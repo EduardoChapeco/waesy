@@ -165,7 +165,7 @@ function WorkspaceAiSettingsPage() {
  <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
  Configurações de IA
  </h1>
- <Badge variant="outline" className="text-[10px] font-mono gap-1 text-primary">
+ <Badge variant="outline" className="text-xs font-mono gap-1 text-primary">
  <Layers className="size-3" /> BYOK (Bring Your Own Key)
  </Badge>
  </div>
@@ -213,20 +213,20 @@ function WorkspaceAiSettingsPage() {
 
  {isConfigured ? (
  config?.status === "active" ? (
- <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] gap-1">
+ <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-xs gap-1">
  <CheckCircle2 className="size-3" /> Conectado
  </Badge>
  ) : config?.status === "error" ? (
- <Badge variant="destructive" className="text-[10px] gap-1">
+ <Badge variant="destructive" className="text-xs gap-1">
  <AlertCircle className="size-3" /> Erro
  </Badge>
  ) : (
- <Badge variant="outline" className="text-[10px] font-mono">
+ <Badge variant="outline" className="text-xs font-mono">
  Não Testado
  </Badge>
  )
  ) : (
- <Badge variant="secondary" className="text-[10px] font-mono">
+ <Badge variant="secondary" className="text-xs font-mono">
  Não Configurado
  </Badge>
  )}
@@ -237,11 +237,11 @@ function WorkspaceAiSettingsPage() {
  <p className="text-muted-foreground">
  Modelo: <strong className="text-foreground font-mono">{config!.model_name}</strong>
  </p>
- <p className="text-muted-foreground font-mono text-[11px]">
+ <p className="text-muted-foreground font-mono text-xs">
  Chave: {config!.api_key_masked}
  </p>
  {config?.last_tested_at && (
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Testado em: {new Date(config.last_tested_at).toLocaleString()}
  </p>
  )}
@@ -366,7 +366,7 @@ function WorkspaceAiSettingsPage() {
  required
  autoFocus
  />
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Sua chave fica protegida com isolamento por tenant no banco de dados.
  </p>
  </div>

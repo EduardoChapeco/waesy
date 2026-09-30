@@ -183,19 +183,19 @@ function WorkspaceProposalsIndexPage() {
  >
  <div className="space-y-2.5">
  <div className="flex items-center justify-between">
- <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary">
+ <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary">
  {p.destination_city}
  </span>
  <Badge
  variant="outline"
- className={`text-[10px] font-mono uppercase font-bold ${
+ className={`text-xs font-mono uppercase font-bold ${
  p.status === "approved"
  ? "bg-emerald-50 text-emerald-700 border-emerald-300"
  : ""
  }`}
  >
  {p.status === "approved"
- ? "✓ Aprovada"
+ ? "Aprovada"
  : p.status === "sent"
  ? "Enviada"
  : "Rascunho"}
@@ -239,7 +239,7 @@ function WorkspaceProposalsIndexPage() {
  <p>
  Passageiro: <span className="font-bold text-foreground">{p.client_name}</span>
  </p>
- <p className="font-mono text-[11px]">{p.client_whatsapp}</p>
+ <p className="font-mono text-xs">{p.client_whatsapp}</p>
  </div>
 
  <div className="pt-2 border-t border-border/40 flex items-center justify-between">

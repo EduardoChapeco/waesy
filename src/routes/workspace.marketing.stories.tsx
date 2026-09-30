@@ -284,7 +284,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     className="mt-1.5 h-11 rounded-xl text-xs"
                     placeholder="Ex: 14990 = R$ 149,90"
                   />
-                  <span className="text-[10px] text-muted-foreground mt-1 block">
+                  <span className="text-xs text-muted-foreground mt-1 block">
                     {(priceCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                   </span>
                 </div>
@@ -371,7 +371,7 @@ export default function WorkspaceMarketingStoriesPage() {
                 Prévia Interativa ({format === "story_9_16" ? "9:16" : format === "feed_1_1" ? "1:1" : "16:9"})
               </span>
               {generatedCard && (
-                <Badge variant="outline" className="text-[10px] font-bold">
+                <Badge variant="outline" className="text-xs font-bold">
                   {generatedCard.dimensions.width} x {generatedCard.dimensions.height}px
                 </Badge>
               )}
@@ -404,7 +404,7 @@ export default function WorkspaceMarketingStoriesPage() {
                 >
                   <ImageIcon className="size-10 text-muted-foreground/50 mb-3" />
                   <p className="text-xs font-bold text-foreground">Aguardando geração</p>
-                  <p className="text-[11px] text-muted-foreground mt-1 max-w-[180px]">
+                  <p className="text-xs text-muted-foreground mt-1 max-w-[180px]">
                     Preencha os campos ao lado e clique em &quot;Gerar Card Social&quot;.
                   </p>
                 </div>

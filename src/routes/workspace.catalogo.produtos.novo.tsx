@@ -686,7 +686,7 @@ export function UnifiedNewProductPage() {
  </div>
  <div>
  <span className="text-xs font-bold text-foreground">Modelo de Vitrine</span>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {showcaseMode === "travel"
  ? "Pacote Turístico / Roteiro Completo (com itinerário, saídas e inclusões)"
  : showcaseMode === "grocery"
@@ -772,7 +772,7 @@ export function UnifiedNewProductPage() {
  <button
  type="button"
  onClick={() => setIsQuickCategoryOpen(true)}
- className="text-[11px] text-primary hover:underline font-semibold cursor-pointer"
+ className="text-xs text-primary hover:underline font-semibold cursor-pointer"
  >
  + Criar Rápido
  </button>
@@ -1023,7 +1023,7 @@ export function UnifiedNewProductPage() {
  <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/20 border border-border/50">
  <div className="space-y-0.5">
  <p className="text-xs font-medium text-foreground">Exibir disponibilidade na vitrine</p>
- <p className="text-[11px] text-muted-foreground leading-tight">
+ <p className="text-xs text-muted-foreground leading-tight">
  Quando ativo, clientes veem o indicador de estoque ou esgotado.
  </p>
  </div>
@@ -1102,7 +1102,7 @@ export function UnifiedNewProductPage() {
  <ShieldCheck className="size-4 text-primary" />
  <span>Classificação Fiscal e Reforma Tributária 2026</span>
  </div>
- <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20 font-semibold">
+ <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20 font-semibold">
  IBS / CBS
  </Badge>
  </div>
@@ -1114,7 +1114,7 @@ export function UnifiedNewProductPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsMasterCatalogOpen(true)}
- className="h-7 text-[11px] font-bold gap-1 rounded-lg border-primary/30 text-primary cursor-pointer"
+ className="h-7 text-xs font-bold gap-1 rounded-lg border-primary/30 text-primary cursor-pointer"
  >
  <Star className="size-3" />
  <span>Buscar no Catálogo Mestre</span>
@@ -1130,7 +1130,7 @@ export function UnifiedNewProductPage() {
  placeholder="Ex: 1006.30.21"
  className="h-10 rounded-xl text-xs bg-background font-mono font-semibold"
  />
- <p className="text-[10px] text-muted-foreground">Nomenclatura Comum do Mercosul oficial</p>
+ <p className="text-xs text-muted-foreground">Nomenclatura Comum do Mercosul oficial</p>
  </div>
 
  <div className="space-y-1.5">
@@ -1141,7 +1141,7 @@ export function UnifiedNewProductPage() {
  placeholder="Ex: 17.001.00"
  className="h-10 rounded-xl text-xs bg-background font-mono"
  />
- <p className="text-[10px] text-muted-foreground">Código Especificador da Substituição Tributária</p>
+ <p className="text-xs text-muted-foreground">Código Especificador da Substituição Tributária</p>
  </div>
  </div>
 
@@ -1154,7 +1154,7 @@ export function UnifiedNewProductPage() {
  placeholder="5.102"
  className="h-10 rounded-xl text-xs bg-background font-mono"
  />
- <p className="text-[10px] text-muted-foreground">5.102 (venda) ou 5.405 (substituição)</p>
+ <p className="text-xs text-muted-foreground">5.102 (venda) ou 5.405 (substituição)</p>
  </div>
 
  <div className="space-y-1.5">
@@ -1166,7 +1166,7 @@ export function UnifiedNewProductPage() {
  onChange={(e) => setFiscalData({ ...fiscalData, ibs_rate: Number(e.target.value) })}
  className="h-10 rounded-xl text-xs bg-background font-mono font-bold"
  />
- <p className="text-[10px] text-muted-foreground">Imposto sobre Bens e Serviços (Estados/Municípios)</p>
+ <p className="text-xs text-muted-foreground">Imposto sobre Bens e Serviços (Estados/Municípios)</p>
  </div>
 
  <div className="space-y-1.5">
@@ -1178,7 +1178,7 @@ export function UnifiedNewProductPage() {
  onChange={(e) => setFiscalData({ ...fiscalData, cbs_rate: Number(e.target.value) })}
  className="h-10 rounded-xl text-xs bg-background font-mono font-bold"
  />
- <p className="text-[10px] text-muted-foreground">Contribuição sobre Bens e Serviços (Federal)</p>
+ <p className="text-xs text-muted-foreground">Contribuição sobre Bens e Serviços (Federal)</p>
  </div>
  </div>
 
@@ -1221,7 +1221,7 @@ export function UnifiedNewProductPage() {
  <ImagePlus className="size-4 text-primary" />
  <span>Galeria de Imagens</span>
  </div>
- <span className="text-[11px] font-mono text-muted-foreground">
+ <span className="text-xs font-mono text-muted-foreground">
  {images.length} foto(s)
  </span>
  </div>
@@ -1278,7 +1278,7 @@ export function UnifiedNewProductPage() {
  </span>
  </div>
 
- <div className="flex items-center bg-muted/80 p-0.5 rounded-xl text-[11px] font-semibold shrink-0">
+ <div className="flex items-center bg-muted/80 p-0.5 rounded-xl text-xs font-semibold shrink-0">
  <button
  type="button"
  onClick={() => setPreviewDevice("mobile")}
@@ -1345,7 +1345,7 @@ export function UnifiedNewProductPage() {
  </div>
  )}
  {formValues.status !== "published" && (
- <Badge variant="secondary" className="absolute top-3 left-3 text-[10px] font-bold">
+ <Badge variant="secondary" className="absolute top-3 left-3 text-xs font-bold">
  Rascunho (Oculto)
  </Badge>
  )}
@@ -1374,7 +1374,7 @@ export function UnifiedNewProductPage() {
  {/* Informações Comerciais */}
  <div className="space-y-4">
  <div className="space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+ <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
  {formValues.brand || store?.name || "Loja Parceira"}
  </span>
  <h2 className="text-xl font-black text-foreground leading-tight">
@@ -1400,7 +1400,7 @@ export function UnifiedNewProductPage() {
                   /{formValues.selling_unit}
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {(formValues.price_cents || 0) >= 10000 ? (
                   `Em até 3x de ${formatMoney(Math.round((formValues.price_cents || 0) / 3))} sem juros`
                 ) : (
@@ -1452,7 +1452,7 @@ export function UnifiedNewProductPage() {
  {/* Bloco de Análise Financeira (Margem / Lucro) */}
  <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 flex items-center justify-between">
  <div>
- <span className="text-[10px] font-bold text-muted-foreground uppercase">
+ <span className="text-xs font-bold text-muted-foreground uppercase">
  Lucro Bruto Estimado
  </span>
  <div className="text-sm font-black font-mono text-emerald-600">
@@ -1460,7 +1460,7 @@ export function UnifiedNewProductPage() {
  </div>
  </div>
  <div className="text-right">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">
+ <span className="text-xs font-bold text-muted-foreground uppercase">
  Margem de Contribuição
  </span>
  <div className="text-sm font-black font-mono text-foreground">
@@ -1478,7 +1478,7 @@ export function UnifiedNewProductPage() {
  <SlidersHorizontal className="size-3.5 text-primary" />
  <span>Opções e Personalização</span>
  </h3>
- <Badge variant="outline" className="text-[10px]">
+ <Badge variant="outline" className="text-xs">
  {selectedOptionGroupIds.length} grupo(s)
  </Badge>
  </div>
@@ -1497,7 +1497,7 @@ export function UnifiedNewProductPage() {
  <Badge
  variant={grp.is_required ? "default" : "secondary"}
  className={cn(
- "text-[9px] h-4 font-semibold",
+ "text-xs h-4 font-semibold",
  grp.is_required ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
  )}
  >
@@ -1508,7 +1508,7 @@ export function UnifiedNewProductPage() {
  {(grp.values || []).map((val: any) => (
  <span
  key={val.id || val.label}
- className="inline-flex items-center gap-1 text-[10px] bg-card border border-border/80 px-2 py-0.5 rounded-md text-foreground font-medium"
+ className="inline-flex items-center gap-1 text-xs bg-card border border-border/80 px-2 py-0.5 rounded-md text-foreground font-medium"
  >
  <span>{val.label}</span>
  {val.price_modifier_cents > 0 && (
@@ -1561,7 +1561,7 @@ export function UnifiedNewProductPage() {
  {/* Chips de Sugestão Rápida para o Nicho */}
  {nicheCtx.suggestedDimensionChips && nicheCtx.suggestedDimensionChips.length > 0 && (
  <div className="flex flex-wrap items-center gap-1.5 pt-1">
- <span className="text-[10px] uppercase font-bold text-muted-foreground mr-1">
+ <span className="text-xs uppercase font-bold text-muted-foreground mr-1">
  Sugestões:
  </span>
  {nicheCtx.suggestedDimensionChips.map((chip) => (
@@ -1572,7 +1572,7 @@ export function UnifiedNewProductPage() {
  setNewDimensionName(chip.name);
  if (!newDimensionValue) setNewDimensionValue(chip.firstValue);
  }}
- className="text-[11px] px-2.5 py-1 rounded-lg border border-border/70 bg-muted/40 hover:bg-primary/10 hover:border-primary/50 text-foreground transition-all cursor-pointer font-medium"
+ className="text-xs px-2.5 py-1 rounded-lg border border-border/70 bg-muted/40 hover:bg-primary/10 hover:border-primary/50 text-foreground transition-all cursor-pointer font-medium"
  >
  + {chip.name}
  </button>
@@ -1607,7 +1607,7 @@ export function UnifiedNewProductPage() {
  if (e.key === "Enter") handleAddDimensionSubmit();
  }}
  />
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Você poderá adicionar mais opções na tabela de grade a seguir.
  </p>
  </div>

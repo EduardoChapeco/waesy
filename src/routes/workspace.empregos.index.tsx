@@ -231,15 +231,15 @@ function WorkspaceJobsPage() {
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase">Vagas Publicadas</span>
+          <span className="text-xs font-bold text-muted-foreground uppercase">Vagas Publicadas</span>
           <p className="text-2xl font-black text-foreground">{jobs.length}</p>
         </div>
         <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase">Candidaturas Recebidas</span>
+          <span className="text-xs font-bold text-muted-foreground uppercase">Candidaturas Recebidas</span>
           <p className="text-2xl font-black text-foreground">{totalApplications}</p>
         </div>
         <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase">Processos Ativos</span>
+          <span className="text-xs font-bold text-muted-foreground uppercase">Processos Ativos</span>
           <p className="text-2xl font-black text-emerald-600">
             {jobs.filter((j) => j.status === "active").length}
           </p>
@@ -274,29 +274,29 @@ function WorkspaceJobsPage() {
                   <h4 className="text-sm sm:text-base font-bold text-foreground">
                     {job.title}
                   </h4>
-                  <Badge variant={job.status === "active" ? "default" : "secondary"} className="text-[10px] font-bold">
+                  <Badge variant={job.status === "active" ? "default" : "secondary"} className="text-xs font-bold">
                     {job.status === "active" ? "Publicada" : "Encerrada"}
                   </Badge>
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-xs">
                     {job.contract_type}
                   </Badge>
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-xs">
                     {job.workplace_type}
                   </Badge>
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
                     {job.linkedin_sync_status === "published" && (
-                      <Badge variant="outline" className="text-[10px] font-bold border-[#0A66C2]/40 text-[#0A66C2] bg-[#0A66C2]/10 flex items-center gap-1">
+                      <Badge variant="outline" className="text-xs font-bold border-[#0A66C2]/40 text-[#0A66C2] bg-[#0A66C2]/10 flex items-center gap-1">
                         <Linkedin className="size-2.5 fill-current" />
-                        <span>LinkedIn ✓</span>
+                        <span>LinkedIn </span>
                       </Badge>
                     )}
                     {job.linkedin_sync_status === "failed" && (
                       <button
                         type="button"
                         onClick={() => handleSyndicateJob(job.id)}
-                        className="text-[10px] font-bold text-destructive hover:underline flex items-center gap-1 cursor-pointer"
+                        className="text-xs font-bold text-destructive hover:underline flex items-center gap-1 cursor-pointer"
                       >
                         <AlertCircle className="size-3" />
                         <span>Falha no LinkedIn (Tentar)</span>
@@ -590,12 +590,12 @@ function WorkspaceJobsPage() {
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-bold text-foreground">Publicar no LinkedIn</span>
                     {!isPro && (
-                      <Badge variant="outline" className="text-[9px] border-amber-500/40 text-amber-600 bg-amber-500/10 px-1 py-0 flex items-center gap-0.5">
+                      <Badge variant="outline" className="text-xs border-amber-500/40 text-amber-600 bg-amber-500/10 px-1 py-0 flex items-center gap-0.5">
                         <Lock className="size-2" /> PRO
                       </Badge>
                     )}
                   </div>
-                  <span className="text-[11px] text-muted-foreground block">
+                  <span className="text-xs text-muted-foreground block">
                     Sindica a vaga na Company Page vinculada.
                   </span>
                 </div>
@@ -607,7 +607,7 @@ function WorkspaceJobsPage() {
                   size="sm"
                   variant="outline"
                   onClick={() => setIsPaywallOpen(true)}
-                  className="h-7 px-2.5 rounded-lg text-[11px] font-bold border-amber-500/40 text-amber-700 bg-amber-500/10 hover:bg-amber-500/20"
+                  className="h-7 px-2.5 rounded-lg text-xs font-bold border-amber-500/40 text-amber-700 bg-amber-500/10 hover:bg-amber-500/20"
                 >
                   <Lock className="size-3 mr-1" /> Desbloquear
                 </Button>

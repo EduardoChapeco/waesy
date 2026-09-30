@@ -216,13 +216,13 @@ function ServicesIndexPage() {
  <TableCell>
  <div className="font-bold text-foreground text-xs">{service.title}</div>
  {service.description && (
- <div className="text-[11px] text-muted-foreground line-clamp-1 max-w-[320px] mt-0.5">
+ <div className="text-xs text-muted-foreground line-clamp-1 max-w-[320px] mt-0.5">
  {service.description}
  </div>
  )}
  </TableCell>
  <TableCell>
- <Badge variant="outline" className="font-mono text-[10px] gap-1">
+ <Badge variant="outline" className="font-mono text-xs gap-1">
  <Clock className="size-3" />
  {service.duration_minutes} min
  </Badge>
@@ -231,7 +231,7 @@ function ServicesIndexPage() {
  {formatMoney(service.price_cents)}
  </TableCell>
  <TableCell>
- <Badge variant={service.status === "active" ? "default" : "secondary"} className="text-[10px]">
+ <Badge variant={service.status === "active" ? "default" : "secondary"} className="text-xs">
  {service.status === "active" ? "● Ativo" : "● Arquivado"}
  </Badge>
  </TableCell>

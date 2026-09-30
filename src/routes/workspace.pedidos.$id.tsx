@@ -469,7 +469,7 @@ function AdminOrderDetailPage() {
  <span className="text-primary font-bold mr-1">{item.qty}x</span>
  {item.product_title}
  {isBackorderItem && (
- <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-warning/15 text-warning border border-warning/30 rounded-md">
+ <span className="inline-flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 bg-warning/15 text-warning border border-warning/30 rounded-md">
  ⏱ Encomenda
  </span>
  )}
@@ -670,11 +670,11 @@ function AdminOrderDetailPage() {
         <span>Documento Fiscal</span>
       </h3>
       {invoice ? (
-        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+        <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
           NF-e Emitida
         </span>
       ) : (
-        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           Pendente
         </span>
       )}
@@ -689,8 +689,8 @@ function AdminOrderDetailPage() {
           </div>
           {invoice.nfe_key && (
             <div className="space-y-0.5">
-              <span className="text-muted-foreground text-[10px] block">Chave de Acesso:</span>
-              <span className="text-[10px] text-foreground break-all">{invoice.nfe_key}</span>
+              <span className="text-muted-foreground text-xs block">Chave de Acesso:</span>
+              <span className="text-xs text-foreground break-all">{invoice.nfe_key}</span>
             </div>
           )}
         </div>
@@ -720,16 +720,16 @@ function AdminOrderDetailPage() {
 
         {order.cpf_on_receipt?.requested && order.cpf_on_receipt?.cpf ? (
           <div className="p-3 rounded-xl bg-muted/20 border border-border/40 space-y-1 text-xs">
-            <span className="text-muted-foreground text-[11px] block">CPF solicitado no Checkout:</span>
+            <span className="text-muted-foreground text-xs block">CPF solicitado no Checkout:</span>
             <span className="font-mono font-bold text-foreground">{order.cpf_on_receipt.cpf}</span>
           </div>
         ) : customer.document || customer.cpf ? (
           <div className="p-3 rounded-xl bg-muted/20 border border-border/40 space-y-1 text-xs">
-            <span className="text-muted-foreground text-[11px] block">Documento do Cadastro:</span>
+            <span className="text-muted-foreground text-xs block">Documento do Cadastro:</span>
             <span className="font-mono font-bold text-foreground">{customer.document || customer.cpf}</span>
           </div>
         ) : (
-          <p className="text-[11px] text-muted-foreground italic">
+          <p className="text-xs text-muted-foreground italic">
             Nenhum CPF específico foi solicitado no checkout (Consumidor Final).
           </p>
         )}
@@ -962,7 +962,7 @@ function AdminOrderDetailPage() {
 
             <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 space-y-2 text-xs">
               <p className="text-muted-foreground font-medium">Link do Entregador:</p>
-              <p className="font-mono text-[11px] break-all bg-background p-2 rounded-lg border">
+              <p className="font-mono text-xs break-all bg-background p-2 rounded-lg border">
                 {`${window.location.origin}/entrega/${createdDispatchResult.delivery_token}`}
               </p>
             </div>
@@ -1035,7 +1035,7 @@ function AdminOrderDetailPage() {
                 onChange={(e) => setMotolinkFeeReais(e.target.value)}
                 className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Frete pago pelo cliente: {formatMoney(order.shipping_cents || 0)} (imutável)
               </p>
             </div>
@@ -1180,7 +1180,7 @@ function AdminOrderDetailPage() {
  className="w-full aspect-video object-cover rounded-lg hover:opacity-90 transition-opacity"
  />
  </a>
- <div className="text-[10px] text-muted-foreground flex items-center justify-between">
+ <div className="text-xs text-muted-foreground flex items-center justify-between">
  <span>Foto do pacote/destinatário</span>
  {pr.latitude && pr.longitude && (
  <a

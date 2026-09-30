@@ -306,7 +306,7 @@ function CouriersListPage() {
                         )}
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] text-muted-foreground uppercase font-semibold block">
+                        <span className="text-xs text-muted-foreground uppercase font-semibold block">
                           Taxa Padrão
                         </span>
                         <span className="font-mono font-black text-sm text-foreground">

@@ -45,7 +45,7 @@ function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? { label: status, variant: "outline", icon: FileText, color: "" };
   const Icon = cfg.icon;
   return (
-    <Badge variant={cfg.variant} className="gap-1.5 text-[10px] font-semibold rounded-lg px-2 py-0.5">
+    <Badge variant={cfg.variant} className="gap-1.5 text-xs font-semibold rounded-lg px-2 py-0.5">
       <Icon className="size-3" />
       {cfg.label}
     </Badge>
@@ -207,11 +207,11 @@ function QuotesListPage() {
                 <div className="flex items-center justify-between pb-2 border-b border-border/50 shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-foreground">{col.title}</span>
-                    <Badge variant="secondary" className="text-[10px] font-mono px-1.5 py-0 h-4">
+                    <Badge variant="secondary" className="text-xs font-mono px-1.5 py-0 h-4">
                       {colQuotes.length}
                     </Badge>
                   </div>
-                  <span className="text-[11px] font-mono font-bold text-muted-foreground">
+                  <span className="text-xs font-mono font-bold text-muted-foreground">
                     {formatMoney(colTotalCents)}
                   </span>
                 </div>
@@ -243,11 +243,11 @@ function QuotesListPage() {
                           {q.customer_name ?? q.customer_email ?? "Cliente não informado"}
                         </p>
 
-                        <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px]">
+                        <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
                           <span className="font-bold text-foreground font-mono">
                             {formatMoney(q.total_cents)}
                           </span>
-                          <span className="text-muted-foreground text-[10px]">
+                          <span className="text-muted-foreground text-xs">
                             {formatRelativeTime(q.updated_at)}
                           </span>
                         </div>
@@ -260,7 +260,7 @@ function QuotesListPage() {
                               size="sm"
                               disabled={updateStatusMutation.isPending}
                               onClick={() => updateStatusMutation.mutate({ quote_id: q.id, status: "sent" })}
-                              className="h-6 px-2 text-[10px] font-bold rounded-lg gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-primary hover:text-primary hover:bg-primary/10"
                             >
                               <span>Enviar</span>
                               <ArrowRight className="size-2.5" />
@@ -272,7 +272,7 @@ function QuotesListPage() {
                               size="sm"
                               disabled={updateStatusMutation.isPending}
                               onClick={() => updateStatusMutation.mutate({ quote_id: q.id, status: "negotiating" })}
-                              className="h-6 px-2 text-[10px] font-bold rounded-lg gap-1 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
                             >
                               <span>Negociar</span>
                               <ArrowRight className="size-2.5" />
@@ -385,7 +385,7 @@ function QuoteRow({ quote }: { quote: QuoteSummaryDTO }) {
           <span className="text-xs font-mono font-bold text-foreground">{quote.quote_number}</span>
           <StatusBadge status={quote.status} />
           {isExpiring && (
-            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
               <AlertTriangle className="size-3" />
               Vence em breve
             </span>
@@ -400,7 +400,7 @@ function QuoteRow({ quote }: { quote: QuoteSummaryDTO }) {
 
       <div className="text-right shrink-0">
         <p className="text-xs font-bold text-foreground font-mono">{formatMoney(quote.total_cents)}</p>
-        <p className="text-[10px] text-muted-foreground">{formatRelativeTime(quote.updated_at)}</p>
+        <p className="text-xs text-muted-foreground">{formatRelativeTime(quote.updated_at)}</p>
       </div>
 
       <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />

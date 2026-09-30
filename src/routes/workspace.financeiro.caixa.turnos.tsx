@@ -154,13 +154,13 @@ function ShiftsPage() {
   const getStatusBadge = (status: CashRegisterStatus) => {
     switch (status) {
       case "open":
-        return <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-bold">Aberto</Badge>;
+        return <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-xs font-bold">Aberto</Badge>;
       case "closed":
-        return <Badge variant="secondary" className="text-[10px] font-bold">Fechado</Badge>;
+        return <Badge variant="secondary" className="text-xs font-bold">Fechado</Badge>;
       case "discrepancy":
-        return <Badge variant="outline" className="text-rose-600 border-rose-500/30 bg-rose-500/10 text-[10px] font-bold">Com Quebra</Badge>;
+        return <Badge variant="outline" className="text-rose-600 border-rose-500/30 bg-rose-500/10 text-xs font-bold">Com Quebra</Badge>;
       default:
-        return <Badge variant="outline" className="text-[10px]">{status}</Badge>;
+        return <Badge variant="outline" className="text-xs">{status}</Badge>;
     }
   };
 
@@ -193,46 +193,46 @@ function ShiftsPage() {
       {/* ── KPIS FINANCEIROS DE TURNOS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <History className="size-3.5 text-foreground" />
             Turnos Registrados
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.totalShifts}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Histórico completo da loja
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <ArrowDownLeft className="size-3.5 text-emerald-600" />
             Total Entradas (+)
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             +{formatMoney(kpis.totalIncomeCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Vendas e suprimentos apurados
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <ArrowUpRight className="size-3.5 text-rose-600" />
             Total Saídas (-)
           </span>
           <div className="text-2xl font-mono font-bold text-rose-600 dark:text-rose-400">
             -{formatMoney(kpis.totalExpenseCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Sangrias e retiradas de gaveta
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <AlertTriangle className={`size-3.5 ${kpis.totalDiscrepancyCents === 0 ? "text-muted-foreground" : "text-amber-500"}`} />
             Divergência Líquida
           </span>
@@ -246,7 +246,7 @@ function ShiftsPage() {
             {kpis.totalDiscrepancyCents > 0 ? "+" : ""}
             {formatMoney(kpis.totalDiscrepancyCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.discrepancyCount} turno(s) com diferença
           </p>
         </div>
@@ -427,21 +427,21 @@ function ShiftsPage() {
             {/* Cabeçalho do Turno */}
             <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-muted/40 border border-border/60 text-xs">
               <div>
-                <span className="text-muted-foreground block text-[10px] uppercase font-bold">Operador Abertura</span>
+                <span className="text-muted-foreground block text-xs uppercase font-bold">Operador Abertura</span>
                 <span className="font-bold text-foreground">
                   {shiftDetails.opened_by_profile?.full_name || "Desconhecido"}
                 </span>
-                <span className="text-[11px] font-mono text-muted-foreground block mt-0.5">
+                <span className="text-xs font-mono text-muted-foreground block mt-0.5">
                   {formatDateTime(shiftDetails.opened_at)}
                 </span>
               </div>
 
               <div>
-                <span className="text-muted-foreground block text-[10px] uppercase font-bold">Operador Fechamento</span>
+                <span className="text-muted-foreground block text-xs uppercase font-bold">Operador Fechamento</span>
                 <span className="font-bold text-foreground">
                   {shiftDetails.closed_by_profile?.full_name || (shiftDetails.closed_at ? "Mesmo Operador" : "Em Aberto")}
                 </span>
-                <span className="text-[11px] font-mono text-muted-foreground block mt-0.5">
+                <span className="text-xs font-mono text-muted-foreground block mt-0.5">
                   {shiftDetails.closed_at ? formatDateTime(shiftDetails.closed_at) : "Aguardando Fechamento"}
                 </span>
               </div>
@@ -450,28 +450,28 @@ function ShiftsPage() {
             {/* Balanço Financeiro do Turno */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">Fundo Inicial</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase">Fundo Inicial</span>
                 <div className="text-sm font-mono font-bold text-foreground">
                   {formatMoney(shiftDetails.initial_balance_cents)}
                 </div>
               </div>
 
               <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">Entradas (+)</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase">Entradas (+)</span>
                 <div className="text-sm font-mono font-bold text-emerald-600">
                   +{formatMoney(shiftDetails.incomeCents || 0)}
                 </div>
               </div>
 
               <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">Saídas (-)</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase">Saídas (-)</span>
                 <div className="text-sm font-mono font-bold text-rose-600">
                   -{formatMoney(shiftDetails.expenseCents || 0)}
                 </div>
               </div>
 
               <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">Saldo Esperado</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase">Saldo Esperado</span>
                 <div className="text-sm font-mono font-bold text-foreground">
                   {formatMoney(shiftDetails.initial_balance_cents + (shiftDetails.incomeCents || 0) - (shiftDetails.expenseCents || 0))}
                 </div>
@@ -512,20 +512,20 @@ function ShiftsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border/60 hover:bg-transparent">
-                      <TableHead className="text-[11px] font-bold">Horário</TableHead>
-                      <TableHead className="text-[11px] font-bold">Tipo</TableHead>
-                      <TableHead className="text-[11px] font-bold">Descrição</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold font-mono">Valor</TableHead>
+                      <TableHead className="text-xs font-bold">Horário</TableHead>
+                      <TableHead className="text-xs font-bold">Tipo</TableHead>
+                      <TableHead className="text-xs font-bold">Descrição</TableHead>
+                      <TableHead className="text-right text-xs font-bold font-mono">Valor</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {(shiftDetails.entries || []).map((entry: any) => (
                       <TableRow key={entry.id} className="border-border/40 text-xs">
-                        <TableCell className="font-mono text-muted-foreground text-[11px]">
+                        <TableCell className="font-mono text-muted-foreground text-xs">
                           {formatDateTime(entry.created_at)}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`text-[10px] font-bold ${
+                          <Badge variant="outline" className={`text-xs font-bold ${
                             entry.entry_type === "sale" || entry.entry_type === "supply"
                               ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/10"
                               : "text-rose-600 border-rose-500/30 bg-rose-500/10"

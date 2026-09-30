@@ -171,7 +171,7 @@ export function WorkspaceConformidadePage() {
                   <strong className="text-foreground">Marketplace Verificado:</strong> Empresas registradas com CNPJ ativo, SAC comprovado e garantia contratual de entrega.
                 </li>
               </ul>
-              <div className="pt-2 border-t border-border/60 text-[11px] text-muted-foreground">
+              <div className="pt-2 border-t border-border/60 text-xs text-muted-foreground">
                 A validação do CNPJ é executada via algoritmo normativo oficial (Módulo 11 da Receita Federal).
               </div>
             </div>
@@ -272,7 +272,7 @@ export function WorkspaceConformidadePage() {
               </div>
 
               <div className="pt-4 border-t border-border/60 flex items-center justify-between">
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Ao salvar, os dados serão submetidos para conferência da auditoria.
                 </p>
                 <Button

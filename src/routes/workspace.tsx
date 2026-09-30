@@ -41,7 +41,7 @@ export const Route = createFileRoute("/workspace")({
     const isPlatformAdmin = isPlatformAdminUser(session);
       const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
 
- // 🚨 REGRA INVIOLÁVEL: O Workspace exige um negócio cadastrado.
+ // REGRA INVIOLÁVEL: O Workspace exige um negócio cadastrado.
  // Quem não possui loja/empresa não pode ver o workspace nem ferramentas operacionais.
  // É redirecionado imediatamente para o cadastro do seu negócio.
  if (!hasStore) {
@@ -119,7 +119,7 @@ function WorkspaceErrorComponent({ error, reset }: { error: Error; reset: () => 
  </div>
 
  {error?.message && (
- <div className="p-3 bg-destructive/5 rounded-xl border border-destructive/20 text-left text-[11px] font-mono text-destructive space-y-1 max-h-40 overflow-y-auto no-scrollbar">
+ <div className="p-3 bg-destructive/5 rounded-xl border border-destructive/20 text-left text-xs font-mono text-destructive space-y-1 max-h-40 overflow-y-auto no-scrollbar">
  <span className="font-bold block">Diagnóstico Técnico:</span>
  <span className="break-all">{error.message}</span>
  </div>

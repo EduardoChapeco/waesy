@@ -319,7 +319,7 @@ function ContasPagarPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("overdue")}
-            className="text-[11px] font-bold underline hover:opacity-80 cursor-pointer"
+            className="text-xs font-bold underline hover:opacity-80 cursor-pointer"
           >
             Filtrar Atrasadas
           </button>
@@ -329,53 +329,53 @@ function ContasPagarPage() {
       {/* ── KPIS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Clock className="size-3.5 text-blue-600" />
             Total a Pagar Previsto
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {formatMoney(kpis.pendingCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.pendingCount} títulos em aberto
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Calendar className="size-3.5 text-amber-500" />
             Vence Hoje
           </span>
           <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
             {formatMoney(kpis.todayCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.todayCount > 0 ? `${kpis.todayCount} compromisso(s) para quitar hoje` : "Nenhum boleto para hoje"}
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <AlertTriangle className="size-3.5 text-rose-600" />
             Em Atraso / Vencidas
           </span>
           <div className="text-2xl font-mono font-bold text-rose-600 dark:text-rose-400">
             {formatMoney(kpis.overdueCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.overdueCount > 0 ? `${kpis.overdueCount} título(s) vencido(s)` : "Em dia com os fornecedores"}
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
             Total Liquidado
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {formatMoney(kpis.paidCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.paidCount} pagamentos realizados
           </p>
         </div>
@@ -504,7 +504,7 @@ function ContasPagarPage() {
                         {catInfo.label}
                       </span>
                       {ob.recurrence !== "none" && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-mono">
+                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 font-mono">
                           {ob.recurrence === "monthly" ? "Mensal" : ob.recurrence === "weekly" ? "Semanal" : "Anual"}
                         </Badge>
                       )}
@@ -512,7 +512,7 @@ function ContasPagarPage() {
 
                     <div>
                       {isPaid ? (
-                        <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[11px] font-bold px-2 py-0.5">
+                        <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-bold px-2 py-0.5">
                           Liquidado
                         </Badge>
                       ) : isOverdue ? (
@@ -520,11 +520,11 @@ function ContasPagarPage() {
                           Vencido
                         </Badge>
                       ) : isToday ? (
-                        <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[11px] font-bold px-2 py-0.5">
+                        <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-bold px-2 py-0.5">
                           Vence Hoje
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[11px] text-muted-foreground font-mono px-2 py-0.5">
+                        <Badge variant="outline" className="text-xs text-muted-foreground font-mono px-2 py-0.5">
                           No prazo
                         </Badge>
                       )}
@@ -545,14 +545,14 @@ function ContasPagarPage() {
                   {/* Vencimento e Valor */}
                   <div className="flex items-baseline justify-between pt-2 border-t border-border/30">
                     <div className="space-y-0.5">
-                      <span className="text-[11px] text-muted-foreground block">Data de Vencimento</span>
+                      <span className="text-xs text-muted-foreground block">Data de Vencimento</span>
                       <span className="text-xs font-mono font-bold text-foreground">
                         {ob.due_date.split("-").reverse().join("/")}
                       </span>
                     </div>
 
                     <div className="text-right space-y-0.5">
-                      <span className="text-[11px] text-muted-foreground block">Valor</span>
+                      <span className="text-xs text-muted-foreground block">Valor</span>
                       <span className="text-xl font-mono font-black text-foreground">
                         {formatMoney(ob.amount_cents)}
                       </span>
@@ -656,12 +656,12 @@ function ContasPagarPage() {
                             <div className="font-bold text-xs text-foreground flex items-center gap-1.5">
                               {ob.title}
                               {ob.recurrence !== "none" && (
-                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 font-mono">
+                                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 font-mono">
                                   {ob.recurrence === "monthly" ? "Mensal" : ob.recurrence === "weekly" ? "Semanal" : "Anual"}
                                 </Badge>
                               )}
                             </div>
-                            <span className="text-[11px] text-muted-foreground block">
+                            <span className="text-xs text-muted-foreground block">
                               {catInfo.label}
                             </span>
                           </div>
@@ -680,7 +680,7 @@ function ContasPagarPage() {
                             {ob.due_date.split("-").reverse().join("/")}
                           </div>
                           {isPaid ? (
-                            <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[10px] font-bold">
+                            <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-bold">
                               Pago em {ob.paid_at ? ob.paid_at.slice(0, 10).split("-").reverse().join("/") : "dia"}
                             </Badge>
                           ) : isOverdue ? (
@@ -688,11 +688,11 @@ function ContasPagarPage() {
                               Vencido
                             </Badge>
                           ) : isToday ? (
-                            <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px] font-bold">
+                            <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-bold">
                               Vence Hoje
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[10px] text-muted-foreground font-mono">
+                            <Badge variant="outline" className="text-xs text-muted-foreground font-mono">
                               No prazo
                             </Badge>
                           )}
@@ -709,7 +709,7 @@ function ContasPagarPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleCopyBarcode(ob.id, ob.barcode!)}
-                            className="h-7 px-2 text-[11px] font-mono gap-1 text-muted-foreground hover:text-foreground cursor-pointer rounded-lg"
+                            className="h-7 px-2 text-xs font-mono gap-1 text-muted-foreground hover:text-foreground cursor-pointer rounded-lg"
                           >
                             {copiedId === ob.id ? (
                               <>
@@ -724,7 +724,7 @@ function ContasPagarPage() {
                             )}
                           </Button>
                         ) : (
-                          <span className="text-[11px] text-muted-foreground/60">—</span>
+                          <span className="text-xs text-muted-foreground/60">—</span>
                         )}
                       </TableCell>
 
@@ -740,7 +740,7 @@ function ContasPagarPage() {
                               <span>Pagar</span>
                             </Button>
                           ) : (
-                            <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-bold">
+                            <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-xs font-bold">
                               Liquidado
                             </Badge>
                           )}

@@ -67,7 +67,7 @@ function WorkspaceAnunciosErrorComponent({ error }: { error: any }) {
         </p>
       </div>
       {error?.message && (
-        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
           {error.message}
         </pre>
       )}
@@ -373,10 +373,10 @@ function AnunciosWorkspacePage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-[10px] uppercase tracking-wider font-bold">
+                <Badge variant="outline" className="text-xs uppercase tracking-wider font-bold">
                   Retorno Auditado
                 </Badge>
-                <Badge variant={tierStatus?.isMaxUnlocked ? "default" : "secondary"} className="text-[10px]">
+                <Badge variant={tierStatus?.isMaxUnlocked ? "default" : "secondary"} className="text-xs">
                   Tier {String(tierStatus?.planTier || "free").toUpperCase()} {tierStatus?.boostDiscountPercent ? `(-${tierStatus.boostDiscountPercent}% no Boost)` : ""}
                 </Badge>
               </div>
@@ -497,15 +497,15 @@ function AnunciosWorkspacePage() {
           {aiCreativePreview && (
             <div className="p-4 rounded-xl bg-muted/30 border border-border/50 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase text-muted-foreground">Headline Estruturada</span>
+                <span className="text-xs font-bold uppercase text-muted-foreground">Headline Estruturada</span>
                 <p className="text-xs font-bold text-foreground">{aiCreativePreview.creative.headline}</p>
-                <span className="text-[10px] font-bold uppercase text-muted-foreground block pt-1">Canvas Spec</span>
-                <p className="text-[11px] font-mono text-muted-foreground">
+                <span className="text-xs font-bold uppercase text-muted-foreground block pt-1">Canvas Spec</span>
+                <p className="text-xs font-mono text-muted-foreground">
                   {aiCreativePreview.canvasSpec.width}x{aiCreativePreview.canvasSpec.height} ({aiCreativePreview.canvasSpec.aspectRatio}) • {aiCreativePreview.priceFormatted}
                 </p>
               </div>
               <div className="md:col-span-2 space-y-1">
-                <span className="text-[10px] font-bold uppercase text-muted-foreground">Copy Persuasiva</span>
+                <span className="text-xs font-bold uppercase text-muted-foreground">Copy Persuasiva</span>
                 <p className="text-xs text-foreground leading-relaxed">{aiCreativePreview.creative.bodyCopy}</p>
               </div>
             </div>
@@ -516,7 +516,7 @@ function AnunciosWorkspacePage() {
         <Sheet open={maxUpsellOpen} onOpenChange={setMaxUpsellOpen}>
           <SheetContent side="bottom" className="rounded-t-2xl max-w-xl mx-auto p-6 space-y-5">
             <SheetHeader className="space-y-1 text-left">
-              <Badge variant="default" className="w-fit text-[10px]">Exclusivo Waesy Max</Badge>
+              <Badge variant="default" className="w-fit text-xs">Exclusivo Waesy Max</Badge>
               <SheetTitle className="text-lg font-bold">Tráfego Externo</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">
                 Conecte Meta Ads e Google Ads via OAuth 2.0, gere anúncios direto do seu catálogo e receba 50% de subsídio em todos os destaques internos da vitrine.
@@ -525,15 +525,15 @@ function AnunciosWorkspacePage() {
             <div className="space-y-2.5 text-xs">
               <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
                 <span className="font-medium">Conector Oficial Meta Graph API</span>
-                <Badge variant="outline" className="text-[10px]">Incluído</Badge>
+                <Badge variant="outline" className="text-xs">Incluído</Badge>
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
                 <span className="font-medium">Subsídio em Destaques na Vitrine</span>
-                <Badge variant="outline" className="text-[10px]">50% OFF</Badge>
+                <Badge variant="outline" className="text-xs">50% OFF</Badge>
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
                 <span className="font-medium">Atribuição Determinística de Receita</span>
-                <Badge variant="outline" className="text-[10px]">Incluído</Badge>
+                <Badge variant="outline" className="text-xs">Incluído</Badge>
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -594,7 +594,7 @@ function AnunciosWorkspacePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-foreground">Meta Ads</h3>
-                    <Badge variant="default" className="text-[10px]">Conectado (AES-256-GCM)</Badge>
+                    <Badge variant="default" className="text-xs">Conectado (AES-256-GCM)</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Conta Business sincronizada via Graph API v20.0 e Catálogo CSV ativo.
@@ -632,7 +632,7 @@ function AnunciosWorkspacePage() {
                     <span>{copiedFeed === "meta" ? "Copiado" : "Copiar Feed URL"}</span>
                   </Button>
                 </div>
-                <div className="p-2 rounded-lg bg-background font-mono text-[10px] text-muted-foreground break-all border">
+                <div className="p-2 rounded-lg bg-background font-mono text-xs text-muted-foreground break-all border">
                   {channelsSettings?.meta_ads?.catalog_feed_url}
                 </div>
               </div>
@@ -667,7 +667,7 @@ function AnunciosWorkspacePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-foreground">Google Ads e Merchant Center</h3>
-                    <Badge variant="default" className="text-[10px]">Conectado (AES-256-GCM)</Badge>
+                    <Badge variant="default" className="text-xs">Conectado (AES-256-GCM)</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Sincronização ativa com Google Ads API v17 e Merchant Center XML.
@@ -705,7 +705,7 @@ function AnunciosWorkspacePage() {
                     <span>{copiedFeed === "google" ? "Copiado" : "Copiar Feed XML"}</span>
                   </Button>
                 </div>
-                <div className="p-2 rounded-lg bg-background font-mono text-[10px] text-muted-foreground break-all border">
+                <div className="p-2 rounded-lg bg-background font-mono text-xs text-muted-foreground break-all border">
                   {channelsSettings?.google_ads?.merchant_feed_url}
                 </div>
               </div>
@@ -717,7 +717,7 @@ function AnunciosWorkspacePage() {
         <Sheet open={Boolean(activationSheetPlatform)} onOpenChange={(open) => !open && setActivationSheetPlatform(null)}>
           <SheetContent side="bottom" className="rounded-t-2xl max-w-xl mx-auto p-6 space-y-5">
             <SheetHeader className="space-y-1 text-left">
-              <Badge variant="outline" className="w-fit text-[10px]">Cofre AES-256-GCM</Badge>
+              <Badge variant="outline" className="w-fit text-xs">Cofre AES-256-GCM</Badge>
               <SheetTitle className="text-lg font-bold">
                 {activationSheetPlatform === "google_ads" ? "Conectar Google Ads" : "Conectar Meta Ads"}
               </SheetTitle>
@@ -919,7 +919,7 @@ function AnunciosWorkspacePage() {
                     <span>Copiar Link</span>
                   </Button>
                 </div>
-                <div className="p-2 rounded-lg bg-background font-mono text-[11px] text-foreground break-all border">
+                <div className="p-2 rounded-lg bg-background font-mono text-xs text-foreground break-all border">
                   {generatedUtmUrl}
                 </div>
               </div>
@@ -940,7 +940,7 @@ function AnunciosWorkspacePage() {
               <span className="text-xs font-bold text-foreground">
                 Criador de Anúncios com IA (Protocolo MCP)
               </span>
-              <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono text-muted-foreground border-border/60">
+              <Badge variant="outline" className="text-xs h-5 px-1.5 font-mono text-muted-foreground border-border/60">
                 Linguagem Natural e Voz
               </Badge>
             </div>
@@ -949,7 +949,7 @@ function AnunciosWorkspacePage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setDynamicBlock(null)}
-                className="h-6 text-[11px] text-muted-foreground hover:text-foreground px-2"
+                className="h-6 text-xs text-muted-foreground hover:text-foreground px-2"
               >
                 Fechar Prévia
               </Button>
@@ -1006,14 +1006,14 @@ function AnunciosWorkspacePage() {
 
           {/* Sugestões Rápidas de Prompt em 1 Toque */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground shrink-0 mr-1">
+            <span className="text-xs font-medium text-muted-foreground shrink-0 mr-1">
               Sugestões:
             </span>
             {[
-              "🍺 Especial Oktoberfest de R$ 50/dia",
-              "🔥 Promoção Relâmpago de R$ 30/dia",
-              "📍 Anúncio no Bairro de R$ 20/dia",
-              "🛍️ Destaque dos Melhores Produtos no Instagram",
+              "Especial Oktoberfest de R$ 50/dia",
+              "Promoção Relâmpago de R$ 30/dia",
+              "Anúncio no Bairro de R$ 20/dia",
+              "Destaque dos Melhores Produtos no Instagram",
             ].map((sug) => (
               <button
                 key={sug}
@@ -1023,7 +1023,7 @@ function AnunciosWorkspacePage() {
                   handleGenerateMcp(sug);
                 }}
                 disabled={isGeneratingMcp}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg border border-border/60 bg-muted/10 hover:bg-muted/30 text-foreground transition-colors cursor-pointer shrink-0"
+                className="text-xs whitespace-nowrap px-2.5 py-1 rounded-lg border border-border/60 bg-muted/10 hover:bg-muted/30 text-foreground transition-colors cursor-pointer shrink-0"
               >
                 {sug}
               </button>
@@ -1113,11 +1113,11 @@ function AnunciosWorkspacePage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge
                         variant={c.status === "active" ? "default" : "secondary"}
-                        className="text-[10px] rounded-md font-bold px-2 py-0.5 uppercase tracking-wider"
+                        className="text-xs rounded-md font-bold px-2 py-0.5 uppercase tracking-wider"
                       >
                         {c.status === "active" ? "Veiculando" : "Pausada"}
                       </Badge>
-                      <Badge variant="outline" className="text-[10px] rounded-md font-medium px-2 py-0.5">
+                      <Badge variant="outline" className="text-xs rounded-md font-medium px-2 py-0.5">
                         {FORMAT_LABELS[c.format] || c.format}
                       </Badge>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -1315,7 +1315,7 @@ function AnunciosWorkspacePage() {
 
               {/* Truthful Preview Compacto */}
               <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/40 space-y-2">
-                <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground">
+                <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
                   <span className="flex items-center gap-1.5">
                     <Eye className="size-3 text-primary" />
                     Prévia Real
@@ -1339,11 +1339,11 @@ function AnunciosWorkspacePage() {
                   ) : (
                     <div className="text-center p-4 text-muted-foreground flex flex-col items-center gap-1">
                       <ImageIcon className="size-6 opacity-40" />
-                      <span className="text-[10px]">Sem criativo enviado</span>
+                      <span className="text-xs">Sem criativo enviado</span>
                     </div>
                   )}
                   <div className="absolute top-2 left-2">
-                    <Badge className="bg-foreground/80 text-background text-[8px] font-bold">
+                    <Badge className="bg-foreground/80 text-background text-xs font-bold">
                       Patrocinado
                     </Badge>
                   </div>
@@ -1353,7 +1353,7 @@ function AnunciosWorkspacePage() {
                   <p className="font-bold text-foreground truncate">
                     {formHeadline || formTitle || "Título da chamada"}
                   </p>
-                  <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <MapPin className="size-3" />
                     <span>{formLocation} ({formRadiusKm} km)</span>
                   </p>

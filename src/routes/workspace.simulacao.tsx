@@ -251,7 +251,7 @@ function SimulacaoPage() {
                   <Layers className="size-4 text-primary" />
                   Hipótese da Oferta
                 </span>
-                <span className="text-[11px] text-muted-foreground font-mono">
+                <span className="text-xs text-muted-foreground font-mono">
                   {selectedNiche}
                 </span>
               </div>
@@ -341,7 +341,7 @@ function SimulacaoPage() {
                   <Users className="size-3.5 text-primary" />
                   Bancada Amostral IBGE
                 </span>
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {filteredPersonas.length} calibradas
                 </span>
               </div>
@@ -356,14 +356,14 @@ function SimulacaoPage() {
                       <p className="font-semibold text-foreground truncate">
                         {p.display_name}
                       </p>
-                      <p className="text-[10px] text-muted-foreground truncate">
+                      <p className="text-xs text-muted-foreground truncate">
                         {p.age} anos • {p.region} • R${" "}
                         {p.median_income_brl.toLocaleString("pt-BR")}/mês
                       </p>
                     </div>
                     <Badge
                       variant="outline"
-                      className="text-[10px] rounded-md font-medium px-2 py-0.5 shrink-0 bg-muted/40"
+                      className="text-xs rounded-md font-medium px-2 py-0.5 shrink-0 bg-muted/40"
                     >
                       Classe {p.abep_social_class}
                     </Badge>
@@ -431,7 +431,7 @@ function SimulacaoPage() {
                             ? "Revisar com Ajustes Estratégicos"
                             : "Bloqueado por Alto Risco de Mercado"}
                       </p>
-                      <p className="text-[11px] opacity-90 mt-0.5">
+                      <p className="text-xs opacity-90 mt-0.5">
                         Aprovação: {synthesis.overall_approval_rate}% • NPS:{" "}
                         {synthesis.synthetic_nps} • Conversão Estimada:{" "}
                         {synthesis.estimated_conversion_range[0]}% a{" "}
@@ -489,7 +489,7 @@ function SimulacaoPage() {
                       <MessageSquare className="size-3.5 text-primary" />
                       Reações Individuais das Personas
                     </span>
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {evaluations.length} depoimentos
                     </span>
                   </div>
@@ -505,7 +505,7 @@ function SimulacaoPage() {
                             <span className="font-bold text-foreground">
                               {ev.archetype?.display_name || "Consumidor"}
                             </span>
-                            <span className="text-[10px] text-muted-foreground font-mono">
+                            <span className="text-xs text-muted-foreground font-mono">
                               Classe {ev.archetype?.abep_social_class || "C"} •{" "}
                               {ev.archetype?.region || "Brasil"}
                             </span>
@@ -516,17 +516,17 @@ function SimulacaoPage() {
                                 ? "default"
                                 : "outline"
                             }
-                            className="text-[10px] rounded-md font-medium px-2 py-0.5"
+                            className="text-xs rounded-md font-medium px-2 py-0.5"
                           >
                             {ev.purchase_intent_percent}% Intenção
                           </Badge>
                         </div>
 
-                        <p className="text-[11px] text-muted-foreground italic bg-muted/20 p-2.5 rounded-xl border border-border/40 leading-relaxed">
+                        <p className="text-xs text-muted-foreground italic bg-muted/20 p-2.5 rounded-xl border border-border/40 leading-relaxed">
                           "{ev.verbatim_reaction}"
                         </p>
 
-                        <div className="flex flex-wrap items-center gap-3 text-[10px] text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                           <span>
                             Emoção:{" "}
                             <strong className="text-foreground capitalize">

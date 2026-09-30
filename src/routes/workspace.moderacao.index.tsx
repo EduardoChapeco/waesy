@@ -165,11 +165,11 @@ function ModerationQueuePage() {
  <div className="flex items-center gap-2 flex-wrap">
  <Badge
  variant={reasonInfo.variant}
- className="text-[10px] font-bold uppercase tracking-wider"
+ className="text-xs font-bold uppercase tracking-wider"
  >
  {reasonInfo.label}
  </Badge>
- <Badge variant="outline" className="text-[10px] font-semibold">
+ <Badge variant="outline" className="text-xs font-semibold">
  {ENTITY_LABELS[rep.entity_type] || rep.entity_type}
  </Badge>
  <span className="text-xs text-muted-foreground">
@@ -185,7 +185,7 @@ function ModerationQueuePage() {
  ? "default"
  : "outline"
  }
- className="text-[10px] font-mono uppercase"
+ className="text-xs font-mono uppercase"
  >
  {rep.status === "pending"
  ? "Pendente"
@@ -201,7 +201,7 @@ function ModerationQueuePage() {
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
  <div className="md:col-span-2 space-y-2">
  <div>
- <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider">
+ <span className="text-muted-foreground block text-xs uppercase font-bold tracking-wider">
  Conteúdo Alvo
  </span>
  <div className="flex items-center gap-2 mt-0.5">
@@ -213,7 +213,7 @@ function ModerationQueuePage() {
  asChild
  variant="ghost"
  size="sm"
- className="h-6 px-2 text-[10px] gap-1"
+ className="h-6 px-2 text-xs gap-1"
  >
  <Link
  to="/classificados/$id"
@@ -240,7 +240,7 @@ function ModerationQueuePage() {
 
  <div className="space-y-2 border-t md:border-t-0 md: md:pl-4 pt-2 md:pt-0">
  <div>
- <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider">
+ <span className="text-muted-foreground block text-xs uppercase font-bold tracking-wider">
  Denunciante
  </span>
  <span className="font-semibold text-foreground">
@@ -250,7 +250,7 @@ function ModerationQueuePage() {
 
  {rep.moderator && (
  <div>
- <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider">
+ <span className="text-muted-foreground block text-xs uppercase font-bold tracking-wider">
  Moderado por
  </span>
  <span className="font-semibold text-foreground">

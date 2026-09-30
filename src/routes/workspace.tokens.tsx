@@ -187,7 +187,7 @@ export default function WorkspaceTokensPage() {
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {(wallet.balance || 0).toLocaleString()}
  </div>
- <span className="text-[11px] text-muted-foreground">micro-tokens disponíveis</span>
+ <span className="text-xs text-muted-foreground">micro-tokens disponíveis</span>
  </div>
 
  <div className="p-4 rounded-xl border border-border/60 bg-card">
@@ -195,7 +195,7 @@ export default function WorkspaceTokensPage() {
  <div className="text-2xl font-bold tracking-tight text-primary mt-1">
  {promoTokens.toLocaleString()}
  </div>
- <span className="text-[11px] text-muted-foreground">bounties e crescimento orgânico</span>
+ <span className="text-xs text-muted-foreground">bounties e crescimento orgânico</span>
  </div>
 
  <div className="p-4 rounded-xl border border-border/60 bg-card">
@@ -203,7 +203,7 @@ export default function WorkspaceTokensPage() {
  <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
  {purchasedTokens.toLocaleString()}
  </div>
- <span className="text-[11px] text-muted-foreground">lastreados para IA, NF-e e WhatsApp</span>
+ <span className="text-xs text-muted-foreground">lastreados para IA, NF-e e WhatsApp</span>
  </div>
 
  <div className="p-4 rounded-xl border border-border/60 bg-card">
@@ -211,7 +211,7 @@ export default function WorkspaceTokensPage() {
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {growth?.total_clients_brought || 0}
  </div>
- <span className="text-[11px] text-muted-foreground">+100k tokens por novo cliente</span>
+ <span className="text-xs text-muted-foreground">+100k tokens por novo cliente</span>
  </div>
  </div>
 
@@ -230,11 +230,11 @@ export default function WorkspaceTokensPage() {
  <div className="space-y-0.5">
  <div className="flex items-center gap-2">
  <span className="font-semibold text-foreground">Link Próprio da Loja</span>
- <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+ <Badge variant="outline" className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
  0 Tokens (Tráfego Gratuito)
  </Badge>
  </div>
- <p className="text-muted-foreground font-mono text-[11px] truncate max-w-md">
+ <p className="text-muted-foreground font-mono text-xs truncate max-w-md">
  {growth?.referral_url || `https://usewaesy.pages.dev/@${wallet.store_name?.toLowerCase().replace(/\s+/g, "")}`}
  </p>
  </div>
@@ -256,39 +256,39 @@ export default function WorkspaceTokensPage() {
  <div className="rounded-xl border border-border/60 overflow-hidden bg-card text-xs">
  <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-border/40">
  <div className="p-3 space-y-0.5">
- <span className="text-muted-foreground block text-[11px]">Visualização no Feed</span>
+ <span className="text-muted-foreground block text-xs">Visualização no Feed</span>
  <strong className="text-foreground">10 Tokens</strong>
- <span className="text-[10px] text-muted-foreground block">~R$ 0,0005 (Mídia)</span>
+ <span className="text-xs text-muted-foreground block">~R$ 0,0005 (Mídia)</span>
  </div>
  <div className="p-3 space-y-0.5">
- <span className="text-muted-foreground block text-[11px]">Alerta Push / In-App</span>
+ <span className="text-muted-foreground block text-xs">Alerta Push / In-App</span>
  <strong className="text-foreground">25 Tokens</strong>
- <span className="text-[10px] text-muted-foreground block">~R$ 0,0012 (Mídia)</span>
+ <span className="text-xs text-muted-foreground block">~R$ 0,0012 (Mídia)</span>
  </div>
  <div className="p-3 space-y-0.5">
- <span className="text-muted-foreground block text-[11px]">Turno IA de Vendas</span>
+ <span className="text-muted-foreground block text-xs">Turno IA de Vendas</span>
  <strong className="text-foreground">100 Tokens</strong>
- <span className="text-[10px] text-muted-foreground block">~R$ 0,0049 (Infra)</span>
+ <span className="text-xs text-muted-foreground block">~R$ 0,0049 (Infra)</span>
  </div>
  <div className="p-3 space-y-0.5">
- <span className="text-muted-foreground block text-[11px]">Disparo WhatsApp</span>
+ <span className="text-muted-foreground block text-xs">Disparo WhatsApp</span>
  <strong className="text-foreground">150 Tokens</strong>
- <span className="text-[10px] text-muted-foreground block">~R$ 0,0073 (Infra)</span>
+ <span className="text-xs text-muted-foreground block">~R$ 0,0073 (Infra)</span>
  </div>
  <div className="p-3 space-y-0.5">
- <span className="text-muted-foreground block text-[11px]">Diária Loja Curada</span>
+ <span className="text-muted-foreground block text-xs">Diária Loja Curada</span>
  <strong className="text-foreground">200 Tokens/dia</strong>
- <span className="text-[10px] text-muted-foreground block">~R$ 0,0098 (Mídia)</span>
+ <span className="text-xs text-muted-foreground block">~R$ 0,0098 (Mídia)</span>
  </div>
  <div className="p-3 space-y-0.5">
- <span className="text-muted-foreground block text-[11px]">Emissão NF-e / Fiscal</span>
+ <span className="text-muted-foreground block text-xs">Emissão NF-e / Fiscal</span>
  <strong className="text-foreground">1.500 Tokens</strong>
- <span className="text-[10px] text-muted-foreground block">~R$ 0,0735 (Infra API)</span>
+ <span className="text-xs text-muted-foreground block">~R$ 0,0735 (Infra API)</span>
  </div>
  <div className="p-3 space-y-0.5 col-span-2 bg-muted/20">
- <span className="text-rose-600 dark:text-rose-400 font-semibold block text-[11px]">Lead Quente Qualificado</span>
+ <span className="text-rose-600 dark:text-rose-400 font-semibold block text-xs">Lead Quente Qualificado</span>
  <strong className="text-foreground">35.000 Tokens (~R$ 1,71)</strong>
- <span className="text-[10px] text-muted-foreground block">Cliente local com intenção de compra imediata</span>
+ <span className="text-xs text-muted-foreground block">Cliente local com intenção de compra imediata</span>
  </div>
  </div>
  </div>
@@ -311,7 +311,7 @@ export default function WorkspaceTokensPage() {
  <div className="flex items-center justify-between">
  <span className="font-bold text-sm text-foreground">{pkg.name}</span>
  {pkg.badge && (
- <Badge variant="secondary" className="text-[9px] font-bold">
+ <Badge variant="secondary" className="text-xs font-bold">
  {pkg.badge}
  </Badge>
  )}
@@ -389,7 +389,7 @@ export default function WorkspaceTokensPage() {
                         <p className="text-xs sm:text-sm font-medium text-foreground truncate">
                           {label}
                         </p>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {dateStr} às {timeStr}
                         </p>
                       </div>
@@ -407,7 +407,7 @@ export default function WorkspaceTokensPage() {
                           ? `+${Number(tx.amount).toLocaleString("pt-BR")}`
                           : Number(tx.amount).toLocaleString("pt-BR")}
                       </span>
-                      <span className="block text-[10px] text-muted-foreground uppercase font-mono tracking-wider">
+                      <span className="block text-xs text-muted-foreground uppercase font-mono tracking-wider">
                         tokens
                       </span>
                     </div>
@@ -452,7 +452,7 @@ export default function WorkspaceTokensPage() {
  <div key={c.platform} className="p-4 rounded-xl border border-border/60 bg-muted/10 space-y-3">
  <div className="space-y-0.5">
  <span className="font-bold text-sm text-foreground block">{c.platform}</span>
- <span className="text-[11px] text-muted-foreground block">{c.rate_desc}</span>
+ <span className="text-xs text-muted-foreground block">{c.rate_desc}</span>
  </div>
 
  <div className="space-y-1">
@@ -463,12 +463,12 @@ export default function WorkspaceTokensPage() {
  </div>
 
  <div className="pt-2 border-t border-border/40 space-y-0.5">
- <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold block">
+ <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold block">
  Economia Líquida na Waesy:
  </span>
  <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono">
  +{c.savings_brl.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}{" "}
- <span className="text-[11px] font-normal">(-{c.savings_percent}%)</span>
+ <span className="text-xs font-normal">(-{c.savings_percent}%)</span>
  </div>
  </div>
  </div>
@@ -514,7 +514,7 @@ export default function WorkspaceTokensPage() {
  onChange={(e) => setMonthlyLimitBrl(Number(e.target.value || "0"))}
  className="h-9 font-mono"
  />
- <span className="text-[10px] text-muted-foreground block">
+ <span className="text-xs text-muted-foreground block">
  Trava de segurança: a plataforma nunca cobrará mais que este valor no mês.
  </span>
  </div>
@@ -523,7 +523,7 @@ export default function WorkspaceTokensPage() {
  <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/60 bg-muted/20">
  <div className="space-y-0.5">
  <span className="font-semibold text-foreground block">Recarga Automática de Continuidade</span>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Quando seu saldo cair abaixo de {thresholdTokens.toLocaleString()} tokens, recarrega automaticamente o pacote padrão.
  </p>
  </div>

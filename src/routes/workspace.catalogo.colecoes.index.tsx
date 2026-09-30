@@ -258,7 +258,7 @@ function AdminCollectionsPage() {
                               className="size-full object-cover"
                             />
                           ) : (
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                            <span className="text-xs font-bold text-muted-foreground uppercase">
                               {col.name.slice(0, 2)}
                             </span>
                           )}

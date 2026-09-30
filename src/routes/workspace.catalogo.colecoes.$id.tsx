@@ -142,7 +142,7 @@ function EditCollectionPage() {
  className="h-10 text-xs rounded-xl"
  />
  {errors.name && (
- <span className="text-[11px] text-destructive font-medium block">
+ <span className="text-xs text-destructive font-medium block">
  {String(errors.name.message)}
  </span>
  )}
@@ -182,7 +182,7 @@ function EditCollectionPage() {
  onChange={(e) => setBadgeText(e.target.value.toUpperCase())}
  className="h-10 text-xs rounded-xl font-mono uppercase"
  />
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Selo tátil exibido em cima dos cards na vitrine pública.
  </p>
  </div>
@@ -221,7 +221,7 @@ function EditCollectionPage() {
  <span className="text-xs font-bold text-foreground">Curadoria Manual</span>
  {collectionType === "manual" && <Check className="size-4 text-primary" />}
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground leading-relaxed">
  Você escolhe e organiza os produtos individualmente na coleção.
  </p>
  </button>
@@ -242,7 +242,7 @@ function EditCollectionPage() {
  </span>
  {collectionType === "automated" && <Check className="size-4 text-primary" />}
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground leading-relaxed">
  Produtos entram e saem dinamicamente baseado em descontos e regras.
  </p>
  </button>
@@ -255,7 +255,7 @@ function EditCollectionPage() {
  <span className="text-xs font-bold text-foreground block">
  Desconto Mínimo Obrigatório
  </span>
- <span className="text-[11px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  Apenas produtos com no mínimo {minDiscountPercent}% de desconto entrarão.
  </span>
  </div>
@@ -279,7 +279,7 @@ function EditCollectionPage() {
  <span className="text-xs font-bold text-foreground block">
  Apenas Produtos em Estoque
  </span>
- <span className="text-[11px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  Oculta automaticamente produtos que esgotarem o estoque.
  </span>
  </div>
@@ -303,7 +303,7 @@ function EditCollectionPage() {
  </div>
 
  <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-3">
- <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
+ <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground block">
  Pré-visualização do Selo
  </span>
 
@@ -313,13 +313,13 @@ function EditCollectionPage() {
  ) : (
  <div className="text-center p-4">
  <Tag className="size-6 text-muted-foreground/50 mx-auto mb-1" />
- <span className="text-[11px] text-muted-foreground">Sem imagem</span>
+ <span className="text-xs text-muted-foreground">Sem imagem</span>
  </div>
  )}
 
  {badgeText && (
  <div className="absolute top-2 left-2">
- <Badge className="bg-foreground text-background font-mono text-[9px] font-bold">
+ <Badge className="bg-foreground text-background font-mono text-xs font-bold">
  {badgeText}
  </Badge>
  </div>
@@ -330,7 +330,7 @@ function EditCollectionPage() {
  <span className="text-xs font-bold text-foreground block truncate">
  {watch("name") || "Nome da Coleção"}
  </span>
- <span className="text-[10px] text-muted-foreground font-mono">
+ <span className="text-xs text-muted-foreground font-mono">
  {collectionType === "automated" ? "Regras Inteligentes Ativas" : "Curadoria Manual"}
  </span>
  </div>

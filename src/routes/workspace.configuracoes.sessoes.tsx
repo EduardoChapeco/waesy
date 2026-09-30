@@ -175,7 +175,7 @@ function WorkspaceSessionsAndAuditPage() {
           <Badge
             variant="secondary"
             className={cn(
-              "text-[10px] px-1.5 py-0 h-4 font-mono",
+              "text-xs px-1.5 py-0 h-4 font-mono",
               activeTab === "store_audit" ? "bg-primary-foreground/20 text-primary-foreground" : ""
             )}
           >
@@ -197,7 +197,7 @@ function WorkspaceSessionsAndAuditPage() {
           <Badge
             variant="secondary"
             className={cn(
-              "text-[10px] px-1.5 py-0 h-4 font-mono",
+              "text-xs px-1.5 py-0 h-4 font-mono",
               activeTab === "sessions" ? "bg-primary-foreground/20 text-primary-foreground" : ""
             )}
           >
@@ -257,7 +257,7 @@ function WorkspaceSessionsAndAuditPage() {
               <p className="text-xs font-semibold text-foreground">
                 Nenhuma ação operacional registrada ainda.
               </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Alterações de catálogo, pedidos, preços e permissões executadas por membros da equipe serão logadas aqui com integridade forense.
               </p>
             </div>
@@ -279,12 +279,12 @@ function WorkspaceSessionsAndAuditPage() {
                           <span className="text-xs font-bold text-foreground">
                             {log.user_name || "Membro da Equipe"}
                           </span>
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 capitalize">
                             {log.entity_type}
                           </Badge>
                           <Badge
                             className={cn(
-                              "text-[10px] px-1.5 py-0 font-medium",
+                              "text-xs px-1.5 py-0 font-medium",
                               log.action.includes("delete") || log.action.includes("block")
                                 ? "bg-destructive/90 text-white"
                                 : log.action.includes("create")
@@ -297,7 +297,7 @@ function WorkspaceSessionsAndAuditPage() {
                         </div>
 
                         {log.entity_id && (
-                          <p className="text-[11px] font-mono text-muted-foreground">
+                          <p className="text-xs font-mono text-muted-foreground">
                             ID: <span className="opacity-80">{log.entity_id}</span>
                           </p>
                         )}
@@ -305,9 +305,9 @@ function WorkspaceSessionsAndAuditPage() {
                     </div>
 
                     <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                      <div className="text-left sm:text-right font-mono text-[11px] text-muted-foreground">
+                      <div className="text-left sm:text-right font-mono text-xs text-muted-foreground">
                         <p>{format(new Date(log.created_at), "dd/MM/yyyy", { locale: ptBR })}</p>
-                        <p className="text-[10px] text-muted-foreground/70">
+                        <p className="text-xs text-muted-foreground/70">
                           {format(new Date(log.created_at), "HH:mm:ss", { locale: ptBR })}
                         </p>
                       </div>
@@ -367,20 +367,20 @@ function WorkspaceSessionsAndAuditPage() {
                             <p className="text-xs font-bold text-foreground">
                               {dev.device_name || (isMobile ? "Dispositivo Móvel" : "Computador")}
                             </p>
-                            <p className="text-[11px] text-muted-foreground font-mono">
+                            <p className="text-xs text-muted-foreground font-mono">
                               {dev.ip_address && dev.ip_address !== "127.0.0.1" ? dev.ip_address : "127.0.0.1 (Local)"}
                             </p>
                           </div>
                         </div>
 
                         {dev.is_trusted && (
-                          <Badge variant="outline" className="text-[9px] bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                          <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
                             Confiável
                           </Badge>
                         )}
                       </div>
 
-                      <div className="space-y-1 text-[11px] text-muted-foreground border-t border-border/40 pt-2">
+                      <div className="space-y-1 text-xs text-muted-foreground border-t border-border/40 pt-2">
                         {dev.city && (
                           <p className="flex items-center gap-1">
                             <MapPin className="size-3" />
@@ -388,7 +388,7 @@ function WorkspaceSessionsAndAuditPage() {
                           </p>
                         )}
                         {dev.last_seen_at && (
-                          <p className="flex items-center gap-1 font-mono text-[10px]">
+                          <p className="flex items-center gap-1 font-mono text-xs">
                             <Clock className="size-3" />
                             Visto em: {format(new Date(dev.last_seen_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                           </p>
@@ -453,13 +453,13 @@ function WorkspaceSessionsAndAuditPage() {
                               {log.event_type === "login_success" ? "Login Autorizado" : log.event_type}
                             </p>
                             {log.is_datacenter && (
-                              <Badge variant="outline" className="text-[9px] bg-purple-500/10 text-purple-600 border-purple-500/30">
+                              <Badge variant="outline" className="text-xs bg-purple-500/10 text-purple-600 border-purple-500/30">
                                 VPN/Datacenter
                               </Badge>
                             )}
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground mt-0.5">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-0.5">
                             <span className="flex items-center gap-1 font-mono">
                               <Globe className="size-3" />
                               {log.ip_address && log.ip_address !== "127.0.0.1" ? log.ip_address : "127.0.0.1 (Local)"}
@@ -475,9 +475,9 @@ function WorkspaceSessionsAndAuditPage() {
                         </div>
                       </div>
 
-                      <div className="text-[11px] text-muted-foreground text-left sm:text-right font-mono">
+                      <div className="text-xs text-muted-foreground text-left sm:text-right font-mono">
                         <p>{format(new Date(log.created_at), "dd/MM/yyyy", { locale: ptBR })}</p>
-                        <p className="text-[10px] text-muted-foreground/70">
+                        <p className="text-xs text-muted-foreground/70">
                           {format(new Date(log.created_at), "HH:mm:ss", { locale: ptBR })}
                         </p>
                       </div>
@@ -507,13 +507,13 @@ function WorkspaceSessionsAndAuditPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs bg-muted/30 p-2.5 rounded-xl border border-border/60">
                 <span className="font-semibold text-foreground">Autor: {selectedPayloadLog.user_name}</span>
-                <Badge variant="outline" className="text-[10px] capitalize">
+                <Badge variant="outline" className="text-xs capitalize">
                   {selectedPayloadLog.action}
                 </Badge>
               </div>
 
               <div className="bg-muted/40 p-3 rounded-xl border border-border/60 overflow-x-auto max-h-80">
-                <pre className="text-[11px] font-mono text-foreground/90 whitespace-pre-wrap">
+                <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap">
                   {JSON.stringify(selectedPayloadLog.payload_snapshot, null, 2)}
                 </pre>
               </div>

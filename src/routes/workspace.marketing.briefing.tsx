@@ -349,7 +349,7 @@ export function BrandBriefingPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-primary/10 text-primary border border-primary/20">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                   Estratégia Engine
                 </span>
                 <span className="text-xs font-mono text-muted-foreground">
@@ -605,7 +605,7 @@ export function BrandBriefingPage() {
                 <p className="text-3xl font-black" style={{ color: scoreColor }}>
                   {score}
                 </p>
-                <p className="text-[10px] text-muted-foreground font-mono">/ 100</p>
+                <p className="text-xs text-muted-foreground font-mono">/ 100</p>
               </div>
             </div>
 
@@ -619,7 +619,7 @@ export function BrandBriefingPage() {
                       ok ? "text-emerald-500" : "text-muted-foreground/40"
                     }`}
                   >
-                    {ok ? "✓ OK" : "○ Faltando"}
+                    {ok ? "OK" : "○ Faltando"}
                   </span>
                 </div>
               ))}
@@ -633,7 +633,7 @@ export function BrandBriefingPage() {
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 CCP Ativo
               </p>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Este briefing alimenta automaticamente a geração de Posts, Vídeos, Brand Kit
                 e Bio Links da sua marca.
               </p>
@@ -658,7 +658,7 @@ export function BrandBriefingPage() {
               ].map((m) => (
                 <span
                   key={m}
-                  className="text-[10px] bg-muted/40 text-muted-foreground px-2 py-0.5 rounded-md border border-border/30"
+                  className="text-xs bg-muted/40 text-muted-foreground px-2 py-0.5 rounded-md border border-border/30"
                 >
                   {m}
                 </span>
@@ -668,10 +668,10 @@ export function BrandBriefingPage() {
 
           {/* Schema real do banco (debug transparente) */}
           <div className="bg-card border border-border/50 rounded-2xl p-4">
-            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-2">
+            <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-2">
               Schema JSONB no banco
             </p>
-            <pre className="text-[10px] text-muted-foreground leading-relaxed overflow-auto">
+            <pre className="text-xs text-muted-foreground leading-relaxed overflow-auto">
               {`company.name: "${form.company_name || "—"}"
 company.segment: "${form.segment || "—"}"
 audience.personality: "${form.brand_personality || "—"}"

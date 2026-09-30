@@ -270,7 +270,7 @@ function AdminStockPage() {
             >
               <span>{loc.name}</span>
               {loc.is_default && (
-                <span className="text-[10px] opacity-75 font-mono">(Principal)</span>
+                <span className="text-xs opacity-75 font-mono">(Principal)</span>
               )}
             </button>
           ))}
@@ -332,15 +332,15 @@ function AdminStockPage() {
                       </span>
                       <div>
                         {available <= 0 ? (
-                          <Badge variant="destructive" className="text-[11px] font-semibold px-2 py-0.5">
+                          <Badge variant="destructive" className="text-xs font-semibold px-2 py-0.5">
                             Esgotado
                           </Badge>
                         ) : available <= 5 ? (
-                          <Badge variant="warning" className="text-[11px] font-semibold px-2 py-0.5">
+                          <Badge variant="warning" className="text-xs font-semibold px-2 py-0.5">
                             Crítico
                           </Badge>
                         ) : (
-                          <Badge variant="default" className="text-[11px] font-semibold px-2 py-0.5">
+                          <Badge variant="default" className="text-xs font-semibold px-2 py-0.5">
                             Regular
                           </Badge>
                         )}
@@ -353,7 +353,7 @@ function AdminStockPage() {
                         {variant.products?.title || "Produto sem título"}
                       </h3>
                       {variant.products?.status !== "published" && (
-                        <Badge variant="secondary" className="text-[10px] mt-1">
+                        <Badge variant="secondary" className="text-xs mt-1">
                           Inativo
                         </Badge>
                       )}
@@ -426,7 +426,7 @@ function AdminStockPage() {
                             {variant.products?.title || "Produto sem título"}
                           </span>
                           {variant.products?.status !== "published" && (
-                            <Badge variant="secondary" className="text-[10px]">
+                            <Badge variant="secondary" className="text-xs">
                               Inativo
                             </Badge>
                           )}
@@ -437,15 +437,15 @@ function AdminStockPage() {
 
                       <TableCell className="text-center">
                         {available <= 0 ? (
-                          <Badge variant="destructive" className="text-[10px]">
+                          <Badge variant="destructive" className="text-xs">
                             Esgotado
                           </Badge>
                         ) : available <= 5 ? (
-                          <Badge variant="warning" className="text-[10px]">
+                          <Badge variant="warning" className="text-xs">
                             Crítico
                           </Badge>
                         ) : (
-                          <Badge variant="default" className="text-[10px]">
+                          <Badge variant="default" className="text-xs">
                             Regular
                           </Badge>
                         )}
@@ -607,7 +607,7 @@ function AdminStockPage() {
  required
  className="h-10 rounded-xl text-xs font-mono font-bold"
  />
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {movementType === "damage"
  ? "A quantidade será deduzida automaticamente do saldo em mãos."
  : "A quantidade será adicionada ao saldo em mãos."}

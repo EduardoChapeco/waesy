@@ -159,7 +159,7 @@ function WorkspaceRHPontoPage() {
                         </div>
                       </div>
                     </div>
-                    <Badge variant="outline" className={`rounded-lg px-2 py-0.5 text-[11px] font-semibold border shrink-0 ${typeInfo.color}`}>
+                    <Badge variant="outline" className={`rounded-lg px-2 py-0.5 text-xs font-semibold border shrink-0 ${typeInfo.color}`}>
                       {typeInfo.label}
                     </Badge>
                   </div>
@@ -169,7 +169,7 @@ function WorkspaceRHPontoPage() {
                       <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
                       <span>{formatDateTime(entry.recorded_at)}</span>
                     </div>
-                    <Badge variant="secondary" className="text-[10px] rounded-lg">
+                    <Badge variant="secondary" className="text-xs rounded-lg">
                       {entry.status === "verified" ? "Verificado" : entry.status === "adjusted" ? "Ajustado" : entry.status}
                     </Badge>
                   </div>

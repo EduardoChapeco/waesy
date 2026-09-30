@@ -168,7 +168,7 @@ function AfiliadosFinanceiroPage() {
  <p className="font-medium text-foreground flex items-center gap-2">
  {p.sellerName}
  {p.commissionRate > 0 && (
- <Badge variant="outline" className="text-[10px] h-5">
+ <Badge variant="outline" className="text-xs h-5">
  {p.commissionRate}%
  </Badge>
  )}

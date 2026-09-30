@@ -243,11 +243,11 @@ function KDSDashboard() {
  if (colPending.length > 0) {
  const firstOrder = colPending[0];
  moveOrder(firstOrder.id, firstOrder.status);
- toast.success(`⚡ [Bump Bar] Pedido #${firstOrder.id.split("-")[0].toUpperCase()} iniciado!`);
+ toast.success(`[Bump Bar] Pedido #${firstOrder.id.split("-")[0].toUpperCase()} iniciado!`);
  } else if (colProcessing.length > 0) {
  const firstOrder = colProcessing[0];
  moveOrder(firstOrder.id, firstOrder.status);
- toast.success(`⚡ [Bump Bar] Pedido #${firstOrder.id.split("-")[0].toUpperCase()} finalizado!`);
+ toast.success(`[Bump Bar] Pedido #${firstOrder.id.split("-")[0].toUpperCase()} finalizado!`);
  }
  }
 
@@ -284,7 +284,7 @@ function KDSDashboard() {
  <div>
  <div className="flex items-center gap-2">
  <h1 className="font-black text-xl tracking-tight leading-none">Cozinha (KDS)</h1>
- <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[10px] font-mono uppercase">
+ <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs font-mono uppercase">
  Estação de Produção
  </Badge>
  </div>
@@ -386,7 +386,7 @@ function KDSDashboard() {
  <StationIcon className={cn("size-3.5", isActive ? station.color : "")} />
  <span>{station.label}</span>
  {station.id !== "all" && count > 0 && (
- <span className={cn("font-mono text-[10px]", station.color)}>
+ <span className={cn("font-mono text-xs", station.color)}>
  {count}
  </span>
  )}
@@ -528,7 +528,7 @@ function KDSDashboard() {
  >
  <div className="text-center border-b border-dashed border-neutral-400 pb-2">
  <h3 className="font-black text-sm uppercase tracking-wider">PRODUÇÃO COZINHA</h3>
- <p className="text-[10px] text-neutral-600 font-bold">{formatDateTime(orderToPrint.created_at)}</p>
+ <p className="text-xs text-neutral-600 font-bold">{formatDateTime(orderToPrint.created_at)}</p>
  </div>
 
  <div className="flex justify-between items-center text-sm font-black border-b border-dashed border-neutral-400 pb-2">
@@ -558,18 +558,18 @@ function KDSDashboard() {
  <div className="flex justify-between font-black text-sm">
  <span>{it.qty ?? it.quantity ?? 1}x {it.product_title || it.product_name}</span>
  {stationInfo && stationInfo.id !== "all" && (
- <span className="text-[9px] font-bold text-neutral-500 uppercase">
+ <span className="text-xs font-bold text-neutral-500 uppercase">
  [{stationInfo.label}]
  </span>
  )}
  </div>
  {optionsList.map((opt: any, oIdx: number) => (
- <p key={oIdx} className="text-[11px] font-bold text-neutral-700 pl-3">
+ <p key={oIdx} className="text-xs font-bold text-neutral-700 pl-3">
  + {typeof opt === "string" ? opt : opt?.label || opt?.name}
  </p>
  ))}
  {it.notes && (
- <p className="text-[11px] font-black bg-neutral-200 px-1 py-0.5 mt-0.5 uppercase">
+ <p className="text-xs font-black bg-neutral-200 px-1 py-0.5 mt-0.5 uppercase">
  * OBS: {it.notes}
  </p>
  )}
@@ -578,7 +578,7 @@ function KDSDashboard() {
  })}
  </div>
 
- <div className="border-t border-dashed border-neutral-400 pt-2 text-center text-[10px] text-neutral-500">
+ <div className="border-t border-dashed border-neutral-400 pt-2 text-center text-xs text-neutral-500">
  Impresso via Waesy Cozinha Inteligente
  </div>
  </div>
@@ -701,7 +701,7 @@ function KitchenTicketCard({
  <span className="font-black text-xl font-mono">#{ticketNumber}</span>
  <Badge
  variant="outline"
- className="text-[10px] uppercase font-mono font-bold bg-white/10 text-white border-white/20"
+ className="text-xs uppercase font-mono font-bold bg-white/10 text-white border-white/20"
  >
  {originLabel}
  </Badge>
@@ -726,7 +726,7 @@ function KitchenTicketCard({
  <Clock className="size-3.5" />
  {waitMinutes}min
  </div>
- <span className="text-[9px] text-white/70 font-mono">{formatTimeOnly(order.created_at)}</span>
+ <span className="text-xs text-white/70 font-mono">{formatTimeOnly(order.created_at)}</span>
  </div>
  </div>
  </div>
@@ -799,7 +799,7 @@ function KitchenTicketCard({
  {item.product_title || item.product_name || "Item sem título"}
  </h3>
  {stationInfo && stationInfo.id !== "all" && (
- <span className={cn("text-[9px] font-bold uppercase", stationInfo.color)}>
+ <span className={cn("text-xs font-bold uppercase", stationInfo.color)}>
  [{stationInfo.label}]
  </span>
  )}
@@ -813,7 +813,7 @@ function KitchenTicketCard({
  return (
  <span
  key={oIdx}
- className="text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-md"
+ className="text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-md"
  >
  + {label}
  </span>
@@ -823,8 +823,8 @@ function KitchenTicketCard({
  )}
 
  {item.notes && (
- <div className="mt-1.5 text-[10px] font-black text-destructive bg-destructive/10 border border-destructive/20 p-1 rounded-md uppercase">
- ⚠️ OBS: {item.notes}
+ <div className="mt-1.5 text-xs font-black text-destructive bg-destructive/10 border border-destructive/20 p-1 rounded-md uppercase">
+ OBS: {item.notes}
  </div>
  )}
  </div>

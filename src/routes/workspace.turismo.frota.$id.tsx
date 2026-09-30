@@ -329,11 +329,11 @@ function VehicleLayoutEditorPage() {
  onChange={(e) => setName(e.target.value)}
  className="h-8 font-bold text-base sm:text-lg border-transparent hover:border-border focus:border-primary px-2 rounded-lg"
  />
- <Badge variant="outline" className="text-[11px] font-mono shrink-0">
+ <Badge variant="outline" className="text-xs font-mono shrink-0">
  {totalSeats} assentos
  </Badge>
  {isDoubleDecker && (
- <Badge variant="secondary" className="text-[10px] font-semibold uppercase shrink-0">
+ <Badge variant="secondary" className="text-xs font-semibold uppercase shrink-0">
  Double Decker (2 Pisos)
  </Badge>
  )}
@@ -410,7 +410,7 @@ function VehicleLayoutEditorPage() {
  {/* Ferramentas de Pintura */}
  <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-2.5">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono">
+ <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">
  Ferramenta de Pintura
  </span>
  {isDoubleDecker && (
@@ -480,7 +480,7 @@ function VehicleLayoutEditorPage() {
 
  {/* Categorias de Poltrona */}
  <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-2.5">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono">
+ <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">
  Categoria Ativa para Novas Poltronas
  </span>
  <div className="flex flex-wrap items-center gap-1.5">
@@ -521,7 +521,7 @@ function VehicleLayoutEditorPage() {
  {/* Carroceria do Ônibus */}
  <div className="relative w-fit rounded-[40px] border-4 border-foreground/30 bg-card p-6 sm:p-8 shadow-sm flex flex-col items-center space-y-4 min-w-[300px]">
  {/* Para-brisa Dianteiro */}
- <div className="w-full h-9 rounded-t-3xl bg-sky-500/10 border-2 border-sky-500/30 flex items-center justify-center text-[10px] font-mono font-bold text-sky-600 uppercase tracking-widest">
+ <div className="w-full h-9 rounded-t-3xl bg-sky-500/10 border-2 border-sky-500/30 flex items-center justify-center text-xs font-mono font-bold text-sky-600 uppercase tracking-widest">
  Frente / Para-brisa {isDoubleDecker ? `(Piso ${activeDeck})` : ""}
  </div>
 
@@ -569,28 +569,28 @@ function VehicleLayoutEditorPage() {
  cellType === "aisle" &&
  "bg-muted/30 border border-dashed border-border/60 text-muted-foreground/30 hover:bg-muted/60",
  cellType === "wc" &&
- "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 font-mono text-[11px]",
+ "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 font-mono text-xs",
  cellType === "door" &&
- "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 text-[10px]",
+ "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 text-xs",
  cellType === "driver" &&
- "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/40 text-[10px]",
+ "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/40 text-xs",
  cellType === "guide" &&
- "bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/40 text-[10px]",
+ "bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/40 text-xs",
  cellType === "stairs" &&
- "bg-slate-500/20 text-slate-700 dark:text-slate-300 border border-slate-500/40 text-[10px]",
+ "bg-slate-500/20 text-slate-700 dark:text-slate-300 border border-slate-500/40 text-xs",
  cellType === "empty" &&
- "border border-border/40 bg-background/50 hover:border-primary/40 text-transparent hover:text-muted-foreground text-[10px]"
+ "border border-border/40 bg-background/50 hover:border-primary/40 text-transparent hover:text-muted-foreground text-xs"
  )}
  >
  {cellType === "seat" ? (
  <>
  <span className="font-mono text-xs leading-none">{cell?.label || `${r + 1}`}</span>
- <span className="text-[8px] opacity-80 uppercase tracking-tighter mt-0.5">
+ <span className="text-xs opacity-80 uppercase tracking-tighter mt-0.5">
  {isAccessible ? "PCD" : isBlocked ? "BLQ" : cell?.category ? cell.category.substring(0, 4) : "EXEC"}
  </span>
  </>
  ) : cellType === "aisle" ? (
- <span className="text-[9px]">·</span>
+ <span className="text-xs">·</span>
  ) : (
  cell?.label || cellType
  )}
@@ -601,7 +601,7 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* Traseira do Ônibus */}
- <div className="w-full h-5 rounded-b-2xl bg-muted/60 border-t border-border flex items-center justify-center text-[9px] font-mono text-muted-foreground uppercase tracking-wider">
+ <div className="w-full h-5 rounded-b-2xl bg-muted/60 border-t border-border flex items-center justify-center text-xs font-mono text-muted-foreground uppercase tracking-wider">
  Traseira do Veículo
  </div>
  </div>

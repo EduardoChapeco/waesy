@@ -160,7 +160,7 @@ function MasterInfluencersPage() {
                     </div>
                     <Badge
                       variant={isAmbassador ? "default" : "outline"}
-                      className={`text-[10px] font-bold shrink-0 ${isAmbassador ? "bg-primary hover:bg-primary/90 text-primary-foreground" : ""}`}
+                      className={`text-xs font-bold shrink-0 ${isAmbassador ? "bg-primary hover:bg-primary/90 text-primary-foreground" : ""}`}
                     >
                       {creator.niche || "Geral"}
                     </Badge>
@@ -179,14 +179,14 @@ function MasterInfluencersPage() {
                     ].map(({ label, value }) => (
                       <div key={label} className="bg-muted/40 rounded-xl p-2 text-center">
                         <div className="text-xs font-black text-foreground">{value}</div>
-                        <div className="text-[10px] text-muted-foreground">{label}</div>
+                        <div className="text-xs text-muted-foreground">{label}</div>
                       </div>
                     ))}
                   </div>
 
                   {/* Ação */}
                   <div className="pt-2 border-t border-border/50 flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {isAmbassador ? (
                         <span className="flex items-center gap-1 text-purple-600 font-bold">
                           <CheckCircle className="size-3" /> Embaixador Ativo

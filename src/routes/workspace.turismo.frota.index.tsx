@@ -239,7 +239,7 @@ function VehicleLayoutsListPage() {
  </div>
 
  <div className="flex items-center gap-1">
- <Badge variant="outline" className="text-[10px] font-mono capitalize">
+ <Badge variant="outline" className="text-xs font-mono capitalize">
  {layout.vehicle_type === "bus"
  ? "Ônibus"
  : layout.vehicle_type === "van"
@@ -249,7 +249,7 @@ function VehicleLayoutsListPage() {
  : "Avião"}
  </Badge>
  {layout.is_double_decker && (
- <Badge variant="secondary" className="text-[10px] bg-amber-500/10 text-amber-600 border-none">
+ <Badge variant="secondary" className="text-xs bg-amber-500/10 text-amber-600 border-none">
  2 Andares (DD)
  </Badge>
  )}
@@ -376,7 +376,7 @@ function VehicleLayoutsListPage() {
         <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60">
           <div className="space-y-0.5">
             <p className="text-xs font-semibold text-foreground">Ônibus Double-Decker (DD)</p>
-            <p className="text-[10px] text-muted-foreground">Possui dois andares com escada</p>
+            <p className="text-xs text-muted-foreground">Possui dois andares com escada</p>
           </div>
           <input
             type="checkbox"

@@ -271,12 +271,12 @@ export default function TourismIncidentsPage() {
                         {INCIDENT_TYPE_LABELS[incident.incident_type]}
                       </span>
                       {incident.priority === 'urgent' && (
-                        <Badge variant="outline" className={`text-[10px] ${priorityBadgeClass('urgent')}`}>
+                        <Badge variant="outline" className={`text-xs ${priorityBadgeClass('urgent')}`}>
                           Urgente
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       {incident.passenger_name && <span>{incident.passenger_name}</span>}
                       {incident.booking_reference && (
                         <>
@@ -290,7 +290,7 @@ export default function TourismIncidentsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <Badge variant="outline" className={`text-[10px] border font-semibold hidden sm:inline-flex ${st.className}`}>
+                  <Badge variant="outline" className={`text-xs border font-semibold hidden sm:inline-flex ${st.className}`}>
                     {st.label}
                   </Badge>
                   <ChevronRight className="size-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
@@ -320,17 +320,17 @@ export default function TourismIncidentsPage() {
                   <span>{INCIDENT_TYPE_LABELS[detail.incident_type]}</span>
                   <Badge
                     variant="outline"
-                    className={`ml-auto text-[10px] ${INCIDENT_STATUS_LABELS[detail.status]?.className}`}
+                    className={`ml-auto text-xs ${INCIDENT_STATUS_LABELS[detail.status]?.className}`}
                   >
                     {INCIDENT_STATUS_LABELS[detail.status]?.label}
                   </Badge>
                 </SheetTitle>
 
                 {/* Metadata row */}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground font-mono pt-1">
-                  {detail.passenger_name && <span>👤 {detail.passenger_name}</span>}
-                  {detail.booking_reference && <span>🔖 {detail.booking_reference}</span>}
-                  {detail.airline_code && <span>✈ {detail.airline_code} {detail.origin_flight_number}</span>}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground font-mono pt-1">
+                  {detail.passenger_name && <span>{detail.passenger_name}</span>}
+                  {detail.booking_reference && <span>{detail.booking_reference}</span>}
+                  {detail.airline_code && <span>{detail.airline_code} {detail.origin_flight_number}</span>}
                   {detail.airline_protocol_number && (
                     <span className="text-violet-600 dark:text-violet-400 font-semibold">
                       Protocolo CIA: {detail.airline_protocol_number}
@@ -340,10 +340,10 @@ export default function TourismIncidentsPage() {
 
                 {/* ANAC Rights badge for flight incidents */}
                 {isFlightType && anacRights?.material_assistance && (
-                  <div className="mt-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 grid grid-cols-2 gap-1.5 text-[11px]">
+                  <div className="mt-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 grid grid-cols-2 gap-1.5 text-xs">
                     <div className="flex items-center gap-1.5 col-span-2">
                       <ShieldAlert className="size-3.5 text-amber-600" />
-                      <span className="font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide text-[10px]">Direitos ANAC 400</span>
+                      <span className="font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide text-xs">Direitos ANAC 400</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Utensils className="size-3 text-muted-foreground" />
@@ -381,7 +381,7 @@ export default function TourismIncidentsPage() {
                         size="sm"
                         onClick={() => updateStatusMutation.mutate({ status: 'in_analysis' })}
                         disabled={updateStatusMutation.isPending}
-                        className="h-7 px-2.5 text-[11px] gap-1 font-semibold cursor-pointer"
+                        className="h-7 px-2.5 text-xs gap-1 font-semibold cursor-pointer"
                       >
                         Em Análise
                       </Button>
@@ -413,7 +413,7 @@ export default function TourismIncidentsPage() {
 
               {/* ── Linha do Tempo ── */}
               <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-3">
-                <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-3">
+                <p className="text-xs font-bold uppercase text-muted-foreground tracking-widest mb-3">
                   Linha do Tempo
                 </p>
                 {events.map((ev, i) => (
@@ -428,7 +428,7 @@ export default function TourismIncidentsPage() {
                     </div>
                     <div className="pb-3 flex-1 min-w-0">
                       <p className="text-xs font-semibold text-foreground leading-snug">{ev.description}</p>
-                      <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                      <p className="text-xs text-muted-foreground font-mono mt-0.5">
                         {new Date(ev.created_at).toLocaleString('pt-BR', {
                           day: '2-digit', month: '2-digit', year: '2-digit',
                           hour: '2-digit', minute: '2-digit',

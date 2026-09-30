@@ -262,7 +262,7 @@ function WorkspaceCollectionsPage() {
                       />
                       <Badge
                         variant={isActive ? "default" : "secondary"}
-                        className="absolute top-2 right-2 text-[10px] font-bold"
+                        className="absolute top-2 right-2 text-xs font-bold"
                       >
                         {isActive ? "Ativa" : "Inativa"}
                       </Badge>
@@ -275,7 +275,7 @@ function WorkspaceCollectionsPage() {
                       </div>
                       <Badge
                         variant={isActive ? "default" : "secondary"}
-                        className="text-[10px] font-bold"
+                        className="text-xs font-bold"
                       >
                         {isActive ? "Ativa" : "Inativa"}
                       </Badge>
@@ -286,7 +286,7 @@ function WorkspaceCollectionsPage() {
                     <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
                       {col.name}
                     </h3>
-                    <p className="text-[11px] font-mono text-muted-foreground">
+                    <p className="text-xs font-mono text-muted-foreground">
                       /{col.slug}
                     </p>
                   </div>
@@ -299,7 +299,7 @@ function WorkspaceCollectionsPage() {
                 </div>
 
                 <div className="pt-3 border-t border-border/40 flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
                     <Package className="size-3.5" />
                     <span>Coleção</span>
                   </span>

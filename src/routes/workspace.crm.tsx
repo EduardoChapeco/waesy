@@ -101,7 +101,7 @@ export default function WorkspaceCrmPage() {
           <h1 className="text-base sm:text-2xl font-bold tracking-tight text-foreground truncate">
             CRM
           </h1>
-          <Badge variant="outline" className="text-[11px] sm:text-xs font-mono py-0 px-2 border-primary/30 text-primary shrink-0">
+          <Badge variant="outline" className="text-xs sm:text-xs font-mono py-0 px-2 border-primary/30 text-primary shrink-0">
             {metrics.total} contatos
           </Badge>
         </div>
@@ -130,7 +130,7 @@ export default function WorkspaceCrmPage() {
             variant="ghost"
             size="sm"
             onClick={() => setShowMetricsMobile((prev) => !prev)}
-            className="h-9 px-2 text-[11px] text-muted-foreground font-medium gap-1 rounded-xl"
+            className="h-9 px-2 text-xs text-muted-foreground font-medium gap-1 rounded-xl"
             title="Alternar resumo de métricas"
           >
             <span>Métricas</span>
@@ -210,7 +210,7 @@ export default function WorkspaceCrmPage() {
           </div>
           <div className="mt-3">
             <p className="text-2xl font-black text-foreground font-mono">{metrics.total}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Base ativa na loja</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Base ativa na loja</p>
           </div>
         </Card>
 
@@ -223,7 +223,7 @@ export default function WorkspaceCrmPage() {
           </div>
           <div className="mt-3">
             <p className="text-2xl font-black text-foreground font-mono">{metrics.active}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Compras regulares</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Compras regulares</p>
           </div>
         </Card>
 
@@ -236,7 +236,7 @@ export default function WorkspaceCrmPage() {
           </div>
           <div className="mt-3">
             <p className="text-2xl font-black text-foreground font-mono">{metrics.newCustomers30d}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Últimos 30 dias</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Últimos 30 dias</p>
           </div>
         </Card>
 
@@ -249,7 +249,7 @@ export default function WorkspaceCrmPage() {
           </div>
           <div className="mt-3">
             <p className="text-2xl font-black text-foreground font-mono">{formatMoney(metrics.avgTicketCents)}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Histórico acumulado</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Histórico acumulado</p>
           </div>
         </Card>
       </div>
@@ -422,7 +422,7 @@ export default function WorkspaceCrmPage() {
           {/* Visualização Desktop: Tabela de Alta Densidade (>= 640px) */}
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-muted/30 border-b border-border/40 text-[11px] uppercase tracking-wider text-muted-foreground font-mono">
+              <thead className="bg-muted/30 border-b border-border/40 text-xs uppercase tracking-wider text-muted-foreground font-mono">
                 <tr>
                   <th className="py-3 px-4 font-bold">Cliente</th>
                   <th className="py-3 px-4 font-bold hidden sm:table-cell">Contato</th>
@@ -451,7 +451,7 @@ export default function WorkspaceCrmPage() {
                               {customer.full_name || "Cliente sem nome"}
                             </p>
                             {customer.document && (
-                              <p className="text-[10px] text-muted-foreground font-mono">
+                              <p className="text-xs text-muted-foreground font-mono">
                                 {customer.document}
                               </p>
                             )}
@@ -465,12 +465,12 @@ export default function WorkspaceCrmPage() {
                             <p className="text-xs font-mono text-foreground">{customer.phone}</p>
                           )}
                           {customer.email && (
-                            <p className="text-[11px] text-muted-foreground truncate max-w-[180px]">
+                            <p className="text-xs text-muted-foreground truncate max-w-[180px]">
                               {customer.email}
                             </p>
                           )}
                           {!customer.phone && !customer.email && (
-                            <span className="text-[11px] text-muted-foreground/60">—</span>
+                            <span className="text-xs text-muted-foreground/60">—</span>
                           )}
                         </div>
                       </td>
@@ -478,7 +478,7 @@ export default function WorkspaceCrmPage() {
                       <td className="py-3.5 px-4 hidden md:table-cell">
                         <Badge
                           variant={customer.status === "active" ? "default" : "secondary"}
-                          className="text-[10px] font-mono capitalize"
+                          className="text-xs font-mono capitalize"
                         >
                           {customer.status === "active" ? "Ativo" : customer.status || "Pendente"}
                         </Badge>

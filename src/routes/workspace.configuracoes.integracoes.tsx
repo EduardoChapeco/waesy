@@ -130,11 +130,11 @@ function IntegrationCard({
                 <CardTitle className="text-base flex items-center gap-2">
                   {title}
                   {existingSetting?.is_active ? (
-                    <Badge variant="default" className="text-[10px] bg-emerald-600 hover:bg-emerald-600">
+                    <Badge variant="default" className="text-xs bg-emerald-600 hover:bg-emerald-600">
                       Ativo
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                    <Badge variant="outline" className="text-xs text-muted-foreground">
                       Não Configurado
                     </Badge>
                   )}
@@ -312,11 +312,11 @@ function SecretVaultCard({
                 <CardTitle className="text-base flex items-center gap-2">
                   {title}
                   {existingSecret ? (
-                    <Badge variant="default" className="text-[10px] bg-primary hover:bg-primary">
+                    <Badge variant="default" className="text-xs bg-primary hover:bg-primary">
                       BYOK Ativo
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                    <Badge variant="outline" className="text-xs text-muted-foreground">
                       Pool Plataforma
                     </Badge>
                   )}
@@ -329,7 +329,7 @@ function SecretVaultCard({
         </CardHeader>
 
         <CardContent className="space-y-3 pt-1">
-          <div className="text-[11px] text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/50 flex items-center justify-between">
+          <div className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/50 flex items-center justify-between">
             <span>Recursos / Modelos:</span>
             <span className="font-semibold text-foreground">{modelsLabel}</span>
           </div>
@@ -349,7 +349,7 @@ function SecretVaultCard({
                     size="icon"
                     onClick={() => onDelete(existingSecret.id)}
                     className="size-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
-                    title="Remover chave e voltar ao pool da plataforma"
+                    title="Remover Chave"
                   >
                     <Trash2 className="size-3.5" />
                   </Button>
@@ -398,7 +398,7 @@ function SecretVaultCard({
                   onChange={(e) => setSecretKey(e.target.value)}
                   className="rounded-xl border-border/70 text-xs h-9 font-mono"
                 />
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Sua chave é encriptada no Secret Vault. Prioridade máxima em carrosséis, contratos e mineração.
                 </p>
               </div>
@@ -1027,11 +1027,11 @@ function UnifiedIntegrationsHubPage() {
                     <div className="flex items-center justify-between">
                       <h5 className="font-bold text-sm text-foreground">{mkt.name}</h5>
                       {isConnected ? (
-                        <Badge variant="default" className="text-[10px] bg-emerald-600 hover:bg-emerald-600">
+                        <Badge variant="default" className="text-xs bg-emerald-600 hover:bg-emerald-600">
                           Conectado
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                        <Badge variant="outline" className="text-xs text-muted-foreground">
                           Desconectado
                         </Badge>
                       )}
@@ -1040,7 +1040,7 @@ function UnifiedIntegrationsHubPage() {
                   </div>
 
                   <div className="pt-2 border-t border-border/50 flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {conn?.last_sync_at
                         ? `Último sync: ${new Date(conn.last_sync_at).toLocaleDateString("pt-BR")}`
                         : "Sem sincronização"}
@@ -1336,11 +1336,11 @@ function UnifiedIntegrationsHubPage() {
                         <CardTitle className="text-base flex items-center gap-2">
                           LinkedIn Company Page
                           {linkedInStatus?.isConnected ? (
-                            <Badge variant="default" className="text-[10px] bg-emerald-600 hover:bg-emerald-600">
+                            <Badge variant="default" className="text-xs bg-emerald-600 hover:bg-emerald-600">
                               Conectado Ativo
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            <Badge variant="outline" className="text-xs text-muted-foreground">
                               Não Conectado
                             </Badge>
                           )}
@@ -1351,7 +1351,7 @@ function UnifiedIntegrationsHubPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-3 pt-1">
-                  <div className="text-[11px] text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/50 flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/50 flex items-center justify-between">
                     <span>Status da Sindicação:</span>
                     <span className="font-semibold text-foreground">
                       {linkedInStatus?.isPro ? "Plano PRO Ativo (Habilitado)" : "Requer Plano PRO"}
@@ -1376,11 +1376,11 @@ function UnifiedIntegrationsHubPage() {
                           Desconectar
                         </Button>
                       </div>
-                      <p className="text-muted-foreground text-[11px]">
+                      <p className="text-muted-foreground text-xs">
                         <strong>Empresa:</strong> {linkedInStatus.companyName || "LinkedIn Organization"} ({linkedInStatus.companyId || "N/A"})
                       </p>
                       {linkedInStatus.lastSyncedAt && (
-                        <p className="text-muted-foreground text-[10px]">
+                        <p className="text-muted-foreground text-xs">
                           Última sincronização: {new Date(linkedInStatus.lastSyncedAt).toLocaleString("pt-BR")}
                         </p>
                       )}

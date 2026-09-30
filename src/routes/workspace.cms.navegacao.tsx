@@ -179,7 +179,7 @@ function CmsNavigationPage() {
                     <GripVertical className="h-5 w-5 text-muted-foreground cursor-move shrink-0" />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
                       <div className="space-y-1">
-                        <Label className="text-[10px] text-muted-foreground">Rótulo</Label>
+                        <Label className="text-xs text-muted-foreground">Rótulo</Label>
                         <Input
                           value={item.label}
                           onChange={(e) => handleItemChange(index, "label", e.target.value)}
@@ -188,7 +188,7 @@ function CmsNavigationPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[10px] text-muted-foreground">URL ou Caminho</Label>
+                        <Label className="text-xs text-muted-foreground">URL ou Caminho</Label>
                         <div className="relative">
                           <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                           <Input

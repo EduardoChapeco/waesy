@@ -58,7 +58,7 @@ function WorkspaceDoacoesHubPage() {
           <strong className="text-xl sm:text-2xl font-bold font-mono text-foreground">
             {donations.length}
           </strong>
-          <span className="text-[11px] text-muted-foreground block">Disponíveis gratuitamente</span>
+          <span className="text-xs text-muted-foreground block">Disponíveis gratuitamente</span>
         </div>
 
         <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 space-y-2">
@@ -69,7 +69,7 @@ function WorkspaceDoacoesHubPage() {
           <strong className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
             R$ 0,00
           </strong>
-          <span className="text-[11px] text-muted-foreground block">100% solidário e sem taxas</span>
+          <span className="text-xs text-muted-foreground block">100% solidário e sem taxas</span>
         </div>
 
         <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 space-y-2">
@@ -80,7 +80,7 @@ function WorkspaceDoacoesHubPage() {
           <strong className="text-xl sm:text-2xl font-bold text-foreground">
             Ponto da Loja
           </strong>
-          <span className="text-[11px] text-muted-foreground block">Retirada direta no balcão</span>
+          <span className="text-xs text-muted-foreground block">Retirada direta no balcão</span>
         </div>
       </div>
 
@@ -93,7 +93,7 @@ function WorkspaceDoacoesHubPage() {
               Campanhas e Itens Ativos
             </h2>
           </div>
-          <Badge variant="outline" className="text-[10px] font-mono">
+          <Badge variant="outline" className="text-xs font-mono">
             {donations.length} {donations.length === 1 ? "item" : "itens"}
           </Badge>
         </div>
@@ -135,7 +135,7 @@ function WorkspaceDoacoesHubPage() {
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm text-foreground truncate">{item.title}</span>
-                        <Badge variant="outline" className="text-[10px] font-bold border-emerald-500/30 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10">
+                        <Badge variant="outline" className="text-xs font-bold border-emerald-500/30 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10">
                           Gratuito
                         </Badge>
                       </div>
@@ -144,7 +144,7 @@ function WorkspaceDoacoesHubPage() {
                         {item.content || "Sem descrição adicional informada."}
                       </p>
 
-                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground pt-0.5">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground pt-0.5">
                         <span className="flex items-center gap-1">
                           <MapPin className="size-3" />
                           {item.location_name || "No balcão da loja"}

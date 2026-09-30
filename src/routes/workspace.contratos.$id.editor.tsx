@@ -417,8 +417,8 @@ function ContractEditorPage() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-bold">Cláusulas do Contrato (Markdown)</Label>
-                    <span className="text-[11px] text-muted-foreground">
-                      Dica: Variáveis como <code className="font-mono text-primary text-[10px]">&#123;&#123;cliente_nome&#125;&#125;</code> são preenchidas automaticamente.
+                    <span className="text-xs text-muted-foreground">
+                      Dica: Variáveis como <code className="font-mono text-primary text-xs">&#123;&#123;cliente_nome&#125;&#125;</code> são preenchidas automaticamente.
                     </span>
                   </div>
                   <Textarea
@@ -514,7 +514,7 @@ function ContractEditorPage() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-[11px] text-muted-foreground">Posição da Marca</Label>
+                        <Label className="text-xs text-muted-foreground">Posição da Marca</Label>
                         <Select
                           value={authMarkPosition}
                           onValueChange={(v: any) => setAuthMarkPosition(v)}
@@ -531,7 +531,7 @@ function ContractEditorPage() {
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-[11px] text-muted-foreground">Tamanho</Label>
+                        <Label className="text-xs text-muted-foreground">Tamanho</Label>
                         <Select
                           value={authMarkSize}
                           onValueChange={(v: any) => setAuthMarkSize(v)}
@@ -590,7 +590,7 @@ function ContractEditorPage() {
                     {observers.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         {observers.map((obs, i) => (
-                          <Badge key={i} variant="secondary" className="text-[11px]">
+                          <Badge key={i} variant="secondary" className="text-xs">
                             {obs.name} ({obs.email})
                           </Badge>
                         ))}
@@ -641,10 +641,10 @@ function ContractEditorPage() {
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Ao clicar em <strong>Criar Documento e Selar</strong>, o hash SHA-256 será computado de forma irreversível sobre o conteúdo e as caixas de assinatura.
                   </p>
-                  <div className="space-y-1.5 text-[11px] text-muted-foreground border-t border-border/50 pt-2.5">
-                    <p>✓ Trilha de auditoria com IP, User-Agent e Timestamp UTC</p>
-                    <p>✓ Folha de rosto anexada com QR Code oficial de verificação</p>
-                    <p>✓ Envio instantâneo via WhatsApp e E-mail para os signatários</p>
+                  <div className="space-y-1.5 text-xs text-muted-foreground border-t border-border/50 pt-2.5">
+                    <p>Trilha de auditoria com IP, User-Agent e Timestamp UTC</p>
+                    <p>Folha de rosto anexada com QR Code oficial de verificação</p>
+                    <p>Envio instantâneo via WhatsApp e E-mail para os signatários</p>
                   </div>
                 </div>
               </div>

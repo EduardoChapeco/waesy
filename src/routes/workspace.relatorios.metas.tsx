@@ -294,40 +294,40 @@ function RevenueGoalsPage() {
       {/* ── GRID DE 4 KPIS DE PERFORMANCE E PROJEÇÃO ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Target className="size-3.5 text-blue-600" />
             Meta Mensal
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {formatMoney(data.monthly_goal_cents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Objetivo global cadastrado
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <DollarSign className="size-3.5 text-emerald-600" />
             Realizado Atual
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {formatMoney(data.realized_cents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {data.orders_count} pedidos faturados
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <TrendingUp className="size-3.5 text-purple-600" />
             Forecast de Fechamento
           </span>
           <div className="text-2xl font-mono font-bold text-purple-600 dark:text-purple-400">
             {formatMoney(data.projected_closing_cents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
+          <p className="text-xs text-muted-foreground font-mono flex items-center gap-1">
             <span>Projetado:</span>
             <strong className={data.projected_percent >= 100 ? "text-emerald-600" : "text-amber-600"}>
               {data.projected_percent}%
@@ -336,7 +336,7 @@ function RevenueGoalsPage() {
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <ArrowUpRight className="size-3.5 text-amber-500" />
             Meta Diária Necessária
           </span>
@@ -344,7 +344,7 @@ function RevenueGoalsPage() {
             {formatMoney(data.required_daily_run_rate_cents)}
             <span className="text-xs font-normal text-muted-foreground">/dia</span>
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Ritmo atual: {formatMoney(data.daily_run_rate_cents)}/dia
           </p>
         </div>
@@ -482,7 +482,7 @@ function RevenueGoalsPage() {
                       </div>
                       <Badge
                         variant={ch.percent_achieved >= 100 ? "default" : "outline"}
-                        className="font-mono text-[10px]"
+                        className="font-mono text-xs"
                       >
                         {ch.percent_achieved}%
                       </Badge>
@@ -518,7 +518,7 @@ function RevenueGoalsPage() {
                 onChange={(val) => setEditMonthlyGoalCents(val ?? 0)}
                 className="font-mono font-bold text-lg h-12 bg-background border-border/80 rounded-xl"
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Receita total esperada no mês somando todos os pontos de contato da empresa.
               </p>
             </div>

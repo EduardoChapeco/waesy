@@ -177,7 +177,7 @@ export default function WorkspaceTendersPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold tracking-tight text-foreground">Licitações</h1>
-            <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+            <Badge variant="outline" className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
               PNCP Gov Harvester
             </Badge>
           </div>
@@ -191,7 +191,7 @@ export default function WorkspaceTendersPage() {
             <Coins className="size-3.5 text-primary" />
             <span className="text-muted-foreground">Saldo:</span>
             <span className="font-semibold text-foreground">{(wallet.balance || 0).toLocaleString()}</span>
-            <span className="text-[10px] text-muted-foreground">Tokens</span>
+            <span className="text-xs text-muted-foreground">Tokens</span>
           </div>
         )}
       </div>
@@ -203,7 +203,7 @@ export default function WorkspaceTendersPage() {
           <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
             {tenders.length}
           </div>
-          <span className="text-[11px] text-muted-foreground">Chapecó e Região Oeste</span>
+          <span className="text-xs text-muted-foreground">Chapecó e Região Oeste</span>
         </div>
 
         <div className="p-4 rounded-xl border border-border/60 bg-card">
@@ -211,7 +211,7 @@ export default function WorkspaceTendersPage() {
           <div className="text-2xl font-bold tracking-tight text-primary mt-1">
             {totalAmountBrl.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </div>
-          <span className="text-[11px] text-muted-foreground">valor total estimado</span>
+          <span className="text-xs text-muted-foreground">valor total estimado</span>
         </div>
 
         <div className="p-4 rounded-xl border border-border/60 bg-card">
@@ -219,7 +219,7 @@ export default function WorkspaceTendersPage() {
           <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
             {tenders.filter((t) => t.is_unlocked).length}
           </div>
-          <span className="text-[11px] text-muted-foreground">com checklist de proposta</span>
+          <span className="text-xs text-muted-foreground">com checklist de proposta</span>
         </div>
 
         <div className="p-4 rounded-xl border border-border/60 bg-card">
@@ -227,7 +227,7 @@ export default function WorkspaceTendersPage() {
           <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
             {alertKeywords.length}
           </div>
-          <span className="text-[11px] text-muted-foreground">palavras-chave ativas</span>
+          <span className="text-xs text-muted-foreground">palavras-chave ativas</span>
         </div>
       </div>
 
@@ -333,14 +333,14 @@ export default function WorkspaceTendersPage() {
                   >
                     <div className="space-y-1.5 flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="text-[10px] font-medium">
+                        <Badge variant="secondary" className="text-xs font-medium">
                           {t.modality}
                         </Badge>
-                        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                        <Badge variant="outline" className="text-xs text-muted-foreground">
                           {t.city}/{t.uf}
                         </Badge>
                         {t.is_unlocked && (
-                          <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1">
+                          <Badge variant="outline" className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1">
                             <CheckCircle2 className="size-2.5" />
                             Dossiê IA Desbloqueado
                           </Badge>
@@ -350,7 +350,7 @@ export default function WorkspaceTendersPage() {
                       <h3 className="text-sm font-semibold text-foreground line-clamp-1">{t.title}</h3>
                       <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
 
-                      <div className="flex flex-wrap items-center gap-4 text-[11px] text-muted-foreground pt-1">
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1">
                         <span className="flex items-center gap-1">
                           <Building className="size-3" />
                           {t.agency_name}
@@ -364,7 +364,7 @@ export default function WorkspaceTendersPage() {
 
                     <div className="flex items-center justify-between md:flex-col md:items-end gap-2 shrink-0 border-t md:border-t-0 pt-3 md:pt-0">
                       <div className="text-right">
-                        <span className="text-[10px] text-muted-foreground block">Valor Estimado</span>
+                        <span className="text-xs text-muted-foreground block">Valor Estimado</span>
                         <span className="text-sm font-bold text-foreground">{amountFormatted}</span>
                       </div>
 
@@ -382,7 +382,7 @@ export default function WorkspaceTendersPage() {
                           <>
                             <Star className="size-3 text-amber-500" />
                             Ver Dossiê IA
-                            <span className="text-[10px] text-muted-foreground font-mono ml-0.5">
+                            <span className="text-xs text-muted-foreground font-mono ml-0.5">
                               [ -100 Tokens ]
                             </span>
                           </>
@@ -456,7 +456,7 @@ export default function WorkspaceTendersPage() {
             <>
               <SheetHeader className="space-y-2 text-left">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-[10px]">
+                  <Badge variant="secondary" className="text-xs">
                     {selectedTender.modality}
                   </Badge>
                   <span className="text-xs text-muted-foreground font-mono">
@@ -477,7 +477,7 @@ export default function WorkspaceTendersPage() {
                   <p className="text-xs font-medium text-foreground">
                     O Tollbooth está processando e mastigando o edital com IA...
                   </p>
-                  <span className="text-[11px] text-muted-foreground block">
+                  <span className="text-xs text-muted-foreground block">
                     Validando habilitação jurídica, cronograma e riscos (-100 Tokens)
                   </span>
                 </div>
@@ -563,7 +563,7 @@ export default function WorkspaceTendersPage() {
 
                   {/* Link Oficial */}
                   <div className="pt-3 border-t border-border/40 flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">Fonte Oficial PNCP</span>
+                    <span className="text-xs text-muted-foreground">Fonte Oficial PNCP</span>
                     {selectedTender.portal_url && (
                       <a
                         href={selectedTender.portal_url}

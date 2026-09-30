@@ -145,7 +145,7 @@ function QuoteDetailPage() {
  <span className="text-xs font-mono font-bold text-muted-foreground">{quote.quote_number}</span>
  <Badge
  variant={isTerminal ? "default" : "secondary"}
- className="text-[10px] font-semibold px-2 py-0.5 rounded-lg"
+ className="text-xs font-semibold px-2 py-0.5 rounded-lg"
  >
  {quote.status}
  </Badge>
@@ -200,14 +200,14 @@ function QuoteDetailPage() {
  {quote.customer_name ?? quote.customer_email ?? "Cliente não identificado"}
  </h3>
  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
- {quote.customer_phone && <span className="font-mono">📱 {quote.customer_phone}</span>}
- {quote.customer_email && <span>✉️ {quote.customer_email}</span>}
+ {quote.customer_phone && <span className="font-mono">{quote.customer_phone}</span>}
+ {quote.customer_email && <span>{quote.customer_email}</span>}
  </div>
  </div>
 
  {quote.valid_until && (
  <div className="text-right">
- <p className="text-[11px] font-semibold text-muted-foreground uppercase">Validade</p>
+ <p className="text-xs font-semibold text-muted-foreground uppercase">Validade</p>
  <p className="text-xs font-bold text-foreground font-mono mt-0.5">
  {new Date(quote.valid_until).toLocaleDateString("pt-BR")}
  </p>
@@ -241,14 +241,14 @@ function QuoteDetailPage() {
  <div key={i} className="p-4 rounded-2xl bg-background/70 border border-border/60 space-y-2 text-xs">
  <div className="flex items-center justify-between font-bold">
  <span className="text-foreground">{f.airline_name} ({f.flight_number || "Voo Regular"})</span>
- <Badge variant="secondary" className="text-[10px]">{f.cabin_class || "Econômica"}</Badge>
+ <Badge variant="secondary" className="text-xs">{f.cabin_class || "Econômica"}</Badge>
  </div>
  <div className="flex items-center justify-between text-muted-foreground">
- <span>{f.origin_iata} ({f.origin_city}) ➔ {f.destination_iata} ({f.destination_city})</span>
+ <span>{f.origin_iata} ({f.origin_city})  {f.destination_iata} ({f.destination_city})</span>
  <span className="font-mono font-bold text-foreground">{f.departure_time} - {f.arrival_time}</span>
  </div>
  {f.baggage_included && (
- <p className="text-[11px] text-muted-foreground">🧳 {f.baggage_included}</p>
+ <p className="text-xs text-muted-foreground">Bagagem: {f.baggage_included}</p>
  )}
  </div>
  ))}
@@ -269,15 +269,15 @@ function QuoteDetailPage() {
  <div key={i} className="p-4 rounded-2xl bg-background/70 border border-border/60 space-y-2 text-xs">
  <div className="flex items-center justify-between font-bold">
  <span className="text-foreground">{h.hotel_name}</span>
- <span className="text-amber-500">{"★".repeat(h.stars || 5)}</span>
+ <span className="text-amber-500">{"".repeat(h.stars || 5)}</span>
  </div>
  <div className="flex items-center justify-between text-muted-foreground">
  <span>Quarto: {h.room_type}</span>
- <Badge variant="outline" className="text-[10px] font-semibold capitalize">
+ <Badge variant="outline" className="text-xs font-semibold capitalize">
  {h.board_basis?.replace("_", " ") || "Regime a definir"}
  </Badge>
  </div>
- <p className="text-[11px] text-muted-foreground">🌙 {h.nights_count} noites de hospedagem</p>
+ <p className="text-xs text-muted-foreground">{h.nights_count} noites de hospedagem</p>
  </div>
  ))}
  </div>
@@ -303,8 +303,8 @@ function QuoteDetailPage() {
  }`}
  >
  <div className="flex items-center justify-between font-semibold">
- <span>{msg.is_internal ? "🔒 Nota Interna" : "Comunicação"}</span>
- <span className="text-[10px] text-muted-foreground">{formatRelativeTime(msg.created_at)}</span>
+ <span>{msg.is_internal ? "Nota Interna" : "Comunicação"}</span>
+ <span className="text-xs text-muted-foreground">{formatRelativeTime(msg.created_at)}</span>
  </div>
  <p>{msg.body}</p>
  </div>

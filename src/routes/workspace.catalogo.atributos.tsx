@@ -359,7 +359,7 @@ function OptionGroupsPage() {
  {/* Presets Rápidos de 1 Clique */}
  {!form.watch("id") && (
  <div className="space-y-2 pb-2 border-b border-border/40">
- <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
  <Layers className="size-3.5 text-primary" />
  <span>Modelos Prontos (Presets de 1 Clique)</span>
  </div>
@@ -377,7 +377,7 @@ function OptionGroupsPage() {
  <Icon className="size-3.5 text-primary shrink-0" />
  <span className="text-xs font-semibold text-foreground truncate">{preset.name}</span>
  </div>
- <span className="text-[10px] text-muted-foreground line-clamp-1">{preset.desc}</span>
+ <span className="text-xs text-muted-foreground line-clamp-1">{preset.desc}</span>
  </button>
  );
  })}
@@ -403,7 +403,7 @@ function OptionGroupsPage() {
  className="rounded-xl text-xs h-9"
  />
  {form.formState.errors.internal_name && (
- <p className="text-[11px] text-destructive">
+ <p className="text-xs text-destructive">
  {form.formState.errors.internal_name.message}
  </p>
  )}
@@ -424,7 +424,7 @@ function OptionGroupsPage() {
  className="rounded-xl text-xs h-9"
  />
  {form.formState.errors.display_name && (
- <p className="text-[11px] text-destructive">
+ <p className="text-xs text-destructive">
  {form.formState.errors.display_name.message}
  </p>
  )}
@@ -503,7 +503,7 @@ function OptionGroupsPage() {
  <div className="flex items-center justify-between">
  <div>
  <Label className="text-sm font-bold text-foreground">Itens / Adicionais</Label>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Fotos aparecem na vitrine do produto para o cliente ver o complemento.
  </p>
  </div>
@@ -652,7 +652,7 @@ function OptionItemCard({
  ) : (
  <>
  <ImagePlus className="size-4" />
- <span className="text-[9px] font-semibold mt-0.5">Foto</span>
+ <span className="text-xs font-semibold mt-0.5">Foto</span>
  </>
  )}
  </button>
@@ -674,7 +674,7 @@ function OptionItemCard({
  <div className="grid flex-1 gap-2.5">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-foreground">Nome do Adicional *</Label>
+ <Label className="text-xs font-bold text-foreground">Nome do Adicional *</Label>
  <Input
  {...form.register(`values.${index}.label`)}
  placeholder="ex: Bacon Crocante Especial"
@@ -682,7 +682,7 @@ function OptionItemCard({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-foreground">Preço Adicional (R$)</Label>
+ <Label className="text-xs font-bold text-foreground">Preço Adicional (R$)</Label>
  <CurrencyField
  className="h-8 text-xs rounded-xl"
  placeholder="0,00"
@@ -698,13 +698,13 @@ function OptionItemCard({
  <Input
  {...form.register(`values.${index}.description`)}
  placeholder="Descrição curta (ex: 4 fatias defumadas em lenha)"
- className="h-7 text-[11px] rounded-lg text-muted-foreground"
+ className="h-7 text-xs rounded-lg text-muted-foreground"
  />
  </div>
 
  <div className="flex items-center justify-between pt-0.5 text-xs">
  <div className="flex items-center gap-4">
- <label className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground cursor-pointer">
+ <label className="flex items-center gap-1.5 text-xs font-semibold text-foreground cursor-pointer">
  <Checkbox
  checked={form.watch(`values.${index}.is_default`)}
  onCheckedChange={(c) => form.setValue(`values.${index}.is_default`, !!c)}
@@ -712,7 +712,7 @@ function OptionItemCard({
  />
  <span>Marcado por Padrão</span>
  </label>
- <label className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground cursor-pointer">
+ <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground cursor-pointer">
  <Checkbox
  checked={form.watch(`values.${index}.is_active`)}
  onCheckedChange={(c) => form.setValue(`values.${index}.is_active`, !!c)}
@@ -769,19 +769,19 @@ function OptionGroupTableRow({
  <span className="font-bold text-xs text-foreground block">
  {group.display_name}
  </span>
- <span className="text-[10px] text-muted-foreground font-mono block">
+ <span className="text-xs text-muted-foreground font-mono block">
  {group.internal_name}
  </span>
  </div>
  </TableCell>
  <TableCell>
- <Badge variant="outline" className="text-[10px] font-semibold rounded-lg px-2 py-0.5">
+ <Badge variant="outline" className="text-xs font-semibold rounded-lg px-2 py-0.5">
  {group.selection_type === "single" ? "Única (Radio)" : "Múltipla (Checkbox)"}
  </Badge>
  </TableCell>
  <TableCell className="text-xs text-muted-foreground">
  {group.is_required ? (
- <span className="text-primary font-bold text-[11px]">Obrigatório (min {group.min_selections})</span>
+ <span className="text-primary font-bold text-xs">Obrigatório (min {group.min_selections})</span>
  ) : (
  <span>Opcional (máx {group.max_selections})</span>
  )}
@@ -801,7 +801,7 @@ function OptionGroupTableRow({
  ) : (
  <div
  key={v.id || i}
- className="inline-flex items-center justify-center size-6 rounded-md bg-muted text-[10px] font-bold text-muted-foreground ring-2 ring-background uppercase"
+ className="inline-flex items-center justify-center size-6 rounded-md bg-muted text-xs font-bold text-muted-foreground ring-2 ring-background uppercase"
  >
  {v.label?.slice(0, 1) || "•"}
  </div>
@@ -837,10 +837,10 @@ function OptionGroupTableRow({
  <Table className="text-xs">
  <TableHeader>
  <TableRow className="bg-transparent border-b">
- <TableHead className="h-8 text-[11px] font-bold w-12 text-center">Foto</TableHead>
- <TableHead className="h-8 text-[11px] font-bold">Nome do Adicional</TableHead>
- <TableHead className="h-8 text-[11px] font-bold w-36">Preço Adicional</TableHead>
- <TableHead className="h-8 text-[11px] font-bold w-20 text-center">Status</TableHead>
+ <TableHead className="h-8 text-xs font-bold w-12 text-center">Foto</TableHead>
+ <TableHead className="h-8 text-xs font-bold">Nome do Adicional</TableHead>
+ <TableHead className="h-8 text-xs font-bold w-36">Preço Adicional</TableHead>
+ <TableHead className="h-8 text-xs font-bold w-20 text-center">Status</TableHead>
  </TableRow>
  </TableHeader>
  <TableBody>

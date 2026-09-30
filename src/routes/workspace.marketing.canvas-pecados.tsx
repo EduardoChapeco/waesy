@@ -145,7 +145,7 @@ export function SevenSinsCanvasPage() {
   // Disparar no WhatsApp Web / Mobile
   function handleOpenWhatsApp() {
     if (!generatedHook) return;
-    const fullText = `*${generatedHook.copy_headline}*\n\n${generatedHook.copy_body}\n\n👉 ${generatedHook.call_to_action}`;
+    const fullText = `*${generatedHook.copy_headline}*\n\n${generatedHook.copy_body}\n\n${generatedHook.call_to_action}`;
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullText)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   }
@@ -205,7 +205,7 @@ export function SevenSinsCanvasPage() {
             <button
               type="button"
               onClick={() => setFeedback(null)}
-              className="text-[11px] underline opacity-80 hover:opacity-100 ml-4"
+              className="text-xs underline opacity-80 hover:opacity-100 ml-4"
             >
               Fechar
             </button>
@@ -247,7 +247,7 @@ export function SevenSinsCanvasPage() {
                       {sinKey}
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground line-clamp-2 leading-tight">
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-tight">
                     {def.subconscious}
                   </p>
                 </button>
@@ -263,11 +263,11 @@ export function SevenSinsCanvasPage() {
           {/* Seletor ou Nome do Produto */}
           <div className="w-full sm:flex-1 space-y-1">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-semibold text-muted-foreground block uppercase tracking-wider">
+              <label className="text-xs font-semibold text-muted-foreground block uppercase tracking-wider">
                 Produto ou Serviço da Sua Loja
               </label>
               {productsList.length > 0 && (
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {productsList.length} itens no catálogo
                 </span>
               )}
@@ -308,7 +308,7 @@ export function SevenSinsCanvasPage() {
           </div>
 
           <div className="w-full sm:w-64">
-            <label className="text-[11px] font-semibold text-muted-foreground block mb-1 uppercase tracking-wider">
+            <label className="text-xs font-semibold text-muted-foreground block mb-1 uppercase tracking-wider">
               Canal de Disparo
             </label>
             <select
@@ -344,7 +344,7 @@ export function SevenSinsCanvasPage() {
             {generatedHook ? (
               <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-xs space-y-5">
                 <div>
-                  <span className="text-[11px] text-muted-foreground uppercase font-semibold tracking-wider block">
+                  <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider block">
                     Headline de Alto Impacto
                   </span>
                   <p className="text-lg font-bold tracking-tight text-foreground mt-1">
@@ -353,7 +353,7 @@ export function SevenSinsCanvasPage() {
                 </div>
 
                 <div className="pt-3 border-t border-border/30">
-                  <span className="text-[11px] text-muted-foreground uppercase font-semibold tracking-wider block mb-1">
+                  <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider block mb-1">
                     Corpo do Anúncio / Mensagem
                   </span>
                   <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
@@ -363,11 +363,11 @@ export function SevenSinsCanvasPage() {
 
                 <div className="pt-3 border-t border-border/30 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider block">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider block">
                       Chamada para Ação (CTA)
                     </span>
                     <span className="text-sm font-semibold text-primary">
-                      👉 {generatedHook.call_to_action}
+                      {generatedHook.call_to_action}
                     </span>
                   </div>
 
@@ -376,7 +376,7 @@ export function SevenSinsCanvasPage() {
                       type="button"
                       onClick={() =>
                         handleCopy(
-                          `*${generatedHook.copy_headline}*\n\n${generatedHook.copy_body}\n\n👉 ${generatedHook.call_to_action}`
+                          `*${generatedHook.copy_headline}*\n\n${generatedHook.copy_body}\n\n${generatedHook.call_to_action}`
                         )
                       }
                       className="h-10 px-3.5 inline-flex items-center gap-1.5 rounded-xl text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors"
@@ -497,7 +497,7 @@ export function SevenSinsCanvasPage() {
                     </div>
 
                     {p.primary_objection && (
-                      <div className="flex items-start gap-2 text-[11px] text-muted-foreground pt-1">
+                      <div className="flex items-start gap-2 text-xs text-muted-foreground pt-1">
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                         <span>
                           <strong>Objeção:</strong> {p.primary_objection}{" "}

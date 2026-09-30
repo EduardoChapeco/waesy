@@ -74,7 +74,7 @@ function RelatoriosPage() {
         {/* Vendas Hoje */}
         <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2 col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Vendas Hoje
             </span>
             <DollarSign className="size-4 text-emerald-500" />
@@ -82,7 +82,7 @@ function RelatoriosPage() {
           <div className="text-2xl font-black text-foreground">
             {formatMoney(data.salesTodayCents)}
           </div>
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {data.ordersTodayCount} pedido{data.ordersTodayCount !== 1 ? "s" : ""} hoje
           </span>
         </div>
@@ -90,7 +90,7 @@ function RelatoriosPage() {
         {/* Vendas do Mês */}
         <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2 col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Mês Atual
             </span>
             <BarChart3 className="size-4 text-primary" />
@@ -100,7 +100,7 @@ function RelatoriosPage() {
           </div>
           {growth !== null && (
             <div
-              className={`flex items-center gap-1 text-[11px] font-bold ${
+              className={`flex items-center gap-1 text-xs font-bold ${
                 isPositiveGrowth ? "text-emerald-600" : "text-rose-500"
               }`}
             >
@@ -117,7 +117,7 @@ function RelatoriosPage() {
         {/* Novos Clientes */}
         <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Novos Clientes
             </span>
             <Users className="size-4 text-violet-500" />
@@ -125,13 +125,13 @@ function RelatoriosPage() {
           <div className="text-2xl font-black text-foreground">
             {data.newCustomers30d}
           </div>
-          <span className="text-[10px] text-muted-foreground">Últimos 30 dias</span>
+          <span className="text-xs text-muted-foreground">Últimos 30 dias</span>
         </div>
 
         {/* Carrinhos Abandonados */}
         <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Carrinhos Abandon.
             </span>
             <ShoppingCart className="size-4 text-amber-500" />
@@ -139,7 +139,7 @@ function RelatoriosPage() {
           <div className="text-2xl font-black text-amber-500">
             {data.abandonedCartsCount}
           </div>
-          <span className="text-[10px] text-muted-foreground">Últimos 7 dias</span>
+          <span className="text-xs text-muted-foreground">Últimos 7 dias</span>
         </div>
       </div>
 
@@ -213,7 +213,7 @@ function RelatoriosPage() {
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-sm text-foreground">Estoque em Alerta</h3>
             {(data.criticalStockCount ?? 0) > 0 && (
-              <Badge variant="destructive" className="text-[10px]">
+              <Badge variant="destructive" className="text-xs">
                 {data.criticalStockCount} item{data.criticalStockCount !== 1 ? "s" : ""}
               </Badge>
             )}
@@ -235,7 +235,7 @@ function RelatoriosPage() {
                     <h4 className="text-xs font-bold text-foreground truncate">
                       {item.productTitle}
                     </h4>
-                    <span className="text-[10px] font-mono text-muted-foreground">
+                    <span className="text-xs font-mono text-muted-foreground">
                       SKU: {item.sku}
                     </span>
                   </div>
@@ -273,7 +273,7 @@ function RelatoriosPage() {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-foreground">{activity.title}</h4>
-                    <p className="text-[10px] text-muted-foreground">{activity.subtitle}</p>
+                    <p className="text-xs text-muted-foreground">{activity.subtitle}</p>
                   </div>
                 </div>
                 <div className="text-right shrink-0">
@@ -282,7 +282,7 @@ function RelatoriosPage() {
                       {formatMoney(activity.totalCents)}
                     </span>
                   )}
-                  <span className="text-[10px] text-muted-foreground">{activity.timeDisplay}</span>
+                  <span className="text-xs text-muted-foreground">{activity.timeDisplay}</span>
                 </div>
               </div>
             ))}
@@ -293,20 +293,20 @@ function RelatoriosPage() {
       {/* ── Rodapé com LTV e Crescimento ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Faturamento Mês Anterior
           </span>
           <div className="text-2xl font-black text-muted-foreground">
             {formatMoney(data.salesLastMonthCents)}
           </div>
-          <span className="text-[10px] text-muted-foreground">Referência para cálculo de crescimento</span>
+          <span className="text-xs text-muted-foreground">Referência para cálculo de crescimento</span>
         </div>
         <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Pedidos no Mês
           </span>
           <div className="text-2xl font-black text-foreground">{data.ordersMonthCount}</div>
-          <span className="text-[10px] text-muted-foreground">Total de pedidos abertos neste mês</span>
+          <span className="text-xs text-muted-foreground">Total de pedidos abertos neste mês</span>
         </div>
       </div>
     </div>

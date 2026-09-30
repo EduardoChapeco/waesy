@@ -223,7 +223,7 @@ function AdminResourcesPage() {
                       : "Equipamento"}
                   </p>
                 </div>
-                <Badge variant={res.status === "active" ? "default" : "secondary"} className="rounded-lg text-[10px]">
+                <Badge variant={res.status === "active" ? "default" : "secondary"} className="rounded-lg text-xs">
                   {res.status === "active" ? "Ativo" : "Inativo"}
                 </Badge>
               </div>
@@ -354,7 +354,7 @@ function AdminResourcesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-foreground">Grade Semanal de Atendimento</h4>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Marque os dias e defina os horários em que este recurso pode receber agendamentos.
                   </p>
                 </div>
@@ -364,7 +364,7 @@ function AdminResourcesPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => applyPreset("weekdays")}
-                    className="text-[10px] h-7 rounded-lg px-2"
+                    className="text-xs h-7 rounded-lg px-2"
                   >
                     Seg-Sex
                   </Button>
@@ -373,7 +373,7 @@ function AdminResourcesPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => applyPreset("allweek")}
-                    className="text-[10px] h-7 rounded-lg px-2"
+                    className="text-xs h-7 rounded-lg px-2"
                   >
                     Todos
                   </Button>
@@ -410,7 +410,7 @@ function AdminResourcesPage() {
                             onChange={(e) => updateDayTimes(d.id, "start_time", e.target.value)}
                             className="h-8 w-24 text-xs font-mono rounded-lg"
                           />
-                          <span className="text-muted-foreground text-[10px]">até</span>
+                          <span className="text-muted-foreground text-xs">até</span>
                           <Input
                             type="time"
                             value={slot.end_time}
@@ -419,7 +419,7 @@ function AdminResourcesPage() {
                           />
                         </div>
                       ) : (
-                        <span className="text-[11px] text-muted-foreground italic pr-2">Indisponível</span>
+                        <span className="text-xs text-muted-foreground italic pr-2">Indisponível</span>
                       )}
                     </div>
                   );

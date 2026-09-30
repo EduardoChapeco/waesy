@@ -237,7 +237,7 @@ function StudioWorkspacePage() {
  onChange={(e) => setProjectTitle(e.target.value)}
  className="h-8 px-2 text-xs font-black bg-transparent border-transparent hover:border-border/60 focus:border-border rounded-lg max-w-[180px] sm:max-w-[260px]"
  />
- <Badge variant="outline" className="text-[10px] font-mono uppercase font-bold">
+ <Badge variant="outline" className="text-xs font-mono uppercase font-bold">
  {studioMode === "graphic" ? "Design Gráfico" : "Vídeo 4K"}
  </Badge>
  </div>
@@ -325,7 +325,7 @@ function StudioWorkspacePage() {
  {/* COLUNA 1: Toolbar Lateral de Ferramentas & Ativos */}
  <div className="w-64 border-r border-border/80 bg-card flex flex-col shrink-0 overflow-y-auto no-scrollbar p-4 space-y-4">
  <div className="flex items-center justify-between border-b border-border/60 pb-2">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Ferramentas
  </span>
  </div>
@@ -456,7 +456,7 @@ function StudioWorkspacePage() {
  <div className="space-y-2 pt-2 border-t border-border/60">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">Modelos Prontos</Label>
- <span className="text-[10px] font-mono text-muted-foreground">{filteredTemplates.length} disponíveis</span>
+ <span className="text-xs font-mono text-muted-foreground">{filteredTemplates.length} disponíveis</span>
  </div>
 
  {/* Filtro Rápido por Nicho */}
@@ -472,7 +472,7 @@ function StudioWorkspacePage() {
  key={cat.id}
  type="button"
  onClick={() => setSelectedTemplateCategory(cat.id)}
- className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap ${
+ className={`px-2 py-0.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
  selectedTemplateCategory === cat.id
  ? "bg-primary text-primary-foreground"
  : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -492,11 +492,11 @@ function StudioWorkspacePage() {
  >
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground truncate">{tpl.title}</span>
- <Badge variant="secondary" className="text-[9px] font-mono uppercase">
+ <Badge variant="secondary" className="text-xs font-mono uppercase">
  {tpl.aspect_ratio}
  </Badge>
  </div>
- <span className="text-[10px] text-muted-foreground uppercase font-semibold">
+ <span className="text-xs text-muted-foreground uppercase font-semibold">
  {tpl.category}
  </span>
  </div>
@@ -596,7 +596,7 @@ function StudioWorkspacePage() {
  className="h-8 rounded-xl bg-muted/40 border border-border/40 px-3 flex items-center justify-between text-xs"
  >
  <span className="font-bold text-foreground">{tr.name}</span>
- <div className="flex-1 mx-4 h-5 rounded-lg bg-primary/20 border border-primary/40 flex items-center px-2 text-[10px] font-mono text-primary truncate">
+ <div className="flex-1 mx-4 h-5 rounded-lg bg-primary/20 border border-primary/40 flex items-center px-2 text-xs font-mono text-primary truncate">
  {tr.clips[0]?.name || "Trilha vazia"}
  </div>
  </div>
@@ -610,7 +610,7 @@ function StudioWorkspacePage() {
  {/* COLUNA 3: Painel Inspector de Propriedades (Contextual) */}
  <div className="w-72 border-l border-border/80 bg-card flex flex-col shrink-0 overflow-y-auto no-scrollbar p-4 space-y-4">
  <div className="flex items-center justify-between border-b border-border/60 pb-2">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Propriedades
  </span>
  {selectedElement && (
@@ -753,7 +753,7 @@ function StudioWorkspacePage() {
  <div className="py-12 text-center space-y-2 text-muted-foreground">
  <Layers className="size-8 mx-auto opacity-40" />
  <p className="text-xs font-medium">Nenhum elemento selecionado</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Clique em um texto ou forma no canvas para editar suas propriedades.
  </p>
  </div>

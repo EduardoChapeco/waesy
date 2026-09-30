@@ -302,7 +302,7 @@ function EventCheckinPage() {
  <h1 className="text-base font-bold leading-tight truncate max-w-xs md:max-w-md">
  {event?.name || "Check-in"}
  </h1>
- <Badge variant="secondary" className="text-[10px] font-mono uppercase font-bold">
+ <Badge variant="secondary" className="text-xs font-mono uppercase font-bold">
  Ao Vivo
  </Badge>
  </div>
@@ -439,7 +439,7 @@ function EventCheckinPage() {
  <span>{lastCheckin.lotName}</span>
  </div>
  )}
- <p className="text-[10px] opacity-60 pt-1">
+ <p className="text-xs opacity-60 pt-1">
  Validado Ã s {lastCheckin.timestamp.toLocaleTimeString()}
  </p>
  </div>
@@ -474,11 +474,11 @@ function EventCheckinPage() {
  >
  <div className="min-w-0 pr-2">
  <p className="font-bold truncate">{item.name || item.code}</p>
- <p className="text-[10px] text-muted-foreground">{item.lotName || item.time}</p>
+ <p className="text-xs text-muted-foreground">{item.lotName || item.time}</p>
  </div>
  <Badge
  variant={item.success ? "default" : "destructive"}
- className="text-[9px] px-1.5 py-0 uppercase font-mono"
+ className="text-xs px-1.5 py-0 uppercase font-mono"
  >
  {item.success ? "OK" : "ERRO"}
  </Badge>

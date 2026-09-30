@@ -248,14 +248,14 @@ export default function WorkspaceEventosPage() {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-3 left-3">
-                          <Badge className="bg-background/95 text-foreground border border-border/80 text-[10px] font-semibold shadow-xs">
+                          <Badge className="bg-background/95 text-foreground border border-border/80 text-xs font-semibold shadow-xs">
                             {event.category || "Evento"}
                           </Badge>
                         </div>
                         <div className="absolute top-3 right-3">
                           <Badge
                             variant={isPast ? "secondary" : "default"}
-                            className="text-[10px] font-semibold uppercase shadow-xs"
+                            className="text-xs font-semibold uppercase shadow-xs"
                           >
                             {isPast ? "Encerrado" : "Confirmado"}
                           </Badge>
@@ -265,7 +265,7 @@ export default function WorkspaceEventosPage() {
                       <div className="w-full aspect-[16/9] bg-muted/40 flex items-center justify-center text-muted-foreground relative">
                         <Calendar className="size-8 opacity-40" />
                         <div className="absolute top-3 left-3">
-                          <Badge variant="outline" className="text-[10px] font-mono uppercase">
+                          <Badge variant="outline" className="text-xs font-mono uppercase">
                             {event.category || "Evento"}
                           </Badge>
                         </div>
@@ -300,7 +300,7 @@ export default function WorkspaceEventosPage() {
                       )}
 
                       {event.capacity && (
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-mono pt-1">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-mono pt-1">
                           <Users className="size-3.5 shrink-0" />
                           <span>Capacidade: {event.capacity} pessoas</span>
                         </p>
@@ -512,7 +512,7 @@ export default function WorkspaceEventosPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-bold text-foreground">Ingresso por Link Externo</p>
-                      <p className="text-[11px] text-muted-foreground">Ative se os ingressos são vendidos em outra plataforma.</p>
+                      <p className="text-xs text-muted-foreground">Ative se os ingressos são vendidos em outra plataforma.</p>
                     </div>
                     <button
                       type="button"
@@ -565,7 +565,7 @@ export default function WorkspaceEventosPage() {
           isOpen={isDashboardOpen}
           onClose={() => setIsDashboardOpen(false)}
           title="Eventos"
-          subtitle="Taxa de ocupação de público e capacidade dos eventos"
+          subtitle="Taxa de Ocupação"
           metrics={metricsItems}
         />
       </div>

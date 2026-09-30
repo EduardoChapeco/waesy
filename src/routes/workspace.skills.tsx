@@ -169,7 +169,7 @@ function SkillsCatalogPage() {
                       <IconComp className="size-5" />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-muted-foreground font-medium">
+                      <span className="text-xs text-muted-foreground font-medium">
                         {skill.is_enabled ? "Ativa" : "Desativada"}
                       </span>
                       <Switch
@@ -190,14 +190,14 @@ function SkillsCatalogPage() {
                     </p>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-muted/20 border border-border/40 text-[11px] text-muted-foreground space-y-1">
+                  <div className="p-2.5 rounded-xl bg-muted/20 border border-border/40 text-xs text-muted-foreground space-y-1">
                     <span className="font-semibold text-foreground block">Gatilho:</span>
                     <p className="line-clamp-2 italic">{skill.trigger_explicit}</p>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground font-mono text-[10px]">
+                  <span className="text-muted-foreground font-mono text-xs">
                     Custo est.: ~${skill.estimated_cost_usd.toFixed(4)}
                   </span>
 
@@ -295,11 +295,11 @@ function SkillsCatalogPage() {
                 <div className="p-3.5 rounded-xl bg-card border border-border/60 space-y-2 mt-3">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-foreground">Resultado da Execução:</span>
-                    <Badge variant="outline" className="text-[10px] text-emerald-500 border-emerald-500/20">
+                    <Badge variant="outline" className="text-xs text-emerald-500 border-emerald-500/20">
                       Sucesso (Porta Única)
                     </Badge>
                   </div>
-                  <pre className="p-3 rounded-lg bg-muted/40 font-mono text-[11px] whitespace-pre-wrap max-h-[220px] overflow-y-auto">
+                  <pre className="p-3 rounded-lg bg-muted/40 font-mono text-xs whitespace-pre-wrap max-h-[220px] overflow-y-auto">
                     {testResult}
                   </pre>
                 </div>

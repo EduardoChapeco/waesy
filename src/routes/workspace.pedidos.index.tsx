@@ -416,14 +416,14 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  {order.order_number || ("#" + (order.public_token || order.id.slice(0, 6)))}
  </span>
- <Badge variant="outline" className="text-[10px] font-bold">
+ <Badge variant="outline" className="text-xs font-bold">
  {order.payment_method?.toUpperCase() || "PIX / RESERVA"}
  </Badge>
  </div>
  <p className="font-bold text-xs text-foreground mt-1">
  {order.customer_snapshot?.name || "Passageiro Titular"}
  </p>
- <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+ <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
  {firstItem}
  </p>
  </div>
@@ -432,7 +432,7 @@ function AdminOrdersPage() {
  <span className="text-xs font-black text-foreground">
  {formatMoney(order.total_cents)}
  </span>
- <div className="flex items-center justify-end gap-1 text-[10px] text-muted-foreground mt-0.5">
+ <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground mt-0.5">
  <Clock className="size-3" />
  <span>Hoje</span>
  </div>
@@ -519,14 +519,14 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  #{order.public_token || order.id.slice(0, 6)}
  </span>
- <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary uppercase">
+ <span className="inline-block px-1.5 py-0.5 rounded text-xs font-bold bg-primary/10 text-primary uppercase">
  Emitindo Bilhetes
  </span>
  </div>
  <p className="font-bold text-xs text-foreground mt-1">
  {order.customer_snapshot?.name || "Passageiro"}
  </p>
- <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+ <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
  {firstItem}
  </p>
  </div>
@@ -596,7 +596,7 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  #{order.public_token || order.id.slice(0, 6)}
  </span>
- <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 uppercase">
+ <span className="inline-block px-1.5 py-0.5 rounded text-xs font-bold bg-emerald-500/10 text-emerald-600 uppercase">
  Pronto p/ Embarque
  </span>
  </div>
@@ -677,7 +677,7 @@ function AdminOrdersPage() {
  {formatMoney(order.total_cents)}
  </span>
  </div>
- <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
+ <div className="flex items-center justify-between pt-1 text-xs text-muted-foreground">
  <span>Realizada com sucesso</span>
  <Link
  to={`/workspace/pedidos/${order.id}` as never}
@@ -732,7 +732,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary uppercase">
+ <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-xs font-bold bg-primary/10 text-primary uppercase">
  {order.shipping_method === "pickup" ? "Retirada Balcão" : "Entrega Parceira"}
  </span>
  </div>
@@ -741,7 +741,7 @@ function AdminOrdersPage() {
  <span className="text-xs font-black text-foreground">
  {formatMoney(order.total_cents)}
  </span>
- <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+ <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
  <Clock className="size-3" />
  <span>Hoje</span>
  </div>
@@ -808,7 +808,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 uppercase">
+ <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-xs font-bold bg-amber-500/10 text-amber-600 uppercase">
  Cozinha Produzindo
  </span>
  </div>
@@ -896,7 +896,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-600 uppercase">
+ <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-600 uppercase">
  {order.status === "ready_for_pickup"
  ? "Aguardando Retirada"
  : "Entregador a Caminho"}
@@ -987,14 +987,14 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-base text-foreground">
  #{order.public_token || order.id.slice(0, 6)}
  </span>
- <Badge variant="secondary" className="font-mono text-[10px] uppercase">
+ <Badge variant="secondary" className="font-mono text-xs uppercase">
  {order.shipping_method === "pickup" ? "Retirada Balcão" : "Entrega Agendada"}
  </Badge>
  </div>
  <p className="text-xs font-bold text-foreground mt-1">
  {order.customer_snapshot?.name || "Cliente Waesy"}
  </p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {order.customer_snapshot?.address_city || "Localidade não informada"}
  </p>
  </div>
@@ -1003,7 +1003,7 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  {formatMoney(order.total_cents)}
  </span>
- <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+ <p className="text-xs text-muted-foreground font-mono mt-0.5">
  {checkedCount}/{totalItems} itens conferidos
  </p>
  </div>
@@ -1048,7 +1048,7 @@ function AdminOrdersPage() {
  >
  {item.title || item.product_name || `Item #${idx + 1}`}
  </p>
- <p className="text-[10px] text-muted-foreground font-mono">
+ <p className="text-xs text-muted-foreground font-mono">
  Qtd: {item.quantity || 1} • {formatMoney(item.unit_price_cents || item.price_cents || 0)}
  </p>
  </div>
@@ -1069,7 +1069,7 @@ function AdminOrdersPage() {
  toast.info(`Item ${item.title} marcado para substituição.`);
  }
  }}
- className="h-7 px-2 text-[10px] font-bold text-primary hover:bg-primary/10 rounded-lg shrink-0"
+ className="h-7 px-2 text-xs font-bold text-primary hover:bg-primary/10 rounded-lg shrink-0"
  >
  Substituir
  </Button>
@@ -1252,7 +1252,7 @@ function AdminOrdersPage() {
  <span className="font-semibold text-foreground truncate">
  {firstItem}
  </span>
- <span className="text-[11px] text-muted-foreground uppercase">
+ <span className="text-xs text-muted-foreground uppercase">
  {order.payment_method || "Pix / Boleto"}
  </span>
  </div>
@@ -1263,7 +1263,7 @@ function AdminOrdersPage() {
  </TableCell>
 
  <TableCell className="text-center">
- <Badge variant={badgeInfo.variant} className="text-[10px] font-bold">
+ <Badge variant={badgeInfo.variant} className="text-xs font-bold">
  {badgeInfo.label}
  </Badge>
  </TableCell>

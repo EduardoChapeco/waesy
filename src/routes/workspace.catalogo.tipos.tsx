@@ -224,7 +224,7 @@ function ProductTypesPage() {
  <div className="flex items-center justify-between pb-2">
  <div>
  <h4 className="text-xs font-bold text-foreground">Campos Dinâmicos e Grades</h4>
- <p className="text-[11px] text-muted-foreground">Atributos que produtos deste tipo possuirão.</p>
+ <p className="text-xs text-muted-foreground">Atributos que produtos deste tipo possuirão.</p>
  </div>
  <Button
  type="button"
@@ -260,7 +260,7 @@ function ProductTypesPage() {
  </Button>
  <div className="grid flex-1 grid-cols-1 md:grid-cols-3 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Nome do campo</Label>
+ <Label className="text-xs font-bold">Nome do campo</Label>
  <Input
  placeholder="Ex: Material ou Voltagem"
  className="rounded-xl text-xs h-8"
@@ -268,7 +268,7 @@ function ProductTypesPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Tipo de dado</Label>
+ <Label className="text-xs font-bold">Tipo de dado</Label>
  <Select
  onValueChange={(val) =>
  form.setValue(
@@ -312,7 +312,7 @@ function ProductTypesPage() {
  </div>
  {form.watch(`fields.${index}.kind`) === "option_group" && (
  <div className="space-y-1 md:col-span-3">
- <Label className="text-[10px] text-muted-foreground font-bold">
+ <Label className="text-xs text-muted-foreground font-bold">
  Valores permitidos (separados por vírgula)
  </Label>
  <Input
@@ -393,7 +393,7 @@ function ProductTypesPage() {
  {type.slug}
  </TableCell>
  <TableCell>
- <Badge variant="secondary" className="text-[11px] font-bold rounded-lg bg-muted border-border">
+ <Badge variant="secondary" className="text-xs font-bold rounded-lg bg-muted border-border">
  {Array.isArray(type.field_schema) ? type.field_schema.length : 0} {Array.isArray(type.field_schema) && type.field_schema.length === 1 ? "campo" : "campos"}
  </Badge>
  </TableCell>

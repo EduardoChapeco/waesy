@@ -228,53 +228,53 @@ function StockAlertsPage() {
       {/* ── KPIS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Flame className="size-3.5 text-destructive" />
             Itens Esgotados
           </span>
           <div className="text-2xl font-mono font-bold text-destructive">
             {kpis.outOfStock}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Ruptura total (saldo zero)
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <AlertTriangle className="size-3.5 text-amber-500" />
             Nível Crítico
           </span>
           <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
             {kpis.lowStock}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Saldo entre 1 e 5 unidades
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <BellRing className="size-3.5 text-blue-600" />
             Fila de Espera (Waitlist)
           </span>
           <div className="text-2xl font-mono font-bold text-blue-600 dark:text-blue-400">
             {kpis.totalWaitlist}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Clientes aguardando aviso
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Boxes className="size-3.5 text-foreground" />
             Total SKUs em Risco
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.totalAtRisk}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Itens monitorados pelo sistema
           </p>
         </div>
@@ -369,19 +369,19 @@ function StockAlertsPage() {
 
                     <div className="flex items-center gap-1.5">
                       {waitingCount > 0 && (
-                        <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 font-bold text-[10px] px-2 py-0.5">
+                        <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 font-bold text-xs px-2 py-0.5">
                           <BellRing className="size-3" />
                           <span>{waitingCount} na fila</span>
                         </Badge>
                       )}
 
                       {available <= 0 ? (
-                        <Badge variant="destructive" className="gap-1 text-[11px] font-bold px-2 py-0.5">
+                        <Badge variant="destructive" className="gap-1 text-xs font-bold px-2 py-0.5">
                           <Flame className="size-3" />
                           Esgotado
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-0.5">
+                        <Badge variant="secondary" className="gap-1 text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-0.5">
                           <AlertTriangle className="size-3 text-amber-500" />
                           Crítico
                         </Badge>
@@ -485,12 +485,12 @@ function StockAlertsPage() {
                       </TableCell>
                       <TableCell className="text-center">
                         {available <= 0 ? (
-                          <Badge variant="destructive" className="gap-1 text-[10px] font-bold">
+                          <Badge variant="destructive" className="gap-1 text-xs font-bold">
                             <Flame className="size-3" />
                             Esgotado
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300">
+                          <Badge variant="secondary" className="gap-1 text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300">
                             <AlertTriangle className="size-3 text-amber-500" />
                             Crítico ({available} un)
                           </Badge>
@@ -498,7 +498,7 @@ function StockAlertsPage() {
                       </TableCell>
                       <TableCell className="text-center">
                         {waitingCount > 0 ? (
-                          <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 font-bold text-[10px]">
+                          <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 font-bold text-xs">
                             <BellRing className="size-3" />
                             <span>{waitingCount} {waitingCount === 1 ? "cliente" : "clientes"}</span>
                           </Badge>
@@ -513,7 +513,7 @@ function StockAlertsPage() {
                             variant="outline"
                             onClick={() => handleQuickRefill(v.id, 5)}
                             disabled={isItemAdjusting}
-                            className="h-8 text-[11px] font-bold px-2 rounded-lg cursor-pointer"
+                            className="h-8 text-xs font-bold px-2 rounded-lg cursor-pointer"
                           >
                             +5
                           </Button>
@@ -522,7 +522,7 @@ function StockAlertsPage() {
                             variant="outline"
                             onClick={() => handleQuickRefill(v.id, 10)}
                             disabled={isItemAdjusting}
-                            className="h-8 text-[11px] font-bold px-2 rounded-lg cursor-pointer"
+                            className="h-8 text-xs font-bold px-2 rounded-lg cursor-pointer"
                           >
                             +10
                           </Button>
@@ -533,7 +533,7 @@ function StockAlertsPage() {
                               setCustomModalItem(v);
                               setCustomQuantity(waitingCount > 0 ? waitingCount * 2 : 20);
                             }}
-                            className="h-8 text-[11px] font-bold px-3 rounded-lg gap-1 cursor-pointer"
+                            className="h-8 text-xs font-bold px-3 rounded-lg gap-1 cursor-pointer"
                           >
                             <Plus className="size-3" />
                             Personalizado
@@ -574,8 +574,8 @@ function StockAlertsPage() {
                 onChange={(e) => setCustomQuantity(parseInt(e.target.value, 10) || 1)}
                 className="font-mono font-bold text-sm h-11 rounded-xl bg-background border-border/80"
               />
-              <p className="text-[11px] text-muted-foreground">
-                Saldo atual: <strong>{customModalItem?.stock_on_hand || 0} un</strong> ➔ Novo saldo:{" "}
+              <p className="text-xs text-muted-foreground">
+                Saldo atual: <strong>{customModalItem?.stock_on_hand || 0} un</strong>  Novo saldo:{" "}
                 <strong className="text-emerald-600">
                   {(customModalItem?.stock_on_hand || 0) + customQuantity} un
                 </strong>

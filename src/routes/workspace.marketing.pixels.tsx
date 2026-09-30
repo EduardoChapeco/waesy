@@ -194,7 +194,7 @@ export default function WorkspaceMarketingPixelsPage() {
               </div>
             </div>
             {metaPixelId && (
-              <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 border-emerald-500/30">
+              <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
                 Ativo
               </Badge>
             )}
@@ -209,7 +209,7 @@ export default function WorkspaceMarketingPixelsPage() {
                 placeholder="Ex: 123456789012345"
                 className="h-9 rounded-xl text-xs font-mono"
               />
-              <span className="text-[11px] text-muted-foreground block">
+              <span className="text-xs text-muted-foreground block">
                 Localizado no Gerenciador de Eventos da Meta.
               </span>
             </div>
@@ -223,7 +223,7 @@ export default function WorkspaceMarketingPixelsPage() {
                 placeholder="EAAB..."
                 className="h-9 rounded-xl text-xs font-mono"
               />
-              <span className="text-[11px] text-muted-foreground block">
+              <span className="text-xs text-muted-foreground block">
                 Garante o disparo de conversões pelo servidor, imune a bloqueadores de anúncios.
               </span>
             </div>
@@ -255,7 +255,7 @@ export default function WorkspaceMarketingPixelsPage() {
                 placeholder="Ex: AW-1234567890"
                 className="h-9 rounded-xl text-xs font-mono"
               />
-              <span className="text-[11px] text-muted-foreground block">
+              <span className="text-xs text-muted-foreground block">
                 Encontrado em Google Ads → Ferramentas → Conversões.
               </span>
             </div>
@@ -268,7 +268,7 @@ export default function WorkspaceMarketingPixelsPage() {
                 placeholder="Ex: G-XXXXXXXXXX"
                 className="h-9 rounded-xl text-xs font-mono"
               />
-              <span className="text-[11px] text-muted-foreground block">
+              <span className="text-xs text-muted-foreground block">
                 Encontrado em GA4 → Administração → Fluxos de dados.
               </span>
             </div>
@@ -282,7 +282,7 @@ export default function WorkspaceMarketingPixelsPage() {
                 placeholder="Chave secreta do stream GA4 para Enhanced Conversions server-side"
                 className="h-9 rounded-xl text-xs font-mono"
               />
-              <span className="text-[11px] text-muted-foreground block">
+              <span className="text-xs text-muted-foreground block">
                 GA4 → Administração → Fluxos de dados → Measurement Protocol API secrets.
                 Necessário para disparar conversões pelo servidor (Google Ads Enhanced Conversions).
               </span>
@@ -340,7 +340,7 @@ export default function WorkspaceMarketingPixelsPage() {
                   <GoogleLogo size={16} weight="bold" className="text-amber-500" />
                   Google Merchant Center (Feed RSS XML)
                 </span>
-                <Badge variant="outline" className="text-[10px] uppercase font-mono">XML 2.0</Badge>
+                <Badge variant="outline" className="text-xs uppercase font-mono">XML 2.0</Badge>
               </div>
               <div className="flex items-center gap-2">
                 <Input
@@ -384,7 +384,7 @@ export default function WorkspaceMarketingPixelsPage() {
                   <MetaLogo size={16} weight="bold" className="text-blue-600" />
                   Meta Commerce Manager (Catálogo DPA CSV)
                 </span>
-                <Badge variant="outline" className="text-[10px] uppercase font-mono">CSV UTF-8</Badge>
+                <Badge variant="outline" className="text-xs uppercase font-mono">CSV UTF-8</Badge>
               </div>
               <div className="flex items-center gap-2">
                 <Input
@@ -528,7 +528,7 @@ export default function WorkspaceMarketingPixelsPage() {
                 </p>
               </div>
             </div>
-            <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30">
+            <Badge variant="outline" className="text-xs font-mono text-primary border-primary/30">
               Open Standard
             </Badge>
           </div>
@@ -538,7 +538,7 @@ export default function WorkspaceMarketingPixelsPage() {
             <div className="space-y-1.5">
               <Label className="text-xs font-bold flex items-center justify-between">
                 <span>Feed Meta Commerce / Instagram Store (CSV DPA)</span>
-                <span className="text-[10px] font-normal text-muted-foreground">Formato Oficial Meta Catalog</span>
+                <span className="text-xs font-normal text-muted-foreground">Formato Oficial Meta Catalog</span>
               </Label>
               <div className="flex items-center gap-2">
                 <Input
@@ -570,7 +570,7 @@ export default function WorkspaceMarketingPixelsPage() {
             <div className="space-y-1.5">
               <Label className="text-xs font-bold flex items-center justify-between">
                 <span>Feed Google Shopping / Merchant Center (XML RSS 2.0)</span>
-                <span className="text-[10px] font-normal text-muted-foreground">Formato Google Product Feed</span>
+                <span className="text-xs font-normal text-muted-foreground">Formato Google Product Feed</span>
               </Label>
               <div className="flex items-center gap-2">
                 <Input
@@ -602,7 +602,7 @@ export default function WorkspaceMarketingPixelsPage() {
             <div className="space-y-1.5">
               <Label className="text-xs font-bold flex items-center justify-between">
                 <span>Manifesto WebMCP para Agentes de IA (JSON)</span>
-                <span className="text-[10px] font-normal text-muted-foreground">Indexação Gemini, Claude e Perplexity</span>
+                <span className="text-xs font-normal text-muted-foreground">Indexação Gemini, Claude e Perplexity</span>
               </Label>
               <div className="flex items-center gap-2">
                 <Input

@@ -454,7 +454,7 @@ export default function WorkspaceSocialStudioPage() {
                     type="button"
                     onClick={() => setActiveSlideIndex(idx)}
                     className={cn(
-                      "py-2 px-1 rounded-xl text-center border text-[11px] font-semibold transition-all cursor-pointer",
+                      "py-2 px-1 rounded-xl text-center border text-xs font-semibold transition-all cursor-pointer",
                       activeSlideIndex === idx
                         ? "border-primary bg-primary text-primary-foreground shadow-xs"
                         : "border-border/80 bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -593,11 +593,11 @@ export default function WorkspaceSocialStudioPage() {
             </span>
             <div className="flex items-center gap-2">
               {template === "carousel" && (
-                <span className="font-semibold text-emerald-400 text-[11px] bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                <span className="font-semibold text-emerald-400 text-xs bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                   Slide {activeSlideIndex + 1}/5
                 </span>
               )}
-              <span className="font-mono text-[11px] bg-neutral-800 px-2 py-0.5 rounded text-neutral-300">
+              <span className="font-mono text-xs bg-neutral-800 px-2 py-0.5 rounded text-neutral-300">
                 {ratio === "9:16" ? "1080 x 1920" : ratio === "1:1" ? "1080 x 1080" : "1920 x 1080"}
               </span>
             </div>
@@ -632,12 +632,12 @@ export default function WorkspaceSocialStudioPage() {
                 </div>
                 <div>
                   <p className="text-xs font-bold leading-none tracking-tight">{authorName}</p>
-                  <p className="text-[10px] text-neutral-400 font-mono leading-tight">{authorHandle}</p>
+                  <p className="text-xs text-neutral-400 font-mono leading-tight">{authorHandle}</p>
                 </div>
               </div>
 
               {(template === "carousel" ? activeSlide.tag : badgeText) && (
-                <span className="px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
+                <span className="px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-semibold uppercase tracking-wider text-emerald-300">
                   {template === "carousel" ? activeSlide.tag : badgeText}
                 </span>
               )}
@@ -662,7 +662,7 @@ export default function WorkspaceSocialStudioPage() {
               </div>
             ) : template === "presentation" ? (
               <div className="my-auto py-4 space-y-2 z-10">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                <span className="text-xs font-mono uppercase tracking-wider text-neutral-400">
                   Apresentação Comercial • {store?.name || "Catálogo"}
                 </span>
                 <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">
@@ -707,7 +707,7 @@ export default function WorkspaceSocialStudioPage() {
                       </span>
                     </div>
                     {installments && (
-                      <span className="text-[11px] text-neutral-300 font-medium">
+                      <span className="text-xs text-neutral-300 font-medium">
                         {installments}
                       </span>
                     )}
@@ -717,7 +717,7 @@ export default function WorkspaceSocialStudioPage() {
             )}
 
             {/* Rodapé com Indicador de Carrossel */}
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[10px] text-neutral-400 z-10">
+            <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400 z-10">
               <span>{store?.name || "Waesy Comércio Local"}</span>
               {template === "carousel" ? (
                 <div className="flex items-center gap-1.5">

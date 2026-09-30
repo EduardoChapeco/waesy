@@ -180,7 +180,7 @@ function WorkspaceNewJobPage() {
               : "border-amber-500/40 text-amber-600 bg-amber-500/10"
           }`}
         >
-          {isPro ? "Plano PRO Ativo ✓" : "Plano Gratuito"}
+          {isPro ? "Plano PRO Ativo " : "Plano Gratuito"}
         </Badge>
       </div>
 
@@ -429,13 +429,13 @@ function WorkspaceNewJobPage() {
                     Publicar simultaneamente no LinkedIn
                   </h3>
                   {!isPro ? (
-                    <Badge variant="outline" className="text-[10px] font-bold border-amber-500/40 text-amber-600 bg-amber-500/10 px-1.5 py-0 flex items-center gap-1">
+                    <Badge variant="outline" className="text-xs font-bold border-amber-500/40 text-amber-600 bg-amber-500/10 px-1.5 py-0 flex items-center gap-1">
                       <Lock className="size-2.5" />
                       <span>Plano PRO</span>
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[10px] font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/10 px-1.5 py-0">
-                      Disponível ✓
+                    <Badge variant="outline" className="text-xs font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/10 px-1.5 py-0">
+                      Disponível 
                     </Badge>
                   )}
                 </div>

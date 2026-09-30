@@ -387,7 +387,7 @@ function SubPainelEventoPage() {
  className="bg-card rounded-2xl p-4 border border-border/60 space-y-3"
  >
  <div className="flex items-center justify-between">
- <Badge variant="outline" className="text-[10px] uppercase font-mono">
+ <Badge variant="outline" className="text-xs uppercase font-mono">
  {lot.status === "active" ? "Ativo" : "Pausado"}
  </Badge>
  <div className="flex items-center gap-2">
@@ -455,7 +455,7 @@ function SubPainelEventoPage() {
  <TableCell className="font-medium text-xs">
  {t.profiles?.full_name || "Participante"}
  {t.profiles?.tax_id && (
- <span className="block text-[10px] text-muted-foreground font-mono">
+ <span className="block text-xs text-muted-foreground font-mono">
  CPF: {t.profiles.tax_id}
  </span>
  )}
@@ -475,7 +475,7 @@ function SubPainelEventoPage() {
  ? "default"
  : "outline"
  }
- className="text-[10px]"
+ className="text-xs"
  >
  {t.status === "used"
  ? "Entrada Realizada"

@@ -521,7 +521,7 @@ function WorkspaceAtendimentoPage() {
                         <div className="flex items-center justify-between gap-2">
                           <Badge
                             className={cn(
-                              "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5",
+                              "text-xs font-bold uppercase tracking-wider px-2 py-0.5",
                               isReady
                                 ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
                                 : isWarm
@@ -530,15 +530,15 @@ function WorkspaceAtendimentoPage() {
                             )}
                           >
                             {isReady
-                              ? "🎯 Pronto para Comprar"
+                              ? "Pronto para Comprar"
                               : isWarm
-                              ? "🔥 Lead Quente"
+                              ? "Lead Quente"
                               : session.intent_classification === "curious"
-                              ? "💡 Curioso / Dúvida"
+                              ? "Curioso / Dúvida"
                               : "Atendimento Geral"}
                           </Badge>
 
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {formatRelativeTime(session.updated_at)}
                           </span>
                         </div>
@@ -550,7 +550,7 @@ function WorkspaceAtendimentoPage() {
                               {session.classified.title}
                             </h4>
                             {session.classified.price_cents !== null && session.classified.price_cents !== undefined && (
-                              <p className="text-[11px] font-semibold text-primary font-mono">
+                              <p className="text-xs font-semibold text-primary font-mono">
                                 {session.classified.price_cents > 0 ? formatMoney(session.classified.price_cents) : "Sob Consulta"}
                               </p>
                             )}
@@ -1161,10 +1161,10 @@ function WorkspaceAtendimentoPage() {
 
               {selectedSdrSession.summary && (
                 <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-foreground space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary block">
+                  <span className="text-xs font-bold uppercase tracking-wider text-primary block">
                     Resumo do Interesse (Gerado por IA)
                   </span>
-                  <p className="leading-relaxed text-[11px]">
+                  <p className="leading-relaxed text-xs">
                     {selectedSdrSession.summary}
                   </p>
                 </div>
@@ -1186,7 +1186,7 @@ function WorkspaceAtendimentoPage() {
                           : "mr-auto bg-card border border-border/70 text-foreground rounded-tl-xs shadow-2xs"
                       )}
                     >
-                      <div className="flex items-center justify-between gap-2 mb-1 opacity-75 text-[10px] font-semibold">
+                      <div className="flex items-center justify-between gap-2 mb-1 opacity-75 text-xs font-semibold">
                         <span>{isAssistant ? "Assistente SDR (IA)" : "Cliente / Comprador"}</span>
                         {msg.at && <span>{new Date(msg.at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>}
                       </div>

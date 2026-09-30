@@ -521,7 +521,7 @@ function WorkspaceLeadFormsPage() {
         >
           <span>Caixa de Entrada (CRM)</span>
           {kpis.newLeadsCount > 0 && (
-            <span className="px-1.5 py-0.2 bg-primary text-primary-foreground text-[10px] font-bold rounded-full">
+            <span className="px-1.5 py-0.2 bg-primary text-primary-foreground text-xs font-bold rounded-full">
               {kpis.newLeadsCount}
             </span>
           )}
@@ -555,14 +555,14 @@ function WorkspaceLeadFormsPage() {
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider font-semibold mb-1.5">
+                        <Badge variant="outline" className="text-xs uppercase tracking-wider font-semibold mb-1.5">
                           {form.niche_id}
                         </Badge>
                         <h4 className="font-semibold text-sm text-foreground line-clamp-1">
                           {form.title}
                         </h4>
                       </div>
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${form.status === 'active' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${form.status === 'active' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
                         {form.status === 'active' ? 'Ativo' : 'Pausado'}
                       </span>
                     </div>
@@ -574,15 +574,15 @@ function WorkspaceLeadFormsPage() {
                     {/* Métricas do Formulário */}
                     <div className="grid grid-cols-3 gap-2 py-2 px-3 rounded-xl bg-muted/20 border border-border/30 text-center">
                       <div>
-                        <div className="text-[10px] text-muted-foreground">Views</div>
+                        <div className="text-xs text-muted-foreground">Views</div>
                         <div className="text-xs font-bold text-foreground">{form.views_count}</div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-muted-foreground">Leads</div>
+                        <div className="text-xs text-muted-foreground">Leads</div>
                         <div className="text-xs font-bold text-primary">{form.submissions_count}</div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-muted-foreground">Taxa</div>
+                        <div className="text-xs text-muted-foreground">Taxa</div>
                         <div className="text-xs font-bold text-emerald-600">
                           {form.views_count > 0 ? ((form.submissions_count / form.views_count) * 100).toFixed(0) : 0}%
                         </div>
@@ -591,7 +591,7 @@ function WorkspaceLeadFormsPage() {
 
                     {/* Link da Landing Page */}
                     <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                      <span className="font-mono text-[11px] truncate max-w-[180px]">
+                      <span className="font-mono text-xs truncate max-w-[180px]">
                         /f/{form.slug}
                       </span>
                       <Button
@@ -658,7 +658,7 @@ function WorkspaceLeadFormsPage() {
 
             {/* Presets de Nicho */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] text-muted-foreground mr-1">Modelos:</span>
+              <span className="text-xs text-muted-foreground mr-1">Modelos:</span>
               <Button
                 variant="outline"
                 size="sm"
@@ -750,7 +750,7 @@ function WorkspaceLeadFormsPage() {
                         : "border-border/50 text-muted-foreground"
                     }`}
                   >
-                    💬 Abrir WhatsApp
+                    Abrir WhatsApp
                   </button>
                   <button
                     type="button"
@@ -761,14 +761,14 @@ function WorkspaceLeadFormsPage() {
                         : "border-border/50 text-muted-foreground"
                     }`}
                   >
-                    ✅ Mensagem de Sucesso
+                    Mensagem de Sucesso
                   </button>
                 </div>
 
                 {builderAfterSubmitAction === "whatsapp_redirect" && (
                   <div className="space-y-2 pt-2">
                     <div>
-                      <Label className="text-[11px] text-muted-foreground">WhatsApp de Atendimento</Label>
+                      <Label className="text-xs text-muted-foreground">WhatsApp de Atendimento</Label>
                       <Input
                         value={builderWhatsappPhone}
                         onChange={(e) => setBuilderWhatsappPhone(formatPhone(e.target.value))}
@@ -777,13 +777,13 @@ function WorkspaceLeadFormsPage() {
                       />
                     </div>
                     <div>
-                      <Label className="text-[11px] text-muted-foreground">Template da Mensagem Inicial</Label>
+                      <Label className="text-xs text-muted-foreground">Template da Mensagem Inicial</Label>
                       <Textarea
                         value={builderWhatsappTemplate}
                         onChange={(e) => setBuilderWhatsappTemplate(e.target.value)}
                         className="rounded-xl text-xs min-h-[60px] resize-none"
                       />
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         Tags: {"{nome}"}, {"{telefone}"}, {"{formulario}"}
                       </span>
                     </div>
@@ -797,7 +797,7 @@ function WorkspaceLeadFormsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-semibold text-foreground">Campos do Formulário</h4>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Nome e WhatsApp são coletados obrigatoriamente por padrão.
                   </p>
                 </div>
@@ -884,7 +884,7 @@ function WorkspaceLeadFormsPage() {
                         />
                         <span>Obrigatório</span>
                       </label>
-                      <span className="font-mono text-[10px] text-muted-foreground/60">
+                      <span className="font-mono text-xs text-muted-foreground/60">
                         key: {field.field_key}
                       </span>
                     </div>
@@ -1001,12 +1001,12 @@ function WorkspaceLeadFormsPage() {
                               {sub.contact_name}
                             </h4>
                             {sub.is_new_registered_user && (
-                              <span className="text-[10px] bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <span className="text-xs bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <Star className="w-3 h-3" />
                                 Registro Rápido
                               </span>
                             )}
-                            <span className="text-[11px] text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                               • {new Date(sub.created_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
                             </span>
                           </div>
@@ -1046,11 +1046,11 @@ function WorkspaceLeadFormsPage() {
                               : "bg-muted/40 text-foreground border-border/50"
                           }`}
                         >
-                          <option value="new">🟡 Novo</option>
-                          <option value="contacted">🔵 Contatado</option>
-                          <option value="qualified">🟣 Qualificado</option>
-                          <option value="won">🟢 Ganho / Fechado</option>
-                          <option value="lost">🔴 Perdido</option>
+                          <option value="new">Novo</option>
+                          <option value="contacted">Contatado</option>
+                          <option value="qualified">Qualificado</option>
+                          <option value="won">Ganho / Fechado</option>
+                          <option value="lost">Perdido</option>
                         </select>
 
                         <Button
@@ -1082,7 +1082,7 @@ function WorkspaceLeadFormsPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-muted/20 rounded-xl">
                           {Object.entries(sub.raw_answers || {}).map(([k, v]) => (
                             <div key={k} className="space-y-0.5">
-                              <span className="text-[11px] text-muted-foreground uppercase font-medium">{k}</span>
+                              <span className="text-xs text-muted-foreground uppercase font-medium">{k}</span>
                               <div className="font-medium text-foreground">
                                 {typeof v === "object" ? JSON.stringify(v) : String(v)}
                               </div>

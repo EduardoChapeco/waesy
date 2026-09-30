@@ -323,10 +323,10 @@ function CustomerDetailPage() {
                   CPF/CNPJ: {data.profile.taxId}
                 </span>
               ) : (
-                <span className="text-[11px] text-muted-foreground">Documento não informado</span>
+                <span className="text-xs text-muted-foreground">Documento não informado</span>
               )}
               {data.profile.isConsentLgpd && (
-                <Badge variant="outline" className="text-[10px] text-emerald-600 gap-1 border-emerald-500/30">
+                <Badge variant="outline" className="text-xs text-emerald-600 gap-1 border-emerald-500/30">
                   <ShieldCheck className="size-3" /> LGPD Consentido
                 </Badge>
               )}
@@ -366,26 +366,26 @@ function CustomerDetailPage() {
         {/* Grid de KPIs 360° */}
         <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">LTV Total</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">LTV Total</span>
             <div className="text-lg sm:text-xl font-black text-foreground">{formatMoney(data.totalLtvCents || 0)}</div>
-            <span className="text-[10px] text-muted-foreground font-mono">{data.totalOrdersCount || 0} compras</span>
+            <span className="text-xs text-muted-foreground font-mono">{data.totalOrdersCount || 0} compras</span>
           </div>
           <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Ticket Médio</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Ticket Médio</span>
             <div className="text-lg sm:text-xl font-black text-foreground">{formatMoney(data.averageTicketCents || 0)}</div>
-            <span className="text-[10px] text-muted-foreground">Por compra</span>
+            <span className="text-xs text-muted-foreground">Por compra</span>
           </div>
           <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Créditos</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Créditos</span>
             <div className="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400">
               {formatMoney(data.totalCreditCents || 0)}
             </div>
-            <span className="text-[10px] text-muted-foreground">Disponível</span>
+            <span className="text-xs text-muted-foreground">Disponível</span>
           </div>
           <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Recência</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Recência</span>
             <div className="text-lg sm:text-xl font-black text-foreground">{data.daysSinceLastOrder || 0}d</div>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {(data.daysSinceLastOrder || 0) > 60 ? "️ Risco Churn" : "Ativo"}
             </span>
           </div>
@@ -477,7 +477,7 @@ function CustomerDetailPage() {
                       <p className="text-xs text-muted-foreground">{event.description}</p>
                     </div>
                   </div>
-                  <span className="text-[11px] text-muted-foreground font-mono shrink-0">
+                  <span className="text-xs text-muted-foreground font-mono shrink-0">
                     {new Date(event.timestamp).toLocaleDateString("pt-BR", {
                       day: "2-digit",
                       month: "short",
@@ -521,33 +521,33 @@ function CustomerDetailPage() {
                               <h4 className="font-bold text-sm text-foreground truncate">
                                 {trip.title || trip.destination_city || "Roteiro de Viagem"}
                               </h4>
-                              <p className="text-[11px] text-muted-foreground font-mono">
+                              <p className="text-xs text-muted-foreground font-mono">
                                 #{trip.trip_number || trip.id.slice(0, 8)} • {trip.destination_city}
                               </p>
                             </div>
                           </div>
-                          <Badge variant="secondary" className="text-[10px] uppercase font-bold shrink-0">
+                          <Badge variant="secondary" className="text-xs uppercase font-bold shrink-0">
                             {trip.status}
                           </Badge>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 text-[11px] bg-muted/30 p-2.5 rounded-xl">
+                        <div className="grid grid-cols-2 gap-2 text-xs bg-muted/30 p-2.5 rounded-xl">
                           <div>
-                            <span className="text-muted-foreground block text-[10px]">Período</span>
+                            <span className="text-muted-foreground block text-xs">Período</span>
                             <span className="font-semibold text-foreground">
                               {trip.travel_start_date ? new Date(trip.travel_start_date).toLocaleDateString("pt-BR") : "A definir"}
                               {trip.travel_end_date ? ` até ${new Date(trip.travel_end_date).toLocaleDateString("pt-BR")}` : ""}
                             </span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground block text-[10px]">Passageiros</span>
+                            <span className="text-muted-foreground block text-xs">Passageiros</span>
                             <span className="font-semibold text-foreground">
                               {(trip.adults_count || 1) + (trip.children_count || 0)} pax
                             </span>
                           </div>
                           {trip.total_cents > 0 && (
                             <div className="col-span-2 pt-1 border-t border-border/40 flex items-center justify-between">
-                              <span className="text-muted-foreground text-[10px]">Investimento Total</span>
+                              <span className="text-muted-foreground text-xs">Investimento Total</span>
                               <span className="font-mono font-bold text-foreground">
                                 {formatMoney(trip.total_cents)}
                               </span>
@@ -593,19 +593,19 @@ function CustomerDetailPage() {
                                 <h4 className="font-bold text-sm text-foreground truncate">
                                   {prop.title || prop.destination_city || "Proposta Comercial"}
                                 </h4>
-                                <p className="text-[11px] text-muted-foreground font-mono">
+                                <p className="text-xs text-muted-foreground font-mono">
                                   Destino: {prop.destination_city || "Personalizado"}
                                 </p>
                               </div>
                             </div>
-                            <Badge variant="outline" className="text-[10px] uppercase font-bold shrink-0">
+                            <Badge variant="outline" className="text-xs uppercase font-bold shrink-0">
                               {prop.status}
                             </Badge>
                           </div>
 
                           {totalCents > 0 && (
                             <div className="bg-muted/30 p-2.5 rounded-xl flex items-center justify-between text-xs">
-                              <span className="text-muted-foreground text-[11px]">Total da Proposta</span>
+                              <span className="text-muted-foreground text-xs">Total da Proposta</span>
                               <span className="font-mono font-bold text-foreground">
                                 {formatMoney(totalCents)}
                               </span>
@@ -659,19 +659,19 @@ function CustomerDetailPage() {
                                 <h4 className="font-bold text-sm text-foreground truncate">
                                   {contract.title || "Contrato de Serviços"}
                                 </h4>
-                                <p className="text-[11px] text-muted-foreground font-mono">
+                                <p className="text-xs text-muted-foreground font-mono">
                                   Cód: {contract.verification_code || contract.id.slice(0, 8)}
                                 </p>
                               </div>
                             </div>
-                            <Badge variant={contract.status === "signed" ? "default" : "outline"} className="text-[10px] uppercase font-bold shrink-0">
+                            <Badge variant={contract.status === "signed" ? "default" : "outline"} className="text-xs uppercase font-bold shrink-0">
                               {contract.status === "signed" ? "Assinado" : contract.status}
                             </Badge>
                           </div>
 
                           {totalCents > 0 && (
                             <div className="bg-muted/30 p-2.5 rounded-xl flex items-center justify-between text-xs">
-                              <span className="text-muted-foreground text-[11px]">Valor Contratual</span>
+                              <span className="text-muted-foreground text-xs">Valor Contratual</span>
                               <span className="font-mono font-bold text-foreground">
                                 {formatMoney(totalCents)}
                               </span>
@@ -723,18 +723,18 @@ function CustomerDetailPage() {
                               {lead.title || lead.full_name || "Oportunidade"}
                             </h4>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                              <Badge variant="outline" className="text-xs px-1.5 py-0">
                                 {lead.status}
                               </Badge>
                               {lead.estimated_value_cents > 0 && (
-                                <span className="text-[11px] text-muted-foreground font-mono">
+                                <span className="text-xs text-muted-foreground font-mono">
                                   {formatMoney(lead.estimated_value_cents)}
                                 </span>
                               )}
                             </div>
                           </div>
                         </div>
-                        <span className="text-[11px] text-muted-foreground font-mono shrink-0">
+                        <span className="text-xs text-muted-foreground font-mono shrink-0">
                           {new Date(lead.created_at).toLocaleDateString("pt-BR", {
                             day: "2-digit",
                             month: "short",
@@ -778,7 +778,7 @@ function CustomerDetailPage() {
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between py-1 border-b border-border/30">
                   <span className="text-muted-foreground">Preferência:</span>
-                  <Badge variant="secondary" className="text-[11px]">
+                  <Badge variant="secondary" className="text-xs">
                     {seatPref === "window" ? "Janela" : seatPref === "aisle" ? "Corredor" : seatPref === "front" ? "Frente / Emergência" : "Sem preferência"}
                   </Badge>
                 </div>
@@ -825,7 +825,7 @@ function CustomerDetailPage() {
               </div>
               <div className="space-y-2 text-xs">
                 {airlineMiles ? (
-                  <div className="p-2.5 rounded-xl bg-muted/40 font-mono text-[11px] space-y-1">
+                  <div className="p-2.5 rounded-xl bg-muted/40 font-mono text-xs space-y-1">
                     {airlineMiles.split(",").map((m: string, idx: number) => (
                       <div key={idx} className="flex items-center justify-between">
                         <span>{m.trim()}</span>
@@ -882,10 +882,10 @@ function CustomerDetailPage() {
                   className="rounded-2xl border border-border/60 bg-gradient-to-br from-card to-muted/30 p-5 space-y-3 relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between">
-                    <Badge variant="secondary" className="text-[10px] uppercase font-bold">
+                    <Badge variant="secondary" className="text-xs uppercase font-bold">
                       {pass.pass_type || "Cartão Digital"}
                     </Badge>
-                    <Badge variant="outline" className="text-[10px] font-mono">
+                    <Badge variant="outline" className="text-xs font-mono">
                       {pass.status || "Ativo"}
                     </Badge>
                   </div>
@@ -893,11 +893,11 @@ function CustomerDetailPage() {
                     <h4 className="font-bold text-sm text-foreground">{pass.title || "Passe Digital"}</h4>
                     <p className="text-xs text-muted-foreground">{pass.description || "Documento Digital"}</p>
                   </div>
-                  <div className="p-3 bg-card/80 border border-border/40 rounded-xl flex items-center justify-between font-mono text-[11px]">
+                  <div className="p-3 bg-card/80 border border-border/40 rounded-xl flex items-center justify-between font-mono text-xs">
                     <span className="text-muted-foreground">Serial:</span>
                     <span className="font-bold text-foreground truncate max-w-[120px]">{pass.serial_number || pass.id.slice(0, 8)}</span>
                   </div>
-                  <div className="text-[10px] text-muted-foreground text-right">
+                  <div className="text-xs text-muted-foreground text-right">
                     Criado em {new Date(pass.created_at).toLocaleDateString("pt-BR")}
                   </div>
                 </div>
@@ -923,13 +923,13 @@ function CustomerDetailPage() {
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-bold text-sm text-foreground truncate">{pax.full_name}</h4>
-                      <Badge variant="secondary" className="text-[10px] uppercase px-1.5">
+                      <Badge variant="secondary" className="text-xs uppercase px-1.5">
                         {pax.relationship || "Outro"}
                       </Badge>
                     </div>
                   </div>
                   {(pax.document || pax.birth_date || pax.phone) && (
-                    <div className="space-y-0.5 text-[11px] text-muted-foreground border-t border-border/40 pt-2">
+                    <div className="space-y-0.5 text-xs text-muted-foreground border-t border-border/40 pt-2">
                       {pax.birth_date && (
                         <p>Nasc: {new Date(pax.birth_date).toLocaleDateString("pt-BR")}</p>
                       )}
@@ -937,7 +937,7 @@ function CustomerDetailPage() {
                       {pax.phone && <p>Tel: {pax.phone}</p>}
                     </div>
                   )}
-                  <span className="text-[10px] text-muted-foreground/60 block">Via: {pax._leadTitle}</span>
+                  <span className="text-xs text-muted-foreground/60 block">Via: {pax._leadTitle}</span>
                 </div>
               ))}
             </div>
@@ -966,14 +966,14 @@ function CustomerDetailPage() {
                       {addr.street}{addr.number ? `, ${addr.number}` : ""}
                     </span>
                     {addr.is_default && (
-                      <Badge variant="secondary" className="text-[10px]">Principal</Badge>
+                      <Badge variant="secondary" className="text-xs">Principal</Badge>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {[addr.neighborhood, addr.city, addr.state].filter(Boolean).join(" • ")}
                   </p>
                   {addr.zipcode && (
-                    <span className="text-[11px] font-mono text-muted-foreground block">CEP: {addr.zipcode}</span>
+                    <span className="text-xs font-mono text-muted-foreground block">CEP: {addr.zipcode}</span>
                   )}
                 </div>
               ))}
@@ -1001,7 +1001,7 @@ function CustomerDetailPage() {
                       <h4 className="font-bold text-sm text-foreground">
                         {cr.description || "Crédito em Loja"}
                       </h4>
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         Concedido em {new Date(cr.created_at).toLocaleDateString("pt-BR")}
                       </span>
                     </div>
@@ -1031,7 +1031,7 @@ function CustomerDetailPage() {
                       <HeartPulse className="size-4 text-rose-500" />
                       <h4 className="font-bold text-sm text-foreground">{rec.service_title}</h4>
                     </div>
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {new Date(rec.created_at).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "long",
@@ -1047,7 +1047,7 @@ function CustomerDetailPage() {
                     </div>
                   )}
                   {rec.professional_name && (
-                    <span className="text-[11px] text-muted-foreground block">
+                    <span className="text-xs text-muted-foreground block">
                       Atendido por: {rec.professional_name}
                     </span>
                   )}
@@ -1321,7 +1321,7 @@ function CustomerDetailPage() {
                     />
                     <div className="text-xs">
                       <span className="font-bold text-foreground block">Passageiro PCD</span>
-                      <span className="text-muted-foreground text-[11px]">Requer prioridade de embarque e atendimento</span>
+                      <span className="text-muted-foreground text-xs">Requer prioridade de embarque e atendimento</span>
                     </div>
                   </label>
 
@@ -1334,7 +1334,7 @@ function CustomerDetailPage() {
                     />
                     <div className="text-xs">
                       <span className="font-bold text-foreground block">Cadeira de Rodas (WCHR)</span>
-                      <span className="text-muted-foreground text-[11px]">Solicitar assistência no aeroporto / transfer</span>
+                      <span className="text-muted-foreground text-xs">Solicitar assistência no aeroporto / transfer</span>
                     </div>
                   </label>
                 </div>

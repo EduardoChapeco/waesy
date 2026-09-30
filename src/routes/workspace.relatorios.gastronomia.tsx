@@ -92,14 +92,14 @@ function PeakHoursHeatmap({ peakHoursMap }: { peakHoursMap: Record<string, numbe
  )}
  title={`${hour}h — ${count} pedidos`}
  >
- <span className="text-[11px] font-bold font-mono">{hour}h</span>
+ <span className="text-xs font-bold font-mono">{hour}h</span>
  <span className="text-xs font-black">{count}</span>
  </div>
  ))}
  </div>
 
  {/* Legenda */}
- <div className="flex items-center gap-3 mt-3 text-[11px] text-muted-foreground">
+ <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
  <div className="flex items-center gap-1">
  <div className="size-2.5 rounded bg-muted/20" />
  <span>0 pedidos</span>
@@ -300,7 +300,7 @@ function GastronomyReportsPage() {
  <div className="bg-card rounded-2xl border border-border/80 p-5 shadow-2xs space-y-4">
  <div className="flex items-center justify-between">
  <h2 className="text-sm font-black">Pedidos por Canal</h2>
- <Badge variant="outline" className="text-[10px] font-mono">hoje</Badge>
+ <Badge variant="outline" className="text-xs font-mono">hoje</Badge>
  </div>
  {totalChannelToday === 0 ? (
  <p className="text-xs text-muted-foreground py-4 text-center">Nenhum pedido hoje ainda.</p>
@@ -317,7 +317,7 @@ function GastronomyReportsPage() {
  <div className="bg-card rounded-2xl border border-border/80 p-5 shadow-2xs space-y-4">
  <div className="flex items-center justify-between">
  <h2 className="text-sm font-black">Status da Cozinha</h2>
- <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30 bg-emerald-500/10 font-mono">
+ <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30 bg-emerald-500/10 font-mono">
  ao vivo
  </Badge>
  </div>
@@ -340,7 +340,7 @@ function GastronomyReportsPage() {
  <div className="bg-card rounded-2xl border border-border/80 p-5 shadow-2xs space-y-4">
  <div className="flex items-center justify-between">
  <h2 className="text-sm font-black">Horário de Pico</h2>
- <Badge variant="outline" className="text-[10px] font-mono">últimos 30 dias</Badge>
+ <Badge variant="outline" className="text-xs font-mono">últimos 30 dias</Badge>
  </div>
  {Object.values(reports.peakHoursMap).every((v) => v === 0) ? (
  <p className="text-xs text-muted-foreground py-4 text-center">Sem dados suficientes para gerar o heatmap.</p>
@@ -353,7 +353,7 @@ function GastronomyReportsPage() {
  <div className="bg-card rounded-2xl border border-border/80 p-5 shadow-2xs space-y-4">
  <div className="flex items-center justify-between">
  <h2 className="text-sm font-black">Produtos Mais Vendidos</h2>
- <Badge variant="outline" className="text-[10px] font-mono">este mês</Badge>
+ <Badge variant="outline" className="text-xs font-mono">este mês</Badge>
  </div>
  {reports.topProducts.length === 0 ? (
  <p className="text-xs text-muted-foreground py-4 text-center">Nenhuma venda registrada neste mês.</p>

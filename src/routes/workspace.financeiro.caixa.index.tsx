@@ -119,17 +119,17 @@ function CashRegisterManagerPage() {
  function getChannelBadge(channel?: string) {
  switch (channel) {
  case "mercadolivre":
- return <Badge variant="outline" className="text-[10px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">Mercado Livre</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">Mercado Livre</Badge>;
  case "ifood":
- return <Badge variant="outline" className="text-[10px] font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30">iFood</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30">iFood</Badge>;
  case "amazon":
- return <Badge variant="outline" className="text-[10px] font-medium bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30">Amazon</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30">Amazon</Badge>;
  case "whatsapp":
- return <Badge variant="outline" className="text-[10px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">WhatsApp</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">WhatsApp</Badge>;
  case "ecommerce":
- return <Badge variant="outline" className="text-[10px] font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30">Loja Virtual</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30">Loja Virtual</Badge>;
  default:
- return <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground border-border/60">Balcão / PDV</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium text-muted-foreground border-border/60">Balcão / PDV</Badge>;
  }
  }
 
@@ -340,7 +340,7 @@ function CashRegisterManagerPage() {
  </h2>
  <Badge
  variant={isBoxOpen ? "default" : "secondary"}
- className="text-[10px] font-bold rounded-lg"
+ className="text-xs font-bold rounded-lg"
  >
  {isBoxOpen ? (register?.isExpired ? "Expirado (>24h)" : "Aberto") : "Fechado"}
  </Badge>
@@ -356,7 +356,7 @@ function CashRegisterManagerPage() {
  <div className="flex items-center gap-3 self-end sm:self-center">
  {isBoxOpen && (
  <div className="text-right">
- <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider block">
+ <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider block">
  Saldo em Gaveta (Dinheiro)
  </span>
  <span className="text-xl font-mono font-black text-emerald-600 dark:text-emerald-400">
@@ -371,7 +371,7 @@ function CashRegisterManagerPage() {
  {isBoxOpen && (
  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
  <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+ <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <Banknote className="size-3 text-emerald-500" />
  <span>Dinheiro</span>
  </span>
@@ -381,7 +381,7 @@ function CashRegisterManagerPage() {
  </div>
 
  <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+ <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <QrCode className="size-3 text-cyan-500" />
  <span>PIX</span>
  </span>
@@ -391,7 +391,7 @@ function CashRegisterManagerPage() {
  </div>
 
  <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+ <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <CreditCard className="size-3 text-blue-500" />
  <span>Débito</span>
  </span>
@@ -401,7 +401,7 @@ function CashRegisterManagerPage() {
  </div>
 
  <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+ <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <CreditCard className="size-3 text-indigo-500" />
  <span>Crédito</span>
  </span>
@@ -411,7 +411,7 @@ function CashRegisterManagerPage() {
  </div>
 
  <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+ <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <ArrowUpRight className="size-3 text-rose-500" />
  <span>Sangrias</span>
  </span>
@@ -421,7 +421,7 @@ function CashRegisterManagerPage() {
  </div>
 
  <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+ <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <ArrowDownLeft className="size-3 text-emerald-500" />
  <span>Suprimentos</span>
  </span>
@@ -476,7 +476,7 @@ function CashRegisterManagerPage() {
  <div className="space-y-3">
       {/* Seletor Rápido de Canal / Origem */}
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
-        <span className="text-muted-foreground font-medium text-[11px] mr-1 shrink-0">Filtrar Canal:</span>
+        <span className="text-muted-foreground font-medium text-xs mr-1 shrink-0">Filtrar Canal:</span>
         {[
           { id: "all", label: "Todos os Canais" },
           { id: "pos_counter", label: "Balcão / PDV" },
@@ -491,7 +491,7 @@ function CashRegisterManagerPage() {
             type="button"
             onClick={() => setSelectedChannel(ch.id)}
             className={cn(
-              "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors whitespace-nowrap",
+              "px-2.5 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap",
               selectedChannel === ch.id
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -525,7 +525,7 @@ function CashRegisterManagerPage() {
                       </span>
                       {getChannelBadge(entry.channel)}
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
                       <span>{formatDateTime(entry.created_at)}</span>
                       <span>•</span>
                       <span className="uppercase font-semibold">{entry.method}</span>
@@ -550,7 +550,7 @@ function CashRegisterManagerPage() {
                       {formatMoney(Math.abs(entry.amount_cents))}
                     </span>
                     {entry.marketplace_fee_cents > 0 && (
-                      <span className="text-[10px] text-muted-foreground font-mono block">
+                      <span className="text-xs text-muted-foreground font-mono block">
                         Tx: -{formatMoney(entry.marketplace_fee_cents)}
                       </span>
                     )}
@@ -584,7 +584,7 @@ function CashRegisterManagerPage() {
                       <p className="text-xs font-bold text-foreground truncate">
                         {entry.description || "Lançamento"}
                       </p>
-                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
                         <span>{formatDateTime(entry.created_at)}</span>
                         <span>•</span>
                         <span className="uppercase">{entry.method}</span>
@@ -622,7 +622,7 @@ function CashRegisterManagerPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold">Valor Total</span>
+                    <span className="text-xs text-muted-foreground uppercase font-bold">Valor Total</span>
                     <div
                       className={`text-2xl font-mono font-black ${
                         isNeg ? "text-rose-600" : "text-emerald-600"
@@ -638,21 +638,21 @@ function CashRegisterManagerPage() {
 
                   <div className="grid grid-cols-2 gap-2.5 pt-2 text-xs">
                     <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Método</span>
+                      <span className="text-xs text-muted-foreground uppercase font-semibold">Método</span>
                       <p className="font-mono font-bold uppercase text-foreground">{activeEntry.method}</p>
                     </div>
                     <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Horário</span>
-                      <p className="font-mono text-muted-foreground text-[11px]">{formatDateTime(activeEntry.created_at)}</p>
+                      <span className="text-xs text-muted-foreground uppercase font-semibold">Horário</span>
+                      <p className="font-mono text-muted-foreground text-xs">{formatDateTime(activeEntry.created_at)}</p>
                     </div>
                     <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Taxa do Canal</span>
+                      <span className="text-xs text-muted-foreground uppercase font-semibold">Taxa do Canal</span>
                       <p className="font-mono font-bold text-rose-600">
                         {activeEntry.marketplace_fee_cents ? `-${formatMoney(activeEntry.marketplace_fee_cents)}` : "R$ 0,00"}
                       </p>
                     </div>
                     <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Líquido Recebido</span>
+                      <span className="text-xs text-muted-foreground uppercase font-semibold">Líquido Recebido</span>
                       <p className="font-mono font-bold text-emerald-600">
                         {formatMoney(activeEntry.net_payout_cents || (activeEntry.amount_cents - (activeEntry.marketplace_fee_cents || 0)))}
                       </p>
@@ -706,16 +706,16 @@ function CashRegisterManagerPage() {
                         <div className="flex items-center gap-1.5">
                           <Badge
                             variant={isNegative ? "destructive" : "outline"}
-                            className="text-[10px] font-mono uppercase"
+                            className="text-xs font-mono uppercase"
                           >
                             {entry.method}
                           </Badge>
                           {entry.order_id ? (
-                            <Badge variant="outline" className="text-[9px] font-semibold text-emerald-600 border-emerald-500/30 bg-emerald-500/5">
+                            <Badge variant="outline" className="text-xs font-semibold text-emerald-600 border-emerald-500/30 bg-emerald-500/5">
                               NF-e
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[9px] font-mono text-muted-foreground border-border/40">
+                            <Badge variant="outline" className="text-xs font-mono text-muted-foreground border-border/40">
                               Não Fiscal
                             </Badge>
                           )}
@@ -836,15 +836,15 @@ function CashRegisterManagerPage() {
 
                 <div className="pt-2 border-t border-border/40 grid grid-cols-3 gap-2 text-center text-xs">
                   <div className="p-2 rounded-xl bg-muted/30">
-                    <span className="text-[11px] text-muted-foreground block">Troco</span>
+                    <span className="text-xs text-muted-foreground block">Troco</span>
                     <span className="font-mono font-bold text-foreground">{formatMoney(turn.initial_balance_cents)}</span>
                   </div>
                   <div className="p-2 rounded-xl bg-muted/30">
-                    <span className="text-[11px] text-muted-foreground block">Esperado</span>
+                    <span className="text-xs text-muted-foreground block">Esperado</span>
                     <span className="font-mono font-bold text-foreground">{formatMoney(turn.expected_balance_cents ?? turn.currentBalanceCents ?? 0)}</span>
                   </div>
                   <div className="p-2 rounded-xl bg-muted/30">
-                    <span className="text-[11px] text-muted-foreground block">Contado</span>
+                    <span className="text-xs text-muted-foreground block">Contado</span>
                     <span className="font-mono font-bold text-foreground">
                       {turn.final_balance_cents !== null ? formatMoney(turn.final_balance_cents) : "Em Aberto"}
                     </span>
@@ -883,7 +883,7 @@ function CashRegisterManagerPage() {
                           {formatDateTime(turn.opened_at)}
                         </span>
                         {turn.closed_at && (
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Até {formatDateTime(turn.closed_at)}
                           </p>
                         )}
@@ -893,7 +893,7 @@ function CashRegisterManagerPage() {
                       <div className="text-foreground">
                         <span>{turn.opened_by_profile?.full_name || "Operador"}</span>
                         {turn.closed_by_profile && (
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Fechado por {turn.closed_by_profile.full_name}
                           </p>
                         )}
@@ -912,19 +912,19 @@ function CashRegisterManagerPage() {
                     </TableCell>
                     <TableCell className="text-center py-3.5">
                       {turn.status === "open" ? (
-                        <Badge variant="default" className="text-[10px]">
+                        <Badge variant="default" className="text-xs">
                           Aberto
                         </Badge>
                       ) : diff === 0 ? (
-                        <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30">
+                        <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30">
                           Exato (R$ 0,00)
                         </Badge>
                       ) : diff > 0 ? (
-                        <Badge variant="outline" className="text-[10px] text-cyan-600 border-cyan-500/30">
+                        <Badge variant="outline" className="text-xs text-cyan-600 border-cyan-500/30">
                           Sobra +{formatMoney(diff)}
                         </Badge>
                       ) : (
-                        <Badge variant="destructive" className="text-[10px]">
+                        <Badge variant="destructive" className="text-xs">
                           Falta -{formatMoney(Math.abs(diff))}
                         </Badge>
                       )}
@@ -962,7 +962,7 @@ function CashRegisterManagerPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   <Badge
                     variant={isDebit ? "destructive" : "default"}
-                    className="text-[10px] font-mono uppercase shrink-0"
+                    className="text-xs font-mono uppercase shrink-0"
                   >
                     {row.entry_type || row.direction}
                   </Badge>
@@ -970,7 +970,7 @@ function CashRegisterManagerPage() {
                     <p className="text-xs font-semibold text-foreground truncate">
                       {row.description || "Transação Atômica ACID"}
                     </p>
-                    <p className="text-[10px] font-mono text-muted-foreground truncate">
+                    <p className="text-xs font-mono text-muted-foreground truncate">
                       {formatDateTime(row.created_at)} • Ref: {row.reference_type || "core"}
                     </p>
                   </div>
@@ -1103,7 +1103,7 @@ function CashRegisterManagerPage() {
  <form onSubmit={closeForm.handleSubmit(handleCloseRegister)} className="flex-1 flex flex-col justify-between">
  <div className="p-6 space-y-4 overflow-y-auto no-scrollbar">
  <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 space-y-1">
- <span className="text-[11px] font-bold text-muted-foreground block">
+ <span className="text-xs font-bold text-muted-foreground block">
  Saldo Esperado em Dinheiro:
  </span>
  <span className="text-lg font-mono font-bold text-foreground">

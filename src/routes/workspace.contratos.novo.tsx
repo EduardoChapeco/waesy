@@ -813,7 +813,7 @@ function NovoContratoPage() {
                     className="h-10 text-xs rounded-xl"
                   />
                 </div>
-                <Badge variant="outline" className="text-[11px] font-mono shrink-0">
+                <Badge variant="outline" className="text-xs font-mono shrink-0">
                   {Object.keys(ALL_TEMPLATES).length} Modelos Oficiais
                 </Badge>
               </div>
@@ -841,11 +841,11 @@ function NovoContratoPage() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-xs font-bold text-foreground line-clamp-1">{t.title}</p>
-                        <Badge variant="secondary" className="text-[10px] shrink-0 font-medium">
+                        <Badge variant="secondary" className="text-xs shrink-0 font-medium">
                           Usar Modelo
                         </Badge>
                       </div>
-                      <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                         {t.description}
                       </p>
                     </button>
@@ -875,8 +875,8 @@ function NovoContratoPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold">Texto Principal do Contrato</Label>
-                  <p className="text-[11px] text-muted-foreground">
-                    Variáveis como <code className="font-mono text-primary text-[10px]">&#123;&#123;cliente_nome&#125;&#125;</code> são preenchidas automaticamente.
+                  <p className="text-xs text-muted-foreground">
+                    Variáveis como <code className="font-mono text-primary text-xs">&#123;&#123;cliente_nome&#125;&#125;</code> são preenchidas automaticamente.
                   </p>
                 </div>
 
@@ -922,7 +922,7 @@ function NovoContratoPage() {
                   </div>
                 </div>
 
-                <Badge variant="outline" className="text-[10px]">
+                <Badge variant="outline" className="text-xs">
                   {previewDevice === "mobile" ? "Modo Celular (Sem Pinch-Zoom)" : "Modo Desktop"}
                 </Badge>
               </div>
@@ -933,9 +933,9 @@ function NovoContratoPage() {
                   previewDevice === "mobile" ? "max-w-[390px]" : "w-full"
                 }`}
               >
-                <div className="border-b border-border/50 pb-2 text-[11px] font-bold text-muted-foreground flex items-center justify-between">
+                <div className="border-b border-border/50 pb-2 text-xs font-bold text-muted-foreground flex items-center justify-between">
                   <span>{title || "Sem título"}</span>
-                  <span className="text-[10px] text-emerald-600">Leitura Limpa</span>
+                  <span className="text-xs text-emerald-600">Leitura Limpa</span>
                 </div>
                 <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 font-serif leading-relaxed text-xs">
                   <ReactMarkdown>{contentMarkdown}</ReactMarkdown>

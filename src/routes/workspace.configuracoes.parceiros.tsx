@@ -243,34 +243,34 @@ function ConfigParceirosPage() {
                       </h4>
                       <p className="text-xs text-muted-foreground font-mono">{acc.accountant_email}</p>
                       {acc.accountant_crc && (
-                        <span className="text-[10px] font-mono text-primary font-bold block mt-0.5">
+                        <span className="text-xs font-mono text-primary font-bold block mt-0.5">
                           CRC: {acc.accountant_crc}
                         </span>
                       )}
                     </div>
-                    <Badge variant="outline" className="text-[10px] text-emerald-500 border-emerald-500/30 bg-emerald-500/10">
+                    <Badge variant="outline" className="text-xs text-emerald-500 border-emerald-500/30 bg-emerald-500/10">
                       Ativo
                     </Badge>
                   </div>
 
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {perms.view_dre && (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         Ver DRE
                       </Badge>
                     )}
                     {perms.download_xml && (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         Baixar XMLs
                       </Badge>
                     )}
                     {perms.view_invoices && (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         Ver Notas
                       </Badge>
                     )}
                     {perms.view_settlement && (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         Liquidações
                       </Badge>
                     )}

@@ -823,7 +823,7 @@ Assinatura da Loja (Consignante)`;
 
                             {/* Detalhes de Encargos */}
                             {!isPaid && (fineAmount > 0 || interestAmount > 0 || discountAmount > 0) && (
-                              <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+                              <div className="text-xs text-muted-foreground flex items-center gap-2">
                                 <span>Nominal: {formatMoney(inst.original_amount_cents || inst.amount_cents)}</span>
                                 {fineAmount > 0 && <span className="text-rose-500">+Multa: {formatMoney(fineAmount)}</span>}
                                 {interestAmount > 0 && <span className="text-rose-500">+Juros: {formatMoney(interestAmount)}</span>}
@@ -840,7 +840,7 @@ Assinatura da Loja (Consignante)`;
                               {formatMoney(finalAmount)}
                             </div>
                             {isPaid && (
-                              <div className="text-[11px] text-emerald-600 flex items-center gap-0.5 justify-end">
+                              <div className="text-xs text-emerald-600 flex items-center gap-0.5 justify-end">
                                 <ShieldCheck className="h-3 w-3" /> Conciliado
                               </div>
                             )}
@@ -1117,7 +1117,7 @@ Assinatura da Loja (Consignante)`;
                           >
                             <div className="truncate pr-2">
                               <p className="font-medium text-foreground truncate">{item.name}</p>
-                              <p className="text-[11px] text-muted-foreground">Tam: {item.size}</p>
+                              <p className="text-xs text-muted-foreground">Tam: {item.size}</p>
                             </div>
                             <div className="text-right shrink-0">
                               <p className="font-semibold text-foreground">{formatMoney(item.priceCents)}</p>
@@ -1396,7 +1396,7 @@ Assinatura da Loja (Consignante)`;
                     <span className="text-xs font-semibold text-foreground block">
                       Lembrete Amigável
                     </span>
-                    <span className="text-[11px] text-muted-foreground block">
+                    <span className="text-xs text-muted-foreground block">
                       Avisa sobre o vencimento próximo da parcela com instruções de pagamento.
                     </span>
                   </div>
@@ -1414,7 +1414,7 @@ Assinatura da Loja (Consignante)`;
                     <span className="text-xs font-semibold text-foreground block">
                       ️ Aviso de Vencimento
                     </span>
-                    <span className="text-[11px] text-muted-foreground block">
+                    <span className="text-xs text-muted-foreground block">
                       Alerta sobre juros de mora e pede a regularização imediata da dívida.
                     </span>
                   </div>
@@ -1432,7 +1432,7 @@ Assinatura da Loja (Consignante)`;
                     <span className="text-xs font-semibold text-foreground block">
                       Oferta de Desconto para Quitação
                     </span>
-                    <span className="text-[11px] text-muted-foreground block">
+                    <span className="text-xs text-muted-foreground block">
                       Oferece um percentual de desconto caso o cliente quite a parcela hoje.
                     </span>
                   </div>
@@ -1510,7 +1510,7 @@ Assinatura da Loja (Consignante)`;
                       <span className="text-xs font-semibold text-foreground block">
                         {selectedCustomer.full_name}
                       </span>
-                      <span className="text-[11px] text-muted-foreground block">
+                      <span className="text-xs text-muted-foreground block">
                         {selectedCustomer.email || selectedCustomer.phone}
                       </span>
                     </div>
@@ -1546,7 +1546,7 @@ Assinatura da Loja (Consignante)`;
                         >
                           <div>
                             <span className="font-medium text-foreground block">{cust.full_name}</span>
-                            <span className="text-[11px] text-muted-foreground block">
+                            <span className="text-xs text-muted-foreground block">
                               {cust.email || cust.phone}
                             </span>
                           </div>
@@ -1618,7 +1618,7 @@ Assinatura da Loja (Consignante)`;
             {/* Taxas de Encargos */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
               <div className="space-y-1">
-                <Label className="text-[11px] text-muted-foreground">Juros Mensal (%)</Label>
+                <Label className="text-xs text-muted-foreground">Juros Mensal (%)</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -1630,7 +1630,7 @@ Assinatura da Loja (Consignante)`;
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[11px] text-muted-foreground">Multa Atraso (%)</Label>
+                <Label className="text-xs text-muted-foreground">Multa Atraso (%)</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -1642,7 +1642,7 @@ Assinatura da Loja (Consignante)`;
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[11px] text-muted-foreground">Carência (dias)</Label>
+                <Label className="text-xs text-muted-foreground">Carência (dias)</Label>
                 <Input
                   type="number"
                   min="0"
@@ -1867,7 +1867,7 @@ Assinatura da Loja (Consignante)`;
                     >
                       <div className="truncate">
                         <p className="font-semibold text-foreground truncate">{item.name}</p>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           Tam: {item.size} • {formatMoney(item.priceCents)}
                         </p>
                       </div>
@@ -1930,7 +1930,7 @@ Assinatura da Loja (Consignante)`;
                     )}
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/30">
+                <div className="flex justify-between text-xs text-muted-foreground pt-1 border-t border-border/30">
                   <span>Reintegradas ao Estoque:</span>
                   <span>
                     {

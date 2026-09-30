@@ -336,7 +336,7 @@ function WmsExpedicaoPage() {
                     <span className="font-mono font-bold text-sm text-primary">{batch.batch_code}</span>
                     <div className="flex items-center gap-1.5">
                       {isSelected && (
-                        <Badge className="text-[10px] bg-primary text-primary-foreground font-semibold">Ativo</Badge>
+                        <Badge className="text-xs bg-primary text-primary-foreground font-semibold">Ativo</Badge>
                       )}
                       <Badge variant="secondary" className="capitalize text-xs rounded-lg">{batch.status}</Badge>
                     </div>
@@ -355,7 +355,7 @@ function WmsExpedicaoPage() {
           <div className="mt-4 pt-4 border-t border-border/60 space-y-2">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold text-foreground">Pedidos no Lote ({selectedBatch.batch_code})</h4>
-              <span className="text-[11px] text-muted-foreground">{batchOrderIds.length} pedido(s)</span>
+              <span className="text-xs text-muted-foreground">{batchOrderIds.length} pedido(s)</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {batchOrderIds.map((oId) => {
@@ -364,14 +364,14 @@ function WmsExpedicaoPage() {
                   <div key={oId} className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border text-xs">
                     <div className="truncate pr-2">
                       <span className="font-mono font-bold text-foreground">#{matchedOrder?.public_token || oId.substring(0, 8)}</span>
-                      <p className="text-[11px] text-muted-foreground truncate">
+                      <p className="text-xs text-muted-foreground truncate">
                         {matchedOrder?.customer_snapshot?.name || "Cliente Final"}
                       </p>
                     </div>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] rounded-xl sm:rounded-lg gap-1.5 cursor-pointer shrink-0 font-medium"
+                      className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs rounded-xl sm:rounded-lg gap-1.5 cursor-pointer shrink-0 font-medium"
                       onClick={() => setSelectedShippingLabelOrderId(oId)}
                     >
                       <Printer className="size-3.5 text-primary" /> Etiqueta
@@ -420,7 +420,7 @@ function WmsExpedicaoPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-bold text-foreground">#{ord.external_order_id}</span>
-                    <Badge variant="outline" className="text-[10px] capitalize">
+                    <Badge variant="outline" className="text-xs capitalize">
                       {ord.platform}
                     </Badge>
                   </div>
@@ -429,7 +429,7 @@ function WmsExpedicaoPage() {
                 <div className="flex items-center justify-between sm:justify-end gap-3 pt-1 sm:pt-0 border-t border-border/40 sm:border-0">
                   <div className="text-left sm:text-right">
                     <p className="text-xs font-semibold text-foreground">{formatMoney(ord.total_amount_cents)}</p>
-                    <p className="text-[10px] text-muted-foreground">Taxa: {formatMoney(ord.marketplace_fee_cents)}</p>
+                    <p className="text-xs text-muted-foreground">Taxa: {formatMoney(ord.marketplace_fee_cents)}</p>
                   </div>
                   {ord.id && (
                     <Button
@@ -500,7 +500,7 @@ function WmsExpedicaoPage() {
                           <p className="text-xs font-bold text-foreground font-mono">
                             #{ord.public_token?.slice(0, 8) || ord.id.slice(0, 8)}
                           </p>
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {ord.customer_snapshot?.name || "Cliente"} • {ord.channel_origin || "Loja Online"}
                           </p>
                         </div>

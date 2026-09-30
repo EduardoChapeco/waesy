@@ -45,7 +45,7 @@ function WorkspaceAnunciosNovoErrorComponent({ error }: { error: any }) {
         </p>
       </div>
       {error?.message && (
-        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
           {error.message}
         </pre>
       )}
@@ -261,7 +261,7 @@ function NovoAnuncioPage() {
  <ImageIcon className="size-3.5 text-primary" />
  <span>Mídia da Campanha</span>
  </Label>
- <span className="text-[10px] text-muted-foreground font-mono">
+ <span className="text-xs text-muted-foreground font-mono">
  Enquadramento: {selectedFormatConfig.aspectLabel}
  </span>
  </div>
@@ -373,7 +373,7 @@ function NovoAnuncioPage() {
  <Icon className={cn("size-4", isSel ? "text-primary" : "text-muted-foreground")} />
  <span className="text-xs font-bold text-foreground">{obj.title}</span>
  </div>
- <p className="text-[10px] text-muted-foreground">{obj.desc}</p>
+ <p className="text-xs text-muted-foreground">{obj.desc}</p>
  </button>
  );
  })}
@@ -496,7 +496,7 @@ function NovoAnuncioPage() {
  <div className="flex items-center gap-2">
  <Palette className="size-4 text-primary shrink-0" />
  <span>Formato Visual</span>
- <Badge variant="outline" className="text-[10px] font-mono uppercase tracking-wider">
+ <Badge variant="outline" className="text-xs font-mono uppercase tracking-wider">
  {selectedFormatConfig.title} ({selectedFormatConfig.aspectLabel})
  </Badge>
  </div>
@@ -505,7 +505,7 @@ function NovoAnuncioPage() {
 
  {isFormatDrawerOpen && (
  <div className="mt-3 pt-3 border-t border-border/40 space-y-2">
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Selecione onde seu anúncio deve ser veiculado na plataforma:
  </p>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
@@ -523,7 +523,7 @@ function NovoAnuncioPage() {
  >
  <div>
  <p className="text-xs font-bold text-foreground">{f.title}</p>
- <p className="text-[11px] text-muted-foreground mt-0.5">{f.desc}</p>
+ <p className="text-xs text-muted-foreground mt-0.5">{f.desc}</p>
  </div>
  {format === f.id && (
  <CheckCircle2 className="size-4 text-primary shrink-0 ml-2" />
@@ -565,24 +565,24 @@ function NovoAnuncioPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="p-3 rounded-xl bg-muted/40 space-y-0.5">
- <span className="text-[10px] text-muted-foreground uppercase font-bold">
+ <span className="text-xs text-muted-foreground uppercase font-bold">
  Alcance Diário
  </span>
  <p className="text-sm font-black text-foreground">
  {estimatedDailyReachMin.toLocaleString("pt-BR")} –{" "}
  {estimatedDailyReachMax.toLocaleString("pt-BR")}
  </p>
- <p className="text-[10px] text-muted-foreground">pessoas/dia</p>
+ <p className="text-xs text-muted-foreground">pessoas/dia</p>
  </div>
 
  <div className="p-3 rounded-xl bg-muted/40 space-y-0.5">
- <span className="text-[10px] text-muted-foreground uppercase font-bold">
+ <span className="text-xs text-muted-foreground uppercase font-bold">
  Cliques Estimados
  </span>
  <p className="text-sm font-black text-foreground">
  ~{estimatedClicks.toLocaleString("pt-BR")}
  </p>
- <p className="text-[10px] text-muted-foreground">cliques/dia</p>
+ <p className="text-xs text-muted-foreground">cliques/dia</p>
  </div>
  </div>
  </div>
@@ -594,7 +594,7 @@ function NovoAnuncioPage() {
  <Eye className="size-3.5 text-primary" />
  Prévia da Vitrine
  </span>
- <Badge variant="secondary" className="text-[10px] font-mono">
+ <Badge variant="secondary" className="text-xs font-mono">
  {selectedFormatConfig.title}
  </Badge>
  </div>
@@ -615,7 +615,7 @@ function NovoAnuncioPage() {
  className="size-full object-cover"
  />
  <div className="absolute top-2 left-2">
- <Badge className="bg-foreground/80 text-background text-[9px] font-bold">
+ <Badge className="bg-foreground/80 text-background text-xs font-bold">
  Patrocinado
  </Badge>
  </div>
@@ -639,7 +639,7 @@ function NovoAnuncioPage() {
  <p className="text-xs font-bold text-foreground line-clamp-1">
  {headline || title || "Título da sua chamada"}
  </p>
- <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+ <p className="text-xs text-muted-foreground flex items-center gap-1">
  <MapPin className="size-3" />
  <span>{location}</span> • <span>Raio de {radiusKm}km</span>
  </p>

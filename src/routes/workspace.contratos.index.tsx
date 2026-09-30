@@ -221,26 +221,26 @@ function ContractsDashboard() {
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <Badge variant="outline" className="text-[10px] font-medium bg-muted/40">
+                      <Badge variant="outline" className="text-xs font-medium bg-muted/40">
                         {categoryLabel}
                       </Badge>
                       {contract.is_settled && (
-                        <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-600 bg-emerald-500/5">
+                        <Badge variant="outline" className="text-xs border-emerald-500/40 text-emerald-600 bg-emerald-500/5">
                           Quitado âœ“
                         </Badge>
                       )}
                     </div>
 
                     {isSigned ? (
-                      <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] font-semibold gap-1">
+                      <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold gap-1">
                         <CheckCircle2 size={11} /> Assinado
                       </Badge>
                     ) : isSigning ? (
-                      <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-semibold gap-1">
+                      <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-semibold gap-1">
                         <Clock size={11} /> Em Assinatura
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] text-muted-foreground font-medium">
+                      <Badge variant="outline" className="text-xs text-muted-foreground font-medium">
                         Rascunho
                       </Badge>
                     )}

@@ -249,7 +249,7 @@ function WorkspaceStoreBannersPage() {
                   {b.city_filter && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] font-semibold bg-background/80 backdrop-blur-sm gap-1 border-border/60"
+                      className="text-xs font-semibold bg-background/80 backdrop-blur-sm gap-1 border-border/60"
                     >
                       <MapPin className="size-2.5 text-primary" />
                       <span>{b.city_filter}</span>
@@ -257,7 +257,7 @@ function WorkspaceStoreBannersPage() {
                   )}
                   <Badge
                     variant={b.is_active ? "default" : "secondary"}
-                    className="text-[10px] font-bold"
+                    className="text-xs font-bold"
                   >
                     {b.is_active ? "Ativo" : "Pausado"}
                   </Badge>
@@ -267,7 +267,7 @@ function WorkspaceStoreBannersPage() {
                 <div>
                   <h3 className="font-bold text-sm text-foreground truncate">{b.title}</h3>
                   {b.target_url && (
-                    <p className="text-[11px] text-muted-foreground truncate font-mono mt-0.5">
+                    <p className="text-xs text-muted-foreground truncate font-mono mt-0.5">
                       Link: {b.target_url}
                     </p>
                   )}
@@ -276,7 +276,7 @@ function WorkspaceStoreBannersPage() {
                   <Badge
                     variant={b.is_active ? "default" : "outline"}
                     className={cn(
-                      "text-[10px] font-semibold px-2 py-0.5 rounded-full",
+                      "text-xs font-semibold px-2 py-0.5 rounded-full",
                       b.is_active
                         ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                         : "text-muted-foreground"
@@ -338,7 +338,7 @@ function WorkspaceStoreBannersPage() {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Defina se este banner é focado nos clientes de uma cidade específica ou para todos os visitantes.
             </p>
           </div>

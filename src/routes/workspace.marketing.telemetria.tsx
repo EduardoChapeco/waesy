@@ -88,29 +88,29 @@ function LeadRow({ lead, onStatusChange }: { lead: WhatsAppLeadDTO; onStatusChan
  <td className="py-3 px-3">
  <div className="flex flex-col gap-0.5">
  <span className="font-bold text-foreground text-xs">{lead.entity_title || "—"}</span>
- <span className="text-[10px] text-muted-foreground font-mono">{lead.lead_code}</span>
+ <span className="text-xs text-muted-foreground font-mono">{lead.lead_code}</span>
  </div>
  </td>
  <td className="py-3 px-3">
- <Badge variant="outline" className="text-[9px] font-mono font-bold uppercase px-1.5">
+ <Badge variant="outline" className="text-xs font-mono font-bold uppercase px-1.5">
  {ENTITY_LABELS[lead.entity_type] || lead.entity_type}
  </Badge>
  </td>
  <td className="py-3 px-3 font-mono text-xs text-muted-foreground">{maskedPhone}</td>
  <td className="py-3 px-3">
- <Badge variant="outline" className={`text-[10px] font-bold w-fit ${statusCfg.color}`}>
+ <Badge variant="outline" className={`text-xs font-bold w-fit ${statusCfg.color}`}>
  {statusCfg.label}
  </Badge>
  </td>
  <td className="py-3 px-3">
- <Badge variant="outline" className="text-[9px] font-mono uppercase px-1.5">
+ <Badge variant="outline" className="text-xs font-mono uppercase px-1.5">
  {lead.device_type}
  </Badge>
  </td>
  <td className="py-3 px-3 text-xs text-muted-foreground font-mono">{date}</td>
  <td className="py-3 px-3">
  <select
- className="text-[10px] rounded-lg bg-background px-2 py-1 font-bold text-foreground cursor-pointer"
+ className="text-xs rounded-lg bg-background px-2 py-1 font-bold text-foreground cursor-pointer"
  value={lead.status}
  onChange={(e) => onStatusChange(lead.id, e.target.value)}
  >
@@ -165,7 +165,7 @@ function WorkspaceTelemetriaPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div>
  <div className="flex items-center gap-2">
- <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+ <span className="px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
  Telemetria e Analytics
  </span>
  <span className="text-xs text-muted-foreground font-mono">Dados Auditados em Tempo Real</span>
@@ -230,7 +230,7 @@ function WorkspaceTelemetriaPage() {
  {card.icon}
  </div>
  <p className="text-2xl font-black text-foreground">{card.value}</p>
- <p className="text-[11px] text-muted-foreground">{card.sub}</p>
+ <p className="text-xs text-muted-foreground">{card.sub}</p>
  </div>
  ))}
  </div>
@@ -272,7 +272,7 @@ function WorkspaceTelemetriaPage() {
           {wa.top_items.slice(0, 5).map((item: any, idx: number) => (
  <div key={`${item.entity_id}-${idx}`} className="flex items-center justify-between gap-2 text-xs py-1.5 last:border-0">
  <div className="flex items-center gap-2 min-w-0">
- <span className="size-5 shrink-0 rounded-full bg-muted flex items-center justify-center font-black text-[10px] text-muted-foreground">{idx + 1}</span>
+ <span className="size-5 shrink-0 rounded-full bg-muted flex items-center justify-center font-black text-xs text-muted-foreground">{idx + 1}</span>
  <span className="font-semibold text-foreground truncate">{item.title || "—"}</span>
  </div>
  <div className="flex items-center gap-1.5 shrink-0">
@@ -328,7 +328,7 @@ function WorkspaceTelemetriaPage() {
  <thead>
  <tr className=" text-muted-foreground">
  {["Anúncio / Código", "Tipo", "Telefone", "Status", "Dispositivo", "Data", "Atualizar"].map((h) => (
- <th key={h} className="py-3 px-3 font-bold uppercase tracking-wider text-[10px]">{h}</th>
+ <th key={h} className="py-3 px-3 font-bold uppercase tracking-wider text-xs">{h}</th>
  ))}
  </tr>
  </thead>
@@ -341,7 +341,7 @@ function WorkspaceTelemetriaPage() {
  </div>
  )}
 
- <div className="flex items-center gap-2 pt-2 text-[11px] text-muted-foreground ">
+ <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground ">
  <ShieldCheck size={14} weight="bold" className="text-emerald-500 shrink-0" />
  <span>Telefones mascarados (LGPD). Código rastreável injetado em cada mensagem para prova de conversão auditável.</span>
  </div>
@@ -365,7 +365,7 @@ function WorkspaceTelemetriaPage() {
  {card.icon}
  </div>
  <p className="text-2xl font-black text-foreground">{card.value}</p>
- <p className="text-[11px] text-muted-foreground">{card.sub}</p>
+ <p className="text-xs text-muted-foreground">{card.sub}</p>
  </div>
  ))}
  </div>
@@ -392,7 +392,7 @@ function WorkspaceTelemetriaPage() {
  <thead>
  <tr className=" text-muted-foreground">
  {["Patrocinador", "Tier", "Impressões", "Únicos", "Tempo Médio", "Scroll 50%", "Cliques", "CTR"].map((h) => (
- <th key={h} className="py-3 px-3 font-bold uppercase tracking-wider text-[10px]">{h}</th>
+ <th key={h} className="py-3 px-3 font-bold uppercase tracking-wider text-xs">{h}</th>
  ))}
  </tr>
  </thead>
@@ -401,7 +401,7 @@ function WorkspaceTelemetriaPage() {
  <tr key={sp.sponsor_id} className="hover:bg-muted/30 transition-colors">
  <td className="py-3.5 px-3 font-bold text-foreground">{sp.sponsor_name}</td>
  <td className="py-3.5 px-3">
- <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-primary/10 text-primary">{sp.tier}</span>
+ <span className="px-2 py-0.5 rounded-full text-xs font-black uppercase bg-primary/10 text-primary">{sp.tier}</span>
  </td>
  <td className="py-3.5 px-3 font-mono">{sp.total_impressions}</td>
  <td className="py-3.5 px-3 font-mono">{sp.unique_views}</td>

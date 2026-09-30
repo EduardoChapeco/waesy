@@ -256,7 +256,7 @@ function FrotaEntregasPage() {
  <Bike className="size-4 text-primary" />
  <span>Pedidos Prontos para Entrega ({pendingOrders.length})</span>
  </div>
- <Badge variant="outline" className="text-[10px] uppercase font-mono">
+ <Badge variant="outline" className="text-xs uppercase font-mono">
  Fila de Expedição
  </Badge>
  </div>
@@ -275,7 +275,7 @@ function FrotaEntregasPage() {
  <p className="text-xs font-semibold text-foreground mt-1">
  {ord.customer_snapshot?.name || "Cliente"}
  </p>
- <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+ <p className="text-xs text-muted-foreground truncate mt-0.5">
  {ord.shipping_address?.street ? `${ord.shipping_address.street}, ${ord.shipping_address.number || ""}` : "Entrega Delivery"}
  </p>
  </div>
@@ -479,15 +479,15 @@ function FrotaEntregasPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-muted/40 p-2.5 rounded-xl text-xs">
  <div>
- <span className="text-[10px] text-muted-foreground">Entregador</span>
+ <span className="text-xs text-muted-foreground">Entregador</span>
  <p className="font-semibold text-foreground truncate">{d.courier_name}</p>
  </div>
  <div>
- <span className="text-[10px] text-muted-foreground">Taxa</span>
+ <span className="text-xs text-muted-foreground">Taxa</span>
  <p className="font-semibold text-foreground">{formatMoney(d.delivery_fee_cents)}</p>
  </div>
  <div>
- <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+ <span className="text-xs text-muted-foreground flex items-center gap-0.5">
  <KeyRound className="size-2.5" /> PIN Cliente
  </span>
  <p className="font-mono font-bold text-foreground">{d.pin_code}</p>
@@ -658,7 +658,7 @@ function FrotaEntregasPage() {
  <div key={tbl.id} className="rounded-2xl bg-card p-4 space-y-3 ">
  <div className="flex items-start justify-between">
  <div>
- <Badge variant="outline" className="text-[10px] uppercase font-mono mb-1">
+ <Badge variant="outline" className="text-xs uppercase font-mono mb-1">
  {tbl.service_type}
  </Badge>
  <h4 className="text-sm font-semibold text-foreground">{tbl.name}</h4>
@@ -677,19 +677,19 @@ function FrotaEntregasPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-muted/40 p-2.5 rounded-xl text-xs">
  <div>
- <span className="text-[10px] text-muted-foreground">Taxa Partida</span>
+ <span className="text-xs text-muted-foreground">Taxa Partida</span>
  <p className="font-semibold text-foreground">{formatMoney(tbl.base_fee_cents)}</p>
  </div>
  <div>
- <span className="text-[10px] text-muted-foreground">Por KM</span>
+ <span className="text-xs text-muted-foreground">Por KM</span>
  <p className="font-semibold text-foreground">{formatMoney(tbl.km_rate_cents)}/km</p>
  </div>
  <div>
- <span className="text-[10px] text-muted-foreground">Tarifa Mínima</span>
+ <span className="text-xs text-muted-foreground">Tarifa Mínima</span>
  <p className="font-semibold text-foreground">{formatMoney(tbl.min_fare_cents)}</p>
  </div>
  <div>
- <span className="text-[10px] text-muted-foreground">Ajudante</span>
+ <span className="text-xs text-muted-foreground">Ajudante</span>
  <p className="font-semibold text-foreground">{formatMoney(tbl.helper_fee_cents)}</p>
  </div>
  </div>

@@ -208,53 +208,53 @@ function HrFinancePage() {
       {/* ── KPIS CONSOLIDADOS DE FOLHA ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Wallet className="size-3.5 text-primary" />
             Total Líquido a Pagar
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {formatMoney(kpis.totalToPayCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Saldos positivos a transferir
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <ArrowDownRight className="size-3.5 text-rose-600" />
             Total Vales Concedidos (-)
           </span>
           <div className="text-2xl font-mono font-bold text-rose-600 dark:text-rose-400">
             -{formatMoney(kpis.totalAdvancesCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Adiantamentos e retiradas da folha
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <ArrowUpRight className="size-3.5 text-emerald-600" />
             Bônus & Ajustes (+)
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             +{formatMoney(kpis.totalAdjustmentsCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Gratificações e comissões avulsas
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Users className="size-3.5 text-foreground" />
             Colaboradores na Folha
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.staffCount}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Membros ativos cadastrados
           </p>
         </div>
@@ -329,10 +329,10 @@ function HrFinancePage() {
                 <div>
                   <h3 className="font-bold text-sm text-foreground">{emp.name}</h3>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <Badge variant="outline" className="text-[10px] font-bold capitalize">
+                    <Badge variant="outline" className="text-xs font-bold capitalize">
                       {emp.role}
                     </Badge>
-                    <span className="text-[11px] text-muted-foreground font-mono">
+                    <span className="text-xs text-muted-foreground font-mono">
                       {emp.recentRecords?.length || 0} lançamento(s) recente(s)
                     </span>
                   </div>
@@ -341,7 +341,7 @@ function HrFinancePage() {
 
               <div className="flex flex-wrap items-center justify-between sm:justify-end gap-4 border-t md:border-t-0 pt-3 md:pt-0 border-border/40">
                 <div className="text-left md:text-right">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground">Saldo Atual a Receber</p>
+                  <p className="text-xs uppercase font-bold text-muted-foreground">Saldo Atual a Receber</p>
                   <p
                     className={`text-xl font-mono font-bold ${
                       emp.balanceCents > 0
@@ -403,7 +403,7 @@ function HrFinancePage() {
               <div>
                 <h4 className="font-bold text-base text-foreground">{statementData.employee.name}</h4>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <Badge variant="outline" className="text-[10px] font-bold capitalize">
+                  <Badge variant="outline" className="text-xs font-bold capitalize">
                     {statementData.employee.role}
                   </Badge>
                   <span className="text-xs text-muted-foreground font-mono">{statementData.employee.email}</span>
@@ -414,21 +414,21 @@ function HrFinancePage() {
             {/* Resumo Financeiro */}
             <div className="grid grid-cols-3 gap-3">
               <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">Créditos (+)</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase">Créditos (+)</span>
                 <div className="text-sm font-mono font-bold text-emerald-600">
                   +{formatMoney(statementData.summary.totalCreditsCents)}
                 </div>
               </div>
 
               <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">Vales / Débitos (-)</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase">Vales / Débitos (-)</span>
                 <div className="text-sm font-mono font-bold text-rose-600">
                   -{formatMoney(statementData.summary.totalDebitsCents)}
                 </div>
               </div>
 
               <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">Saldo Líquido</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase">Saldo Líquido</span>
                 <div className={`text-sm font-mono font-bold ${
                   statementData.summary.netBalanceCents > 0
                     ? "text-emerald-600"
@@ -451,20 +451,20 @@ function HrFinancePage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border/60 hover:bg-transparent">
-                      <TableHead className="text-[11px] font-bold">Data/Hora</TableHead>
-                      <TableHead className="text-[11px] font-bold">Tipo</TableHead>
-                      <TableHead className="text-[11px] font-bold">Descrição</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold font-mono">Valor</TableHead>
+                      <TableHead className="text-xs font-bold">Data/Hora</TableHead>
+                      <TableHead className="text-xs font-bold">Tipo</TableHead>
+                      <TableHead className="text-xs font-bold">Descrição</TableHead>
+                      <TableHead className="text-right text-xs font-bold font-mono">Valor</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {(statementData.records || []).map((r: any) => (
                       <TableRow key={r.id} className="border-border/40 text-xs">
-                        <TableCell className="font-mono text-muted-foreground text-[11px]">
+                        <TableCell className="font-mono text-muted-foreground text-xs">
                           {formatDateTime(r.created_at)}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`text-[10px] font-bold ${
+                          <Badge variant="outline" className={`text-xs font-bold ${
                             r.amount_cents > 0
                               ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/10"
                               : "text-rose-600 border-rose-500/30 bg-rose-500/10"

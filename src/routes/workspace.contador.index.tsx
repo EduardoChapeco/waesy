@@ -84,7 +84,7 @@ function AccountantPortalPage() {
     <div className="space-y-6 pb-12">
       <PageHeader
         title="Contabilidade"
-        subtitle="Exportação de notas fiscais e relatórios fiscais mensais."
+        subtitle="Exportação Fiscal"
       />
 
       {/* Corporate Summary & Share Box */}
@@ -100,7 +100,7 @@ function AccountantPortalPage() {
           <p className="text-xs font-mono text-muted-foreground">
             CNPJ: {loaderData?.config?.cnpj || "Inexistente"}
           </p>
-          <Badge variant="outline" className="text-[11px] font-medium mt-1">
+          <Badge variant="outline" className="text-xs font-medium mt-1">
             Regime: {loaderData?.config?.regime_tributario || "Simples Nacional"}
           </Badge>
         </div>
@@ -148,7 +148,7 @@ function AccountantPortalPage() {
           <div>
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               Gerar Link de Acesso Seguro para o Contador
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
                 Expira em 7 dias
               </span>
             </h3>
@@ -232,7 +232,7 @@ function AccountantPortalPage() {
                   </TableCell>
                   <TableCell className="text-xs">
                     <p className="font-medium text-foreground">{inv.tomador_nome || "Consumidor Final"}</p>
-                    <p className="text-[11px] text-muted-foreground font-mono">{inv.tomador_documento || "---"}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{inv.tomador_documento || "---"}</p>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDateTime(inv.issued_at || inv.created_at)}
@@ -247,7 +247,7 @@ function AccountantPortalPage() {
                           href={inv.danfe_pdf_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] h-7 px-2.5 rounded-lg border border-border bg-background hover:bg-muted font-medium text-foreground transition-colors"
+                          className="inline-flex items-center gap-1 text-xs h-7 px-2.5 rounded-lg border border-border bg-background hover:bg-muted font-medium text-foreground transition-colors"
                         >
                           DANFE <ExternalLink className="w-3 h-3 text-muted-foreground" />
                         </a>
@@ -257,7 +257,7 @@ function AccountantPortalPage() {
                           href={inv.xml_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] h-7 px-2.5 rounded-lg border border-border bg-background hover:bg-muted font-medium text-foreground transition-colors"
+                          className="inline-flex items-center gap-1 text-xs h-7 px-2.5 rounded-lg border border-border bg-background hover:bg-muted font-medium text-foreground transition-colors"
                         >
                           XML <Download className="w-3 h-3 text-muted-foreground" />
                         </a>

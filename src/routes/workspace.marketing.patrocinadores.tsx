@@ -157,7 +157,7 @@ function WorkspacePatrocinadoresPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+            <span className="px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
               Marketing e Monetização
             </span>
             <span className="text-xs text-muted-foreground font-mono">Rede Display e Telemetria</span>
@@ -208,7 +208,7 @@ function WorkspacePatrocinadoresPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                      className={`px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider ${
                         sp.tier === "gold"
                           ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
                           : sp.tier === "silver"
@@ -217,12 +217,12 @@ function WorkspacePatrocinadoresPage() {
                       }`}
                     >
                       {sp.tier === "gold"
-                        ? "★ Master Gold"
+                        ? "Master Gold"
                         : sp.tier === "silver"
                         ? "Silver"
                         : "Padrão"}
                     </span>
-                    <Badge variant={sp.active ? "default" : "secondary"} className="text-[10px]">
+                    <Badge variant={sp.active ? "default" : "secondary"} className="text-xs">
                       {sp.active ? "Ativo" : "Pausado"}
                     </Badge>
                   </div>
@@ -247,7 +247,7 @@ function WorkspacePatrocinadoresPage() {
                           {sp.description}
                         </p>
                       ) : (
-                        <p className="text-[10px] text-muted-foreground font-mono">
+                        <p className="text-xs text-muted-foreground font-mono">
                           {sp.video_url ? "Criativo Vídeo" : sp.banner_url ? "Criativo Imagem" : "Formato Texto"}
                         </p>
                       )}
@@ -257,7 +257,7 @@ function WorkspacePatrocinadoresPage() {
                   {/* Telemetria em Tempo Real */}
                   <div className="grid grid-cols-3 gap-2 pt-2 border-t text-center font-mono">
                     <div className="p-2 rounded-xl bg-muted/40">
-                      <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+                      <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                         <Eye className="size-3" />
                         <span>Views</span>
                       </div>
@@ -265,7 +265,7 @@ function WorkspacePatrocinadoresPage() {
                     </div>
 
                     <div className="p-2 rounded-xl bg-muted/40">
-                      <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+                      <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                         <MousePointerClick className="size-3" />
                         <span>Cliques</span>
                       </div>
@@ -273,7 +273,7 @@ function WorkspacePatrocinadoresPage() {
                     </div>
 
                     <div className="p-2 rounded-xl bg-muted/40">
-                      <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+                      <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                         <TrendingUp className="size-3 text-emerald-500" />
                         <span>CTR</span>
                       </div>
@@ -382,7 +382,7 @@ function WorkspacePatrocinadoresPage() {
                   onChange={(e) => setTier(e.target.value as any)}
                   className="w-full h-11 px-3 rounded-xl bg-background text-xs font-semibold border"
                 >
-                  <option value="gold">★ Master Gold</option>
+                  <option value="gold">Master Gold</option>
                   <option value="silver">Silver</option>
                   <option value="standard">Standard</option>
                   <option value="supporter">Apoiador</option>
@@ -436,7 +436,7 @@ function WorkspacePatrocinadoresPage() {
                 onChange={(e) => setVideoUrl(e.target.value)}
                 className="rounded-xl h-11 font-mono text-xs"
               />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Se informado, o banner executará o vídeo em loop suave e silencioso.
               </p>
             </div>
@@ -463,7 +463,7 @@ function WorkspacePatrocinadoresPage() {
                 onChange={(e) => setSponsorStoreId(e.target.value)}
                 className="rounded-xl h-11 font-mono text-xs"
               />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Vincule o patrocinador ao portal de uma empresa do app para que ela consulte seus relatórios direto no painel corporativo.
               </p>
             </div>

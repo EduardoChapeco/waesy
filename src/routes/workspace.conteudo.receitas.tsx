@@ -270,7 +270,7 @@ function WorkspaceRecipesManagementPage() {
             <h1 className="text-xl font-bold text-foreground tracking-tight">
               Curadoria e Gestão de Receitas
             </h1>
-            <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5">
+            <Badge variant="outline" className="text-xs font-mono py-0 px-1.5">
               {recipes.length} extrações
             </Badge>
           </div>
@@ -292,19 +292,19 @@ function WorkspaceRecipesManagementPage() {
       {/* ── 2. Quick KPIs ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-3.5 rounded-xl border border-border/50 bg-card space-y-1">
-          <span className="text-[11px] font-mono uppercase text-muted-foreground">Total Extraídas</span>
+          <span className="text-xs font-mono uppercase text-muted-foreground">Total Extraídas</span>
           <p className="text-xl font-bold text-foreground">{recipes.length}</p>
         </div>
         <div className="p-3.5 rounded-xl border border-border/50 bg-card space-y-1">
-          <span className="text-[11px] font-mono uppercase text-emerald-600">Ativas na Vitrine</span>
+          <span className="text-xs font-mono uppercase text-emerald-600">Ativas na Vitrine</span>
           <p className="text-xl font-bold text-emerald-600">{activeCount}</p>
         </div>
         <div className="p-3.5 rounded-xl border border-border/50 bg-card space-y-1">
-          <span className="text-[11px] font-mono uppercase text-amber-600">Ocultas / Moderação</span>
+          <span className="text-xs font-mono uppercase text-amber-600">Ocultas / Moderação</span>
           <p className="text-xl font-bold text-amber-600">{hiddenCount}</p>
         </div>
         <div className="p-3.5 rounded-xl border border-border/50 bg-card space-y-1">
-          <span className="text-[11px] font-mono uppercase text-muted-foreground">Categorias Ativas</span>
+          <span className="text-xs font-mono uppercase text-muted-foreground">Categorias Ativas</span>
           <p className="text-xl font-bold text-foreground">
             {new Set(recipes.map((r) => r.category)).size}
           </p>
@@ -388,11 +388,11 @@ function WorkspaceRecipesManagementPage() {
 
                   <div className="min-w-0 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-mono font-bold uppercase text-primary">
+                      <span className="text-xs font-mono font-bold uppercase text-primary">
                         {rec.category || "Geral"}
                       </span>
                       {rec.total_time && (
-                        <span className="text-[10px] font-mono text-muted-foreground flex items-center gap-1">
+                        <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
                           <Clock className="size-3" />
                           {rec.total_time}
                         </span>
@@ -400,7 +400,7 @@ function WorkspaceRecipesManagementPage() {
                       <Badge
                         variant={isHidden ? "secondary" : "outline"}
                         className={cn(
-                          "text-[9px] uppercase font-mono py-0 px-1.5",
+                          "text-xs uppercase font-mono py-0 px-1.5",
                           isHidden
                             ? "bg-zinc-800 text-zinc-300"
                             : "border-emerald-500/40 text-emerald-600"
@@ -414,7 +414,7 @@ function WorkspaceRecipesManagementPage() {
                       {rec.title}
                     </h4>
 
-                    <p className="text-[11px] text-muted-foreground truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {rec.ingredients.length} ingredientes • {rec.instructions.length} passos de preparo
                       {rec.source_name && ` • Fonte: ${rec.source_name}`}
                     </p>
@@ -562,7 +562,7 @@ function WorkspaceRecipesManagementPage() {
             <div className="space-y-1">
               <label className="font-semibold text-foreground flex items-center justify-between">
                 <span>Ingredientes (um por linha)</span>
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="text-xs text-muted-foreground font-mono">
                   {editForm.ingredientsText.split("\n").filter(Boolean).length} itens
                 </span>
               </label>
@@ -578,7 +578,7 @@ function WorkspaceRecipesManagementPage() {
             <div className="space-y-1">
               <label className="font-semibold text-foreground flex items-center justify-between">
                 <span>Modo de Preparo (um passo por linha)</span>
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="text-xs text-muted-foreground font-mono">
                   {editForm.instructionsText.split("\n").filter(Boolean).length} passos
                 </span>
               </label>

@@ -152,20 +152,20 @@ function WorkspaceGroupTourDetailPage() {
  <h1 className="text-sm font-bold text-foreground truncate max-w-xs sm:max-w-md">
  {tour.title}
  </h1>
- <Badge variant="outline" className="text-[10px] font-mono font-bold">
+ <Badge variant="outline" className="text-xs font-mono font-bold">
  {tour.destination}
  </Badge>
  {isSaving ? (
- <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono">
+ <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
  <Loader2 className="size-3 animate-spin text-primary" /> Salvando...
  </span>
  ) : (
- <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-mono">
+ <span className="flex items-center gap-1 text-xs text-emerald-600 font-mono">
  <Check className="size-3" /> Atualizado
  </span>
  )}
  </div>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  SaÃ­da: {tour.departure_date} Ã s {tour.departure_time} de {tour.departure_city} â€¢ Retorno: {tour.return_date}
  </p>
  </div>
@@ -323,7 +323,7 @@ function WorkspaceGroupTourDetailPage() {
  <div className="hidden">
  <div id="manifesto-antt-view" className="p-10 bg-white text-slate-900 font-sans space-y-6">
  <div className="text-center pb-4 border-b-2 border-slate-900 space-y-1">
- <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">
+ <span className="text-xs font-mono font-bold uppercase tracking-widest text-slate-500">
  AgÃªncia Nacional de Transportes Terrestres (ANTT) / DER
  </span>
  <h1 className="text-xl font-black uppercase text-slate-900">
@@ -336,21 +336,21 @@ function WorkspaceGroupTourDetailPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
  <div>
- <span className="text-slate-500 block text-[10px]">Data e Hora SaÃ­da:</span>
+ <span className="text-slate-500 block text-xs">Data e Hora SaÃ­da:</span>
  <strong>{tour.departure_date} Ã s {tour.departure_time}</strong>
  </div>
  <div>
- <span className="text-slate-500 block text-[10px]">Empresa / Placa:</span>
+ <span className="text-slate-500 block text-xs">Empresa / Placa:</span>
  <strong>{busCompany || "A Definir"} ({busPlate || "S/ Placa"})</strong>
  </div>
  <div>
- <span className="text-slate-500 block text-[10px]">Motorista:</span>
+ <span className="text-slate-500 block text-xs">Motorista:</span>
  <strong>{driverName || "A Definir"}</strong>
  </div>
  </div>
 
  <table className="w-full text-xs text-left border border-slate-200">
- <thead className="bg-slate-100 font-bold border-b border-slate-200 text-[10px] uppercase font-mono">
+ <thead className="bg-slate-100 font-bold border-b border-slate-200 text-xs uppercase font-mono">
  <tr>
  <th className="p-2 border-r">Poltrona</th>
  <th className="p-2 border-r">Nome Completo do Passageiro</th>
@@ -372,7 +372,7 @@ function WorkspaceGroupTourDetailPage() {
  </tbody>
  </table>
 
- <div className="pt-6 border-t border-slate-200 flex justify-between text-[10px] text-slate-500 font-mono">
+ <div className="pt-6 border-t border-slate-200 flex justify-between text-xs text-slate-500 font-mono">
  <span>Total de Passageiros Embarcados: {occupiedSeats.length}</span>
  <span>Documento emitido digitalmente pela plataforma Waesy</span>
  </div>

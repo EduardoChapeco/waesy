@@ -407,7 +407,7 @@ export default function TableReservationsPage() {
  {/* Label + lugares */}
  <div>
  <p className={cn("text-xs font-black leading-none", style.text)}>{table.label}</p>
- <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+ <p className="text-xs text-muted-foreground font-mono mt-0.5">
  {table.seats} lugares
  </p>
  </div>
@@ -415,7 +415,7 @@ export default function TableReservationsPage() {
  {/* Badge de status */}
  <span
  className={cn(
- "absolute top-2 right-2 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full border",
+ "absolute top-2 right-2 text-xs font-bold uppercase px-1.5 py-0.5 rounded-full border",
  style.badgeCn,
  )}
  >
@@ -424,7 +424,7 @@ export default function TableReservationsPage() {
 
  {/* Nome do cliente (se reservada/acomodada) */}
  {reservation && (
- <p className={cn("text-[10px] font-bold truncate max-w-full px-1", style.text)}>
+ <p className={cn("text-xs font-bold truncate max-w-full px-1", style.text)}>
  {reservation.customer_name?.split(" ")[0]}
  {" · "}
  {reservation.reservation_time}
@@ -436,7 +436,7 @@ export default function TableReservationsPage() {
  </div>
 
  {/* Legenda de área */}
- <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+ <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
  <span className="font-mono">↑ Norte — Entrada principal</span>
  <span className="font-bold">{salonTables.length} mesas · {salonTables.reduce((a, b) => a + b.seats, 0)} lugares total</span>
  </div>
@@ -504,11 +504,11 @@ export default function TableReservationsPage() {
  {r.party_size} {r.party_size === 1 ? "pessoa" : "pessoas"}
  </div>
  {r.assigned_table ? (
- <Badge variant="outline" className="text-[10px] font-mono mt-0.5">
+ <Badge variant="outline" className="text-xs font-mono mt-0.5">
  {r.assigned_table}
  </Badge>
  ) : (
- <span className="text-[11px] text-muted-foreground italic">Sem mesa definida</span>
+ <span className="text-xs text-muted-foreground italic">Sem mesa definida</span>
  )}
  </TableCell>
  <TableCell>
@@ -557,7 +557,7 @@ export default function TableReservationsPage() {
  }
  disabled={isOpeningComanda}
  className="text-xs font-bold gap-1 text-primary border-primary/30 hover:bg-primary/5 cursor-pointer"
- title="Abrir comanda no PDV e lançar pedidos"
+ title="Abrir Comanda PDV"
  >
  <Receipt className="size-3.5" /> Comanda PDV
  </Button>
@@ -759,7 +759,7 @@ function ReservationStatusBadge({ status }: { status: string }) {
  };
  const cfg = map[status] || { label: status, cn: "bg-muted/60 text-muted-foreground border-border/60" };
  return (
- <span className={cn("text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg border", cfg.cn)}>
+ <span className={cn("text-xs font-bold uppercase px-2 py-0.5 rounded-lg border", cfg.cn)}>
  {cfg.label}
  </span>
  );
@@ -832,8 +832,8 @@ function ReservationForm({
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-muted-foreground">Nome do Cliente *</Label>
  {isCrmLinked && (
- <Badge variant="secondary" className="text-[10px] font-bold bg-primary/10 text-primary border-primary/20">
- ✓ Vinculado ao CRM
+ <Badge variant="secondary" className="text-xs font-bold bg-primary/10 text-primary border-primary/20">
+ Vinculado ao CRM
  </Badge>
  )}
  </div>
@@ -864,11 +864,11 @@ function ReservationForm({
  >
  <div>
  <p className="font-bold text-foreground">{c.fullName || c.name}</p>
- <p className="text-[11px] text-muted-foreground font-mono">
+ <p className="text-xs text-muted-foreground font-mono">
  {c.phone ? `Whats: ${c.phone}` : "Sem telefone"} {c.document && `• CPF: ${c.document}`}
  </p>
  </div>
- <Badge variant="outline" className="text-[9px] font-mono">
+ <Badge variant="outline" className="text-xs font-mono">
  Usar
  </Badge>
  </div>

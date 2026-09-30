@@ -389,7 +389,7 @@ function WorkspaceCandidatesPage() {
             <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground truncate">
               Candidaturas
             </h1>
-            <p className="text-[11px] text-muted-foreground hidden sm:block">
+            <p className="text-xs text-muted-foreground hidden sm:block">
               Gestão de talentos, triagem, entrevistas e admissão direta no RH
             </p>
           </div>
@@ -397,8 +397,8 @@ function WorkspaceCandidatesPage() {
 
         <div className="flex items-center gap-2 shrink-0">
           {isPro ? (
-            <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-emerald-500/30 text-emerald-600 bg-emerald-500/10 font-medium">
-              Plano PRO ✓
+            <Badge variant="outline" className="text-xs px-2 py-0.5 border-emerald-500/30 text-emerald-600 bg-emerald-500/10 font-medium">
+              Plano PRO 
             </Badge>
           ) : (
             <Button
@@ -431,12 +431,12 @@ function WorkspaceCandidatesPage() {
                 Banco Regional de Talentos
               </h3>
               {!isPro && (
-                <Badge variant="outline" className="text-[9px] border-border text-muted-foreground">
+                <Badge variant="outline" className="text-xs border-border text-muted-foreground">
                   Recurso PRO
                 </Badge>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Aborde profissionais qualificados por competência, tempo de experiência e cidade.
             </p>
           </div>
@@ -503,7 +503,7 @@ function WorkspaceCandidatesPage() {
               }`}
             >
               <span>{tab.label}</span>
-              <span className="opacity-70 text-[10px]">({tab.count})</span>
+              <span className="opacity-70 text-xs">({tab.count})</span>
             </button>
           ))}
         </div>
@@ -559,11 +559,11 @@ function WorkspaceCandidatesPage() {
                       <div className="flex items-center gap-2">
                         <h4 className="text-xs font-bold text-foreground truncate">{candidate.fullName}</h4>
                         {candidate.openToWork && (
-                          <Badge variant="outline" className="text-[9px] border-emerald-500/40 text-emerald-600 bg-emerald-500/10 px-1.5 py-0">
+                          <Badge variant="outline" className="text-xs border-emerald-500/40 text-emerald-600 bg-emerald-500/10 px-1.5 py-0">
                             Disponível
                           </Badge>
                         )}
-                        <span className="text-[11px] text-muted-foreground hidden sm:inline font-mono">
+                        <span className="text-xs text-muted-foreground hidden sm:inline font-mono">
                           {candidate.totalExperienceMonths > 0
                             ? Math.round((candidate.totalExperienceMonths / 12) * 10) / 10 + " anos"
                             : "Iniciante"}
@@ -619,7 +619,7 @@ function WorkspaceCandidatesPage() {
                             ? "outline"
                             : "secondary"
                         }
-                        className={`text-[9px] px-1.5 py-0 shrink-0 ${
+                        className={`text-xs px-1.5 py-0 shrink-0 ${
                           app.status === "hired"
                             ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
                             : app.status === "interview_scheduled"
@@ -637,16 +637,16 @@ function WorkspaceCandidatesPage() {
                       </Badge>
                     </div>
 
-                    <p className="text-[11px] text-muted-foreground truncate">{app.job_title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{app.job_title}</p>
 
                     <div className="flex items-center gap-2 pt-0.5">
                       {app.rating ? (
-                        <div className="flex items-center text-[10px] text-amber-500 font-bold">
+                        <div className="flex items-center text-xs text-amber-500 font-bold">
                           <Star className="size-3 fill-amber-400 mr-0.5" />
                           <span>{app.rating}.0</span>
                         </div>
                       ) : null}
-                      <span className="text-[10px] text-muted-foreground/60">{app.candidate_email}</span>
+                      <span className="text-xs text-muted-foreground/60">{app.candidate_email}</span>
                     </div>
                   </div>
                 </div>
@@ -668,7 +668,7 @@ function WorkspaceCandidatesPage() {
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground truncate block">
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground truncate block">
                         Vaga: {app.job_title}
                       </span>
                       <h4 className="text-base font-bold text-foreground truncate">{app.candidate_name}</h4>
@@ -676,7 +676,7 @@ function WorkspaceCandidatesPage() {
 
                     <Badge
                       variant="outline"
-                      className={`text-[10px] font-semibold shrink-0 ${
+                      className={`text-xs font-semibold shrink-0 ${
                         app.status === "hired"
                           ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
                           : app.status === "interview_scheduled"
@@ -736,7 +736,7 @@ function WorkspaceCandidatesPage() {
                           href={app.interview_meeting_url}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] text-primary underline font-medium"
+                          className="inline-flex items-center gap-1 text-xs text-primary underline font-medium"
                         >
                           <Video className="size-3" />
                           <span>Abrir Sala de Vídeo</span>
@@ -750,7 +750,7 @@ function WorkspaceCandidatesPage() {
                     <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-0.5">
                       <p className="font-bold text-emerald-700">Contratado como: {app.hired_role}</p>
                       {app.hired_salary_cents && (
-                        <p className="text-[11px] text-emerald-600 font-mono">
+                        <p className="text-xs text-emerald-600 font-mono">
                           Salário: {formatMoney(app.hired_salary_cents)}
                         </p>
                       )}
@@ -761,7 +761,7 @@ function WorkspaceCandidatesPage() {
                 {/* Avaliação & Botões de Ação */}
                 <div className="space-y-3 pt-3 border-t border-border/40">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-muted-foreground">Classificação:</span>
+                    <span className="text-xs font-semibold text-muted-foreground">Classificação:</span>
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -829,7 +829,7 @@ function WorkspaceCandidatesPage() {
               <SheetHeader className="text-left pb-2 border-b border-border/40">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                    <span className="text-xs font-mono text-muted-foreground uppercase">
                       Vaga: {dossierCandidate.job_title}
                     </span>
                     <SheetTitle className="text-base font-bold text-foreground">
@@ -838,7 +838,7 @@ function WorkspaceCandidatesPage() {
                   </div>
                   <Badge
                     variant="outline"
-                    className={`text-[10px] font-semibold ${
+                    className={`text-xs font-semibold ${
                       dossierCandidate.status === "hired"
                         ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
                         : "border-border text-foreground"
@@ -1113,7 +1113,7 @@ function WorkspaceCandidatesPage() {
                   <button
                     type="button"
                     onClick={() => setHirePin(String(Math.floor(1000 + Math.random() * 9000)))}
-                    className="text-[10px] text-primary underline cursor-pointer"
+                    className="text-xs text-primary underline cursor-pointer"
                   >
                     Gerar Novo
                   </button>
@@ -1162,13 +1162,13 @@ function WorkspaceCandidatesPage() {
 
           {/* Credencial de Acesso Rápido */}
           <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-2">
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
               PIN de Ponto Eletrônico & Terminal
             </span>
             <div className="text-2xl font-black font-mono tracking-widest text-foreground">
               {hireSuccessData?.pin}
             </div>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Forneça este PIN ao colaborador para que ele possa bater ponto no terminal ou celular.
             </p>
           </div>

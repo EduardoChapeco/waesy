@@ -160,7 +160,7 @@ function AdminCategoriesPage() {
                             /{cat.slug}
                           </span>
                           {parentCat && (
-                            <span className="text-[11px] text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-md truncate">
+                            <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-md truncate">
                               Sub de: {parentCat.name}
                             </span>
                           )}
@@ -267,7 +267,7 @@ function AdminCategoriesPage() {
                           <div className="flex flex-col">
                             <span className="font-bold text-foreground">{cat.name}</span>
                             {cat.parent_id && (
-                              <span className="text-[11px] text-muted-foreground font-normal">
+                              <span className="text-xs text-muted-foreground font-normal">
                                 Subcategoria de{" "}
                                 {categories.find((c: any) => c.id === cat.parent_id)?.name || "outra"}
                               </span>

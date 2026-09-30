@@ -54,7 +54,7 @@ const TEMPLATES_GALLERY: TemplateItem[] = [
  niche: "Ofertas Relâmpago & Campanhas",
  category: "hotpage",
  tagline: "Countdown timer regressivo, cupons de desconto automáticos e grade de produtos em promoção.",
- badge: "🔥 Hotpage",
+ badge: "Hotpage",
  imageUrl: "",
  features: ["Countdown Timer", "Filtro 50% OFF", "Cupom 1-Toque", "Banners Dinâmicos"],
  },
@@ -64,7 +64,7 @@ const TEMPLATES_GALLERY: TemplateItem[] = [
  niche: "Logística & Fidelização",
  category: "hotpage",
  tagline: "Regras de entrega expressa, valor mínimo no carrinho e produtos elegíveis para entrega grátis.",
- badge: "🚚 Hotpage",
+ badge: "Hotpage",
  imageUrl: "",
  features: ["Aviso de Frete Grátis", "Regiões Atendidas", "Carrinho Integrado"],
  },
@@ -310,16 +310,16 @@ function WorkspaceSitesHubPage() {
  const getDocTypeBadge = (type: string) => {
  switch (type) {
  case "storefront":
- return <Badge variant="default" className="text-[11px] font-medium bg-primary/10 text-primary border-primary/20">Vitrine Virtual</Badge>;
+ return <Badge variant="default" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">Vitrine Virtual</Badge>;
  case "biolink":
- return <Badge variant="outline" className="text-[11px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">Link da Bio</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">Link da Bio</Badge>;
  case "campaign":
- return <Badge variant="outline" className="text-[11px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">Hotpage / Oferta</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">Hotpage / Oferta</Badge>;
  case "landing_page":
  case "custom":
- return <Badge variant="outline" className="text-[11px] font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">Landing Page</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">Landing Page</Badge>;
  default:
- return <Badge variant="outline" className="text-[11px] font-medium">Página</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium">Página</Badge>;
  }
  };
 
@@ -414,7 +414,7 @@ function WorkspaceSitesHubPage() {
  variant={docTypeFilter === "all" ? "default" : "outline"}
  size="sm"
  onClick={() => setDocTypeFilter("all")}
- className="h-7 text-[11px] rounded-lg cursor-pointer"
+ className="h-7 text-xs rounded-lg cursor-pointer"
  >
  Todas ({documents.length})
  </Button>
@@ -422,7 +422,7 @@ function WorkspaceSitesHubPage() {
  variant={docTypeFilter === "storefront" ? "default" : "outline"}
  size="sm"
  onClick={() => setDocTypeFilter("storefront")}
- className="h-7 text-[11px] rounded-lg cursor-pointer gap-1"
+ className="h-7 text-xs rounded-lg cursor-pointer gap-1"
  >
  <Store className="size-3" />
  <span>Vitrines Virtuais ({storefrontsCount})</span>
@@ -431,7 +431,7 @@ function WorkspaceSitesHubPage() {
  variant={docTypeFilter === "biolink" ? "default" : "outline"}
  size="sm"
  onClick={() => setDocTypeFilter("biolink")}
- className="h-7 text-[11px] rounded-lg cursor-pointer gap-1"
+ className="h-7 text-xs rounded-lg cursor-pointer gap-1"
  >
  <Smartphone className="size-3" />
  <span>Links da Bio ({biolinksCount})</span>
@@ -440,7 +440,7 @@ function WorkspaceSitesHubPage() {
  variant={docTypeFilter === "landing_page" ? "default" : "outline"}
  size="sm"
  onClick={() => setDocTypeFilter("landing_page")}
- className="h-7 text-[11px] rounded-lg cursor-pointer gap-1"
+ className="h-7 text-xs rounded-lg cursor-pointer gap-1"
  >
  <Laptop className="size-3" />
  <span>Landing Pages ({landingPagesCount})</span>
@@ -449,7 +449,7 @@ function WorkspaceSitesHubPage() {
  variant={docTypeFilter === "campaign" ? "default" : "outline"}
  size="sm"
  onClick={() => setDocTypeFilter("campaign")}
- className="h-7 text-[11px] rounded-lg cursor-pointer gap-1"
+ className="h-7 text-xs rounded-lg cursor-pointer gap-1"
  >
  <Flame className="size-3" />
  <span>Campanhas & Hotpages ({campaignsCount})</span>
@@ -511,7 +511,7 @@ function WorkspaceSitesHubPage() {
  <div className="flex items-center gap-2 flex-wrap">
  {getDocTypeBadge(doc.document_type)}
  {isPrimary && (
- <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1">
+ <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1">
  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
  Ativa
  </Badge>
@@ -557,11 +557,11 @@ function WorkspaceSitesHubPage() {
  {/* Preview / Informações Rápidas */}
  <div className="p-4 flex-1 flex flex-col justify-between gap-4">
  <div className="text-xs text-muted-foreground space-y-1">
- <div className="flex items-center justify-between text-[11px]">
+ <div className="flex items-center justify-between text-xs">
  <span>Status:</span>
  <span className="font-medium text-foreground capitalize">{doc.is_active ? "Publicada" : "Rascunho"}</span>
  </div>
- <div className="flex items-center justify-between text-[11px]">
+ <div className="flex items-center justify-between text-xs">
  <span>Criada em:</span>
  <span>{new Date(doc.created_at || Date.now()).toLocaleDateString("pt-BR")}</span>
  </div>
@@ -600,7 +600,7 @@ function WorkspaceSitesHubPage() {
  <span className="text-sm font-semibold text-foreground truncate">{doc.title}</span>
  {getDocTypeBadge(doc.document_type)}
  {isPrimary && (
- <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+ <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
  Principal
  </Badge>
  )}
@@ -662,7 +662,7 @@ function WorkspaceSitesHubPage() {
  variant={templateNicheFilter === cat ? "default" : "outline"}
  size="sm"
  onClick={() => setTemplateNicheFilter(cat)}
- className="h-7 text-[11px] rounded-lg capitalize cursor-pointer"
+ className="h-7 text-xs rounded-lg capitalize cursor-pointer"
  >
  {cat === "all" ? "Todos os Nichos" : cat}
  </Button>
@@ -682,7 +682,7 @@ function WorkspaceSitesHubPage() {
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
  />
  <div className="absolute top-2.5 right-2.5">
- <Badge variant="secondary" className="text-[10px] font-semibold bg-background/90 backdrop-blur-md">
+ <Badge variant="secondary" className="text-xs font-semibold bg-background/90 backdrop-blur-md">
  {tpl.badge}
  </Badge>
  </div>
@@ -690,7 +690,7 @@ function WorkspaceSitesHubPage() {
 
  <div className="p-4 flex-1 flex flex-col justify-between gap-4">
  <div className="space-y-1.5">
- <div className="text-[11px] font-semibold text-primary uppercase tracking-wider">{tpl.niche}</div>
+ <div className="text-xs font-semibold text-primary uppercase tracking-wider">{tpl.niche}</div>
  <h3 className="text-sm font-semibold text-foreground leading-snug">{tpl.title}</h3>
  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{tpl.tagline}</p>
  </div>

@@ -265,10 +265,10 @@ function WorkspaceConcursosPage() {
                       <Badge
                         className={
                           isCompleted
-                            ? "bg-black/70 text-white text-[10px] backdrop-blur-md"
+                            ? "bg-black/70 text-white text-xs backdrop-blur-md"
                             : isCancelled
-                            ? "bg-rose-600 text-white text-[10px]"
-                            : "bg-emerald-600 text-white text-[10px] font-bold"
+                            ? "bg-rose-600 text-white text-xs"
+                            : "bg-emerald-600 text-white text-xs font-bold"
                         }
                       >
                         {isCompleted ? "Encerrado" : isCancelled ? "Cancelado" : "Em Andamento"}
@@ -280,10 +280,10 @@ function WorkspaceConcursosPage() {
                     <Badge
                       className={
                         isCompleted
-                          ? "bg-muted text-muted-foreground text-[10px]"
+                          ? "bg-muted text-muted-foreground text-xs"
                           : isCancelled
-                          ? "bg-rose-500/15 text-rose-600 text-[10px]"
-                          : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold"
+                          ? "bg-rose-500/15 text-rose-600 text-xs"
+                          : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold"
                       }
                     >
                       {isCompleted ? "Encerrado" : isCancelled ? "Cancelado" : "Em Andamento"}
@@ -314,7 +314,7 @@ function WorkspaceConcursosPage() {
 
                   <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
                     <div className="rounded-xl bg-muted/40 p-2.5 border border-border/40">
-                      <span className="text-[10px] text-muted-foreground block uppercase font-mono">
+                      <span className="text-xs text-muted-foreground block uppercase font-mono">
                         Cupons Emitidos
                       </span>
                       <span className="text-sm font-bold text-foreground font-mono">
@@ -322,7 +322,7 @@ function WorkspaceConcursosPage() {
                       </span>
                     </div>
                     <div className="rounded-xl bg-muted/40 p-2.5 border border-border/40">
-                      <span className="text-[10px] text-muted-foreground block uppercase font-mono">
+                      <span className="text-xs text-muted-foreground block uppercase font-mono">
                         Limite por Cliente
                       </span>
                       <span className="text-sm font-bold text-foreground font-mono">
@@ -338,7 +338,7 @@ function WorkspaceConcursosPage() {
                         <span className="font-bold text-foreground block">
                           Cupom Vencedor #{c.winner_ticket_number}
                         </span>
-                        <span className="text-muted-foreground text-[11px]">
+                        <span className="text-muted-foreground text-xs">
                           Sorteado em {new Date(c.drawn_at).toLocaleDateString("pt-BR")}
                         </span>
                       </div>
@@ -565,13 +565,13 @@ function WorkspaceConcursosPage() {
                     </span>
                     <div>
                       <span className="font-semibold text-foreground block">{p.userName}</span>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         Emitido em {new Date(p.createdAt).toLocaleDateString("pt-BR")}
                       </span>
                     </div>
                   </div>
 
-                  <div className="text-right font-mono text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <div className="text-right font-mono text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                     <CheckCircle2 className="size-3.5 shrink-0" />
                     <span>Confirmado</span>
                   </div>

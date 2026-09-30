@@ -166,53 +166,53 @@ function WorkspaceLogisticsInvoicesPage() {
       {/* ── 4 KPIS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Clock className="size-3.5 text-amber-600" />
             Pendente de Repasse
           </span>
           <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
             {formatMoney(kpis.totalPendingCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.pendingCount} fatura(s) em aberto
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
             Total Liquidado
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {formatMoney(kpis.totalPaidCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.paidCount} fatura(s) quitada(s)
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Truck className="size-3.5 text-primary" />
             Corridas / Entregas
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.totalRides}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Volume total apurado
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Coins className="size-3.5 text-foreground" />
             Ticket Médio por Frete
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {formatMoney(kpis.avgFareCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Média por entrega realizada
           </p>
         </div>
@@ -305,21 +305,21 @@ function WorkspaceLogisticsInvoicesPage() {
                       variant="outline"
                       className={
                         inv.status === "paid"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 text-[10px] font-bold"
-                          : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 text-[10px] font-bold"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 text-xs font-bold"
+                          : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 text-xs font-bold"
                       }
                     >
                       {inv.status === "paid" ? "Liquidado" : "Pendente"}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground font-mono">
+                  <p className="text-xs text-muted-foreground font-mono">
                     {inv.courier_phone || "Sem telefone cadastrado"} • Ciclo: {inv.period} ({inv.total_rides} entregas concluídas)
                   </p>
                 </div>
 
                 <div className="flex items-center gap-4 sm:gap-6 justify-between md:justify-end">
                   <div className="text-right">
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold">
+                    <span className="text-xs text-muted-foreground uppercase font-bold">
                       Valor Líquido
                     </span>
                     <p className="font-mono font-bold text-base text-foreground">
@@ -353,7 +353,7 @@ function WorkspaceLogisticsInvoicesPage() {
                         <span>Baixa PIX</span>
                       </Button>
                     ) : (
-                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 font-mono">
+                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 font-mono">
                         <CheckCircle2 className="size-3.5" />
                         <span>Pago {inv.paid_at ? `em ${formatDate(inv.paid_at)}` : ""}</span>
                       </span>
@@ -403,8 +403,8 @@ function WorkspaceLogisticsInvoicesPage() {
                     variant="outline"
                     className={
                       selectedInvoice.status === "paid"
-                        ? "text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/40 text-[10px]"
-                        : "text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/40 text-[10px]"
+                        ? "text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/40 text-xs"
+                        : "text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/40 text-xs"
                     }
                   >
                     {selectedInvoice.status === "paid" ? "Liquidado via PIX" : "Pendente de Liquidação"}
@@ -414,7 +414,7 @@ function WorkspaceLogisticsInvoicesPage() {
 
               <div className="p-4 rounded-xl bg-card border border-border/70 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground">Valor Líquido do Repasse</span>
+                  <span className="text-xs uppercase font-bold text-muted-foreground">Valor Líquido do Repasse</span>
                   <p className="text-xl font-mono font-bold text-foreground">
                     {formatMoney(selectedInvoice.net_payable_cents)}
                   </p>

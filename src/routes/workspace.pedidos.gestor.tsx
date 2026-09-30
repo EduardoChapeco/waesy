@@ -1158,7 +1158,7 @@ function KDSPage() {
  <div className="space-y-4">
  {/* Lista de Itens */}
  <div className="space-y-2.5">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+ <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
  Itens Solicitados ({selectedOrder.order_items?.length || 0})
  </span>
  <div className="space-y-2">
@@ -1179,7 +1179,7 @@ function KDSPage() {
  </div>
  {/* Complementos e Modificadores */}
  {options.length > 0 && (
- <div className="ml-5 pl-2 border-l border-primary/40 space-y-0.5 text-[11px] text-muted-foreground">
+ <div className="ml-5 pl-2 border-l border-primary/40 space-y-0.5 text-xs text-muted-foreground">
  {options.map((opt: any, idx: number) => (
  <div key={idx} className="flex justify-between">
  <span>+ {opt.label || opt.name}</span>
@@ -1330,7 +1330,7 @@ function KDSPage() {
  {/* ── ABA 3: HISTÓRICO & SLAs ── */}
  {sheetTab === "history" && (
  <div className="space-y-4">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+ <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
  Linha do Tempo Operacional
  </span>
  <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
@@ -1338,7 +1338,7 @@ function KDSPage() {
  <div className="relative">
  <span className="absolute -left-6 top-1 size-3.5 rounded-full bg-primary border-2 border-background" />
  <p className="font-bold text-foreground">Pedido Criado / Confirmado</p>
- <p className="text-[11px] text-muted-foreground font-mono">
+ <p className="text-xs text-muted-foreground font-mono">
  {formatDateTime(selectedOrder.created_at)}
  </p>
  </div>
@@ -1352,7 +1352,7 @@ function KDSPage() {
  : "bg-muted-foreground/40",
  )} />
  <p className="font-bold text-foreground">Início do Preparo na Cozinha</p>
- <p className="text-[11px] text-muted-foreground font-mono">
+ <p className="text-xs text-muted-foreground font-mono">
  {selectedOrder.prep_started_at ? formatDateTime(selectedOrder.prep_started_at) : "Aguardando início"}
  </p>
  </div>
@@ -1366,7 +1366,7 @@ function KDSPage() {
  : "bg-muted-foreground/40",
  )} />
  <p className="font-bold text-foreground">Pronto para Retirada / Despachado</p>
- <p className="text-[11px] text-muted-foreground font-mono">
+ <p className="text-xs text-muted-foreground font-mono">
  {selectedOrder.shipped_at ? formatDateTime(selectedOrder.shipped_at) : "Pendente"}
  </p>
  </div>
@@ -1380,7 +1380,7 @@ function KDSPage() {
  : "bg-muted-foreground/40",
  )} />
  <p className="font-bold text-foreground">Pedido Entregue / Concluído</p>
- <p className="text-[11px] text-muted-foreground font-mono">
+ <p className="text-xs text-muted-foreground font-mono">
  {selectedOrder.delivered_at ? formatDateTime(selectedOrder.delivered_at) : "Pendente"}
  </p>
  </div>

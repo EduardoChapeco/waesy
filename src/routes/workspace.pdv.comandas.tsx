@@ -195,7 +195,7 @@ function PdvComandasPage() {
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-xl font-bold tracking-tight text-foreground">Comandas</h1>
- <Badge variant="outline" className="text-[10px] font-mono font-bold">
+ <Badge variant="outline" className="text-xs font-mono font-bold">
  {summary?.occupied_count || 0}/{summary?.total_tables || 0} Ocupadas
  </Badge>
  </div>
@@ -244,7 +244,7 @@ function PdvComandasPage() {
  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-4 sm:px-6">
  <div className="p-3 rounded-xl bg-card border border-border/70 flex items-center justify-between">
  <div className="space-y-0.5">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Livres</span>
+ <span className="text-xs font-bold text-muted-foreground uppercase">Livres</span>
  <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
  {summary?.free_count || 0}
  </p>
@@ -254,7 +254,7 @@ function PdvComandasPage() {
 
  <div className="p-3 rounded-xl bg-card border border-border/70 flex items-center justify-between">
  <div className="space-y-0.5">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Ocupadas</span>
+ <span className="text-xs font-bold text-muted-foreground uppercase">Ocupadas</span>
  <p className="text-xl font-black text-blue-600 dark:text-blue-400">
  {summary?.occupied_count || 0}
  </p>
@@ -264,7 +264,7 @@ function PdvComandasPage() {
 
  <div className="p-3 rounded-xl bg-card border border-border/70 flex items-center justify-between">
  <div className="space-y-0.5">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Pediram Conta</span>
+ <span className="text-xs font-bold text-muted-foreground uppercase">Pediram Conta</span>
  <p className="text-xl font-black text-amber-600 dark:text-amber-400">
  {summary?.awaiting_payment_count || 0}
  </p>
@@ -274,7 +274,7 @@ function PdvComandasPage() {
 
  <div className="p-3 rounded-xl bg-card border border-border/70 flex items-center justify-between">
  <div className="space-y-0.5">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Reservadas</span>
+ <span className="text-xs font-bold text-muted-foreground uppercase">Reservadas</span>
  <p className="text-xl font-black text-purple-600 dark:text-purple-400">
  {summary?.reserved_count || 0}
  </p>
@@ -284,7 +284,7 @@ function PdvComandasPage() {
 
  <div className="p-3 rounded-xl bg-card border border-border/70 col-span-2 sm:col-span-1 flex items-center justify-between">
  <div className="space-y-0.5">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Total Salão</span>
+ <span className="text-xs font-bold text-muted-foreground uppercase">Total Salão</span>
  <p className="text-xl font-black text-foreground">
  {formatMoney(summary?.total_active_cents || 0)}
  </p>
@@ -321,7 +321,7 @@ function PdvComandasPage() {
 
  <div className="flex items-center gap-1.5">
  <span className={cn("size-2 rounded-full", config.dotClass)} />
- <span className={cn("text-[10px] font-bold uppercase", config.textClass)}>
+ <span className={cn("text-xs font-bold uppercase", config.textClass)}>
  {config.label}
  </span>
  </div>
@@ -338,7 +338,7 @@ function PdvComandasPage() {
  <span className="font-bold text-foreground line-clamp-1">
  {table.reservation?.customer_name}
  </span>
- <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono">
+ <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
  <Clock className="size-3" />
  <span>{table.reservation?.reservation_time}</span>
  <span>•</span>
@@ -351,11 +351,11 @@ function PdvComandasPage() {
  <span className="font-black text-foreground font-mono">
  {formatMoney(table.total_cents)}
  </span>
- <span className="text-[10px] text-muted-foreground font-mono">
+ <span className="text-xs text-muted-foreground font-mono">
  {table.items_count} it.
  </span>
  </div>
- <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono">
+ <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
  <Clock className="size-3" />
  <span>{table.elapsed_minutes} min</span>
  </div>
@@ -387,7 +387,7 @@ function PdvComandasPage() {
  <span className="font-black text-foreground text-sm uppercase tracking-wide font-mono">
  {comanda.table_identifier}
  </span>
- <Badge variant="outline" className="text-[10px] font-mono">
+ <Badge variant="outline" className="text-xs font-mono">
  {formatDateTime(comanda.created_at)}
  </Badge>
  </div>
@@ -443,7 +443,7 @@ function PdvComandasPage() {
  {selectedTable && (
  <Badge
  variant={STATUS_CONFIG[selectedTable.status as TableStatus]?.badgeVariant || "outline"}
- className="text-[10px] font-bold"
+ className="text-xs font-bold"
  >
  {STATUS_CONFIG[selectedTable.status as TableStatus]?.label}
  </Badge>
@@ -455,13 +455,13 @@ function PdvComandasPage() {
  <div className="flex-1 overflow-y-auto no-scrollbar py-4 space-y-4">
  <div className="p-3 rounded-xl bg-muted/30 border border-border/60 flex items-center justify-between text-xs">
  <div className="space-y-0.5">
- <span className="text-[10px] text-muted-foreground font-bold uppercase">Tempo no Salão</span>
+ <span className="text-xs text-muted-foreground font-bold uppercase">Tempo no Salão</span>
  <p className="font-mono font-bold text-foreground">
  {selectedTable.elapsed_minutes} minutos
  </p>
  </div>
  <div className="space-y-0.5 text-right">
- <span className="text-[10px] text-muted-foreground font-bold uppercase">Itens Lançados</span>
+ <span className="text-xs text-muted-foreground font-bold uppercase">Itens Lançados</span>
  <p className="font-mono font-bold text-foreground">
  {selectedTable.items_count} produtos
  </p>
@@ -481,7 +481,7 @@ function PdvComandasPage() {
  {it.qty}x {it.product_title}
  </span>
  {it.selected_options && Array.isArray(it.selected_options) && it.selected_options.length > 0 && (
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {it.selected_options.map((o: any) => o.name || o.value).join(", ")}
  </p>
  )}
@@ -766,7 +766,7 @@ function PdvComandasPage() {
 
  <div className="p-3 rounded-xl bg-muted/30 border border-border/60 text-xs text-muted-foreground space-y-1">
  <span className="font-bold text-foreground">Link de Autoatendimento:</span>
- <p className="font-mono text-[11px] break-all select-all text-primary">
+ <p className="font-mono text-xs break-all select-all text-primary">
  {publicMenuTableUrl}
  </p>
  </div>
@@ -778,7 +778,7 @@ function PdvComandasPage() {
  id="printable-table-tent"
  className="w-full max-w-[240px] p-5 rounded-2xl bg-card border border-border/80 shadow-xs text-center space-y-3"
  >
- <Badge variant="outline" className="text-[9px] font-mono border-border/80 text-muted-foreground uppercase">
+ <Badge variant="outline" className="text-xs font-mono border-border/80 text-muted-foreground uppercase">
  Cardápio Digital no Salão
  </Badge>
  <h3 className="text-xs font-bold text-foreground leading-tight line-clamp-1">
@@ -786,7 +786,7 @@ function PdvComandasPage() {
  </h3>
 
  <div className="py-1">
- <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest block">
+ <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest block">
  Mesa
  </span>
  <span className="text-4xl font-black text-foreground font-mono tracking-tighter">
@@ -800,13 +800,13 @@ function PdvComandasPage() {
  alt={`QR Code Mesa ${qrTableNumber}`}
  className="size-28 object-contain"
  />
- <span className="text-[9px] font-mono text-neutral-600 font-bold">
+ <span className="text-xs font-mono text-neutral-600 font-bold">
  Aponte a câmera para pedir
  </span>
  </div>
 
  {qrWifiName && (
- <div className="p-2 rounded-lg bg-muted/40 border border-border/60 text-[10px] text-left space-y-0.5">
+ <div className="p-2 rounded-lg bg-muted/40 border border-border/60 text-xs text-left space-y-0.5">
  <div className="flex items-center justify-between">
  <span className="text-muted-foreground">Wi-Fi:</span>
  <span className="font-semibold text-foreground font-mono">{qrWifiName}</span>

@@ -92,14 +92,14 @@ function SquadsPage() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground">{squad.name}</span>
-                <Badge variant="secondary" className="text-[10px] font-mono">
+                <Badge variant="secondary" className="text-xs font-mono">
                   {squad.members.length} Agentes
                 </Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                 {squad.description}
               </p>
-              <div className="mt-3 flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground font-mono">
                 <span>Teto: ${squad.max_cost_budget_usd.toFixed(3)}</span>
                 <span>Max: {squad.max_execution_steps} passos</span>
               </div>
@@ -117,9 +117,9 @@ function SquadsPage() {
                 <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                   <Layers className="size-4 text-primary" /> Pipeline de Handoff do Squad
                 </h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">{selectedSquad.goal}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{selectedSquad.goal}</p>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
+              <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
                 Política: {selectedSquad.arbitration_policy}
               </Badge>
             </div>
@@ -130,15 +130,15 @@ function SquadsPage() {
                 <div key={member.agent_slug} className="flex-1 flex flex-col md:flex-row items-center gap-3">
                   <div className="w-full p-4 rounded-xl border border-border/60 bg-muted/20 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
+                      <span className="text-xs font-bold text-primary uppercase tracking-wider">
                         Passo {member.step_order}
                       </span>
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         {member.agent.role_label}
                       </Badge>
                     </div>
                     <h4 className="font-bold text-xs text-foreground">{member.agent.name}</h4>
-                    <p className="text-[11px] text-muted-foreground line-clamp-2">
+                    <p className="text-xs text-muted-foreground line-clamp-2">
                       {member.handoff_rule}
                     </p>
                   </div>
@@ -201,7 +201,7 @@ function SquadsPage() {
                     <CheckCircle2 className="size-5 text-emerald-500" />
                     <div>
                       <p className="text-xs font-bold text-foreground">Execução Concluída com Sucesso</p>
-                      <p className="text-[11px] text-muted-foreground">Todos os critérios de aceite foram auditados.</p>
+                      <p className="text-xs text-muted-foreground">Todos os critérios de aceite foram auditados.</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground">
@@ -219,14 +219,14 @@ function SquadsPage() {
                         <span className="font-bold text-foreground">
                           Etapa {h.stepIndex}: {h.toAgent}
                         </span>
-                        <span className="font-mono text-[10px] text-muted-foreground">
+                        <span className="font-mono text-xs text-muted-foreground">
                           ${h.costUsd.toFixed(5)} USD | {h.latencyMs}ms
                         </span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         <strong>Objetivo:</strong> {h.objective}
                       </p>
-                      <div className="p-3 rounded-lg bg-muted/40 font-mono text-[11px] whitespace-pre-wrap max-h-[160px] overflow-y-auto">
+                      <div className="p-3 rounded-lg bg-muted/40 font-mono text-xs whitespace-pre-wrap max-h-[160px] overflow-y-auto">
                         {h.workCompleted.output}
                       </div>
                     </div>

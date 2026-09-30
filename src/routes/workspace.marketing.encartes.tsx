@@ -316,7 +316,7 @@ export default function WorkspaceMarketingEncartesPage() {
             <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
           </div>
           <p className="text-2xl font-black text-foreground">{activeCount}</p>
-          <p className="text-[11px] text-muted-foreground">Exibidos na vitrine agora</p>
+          <p className="text-xs text-muted-foreground">Exibidos na vitrine agora</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-1">
@@ -325,7 +325,7 @@ export default function WorkspaceMarketingEncartesPage() {
             <Clock className="size-3.5 text-blue-500" />
           </div>
           <p className="text-2xl font-black text-foreground">{scheduledCount}</p>
-          <p className="text-[11px] text-muted-foreground">Iniciam em datas futuras</p>
+          <p className="text-xs text-muted-foreground">Iniciam em datas futuras</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-1">
@@ -334,7 +334,7 @@ export default function WorkspaceMarketingEncartesPage() {
             <Clock className="size-3.5 text-muted-foreground" />
           </div>
           <p className="text-2xl font-black text-foreground">{expiredCount}</p>
-          <p className="text-[11px] text-muted-foreground">Ocultos automaticamente</p>
+          <p className="text-xs text-muted-foreground">Ocultos automaticamente</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-1">
@@ -345,7 +345,7 @@ export default function WorkspaceMarketingEncartesPage() {
           <p className="text-2xl font-black text-foreground">
             {flyers.reduce((acc, f) => acc + (f.clicks_count || 0), 0)}
           </p>
-          <p className="text-[11px] text-muted-foreground">Cliques em produtos vinculados</p>
+          <p className="text-xs text-muted-foreground">Cliques em produtos vinculados</p>
         </div>
       </div>
 
@@ -406,35 +406,35 @@ export default function WorkspaceMarketingEncartesPage() {
                     <div className="p-3.5 pb-2 flex items-center justify-between gap-2 border-b border-border/40">
                       <div className="flex items-center gap-1.5">
                         {flyer.status_badge === "active" && (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1">
                             <span className="size-1.5 rounded-full bg-emerald-500" />
                             <span>Ativo</span>
                           </span>
                         )}
                         {flyer.status_badge === "scheduled" && (
-                          <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
                             Agendado
                           </span>
                         )}
                         {flyer.status_badge === "expired" && (
-                          <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-500 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-500 text-xs font-bold">
                             Expirado
                           </span>
                         )}
 
                         <span
                           className={cn(
-                            "px-2 py-0.5 rounded text-[10px] font-bold",
+                            "px-2 py-0.5 rounded text-xs font-bold",
                             isRetro
                               ? "bg-amber-300 text-red-950 font-black"
                               : "bg-muted text-muted-foreground"
                           )}
                         >
-                          {isRetro ? "🎨 Retrô Mercadista" : "Editorial Clean"}
+                          {isRetro ? "Retrô Mercadista" : "Editorial Clean"}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-semibold">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground font-semibold">
                         <Eye className="size-3" />
                         <span>{flyer.views_count} vistas</span>
                       </div>
@@ -466,7 +466,7 @@ export default function WorkspaceMarketingEncartesPage() {
                           <p className="text-xs text-muted-foreground line-clamp-1">{flyer.subtitle}</p>
                         )}
 
-                        <div className="text-[11px] text-muted-foreground space-y-0.5 pt-1">
+                        <div className="text-xs text-muted-foreground space-y-0.5 pt-1">
                           <div className="flex items-center gap-1">
                             <Clock className="size-3 text-primary shrink-0" />
                             <span className="font-semibold text-foreground">
@@ -598,9 +598,9 @@ export default function WorkspaceMarketingEncartesPage() {
                     </div>
                     <div>
                       <h4 className="text-xs font-black uppercase tracking-tight">
-                        🎨 Retrô Mercadista (Cartazista Antigo)
+                        Retrô Mercadista (Cartazista Antigo)
                       </h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Amarelo vibrante com tipografia e bordas de pincel vermelho das mercearias e feiras clássicas.
                       </p>
                     </div>
@@ -620,7 +620,7 @@ export default function WorkspaceMarketingEncartesPage() {
                     </div>
                     <div>
                       <h4 className="text-xs font-bold">Clean e Editorial</h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Bordas finas, superfícies neutras, minimalismo padrão Apple HIG e alta nitidez.
                       </p>
                     </div>
@@ -654,7 +654,7 @@ export default function WorkspaceMarketingEncartesPage() {
                   onChange={(e) => setFormValidUntil(e.target.value)}
                   className="h-10 rounded-xl text-xs"
                 />
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Após esta data, o encarte sairá do ar automaticamente da vitrine pública.
                 </p>
               </div>
@@ -676,7 +676,7 @@ export default function WorkspaceMarketingEncartesPage() {
                         if (urls && urls[0]) setFormImageUrl(urls[0]);
                       }}
                     />
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-xs text-muted-foreground">
                       Ou insira a URL direta da imagem:
                     </div>
                     <Input
@@ -714,7 +714,7 @@ export default function WorkspaceMarketingEncartesPage() {
                         <Tag className="size-4 text-emerald-500" />
                         <span>Vincular Produtos com Botão Redondo (Estilo Instagram)</span>
                       </h3>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Clique diretamente sobre a imagem do encarte abaixo onde o produto aparece para adicionar o botão de compra.
                       </p>
                     </div>
@@ -744,12 +744,12 @@ export default function WorkspaceMarketingEncartesPage() {
                           }}
                           className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group"
                         >
-                          <div className="size-8 rounded-full bg-red-600 text-amber-300 border-2 border-amber-300 flex items-center justify-center font-black text-[11px] shadow-xs">
+                          <div className="size-8 rounded-full bg-red-600 text-amber-300 border-2 border-amber-300 flex items-center justify-center font-black text-xs shadow-xs">
                             {idx + 1}
                           </div>
 
                           {/* Tooltip do produto no hover com botão de excluir */}
-                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:flex items-center gap-1.5 px-2 py-1 bg-black/90 text-white text-[10px] font-bold rounded shadow-xs whitespace-nowrap z-30">
+                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:flex items-center gap-1.5 px-2 py-1 bg-black/90 text-white text-xs font-bold rounded shadow-xs whitespace-nowrap z-30">
                             <span>{spot.custom_label || spot.product?.title || "Produto"}</span>
                             <button
                               type="button"
@@ -780,7 +780,7 @@ export default function WorkspaceMarketingEncartesPage() {
                             className="flex items-center justify-between p-2 rounded-xl bg-muted/40 border border-border/60 text-xs"
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <span className="size-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                              <span className="size-5 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
                                 {index + 1}
                               </span>
                               <div className="min-w-0">
@@ -788,7 +788,7 @@ export default function WorkspaceMarketingEncartesPage() {
                                   {h.custom_label || h.product?.title || "Produto vinculado"}
                                 </p>
                                 {h.price_override_cents && (
-                                  <p className="text-[10px] text-emerald-600 font-semibold">
+                                  <p className="text-xs text-emerald-600 font-semibold">
                                     {formatMoney(h.price_override_cents)}
                                   </p>
                                 )}
@@ -892,7 +892,7 @@ export default function WorkspaceMarketingEncartesPage() {
                     )}
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-foreground truncate">{prod.title}</p>
-                      <p className="text-[11px] font-semibold text-emerald-600">
+                      <p className="text-xs font-semibold text-emerald-600">
                         {formatMoney(prod.promotional_price_cents || prod.price_cents)}
                       </p>
                     </div>

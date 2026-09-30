@@ -148,27 +148,27 @@ function WorkspaceSuppliersPage() {
  <div className="space-y-0.5">
  <h3 className="text-sm font-bold text-foreground leading-tight">{s.name}</h3>
  {s.legal_name && (
- <p className="text-[11px] text-muted-foreground truncate max-w-[220px]">{s.legal_name}</p>
+ <p className="text-xs text-muted-foreground truncate max-w-[220px]">{s.legal_name}</p>
  )}
  </div>
- <Badge variant="outline" className="text-[10px] uppercase font-mono shrink-0">
+ <Badge variant="outline" className="text-xs uppercase font-mono shrink-0">
  {SUPPLIER_KIND_LABELS[s.kind]?.split('/')[0] || s.kind}
  </Badge>
  </div>
 
  <div className="flex items-center gap-2 text-xs pt-1">
- <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+ <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center gap-1">
  <Percent className="size-3" /> {s.commission_rate}% Comissão
  </span>
  {s.city && (
- <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+ <span className="text-xs text-muted-foreground flex items-center gap-1">
  <MapPin className="size-3" /> {s.city}{s.state ? '/' + s.state : ''}
  </span>
  )}
  </div>
 
  {s.notes && (
- <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 bg-muted/20 p-2.5 rounded-xl">
+ <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 bg-muted/20 p-2.5 rounded-xl">
  {s.notes}
  </p>
  )}

@@ -211,7 +211,7 @@ function WorkspaceNovaMateriaPage() {
  </div>
  <div>
  <h3 className="text-sm font-bold text-foreground">Importar Notícia de Link Externo</h3>
- <p className="text-[11px] text-muted-foreground">Cole a URL de qualquer portal de notícias para estruturar os blocos editoriais automaticamente.</p>
+ <p className="text-xs text-muted-foreground">Cole a URL de qualquer portal de notícias para estruturar os blocos editoriais automaticamente.</p>
  </div>
  </div>
  <button onClick={() => setShowAiImport(false)} className="text-muted-foreground hover:text-foreground">
@@ -264,7 +264,7 @@ function WorkspaceNovaMateriaPage() {
  )}
 
  {extractedSourceDomain && (
- <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-600 font-medium">
+ <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 font-medium">
  <CheckCircle2 className="size-3.5" />
  <span>Conteúdo importado e reestruturado a partir de: <strong>{extractedSourceDomain}</strong></span>
  </div>
@@ -427,7 +427,7 @@ function WorkspaceNovaMateriaPage() {
  className="p-4 rounded-xl bg-background border border-border/60 space-y-2 relative group"
  >
  <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
- <span className="uppercase text-[10px] font-bold">
+ <span className="uppercase text-xs font-bold">
  {section.type === "paragraph" && "Parágrafo"}
  {section.type === "heading" && "Subtítulo de Seção"}
  {section.type === "quote" && "Citação / Aspas"}

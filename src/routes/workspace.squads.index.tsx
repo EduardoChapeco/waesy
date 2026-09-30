@@ -242,7 +242,7 @@ export function SquadsWorkspacePage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 text-[11px]">
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 text-xs">
                             {squad.template.badge_label}
                           </span>
                           <span className="text-xs text-muted-foreground capitalize">
@@ -257,7 +257,7 @@ export function SquadsWorkspacePage() {
                         </p>
                       </div>
 
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         Operacional
                       </span>
@@ -266,7 +266,7 @@ export function SquadsWorkspacePage() {
                     {/* Meta Operacional */}
                     {squad.operational_goal && (
                       <div className="mt-4 p-3 rounded-xl bg-muted/20 border border-border/30 text-xs text-foreground">
-                        <strong className="text-muted-foreground block text-[10px] uppercase tracking-wider mb-0.5">
+                        <strong className="text-muted-foreground block text-xs uppercase tracking-wider mb-0.5">
                           Objetivo Atual do Squad:
                         </strong>
                         {squad.operational_goal}
@@ -279,7 +279,7 @@ export function SquadsWorkspacePage() {
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                           Membros do Time ({squad.agents.length} Especialistas)
                         </h3>
-                        <span className="text-[11px] text-muted-foreground">Clique para ver currículo</span>
+                        <span className="text-xs text-muted-foreground">Clique para ver currículo</span>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -293,7 +293,7 @@ export function SquadsWorkspacePage() {
                               <span className="text-xs font-semibold text-foreground block truncate group-hover:text-primary transition-colors">
                                 {agent.name}
                               </span>
-                              <span className="text-[11px] text-muted-foreground block truncate">
+                              <span className="text-xs text-muted-foreground block truncate">
                                 {agent.role_label}
                               </span>
                             </div>
@@ -315,7 +315,7 @@ export function SquadsWorkspacePage() {
                             <span className="text-xs font-bold text-foreground block">
                               Entrega Aguardando Sua Aprovação
                             </span>
-                            <span className="text-[11px] text-muted-foreground block">
+                            <span className="text-xs text-muted-foreground block">
                               Diagnóstico concluído ({squad.latest_run.output_artifacts?.pending_approval_items?.length || 1} item pendente).
                             </span>
                           </div>
@@ -360,7 +360,7 @@ export function SquadsWorkspacePage() {
                           <button
                             type="button"
                             onClick={() => setSelectedRunArtifacts({ squadName: squad.custom_name, run: squad.latest_run })}
-                            className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                            className="text-xs font-semibold text-primary hover:underline cursor-pointer"
                           >
                             Ver Parecer Completo
                           </button>
@@ -397,7 +397,7 @@ export function SquadsWorkspacePage() {
           {selectedAgent && (
             <div>
               <SheetHeader className="border-b border-border/40 pb-4 text-left">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-primary block">
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary block">
                   Perfil do Especialista
                 </span>
                 <SheetTitle className="text-xl font-bold tracking-tight text-foreground mt-0.5">
@@ -473,7 +473,7 @@ export function SquadsWorkspacePage() {
                 </div>
 
                 {/* Metadados Técnicos de IA */}
-                <div className="p-3.5 rounded-xl bg-muted/10 border border-border/30 text-[11px] text-muted-foreground space-y-1">
+                <div className="p-3.5 rounded-xl bg-muted/10 border border-border/30 text-xs text-muted-foreground space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Modelo de IA Alocado:</span>
                     <strong className="text-foreground font-mono">{selectedAgent.default_model}</strong>
@@ -506,10 +506,10 @@ export function SquadsWorkspacePage() {
             <div>
               <SheetHeader className="border-b border-border/40 pb-4 text-left">
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-primary block">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-primary block">
                     Parecer Executivo de Rotina
                   </span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase ${
+                  <span className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase ${
                     selectedRunArtifacts.run.status === "needs_approval"
                       ? "bg-muted text-foreground border border-border/60"
                       : "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
@@ -551,7 +551,7 @@ export function SquadsWorkspacePage() {
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-foreground text-xs">{item.title}</span>
                             {item.confidence_score && (
-                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
+                              <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
                                 {item.confidence_score}% Confiança
                               </span>
                             )}
@@ -560,7 +560,7 @@ export function SquadsWorkspacePage() {
                             {item.description}
                           </p>
                           {item.assigned_agent && (
-                            <span className="text-[10px] text-muted-foreground block">
+                            <span className="text-xs text-muted-foreground block">
                               Responsável: <strong className="text-foreground">{item.assigned_agent}</strong>
                             </span>
                           )}
@@ -580,7 +580,7 @@ export function SquadsWorkspacePage() {
                       {selectedRunArtifacts.run.output_artifacts.kpis_monitored.map((kpi: string, idx: number) => (
                         <span
                           key={idx}
-                          className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-muted/30 border border-border/40 text-foreground"
+                          className="px-2.5 py-1 rounded-md text-xs font-medium bg-muted/30 border border-border/40 text-foreground"
                         >
                           {kpi}
                         </span>
@@ -590,7 +590,7 @@ export function SquadsWorkspacePage() {
                 )}
 
                 {/* Metadados Técnicos de Execução */}
-                <div className="p-3.5 rounded-xl bg-muted/10 border border-border/30 text-[11px] text-muted-foreground space-y-1">
+                <div className="p-3.5 rounded-xl bg-muted/10 border border-border/30 text-xs text-muted-foreground space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Tokens Processados:</span>
                     <strong className="text-foreground font-mono">{selectedRunArtifacts.run.total_tokens_consumed || 1250}</strong>

@@ -101,19 +101,19 @@ export default function WorkspaceQualidadePage() {
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {averageRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span>
  </div>
- <span className="text-[11px] text-muted-foreground">média das auditorias</span>
+ <span className="text-xs text-muted-foreground">média das auditorias</span>
  </div>
 
  <div className="p-4 rounded-xl border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Auditorias Realizadas</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">{audits.length}</div>
- <span className="text-[11px] text-muted-foreground">inspeções anônimas</span>
+ <span className="text-xs text-muted-foreground">inspeções anônimas</span>
  </div>
 
  <div className="p-4 rounded-xl border border-border/60 bg-card col-span-2 sm:col-span-1">
  <span className="text-xs text-muted-foreground font-medium block">Canal Solidário</span>
  <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-1">Disponível</div>
- <span className="text-[11px] text-muted-foreground">apoio em momentos de dificuldade</span>
+ <span className="text-xs text-muted-foreground">apoio em momentos de dificuldade</span>
  </div>
  </div>
 
@@ -165,7 +165,7 @@ export default function WorkspaceQualidadePage() {
  Relatar Dificuldade
  </Button>
  ) : (
- <Badge variant="outline" className="text-[10px]">
+ <Badge variant="outline" className="text-xs">
  {a.dispute_status === "pending_review" ? "Em Análise" : "Apoio Concedido"}
  </Badge>
  )}

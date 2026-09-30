@@ -269,7 +269,7 @@ function WorkspaceSupportPage() {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
                     <span>{CATEGORY_LABELS[t.category]}</span>
                     <span>•</span>
                     <span>{new Date(t.created_at).toLocaleDateString()}</span>
@@ -284,7 +284,7 @@ function WorkspaceSupportPage() {
               </div>
 
               <div className="flex items-center gap-3 shrink-0">
-                <Badge variant="outline" className={`text-[10px] border font-semibold ${st.className}`}>
+                <Badge variant="outline" className={`text-xs border font-semibold ${st.className}`}>
                   {st.label}
                 </Badge>
                 <ChevronRight className="size-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
@@ -453,7 +453,7 @@ function WorkspaceSupportPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-muted-foreground">Tipo de Vínculo</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Tipo de Vínculo</label>
                     <select
                       value={linkType}
                       onChange={(e) => setLinkType(e.target.value as any)}
@@ -468,7 +468,7 @@ function WorkspaceSupportPage() {
 
                   {linkType !== "none" && (
                     <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-muted-foreground">ID / Referência do Vínculo</label>
+                      <label className="text-xs font-semibold text-muted-foreground">ID / Referência do Vínculo</label>
                       <Input
                         value={linkRef}
                         onChange={(e) => setLinkRef(e.target.value)}
@@ -481,7 +481,7 @@ function WorkspaceSupportPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-muted-foreground">Nome do Passageiro / Cliente</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Nome do Passageiro / Cliente</label>
                     <Input
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
@@ -491,7 +491,7 @@ function WorkspaceSupportPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-muted-foreground">SLA Máximo Desejado</label>
+                    <label className="text-xs font-semibold text-muted-foreground">SLA Máximo Desejado</label>
                     <select
                       value={slaMinutes}
                       onChange={(e) => setSlaMinutes(Number(e.target.value))}
@@ -565,7 +565,7 @@ function WorkspaceSupportPage() {
               {activeTicket && (
                 <Badge
                   variant="outline"
-                  className={`text-[10px] ${STATUS_LABELS[activeTicket.status]?.className}`}
+                  className={`text-xs ${STATUS_LABELS[activeTicket.status]?.className}`}
                 >
                   {STATUS_LABELS[activeTicket.status]?.label}
                 </Badge>
@@ -574,7 +574,7 @@ function WorkspaceSupportPage() {
 
             {activeTicket && (
               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs">
-                <div className="flex items-center gap-2 text-muted-foreground font-mono text-[11px]">
+                <div className="flex items-center gap-2 text-muted-foreground font-mono text-xs">
                   <span>{CATEGORY_LABELS[activeTicket.category]}</span>
                   {activeTicket.customer_name && (
                     <>
@@ -598,7 +598,7 @@ function WorkspaceSupportPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleUpdateStatus("resolved")}
-                    className="h-7 px-2.5 text-[11px] font-semibold gap-1 text-emerald-600 hover:text-emerald-700 cursor-pointer"
+                    className="h-7 px-2.5 text-xs font-semibold gap-1 text-emerald-600 hover:text-emerald-700 cursor-pointer"
                   >
                     <CheckCircle2 className="size-3" /> Marcar como Resolvido
                   </Button>
@@ -617,7 +617,7 @@ function WorkspaceSupportPage() {
                     : "bg-muted/40 text-foreground border border-border/60 ml-auto mr-0"
                 }`}
               >
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
                   <span>{m.is_staff_reply ? "Equipe de Suporte Waesy" : "Você (Operador)"}</span>
                   <span>{new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                 </div>
@@ -628,7 +628,7 @@ function WorkspaceSupportPage() {
                       href={m.attachment_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-primary underline hover:text-primary/80 flex items-center gap-1"
+                      className="text-xs text-primary underline hover:text-primary/80 flex items-center gap-1"
                     >
                       <Paperclip className="size-3" /> Ver Anexo
                     </a>

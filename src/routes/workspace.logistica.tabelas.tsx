@@ -180,53 +180,53 @@ function WorkspaceLogisticsPriceTablesPage() {
       {/* ── 4 KPIS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Gauge className="size-3.5 text-primary" />
             Modais Ativos
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.activeCount} <span className="text-xs font-normal text-muted-foreground">de {tables.length}</span>
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Habilitados para cálculo
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Coins className="size-3.5 text-emerald-600" />
             Tarifa Base Média
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {formatMoney(kpis.avgBaseFee)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Taxa de saída média
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Navigation className="size-3.5 text-blue-600" />
             Valor Médio por KM
           </span>
           <div className="text-2xl font-mono font-bold text-blue-600 dark:text-blue-400">
             {formatMoney(kpis.avgKmRate)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Por quilômetro rodado
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <DollarSign className="size-3.5 text-foreground" />
             Piso Mínimo Médio
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {formatMoney(kpis.avgMinFare)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Corrida mínima garantida
           </p>
         </div>
@@ -294,11 +294,11 @@ function WorkspaceLogisticsPriceTablesPage() {
                 <div className="flex items-center justify-between text-xs pb-1.5">
                   <span className="font-bold truncate text-foreground">{table.name.split("(")[0]}</span>
                   {table.is_active ? (
-                    <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-500/30">
+                    <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30">
                       Ativo
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[9px] text-muted-foreground">
+                    <Badge variant="outline" className="text-xs text-muted-foreground">
                       Inativo
                     </Badge>
                   )}
@@ -308,7 +308,7 @@ function WorkspaceLogisticsPriceTablesPage() {
                   {formatMoney(finalFee)}
                 </div>
 
-                <div className="text-[10px] text-muted-foreground flex items-center justify-between pt-1">
+                <div className="text-xs text-muted-foreground flex items-center justify-between pt-1">
                   <span>{simKm} km {simIncludeHelper && "+ Ajudante"}</span>
                   {appliedMinFare && (
                     <span className="text-amber-600 font-bold">(Piso Mínimo)</span>
@@ -342,7 +342,7 @@ function WorkspaceLogisticsPriceTablesPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground leading-tight">{table.name}</h3>
-                  <Badge variant="outline" className="text-[9px] uppercase font-mono mt-0.5">
+                  <Badge variant="outline" className="text-xs uppercase font-mono mt-0.5">
                     {table.service_type}
                   </Badge>
                 </div>
@@ -370,7 +370,7 @@ function WorkspaceLogisticsPriceTablesPage() {
                   placeholder="0,00"
                   className="h-10 text-sm font-mono rounded-xl bg-background border-border/80"
                 />
-                <p className="text-[10px] text-muted-foreground">Valor fixo de partida</p>
+                <p className="text-xs text-muted-foreground">Valor fixo de partida</p>
               </div>
 
               <div className="space-y-1.5">
@@ -381,7 +381,7 @@ function WorkspaceLogisticsPriceTablesPage() {
                   placeholder="0,00"
                   className="h-10 text-sm font-mono rounded-xl bg-background border-border/80"
                 />
-                <p className="text-[10px] text-muted-foreground">Adicional por KM linear</p>
+                <p className="text-xs text-muted-foreground">Adicional por KM linear</p>
               </div>
 
               <div className="space-y-1.5">
@@ -392,7 +392,7 @@ function WorkspaceLogisticsPriceTablesPage() {
                   placeholder="0,00"
                   className="h-10 text-sm font-mono rounded-xl bg-background border-border/80"
                 />
-                <p className="text-[10px] text-muted-foreground">Piso mínimo cobrado</p>
+                <p className="text-xs text-muted-foreground">Piso mínimo cobrado</p>
               </div>
 
               <div className="space-y-1.5">
@@ -403,14 +403,14 @@ function WorkspaceLogisticsPriceTablesPage() {
                   placeholder="0,00"
                   className="h-10 text-sm font-mono rounded-xl bg-background border-border/80"
                 />
-                <p className="text-[10px] text-muted-foreground">Mão de obra extra</p>
+                <p className="text-xs text-muted-foreground">Mão de obra extra</p>
               </div>
             </div>
 
             {/* Estimativa de Referência (5 km) */}
             <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 flex items-center justify-between text-xs">
               <div className="space-y-0.5">
-                <span className="text-[11px] text-muted-foreground font-medium">Estimativa para 5 km:</span>
+                <span className="text-xs text-muted-foreground font-medium">Estimativa para 5 km:</span>
                 <p className="font-bold text-foreground font-mono">
                   {formatMoney(
                     Math.max(
@@ -420,7 +420,7 @@ function WorkspaceLogisticsPriceTablesPage() {
                   )}
                 </p>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono">
+              <Badge variant="outline" className="text-xs font-mono">
                 Cálculo em tempo real
               </Badge>
             </div>

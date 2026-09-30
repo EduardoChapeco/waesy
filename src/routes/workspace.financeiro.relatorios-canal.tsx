@@ -194,66 +194,66 @@ function ChannelDREPage() {
       {/* ── KPIS RESUMO CONSOLIDADOS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <ShoppingCart className="size-3.5 text-foreground" />
             Pedidos Totais
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {totals.orders}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Transações no período
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <BarChart3 className="size-3.5 text-primary" />
             Receita Bruta
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {formatMoney(totals.gross)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Volume total faturado
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <TrendingDown className="size-3.5 text-rose-600" />
             Taxas Plataformas
           </span>
           <div className="text-2xl font-mono font-bold text-rose-600 dark:text-rose-400">
             -{formatMoney(totals.fees)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Comissões dos canais
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <TrendingUp className="size-3.5 text-emerald-600" />
             Receita Líquida
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {formatMoney(totals.net)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Repasse líquido à loja
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Star className="size-3.5 text-amber-500" />
             Margem Média
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {totals.margin.toFixed(1)}%
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Aproveitamento da receita
           </p>
         </div>
@@ -267,7 +267,7 @@ function ChannelDREPage() {
               <PieChart className="size-3.5 text-primary" />
               Participação no Faturamento Bruto (Market Share)
             </span>
-            <span className="text-[11px] text-muted-foreground font-mono">
+            <span className="text-xs text-muted-foreground font-mono">
               {dreRows.length} canal(is) ativo(s)
             </span>
           </div>
@@ -293,7 +293,7 @@ function ChannelDREPage() {
             {dreRows.map((row) => {
               const sharePercent = totals.gross > 0 ? (row.gross_revenue_cents / totals.gross) * 100 : 0;
               return (
-                <div key={row.channel} className="flex items-center gap-1.5 text-[11px]">
+                <div key={row.channel} className="flex items-center gap-1.5 text-xs">
                   <span className={cn("size-2 rounded-full", CHANNEL_BAR_COLORS[row.channel] || "bg-primary")} />
                   <span className="font-medium text-foreground">{row.channel_label}</span>
                   <span className="text-muted-foreground font-mono">({sharePercent.toFixed(1)}%)</span>
@@ -373,7 +373,7 @@ function ChannelDREPage() {
                       <Badge
                         variant="outline"
                         className={cn(
-                          "text-[10px] font-bold rounded-lg px-2.5 py-0.5",
+                          "text-xs font-bold rounded-lg px-2.5 py-0.5",
                           CHANNEL_COLORS[row.channel] || CHANNEL_COLORS.outros
                         )}
                       >
@@ -429,7 +429,7 @@ function ChannelDREPage() {
         </div>
       )}
 
-      <p className="text-[11px] text-muted-foreground font-mono">
+      <p className="text-xs text-muted-foreground font-mono">
         Valores apurados em tempo real a partir de pedidos locais (PDV e E-commerce) e webhooks dos marketplaces parceiros. As taxas consideram os percentuais contratuais reportados em <code className="text-foreground">marketplace_fee_cents</code>.
       </p>
     </div>

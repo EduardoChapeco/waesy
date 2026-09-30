@@ -908,7 +908,7 @@ function PdvTerminal() {
           <ShoppingCart className="size-4 text-primary" />
           <div>
             <h2 className="text-xs font-bold text-foreground">Ticket de Venda</h2>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {serviceMode === "takeout"
                 ? "Balcão"
                 : `${serviceMode.toUpperCase()}: ${tableOrComandaNumber || "Sem nº"}`}
@@ -933,7 +933,7 @@ function PdvTerminal() {
           <div className="py-24 text-center text-muted-foreground space-y-2">
             <ShoppingCart className="size-10 opacity-20 mx-auto" />
             <p className="text-xs font-bold text-foreground">Ticket Vazio</p>
-            <p className="text-[11px] opacity-70">Toque nos produtos ao lado para adicionar</p>
+            <p className="text-xs opacity-70">Toque nos produtos ao lado para adicionar</p>
           </div>
         ) : (
           <div className="space-y-2.5">
@@ -946,12 +946,12 @@ function PdvTerminal() {
                   <div className="flex-1 truncate">
                     <span className="font-bold text-foreground">{item.product.title}</span>
                     {item.variant.sku && item.variant.sku !== "DEFAULT" && (
-                      <p className="text-[10px] text-muted-foreground font-mono">
+                      <p className="text-xs text-muted-foreground font-mono">
                         {item.variant.sku}
                       </p>
                     )}
                     {item.selectedModifiers.length > 0 && (
-                      <p className="text-[10px] text-primary font-medium mt-0.5">
+                      <p className="text-xs text-primary font-medium mt-0.5">
                         + {item.selectedModifiers.map((m) => m.title).join(", ")}
                       </p>
                     )}
@@ -1318,7 +1318,7 @@ function PdvTerminal() {
  {product.title}
  </h3>
  {variant.sku && variant.sku !== "DEFAULT" && (
- <p className="text-[10px] text-muted-foreground font-mono truncate">
+ <p className="text-xs text-muted-foreground font-mono truncate">
  {variant.sku}
  </p>
  )}
@@ -1428,11 +1428,11 @@ function PdvTerminal() {
                   >
                     <Armchair className={`size-6 mb-1.5 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
                     <span className="font-bold text-xs">{table.label}</span>
-                    <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                    <span className="text-xs text-muted-foreground font-mono mt-0.5">
                       {table.seats ? `${table.seats} lugares` : "4 lugares"}
                     </span>
                     {isSelected && (
-                      <Badge variant="outline" className="mt-1 text-[9px] font-bold border-primary text-primary px-1.5 py-0">
+                      <Badge variant="outline" className="mt-1 text-xs font-bold border-primary text-primary px-1.5 py-0">
                         Ativa
                       </Badge>
                     )}
@@ -1458,7 +1458,7 @@ function PdvTerminal() {
  </DialogDescription>
  </div>
  <div className="text-right">
- <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+ <span className="text-xs uppercase font-bold text-muted-foreground block">
  Restante
  </span>
  <span className="text-lg font-mono font-black text-primary">
@@ -1477,7 +1477,7 @@ function PdvTerminal() {
  <span>Dividir Conta entre Pessoas (Split Bill)</span>
  </span>
  {splitCount > 1 && (
- <Badge variant="outline" className="text-[10px] font-mono border-primary/40 text-primary">
+ <Badge variant="outline" className="text-xs font-mono border-primary/40 text-primary">
  {splitCount} pessoas (~{formatMoney(Math.round(cartTotal / splitCount))} cada)
  </Badge>
  )}
@@ -1569,7 +1569,7 @@ function PdvTerminal() {
  {/* Lista de Pagamentos Lançados (Divisão de Conta) */}
  {splitPayments.length > 0 && (
  <div className="space-y-2 p-3 bg-muted/40 rounded-xl border border-border/60">
- <span className="text-[11px] font-bold text-muted-foreground block">
+ <span className="text-xs font-bold text-muted-foreground block">
  Pagamentos Adicionados ({splitPayments.length}):
  </span>
  <div className="space-y-1.5">
@@ -1580,7 +1580,7 @@ function PdvTerminal() {
  >
  <div className="flex items-center gap-1.5">
  {p.payerLabel && (
- <Badge variant="outline" className="text-[10px] font-bold py-0 h-4 border-primary/30 text-primary">
+ <Badge variant="outline" className="text-xs font-bold py-0 h-4 border-primary/30 text-primary">
  {p.payerLabel}
  </Badge>
  )}
@@ -1655,20 +1655,20 @@ function PdvTerminal() {
  <div className="p-4 rounded-xl bg-muted/30 border border-dashed border-border font-mono text-xs space-y-2">
  <div className="text-center border-b border-border/60 pb-2">
  <p className="font-bold">WAESY PDV</p>
- <p className="text-[10px] text-muted-foreground">CUPOM NÃO FISCAL</p>
- <p className="text-[10px] text-muted-foreground">{lastSaleReceipt?.date && formatDateTime(lastSaleReceipt.date)}</p>
+ <p className="text-xs text-muted-foreground">CUPOM NÃO FISCAL</p>
+ <p className="text-xs text-muted-foreground">{lastSaleReceipt?.date && formatDateTime(lastSaleReceipt.date)}</p>
  </div>
 
  <div className="space-y-1 py-1 border-b border-border/60">
  {lastSaleReceipt?.items?.map((item: any, idx: number) => (
- <div key={idx} className="flex justify-between text-[11px]">
+ <div key={idx} className="flex justify-between text-xs">
  <span>{item.qty}x {item.product?.title || item.title}</span>
  <span>{formatMoney(item.unitPriceCents * item.qty)}</span>
  </div>
  ))}
  </div>
 
- <div className="space-y-0.5 pt-1 text-[11px]">
+ <div className="space-y-0.5 pt-1 text-xs">
  <div className="flex justify-between">
  <span>Subtotal:</span>
  <span>{formatMoney(lastSaleReceipt?.subtotal || 0)}</span>

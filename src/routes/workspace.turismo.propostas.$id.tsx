@@ -2,7 +2,7 @@ import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal } from "lucide-react";
+import {  ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal , LayoutTemplate, Moon, Briefcase, Monitor, FileText, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
@@ -186,20 +186,20 @@ function WorkspaceProposalStudioPage() {
  <h1 className="text-xs font-bold text-foreground truncate max-w-xs sm:max-w-sm">
  {proposal.title}
  </h1>
- <Badge variant="outline" className="text-[9px] font-mono uppercase font-bold py-0.5 px-2">
+ <Badge variant="outline" className="text-xs font-mono uppercase font-bold py-0.5 px-2">
  {proposal.status}
  </Badge>
  {isSaving ? (
- <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono">
+ <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
  <Loader2 className="size-3 animate-spin text-primary" /> Salvando...
  </span>
  ) : (
- <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-mono">
+ <span className="flex items-center gap-1 text-xs text-emerald-600 font-mono">
  <Check className="size-3" /> Salvo
  </span>
  )}
  </div>
- <p className="text-[10px] text-muted-foreground truncate max-w-xs">
+ <p className="text-xs text-muted-foreground truncate max-w-xs">
  Cliente: <strong className="text-foreground">{proposal.client_name}</strong> · {proposal.destination_city}
  </p>
  </div>
@@ -233,12 +233,12 @@ function WorkspaceProposalStudioPage() {
  {/* Seletor de Template Visual */}
  <div className="flex items-center gap-0.5 bg-muted/40 p-0.5 rounded-xl border border-border/50">
  {[
-  { id: "editorial-flat", label: "Clean Apple", icon: "📐" },
-  { id: "dark-premium", label: "Dark Luxo", icon: "🌙" },
-  { id: "executivo-b2b", label: "Executivo", icon: "💼" },
-  { id: "landscape-presentation", label: "Paisagem", icon: "🖥️" },
-  { id: "vertical-premium", label: "Vertical", icon: "📜" },
-  { id: "group-catalog", label: "Catálogo", icon: "🏷️" },
+  { id: "editorial-flat", label: "Clean Apple", icon: LayoutTemplate },
+  { id: "dark-premium", label: "Dark Luxo", icon: Moon },
+  { id: "executivo-b2b", label: "Executivo", icon: Briefcase },
+  { id: "landscape-presentation", label: "Paisagem", icon: Monitor },
+  { id: "vertical-premium", label: "Vertical", icon: FileText },
+  { id: "group-catalog", label: "Catálogo", icon: Tag },
   ].map((tpl) => (
  <button
  key={tpl.id}
@@ -270,7 +270,7 @@ function WorkspaceProposalStudioPage() {
  <button
  type="button"
  onClick={() => setZoomScale(null)}
- className="px-2 py-0.5 text-[10px] font-mono font-bold text-muted-foreground hover:text-foreground cursor-pointer"
+ className="px-2 py-0.5 text-xs font-mono font-bold text-muted-foreground hover:text-foreground cursor-pointer"
  title="Ajustar à Tela (Fit)"
  >
  {displayZoom}%
@@ -354,7 +354,7 @@ function WorkspaceProposalStudioPage() {
  size="sm"
  onClick={() => setWhatsappModalOpen(true)}
  className="rounded-xl text-xs font-bold gap-1.5 h-8 px-2.5 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
- title="Enviar lâmina e proposta para o WhatsApp"
+ title="Enviar Proposta WhatsApp"
  >
  <Send className="size-3.5" />
  <span className="hidden sm:inline">WhatsApp</span>

@@ -199,12 +199,12 @@ function WorkspacePriceTablesPage() {
  <div className="flex items-center gap-2">
  <span className="font-bold text-sm text-foreground">{tbl.name}</span>
  {tbl.is_default && (
- <Badge variant="secondary" className="text-[10px]">
+ <Badge variant="secondary" className="text-xs">
  Padrão
  </Badge>
  )}
  </div>
- <Badge variant="outline" className="text-[10px] font-mono uppercase">
+ <Badge variant="outline" className="text-xs font-mono uppercase">
  {tbl.code}
  </Badge>
  </div>
@@ -340,7 +340,7 @@ function WorkspacePriceTablesPage() {
 
                       {/* Campo de Ajuste de Preço Touch (44px) */}
                       <div className="pt-2 border-t border-border/30 space-y-1.5">
-                        <Label className="text-[11px] font-semibold text-muted-foreground">
+                        <Label className="text-xs font-semibold text-muted-foreground">
                           Preço nesta Tabela (R$)
                         </Label>
                         <div className="flex items-center gap-2">
@@ -409,7 +409,7 @@ function WorkspacePriceTablesPage() {
                                   {item.product_name}
                                 </span>
                                 {item.product_sku && (
-                                  <span className="text-[10px] text-muted-foreground font-mono">
+                                  <span className="text-xs text-muted-foreground font-mono">
                                     SKU: {item.product_sku}
                                   </span>
                                 )}
@@ -456,7 +456,7 @@ function WorkspacePriceTablesPage() {
             </div>
  ) : (
  <EmptyState
- title="Selecione ou crie uma tabela de preços"
+ title="Selecione uma Tabela"
  description="Gerencie regras comerciais personalizadas para B2B, atacado, representantes e clientes VIP."
  />
  )}
@@ -465,7 +465,7 @@ function WorkspacePriceTablesPage() {
 
  {/* Drawer Lateral no Desktop / Fullscreen no Mobile: Criar Tabela */}
  <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col justify-between overflow-y-auto no-scrollbar">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-2xl md:max-w-3xl flex flex-col justify-between overflow-y-auto no-scrollbar">
  <div>
  <SheetHeader className="pb-4">
  <SheetTitle>Nova Tabela de Preços</SheetTitle>

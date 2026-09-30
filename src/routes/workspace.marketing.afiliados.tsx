@@ -207,7 +207,7 @@ function WorkspaceAffiliatesPage() {
                           {payout.affiliate?.display_name || "Parceiro"}
                         </div>
                         {payout.affiliate?.handle && (
-                          <div className="text-[11px] text-muted-foreground font-mono">
+                          <div className="text-xs text-muted-foreground font-mono">
                             @{payout.affiliate.handle}
                           </div>
                         )}
@@ -217,7 +217,7 @@ function WorkspaceAffiliatesPage() {
                       </td>
                       <td className="py-3 font-mono">
                         <span className="text-foreground">{payout.pix_key}</span>
-                        <span className="text-muted-foreground ml-1.5 uppercase text-[10px]">
+                        <span className="text-muted-foreground ml-1.5 uppercase text-xs">
                           ({payout.pix_key_type})
                         </span>
                       </td>
@@ -225,7 +225,7 @@ function WorkspaceAffiliatesPage() {
                         {formatDate(payout.created_at)}
                       </td>
                       <td className="py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ${currentStatus.badge}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-semibold ${currentStatus.badge}`}>
                           <StatusIcon className="h-3 w-3" /> {currentStatus.label}
                         </span>
                       </td>

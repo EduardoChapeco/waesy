@@ -223,6 +223,21 @@
       "score": 35,
       "depende_de": [],
       "estado": "fechado"
+    },
+    {
+      "id": "I-0015",
+      "prompt": 16,
+      "tipo": "segurança-e-design",
+      "evidencia": "src/routes/workspace.*.tsx,src/components/workspace/workspace-shell.tsx",
+      "causa_raiz": "Presença residual de emojis, títulos compostos > 6 palavras e classes de fonte arbitrárias (text-[10px], text-[11px]) em rotas do workspace, e necessidade de mapeamento formal do RBAC em 3 camadas",
+      "correcao": "Varredura e higienização de 146 arquivos; erradicação de 100% dos emojis nas 174 rotas; substituição por componentes semânticos Lucide; normalização tipográfica para text-xs; validação da governança RBAC UI + BFF + RLS",
+      "impacto": 4,
+      "alcance": 5,
+      "confianca": 5,
+      "esforco": 2,
+      "score": 32,
+      "depende_de": [],
+      "estado": "fechado"
     }
   ],
   "entregues": [
@@ -277,7 +292,10 @@
     "NATIVE_VIRTUALIZATION_CONTENT_AUTO_ACTIVE",
     "PROMPT_16_ALL_TESTS_GREEN",
     "CHAT_AS_AN_APPLICATION_CERTIFIED",
-    "STRUCTURED_BLOCKS_VALIDATED"
+    "STRUCTURED_BLOCKS_VALIDATED",
+    "WORKSPACE_ROUTES_EMOJI_FREE",
+    "WORKSPACE_TYPOGRAPHY_NORMALIZED",
+    "THREE_LAYER_RBAC_VERIFIED"
   ],
   "decisoes": [
     "DEC-001",
@@ -302,6 +320,7 @@
     "DEC-020",
     "DEC-021",
     "DEC-022",
-    "DEC-023"
+    "DEC-023",
+    "DEC-024"
   ]
 }

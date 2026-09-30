@@ -226,7 +226,7 @@ function GroupTourBoardingPage() {
               <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight truncate">
                 Embarque: {tour.title}
               </h1>
-              <Badge variant="outline" className="text-[10px] font-mono font-bold">
+              <Badge variant="outline" className="text-xs font-mono font-bold">
                 {tour.destination}
               </Badge>
             </div>
@@ -268,35 +268,35 @@ function GroupTourBoardingPage() {
       {/* ── 2. Cards de Métricas de Embarque ── */}
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
         <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5">
-          <span className="text-[11px] font-semibold text-muted-foreground">Total de Vagas</span>
+          <span className="text-xs font-semibold text-muted-foreground">Total de Vagas</span>
           <p className="text-xl font-extrabold text-foreground font-mono">
             {overview?.totalReserved ?? 0}
           </p>
-          <p className="text-[10px] text-muted-foreground">Confirmados na lista</p>
+          <p className="text-xs text-muted-foreground">Confirmados na lista</p>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5">
-          <span className="text-[11px] font-medium text-muted-foreground">Embarcados</span>
+          <span className="text-xs font-medium text-muted-foreground">Embarcados</span>
           <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
             {overview?.checkedInCount ?? 0}
           </p>
-          <p className="text-[10px] text-muted-foreground">Dentro do veículo</p>
+          <p className="text-xs text-muted-foreground">Dentro do veículo</p>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5">
-          <span className="text-[11px] font-medium text-muted-foreground">Aguardando</span>
+          <span className="text-xs font-medium text-muted-foreground">Aguardando</span>
           <p className="text-xl font-bold text-foreground font-mono">
             {overview?.pendingCount ?? 0}
           </p>
-          <p className="text-[10px] text-muted-foreground">Ainda não chegaram</p>
+          <p className="text-xs text-muted-foreground">Ainda não chegaram</p>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5 col-span-3 sm:col-span-1">
-          <span className="text-[11px] font-medium text-muted-foreground">Ausentes (No-show)</span>
+          <span className="text-xs font-medium text-muted-foreground">Ausentes (No-show)</span>
           <p className="text-xl font-bold text-destructive font-mono">
             {overview?.noShowCount ?? 0}
           </p>
-          <p className="text-[10px] text-muted-foreground">Não compareceram</p>
+          <p className="text-xs text-muted-foreground">Não compareceram</p>
         </div>
       </div>
 
@@ -380,18 +380,18 @@ function GroupTourBoardingPage() {
  {passenger.passenger_name || "Nome não informado"}
  </p>
  {isCheckedIn && (
- <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] px-1.5 py-0 h-4">
+ <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-xs px-1.5 py-0 h-4">
  A bordo
  </Badge>
  )}
  {isNoShow && (
- <Badge className="bg-rose-600 hover:bg-rose-600 text-white text-[10px] px-1.5 py-0 h-4">
+ <Badge className="bg-rose-600 hover:bg-rose-600 text-white text-xs px-1.5 py-0 h-4">
  Ausente
  </Badge>
  )}
  </div>
 
- <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground font-mono">
+ <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-mono">
  <span>Doc: {passenger.passenger_document || "S/ Doc"}</span>
  {passenger.passenger_phone && (
  <a
@@ -485,7 +485,7 @@ function GroupTourBoardingPage() {
        {/* Lista de Pontos Atuais */}
        {overview?.points && overview.points.length > 0 && (
          <div className="space-y-2 border-b border-border/60 py-4">
-           <span className="text-[11px] font-mono text-muted-foreground uppercase font-bold">
+           <span className="text-xs font-mono text-muted-foreground uppercase font-bold">
              Paradas Cadastradas
            </span>
            <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar">

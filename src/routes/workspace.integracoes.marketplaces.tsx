@@ -536,7 +536,7 @@ function MarketplaceHubPage() {
           <p className="text-2xl font-bold tracking-tight mt-1 text-foreground">
             {totalConnected} <span className="text-xs text-muted-foreground font-normal">/ {PLATFORMS_CATALOG.length}</span>
           </p>
-          <p className="text-[11px] text-emerald-600 font-medium mt-1">Conexões oficiais ativas</p>
+          <p className="text-xs text-emerald-600 font-medium mt-1">Conexões oficiais ativas</p>
         </div>
 
         <div className="rounded-2xl border border-border/70 bg-card p-4">
@@ -544,7 +544,7 @@ function MarketplaceHubPage() {
           <p className="text-2xl font-bold tracking-tight mt-1 text-foreground">
             {formatMoney(totalGrossSalesCents)}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">Faturamento bruto nos canais</p>
+          <p className="text-xs text-muted-foreground mt-1">Faturamento bruto nos canais</p>
         </div>
 
         <div className="rounded-2xl border border-border/70 bg-card p-4">
@@ -552,7 +552,7 @@ function MarketplaceHubPage() {
           <p className="text-2xl font-bold tracking-tight mt-1 text-rose-600">
             {formatMoney(totalFeesCents)}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">Comissões retidas nas plataformas</p>
+          <p className="text-xs text-muted-foreground mt-1">Comissões retidas nas plataformas</p>
         </div>
 
         <div className="rounded-2xl border border-border/70 bg-card p-4">
@@ -560,7 +560,7 @@ function MarketplaceHubPage() {
           <p className="text-2xl font-bold tracking-tight mt-1 text-emerald-600">
             {formatMoney(totalNetCents)}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">Conciliado no fluxo de caixa</p>
+          <p className="text-xs text-muted-foreground mt-1">Conciliado no fluxo de caixa</p>
         </div>
       </div>
 
@@ -668,15 +668,15 @@ function MarketplaceHubPage() {
                         </div>
                         <div>
                           <h3 className="text-sm font-semibold text-foreground tracking-tight">{item.name}</h3>
-                          <p className="text-[11px] text-muted-foreground">{item.badgeLabel}</p>
+                          <p className="text-xs text-muted-foreground">{item.badgeLabel}</p>
                         </div>
                       </div>
                       {isConnected ? (
-                        <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 bg-emerald-500/10 text-[10px] font-medium h-5">
+                        <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 bg-emerald-500/10 text-xs font-medium h-5">
                           Conectado
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="border-border text-muted-foreground text-[10px] h-5">
+                        <Badge variant="outline" className="border-border text-muted-foreground text-xs h-5">
                           Desconectado
                         </Badge>
                       )}
@@ -693,11 +693,11 @@ function MarketplaceHubPage() {
                     )}
 
                     {isConnected && conn?.last_sync_at ? (
-                      <p className="text-[11px] text-muted-foreground mb-2">
+                      <p className="text-xs text-muted-foreground mb-2">
                         Última sincronização: {formatDateTime(conn.last_sync_at)}
                       </p>
                     ) : (
-                      <p className="text-[11px] text-muted-foreground/50 mb-2">
+                      <p className="text-xs text-muted-foreground/50 mb-2">
                         Pronto para vincular catálogo e pedidos
                       </p>
                     )}
@@ -708,7 +708,7 @@ function MarketplaceHubPage() {
                       <button
                         type="button"
                         onClick={() => handleOpenWebhookInfo(item)}
-                        className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors cursor-pointer"
+                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors cursor-pointer"
                         title="Ver URL do Webhook"
                       >
                         <FileCode2 className="size-3" /> Webhook
@@ -717,7 +717,7 @@ function MarketplaceHubPage() {
                         href={item.docUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                       >
                         Docs <ExternalLink className="size-3" />
                       </a>
@@ -840,7 +840,7 @@ function MarketplaceHubPage() {
                             <Badge
                               variant="outline"
                               className={cn(
-                                "text-[11px] font-mono",
+                                "text-xs font-mono",
                                 item.stock_on_hand > 5
                                   ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
                                   : item.stock_on_hand > 0
@@ -853,17 +853,17 @@ function MarketplaceHubPage() {
                           </TableCell>
                           <TableCell>
                             {channelKeys.length === 0 ? (
-                              <span className="text-[11px] text-muted-foreground italic">Sem vínculos externos</span>
+                              <span className="text-xs text-muted-foreground italic">Sem vínculos externos</span>
                             ) : (
                               <div className="flex flex-wrap gap-1">
                                 {channelKeys.map((ch) => (
-                                  <Badge key={ch} variant="outline" className="text-[10px] font-mono capitalize flex items-center gap-1 group/badge">
+                                  <Badge key={ch} variant="outline" className="text-xs font-mono capitalize flex items-center gap-1 group/badge">
                                     <span>{ch}: #{item.mappings[ch]?.listing_id || "OK"}</span>
                                     <button
                                       type="button"
                                       onClick={() => deleteMappingMutation.mutate({ productId: item.id, platform: ch as MarketplacePlatform })}
                                       disabled={deleteMappingMutation.isPending}
-                                      className="opacity-40 hover:opacity-100 hover:text-destructive cursor-pointer ml-0.5 text-[11px] leading-none"
+                                      className="opacity-40 hover:opacity-100 hover:text-destructive cursor-pointer ml-0.5 text-xs leading-none"
                                       title={`Desvincular canal ${ch}`}
                                     >
                                       ×
@@ -968,7 +968,7 @@ function MarketplaceHubPage() {
                           <Badge
                             variant="outline"
                             className={cn(
-                              "text-[10px] font-medium",
+                              "text-xs font-medium",
                               evt.status === "processed"
                                 ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
                                 : evt.status === "failed"
@@ -1049,7 +1049,7 @@ function MarketplaceHubPage() {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className="border-emerald-500/40 text-emerald-600 bg-emerald-500/10 text-[10px]"
+                            className="border-emerald-500/40 text-emerald-600 bg-emerald-500/10 text-xs"
                           >
                             {log.status}
                           </Badge>
@@ -1110,7 +1110,7 @@ function MarketplaceHubPage() {
                   autoComplete={field.type === "password" ? "new-password" : undefined}
                 />
                 {field.hint && (
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {field.hint}
                   </p>
                 )}
@@ -1121,7 +1121,7 @@ function MarketplaceHubPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium">Sincronizar Estoque em Tempo Real</p>
-                  <p className="text-[11px] text-muted-foreground">Baixa automática em vendas locais e remotas</p>
+                  <p className="text-xs text-muted-foreground">Baixa automática em vendas locais e remotas</p>
                 </div>
                 <Switch checked={syncStock} onCheckedChange={setSyncStock} />
               </div>
@@ -1130,7 +1130,7 @@ function MarketplaceHubPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium">Aceite Automático de Pedidos</p>
-                    <p className="text-[11px] text-muted-foreground">Dispara comanda direta para impressão da cozinha</p>
+                    <p className="text-xs text-muted-foreground">Dispara comanda direta para impressão da cozinha</p>
                   </div>
                   <Switch checked={autoAccept} onCheckedChange={setAutoAccept} />
                 </div>
@@ -1197,7 +1197,7 @@ function MarketplaceHubPage() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-muted/40 p-3 text-[11px] text-muted-foreground space-y-1.5">
+            <div className="rounded-xl bg-muted/40 p-3 text-xs text-muted-foreground space-y-1.5">
               <p className="font-semibold text-foreground">Garantias Técnicas Ativas:</p>
               <p>• Idempotência transacional com prevenção estrita de duplicidade.</p>
               <p>• Inserção automática na tabela mestra de pedidos e KDS.</p>
@@ -1274,7 +1274,7 @@ function MarketplaceHubPage() {
                 onChange={(e) => setPriceMarginPercent(Number(e.target.value))}
                 className="h-10 text-xs rounded-xl font-mono"
               />
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
+              <div className="flex items-center justify-between text-xs text-muted-foreground pt-0.5">
                 <span>Compensa taxas e comissões da plataforma.</span>
                 {selectedProductForMapping && (
                   <span className="font-semibold text-foreground">

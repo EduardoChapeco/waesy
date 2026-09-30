@@ -65,7 +65,7 @@ function WorkspaceCaptacaoHubPage() {
             <Link to="/workspace/captacao/ndas">
               <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
               <span>Ver NDAs Assinados</span>
-              <Badge variant="secondary" className="text-[10px] font-mono font-bold px-1.5 py-0 h-4">
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-1.5 py-0 h-4">
                 {ndas.length}
               </Badge>
             </Link>
@@ -90,7 +90,7 @@ function WorkspaceCaptacaoHubPage() {
           <strong className="text-base sm:text-xl font-bold font-mono text-foreground">
             {formatMoney(totalValuationCents)}
           </strong>
-          <span className="text-[11px] text-muted-foreground">Soma de ativos e participações</span>
+          <span className="text-xs text-muted-foreground">Soma de ativos e participações</span>
         </div>
 
         <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
@@ -101,7 +101,7 @@ function WorkspaceCaptacaoHubPage() {
           <strong className="text-base sm:text-xl font-bold font-mono text-foreground">
             {businesses.length}
           </strong>
-          <span className="text-[11px] text-muted-foreground">Empresas e pontos listados</span>
+          <span className="text-xs text-muted-foreground">Empresas e pontos listados</span>
         </div>
 
         <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
@@ -112,7 +112,7 @@ function WorkspaceCaptacaoHubPage() {
           <strong className="text-base sm:text-xl font-bold font-mono text-foreground">
             {ndas.length}
           </strong>
-          <span className="text-[11px] text-muted-foreground">Investidores com acesso liberado</span>
+          <span className="text-xs text-muted-foreground">Investidores com acesso liberado</span>
         </div>
 
         <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
@@ -123,7 +123,7 @@ function WorkspaceCaptacaoHubPage() {
           <strong className="text-base sm:text-xl font-bold font-mono text-foreground">
             {formatMoney(totalRevenueMonthlyCents)}
           </strong>
-          <span className="text-[11px] text-muted-foreground">Receita recorrente combinada</span>
+          <span className="text-xs text-muted-foreground">Receita recorrente combinada</span>
         </div>
       </div>
 
@@ -136,7 +136,7 @@ function WorkspaceCaptacaoHubPage() {
               Oportunidades em Carteira
             </h2>
           </div>
-          <Badge variant="outline" className="text-[10px] font-mono">
+          <Badge variant="outline" className="text-xs font-mono">
             {businesses.length} {businesses.length === 1 ? "registro" : "registros"}
           </Badge>
         </div>
@@ -185,13 +185,13 @@ function WorkspaceCaptacaoHubPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-bold text-sm text-foreground truncate">{item.title}</span>
                         {requiresNda && (
-                          <Badge variant="outline" className="text-[10px] font-medium border-amber-500/30 text-amber-700 dark:text-amber-300 bg-amber-500/10">
+                          <Badge variant="outline" className="text-xs font-medium border-amber-500/30 text-amber-700 dark:text-amber-300 bg-amber-500/10">
                             <Lock className="size-2.5 mr-1" />
                             NDA Ativo
                           </Badge>
                         )}
                         {attrs.advisor_supported && (
-                          <Badge variant="outline" className="text-[10px] font-medium border-blue-500/30 text-blue-700 dark:text-blue-300 bg-blue-500/10">
+                          <Badge variant="outline" className="text-xs font-medium border-blue-500/30 text-blue-700 dark:text-blue-300 bg-blue-500/10">
                             <ShieldCheck className="size-2.5 mr-1" />
                             Assessorada
                           </Badge>

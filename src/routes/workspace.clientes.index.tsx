@@ -362,7 +362,7 @@ function CarteiraClientesPage() {
                       >
                         {c.status === "active" ? "Ativo" : c.status === "blocked" ? "Bloqueado" : "Inativo"}
                       </Badge>
-                      <Badge variant="outline" className="text-[11px] font-bold uppercase">
+                      <Badge variant="outline" className="text-xs font-bold uppercase">
                         {isCompany ? "PJ (B2B)" : "PF (B2C)"}
                       </Badge>
                     </div>
@@ -542,7 +542,7 @@ function CarteiraClientesPage() {
                               {c.fullName}
                             </Link>
                             {c.legalName && c.legalName !== c.fullName && (
-                              <span className="text-[11px] text-muted-foreground block truncate font-mono">
+                              <span className="text-xs text-muted-foreground block truncate font-mono">
                                 {c.legalName}
                               </span>
                             )}
@@ -552,7 +552,7 @@ function CarteiraClientesPage() {
 
                       {/* Tipo PF / PJ */}
                       <TableCell className="py-3.5">
-                        <Badge variant="outline" className="text-[11px] font-bold uppercase">
+                        <Badge variant="outline" className="text-xs font-bold uppercase">
                           {isCompany ? "PJ (B2B)" : "PF (B2C)"}
                         </Badge>
                       </TableCell>
@@ -581,7 +581,7 @@ function CarteiraClientesPage() {
                             <span className="text-muted-foreground text-xs">—</span>
                           )}
                           {c.email && (
-                            <span className="text-[11px] text-muted-foreground truncate max-w-[150px]">
+                            <span className="text-xs text-muted-foreground truncate max-w-[150px]">
                               {c.email}
                             </span>
                           )}
@@ -598,14 +598,14 @@ function CarteiraClientesPage() {
                       {/* Alertas de Documentos */}
                       <TableCell className="py-3.5">
                         {hasExpiredDocs ? (
-                          <Badge variant="destructive" className="text-[10px] font-bold py-0 h-5 gap-1">
+                          <Badge variant="destructive" className="text-xs font-bold py-0 h-5 gap-1">
                             <AlertTriangle className="size-2.5" />
                             <span>{c.docAlerts.expired} Vencido</span>
                           </Badge>
                         ) : hasSoonDocs ? (
                           <Badge
                             variant="secondary"
-                            className="text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 py-0 h-5 gap-1"
+                            className="text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 py-0 h-5 gap-1"
                           >
                             <Clock className="size-2.5" />
                             <span>{c.docAlerts.soon} Vence em breve</span>

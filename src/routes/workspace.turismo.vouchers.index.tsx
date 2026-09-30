@@ -405,7 +405,7 @@ export default function WorkspaceVouchersPage() {
         isOpen={isMetricsOpen}
         onClose={() => setIsMetricsOpen(false)}
         title="Vouchers"
-        subtitle="Auditoria de cartões de embarque e confirmações"
+        subtitle="Auditoria de Vouchers"
         metrics={metricsItems}
       />
 

@@ -241,7 +241,7 @@ function WorkspaceFaturasPage() {
           {/* ── 2. Grid de KPIs (Paradigma Clean) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
             Total em Aberto
           </span>
           <div className="flex items-baseline justify-between">
@@ -252,13 +252,13 @@ function WorkspaceFaturasPage() {
               {kpis.pendingCount} fatura(s)
             </Badge>
           </div>
-          <p className="text-[11px] text-muted-foreground pt-1">
+          <p className="text-xs text-muted-foreground pt-1">
             Valores consolidados aguardando liquidação ou conferência.
           </p>
         </div>
 
         <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
             Faturas Atrasadas
           </span>
           <div className="flex items-baseline justify-between">
@@ -271,7 +271,7 @@ function WorkspaceFaturasPage() {
               </Badge>
             )}
           </div>
-          <p className="text-[11px] text-muted-foreground pt-1">
+          <p className="text-xs text-muted-foreground pt-1">
             {kpis.overdueCount > 0
               ? "Regularize para evitar suspensão de recursos da loja."
               : "Sua conta está em dia. Nenhuma fatura em atraso."}
@@ -279,7 +279,7 @@ function WorkspaceFaturasPage() {
         </div>
 
         <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
             Faturas Liquidadas
           </span>
           <div className="flex items-baseline justify-between">
@@ -290,7 +290,7 @@ function WorkspaceFaturasPage() {
               Histórico Ativo
             </Badge>
           </div>
-          <p className="text-[11px] text-muted-foreground pt-1">
+          <p className="text-xs text-muted-foreground pt-1">
             Faturas com pagamento conferido e baixado pela administração.
           </p>
         </div>
@@ -348,7 +348,7 @@ function WorkspaceFaturasPage() {
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Receipt className="size-8 stroke-[1.5] text-muted-foreground/50" />
                     <p className="font-semibold text-foreground">Nenhuma fatura encontrada</p>
-                    <p className="text-[11px]">As faturas emitidas pela administração aparecerão listadas aqui.</p>
+                    <p className="text-xs">As faturas emitidas pela administração aparecerão listadas aqui.</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -360,11 +360,11 @@ function WorkspaceFaturasPage() {
                     <TableCell className="font-medium text-xs">
                       <div>
                         <span className="font-bold text-foreground block">{inv.description}</span>
-                        <span className="text-[10px] text-muted-foreground font-mono">
+                        <span className="text-xs text-muted-foreground font-mono">
                           ID: {inv.id.slice(0, 8)} · Emissão: {formatDate(inv.created_at)}
                         </span>
                         {inv.notes && (
-                          <span className="text-[10px] text-muted-foreground/80 block italic mt-0.5">
+                          <span className="text-xs text-muted-foreground/80 block italic mt-0.5">
                             Nota: {inv.notes}
                           </span>
                         )}
@@ -384,7 +384,7 @@ function WorkspaceFaturasPage() {
                         {formatMoney(inv.total_payable_cents || inv.amount_cents)}
                       </span>
                       {inv.is_overdue && (
-                        <span className="text-[9px] text-rose-500 block font-mono">
+                        <span className="text-xs text-rose-500 block font-mono">
                           +{formatMoney((inv.fine_cents || 0) + (inv.interest_cents || 0))} (mora)
                         </span>
                       )}
@@ -392,17 +392,17 @@ function WorkspaceFaturasPage() {
 
                     <TableCell>
                       {isPaid ? (
-                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px] font-bold rounded-md gap-1">
+                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs font-bold rounded-md gap-1">
                           <CheckCircle2 className="size-3" />
                           Quitada
                         </Badge>
                       ) : inv.is_overdue ? (
-                        <Badge variant="destructive" className="text-[10px] font-bold rounded-md gap-1">
+                        <Badge variant="destructive" className="text-xs font-bold rounded-md gap-1">
                           <AlertTriangle className="size-3" />
                           Atrasada ({inv.days_overdue}d)
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="text-[10px] font-bold rounded-md gap-1">
+                        <Badge variant="secondary" className="text-xs font-bold rounded-md gap-1">
                           <Clock className="size-3" />
                           Em Aberto
                         </Badge>
@@ -414,13 +414,13 @@ function WorkspaceFaturasPage() {
                         <button
                           type="button"
                           onClick={() => setPreviewReceiptUrl(inv.receipt_url)}
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
                         >
                           <FileText className="size-3" />
                           <span>Ver Anexo</span>
                         </button>
                       ) : (
-                        <span className="text-[10px] text-muted-foreground italic">Não anexado</span>
+                        <span className="text-xs text-muted-foreground italic">Não anexado</span>
                       )}
                     </TableCell>
 
@@ -432,7 +432,7 @@ function WorkspaceFaturasPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleOpenPix(inv)}
-                              className="h-7 text-[11px] font-bold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/10"
+                              className="h-7 text-xs font-bold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/10"
                             >
                               <QrCode className="size-3.5" />
                               <span>PIX</span>
@@ -446,7 +446,7 @@ function WorkspaceFaturasPage() {
                                 setProofUrl(inv.receipt_url || "");
                                 setProofNotes("");
                               }}
-                              className="h-7 text-[11px] font-bold rounded-lg gap-1"
+                              className="h-7 text-xs font-bold rounded-lg gap-1"
                             >
                               <UploadCloud className="size-3.5" />
                               <span>Comprovante</span>
@@ -475,7 +475,7 @@ function WorkspaceFaturasPage() {
               {/* KPIs do Razão */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
-                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
                     Conciliação Contábil
                   </span>
                   <div className="flex items-baseline justify-between">
@@ -486,13 +486,13 @@ function WorkspaceFaturasPage() {
                       {statement.discrepancyCents === 0 ? "R$ 0,00 Dif." : formatMoney(statement.discrepancyCents)}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground pt-1">
+                  <p className="text-xs text-muted-foreground pt-1">
                     Trigger no PostgreSQL garante integridade centavo por centavo.
                   </p>
                 </div>
 
                 <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
-                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
                     Microtaxas de Pedidos
                   </span>
                   <div className="flex items-baseline justify-between">
@@ -503,13 +503,13 @@ function WorkspaceFaturasPage() {
                       {statement.summary.orderMicrofeesCount} pedido(s)
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground pt-1">
+                  <p className="text-xs text-muted-foreground pt-1">
                     Taxa fixa de R$ 0,99 por pedido processado com sucesso.
                   </p>
                 </div>
 
                 <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
-                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
                     Assinatura Waesy Max
                   </span>
                   <div className="flex items-baseline justify-between">
@@ -520,13 +520,13 @@ function WorkspaceFaturasPage() {
                       {statement.summary.subscriptionsTotalCents > 0 ? "Ativo" : "Gratuito"}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground pt-1">
+                  <p className="text-xs text-muted-foreground pt-1">
                     Mensalidade de manutenção e recursos avançados.
                   </p>
                 </div>
 
                 <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
-                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
                     Total Consolidado
                   </span>
                   <div className="flex items-baseline justify-between">
@@ -537,7 +537,7 @@ function WorkspaceFaturasPage() {
                       Ciclo {statement.invoice?.billing_cycle || "Atual"}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground pt-1">
+                  <p className="text-xs text-muted-foreground pt-1">
                     Status: {statement.invoice?.status ? statement.invoice.status.toUpperCase() : "VIGENTE"}
                   </p>
                 </div>
@@ -604,7 +604,7 @@ function WorkspaceFaturasPage() {
                             {formatMoney(item.amount_cents)}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 font-mono text-[10px]">
+                            <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 font-mono text-xs">
                               Auditado
                             </Badge>
                           </TableCell>
@@ -677,7 +677,7 @@ function WorkspaceFaturasPage() {
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold">Código PIX Copia e Cola</Label>
-                <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 text-[10px] font-mono break-all max-h-20 overflow-y-auto">
+                <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 text-xs font-mono break-all max-h-20 overflow-y-auto">
                   {pixDetails.pixCopyPaste}
                 </div>
                 <Button
@@ -689,7 +689,7 @@ function WorkspaceFaturasPage() {
                 </Button>
               </div>
 
-              <p className="text-[11px] text-muted-foreground text-center">
+              <p className="text-xs text-muted-foreground text-center">
                 Após efetuar a transferência no app do seu banco, anexe o comprovante na tabela para agilizar a conferência.
               </p>
             </div>
@@ -727,7 +727,7 @@ function WorkspaceFaturasPage() {
                 className="h-10 text-xs cursor-pointer rounded-xl file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-primary-foreground"
               />
               {isUploadingProof && (
-                <span className="text-[11px] text-primary flex items-center gap-1.5 animate-pulse">
+                <span className="text-xs text-primary flex items-center gap-1.5 animate-pulse">
                   <UploadCloud className="size-3.5 animate-spin" />
                   Fazendo upload seguro para o storage...
                 </span>
@@ -738,7 +738,7 @@ function WorkspaceFaturasPage() {
                     <CheckCircle2 className="size-3.5" />
                     Arquivo anexado com sucesso!
                   </span>
-                  <a href={proofUrl} target="_blank" rel="noopener noreferrer" className="underline font-bold text-[10px]">
+                  <a href={proofUrl} target="_blank" rel="noopener noreferrer" className="underline font-bold text-xs">
                     Ver arquivo
                   </a>
                 </div>

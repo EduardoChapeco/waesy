@@ -107,7 +107,7 @@ function WorkspaceCaptacaoNdasPage() {
                           <span className="truncate">{sig.signerEmail}</span>
                         </div>
                       </div>
-                      <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-[10px] font-bold shrink-0">
+                      <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-xs font-bold shrink-0">
                         Assinado
                       </Badge>
                     </div>
@@ -117,7 +117,7 @@ function WorkspaceCaptacaoNdasPage() {
                       <span className="truncate font-medium">{sig.classifiedTitle}</span>
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono pt-1">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground font-mono pt-1">
                       <span className="flex items-center gap-1">
                         <Calendar className="size-3" />
                         {dateStr}
@@ -135,7 +135,7 @@ function WorkspaceCaptacaoNdasPage() {
             {/* ── BIFURCAÇÃO DESKTOP: Tabela Corporativa Densa (>=640px) ── */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted/40 text-muted-foreground font-medium border-b border-border/40 uppercase tracking-wider text-[10px]">
+                <thead className="bg-muted/40 text-muted-foreground font-medium border-b border-border/40 uppercase tracking-wider text-xs">
                   <tr>
                     <th className="py-3 px-4 sm:px-5">Investidor / Comprador</th>
                     <th className="py-3 px-4 sm:px-5">Documento (LGPD)</th>
@@ -165,7 +165,7 @@ function WorkspaceCaptacaoNdasPage() {
                               <User className="size-3 text-muted-foreground" />
                               <span>{sig.signerName}</span>
                             </div>
-                            <div className="text-muted-foreground flex items-center gap-1 text-[11px]">
+                            <div className="text-muted-foreground flex items-center gap-1 text-xs">
                               <Mail className="size-2.5" />
                               <span>{sig.signerEmail}</span>
                             </div>
@@ -183,14 +183,14 @@ function WorkspaceCaptacaoNdasPage() {
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground text-[11px]">
+                        <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground text-xs">
                           <div className="flex items-center gap-1">
                             <Calendar className="size-3 text-muted-foreground" />
                             <span>{dateStr}</span>
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground text-[11px]">
+                        <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground text-xs">
                           <div className="flex items-center gap-1">
                             <Globe className="size-3 text-muted-foreground" />
                             <span>{sig.ipAddress}</span>
@@ -198,7 +198,7 @@ function WorkspaceCaptacaoNdasPage() {
                         </td>
 
                         <td className="py-3.5 px-4 sm:px-5 text-right">
-                          <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-[10px] font-bold">
+                          <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-xs font-bold">
                             Assinado
                           </Badge>
                         </td>

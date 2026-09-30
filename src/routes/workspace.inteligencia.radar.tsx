@@ -155,7 +155,7 @@ export function MarketRadarPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-primary/10 text-primary border border-primary/20">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                   Inteligência Competitiva
                 </span>
                 <span className="text-xs text-muted-foreground font-mono">
@@ -330,7 +330,7 @@ export function MarketRadarPage() {
                             </div>
 
                             <span
-                              className={`text-[11px] font-medium px-2 py-0.5 rounded-md uppercase tracking-wider ${
+                              className={`text-xs font-medium px-2 py-0.5 rounded-md uppercase tracking-wider ${
                                 snap?.pricing_signals?.tier === "luxury"
                                   ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
                                   : snap?.pricing_signals?.tier === "premium"
@@ -407,37 +407,37 @@ export function MarketRadarPage() {
                         <>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40">
-                              <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider block">
+                              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider block">
                                 Posicionamento de Preço
                               </span>
                               <span className="text-base font-bold text-foreground capitalize mt-0.5 block">
                                 {selectedCompetitor.latest_snapshot.pricing_signals.tier}
                               </span>
-                              <span className="text-[11px] text-muted-foreground mt-1 block">
+                              <span className="text-xs text-muted-foreground mt-1 block">
                                 Ticket médio ~R$ {selectedCompetitor.latest_snapshot.pricing_signals.average_ticket_estimate},00
                               </span>
                             </div>
 
                             <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40">
-                              <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider block">
+                              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider block">
                                 Intensidade Promocional
                               </span>
                               <span className="text-base font-bold text-foreground capitalize mt-0.5 block">
                                 {selectedCompetitor.latest_snapshot.pricing_signals.promotional_intensity}
                               </span>
-                              <span className="text-[11px] text-muted-foreground mt-1 block">
+                              <span className="text-xs text-muted-foreground mt-1 block">
                                 Agressividade em cupons e ofertas
                               </span>
                             </div>
 
                             <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40">
-                              <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider block">
+                              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider block">
                                 Arquétipo Dominante
                               </span>
                               <span className="text-base font-bold text-foreground mt-0.5 block">
                                 {selectedCompetitor.latest_snapshot.extracted_dna.brand_archetype}
                               </span>
-                              <span className="text-[11px] text-muted-foreground mt-1 block">
+                              <span className="text-xs text-muted-foreground mt-1 block">
                                 Psicologia de comunicação
                               </span>
                             </div>
@@ -486,7 +486,7 @@ export function MarketRadarPage() {
                                       navigator.clipboard.writeText(h);
                                       setFeedback({ type: "success", message: "Gancho copiado para a área de transferência!" });
                                     }}
-                                    className="text-[11px] px-2 py-1 rounded bg-muted hover:bg-muted/80 text-foreground font-medium transition-colors"
+                                    className="text-xs px-2 py-1 rounded bg-muted hover:bg-muted/80 text-foreground font-medium transition-colors"
                                   >
                                     Copiar
                                   </button>
@@ -571,10 +571,10 @@ export function MarketRadarPage() {
                                 className="w-full h-12 rounded-lg border border-border/30 shadow-xs mb-1"
                                 style={{ backgroundColor: val }}
                               />
-                              <span className="text-[10px] uppercase font-semibold text-muted-foreground block">
+                              <span className="text-xs uppercase font-semibold text-muted-foreground block">
                                 {key}
                               </span>
-                              <span className="text-[10px] font-mono text-foreground block">
+                              <span className="text-xs font-mono text-foreground block">
                                 {val}
                               </span>
                             </div>
@@ -592,7 +592,7 @@ export function MarketRadarPage() {
                               key={idx}
                               className="px-2.5 py-1 rounded-md text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20"
                             >
-                              ✕ {w}
+                              {w}
                             </span>
                           ))}
                         </div>
@@ -691,7 +691,7 @@ export function MarketRadarPage() {
                         key={sin}
                         className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-1.5"
                       >
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary block">
+                        <span className="text-xs font-bold uppercase tracking-wider text-primary block">
                           {sin}
                         </span>
                         <p className="text-xs text-foreground leading-relaxed">&ldquo;{copy}&rdquo;</p>

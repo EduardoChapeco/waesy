@@ -144,7 +144,7 @@ function FiscalNFePage() {
             <Badge
               variant="outline"
               className="border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 text-xs font-semibold gap-1.5 py-1.5 px-3 rounded-xl"
-              title="Configure o provedor fiscal ou certificado A1 na aba de Configurações"
+              title="Configurar Provedor Fiscal"
             >
               <AlertCircle className="size-3.5 text-amber-600" />
               Certificado Digital A1 / Provedor Pendente
@@ -188,19 +188,19 @@ function FiscalNFePage() {
           {/* Métricas e Filtros de Tipo */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-card border border-border/60 rounded-xl p-3.5 space-y-1">
-              <span className="text-[11px] text-muted-foreground font-medium">Total Faturado em Notas</span>
+              <span className="text-xs text-muted-foreground font-medium">Total Faturado em Notas</span>
               <p className="text-base font-bold text-foreground">
                 {(invoices.reduce((acc: number, cur: any) => acc + (cur.valor_total_cents || 0), 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
               </p>
             </div>
             <div className="bg-card border border-border/60 rounded-xl p-3.5 space-y-1">
-              <span className="text-[11px] text-muted-foreground font-medium">NF-e (Mercadorias)</span>
+              <span className="text-xs text-muted-foreground font-medium">NF-e (Mercadorias)</span>
               <p className="text-base font-bold text-blue-600">
                 {invoices.filter((i: any) => i.invoice_type === "nfe" || !i.invoice_type).length} emitidas
               </p>
             </div>
             <div className="bg-card border border-border/60 rounded-xl p-3.5 space-y-1">
-              <span className="text-[11px] text-muted-foreground font-medium">NFS-e (Serviços e Turismo)</span>
+              <span className="text-xs text-muted-foreground font-medium">NFS-e (Serviços e Turismo)</span>
               <p className="text-base font-bold text-purple-600">
                 {invoices.filter((i: any) => i.invoice_type === "nfse").length} emitidas
               </p>
@@ -292,15 +292,15 @@ function FiscalNFePage() {
                       <tr key={inv.id} className="hover:bg-muted/20 transition-colors">
                         <td className="py-3 px-4">
                           {inv.invoice_type === "nfse" ? (
-                            <Badge variant="outline" className="text-purple-600 bg-purple-500/10 border-purple-200 text-[10px]">
+                            <Badge variant="outline" className="text-purple-600 bg-purple-500/10 border-purple-200 text-xs">
                               NFS-e
                             </Badge>
                           ) : inv.invoice_type === "nfce" ? (
-                            <Badge variant="outline" className="text-emerald-600 bg-emerald-500/10 border-emerald-200 text-[10px]">
+                            <Badge variant="outline" className="text-emerald-600 bg-emerald-500/10 border-emerald-200 text-xs">
                               NFC-e
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-blue-600 bg-blue-500/10 border-blue-200 text-[10px]">
+                            <Badge variant="outline" className="text-blue-600 bg-blue-500/10 border-blue-200 text-xs">
                               NF-e
                             </Badge>
                           )}
@@ -310,16 +310,16 @@ function FiscalNFePage() {
                         </td>
                         <td className="py-3 px-4">
                           <p className="font-medium text-foreground">{inv.tomador_nome || "Consumidor Final"}</p>
-                          <p className="text-[11px] text-muted-foreground font-mono">{inv.tomador_documento || "—"}</p>
+                          <p className="text-xs text-muted-foreground font-mono">{inv.tomador_documento || "—"}</p>
                         </td>
                         <td className="py-3 px-4 font-medium text-foreground">
                           {(inv.valor_total_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                         </td>
-                        <td className="py-3 px-4 font-mono text-[11px] text-muted-foreground">
+                        <td className="py-3 px-4 font-mono text-xs text-muted-foreground">
                           {inv.nfe_key ? `${inv.nfe_key.slice(0, 12)}...${inv.nfe_key.slice(-6)}` : "—"}
                         </td>
                         <td className="py-3 px-4">
-                          <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 bg-emerald-500/10 text-[10px]">
+                          <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 bg-emerald-500/10 text-xs">
                             {inv.status === "issued" ? "Emitida" : inv.status}
                           </Badge>
                         </td>
@@ -456,7 +456,7 @@ function FiscalNFePage() {
             <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/70 bg-muted/20">
               <div className="space-y-0.5">
                 <p className="text-xs font-semibold text-foreground">Emissão Automatizada ao Mudar para "Em Separação"</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Gera a nota em segundo plano, salva XML e DANFE no Storage e vincula ao comprovante do cliente.
                 </p>
               </div>
@@ -471,7 +471,7 @@ function FiscalNFePage() {
             <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/70 bg-muted/20">
               <div className="space-y-0.5">
                 <p className="text-xs font-semibold text-foreground">Obrigatoriedade de Marketplaces (ML / Amazon / iFood)</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Emite a nota fiscal automaticamente para pedidos de canais integrados que exigem NF-e para despacho.
                 </p>
               </div>
@@ -491,7 +491,7 @@ function FiscalNFePage() {
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   Acesso da Contabilidade e Lote SPED
                 </h4>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Permita que seu contador acesse a DRE, notas e extratos diretamente pelo portal contábil.
                 </p>
               </div>

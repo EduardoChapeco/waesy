@@ -123,7 +123,7 @@ function NewGiftCardDrawer({
             onChange={(e) => setEmail(e.target.value)}
             className="h-10 rounded-xl text-xs"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Se preenchido, o código e link de resgate serão enviados automaticamente.
           </p>
         </div>
@@ -251,7 +251,7 @@ function GiftCardsDashboardPage() {
                     {formatMoney(card.currentBalance)}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusBadge(card.status)} className="text-[10px] font-bold uppercase">
+                    <Badge variant={getStatusBadge(card.status)} className="text-xs font-bold uppercase">
                       {translateStatus(card.status)}
                     </Badge>
                   </TableCell>

@@ -215,23 +215,23 @@ function AutomacoesWorkflowsPage() {
       {/* ── KPIs ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Total de Workflows
           </span>
           <div className="text-2xl font-black text-foreground">{workflows.length}</div>
         </div>
         <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Ativos</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ativos</span>
           <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{activeCount}</div>
         </div>
         <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Rascunhos</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rascunhos</span>
           <div className="text-2xl font-black text-amber-500">
             {workflows.filter((w) => w.status === "draft").length}
           </div>
         </div>
         <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Execuções</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Execuções</span>
           <div className="text-2xl font-black text-foreground">
             {workflows.reduce((sum, w) => sum + (w.execution_count || 0), 0)}
           </div>
@@ -247,7 +247,7 @@ function AutomacoesWorkflowsPage() {
               Arraste triggers, condições e ações para criar fluxos inteligentes.
             </p>
           </div>
-          <Badge variant="outline" className="text-[10px] font-bold uppercase px-2.5 py-1 gap-1 border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+          <Badge variant="outline" className="text-xs font-bold uppercase px-2.5 py-1 gap-1 border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
             <Zap className="size-3 text-emerald-500" />
             Motor de Disparo Ativo
           </Badge>
@@ -271,7 +271,7 @@ function AutomacoesWorkflowsPage() {
                     <Icon className="h-6 w-6" />
                   </div>
                   <h4 className="font-bold text-sm text-foreground">{node.label}</h4>
-                  <Badge variant="outline" className="text-[10px] uppercase font-bold py-0.5 px-2">
+                  <Badge variant="outline" className="text-xs uppercase font-bold py-0.5 px-2">
                     {node.type}
                   </Badge>
                 </div>
@@ -315,28 +315,28 @@ function AutomacoesWorkflowsPage() {
                     <div className="min-w-0">
                       <h4 className="font-bold text-sm text-foreground truncate">{wf.title}</h4>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge variant="outline" className="text-[10px] font-semibold px-1.5 py-0">
+                        <Badge variant="outline" className="text-xs font-semibold px-1.5 py-0">
                           {meta.label}
                         </Badge>
                         <Badge
                           variant={isActive ? "default" : "secondary"}
-                          className={`text-[10px] font-bold px-1.5 py-0 ${isActive ? "bg-emerald-600 text-white" : ""}`}
+                          className={`text-xs font-bold px-1.5 py-0 ${isActive ? "bg-emerald-600 text-white" : ""}`}
                         >
                           {isActive ? "Ativo" : wf.status === "draft" ? "Rascunho" : "Inativo"}
                         </Badge>
                         {wf.execution_count > 0 && (
-                          <span className="text-[10px] text-muted-foreground font-mono">
+                          <span className="text-xs text-muted-foreground font-mono">
                             {wf.execution_count} execuções
                           </span>
                         )}
                         {wf.last_run_at && (
-                          <span className="text-[10px] text-muted-foreground hidden sm:inline">
+                          <span className="text-xs text-muted-foreground hidden sm:inline">
                             Última: {new Date(wf.last_run_at).toLocaleDateString("pt-BR")}
                           </span>
                         )}
                       </div>
                       {wf.description && (
-                        <p className="text-[11px] text-muted-foreground mt-1 truncate">{wf.description}</p>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">{wf.description}</p>
                       )}
                     </div>
                   </div>

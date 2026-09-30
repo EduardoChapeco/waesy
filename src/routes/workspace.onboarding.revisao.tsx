@@ -195,7 +195,7 @@ export function OnboardingReviewPage() {
           >
             <Camera className="size-3.5" />
             <span>Revisão Multimodal</span>
-            <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+            <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
               {items.length}
             </Badge>
           </button>
@@ -241,17 +241,17 @@ export function OnboardingReviewPage() {
                     <Camera className="size-4 text-muted-foreground" />
                     <span className="text-xs font-semibold text-foreground">Cardápio Capturado (OCR Visual)</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-xs">
                     Gemini 2.5 Flash
                   </Badge>
                 </div>
                 <div className="relative aspect-[3/4] bg-muted/30 flex flex-col items-center justify-center p-6 text-center border border-border/40 rounded-xl overflow-hidden">
                   <Camera className="size-12 text-muted-foreground/40 mb-3" />
                   <p className="text-xs font-bold text-foreground">Documento Processado via OCR</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">Extração multimodal concluída</p>
+                  <p className="text-xs text-muted-foreground mt-1">Extração multimodal concluída</p>
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent p-4">
                     <p className="text-xs text-foreground font-medium">Cardápio Principal da Casa</p>
-                    <p className="text-[10px] text-muted-foreground">Itens identificados com alta acurácia semântica</p>
+                    <p className="text-xs text-muted-foreground">Itens identificados com alta acurácia semântica</p>
                   </div>
                 </div>
               </div>
@@ -290,7 +290,7 @@ export function OnboardingReviewPage() {
                   <div className="rounded-2xl border border-dashed border-border/80 p-8 text-center space-y-2 bg-card/40">
                     <Package className="size-8 mx-auto text-muted-foreground/60" />
                     <p className="text-xs font-semibold text-foreground">Nenhum item pendente de revisão</p>
-                    <p className="text-[11px] text-muted-foreground">Envie fotos na etapa multimodal ou utilize o catálogo mestre ao lado para adicionar produtos.</p>
+                    <p className="text-xs text-muted-foreground">Envie fotos na etapa multimodal ou utilize o catálogo mestre ao lado para adicionar produtos.</p>
                   </div>
                 ) : (
                   items.map((item, idx) => (
@@ -299,8 +299,8 @@ export function OnboardingReviewPage() {
                       className="rounded-2xl bg-card border border-border/80 p-4 space-y-3 shadow-xs transition-colors hover:border-foreground/30"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-mono text-muted-foreground">#{idx + 1}</span>
-                        <Badge variant="secondary" className="text-[10px]">
+                        <span className="text-xs font-mono text-muted-foreground">#{idx + 1}</span>
+                        <Badge variant="secondary" className="text-xs">
                           {item.category}
                         </Badge>
                         <button
@@ -314,7 +314,7 @@ export function OnboardingReviewPage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="sm:col-span-2 space-y-1">
-                          <label className="text-[11px] font-medium text-muted-foreground">Nome do Prato/Produto</label>
+                          <label className="text-xs font-medium text-muted-foreground">Nome do Prato/Produto</label>
                           <Input
                             value={item.name}
                             onChange={(e) => handleUpdateItem(item.id, "name", e.target.value)}
@@ -322,7 +322,7 @@ export function OnboardingReviewPage() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[11px] font-medium text-muted-foreground">Preço (R$)</label>
+                          <label className="text-xs font-medium text-muted-foreground">Preço (R$)</label>
                           <Input
                             value={(item.price_cents / 100).toFixed(2).replace(".", ",")}
                             onChange={(e) => {
@@ -335,7 +335,7 @@ export function OnboardingReviewPage() {
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[11px] font-medium text-muted-foreground">Descrição e Ingredientes</label>
+                        <label className="text-xs font-medium text-muted-foreground">Descrição e Ingredientes</label>
                         <Input
                           value={item.description}
                           onChange={(e) => handleUpdateItem(item.id, "description", e.target.value)}
@@ -427,13 +427,13 @@ export function OnboardingReviewPage() {
                         )}
                       </div>
                       <div className="flex items-center justify-between gap-1">
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                        <Badge variant="outline" className="text-xs px-1.5 py-0">
                           {sku.category}
                         </Badge>
-                        <span className="text-[10px] font-mono text-muted-foreground">{sku.barcode_ean}</span>
+                        <span className="text-xs font-mono text-muted-foreground">{sku.barcode_ean}</span>
                       </div>
                       <h3 className="text-xs font-semibold text-foreground line-clamp-2">{sku.name}</h3>
-                      <p className="text-[10px] text-muted-foreground">Marca: {sku.brand_name} · NCM: {sku.ncm_code}</p>
+                      <p className="text-xs text-muted-foreground">Marca: {sku.brand_name} · NCM: {sku.ncm_code}</p>
                     </div>
 
                     <div className="pt-2 border-t border-border/40 flex items-center justify-between">
@@ -444,7 +444,7 @@ export function OnboardingReviewPage() {
                         size="sm"
                         disabled={importingId === sku.id}
                         onClick={() => handleImportSku(sku)}
-                        className="h-8 rounded-lg text-[11px] font-medium px-3 bg-foreground text-background hover:opacity-90 gap-1.5"
+                        className="h-8 rounded-lg text-xs font-medium px-3 bg-foreground text-background hover:opacity-90 gap-1.5"
                       >
                         {importingId === sku.id ? (
                           <Loader2 className="size-3 animate-spin" />

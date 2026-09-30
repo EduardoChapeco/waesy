@@ -168,7 +168,7 @@ export default function WorkspaceContractsIndexPage() {
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-0.5">
-                        <span className="text-[10px] font-mono text-muted-foreground uppercase font-bold">
+                        <span className="text-xs font-mono text-muted-foreground uppercase font-bold">
                           Token: {c.public_token}
                         </span>
                         <h3 className="text-sm font-bold text-foreground line-clamp-1">
@@ -176,7 +176,7 @@ export default function WorkspaceContractsIndexPage() {
                         </h3>
                       </div>
                       <span
-                        className={`text-[10px] font-bold uppercase tracking-wider ${
+                        className={`text-xs font-bold uppercase tracking-wider ${
                           isSigned
                             ? "text-emerald-600 dark:text-emerald-400"
                             : "text-amber-600 dark:text-amber-400"
@@ -202,19 +202,19 @@ export default function WorkspaceContractsIndexPage() {
                     </div>
 
                     <div className="pt-2 border-t border-border/50 flex items-center justify-between">
-                      <span className="text-[11px] text-muted-foreground">Valor:</span>
+                      <span className="text-xs text-muted-foreground">Valor:</span>
                       <span className="text-sm font-black text-foreground font-mono">
                         {formatMoney(c.total_value_cents)}
                       </span>
                     </div>
 
                     {isSigned && (c.signatures || []).length > 0 && (
-                      <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-[11px] space-y-1">
+                      <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-xs space-y-1">
                         <p className="font-bold text-foreground flex items-center gap-1">
                           <CheckCircle2 className="size-3 text-emerald-600" />
                           <span>Assinado por {c.signatures[0].signer_name}</span>
                         </p>
-                        <p className="text-[10px] text-muted-foreground font-mono truncate">
+                        <p className="text-xs text-muted-foreground font-mono truncate">
                           Hash: {((c.signatures[0] as any)?.signature_hash || (c.signatures[0] as any)?.hash || "").substring(0, 24)}...
                         </p>
                       </div>
@@ -285,7 +285,7 @@ export default function WorkspaceContractsIndexPage() {
           isOpen={isDashboardOpen}
           onClose={() => setIsDashboardOpen(false)}
           title="Contratos"
-          subtitle="Status de assinatura eletrônica e conformidade legal"
+          subtitle="Status de Assinatura"
           metrics={metricsItems}
         />
       </div>

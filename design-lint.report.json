@@ -1,614 +1,614 @@
 {
-  "timestamp": "2026-09-30T16:49:16.539Z",
-  "inspectedFiles": 1502,
+  "timestamp": "2026-09-30T19:44:36.582Z",
+  "inspectedFiles": 146,
   "counts": {
-    "P0": 6672,
-    "P1": 22556,
-    "P2": 814,
-    "P3": 1357
+    "P0": 890,
+    "P1": 4142,
+    "P2": 8,
+    "P3": 196
   },
-  "totalViolations": 31399,
+  "totalViolations": 5236,
   "passed": false,
   "violationsSample": [
     {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "id": "DL-01",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
-      "match": "min-h-[100dvh]"
+      "match": "#f59e0b"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
-      "match": "w-[68px]"
+      "match": "h-[100dvh]"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
-      "match": "text-[10px]"
+      "match": "h-[100dvh]"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
-      "match": "max-w-[120px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "text-[9px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "min-h-[100dvh]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "pl-[84px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "pl-[280px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "h-[calc(100dvh-4rem)]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "min-h-[56px]"
+      "match": "h-[calc(100dvh-130px)]"
     },
     {
       "id": "DL-04",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P0",
-      "match": "!collapsed"
+      "match": "!allowedRoles"
     },
     {
       "id": "DL-04",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P0",
-      "match": "!collapsed"
+      "match": "!allowedFinanceRoles"
     },
     {
       "id": "DL-04",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P0",
-      "match": "!collapsed"
+      "match": "!prev"
     },
     {
       "id": "DL-04",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P0",
-      "match": "!collapsed"
+      "match": "!prev"
     },
     {
       "id": "DL-04",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P0",
-      "match": "!collapsed"
+      "match": "!prev"
     },
     {
-      "id": "DL-04",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P0",
-      "match": "!collapsed"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P0",
-      "match": "!collapsed"
+      "id": "DL-05",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "style={{ backgroundColor: isMasterAllVerticals ? \"var(--color-amber-500, #f59e0b)\" : \"currentColor\" }}"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-2"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
       "match": "h-10"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "h-8"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
       "match": "size-3"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
-      "match": "h-3"
+      "match": "size-3"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
-      "match": "h-3"
+      "match": "h-8"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
-      "match": "size-6"
+      "match": "size-3"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "h-8"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-7"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
       "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
-      "match": "size-5"
+      "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
       "match": "size-10"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
       "match": "size-5"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
       "severity": "P1",
-      "match": "h-6"
+      "match": "size-3"
+    },
+    {
+      "id": "DL-15",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P0",
+      "match": "onClick sem focus-visible"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\workspace\\workspace-shell.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "min-h-[44px]"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P0",
+      "match": "!searchQuery"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P0",
+      "match": "!cnjInput"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P0",
+      "match": "!lawsuit"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P0",
+      "match": "!lawsuit"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P0",
+      "match": "!lawsuit"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P0",
+      "match": "!selectedDemand"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P0",
+      "match": "!details"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P0",
+      "match": "! N"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P0",
+      "match": "!open"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P0",
+      "match": "!open"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
       "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
-      "match": "size-5"
+      "match": "h-10"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
-      "match": "size-5"
+      "match": "size-3"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
       "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-9"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-9"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-9"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-9"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-9"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-9"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
       "match": "size-8"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "size-7"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "size-5"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "h-6"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "h-8"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "size-5"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "size-5"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "h-6"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P1",
-      "match": "size-5"
-    },
-    {
-      "id": "DL-15",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P0",
-      "match": "onClick sem focus-visible"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\admin-shell.tsx",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
-      "severity": "P0",
-      "match": "!anim"
-    },
-    {
-      "id": "DL-26",
-      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
-      "severity": "P2",
-      "match": "duration-700"
-    },
-    {
-      "id": "DL-26",
-      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
-      "severity": "P2",
-      "match": "duration-500"
-    },
-    {
-      "id": "DL-26",
-      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
-      "severity": "P2",
-      "match": "duration-600"
-    },
-    {
-      "id": "DL-26",
-      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
-      "severity": "P2",
-      "match": "duration-500"
-    },
-    {
-      "id": "DL-26",
-      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
-      "severity": "P2",
-      "match": "duration-700"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
-      "severity": "P1",
-      "match": "min-h-[80px]"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
-      "severity": "P1",
-      "match": "h-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
-      "severity": "P1",
-      "match": "h-6"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
-      "severity": "P1",
-      "match": "h-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
-      "severity": "P1",
-      "match": "h-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
-      "severity": "P1",
-      "match": "h-8"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
-      "severity": "P1",
-      "match": "h-4"
-    },
-    {
-      "id": "DL-15",
-      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
-      "severity": "P0",
-      "match": "onClick sem focus-visible"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-01",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "#6366f1"
-    },
-    {
-      "id": "DL-01",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "#25D366"
-    },
-    {
-      "id": "DL-01",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "#ffffff"
-    },
-    {
-      "id": "DL-01",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "hsl(263, 70%, 50%)"
-    },
-    {
-      "id": "DL-01",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "hsl(0, 84%, 60%)"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "w-[380px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "text-[9px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P0",
-      "match": "! Como"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P0",
-      "match": "! Entraremos"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P0",
-      "match": "!isOpen"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
       "match": "size-3"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
       "match": "size-3"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
-      "match": "size-3"
+      "match": "h-10"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "h-8"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "size-7"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
       "match": "size-10"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
-      "match": "size-5"
+      "match": "h-10"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
       "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
-      "match": "size-6"
+      "match": "size-8"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
-      "match": "size-6"
+      "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-9"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
       "match": "size-3"
     },
     {
-      "id": "DL-15",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P0",
-      "match": "onClick sem focus-visible"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-27",
-      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
-      "severity": "P3",
-      "match": "transition-all"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-canvas.tsx",
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
-      "match": "max-w-[1440px]"
+      "match": "size-10"
     },
     {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-canvas.tsx",
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
-      "match": "min-h-[calc(100dvh-100px)]"
+      "match": "size-7"
     },
     {
-      "id": "DL-02",
-      "file": "src\\components\\admin\\builder\\builder-canvas.tsx",
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
       "severity": "P1",
-      "match": "text-[11px]"
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\routes\\workspace.advocacia.index.tsx",
+      "severity": "P1",
+      "match": "h-10"
     }
   ]
 }

@@ -407,7 +407,7 @@ function WorkspaceAdvocaciaPage() {
  className="scale-75"
  />
  <span className="font-semibold text-foreground">Mandados de prisão</span>
- <span className="text-[10px] text-muted-foreground hidden md:inline">(BNMP/CNJ)</span>
+ <span className="text-xs text-muted-foreground hidden md:inline">(BNMP/CNJ)</span>
  </label>
 
  <label className="flex items-center gap-2 cursor-pointer text-xs">
@@ -426,7 +426,7 @@ function WorkspaceAdvocaciaPage() {
  className="scale-75"
  />
  <span className="font-semibold text-foreground">Restrições internacionais</span>
- <span className="text-[10px] text-muted-foreground hidden md:inline">(OFAC/ONU)</span>
+ <span className="text-xs text-muted-foreground hidden md:inline">(OFAC/ONU)</span>
  </label>
  </div>
  </div>
@@ -435,7 +435,7 @@ function WorkspaceAdvocaciaPage() {
  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
  <div className="p-4 rounded-2xl bg-card border border-rose-500/30 space-y-1">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 font-mono">
+ <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 font-mono">
  Fatais (&lt; 48h)
  </span>
  <AlertTriangle className="size-3.5 text-rose-500" />
@@ -446,7 +446,7 @@ function WorkspaceAdvocaciaPage() {
  </div>
 
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Prazos Pendentes
  </span>
  <p className="text-xl sm:text-2xl font-black text-foreground font-mono">
@@ -455,7 +455,7 @@ function WorkspaceAdvocaciaPage() {
  </div>
 
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Processos no Acervo
  </span>
  <p className="text-xl sm:text-2xl font-black text-foreground font-mono">
@@ -464,7 +464,7 @@ function WorkspaceAdvocaciaPage() {
  </div>
 
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Monitoramento Ativo
  </span>
  <p className="text-xl sm:text-2xl font-black text-primary font-mono">
@@ -473,7 +473,7 @@ function WorkspaceAdvocaciaPage() {
  </div>
 
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1 col-span-2 sm:col-span-1">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Demandas Abertas
  </span>
  <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
@@ -591,22 +591,22 @@ function WorkspaceAdvocaciaPage() {
  <Table>
  <TableHeader className="bg-muted/40">
  <TableRow>
- <TableHead className="text-[11px] font-bold font-mono uppercase">
+ <TableHead className="text-xs font-bold font-mono uppercase">
  Preclusão / Urgência
  </TableHead>
- <TableHead className="text-[11px] font-bold font-mono uppercase">
+ <TableHead className="text-xs font-bold font-mono uppercase">
  Ato Processual e Tipo
  </TableHead>
- <TableHead className="text-[11px] font-bold font-mono uppercase">
+ <TableHead className="text-xs font-bold font-mono uppercase">
  Processo (CNJ) / Tribunal
  </TableHead>
- <TableHead className="text-[11px] font-bold font-mono uppercase">
+ <TableHead className="text-xs font-bold font-mono uppercase">
  Cliente / Assistido
  </TableHead>
- <TableHead className="text-[11px] font-bold font-mono uppercase">
+ <TableHead className="text-xs font-bold font-mono uppercase">
  Data Fatal
  </TableHead>
- <TableHead className="text-[11px] font-bold font-mono uppercase text-right">
+ <TableHead className="text-xs font-bold font-mono uppercase text-right">
  Ações
  </TableHead>
  </TableRow>
@@ -620,7 +620,7 @@ function WorkspaceAdvocaciaPage() {
  <Badge
  variant="outline"
  className={cn(
- "text-[10px] font-mono px-2.5 py-1 rounded-lg border",
+ "text-xs font-mono px-2.5 py-1 rounded-lg border",
  statusInfo.className
  )}
  >
@@ -630,7 +630,7 @@ function WorkspaceAdvocaciaPage() {
  <TableCell>
  <div className="space-y-0.5">
  <p className="font-bold text-xs text-foreground">{dl.title}</p>
- <Badge variant="secondary" className="text-[10px] font-mono capitalize">
+ <Badge variant="secondary" className="text-xs font-mono capitalize">
  {dl.deadline_type}
  </Badge>
  </div>
@@ -641,7 +641,7 @@ function WorkspaceAdvocaciaPage() {
  {dl.process_number || "Avulso / Sem CNJ"}
  </span>
  {dl.court_name && (
- <p className="text-[10px] text-muted-foreground">{dl.court_name}</p>
+ <p className="text-xs text-muted-foreground">{dl.court_name}</p>
  )}
  </div>
  </TableCell>
@@ -655,7 +655,7 @@ function WorkspaceAdvocaciaPage() {
  <span className="font-bold text-foreground">
  {formatDate(dl.due_date)}
  </span>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  às {new Date(dl.due_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
  </p>
  </div>
@@ -674,7 +674,7 @@ function WorkspaceAdvocaciaPage() {
  ) : (
  <Badge
  variant="outline"
- className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px] font-mono"
+ className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-xs font-mono"
  >
  {dl.protocol_receipt ? `Protocolo: ${dl.protocol_receipt}` : "Concluído"}
  </Badge>
@@ -773,7 +773,7 @@ function WorkspaceAdvocaciaPage() {
  {lawsuit.parties?.title || lawsuit.class_name || "Procedimento Judicial"}
  </p>
  {lawsuit.subject_name && (
- <p className="text-[10px] text-muted-foreground/80 line-clamp-1 font-mono">
+ <p className="text-xs text-muted-foreground/80 line-clamp-1 font-mono">
  {lawsuit.subject_name}
  </p>
  )}
@@ -783,10 +783,10 @@ function WorkspaceAdvocaciaPage() {
  {/* Tribunal & Grau */}
  <TableCell>
  <div className="space-y-1">
- <Badge variant="outline" className="font-mono text-[10px] font-bold">
+ <Badge variant="outline" className="font-mono text-xs font-bold">
  {lawsuit.court_code || "TJ"}
  </Badge>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {lawsuit.degree || "1º GRAU"}
  </p>
  </div>
@@ -798,7 +798,7 @@ function WorkspaceAdvocaciaPage() {
  <p className="font-mono text-xs text-foreground">
  {lawsuit.last_movement_date ? formatDate(lawsuit.last_movement_date) : "—"}
  </p>
- <p className="text-[11px] text-muted-foreground line-clamp-1">
+ <p className="text-xs text-muted-foreground line-clamp-1">
  {lawsuit.last_movement_text || "Aguardando andamento"}
  </p>
  </div>
@@ -865,26 +865,26 @@ function WorkspaceAdvocaciaPage() {
  <div className="space-y-2.5">
  <div className="flex items-start justify-between gap-2">
  <h4 className="text-sm font-bold text-foreground leading-snug">{mon.title}</h4>
- <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 border-emerald-500/30">
+ <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
  Ativo
  </Badge>
  </div>
 
  <div className="space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase font-mono">
+ <span className="text-xs font-bold text-muted-foreground uppercase font-mono">
  Documentos ({mon.document_keys?.length || 0}):
  </span>
  <div className="flex flex-wrap gap-1">
  {(mon.document_keys || []).slice(0, 4).map((doc: string) => (
  <span
  key={doc}
- className="px-2 py-0.5 rounded-md bg-muted/40 font-mono text-[10px] text-foreground font-medium"
+ className="px-2 py-0.5 rounded-md bg-muted/40 font-mono text-xs text-foreground font-medium"
  >
  {doc}
  </span>
  ))}
  {mon.document_keys?.length > 4 && (
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  +{mon.document_keys.length - 4} mais
  </span>
  )}
@@ -893,12 +893,12 @@ function WorkspaceAdvocaciaPage() {
 
  {mon.courts && mon.courts.length > 0 && (
  <div className="space-y-1 pt-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase font-mono">
+ <span className="text-xs font-bold text-muted-foreground uppercase font-mono">
  Tribunais:
  </span>
  <div className="flex flex-wrap gap-1">
  {mon.courts.map((court: string) => (
- <Badge key={court} variant="outline" className="text-[9px] font-mono px-1.5 py-0">
+ <Badge key={court} variant="outline" className="text-xs font-mono px-1.5 py-0">
  {court}
  </Badge>
  ))}
@@ -908,7 +908,7 @@ function WorkspaceAdvocaciaPage() {
  </div>
 
  <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs">
- <span className="text-[11px] text-muted-foreground font-mono">
+ <span className="text-xs text-muted-foreground font-mono">
  Sincronizado: {mon.last_sync_at ? formatDate(mon.last_sync_at) : "Recente"}
  </span>
  <Button
@@ -975,12 +975,12 @@ function WorkspaceAdvocaciaPage() {
  )}
  >
  <div className="flex items-center justify-between gap-2 mb-2">
- <span className="font-mono text-[11px] font-bold text-primary uppercase">
+ <span className="font-mono text-xs font-bold text-primary uppercase">
  {demand.legal_area}
  </span>
  <Badge
  variant={demand.urgency === "urgent" ? "destructive" : "secondary"}
- className="text-[10px] font-mono"
+ className="text-xs font-mono"
  >
  {demand.urgency === "urgent" ? "Urgente" : "Normal"}
  </Badge>
@@ -991,7 +991,7 @@ function WorkspaceAdvocaciaPage() {
  {demand.description}
  </p>
 
- <div className="mt-4 flex items-center justify-between text-[11px] text-muted-foreground border-t border-border/50 pt-2 font-mono">
+ <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-2 font-mono">
  <span>{demand.city || "Regional"} - {demand.state || "SC"}</span>
  <span>{formatDate(demand.created_at)}</span>
  </div>

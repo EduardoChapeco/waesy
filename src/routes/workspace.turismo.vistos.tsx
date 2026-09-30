@@ -214,53 +214,53 @@ function WorkspaceVisasPage() {
         {/* ── 4 KPIS NO PARADIGMA CLEAN ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
               <Clock className="size-3.5 text-amber-600" />
               Processos em Andamento
             </span>
             <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
               {kpis.inProgress}
             </div>
-            <p className="text-[11px] text-muted-foreground font-mono">
+            <p className="text-xs text-muted-foreground font-mono">
               Coleta de docs e formulários
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
               <Calendar className="size-3.5 text-purple-600" />
               Entrevistas Agendadas
             </span>
             <div className="text-2xl font-mono font-bold text-purple-600 dark:text-purple-400">
               {kpis.interviews}
             </div>
-            <p className="text-[11px] text-muted-foreground font-mono">
+            <p className="text-xs text-muted-foreground font-mono">
               CASV / Consulado confirmados
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
               <CheckCircle2 className="size-3.5 text-emerald-600" />
               Vistos Aprovados
             </span>
             <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
               {kpis.approved}
             </div>
-            <p className="text-[11px] text-muted-foreground font-mono">
+            <p className="text-xs text-muted-foreground font-mono">
               Emitidos ou já entregues
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
               <Percent className="size-3.5 text-primary" />
               Taxa de Aprovação
             </span>
             <div className="text-2xl font-mono font-bold text-foreground">
               {kpis.approvalRate}%
             </div>
-            <p className="text-[11px] text-muted-foreground font-mono">
+            <p className="text-xs text-muted-foreground font-mono">
               Eficiência da assessoria da agência
             </p>
           </div>
@@ -349,7 +349,7 @@ function WorkspaceVisasPage() {
                       {v.client_passport && (
                         <Badge
                           variant="outline"
-                          className="font-mono text-[10px] uppercase tracking-wider bg-background"
+                          className="font-mono text-xs uppercase tracking-wider bg-background"
                         >
                           {v.client_passport}
                         </Badge>
@@ -376,7 +376,7 @@ function WorkspaceVisasPage() {
 
                     {/* Entrevista agendada */}
                     {v.interview_date && (
-                      <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 bg-muted/30 p-2.5 rounded-xl border border-border/50">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1.5 bg-muted/30 p-2.5 rounded-xl border border-border/50">
                         <Calendar className="size-3.5 text-purple-600 shrink-0" />
                         <span>
                           Entrevista:{" "}
@@ -388,7 +388,7 @@ function WorkspaceVisasPage() {
                     )}
 
                     {v.notes && (
-                      <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 italic bg-muted/20 p-2 rounded-xl">
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 italic bg-muted/20 p-2 rounded-xl">
                         "{v.notes}"
                       </p>
                     )}
@@ -396,7 +396,7 @@ function WorkspaceVisasPage() {
 
                   {/* Rodapé do Card */}
                   <div className="border-t border-border/60 pt-3 flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="text-[10px] font-mono">
+                    <span className="text-xs font-mono">
                       {v.documents?.length || 4} itens no checklist
                     </span>
                     <CrudActionsMenu

@@ -198,7 +198,7 @@ export default function ReaccommodationPage() {
             <AlertTriangle className="size-4 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase">Em Análise</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase">Em Análise</p>
             <p className="text-2xl font-bold text-foreground">
               {cases.filter((c) => c.workflow_status === 'pending_analysis').length}
             </p>
@@ -210,7 +210,7 @@ export default function ReaccommodationPage() {
             <ShieldAlert className="size-4" />
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase">Urgentes</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase">Urgentes</p>
             <p className="text-2xl font-bold text-foreground">
               {cases.filter((c) => c.priority === 'urgent').length}
             </p>
@@ -222,7 +222,7 @@ export default function ReaccommodationPage() {
             <CheckCircle2 className="size-4" />
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase">Reacomodados</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase">Reacomodados</p>
             <p className="text-2xl font-bold text-foreground">{resolvedCount}</p>
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function ReaccommodationPage() {
             <RefreshCw className="size-4" />
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase">Taxa de Resolução</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase">Taxa de Resolução</p>
             <p className="text-2xl font-bold text-foreground">{resolutionRate}%</p>
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function ReaccommodationPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-bold text-foreground">{getReasonLabel(c.change_reason)}</h3>
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border ${getPriorityBadge(c.priority)}`}>
+                      <span className={`px-2 py-0.5 rounded-md text-xs font-bold uppercase border ${getPriorityBadge(c.priority)}`}>
                         {c.priority}
                       </span>
                     </div>
@@ -504,7 +504,7 @@ export default function ReaccommodationPage() {
                 <div className="p-2.5 rounded-xl bg-background/60 border border-border/40 flex items-center gap-2">
                   <Utensils className="size-4 text-muted-foreground" />
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Alimentação</span>
+                    <span className="text-xs text-muted-foreground block">Alimentação</span>
                     <strong className={previewRights.material_assistance.food_voucher ? 'text-emerald-600' : 'text-muted-foreground'}>
                       {previewRights.material_assistance.food_voucher ? 'Obrigatório (>2h)' : 'Não obrigatório'}
                     </strong>
@@ -513,7 +513,7 @@ export default function ReaccommodationPage() {
                 <div className="p-2.5 rounded-xl bg-background/60 border border-border/40 flex items-center gap-2">
                   <Hotel className="size-4 text-muted-foreground" />
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Hospedagem</span>
+                    <span className="text-xs text-muted-foreground block">Hospedagem</span>
                     <strong className={previewRights.material_assistance.lodging_and_transfer ? 'text-emerald-600' : 'text-muted-foreground'}>
                       {previewRights.material_assistance.lodging_and_transfer ? 'Obrigatório (>4h)' : 'Não obrigatório'}
                     </strong>
@@ -522,7 +522,7 @@ export default function ReaccommodationPage() {
                 <div className="p-2.5 rounded-xl bg-background/60 border border-border/40 flex items-center gap-2">
                   <RefreshCw className="size-4 text-muted-foreground" />
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Voo Concorrente</span>
+                    <span className="text-xs text-muted-foreground block">Voo Concorrente</span>
                     <strong className={previewRights.reaccommodation_options.competitor_flights ? 'text-emerald-600' : 'text-muted-foreground'}>
                       {previewRights.reaccommodation_options.competitor_flights ? 'Permitido Exigir' : 'Só própria CIA'}
                     </strong>
@@ -531,7 +531,7 @@ export default function ReaccommodationPage() {
                 <div className="p-2.5 rounded-xl bg-background/60 border border-border/40 flex items-center gap-2">
                   <FileText className="size-4 text-muted-foreground" />
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Reembolso 100%</span>
+                    <span className="text-xs text-muted-foreground block">Reembolso 100%</span>
                     <strong className={previewRights.reaccommodation_options.full_refund_eligible ? 'text-emerald-600' : 'text-muted-foreground'}>
                       {previewRights.reaccommodation_options.full_refund_eligible ? 'Direito Integral' : 'Sujeito a regra'}
                     </strong>

@@ -76,7 +76,7 @@ function ClinicalRecordDrawer({
  ) : (
  records.map((r: any) => (
  <div key={r.id} className="bg-muted/40 p-3.5 rounded-xl text-xs space-y-1.5">
- <div className="flex justify-between items-center text-[11px] text-muted-foreground font-mono">
+ <div className="flex justify-between items-center text-xs text-muted-foreground font-mono">
  <span>{format(new Date(r.created_at), "dd/MM/yyyy HH:mm")}</span>
  <span>{r.author?.full_name || r.author?.email || "Profissional"}</span>
  </div>
@@ -231,42 +231,42 @@ function AdminAppointmentsPage() {
  case "pending":
  case "confirmed":
  return (
- <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] font-bold">
+ <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs font-bold">
  Agendado
  </Badge>
  );
  case "checked_in":
  return (
- <Badge variant="outline" className="bg-info/10 text-info border-info/20 text-[10px] font-bold">
+ <Badge variant="outline" className="bg-info/10 text-info border-info/20 text-xs font-bold">
  Na Recepção
  </Badge>
  );
  case "in_service":
  return (
- <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold">
+ <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs font-bold">
  Em Atendimento
  </Badge>
  );
  case "completed":
  return (
- <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px] font-bold">
+ <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs font-bold">
  Concluído
  </Badge>
  );
  case "no_show":
  return (
- <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] font-bold">
+ <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-xs font-bold">
  Faltou
  </Badge>
  );
  case "cancelled":
  return (
- <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px] font-bold">
+ <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-xs font-bold">
  Cancelado
  </Badge>
  );
  default:
- return <Badge variant="secondary" className="text-[10px]">{status}</Badge>;
+ return <Badge variant="secondary" className="text-xs">{status}</Badge>;
  }
  };
 
@@ -320,7 +320,7 @@ function AdminAppointmentsPage() {
  : "hover:bg-muted/60 text-muted-foreground hover:text-foreground"
  )}
  >
- <span className="text-[10px] uppercase font-bold tracking-wider">
+ <span className="text-xs uppercase font-bold tracking-wider">
  {format(d, "EEE", { locale: ptBR })}
  </span>
  <span className="text-sm font-black mt-0.5 font-mono">
@@ -351,7 +351,7 @@ function AdminAppointmentsPage() {
  <CalendarIcon className="size-5" />
  </div>
  <div>
- <p className="text-[11px] font-bold text-muted-foreground">Agendamentos</p>
+ <p className="text-xs font-bold text-muted-foreground">Agendamentos</p>
  <p className="text-base font-black text-foreground font-mono">{dayMetrics.totalCount}</p>
  </div>
  </div>
@@ -361,7 +361,7 @@ function AdminAppointmentsPage() {
  <CheckCircle2 className="size-5" />
  </div>
  <div>
- <p className="text-[11px] font-bold text-muted-foreground">Concluídos</p>
+ <p className="text-xs font-bold text-muted-foreground">Concluídos</p>
  <p className="text-base font-black text-foreground font-mono">{dayMetrics.completedCount}</p>
  </div>
  </div>
@@ -371,7 +371,7 @@ function AdminAppointmentsPage() {
  <DollarSign className="size-5" />
  </div>
  <div>
- <p className="text-[11px] font-bold text-muted-foreground">Previsão do Dia</p>
+ <p className="text-xs font-bold text-muted-foreground">Previsão do Dia</p>
  <p className="text-base font-black text-foreground font-mono">
  {formatMoney(dayMetrics.revenueCents)}
  </p>
@@ -404,7 +404,7 @@ function AdminAppointmentsPage() {
  </div>
  <h3 className="font-bold text-sm text-foreground">{resourceName}</h3>
  </div>
- <Badge variant="secondary" className="text-[10px] font-bold">
+ <Badge variant="secondary" className="text-xs font-bold">
  {groupedAppointments[resourceName].length}
  </Badge>
  </div>
@@ -421,7 +421,7 @@ function AdminAppointmentsPage() {
  {appt.booking_services?.title || "Atendimento"}
  </h4>
  {appt.pass_id && (
- <span className="inline-flex items-center gap-1 px-1.5 py-0.5 mt-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary">
+ <span className="inline-flex items-center gap-1 px-1.5 py-0.5 mt-0.5 rounded text-xs font-bold bg-primary/10 text-primary">
  <Ticket size={9} />
  Sessão #{appt.session_number || 1}
  </span>

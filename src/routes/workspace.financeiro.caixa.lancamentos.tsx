@@ -48,17 +48,17 @@ function translateMethod(method: string) {
 function renderChannelBadge(source?: string) {
   switch (source) {
     case "mercadolivre":
-      return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px] font-medium">Mercado Livre</Badge>;
+      return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-xs font-medium">Mercado Livre</Badge>;
     case "ifood":
-      return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/30 text-[10px] font-medium">iFood</Badge>;
+      return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/30 text-xs font-medium">iFood</Badge>;
     case "shopee":
-      return <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/30 text-[10px] font-medium">Shopee</Badge>;
+      return <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/30 text-xs font-medium">Shopee</Badge>;
     case "amazon":
-      return <Badge variant="outline" className="bg-neutral-500/10 text-neutral-700 dark:text-neutral-300 border-neutral-500/30 text-[10px] font-medium">Amazon</Badge>;
+      return <Badge variant="outline" className="bg-neutral-500/10 text-neutral-700 dark:text-neutral-300 border-neutral-500/30 text-xs font-medium">Amazon</Badge>;
     case "classifieds":
-      return <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30 text-[10px] font-medium">Classificados</Badge>;
+      return <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30 text-xs font-medium">Classificados</Badge>;
     default:
-      return <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] font-medium">Loja Física / PDV</Badge>;
+      return <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-xs font-medium">Loja Física / PDV</Badge>;
   }
 }
 
@@ -269,7 +269,7 @@ function CaixaLancamentosPage() {
 
                 {/* Presets Rápidos */}
                 <div className="space-y-2 mt-4">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                  <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
                     Atalhos Rápidos de Operação
                   </span>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -278,7 +278,7 @@ function CaixaLancamentosPage() {
                         key={p.label}
                         type="button"
                         onClick={() => applyPreset(p)}
-                        className="text-left p-2 rounded-xl border border-border/60 bg-muted/30 hover:bg-muted/60 text-[11px] font-medium transition-colors cursor-pointer"
+                        className="text-left p-2 rounded-xl border border-border/60 bg-muted/30 hover:bg-muted/60 text-xs font-medium transition-colors cursor-pointer"
                       >
                         <span className={p.type === "in" ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>
                           {p.type === "in" ? "(+) " : "(-) "}
@@ -372,53 +372,53 @@ function CaixaLancamentosPage() {
       {/* ── KPIS DO TURNO ATUAL ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Wallet className="size-3.5 text-foreground" />
             Fundo de Abertura
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {formatMoney(kpis.initialCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Troco inicial da gaveta
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <ArrowDownLeft className="size-3.5 text-emerald-600" />
             Entradas no Turno (+)
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             +{formatMoney(kpis.inCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Vendas e suprimentos
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <ArrowUpRight className="size-3.5 text-rose-600" />
             Saídas no Turno (-)
           </span>
           <div className="text-2xl font-mono font-bold text-rose-600 dark:text-rose-400">
             -{formatMoney(kpis.outCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Sangrias e despesas operacionais
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <TrendingUp className="size-3.5 text-primary" />
             Saldo Atual Estimado
           </span>
           <div className="text-2xl font-mono font-bold text-primary">
             {formatMoney(kpis.currentCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Disponível em caixa agora
           </p>
         </div>
@@ -499,7 +499,7 @@ function CaixaLancamentosPage() {
 
                     <div className="flex items-center gap-1.5">
                       {renderChannelBadge(entry.channel_source || entry.channel)}
-                      <Badge variant="outline" className="capitalize text-[10px] font-medium">
+                      <Badge variant="outline" className="capitalize text-xs font-medium">
                         {translateMethod(entry.method)}
                       </Badge>
                     </div>
@@ -512,7 +512,7 @@ function CaixaLancamentosPage() {
                     </h3>
 
                     {entry.marketplace_fee_cents > 0 && (
-                      <p className="text-[11px] text-muted-foreground font-mono mt-1">
+                      <p className="text-xs text-muted-foreground font-mono mt-1">
                         Taxa canal: -{formatMoney(entry.marketplace_fee_cents)} • Líquido: {formatMoney(entry.net_payout_cents || (entry.amount_cents - entry.marketplace_fee_cents))}
                       </p>
                     )}
@@ -558,7 +558,7 @@ function CaixaLancamentosPage() {
                     <TableCell className="text-xs font-medium text-foreground">
                       <div>{entry.description || entry.notes}</div>
                       {entry.marketplace_fee_cents > 0 && (
-                        <div className="text-[11px] text-muted-foreground font-mono">
+                        <div className="text-xs text-muted-foreground font-mono">
                           Taxa canal: -{formatMoney(entry.marketplace_fee_cents)} • Líquido: {formatMoney(entry.net_payout_cents || (entry.amount_cents - entry.marketplace_fee_cents))}
                         </div>
                       )}
@@ -567,7 +567,7 @@ function CaixaLancamentosPage() {
                       {renderChannelBadge(entry.channel_source || entry.channel)}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="capitalize text-[10px] font-medium">
+                      <Badge variant="outline" className="capitalize text-xs font-medium">
                         {translateMethod(entry.method)}
                       </Badge>
                     </TableCell>

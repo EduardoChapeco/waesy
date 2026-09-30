@@ -735,7 +735,7 @@ function AdminProductsPage() {
  ? "outline"
  : "secondary"
  }
- className="text-[10px] font-bold"
+ className="text-xs font-bold"
  >
  {product.status === "published"
  ? "Ativo"
@@ -749,7 +749,7 @@ function AdminProductsPage() {
  <TableCell className="text-xs text-muted-foreground">
  <div className="flex flex-col">
  <span className="font-medium text-foreground">{typeName}</span>
- {product.brand && <span className="text-[11px]">{product.brand}</span>}
+ {product.brand && <span className="text-xs">{product.brand}</span>}
  </div>
  </TableCell>
 

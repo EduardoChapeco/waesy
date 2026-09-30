@@ -266,7 +266,7 @@ export default function WorkspaceDashboardPage() {
                 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15"
                 : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/15"
             }`}
-            title="Clique para alternar o status operacional da loja"
+            title="Status Operacional"
           >
             {isTogglingStatus ? (
               <Loader2 className="size-3.5 animate-spin" />

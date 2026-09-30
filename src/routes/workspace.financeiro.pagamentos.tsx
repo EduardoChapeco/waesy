@@ -217,53 +217,53 @@ function AdminPaymentsPage() {
       {/* ── KPIS FINANCEIROS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
             Total Liquidado
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {formatMoney(kpis.totalPaidCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.paidCount} pagamentos confirmados
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Clock className="size-3.5 text-amber-500" />
             Aguardando Pagamento
           </span>
           <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
             {formatMoney(kpis.totalPendingCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.processingCount > 0 ? `${kpis.processingCount} comprovante(s) em análise` : "Aguardando compensação"}
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <TrendingUp className="size-3.5 text-primary" />
             Ticket Médio
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {formatMoney(kpis.avgTicketCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Média por pedido aprovado
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Percent className="size-3.5 text-foreground" />
             Taxa de Liquidação
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.conversionPercent.toFixed(1)}%
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.paidCount} de {kpis.totalTransactions} transações pagas
           </p>
         </div>
@@ -376,15 +376,15 @@ function AdminPaymentsPage() {
                     </TableCell>
                     <TableCell>
                       {p.status === "awaiting_payment" ? (
-                        <Badge variant="outline" className="text-amber-600 border-amber-500/30 bg-amber-500/10 text-[10px] font-bold">
+                        <Badge variant="outline" className="text-amber-600 border-amber-500/30 bg-amber-500/10 text-xs font-bold">
                           Aguardando Pagamento
                         </Badge>
                       ) : p.status === "payment_processing" ? (
-                        <Badge variant="outline" className="text-blue-600 border-blue-500/30 bg-blue-500/10 text-[10px] font-bold">
+                        <Badge variant="outline" className="text-blue-600 border-blue-500/30 bg-blue-500/10 text-xs font-bold">
                           Comprovante Enviado
                         </Badge>
                       ) : (
-                        <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold">
+                        <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold">
                           Liquidado
                         </Badge>
                       )}
@@ -507,7 +507,7 @@ function AdminPaymentsPage() {
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               A liquidação atualizará o status do pedido para &quot;Pago&quot; e acionará a separação de estoque.
             </p>
           </div>

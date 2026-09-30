@@ -135,40 +135,40 @@ function ReceiptsPage() {
       {/* ── KPIS DE AUDITORIA ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Clock className="size-3.5 text-amber-500" />
             Comprovantes Pendentes
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.pendingCount}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Aguardando validação da equipe
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <DollarSign className="size-3.5 text-emerald-600" />
             Valor em Análise
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {formatMoney(kpis.totalPendingCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Soma de recebimentos a liberar
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <ShieldCheck className="size-3.5 text-primary" />
             Último Envio
           </span>
           <div className="text-sm font-bold text-foreground truncate mt-1">
             {kpis.newestDate}
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Fila de conciliação ativa
           </p>
         </div>
@@ -250,7 +250,7 @@ function ReceiptsPage() {
                           <span>Inspecionar</span>
                         </Button>
                       ) : (
-                        <Badge variant="secondary" className="text-[10px]">Aguardando upload</Badge>
+                        <Badge variant="secondary" className="text-xs">Aguardando upload</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -304,19 +304,19 @@ function ReceiptsPage() {
               {/* Box de Informações Rápidas */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-muted/40 border border-border/60 text-xs">
                 <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Cliente</span>
+                  <span className="text-muted-foreground block text-xs uppercase font-bold">Cliente</span>
                   <span className="font-bold text-foreground">
                     {previewTarget.orders?.customer_snapshot?.name || "Cliente"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Valor Total</span>
+                  <span className="text-muted-foreground block text-xs uppercase font-bold">Valor Total</span>
                   <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                     {formatMoney(previewTarget.amount_cents)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Enviado em</span>
+                  <span className="text-muted-foreground block text-xs uppercase font-bold">Enviado em</span>
                   <span className="font-mono text-muted-foreground">
                     {formatDate(previewTarget.created_at)}
                   </span>
@@ -419,7 +419,7 @@ function ReceiptsPage() {
               />
             </div>
 
-            <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-[11px] text-muted-foreground space-y-1">
+            <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground space-y-1">
               <span className="font-bold text-foreground block">Dica operacional:</span>
               <p>Motivos claros evitam atrito com o cliente e aceleram a regularização do pagamento.</p>
             </div>

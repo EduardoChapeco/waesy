@@ -237,7 +237,7 @@ function WorkspacePromotionsPage() {
         >
           <Flame className="size-3.5" />
           <span>Ofertas e Promoções</span>
-          <Badge variant="secondary" className="text-[10px] ml-1 px-1.5 py-0 h-4">
+          <Badge variant="secondary" className="text-xs ml-1 px-1.5 py-0 h-4">
             {promos.length}
           </Badge>
         </button>
@@ -253,7 +253,7 @@ function WorkspacePromotionsPage() {
         >
           <Ticket className="size-3.5" />
           <span>Cupons de Desconto</span>
-          <Badge variant="secondary" className="text-[10px] ml-1 px-1.5 py-0 h-4">
+          <Badge variant="secondary" className="text-xs ml-1 px-1.5 py-0 h-4">
             {couponsList.length}
           </Badge>
         </button>
@@ -265,7 +265,7 @@ function WorkspacePromotionsPage() {
           {/* Métricas de Promoções */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Promoções Ativas
               </span>
               <div className="text-2xl font-mono font-bold text-foreground">
@@ -274,14 +274,14 @@ function WorkspacePromotionsPage() {
             </div>
 
             <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Total de Ofertas Criadas
               </span>
               <div className="text-2xl font-mono font-bold text-foreground">{promos.length}</div>
             </div>
 
             <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Desconto Médio Aplicado
               </span>
               <div className="text-2xl font-mono font-bold text-primary">
@@ -337,7 +337,7 @@ function WorkspacePromotionsPage() {
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm font-bold text-foreground truncate">{promo.title}</h3>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase font-mono bg-primary/10 text-primary">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-black uppercase font-mono bg-primary/10 text-primary">
                           {promo.discount_percent ? `${promo.discount_percent}% OFF` : "COMBO"}
                         </span>
                       </div>
@@ -351,7 +351,7 @@ function WorkspacePromotionsPage() {
 
                   <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-border/40">
                     <div className="text-left sm:text-right">
-                      <span className="text-[11px] text-muted-foreground block font-mono">
+                      <span className="text-xs text-muted-foreground block font-mono">
                         {promo.ends_at
                           ? `Até ${new Date(promo.ends_at).toLocaleDateString("pt-BR")}`
                           : "Sem data limite"}
@@ -378,7 +378,7 @@ function WorkspacePromotionsPage() {
           {/* Métricas de Cupons */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Cupons Ativos
               </span>
               <div className="text-2xl font-mono font-bold text-foreground">
@@ -387,14 +387,14 @@ function WorkspacePromotionsPage() {
             </div>
 
             <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Total de Cupons
               </span>
               <div className="text-2xl font-mono font-bold text-foreground">{couponsList.length}</div>
             </div>
 
             <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Total de Resgates
               </span>
               <div className="text-2xl font-mono font-bold text-primary">
@@ -446,7 +446,7 @@ function WorkspacePromotionsPage() {
                         <span className="font-mono font-bold text-sm bg-muted/70 px-2 py-0.5 rounded-lg text-foreground border border-border/60">
                           {coupon.code}
                         </span>
-                        <Badge variant={coupon.is_active ? "outline" : "secondary"} className="text-[10px] font-bold">
+                        <Badge variant={coupon.is_active ? "outline" : "secondary"} className="text-xs font-bold">
                           {coupon.is_active ? "Ativo" : "Pausado"}
                         </Badge>
                       </div>
@@ -467,7 +467,7 @@ function WorkspacePromotionsPage() {
                   </div>
 
                   <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-border/40">
-                    <span className="text-[11px] text-muted-foreground font-mono">
+                    <span className="text-xs text-muted-foreground font-mono">
                       {coupon.expires_at
                         ? `Expira em ${new Date(coupon.expires_at).toLocaleDateString("pt-BR")}`
                         : "Sem expiração"}
@@ -589,7 +589,7 @@ function WorkspacePromotionsPage() {
                     <RefreshCw className="size-3.5 text-primary" />
                     <span>Auto-Renovação de Estoque Promocional</span>
                   </label>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Ao esgotar o lote inicial, reativa automaticamente uma nova cota de itens em oferta.
                   </p>
                 </div>
@@ -677,7 +677,7 @@ function WorkspacePromotionsPage() {
               onChange={(e) => setCouponCode(e.target.value.toUpperCase().replace(/\s/g, ""))}
               className="rounded-xl text-xs h-10 font-mono uppercase font-bold"
             />
-            <p className="text-[11px] text-muted-foreground">O código que o cliente digitará no carrinho.</p>
+            <p className="text-xs text-muted-foreground">O código que o cliente digitará no carrinho.</p>
           </div>
 
           <div className="space-y-1.5">
@@ -750,7 +750,7 @@ function WorkspacePromotionsPage() {
           <div className="flex items-center justify-between p-3.5 rounded-2xl bg-muted/40 border border-border/60">
             <div className="space-y-0.5">
               <span className="text-xs font-bold text-foreground block">Cupom Ativo Imediatamente</span>
-              <span className="text-[11px] text-muted-foreground">Clientes poderão aplicar este código no checkout.</span>
+              <span className="text-xs text-muted-foreground">Clientes poderão aplicar este código no checkout.</span>
             </div>
             <Switch checked={couponActive} onCheckedChange={setCouponActive} />
           </div>

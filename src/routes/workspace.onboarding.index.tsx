@@ -162,7 +162,7 @@ export default function WorkspaceOnboardingPage() {
               </span>
               <span className="text-xs text-muted-foreground font-semibold">concluído</span>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {onboarding.completedSteps} de {onboarding.totalSteps} etapas finalizadas
             </p>
             <div className="w-40 mt-1">
@@ -180,7 +180,7 @@ export default function WorkspaceOnboardingPage() {
             <div>
               <h3 className="font-bold text-sm text-foreground flex items-center gap-1.5">
                 {niche.multimodalTitle}
-                <Badge variant="outline" className="text-[10px] uppercase font-mono">1-Clique</Badge>
+                <Badge variant="outline" className="text-xs uppercase font-mono">1-Clique</Badge>
               </h3>
               <p className="text-xs text-muted-foreground">
                 {niche.multimodalDescription}
@@ -240,7 +240,7 @@ export default function WorkspaceOnboardingPage() {
                   </div>
                   <Badge
                     variant={isDone ? "secondary" : "outline"}
-                    className={`text-[10px] shrink-0 ${
+                    className={`text-xs shrink-0 ${
                       isDone ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-transparent font-bold" : ""
                     }`}
                   >
@@ -249,7 +249,7 @@ export default function WorkspaceOnboardingPage() {
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {step.details || (isDone ? "Configurado com sucesso" : "Requer preenchimento")}
                   </span>
                   <Button

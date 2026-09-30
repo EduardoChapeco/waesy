@@ -241,7 +241,7 @@ export default function WorkspaceTripsListPage() {
                   {/* Topo do Card */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-0.5">
-                      <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase block">
+                      <span className="text-xs font-mono font-bold text-muted-foreground uppercase block">
                         {trip.trip_number}
                       </span>
                       <h3 className="font-bold text-base text-foreground group-hover:text-primary transition-colors">
@@ -251,7 +251,7 @@ export default function WorkspaceTripsListPage() {
 
                     <Badge
                       variant="outline"
-                      className={`text-[10px] font-bold uppercase tracking-wider rounded-lg px-2 py-0.5 ${statusColors[trip.status] || ""}`}
+                      className={`text-xs font-bold uppercase tracking-wider rounded-lg px-2 py-0.5 ${statusColors[trip.status] || ""}`}
                     >
                       {statusLabels[trip.status] || trip.status}
                     </Badge>
@@ -262,11 +262,11 @@ export default function WorkspaceTripsListPage() {
                     <div className="flex items-center gap-1.5">
                       <Users className="size-3.5 text-muted-foreground shrink-0" />
                       <span className="font-medium text-foreground truncate">{trip.client_name}</span>
-                      <span className="text-[11px] text-muted-foreground">({paxTotal} pax)</span>
+                      <span className="text-xs text-muted-foreground">({paxTotal} pax)</span>
                     </div>
 
                     {(trip.travel_start_date || trip.travel_end_date) && (
-                      <div className="flex items-center gap-1.5 text-[11px]">
+                      <div className="flex items-center gap-1.5 text-xs">
                         <Calendar className="size-3.5 text-muted-foreground shrink-0" />
                         <span>
                           {trip.travel_start_date || "—"} até {trip.travel_end_date || "—"}
@@ -278,19 +278,19 @@ export default function WorkspaceTripsListPage() {
                   {/* Resumo de Serviços Inclusos */}
                   <div className="flex flex-wrap items-center gap-1.5 pt-1">
                     {trip.flights?.length > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/50 text-[10px] text-muted-foreground font-medium border border-border/40">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
                         <Plane className="size-3 text-sky-500" />
                         {trip.flights.length} voo(s)
                       </span>
                     )}
                     {trip.hotels?.length > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/50 text-[10px] text-muted-foreground font-medium border border-border/40">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
                         <Building2 className="size-3 text-amber-500" />
                         {trip.hotels.length} hotel(s)
                       </span>
                     )}
                     {trip.transfers?.length > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/50 text-[10px] text-muted-foreground font-medium border border-border/40">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
                         <Luggage className="size-3 text-emerald-500" />
                         Transfer
                       </span>
@@ -301,7 +301,7 @@ export default function WorkspaceTripsListPage() {
                 {/* Rodapé do Card */}
                 <div className="p-4 pt-3 border-t border-border/60 bg-muted/10 flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-[10px] text-muted-foreground uppercase block font-semibold">
+                    <span className="text-xs text-muted-foreground uppercase block font-semibold">
                       Valor Total
                     </span>
                     <span className="text-sm font-bold text-foreground font-mono">
@@ -342,7 +342,7 @@ export default function WorkspaceTripsListPage() {
         isOpen={isDashboardOpen}
         onClose={() => setIsDashboardOpen(false)}
         title="Viagens"
-        subtitle="Indicadores de faturamento, reservas ativas e passageiros"
+        subtitle="Indicadores de Viagem"
         metrics={metricsItems}
       />
 

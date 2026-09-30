@@ -226,7 +226,7 @@ function WorkspaceStoreHotpagesPage() {
  <Badge variant="outline" className="text-xs font-mono font-bold px-2 py-0.5">
  {h.badge_label || "Card"}
  </Badge>
- <span className="text-[11px] text-muted-foreground font-mono">
+ <span className="text-xs text-muted-foreground font-mono">
  {h.bg_texture !== "none" ? `Textura: ${h.bg_texture}` : "Padrão"}
  </span>
  </div>
@@ -282,7 +282,7 @@ function WorkspaceStoreHotpagesPage() {
  <div className="space-y-5 p-1 pb-16">
  {/* Live Preview */}
  <div className="space-y-1.5 p-3 rounded-2xl bg-muted/20 border border-border/50">
- <span className="text-[11px] font-bold text-muted-foreground">Pré-Visualização em Tempo Real</span>
+ <span className="text-xs font-bold text-muted-foreground">Pré-Visualização em Tempo Real</span>
               <DynamicMediaChip
                 label={title || "Nome do Destaque"}
                 badge={badgeLabel || undefined}
@@ -417,7 +417,7 @@ function WorkspaceStoreHotpagesPage() {
             <div className="flex items-center justify-between pt-1">
               <div>
                 <Label className="text-xs sm:text-sm font-semibold">Sombra no Card / Texto</Label>
-                <p className="text-[11px] text-muted-foreground">Realça contraste sobre imagens claras</p>
+                <p className="text-xs text-muted-foreground">Realça contraste sobre imagens claras</p>
               </div>
               <Switch checked={showShadow} onCheckedChange={setShowShadow} />
             </div>

@@ -235,11 +235,11 @@ export default function WorkspaceLojasPage() {
  {/* Badges Flutuantes no Banner */}
  <div className="absolute top-3 right-3 flex items-center gap-1.5">
  {isCurrentActive ? (
- <Badge className="bg-emerald-500 text-white border-0 text-[10px] font-bold px-2 py-0.5 ">
+ <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold px-2 py-0.5 ">
  ● Ativa no Painel
  </Badge>
  ) : (
- <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-md border-0 text-[10px]">
+ <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-md border-0 text-xs">
  {st.status === "maintenance" ? "Em Manutenção" : "Disponível"}
  </Badge>
  )}
@@ -298,7 +298,7 @@ export default function WorkspaceLojasPage() {
  {/* Metadados Chave em Grid */}
  <div className="grid grid-cols-2 gap-2 py-3 border-y border-border/60 text-xs">
  <div className="space-y-0.5">
- <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+ <span className="text-xs uppercase font-bold text-muted-foreground block">
  Localização
  </span>
  <span className="font-semibold text-foreground flex items-center gap-1 truncate">
@@ -308,7 +308,7 @@ export default function WorkspaceLojasPage() {
  </div>
 
  <div className="space-y-0.5">
- <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+ <span className="text-xs uppercase font-bold text-muted-foreground block">
  Produtos
  </span>
  <span className="font-semibold text-foreground flex items-center gap-1">

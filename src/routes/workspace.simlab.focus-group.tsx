@@ -214,10 +214,10 @@ function FocusGroupPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-semibold tracking-tight text-foreground">Focus Group</h1>
-              <Badge variant="outline" className="text-[10px] font-medium py-0 px-2 border-border/60">
+              <Badge variant="outline" className="text-xs font-medium py-0 px-2 border-border/60">
                 Censo IBGE 2022
               </Badge>
-              <Badge variant="secondary" className="text-[10px] font-medium py-0 px-2 text-primary bg-primary/10 border border-primary/20">
+              <Badge variant="secondary" className="text-xs font-medium py-0 px-2 text-primary bg-primary/10 border border-primary/20">
                 SimLab V2
               </Badge>
             </div>
@@ -263,12 +263,12 @@ function FocusGroupPage() {
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Barra Horizontal Compacta Mobile */}
         <div className="lg:hidden border-b border-border/40 bg-card/40 p-2.5 space-y-1.5 shrink-0">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium px-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-medium px-1">
             <span className="flex items-center gap-1.5">
               <Users className="size-3" />
               Bancada Amostral ({selectedPersonas.length}/{availablePersonas.length})
             </span>
-            <span className="text-[10px]">Toque para alternar</span>
+            <span className="text-xs">Toque para alternar</span>
           </div>
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
             {availablePersonas.map((p) => {
@@ -285,7 +285,7 @@ function FocusGroupPage() {
                   }`}
                 >
                   <span className="truncate max-w-[120px]">{p.display_name}</span>
-                  <Badge variant="secondary" className="text-[9px] py-0 px-1.5 rounded-sm">
+                  <Badge variant="secondary" className="text-xs py-0 px-1.5 rounded-sm">
                     {p.abep_social_class}
                   </Badge>
                 </button>
@@ -322,25 +322,25 @@ function FocusGroupPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0" onClick={() => handleTogglePersona(p)}>
                       <p className="text-xs font-semibold text-foreground truncate">{p.display_name}</p>
-                      <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
                         {profession}
                       </p>
                     </div>
-                    <Badge variant="secondary" className="text-[10px] font-semibold py-0.5 px-2 shrink-0">
+                    <Badge variant="secondary" className="text-xs font-semibold py-0.5 px-2 shrink-0">
                       {p.abep_social_class}
                     </Badge>
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-border/40 grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="mt-3 pt-2.5 border-t border-border/40 grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-muted-foreground block text-[10px]">Folga Mensal POF</span>
+                      <span className="text-muted-foreground block text-xs">Folga Mensal POF</span>
                       <span className="font-semibold text-foreground">R$ {surplus.toLocaleString('pt-BR')}</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block text-[10px]">Sensibilidade Preço</span>
+                      <span className="text-muted-foreground block text-xs">Sensibilidade Preço</span>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <Progress value={p.price_sensitivity * 10} className="h-1 bg-muted/60" />
-                        <span className="font-semibold text-[10px]">{p.price_sensitivity}</span>
+                        <span className="font-semibold text-xs">{p.price_sensitivity}</span>
                       </div>
                     </div>
                   </div>
@@ -350,7 +350,7 @@ function FocusGroupPage() {
                     <button
                       type="button"
                       onClick={() => handleTogglePersona(p)}
-                      className="text-[11px] text-primary font-medium hover:underline"
+                      className="text-xs text-primary font-medium hover:underline"
                     >
                       {isSelected ? 'Desmarcar' : 'Incluir na Bancada'}
                     </button>
@@ -360,7 +360,7 @@ function FocusGroupPage() {
                         e.stopPropagation();
                         setInspectingPersona(p);
                       }}
-                      className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1"
+                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                     >
                       <FileText className="size-3" />
                       <span>Dossiê 360°</span>
@@ -403,13 +403,13 @@ function FocusGroupPage() {
                             <button
                               type="button"
                               onClick={() => setInspectingPersona(matchedPersona)}
-                              className="text-[10px] text-muted-foreground hover:text-primary underline flex items-center gap-0.5"
+                              className="text-xs text-muted-foreground hover:text-primary underline flex items-center gap-0.5"
                             >
                               <span>ver currículo e finanças</span>
                             </button>
                           )}
                         </div>
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Clock className="size-3" />
                           {new Date(s.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                         </span>
@@ -420,17 +420,17 @@ function FocusGroupPage() {
                       {s.sentiment_score !== null && s.sentiment_score !== undefined && (
                         <div className="mt-2.5 flex items-center gap-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-muted-foreground font-medium">Receptividade Estimada:</span>
+                            <span className="text-xs text-muted-foreground font-medium">Receptividade Estimada:</span>
                             <div className="w-20 bg-muted/60 h-1.5 rounded-sm overflow-hidden">
                               <div 
                                 className={`h-full rounded-sm ${s.sentiment_score >= 0.75 ? 'bg-emerald-500' : s.sentiment_score >= 0.5 ? 'bg-amber-500' : 'bg-rose-500'}`}
                                 style={{ width: `${Math.round((s.sentiment_score || 0) * 100)}%` }}
                               />
                             </div>
-                            <span className="text-[10px] font-semibold">{Math.round((s.sentiment_score || 0) * 100)}%</span>
+                            <span className="text-xs font-semibold">{Math.round((s.sentiment_score || 0) * 100)}%</span>
                           </div>
                           {s.sentiment_score >= 0.75 && (
-                            <Badge variant="outline" className="text-[9px] py-0 px-1.5 border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
+                            <Badge variant="outline" className="text-xs py-0 px-1.5 border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
                               Alta Probabilidade de Compra
                             </Badge>
                           )}
@@ -506,13 +506,13 @@ function FocusGroupPage() {
                   <p className="text-foreground font-medium">
                     {inspectingPersona.curriculum?.profession_title || 'Profissional Autônomo'}
                   </p>
-                  <p className="text-muted-foreground text-[11px]">
+                  <p className="text-muted-foreground text-xs">
                     Setor: {inspectingPersona.curriculum?.occupation_sector || 'Serviços'} · {inspectingPersona.curriculum?.work_experience_years || 10} anos de atuação
                   </p>
-                  <p className="text-muted-foreground text-[11px]">
+                  <p className="text-muted-foreground text-xs">
                     Formação: {inspectingPersona.curriculum?.education_degree || inspectingPersona.education_level}
                   </p>
-                  <p className="text-foreground/90 text-[11px] leading-relaxed pt-1 border-t border-border/40">
+                  <p className="text-foreground/90 text-xs leading-relaxed pt-1 border-t border-border/40">
                     {inspectingPersona.curriculum?.career_summary || inspectingPersona.bio}
                   </p>
                 </div>
@@ -526,13 +526,13 @@ function FocusGroupPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Estrutura</span>
+                    <span className="text-xs text-muted-foreground block">Estrutura</span>
                     <span className="font-semibold text-foreground capitalize">
                       {inspectingPersona.household_profile?.family_structure?.replace(/_/g, ' ') || 'Nuclear com filhos'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Membros no Lar</span>
+                    <span className="text-xs text-muted-foreground block">Membros no Lar</span>
                     <span className="font-semibold text-foreground">
                       {inspectingPersona.household_profile?.total_members || 3} pessoas ({inspectingPersona.household_profile?.dependents_count || 1} dependentes)
                     </span>
@@ -548,40 +548,40 @@ function FocusGroupPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Renda Bruta</span>
+                    <span className="text-xs text-muted-foreground block">Renda Bruta</span>
                     <span className="font-semibold text-foreground">
                       R$ {(inspectingPersona.financial_sheet?.gross_monthly_income_brl || inspectingPersona.median_income_brl).toLocaleString('pt-BR')}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Renda Líquida</span>
+                    <span className="text-xs text-muted-foreground block">Renda Líquida</span>
                     <span className="font-semibold text-foreground">
                       R$ {(inspectingPersona.financial_sheet?.net_monthly_income_brl || Math.round(inspectingPersona.median_income_brl * 0.85)).toLocaleString('pt-BR')}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Custos Fixos Essenciais</span>
+                    <span className="text-xs text-muted-foreground block">Custos Fixos Essenciais</span>
                     <span className="font-semibold text-foreground">
                       R$ {(inspectingPersona.financial_sheet?.essential_fixed_expenses_brl || Math.round(inspectingPersona.median_income_brl * 0.7)).toLocaleString('pt-BR')}
                     </span>
                   </div>
                   <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <span className="text-[10px] text-emerald-700 block font-medium">Folga Discricionária</span>
+                    <span className="text-xs text-emerald-700 block font-medium">Folga Discricionária</span>
                     <span className="font-bold text-emerald-800">
                       R$ {(inspectingPersona.financial_sheet?.discretionary_surplus_brl || Math.round(inspectingPersona.median_income_brl * 0.25)).toLocaleString('pt-BR')}
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-border/40 grid grid-cols-2 gap-2 text-[11px]">
+                <div className="pt-2 border-t border-border/40 grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-muted-foreground block text-[10px]">Limite de Cartão</span>
+                    <span className="text-muted-foreground block text-xs">Limite de Cartão</span>
                     <span className="font-semibold text-foreground">
                       R$ {(inspectingPersona.financial_sheet?.credit_limit_available_brl || 3000).toLocaleString('pt-BR')}
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[10px]">Comprometimento Dívida</span>
+                    <span className="text-muted-foreground block text-xs">Comprometimento Dívida</span>
                     <span className="font-semibold text-foreground">
                       {inspectingPersona.financial_sheet?.debt_commitment_percent || 20}%
                     </span>
@@ -597,21 +597,21 @@ function FocusGroupPage() {
                 </div>
                 <div className="space-y-2 text-xs">
                   <div>
-                    <div className="flex justify-between text-[11px] mb-1">
+                    <div className="flex justify-between text-xs mb-1">
                       <span className="text-muted-foreground">Sensibilidade a Preço</span>
                       <span className="font-semibold">{inspectingPersona.price_sensitivity} / 10</span>
                     </div>
                     <Progress value={inspectingPersona.price_sensitivity * 10} className="h-1.5" />
                   </div>
                   <div>
-                    <div className="flex justify-between text-[11px] mb-1">
+                    <div className="flex justify-between text-xs mb-1">
                       <span className="text-muted-foreground">Índice de Cinismo / Ceticismo</span>
                       <span className="font-semibold">{inspectingPersona.cynicism_index} / 10</span>
                     </div>
                     <Progress value={inspectingPersona.cynicism_index * 10} className="h-1.5" />
                   </div>
                   <div>
-                    <div className="flex justify-between text-[11px] mb-1">
+                    <div className="flex justify-between text-xs mb-1">
                       <span className="text-muted-foreground">Impulsividade de Compra</span>
                       <span className="font-semibold">{inspectingPersona.impulsivity_index} / 10</span>
                     </div>
@@ -688,7 +688,7 @@ function FocusGroupPage() {
                 onChange={(e) => setApiKeyInput(e.target.value)}
                 className="h-11 rounded-xl text-xs bg-card border-border/80 font-mono"
               />
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 A chave é criptografada e armazenada no Supabase (`api_key_pools`), habilitando chamadas seguras server-side.
               </p>
             </div>
@@ -706,7 +706,7 @@ function FocusGroupPage() {
 
           <div className="pt-4 border-t border-border/50 space-y-2 text-xs">
             <p className="font-semibold text-foreground">Status Atual:</p>
-            <div className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1 text-[11px]">
+            <div className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Chave ativa detectada:</span>
                 <span className={keyStatus.hasActiveKey ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>

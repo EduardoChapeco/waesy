@@ -127,12 +127,12 @@ function WorkspacePackagesPage() {
  <span className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
  <Ticket size={16} />
  </span>
- <Badge className="bg-muted text-muted-foreground font-mono text-[10px]">
+ <Badge className="bg-muted text-muted-foreground font-mono text-xs">
  {pkg.total_credits} {pkg.total_credits === 1 ? "Sessão" : "Sessões"}
  </Badge>
  </div>
  <Badge
- className={`text-[10px] font-mono ${
+ className={`text-xs font-mono ${
  pkg.is_active
  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
  : "bg-muted text-muted-foreground "
@@ -159,7 +159,7 @@ function WorkspacePackagesPage() {
 
  <div className="p-3 rounded-2xl bg-muted/40 flex items-center justify-between text-xs font-mono">
  <div>
- <span className="text-[10px] text-muted-foreground uppercase block">
+ <span className="text-xs text-muted-foreground uppercase block">
  Preço do Pacote
  </span>
  <span className="text-sm font-black text-foreground">
@@ -167,7 +167,7 @@ function WorkspacePackagesPage() {
  </span>
  </div>
  <div className="text-right">
- <span className="text-[10px] text-muted-foreground uppercase block">
+ <span className="text-xs text-muted-foreground uppercase block">
  Validade
  </span>
  <span className="text-xs font-bold text-foreground">
@@ -178,8 +178,8 @@ function WorkspacePackagesPage() {
  </div>
 
  <div className="pt-3 flex items-center justify-between">
- <span className="text-[11px] text-muted-foreground">
- {pkg.is_recurring ? "🔄 Assinatura Recorrente" : "🎟️ Compra Avulsa"}
+ <span className="text-xs text-muted-foreground">
+ {pkg.is_recurring ? "Assinatura Recorrente" : "Compra Avulsa"}
  </span>
  <div className="flex items-center gap-1.5">
  <Button
@@ -307,7 +307,7 @@ function WorkspacePackagesPage() {
  <div className="flex items-center justify-between">
  <div>
  <Label className="text-xs font-bold block">Assinatura Recorrente</Label>
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  Renovação automática mensal
  </span>
  </div>
@@ -320,7 +320,7 @@ function WorkspacePackagesPage() {
  <div className="flex items-center justify-between pt-2 border-t border-border/40">
  <div>
  <Label className="text-xs font-bold block">Status Ativo</Label>
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  Disponível para compra pública
  </span>
  </div>

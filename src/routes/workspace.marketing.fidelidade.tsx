@@ -242,7 +242,7 @@ export default function LoyaltyDashboardPage() {
  onChange={(e) => setTargetStamps(parseInt(e.target.value, 10) || 10)}
  className="mt-1"
  />
- <p className="text-[11px] text-muted-foreground mt-1">Recomendado: 10 selos</p>
+ <p className="text-xs text-muted-foreground mt-1">Recomendado: 10 selos</p>
  </div>
 
  <div>
@@ -257,7 +257,7 @@ export default function LoyaltyDashboardPage() {
  onChange={(e) => setWelcomeStamps(parseInt(e.target.value, 10) || 0)}
  className="mt-1"
  />
- <p className="text-[11px] text-muted-foreground mt-1">Selos que o cliente recebe ao cadastrar</p>
+ <p className="text-xs text-muted-foreground mt-1">Selos que o cliente recebe ao cadastrar</p>
  </div>
  </div>
 
@@ -375,7 +375,7 @@ export default function LoyaltyDashboardPage() {
  {/* Topo do Cartão */}
  <div className="flex items-start justify-between">
  <div>
- <span className="text-[10px] font-bold tracking-widest uppercase opacity-75">
+ <span className="text-xs font-bold tracking-widest uppercase opacity-75">
  Cartão Fidelidade
  </span>
  <h4 className="font-black text-lg leading-tight mt-0.5">
@@ -391,7 +391,7 @@ export default function LoyaltyDashboardPage() {
  <div className="my-4 py-3 bg-white/10 backdrop-blur-xs rounded-xl p-3">
  <div className="flex items-center justify-between text-xs font-bold mb-2">
  <span>Selos: 3/{targetStamps}</span>
- <span className="text-[10px] uppercase opacity-80">
+ <span className="text-xs uppercase opacity-80">
  {rewardDesc || "Recompensa"}
  </span>
  </div>
@@ -421,14 +421,14 @@ export default function LoyaltyDashboardPage() {
  <div className="size-20 bg-muted/30 border border-border flex items-center justify-center rounded-lg">
  <QrCode className="size-16 text-foreground" />
  </div>
- <span className="font-mono text-[11px] font-bold tracking-wider">
+ <span className="font-mono text-xs font-bold tracking-wider">
  CARD-9821-4029
  </span>
  </div>
  </div>
 
   {/* Compatibilidade de Carteira Digital */}
-  <div className="flex items-center justify-center gap-4 text-[11px] font-semibold text-muted-foreground pt-1">
+  <div className="flex items-center justify-center gap-4 text-xs font-semibold text-muted-foreground pt-1">
   <span className="flex items-center gap-1.5">
   <Smartphone className="size-3.5 text-foreground" /> Carteira Digital e QR Code
   </span>
@@ -482,7 +482,7 @@ export default function LoyaltyDashboardPage() {
  <span className="font-black text-sm">{c.current_stamps}</span>
  <span className="text-muted-foreground text-xs">/ {target}</span>
  {canRedeem && (
- <Badge variant="default" className="bg-emerald-600 text-white text-[10px] ml-1">
+ <Badge variant="default" className="bg-emerald-600 text-white text-xs ml-1">
  Pronto p/ Resgate
  </Badge>
  )}

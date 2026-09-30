@@ -209,13 +209,13 @@ function CmsStoriesPage() {
  <div className="absolute top-2.5 left-2.5">
  <Badge
  variant={story.status === "active" ? "default" : "secondary"}
- className="text-[10px] font-bold"
+ className="text-xs font-bold"
  >
  {story.status === "active" ? "Ativo" : "Inativo"}
  </Badge>
  </div>
 
- <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md text-white text-[10px] font-mono">
+ <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md text-white text-xs font-mono">
  <Clock className="size-3" />
  <span>{story.duration_seconds || 15}s</span>
  </div>
@@ -289,7 +289,7 @@ function CmsStoriesPage() {
  <span className="text-xs font-bold block text-foreground leading-tight">
  {collab.creator?.name}
  </span>
- <span className="text-[11px] font-mono text-muted-foreground">
+ <span className="text-xs font-mono text-muted-foreground">
  @{collab.creator?.handle}
  </span>
  </div>
@@ -297,7 +297,7 @@ function CmsStoriesPage() {
 
  <Badge
  variant={collab.status === "approved" ? "default" : collab.status === "rejected" ? "destructive" : "outline"}
- className="text-[10px] font-bold"
+ className="text-xs font-bold"
  >
  {collab.status === "approved" ? "Aprovado" : collab.status === "rejected" ? "Rejeitado" : "Pendente"}
  </Badge>

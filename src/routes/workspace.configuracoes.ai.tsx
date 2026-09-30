@@ -282,7 +282,7 @@ function AIConfigurationPage() {
  style={{ width: `${Math.min(100, Math.round((quota.monthlyUsed / Math.max(1, quota.monthlyLimit)) * 100))}%` }}
  />
  </div>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {quota.hasActiveBYOK
  ? "Sua loja possui credencial própria vinculada no cofre seguro. Ao esgotar os créditos da franquia, a plataforma comuta silenciosamente para sua chave sem interromper o serviço."
  : "Ao atingir o limite mensal, conecte sua própria chave de API (BYOK) acima para uso irrestrito sem taxas adicionais."}
@@ -323,12 +323,12 @@ function AIConfigurationPage() {
  </div>
  <div>
  <h3 className="text-sm font-bold text-foreground">{sec.label}</h3>
- <p className="text-[11px] text-muted-foreground">{info.label}</p>
+ <p className="text-xs text-muted-foreground">{info.label}</p>
  </div>
  </div>
 
  <div className="flex items-center gap-1.5">
-                    <Badge variant="outline" className="text-[10px] font-mono">
+                    <Badge variant="outline" className="text-xs font-mono">
                       {sec.masked_suffix}
                     </Badge>
                     <Button
@@ -361,7 +361,7 @@ function AIConfigurationPage() {
  <div className="bg-card rounded-2xl p-8 border border-border/60 text-center space-y-2">
  <Key className="size-8 mx-auto text-muted-foreground/50" />
  <p className="text-xs font-semibold text-foreground">Nenhuma API Key conectada</p>
- <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+ <p className="text-xs text-muted-foreground max-w-sm mx-auto">
  Conecte sua própria chave de API (Gemini, OpenRouter, Claude) para habilitar IA de
  custo zero na infraestrutura.
  </p>
@@ -380,11 +380,11 @@ function AIConfigurationPage() {
  <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
  <div>
  <p className="font-bold text-foreground">Assistente de Cláusulas e Contratos</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Análise jurídica, sugestões de redação e conferência de riscos
  </p>
  </div>
- <Badge variant="outline" className="font-mono text-[10px]">
+ <Badge variant="outline" className="font-mono text-xs">
  gemini-1.5-pro
  </Badge>
  </div>
@@ -392,11 +392,11 @@ function AIConfigurationPage() {
  <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
  <div>
  <p className="font-bold text-foreground">Copywriter de Produtos e Classificados</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Geração e otimização de títulos, fichas técnicas e descrições
  </p>
  </div>
- <Badge variant="outline" className="font-mono text-[10px]">
+ <Badge variant="outline" className="font-mono text-xs">
  gemini-2.0-flash
  </Badge>
  </div>
@@ -404,11 +404,11 @@ function AIConfigurationPage() {
  <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
  <div>
  <p className="font-bold text-foreground">Visão Computacional e OCR de Documentos</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Extração automática de comprovantes de pagamento e CNH/RG
  </p>
  </div>
- <Badge variant="outline" className="font-mono text-[10px]">
+ <Badge variant="outline" className="font-mono text-xs">
  gemini-1.5-flash-vision
  </Badge>
  </div>

@@ -93,7 +93,7 @@ export default function WorkspaceNotificationsPage() {
 
   const handleTestNotification = () => {
     if (pushPermission === "granted") {
-      new Notification("🔔 Novo Pedido de Demonstração", {
+      new Notification("Novo Pedido de Demonstração", {
         body: "Pedido #94821 recebido no valor de R$ 149,90 via PIX.",
         icon: "/favicon.ico",
       });
@@ -194,15 +194,15 @@ export default function WorkspaceNotificationsPage() {
                 Notificações Nativas no Navegador (Web Push)
               </h3>
               {pushPermission === "granted" ? (
-                <Badge variant="outline" className="text-[11px] border-emerald-500/40 text-emerald-600 bg-emerald-500/10">
+                <Badge variant="outline" className="text-xs border-emerald-500/40 text-emerald-600 bg-emerald-500/10">
                   Ativas
                 </Badge>
               ) : pushPermission === "denied" ? (
-                <Badge variant="outline" className="text-[11px] border-rose-500/40 text-rose-600 bg-rose-500/10">
+                <Badge variant="outline" className="text-xs border-rose-500/40 text-rose-600 bg-rose-500/10">
                   Bloqueadas
                 </Badge>
               ) : (
-                <Badge variant="secondary" className="text-[11px]">
+                <Badge variant="secondary" className="text-xs">
                   Desativadas
                 </Badge>
               )}
@@ -342,7 +342,7 @@ export default function WorkspaceNotificationsPage() {
                   <h4 className={cn("text-sm tracking-tight truncate", !notif.isRead ? "font-semibold text-foreground" : "font-medium text-foreground/80")}>
                     {notif.title}
                   </h4>
-                  <span className="text-[11px] text-muted-foreground shrink-0">
+                  <span className="text-xs text-muted-foreground shrink-0">
                     {new Date(notif.createdAt).toLocaleDateString("pt-BR", {
                       day: "2-digit",
                       month: "2-digit",
@@ -356,7 +356,7 @@ export default function WorkspaceNotificationsPage() {
                 </p>
 
                 {notif.linkUrl && (
-                  <div className="pt-1 flex items-center gap-1 text-[11px] text-primary font-medium">
+                  <div className="pt-1 flex items-center gap-1 text-xs text-primary font-medium">
                     <span>Ver detalhes</span>
                     <ExternalLink className="w-3 h-3" />
                   </div>

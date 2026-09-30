@@ -213,14 +213,14 @@ export default function WorkspaceGroupToursIndexPage() {
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute top-3 left-3">
-                        <Badge className="bg-background/95 text-foreground border border-border/80 text-[10px] font-semibold shadow-xs">
+                        <Badge className="bg-background/95 text-foreground border border-border/80 text-xs font-semibold shadow-xs">
                           {t.destination}
                         </Badge>
                       </div>
                       <div className="absolute top-3 right-3">
                         <Badge
                           variant="secondary"
-                          className="text-[10px] font-semibold uppercase shadow-xs"
+                          className="text-xs font-semibold uppercase shadow-xs"
                         >
                           {t.status === "open" ? "Aberto" : t.status === "confirmed" ? "Confirmado" : t.status}
                         </Badge>
@@ -228,10 +228,10 @@ export default function WorkspaceGroupToursIndexPage() {
                     </div>
                   ) : (
                     <div className="p-4 pb-0 flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-primary/10 text-primary">
+                      <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-primary/10 text-primary">
                         {t.destination}
                       </span>
-                      <Badge variant="outline" className="text-[10px] font-mono uppercase font-bold">
+                      <Badge variant="outline" className="text-xs font-mono uppercase font-bold">
                         {t.status === "open" ? "Aberto" : t.status === "confirmed" ? "Confirmado" : t.status}
                       </Badge>
                     </div>
@@ -244,7 +244,7 @@ export default function WorkspaceGroupToursIndexPage() {
                       </div>
 
                       {t.vehicle_layout_name && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <Bus className="size-3.5 text-primary shrink-0" />
                           <span className="font-bold text-foreground truncate">
                             {t.vehicle_layout_name}
@@ -268,8 +268,8 @@ export default function WorkspaceGroupToursIndexPage() {
                       {/* Barra de Ocupação de Poltronas */}
                       <div className="space-y-1.5 pt-2 border-t border-border/50">
                         <div className="flex items-center justify-between text-xs font-bold">
-                          <span className="text-muted-foreground text-[11px]">Ocupação:</span>
-                          <span className="font-mono text-foreground text-[11px]">
+                          <span className="text-muted-foreground text-xs">Ocupação:</span>
+                          <span className="font-mono text-foreground text-xs">
                             {occupiedSeats}/{t.total_seats} ({occupancyPct}%)
                           </span>
                         </div>
@@ -289,7 +289,7 @@ export default function WorkspaceGroupToursIndexPage() {
 
                       {/* Preço por Pessoa */}
                       <div className="pt-2 flex items-center justify-between">
-                        <span className="text-[11px] text-muted-foreground">Valor por pessoa:</span>
+                        <span className="text-xs text-muted-foreground">Valor por pessoa:</span>
                         <span className="text-base font-black text-foreground font-mono">
                           {formatMoney(t.price_cents)}
                         </span>
@@ -351,7 +351,7 @@ export default function WorkspaceGroupToursIndexPage() {
           isOpen={isDashboardOpen}
           onClose={() => setIsDashboardOpen(false)}
           title="Grupos"
-          subtitle="Taxa de ocupação de assentos rodoviários e faturamento"
+          subtitle="Taxa de Ocupação"
           metrics={metricsItems}
         />
       </div>

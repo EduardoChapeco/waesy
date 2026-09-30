@@ -338,7 +338,7 @@ export default function TurismoRadarPage() {
                       <span className={`text-xs font-black uppercase tracking-wide ${cfg.text}`}>
                         {alert.destination}
                       </span>
-                      <Badge variant="outline" className="text-[10px] uppercase px-1.5 py-0.5 font-bold">
+                      <Badge variant="outline" className="text-xs uppercase px-1.5 py-0.5 font-bold">
                         {alert.category}
                       </Badge>
                     </div>
@@ -407,7 +407,7 @@ export default function TurismoRadarPage() {
                       <span className="text-xs font-semibold text-muted-foreground">{dest.continent}</span>
                       {dest.is_featured && <Star className="size-3 text-amber-400 fill-amber-400" />}
                       {dest.is_visa_required && (
-                        <Badge variant="destructive" className="text-[9px] px-1.5 py-0 font-bold">
+                        <Badge variant="destructive" className="text-xs px-1.5 py-0 font-bold">
                           VISTO
                         </Badge>
                       )}
@@ -428,7 +428,7 @@ export default function TurismoRadarPage() {
 
                 <div className="mt-4">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       Índice de Demanda
                     </span>
                   </div>
@@ -437,19 +437,19 @@ export default function TurismoRadarPage() {
 
                 <div className="grid grid-cols-3 gap-2 mt-4">
                   <div className="text-center p-2 rounded-xl bg-muted/20 border border-border/40">
-                    <p className="text-[10px] text-muted-foreground">Pacote Médio</p>
+                    <p className="text-xs text-muted-foreground">Pacote Médio</p>
                     <p className="text-xs font-black text-foreground mt-0.5">
                       {dest.avg_package_brl ? `R$ ${(dest.avg_package_brl / 1000).toFixed(1)}k` : '—'}
                     </p>
                   </div>
                   <div className="text-center p-2 rounded-xl bg-muted/20 border border-border/40">
-                    <p className="text-[10px] text-muted-foreground">Diária Média</p>
+                    <p className="text-xs text-muted-foreground">Diária Média</p>
                     <p className="text-xs font-black text-foreground mt-0.5">
                       {dest.avg_daily_rate_brl ? `R$ ${dest.avg_daily_rate_brl}` : '—'}
                     </p>
                   </div>
                   <div className="text-center p-2 rounded-xl bg-muted/20 border border-border/40">
-                    <p className="text-[10px] text-muted-foreground">Moeda / Câmbio</p>
+                    <p className="text-xs text-muted-foreground">Moeda / Câmbio</p>
                     <p className="text-xs font-black text-foreground mt-0.5 font-mono">
                       {dest.currency_code || 'BRL'}
                     </p>
@@ -461,7 +461,7 @@ export default function TurismoRadarPage() {
                     {dest.tags.slice(0, 4).map((tag: string) => (
                       <span
                         key={tag}
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground capitalize border border-border/40"
+                        className="text-xs font-semibold px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground capitalize border border-border/40"
                       >
                         {tag}
                       </span>
@@ -470,7 +470,7 @@ export default function TurismoRadarPage() {
                 )}
 
                 <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
-                  <span className={`flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5 border ${safety.bg}`}>
+                  <span className={`flex items-center gap-1 text-xs font-bold rounded-full px-2 py-0.5 border ${safety.bg}`}>
                     <SafetyIcon className="size-3" />
                     {safety.label}
                   </span>
@@ -546,7 +546,7 @@ export default function TurismoRadarPage() {
         >
           <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-muted/20 shrink-0">
             <div className="flex items-center gap-2 mb-1">
-              <Badge variant="outline" className="text-[10px] font-mono font-bold bg-primary/10 text-primary border-primary/20">
+              <Badge variant="outline" className="text-xs font-mono font-bold bg-primary/10 text-primary border-primary/20">
                 Inteligência de Mercado
               </Badge>
             </div>

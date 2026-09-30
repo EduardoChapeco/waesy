@@ -295,7 +295,7 @@ function CmsPagesPage() {
                     </div>
                     <Badge
                       variant="outline"
-                      className={`text-[9px] font-mono font-medium px-1.5 py-0 rounded-md border ${
+                      className={`text-xs font-mono font-medium px-1.5 py-0 rounded-md border ${
                         isPublished
                           ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
                           : "bg-muted text-muted-foreground border-border/80"
@@ -340,7 +340,7 @@ function CmsPagesPage() {
                     >
                       {page.title}
                     </h3>
-                    <p className="text-[10px] text-muted-foreground font-mono truncate mt-0.5">
+                    <p className="text-xs text-muted-foreground font-mono truncate mt-0.5">
                       /{page.slug}
                     </p>
                   </div>
@@ -351,7 +351,7 @@ function CmsPagesPage() {
                       to="/paginas/$slug"
                       params={{ slug: page.slug }}
                       target="_blank"
-                      className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+                      className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
                       title="Abrir página pública"
                     >
                       <Globe className="size-3" />
@@ -429,7 +429,7 @@ function CmsPagesPage() {
 
             <div className="flex-1 overflow-y-auto space-y-4 pb-4">
               <div>
-                <Label className="text-[11px] font-semibold text-muted-foreground">Nome do projeto</Label>
+                <Label className="text-xs font-semibold text-muted-foreground">Nome do projeto</Label>
                 <Input
                   value={title}
                   onChange={(e) => handleTitleChange(e.target.value)}
@@ -439,7 +439,7 @@ function CmsPagesPage() {
               </div>
 
               <div>
-                <Label className="text-[11px] font-semibold text-muted-foreground mb-2 block">
+                <Label className="text-xs font-semibold text-muted-foreground mb-2 block">
                   Toque num modelo para criar
                 </Label>
                 <div className="space-y-2">
@@ -458,11 +458,11 @@ function CmsPagesPage() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <h4 className="text-xs font-bold text-foreground truncate">{tpl.name}</h4>
-                              <span className="text-[9px] font-medium px-1.5 py-0.2 rounded bg-muted/80 text-muted-foreground">
+                              <span className="text-xs font-medium px-1.5 py-0.2 rounded bg-muted/80 text-muted-foreground">
                                 {tpl.badge}
                               </span>
                             </div>
-                            <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                               {tpl.description}
                             </p>
                           </div>
@@ -485,7 +485,7 @@ function CmsPagesPage() {
 
             <div className="space-y-4">
               <div>
-                <Label className="text-[11px] font-semibold text-muted-foreground">Nome do projeto</Label>
+                <Label className="text-xs font-semibold text-muted-foreground">Nome do projeto</Label>
                 <Input
                   value={title}
                   onChange={(e) => handleTitleChange(e.target.value)}
@@ -496,7 +496,7 @@ function CmsPagesPage() {
               </div>
 
               <div>
-                <Label className="text-[11px] font-semibold text-muted-foreground mb-2 block">
+                <Label className="text-xs font-semibold text-muted-foreground mb-2 block">
                   Escolha o modelo inicial
                 </Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[320px] overflow-y-auto p-0.5">
@@ -519,12 +519,12 @@ function CmsPagesPage() {
                             <div className="size-7 rounded-lg bg-muted flex items-center justify-center">
                               <Icon className="size-3.5 text-foreground" />
                             </div>
-                            <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-muted/80 text-muted-foreground">
+                            <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-muted/80 text-muted-foreground">
                               {tpl.badge}
                             </span>
                           </div>
                           <h4 className="text-xs font-bold text-foreground line-clamp-1">{tpl.name}</h4>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
+                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                             {tpl.description}
                           </p>
                         </div>

@@ -178,7 +178,7 @@ function StorePrivacySettingsPage() {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-foreground">{opt.label}</h3>
-                  <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{opt.desc}</p>
+                  <p className="text-xs text-muted-foreground leading-tight mt-0.5">{opt.desc}</p>
                 </div>
               </button>
             ))}
@@ -202,7 +202,7 @@ function StorePrivacySettingsPage() {
                   className="h-10 rounded-xl text-xs max-w-xs font-mono"
                 />
                 {settings?.hasPasswordConfigured && (
-                  <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 border-emerald-500/30">
+                  <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
                     Senha Ativa Configurada
                   </Badge>
                 )}
@@ -232,7 +232,7 @@ function StorePrivacySettingsPage() {
           <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-bold text-foreground">Modo CatÃ¡logo Somente</span>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Exibe produtos como portfÃ³lio sem botÃ£o de checkout online, direcionando o cliente para orÃ§amento no WhatsApp.
               </p>
             </div>

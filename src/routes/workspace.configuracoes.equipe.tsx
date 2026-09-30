@@ -358,11 +358,11 @@ export default function WorkspaceTeamPage() {
  <div className="space-y-0.5 flex-1 min-w-0">
  <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
  <span>Privacidade e Isolamento Estrito de Workspace</span>
- <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary font-bold">
+ <Badge variant="outline" className="text-xs px-1.5 py-0 border-primary/30 text-primary font-bold">
  Zero-Trust RLS
  </Badge>
  </h3>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground leading-relaxed">
  Cada colaborador vinculado abaixo terá permissões aplicadas <strong>exclusivamente para esta loja</strong>.
  Nenhum dado, pedido, faturamento ou catálogo de outros comerciantes é acessível.
  </p>
@@ -374,7 +374,7 @@ export default function WorkspaceTeamPage() {
  <div className="p-4 border-b border-border/60 flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold text-foreground">
  <span>Membros Ativos</span>
- <Badge variant="secondary" className="text-[11px] font-bold">
+ <Badge variant="secondary" className="text-xs font-bold">
  {members.length}
  </Badge>
  </div>
@@ -429,12 +429,12 @@ export default function WorkspaceTeamPage() {
  </p>
  <Badge
  variant="outline"
- className={`text-[10px] px-2 py-0.5 font-bold rounded-lg border ${roleInfo.color}`}
+ className={`text-xs px-2 py-0.5 font-bold rounded-lg border ${roleInfo.color}`}
  >
  {roleInfo.label}
  </Badge>
  </div>
- <p className="text-[11px] text-muted-foreground truncate font-mono">
+ <p className="text-xs text-muted-foreground truncate font-mono">
  {m.email || "E-mail não público"}
  </p>
  </div>
@@ -472,7 +472,7 @@ export default function WorkspaceTeamPage() {
  </Button>
  </>
  ) : (
- <span className="text-[11px] text-muted-foreground font-medium px-2 py-1 bg-muted/30 rounded-lg">
+ <span className="text-xs text-muted-foreground font-medium px-2 py-1 bg-muted/30 rounded-lg">
  Proprietário Principal
  </span>
  )}
@@ -491,7 +491,7 @@ export default function WorkspaceTeamPage() {
       <div className="p-4 border-b border-border/60 flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-bold text-foreground">
           <span>Prestadores Terceirizados e Freelancers</span>
-          <Badge variant="secondary" className="text-[11px] font-bold">
+          <Badge variant="secondary" className="text-xs font-bold">
             {contractorsList.length}
           </Badge>
         </div>
@@ -569,13 +569,13 @@ export default function WorkspaceTeamPage() {
                     <h4 className="text-sm font-bold text-foreground leading-tight truncate">
                       {c.name}
                     </h4>
-                    <Badge variant="outline" className="text-[10px] font-mono capitalize">
+                    <Badge variant="outline" className="text-xs font-mono capitalize">
                       {c.service_category?.replace("_", " ")}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                     {c.contact_phone && <span>Tel: {c.contact_phone}</span>}
-                    {c.pix_key && <span>Pix: <code className="font-mono text-[11px]">{c.pix_key}</code></span>}
+                    {c.pix_key && <span>Pix: <code className="font-mono text-xs">{c.pix_key}</code></span>}
                     {c.hourly_rate_cents > 0 && <span>{formatMoney(c.hourly_rate_cents)}/h</span>}
                     {c.fixed_fee_cents > 0 && <span>Diária: {formatMoney(c.fixed_fee_cents)}</span>}
                   </div>
@@ -654,7 +654,7 @@ export default function WorkspaceTeamPage() {
  <div className="p-4 border-b border-border/60 flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold text-foreground">
  <span>Vagas de Emprego Publicadas</span>
- <Badge variant="secondary" className="text-[11px] font-bold">
+ <Badge variant="secondary" className="text-xs font-bold">
  {jobs.length}
  </Badge>
  </div>
@@ -700,11 +700,11 @@ export default function WorkspaceTeamPage() {
  <div className="min-w-0 space-y-0.5">
  <div className="flex items-center gap-2">
  <p className="text-xs font-bold text-foreground truncate">{job.title}</p>
- <Badge variant="outline" className="text-[10px] uppercase font-mono font-bold">
+ <Badge variant="outline" className="text-xs uppercase font-mono font-bold">
  {job.contract_type} • {job.workplace_type}
  </Badge>
  </div>
- <p className="text-[11px] text-muted-foreground truncate">
+ <p className="text-xs text-muted-foreground truncate">
  {job.location} • {job.salary_display}
  </p>
  </div>
@@ -932,7 +932,7 @@ export default function WorkspaceTeamPage() {
  <SelectItem key={key} value={key} className="text-xs py-2">
  <div className="space-y-0.5">
  <p className="font-bold text-foreground">{item.label}</p>
- <p className="text-[10px] text-muted-foreground">{item.description}</p>
+ <p className="text-xs text-muted-foreground">{item.description}</p>
  </div>
  </SelectItem>
  ))}
@@ -940,7 +940,7 @@ export default function WorkspaceTeamPage() {
  </Select>
  </div>
 
- <div className="p-3 rounded-xl bg-muted/40 border border-border/50 text-[11px] text-muted-foreground flex items-start gap-2">
+ <div className="p-3 rounded-xl bg-muted/40 border border-border/50 text-xs text-muted-foreground flex items-start gap-2">
  <Info className="size-4 text-primary shrink-0 mt-0.5" />
  <span>O colaborador receberá acesso imediato e restrito única e exclusivamente à sua loja.</span>
  </div>

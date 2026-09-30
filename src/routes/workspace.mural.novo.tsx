@@ -192,7 +192,7 @@ function WorkspaceNewMuralPostPage() {
 
         {/* Rodapé de Ações */}
         <div className="pt-3 border-t border-border/40 flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             Aparece imediatamente no feed público da cidade.
           </span>
 

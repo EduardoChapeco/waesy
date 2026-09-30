@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks } from 'lucide-react';
+import { Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks, Package, UtensilsCrossed, Plane, ClipboardList, Truck, Boxes, Palette, Link2, Megaphone, Newspaper, Ticket, Briefcase, Car, GraduationCap, Bus } from 'lucide-react';
 import { getStoreSettings, saveStoreSettings, getWorkingHours, saveWorkingHours, getPolicies, savePolicies } from "@/services/store.functions";
 import { listManualPaymentMethods, saveManualPaymentMethod, deleteManualPaymentMethod } from "@/services/payment.functions";
 import { uploadStoreMedia } from "@/services/storage.functions";
@@ -571,7 +571,7 @@ export default function WorkspaceConfiguracoesPage() {
  />
  <div className="flex-1 space-y-1">
  <p className="text-xs font-semibold text-foreground">Formato Quadrado (1:1)</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Exibido no cabeçalho da loja, sacola de compras e recibos.
  </p>
  </div>
@@ -593,7 +593,7 @@ export default function WorkspaceConfiguracoesPage() {
  />
  <div className="flex-1 space-y-1">
  <p className="text-xs font-semibold text-foreground">Ícone da Aba (1:1)</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Identifica sua loja na aba do navegador e no app móvel.
  </p>
  </div>
@@ -629,7 +629,7 @@ export default function WorkspaceConfiguracoesPage() {
    <div className="p-5 rounded-2xl bg-muted/20 border border-border/80 space-y-3">
      <div className="space-y-0.5">
        <Label className="text-xs font-bold text-foreground">Canais & Modalidades de Atendimento (Turismo & Agência)</Label>
-       <p className="text-[11px] text-muted-foreground">
+       <p className="text-xs text-muted-foreground">
          Defina as formas que os passageiros e viajantes podem ser atendidos e emitir roteiros com sua agência.
        </p>
      </div>
@@ -638,7 +638,7 @@ export default function WorkspaceConfiguracoesPage() {
        <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
          <div className="space-y-0.5 pr-2">
            <span className="text-xs font-bold text-foreground">Presencial na Agência</span>
-           <p className="text-[10px] text-muted-foreground">Balcão físico com ou sem agendamento</p>
+           <p className="text-xs text-muted-foreground">Balcão físico com ou sem agendamento</p>
          </div>
          <Switch
            checked={orderTypes.in_person ?? orderTypes.dine_in ?? true}
@@ -650,7 +650,7 @@ export default function WorkspaceConfiguracoesPage() {
        <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
          <div className="space-y-0.5 pr-2">
            <span className="text-xs font-bold text-foreground">Consultoria Online</span>
-           <p className="text-[10px] text-muted-foreground">Atendimento WhatsApp e Vídeo</p>
+           <p className="text-xs text-muted-foreground">Atendimento WhatsApp e Vídeo</p>
          </div>
          <Switch
            checked={orderTypes.remote_online ?? true}
@@ -662,7 +662,7 @@ export default function WorkspaceConfiguracoesPage() {
        <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
          <div className="space-y-0.5 pr-2">
            <span className="text-xs font-bold text-foreground">Emissão Autônoma</span>
-           <p className="text-[10px] text-muted-foreground">Reserva e compra direta no portal</p>
+           <p className="text-xs text-muted-foreground">Reserva e compra direta no portal</p>
          </div>
          <Switch
            checked={orderTypes.auto_checkout ?? orderTypes.delivery ?? true}
@@ -674,7 +674,7 @@ export default function WorkspaceConfiguracoesPage() {
        <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
          <div className="space-y-0.5 pr-2">
            <span className="text-xs font-bold text-foreground">Corporativo / B2B</span>
-           <p className="text-[10px] text-muted-foreground">Faturamento para empresas e grupos</p>
+           <p className="text-xs text-muted-foreground">Faturamento para empresas e grupos</p>
          </div>
          <Switch
            checked={orderTypes.corporate_b2b ?? false}
@@ -688,7 +688,7 @@ export default function WorkspaceConfiguracoesPage() {
    <div className="p-5 rounded-2xl bg-muted/20 border border-border/80 space-y-3">
      <div className="space-y-0.5">
        <Label className="text-xs font-bold text-foreground">Modalidades de Atendimento</Label>
-       <p className="text-[11px] text-muted-foreground">
+       <p className="text-xs text-muted-foreground">
          Selecione as formas que os clientes podem comprar e receber do seu estabelecimento.
        </p>
      </div>
@@ -697,7 +697,7 @@ export default function WorkspaceConfiguracoesPage() {
        <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
          <div className="space-y-0.5">
            <span className="text-xs font-bold text-foreground">Delivery</span>
-           <p className="text-[10px] text-muted-foreground">Entrega no endereço</p>
+           <p className="text-xs text-muted-foreground">Entrega no endereço</p>
          </div>
          <Switch
            checked={orderTypes.delivery}
@@ -709,7 +709,7 @@ export default function WorkspaceConfiguracoesPage() {
        <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
          <div className="space-y-0.5">
            <span className="text-xs font-bold text-foreground">Retirada</span>
-           <p className="text-[10px] text-muted-foreground">Pegar no balcão</p>
+           <p className="text-xs text-muted-foreground">Pegar no balcão</p>
          </div>
          <Switch
            checked={orderTypes.takeout}
@@ -721,7 +721,7 @@ export default function WorkspaceConfiguracoesPage() {
        <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
          <div className="space-y-0.5">
            <span className="text-xs font-bold text-foreground">No Local / Mesas</span>
-           <p className="text-[10px] text-muted-foreground">Consumo presencial</p>
+           <p className="text-xs text-muted-foreground">Consumo presencial</p>
          </div>
          <Switch
            checked={orderTypes.dine_in}
@@ -735,7 +735,7 @@ export default function WorkspaceConfiguracoesPage() {
    <div className="p-5 rounded-2xl bg-muted/20 border border-border/80 space-y-3">
      <div className="space-y-0.5">
        <Label className="text-xs font-bold text-foreground">Canais de Atendimento e Prestação de Serviço</Label>
-       <p className="text-[11px] text-muted-foreground">
+       <p className="text-xs text-muted-foreground">
          Defina as formas de atendimento oferecidas pelo seu negócio.
        </p>
      </div>
@@ -744,7 +744,7 @@ export default function WorkspaceConfiguracoesPage() {
        <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
          <div className="space-y-0.5">
            <span className="text-xs font-bold text-foreground">Atendimento Presencial</span>
-           <p className="text-[10px] text-muted-foreground">No escritório ou estabelecimento físico</p>
+           <p className="text-xs text-muted-foreground">No escritório ou estabelecimento físico</p>
          </div>
          <Switch
            checked={orderTypes.in_person ?? orderTypes.dine_in ?? true}
@@ -756,7 +756,7 @@ export default function WorkspaceConfiguracoesPage() {
        <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
          <div className="space-y-0.5">
            <span className="text-xs font-bold text-foreground">Atendimento Remoto / Online</span>
-           <p className="text-[10px] text-muted-foreground">Via canais digitais e videoconferência</p>
+           <p className="text-xs text-muted-foreground">Via canais digitais e videoconferência</p>
          </div>
          <Switch
            checked={orderTypes.remote_online ?? true}
@@ -909,7 +909,7 @@ export default function WorkspaceConfiguracoesPage() {
  </span>
  {isSelected && <Check className="size-3.5 text-primary shrink-0" />}
  </div>
- <p className="text-[11px] leading-relaxed text-muted-foreground">
+ <p className="text-xs leading-relaxed text-muted-foreground">
  {n.desc}
  </p>
  </button>
@@ -961,7 +961,7 @@ export default function WorkspaceConfiguracoesPage() {
  : semantics.nicheId === "gastronomy"
  ? "Cadastro de pratos, bebidas, adicionais e categorias."
  : "Cadastro de produtos, variações, categorias e fotos.",
- icon: semantics.nicheId === "tourism" ? "✈️" : semantics.nicheId === "gastronomy" ? "🍽️" : "📦",
+ icon: semantics.nicheId === "tourism" ? Plane : semantics.nicheId === "gastronomy" ? UtensilsCrossed : Package,
  },
  {
  id: "orders",
@@ -971,7 +971,7 @@ export default function WorkspaceConfiguracoesPage() {
  : semantics.nicheId === "gastronomy"
  ? "Recepção de pedidos em tempo real, telas de cozinha (KDS) e despacho."
  : "Recepção de pedidos, separação e expedição de compras.",
- icon: "📋",
+ icon: ClipboardList,
  },
  {
  id: "delivery",
@@ -979,7 +979,7 @@ export default function WorkspaceConfiguracoesPage() {
  desc: semantics.nicheId === "tourism"
  ? "Gestão de veículos, ônibus, embarques e transfers."
  : "Gestão de entregadores, despacho e taxas por bairro.",
- icon: semantics.nicheId === "tourism" ? "🚌" : "🛵",
+ icon: semantics.nicheId === "tourism" ? Bus : Truck,
  },
  {
  id: "pos",
@@ -987,7 +987,7 @@ export default function WorkspaceConfiguracoesPage() {
  desc: semantics.nicheId === "gastronomy"
  ? "Ponto de venda rápido para balcão, comandas e mesas."
  : "Ponto de venda rápido para recebimento e vendas presenciais.",
- icon: "🏪",
+ icon: Store,
  },
  {
  id: "stock",
@@ -995,73 +995,73 @@ export default function WorkspaceConfiguracoesPage() {
  desc: semantics.nicheId === "tourism"
  ? "Controle de vagas, bloqueios de quartos e assentos."
  : "Movimentações, baixa automática e alerta de insumos mínimos.",
- icon: "📦",
+ icon: Boxes,
  },
  {
  id: "studio",
  title: "Estúdio Visual Studio 3.0",
  desc: "Criador de posts, encartes promocionais e banners para redes.",
- icon: "🎨",
+ icon: Palette,
  },
  {
  id: "biolink",
  title: "Link da Bio (Biolink)",
  desc: "Página móvel com botões rápidos de WhatsApp, PIX e redes.",
- icon: "🔗",
+ icon: Link2,
  },
  {
  id: "pages",
  title: "Páginas do Site (CMS)",
  desc: "Páginas institucionais como Sobre Nós, Políticas e Dúvidas.",
- icon: "📄",
+ icon: FileText,
  },
  {
  id: "classifieds",
  title: "Classificados Locais",
  desc: "Anúncios rápidos de desapegos e oportunidades na região.",
- icon: "📢",
+ icon: Megaphone,
  },
  {
  id: "news",
  title: "Notícias e Redação",
  desc: "Publicação de matérias jornalísticas e conteúdos editoriais.",
- icon: "📰",
+ icon: Newspaper,
  },
  {
  id: "events",
  title: "Eventos e Ingressos",
  desc: "Venda de ingressos com lotes, setores e validação QR Code.",
- icon: "🎟️",
+ icon: Ticket,
  },
  {
  id: "jobs",
  title: "Empregos e Recrutamento",
  desc: "Abertura de vagas e recebimento de currículos de candidatos.",
- icon: "💼",
+ icon: Briefcase,
  },
  {
  id: "vehicles",
  title: "Veículos e Concessionária",
  desc: "Estoque de seminovos, propostas de financiamento e placas.",
- icon: "🚗",
+ icon: Car,
  },
  {
  id: "real_estate",
  title: "Imóveis e Imobiliária",
  desc: "Catálogo de imóveis para venda/locação e vistorias.",
- icon: "🏠",
+ icon: Building2,
  },
  {
  id: "tourism",
  title: "Turismo e Passeios",
  desc: "Pacotes de viagem, pousadas e reservas de passeios locais.",
- icon: "✈️",
+ icon: Plane,
  },
  {
  id: "education",
  title: "Cursos e Workshops",
  desc: "Gestão de turmas, materiais didáticos e matrículas.",
- icon: "🎓",
+ icon: GraduationCap,
  },
  ].map((mod) => {
  const isEnabled = enabledModules.includes(mod.id);
@@ -1078,12 +1078,12 @@ export default function WorkspaceConfiguracoesPage() {
  >
  <div className="space-y-1 pr-3">
  <div className="flex items-center gap-2">
- <span className="text-base leading-none">{mod.icon}</span>
+ {(() => { const ModIcon = mod.icon; return <ModIcon className="size-4 text-primary shrink-0" />; })()}
  <span className="text-xs font-bold text-foreground">
  {mod.title}
  </span>
  </div>
- <p className="text-[11px] text-muted-foreground leading-snug">
+ <p className="text-xs text-muted-foreground leading-snug">
  {mod.desc}
  </p>
  </div>
@@ -1288,7 +1288,7 @@ export default function WorkspaceConfiguracoesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-foreground">CPF na Nota Fiscal</h3>
-                  <p className="text-[11px] text-muted-foreground">Pergunta se o cliente deseja incluir documento fiscal</p>
+                  <p className="text-xs text-muted-foreground">Pergunta se o cliente deseja incluir documento fiscal</p>
                 </div>
                 <Switch
                   checked={cpfCheckoutEnabled}
@@ -1323,7 +1323,7 @@ export default function WorkspaceConfiguracoesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-foreground">Recebedor</h3>
-                  <p className="text-[11px] text-muted-foreground">Permite indicar outra pessoa (nome e telefone de contato)</p>
+                  <p className="text-xs text-muted-foreground">Permite indicar outra pessoa (nome e telefone de contato)</p>
                 </div>
                 <Switch
                   checked={receiverInfoEnabled}
@@ -1337,7 +1337,7 @@ export default function WorkspaceConfiguracoesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-foreground">Falta de Itens</h3>
-                  <p className="text-[11px] text-muted-foreground">Opções para quando um produto estiver esgotado no momento da separação</p>
+                  <p className="text-xs text-muted-foreground">Opções para quando um produto estiver esgotado no momento da separação</p>
                 </div>
                 <Switch
                   checked={substitutionPolicyEnabled}
@@ -1347,7 +1347,7 @@ export default function WorkspaceConfiguracoesPage() {
 
               {substitutionPolicyEnabled && (
                 <div className="pt-2 border-t border-border/30 space-y-1.5 text-xs">
-                  <Label className="text-[11px] text-muted-foreground">Opção pré-selecionada sugerida:</Label>
+                  <Label className="text-xs text-muted-foreground">Opção pré-selecionada sugerida:</Label>
                   <select
                     value={substitutionDefaultOption}
                     onChange={(e) => setSubstitutionDefaultOption(e.target.value as any)}
@@ -1366,7 +1366,7 @@ export default function WorkspaceConfiguracoesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-foreground">Talheres e Descartáveis</h3>
-                  <p className="text-[11px] text-muted-foreground">Pergunta ecológica: enviar talheres e guardanapos descartáveis?</p>
+                  <p className="text-xs text-muted-foreground">Pergunta ecológica: enviar talheres e guardanapos descartáveis?</p>
                 </div>
                 <Switch
                   checked={utensilsPolicyEnabled}
@@ -1380,7 +1380,7 @@ export default function WorkspaceConfiguracoesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-foreground">Observações por Item</h3>
-                  <p className="text-[11px] text-muted-foreground">Permite ao cliente adicionar observações em itens individuais ("+ Observação do item")</p>
+                  <p className="text-xs text-muted-foreground">Permite ao cliente adicionar observações em itens individuais ("+ Observação do item")</p>
                 </div>
                 <Switch
                   checked={itemNotesEnabled}
@@ -1420,7 +1420,7 @@ export default function WorkspaceConfiguracoesPage() {
  <CheckCircle2 className="size-4 text-primary" />
  )}
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground leading-relaxed">
  Cartão de crédito online e Pix automático com split financeiro e conciliação instantânea.
  </p>
  </div>
@@ -1440,7 +1440,7 @@ export default function WorkspaceConfiguracoesPage() {
  <CheckCircle2 className="size-4 text-primary" />
  )}
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground leading-relaxed">
  Chave Pix da sua empresa sem taxas intermediárias, ou pagamento na entrega/retirada no balcão.
  </p>
  </div>
@@ -1497,7 +1497,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* Sugestões Rápidas de Presets */}
  <div className="space-y-1.5">
- <Label className="text-[11px] font-bold text-muted-foreground">Sugestões Rápidas:</Label>
+ <Label className="text-xs font-bold text-muted-foreground">Sugestões Rápidas:</Label>
  <div className="flex flex-wrap gap-2">
  <Button
  type="button"
@@ -1605,13 +1605,13 @@ export default function WorkspaceConfiguracoesPage() {
  <span className="text-xs font-bold text-foreground">{method.name}</span>
  <Badge
  variant={method.is_active ? "default" : "secondary"}
- className="text-[10px] font-semibold"
+ className="text-xs font-semibold"
  >
  {method.is_active ? "Ativo" : "Inativo"}
  </Badge>
  </div>
  {method.instructions && (
- <p className="text-[11px] text-muted-foreground truncate">{method.instructions}</p>
+ <p className="text-xs text-muted-foreground truncate">{method.instructions}</p>
  )}
  </div>
 
@@ -1796,7 +1796,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-bold">Título da Pergunta / Label *</Label>
+ <Label className="text-xs font-bold">Título da Pergunta / Label *</Label>
  <Input
  value={field.label || ""}
  onChange={(e) => {
@@ -1811,7 +1811,7 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Tipo de Resposta</Label>
+ <Label className="text-xs font-bold">Tipo de Resposta</Label>
  <select
  value={field.type || "text"}
  onChange={(e) => {
@@ -1832,7 +1832,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Texto de Exemplo (Placeholder)</Label>
+ <Label className="text-xs font-bold">Texto de Exemplo (Placeholder)</Label>
  <Input
  value={field.placeholder || ""}
  onChange={(e) => {
@@ -1849,7 +1849,7 @@ export default function WorkspaceConfiguracoesPage() {
  <div className="flex items-center justify-between p-2 rounded-xl bg-card ">
  <div>
  <Label className="text-xs font-bold block">Resposta Obrigatória</Label>
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  Cliente não consegue pagar sem preencher
  </span>
  </div>

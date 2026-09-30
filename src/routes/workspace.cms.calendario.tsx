@@ -278,14 +278,14 @@ function CalendarioEditorialPage() {
  <div className="flex items-start justify-between gap-2">
  <span
  className={cn(
- "px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5",
+ "px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5",
  config.colorClass,
  )}
  >
  <Icon className="size-3.5" />
  {config.label}
  </span>
- <Badge variant="outline" className="text-[11px] rounded-md font-medium px-2 py-0.5 uppercase tracking-wide">
+ <Badge variant="outline" className="text-xs rounded-md font-medium px-2 py-0.5 uppercase tracking-wide">
  {post.status === "scheduled" ? "Programado" : post.status}
  </Badge>
  </div>
@@ -301,7 +301,7 @@ function CalendarioEditorialPage() {
 
  {/* Ações de Reagendamento Rápido */}
  <div className="flex items-center justify-between pt-2 text-xs">
- <span className="text-[11px] text-muted-foreground">Mover data:</span>
+ <span className="text-xs text-muted-foreground">Mover data:</span>
  <div className="flex items-center gap-1">
  <Button
  type="button"

@@ -124,7 +124,7 @@ export default function WorkspaceReviewsPage() {
               Avaliações
             </h1>
             <Badge variant="outline" className="text-xs border-amber-500/40 text-amber-600 bg-amber-500/10">
-              {stats.total_reviews > 0 ? `${stats.average_rating.toFixed(1)} ★ (${stats.total_reviews})` : "Sem avaliações"}
+              {stats.total_reviews > 0 ? `${stats.average_rating.toFixed(1)} / 5 (${stats.total_reviews})` : "Sem avaliações"}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -195,34 +195,34 @@ export default function WorkspaceReviewsPage() {
         <div className="bg-card border border-border/60 rounded-2xl p-4 space-y-1.5 shadow-xs text-xs">
           <span className="text-xs text-muted-foreground font-medium block mb-1">Distribuição de Notas</span>
           <div className="flex items-center gap-2">
-            <span className="w-6 text-muted-foreground text-[11px]">5★</span>
+            <span className="w-7 text-muted-foreground text-xs flex items-center gap-0.5">5<Star className="size-2.5 fill-amber-500 text-amber-500" /></span>
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className="h-full bg-amber-500 rounded-full"
                 style={{ width: `${stats.total_reviews > 0 ? (stats.count_5_stars / stats.total_reviews) * 100 : 0}%` }}
               />
             </div>
-            <span className="w-5 text-right font-mono text-[11px]">{stats.count_5_stars}</span>
+            <span className="w-5 text-right font-mono text-xs">{stats.count_5_stars}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-6 text-muted-foreground text-[11px]">4★</span>
+            <span className="w-7 text-muted-foreground text-xs flex items-center gap-0.5">4<Star className="size-2.5 fill-amber-400 text-amber-400" /></span>
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className="h-full bg-amber-400 rounded-full"
                 style={{ width: `${stats.total_reviews > 0 ? (stats.count_4_stars / stats.total_reviews) * 100 : 0}%` }}
               />
             </div>
-            <span className="w-5 text-right font-mono text-[11px]">{stats.count_4_stars}</span>
+            <span className="w-5 text-right font-mono text-xs">{stats.count_4_stars}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-6 text-muted-foreground text-[11px]">3★</span>
+            <span className="w-7 text-muted-foreground text-xs flex items-center gap-0.5">3<Star className="size-2.5 fill-amber-300 text-amber-300" /></span>
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className="h-full bg-amber-300 rounded-full"
                 style={{ width: `${stats.total_reviews > 0 ? (stats.count_3_stars / stats.total_reviews) * 100 : 0}%` }}
               />
             </div>
-            <span className="w-5 text-right font-mono text-[11px]">{stats.count_3_stars}</span>
+            <span className="w-5 text-right font-mono text-xs">{stats.count_3_stars}</span>
           </div>
         </div>
       </div>
@@ -325,7 +325,7 @@ export default function WorkspaceReviewsPage() {
                     <h4 className="text-sm font-semibold text-foreground">
                       {review.reviewer?.full_name || "Cliente Verificado"}
                     </h4>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {new Date(review.created_at).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "long",
@@ -337,7 +337,7 @@ export default function WorkspaceReviewsPage() {
 
                 <div className="flex items-center gap-3">
                   {review.classified?.title && (
-                    <Badge variant="secondary" className="text-[11px] font-normal gap-1 max-w-xs truncate">
+                    <Badge variant="secondary" className="text-xs font-normal gap-1 max-w-xs truncate">
                       <ShoppingBag className="w-3 h-3 text-muted-foreground" />
                       <span className="truncate">{review.classified.title}</span>
                     </Badge>
@@ -372,7 +372,7 @@ export default function WorkspaceReviewsPage() {
                         <CornerDownRight className="w-3.5 h-3.5 text-primary" />
                         <span>Sua Resposta Oficial:</span>
                       </div>
-                      <span className="text-[10px]">
+                      <span className="text-xs">
                         {review.responded_at
                           ? new Date(review.responded_at).toLocaleDateString("pt-BR")
                           : "Respondida"}

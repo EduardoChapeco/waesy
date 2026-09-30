@@ -157,7 +157,7 @@ function PropertyMaintenanceDashboard() {
  }`}
  >
  <span>{tab.label}</span>
- <span className="opacity-70 text-[10px]">({tab.count})</span>
+ <span className="opacity-70 text-xs">({tab.count})</span>
  </button>
  ))}
  </div>
@@ -192,7 +192,7 @@ function PropertyMaintenanceDashboard() {
  <div className="space-y-3">
  <div className="flex items-start justify-between gap-2">
  <div>
- <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+ <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
  <Building className="size-3" />
  <span>{req.property_title}</span>
  </span>
@@ -207,7 +207,7 @@ function PropertyMaintenanceDashboard() {
  ? "warning"
  : "secondary"
  }
- className="text-[10px] font-bold uppercase tracking-wider shrink-0"
+ className="text-xs font-bold uppercase tracking-wider shrink-0"
  >
  {req.urgency === "emergencia" && <Flame className="size-3 mr-1 inline" />}
  {req.urgency}
@@ -251,7 +251,7 @@ function PropertyMaintenanceDashboard() {
  )}
 
  {req.admin_notes && (
- <p className="text-[11px] text-muted-foreground italic bg-info/10 p-2 rounded-lg border border-info/20">
+ <p className="text-xs text-muted-foreground italic bg-info/10 p-2 rounded-lg border border-info/20">
  Notas do Gestor: {req.admin_notes}
  </p>
  )}
@@ -267,7 +267,7 @@ function PropertyMaintenanceDashboard() {
  ? "info"
  : "secondary"
  }
- className="text-[10px] font-bold"
+ className="text-xs font-bold"
  >
  {req.status === "resolved"
  ? "Resolvido âœ“"

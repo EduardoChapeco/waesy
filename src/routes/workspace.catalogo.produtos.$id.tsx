@@ -465,7 +465,7 @@ function EditProductPage() {
  <div className="absolute top-4 left-4 z-10">
  <Badge
  variant={liveStatus === "published" ? "default" : "secondary"}
- className="bg-background text-foreground text-[10px]"
+ className="bg-background text-foreground text-xs"
  >
  {liveStatus === "published"
  ? "Publicado"
@@ -479,7 +479,7 @@ function EditProductPage() {
  <div className="p-4 space-y-4 flex-1">
  <div>
  {liveBrand && (
- <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block mb-1">
+ <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block mb-1">
  {liveBrand}
  </span>
  )}
@@ -501,7 +501,7 @@ function EditProductPage() {
  {/* Descrição Curta */}
  {liveDescription && (
  <div className="pt-2 border-t">
- <h4 className="text-[11px] font-bold text-muted-foreground uppercase mb-1">
+ <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1">
  Sobre o {nicheCtx.entityName}
  </h4>
  <p className="text-xs text-muted-foreground line-clamp-4 leading-relaxed whitespace-pre-wrap">
@@ -551,7 +551,7 @@ function EditProductPage() {
  </div>
  <div>
  <span className="text-xs font-bold text-foreground">Modo de Publicação</span>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {isTravelPackageMode
  ? "Pacote Turístico / Roteiro Completo (sem frete físico, com itinerário e inclusões)"
  : "Produto Físico / Souvenir / Mala (com frete e logística tradicional)"}
@@ -1566,12 +1566,12 @@ function MediaManager({ product }: { product: any }) {
  <img src={m.url} alt={m.alt || ""} className="size-full object-cover" />
  )}
  {idx === 0 && (
- <Badge className="absolute top-2 left-2 text-[10px] font-bold" variant="default">
+ <Badge className="absolute top-2 left-2 text-xs font-bold" variant="default">
  Capa
  </Badge>
  )}
  {m.media_type === "video" && (
- <Badge className="absolute top-2 right-12 text-[10px] bg-destructive text-white border-none">
+ <Badge className="absolute top-2 right-12 text-xs bg-destructive text-white border-none">
  Vídeo
  </Badge>
  )}
@@ -1597,8 +1597,8 @@ function MediaManager({ product }: { product: any }) {
  </div>
  </div>
  <div className="p-3 space-y-1 bg-background/50">
- <p className="text-[11px] font-semibold text-primary truncate">{variantText}</p>
- <p className="text-[10px] text-muted-foreground truncate italic">
+ <p className="text-xs font-semibold text-primary truncate">{variantText}</p>
+ <p className="text-xs text-muted-foreground truncate italic">
  {m.alt ? `"${m.alt}"` : "Sem legenda"}
  </p>
  <div className="flex items-center justify-between pt-2">
@@ -1612,7 +1612,7 @@ function MediaManager({ product }: { product: any }) {
  >
  <ArrowLeft className="size-3.5" />
  </Button>
- <span className="text-[10px] text-muted-foreground font-mono">
+ <span className="text-xs text-muted-foreground font-mono">
  Pos: {idx + 1}
  </span>
  <Button

@@ -286,53 +286,53 @@ function WorkspacePudoLogisticsPage() {
       {/* ── 4 KPIS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Boxes className="size-3.5 text-amber-600" />
             Em Custódia
           </span>
           <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
             {kpis.ready}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Aguardando retirada pelo cliente
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
             Entregas Concluídas
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {kpis.delivered}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Volumes entregues no balcão
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <RotateCcw className="size-3.5 text-destructive" />
             Logística Reversa / Avarias
           </span>
           <div className="text-2xl font-mono font-bold text-destructive">
             {kpis.returns}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Devoluções e pacotes danificados
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Percent className="size-3.5 text-primary" />
             Taxa de Eficiência PUDO
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.successRate}%
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Conclusão sem intercorrências
           </p>
         </div>
@@ -421,7 +421,7 @@ function WorkspacePudoLogisticsPage() {
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5">
-                    <span className="font-mono text-[10px] text-muted-foreground uppercase font-bold">
+                    <span className="font-mono text-xs text-muted-foreground uppercase font-bold">
                       {pkg.tracking_code}
                     </span>
                     <h3 className="text-sm font-bold text-foreground line-clamp-1">
@@ -432,10 +432,10 @@ function WorkspacePudoLogisticsPage() {
                     variant="outline"
                     className={
                       pkg.status === "delivered_to_customer"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] font-bold"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs font-bold"
                         : pkg.status === "ready_for_pickup"
-                        ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-[10px] font-bold"
-                        : "bg-destructive/10 text-destructive border-destructive/30 text-[10px] font-bold"
+                        ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-xs font-bold"
+                        : "bg-destructive/10 text-destructive border-destructive/30 text-xs font-bold"
                     }
                   >
                     {pkg.status === "ready_for_pickup"
@@ -460,7 +460,7 @@ function WorkspacePudoLogisticsPage() {
                 {/* Código de Retirada Seguro */}
                 <div className="p-3 rounded-xl bg-muted/40 border border-border/50 flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                    <span className="text-xs uppercase font-bold text-muted-foreground">
                       Código de Segurança
                     </span>
                     <p className="text-sm font-mono font-bold text-foreground tracking-wider">
@@ -479,7 +479,7 @@ function WorkspacePudoLogisticsPage() {
 
               {/* Ações */}
               <div className="pt-3 border-t border-border/50 flex items-center justify-between gap-2">
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="text-xs text-muted-foreground font-mono">
                   Entrada: {new Date(pkg.created_at).toLocaleDateString("pt-BR")}
                 </span>
 

@@ -220,7 +220,7 @@ function NovoEntregadorPage() {
  placeholder="0,00"
  className="rounded-xl h-11"
  />
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Valor padrão cobrado por cada entrega realizada
  </p>
  </div>

@@ -61,31 +61,31 @@ function getExchangeChannelBadge(channel?: string) {
   switch (channel) {
     case "mercadolivre":
       return (
-        <Badge variant="outline" className="text-[10px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
+        <Badge variant="outline" className="text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
           Mercado Livre
         </Badge>
       );
     case "ifood":
       return (
-        <Badge variant="outline" className="text-[10px] font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30">
+        <Badge variant="outline" className="text-xs font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30">
           iFood
         </Badge>
       );
     case "amazon":
       return (
-        <Badge variant="outline" className="text-[10px] font-medium bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30">
+        <Badge variant="outline" className="text-xs font-medium bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30">
           Amazon
         </Badge>
       );
     case "whatsapp":
       return (
-        <Badge variant="outline" className="text-[10px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+        <Badge variant="outline" className="text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
           WhatsApp
         </Badge>
       );
     default:
       return (
-        <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground border-border/60">
+        <Badge variant="outline" className="text-xs font-medium text-muted-foreground border-border/60">
           Balcão / Loja
         </Badge>
       );
@@ -478,53 +478,53 @@ function ExchangesDashboardPage() {
       {/* ── KPIS OPERACIONAIS & FINANCEIROS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <RotateCcw className="size-3.5 text-blue-600" />
             Total de Solicitações
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.total}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.completedCount} concluídas com êxito
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Clock className="size-3.5 text-amber-500" />
             Em Triagem / Pendentes
           </span>
           <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
             {kpis.pendingCount}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {kpis.pendingCount > 0 ? "Aguardando conferência física" : "Todas as solicitações atendidas"}
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Gift className="size-3.5 text-purple-600" />
             Vale-Compras Gerados
           </span>
           <div className="text-2xl font-mono font-bold text-purple-600 dark:text-purple-400">
             {formatMoney(kpis.storeCreditCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Retenção de crédito na loja
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Banknote className="size-3.5 text-rose-600" />
             Total Estornado
           </span>
           <div className="text-2xl font-mono font-bold text-rose-600 dark:text-rose-400">
             {formatMoney(kpis.refundedCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Reembolsos via Pix / Cartão
           </p>
         </div>
@@ -582,7 +582,7 @@ function ExchangesDashboardPage() {
                     {formatMoney(ex.orderTotal || 0)}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusBadge(ex.status)} className="text-[10px]">
+                    <Badge variant={getStatusBadge(ex.status)} className="text-xs">
                       {translateStatus(ex.status)}
                     </Badge>
                   </TableCell>
@@ -605,7 +605,7 @@ function ExchangesDashboardPage() {
               >
                 <div className="flex justify-between items-center font-medium px-1">
                   <span className="font-bold text-xs text-foreground uppercase tracking-wider">{col.title}</span>
-                  <Badge variant="outline" className="bg-card font-mono text-[10px]">
+                  <Badge variant="outline" className="bg-card font-mono text-xs">
                     {columnExchanges.length}
                   </Badge>
                 </div>
@@ -628,7 +628,7 @@ function ExchangesDashboardPage() {
                             </div>
                             <p className="text-xs text-muted-foreground font-medium">{ex.customerName}</p>
                           </div>
-                          <Badge variant={getStatusBadge(ex.status)} className="text-[10px]">
+                          <Badge variant={getStatusBadge(ex.status)} className="text-xs">
                             {translateStatus(ex.status)}
                           </Badge>
                         </div>

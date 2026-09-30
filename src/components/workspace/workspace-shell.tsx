@@ -361,7 +361,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  type="button"
  onClick={() => setIsMasterAllVerticals((prev) => !prev)}
  className={cn(
- "w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer",
+ "w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer",
  isMasterAllVerticals
  ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
  : "bg-muted/40 text-muted-foreground border-border/40 hover:text-foreground"
@@ -398,7 +398,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <div key={group.id} className="space-y-0.5">
  {isNewSection && sectionLabel && (
  <div className="pt-2.5 pb-1 px-2.5 flex items-center gap-2 select-none">
- <span className="text-[10px] font-mono font-bold tracking-wider text-muted-foreground/60 uppercase truncate">
+ <span className="text-xs font-mono font-bold tracking-wider text-muted-foreground/60 uppercase truncate">
  {sectionLabel}
  </span>
  <div className="h-px bg-border/40 flex-1 shrink-0" />
@@ -420,7 +420,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
   return (
     <div className={cn("flex h-[100dvh] w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative", themeClass)}>
       {/* ── 1. BARRA LATERAL CANÔNICA DO WORKSPACE (PADRÃO META STUDIO - FIXA) ── */}
-      <aside className="hidden lg:flex flex-col w-[268px] shrink-0 sticky top-0 h-[100dvh] bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
+      <aside className="hidden lg:flex flex-col w-64 shrink-0 sticky top-0 h-[100dvh] bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
         {/* Topo da Sidebar com altura exata h-14 (56px) alinhada continuamente à linha do Header */}
         <div className="h-14 border-b border-border/60 px-3 flex items-center shrink-0">
           <WorkspaceAccountSwitcher
@@ -471,7 +471,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  </Link>
 
  {/* 4. Central de Ajuda & Retorno ao Super App */}
- <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px]">
+ <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
  <Link
  to="/termos"
  className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground px-2 py-1 rounded-lg hover:bg-muted/40 transition-colors"
@@ -500,11 +500,11 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
             <div className="lg:hidden shrink-0">
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="icon" className="size-10 min-w-[40px] min-h-[40px] rounded-xl border-border/60">
+                  <Button variant="outline" size="icon" className="size-10 min-w-10 min-h-10 rounded-xl border-border/60">
                     <Sliders className="size-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[290px] p-4">
+                <SheetContent side="left" className="w-72 p-4">
                   <div className="space-y-4">
                     <div className="pb-2 border-b border-border/60">
                       <WorkspaceAccountSwitcher
@@ -529,7 +529,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
             {/* Identificação rápida da loja no Mobile/Tablet (< lg) */}
             <div className="lg:hidden flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-bold text-foreground truncate max-w-[140px] sm:max-w-[220px]">
+              <span className="text-xs font-bold text-foreground truncate max-w-36 sm:max-w-56">
                 {activeStore?.name || "Workspace"}
               </span>
             </div>
@@ -607,12 +607,12 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   type="button"
                   className="flex items-center gap-2 p-1 pl-2 rounded-xl border border-border/60 bg-card hover:bg-muted/80 transition-all cursor-pointer"
                 >
-                  <span className="text-xs font-bold text-foreground max-w-[110px] truncate hidden md:inline-block">
+                  <span className="text-xs font-bold text-foreground max-w-28 truncate hidden md:inline-block">
                     {userDisplayName}
                   </span>
                   <Avatar className="size-7 rounded-lg">
                     <AvatarImage src="" alt={userDisplayName} />
-                    <AvatarFallback className="text-[10px] font-bold bg-primary text-primary-foreground">
+                    <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground">
                       {userInitial}
                     </AvatarFallback>
                   </Avatar>
@@ -622,8 +622,8 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <DropdownMenuContent align="end" className="w-60 rounded-2xl p-2 border border-border">
                 <DropdownMenuLabel className="font-normal px-2 py-1.5">
                   <p className="text-xs font-bold text-foreground truncate">{userDisplayName}</p>
-                  <p className="text-[10px] font-mono text-muted-foreground truncate">{session?.email}</p>
-                  <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary border border-primary/20">
+                  <p className="text-xs font-mono text-muted-foreground truncate">{session?.email}</p>
+                  <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-bold bg-primary/10 text-primary border border-primary/20">
                     {activeStore?.name || "Loja"}
                   </span>
                 </DropdownMenuLabel>
@@ -671,7 +671,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
         </header>
 
         <main id="workspace-main-content" className="main-container-query flex-1 w-full overflow-y-auto no-scrollbar">
-          <div className="w-full max-w-7xl mx-auto px-[1px] sm:px-6 lg:px-8 py-2 sm:py-6 pb-24">
+          <div className="w-full max-w-7xl mx-auto px-1 sm:px-6 lg:px-8 py-2 sm:py-6 pb-24">
             {isAuthorized ? (
               children
             ) : (
@@ -697,13 +697,13 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           return (
             <nav
               aria-label="Navegação operacional móvel"
-              className="lg:hidden fixed inset-x-2.5 z-30 max-w-lg mx-auto grid grid-cols-5 items-center p-1.5 bg-background/95 backdrop-blur-md border border-border/80 rounded-[22px] select-none"
+              className="lg:hidden fixed inset-x-2.5 z-30 max-w-lg mx-auto grid grid-cols-5 items-center p-1.5 bg-background/95 backdrop-blur-md border border-border/80 rounded-2xl select-none"
               style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 6px), 8px)" }}
             >
               <Link
                 to="/workspace"
                 className={cn(
-                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] transition-all active:scale-95",
+                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs transition-colors active:scale-95",
                   isOverview ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -714,7 +714,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Link
                 to={opAction.path as any}
                 className={cn(
-                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] transition-all active:scale-95",
+                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs transition-colors active:scale-95",
                   isOpActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -725,7 +725,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Link
                 to="/workspace/catalogo/produtos"
                 className={cn(
-                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] transition-all active:scale-95",
+                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs transition-colors active:scale-95",
                   isCatalogActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -736,7 +736,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Link
                 to="/workspace/financeiro/caixa"
                 className={cn(
-                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] transition-all active:scale-95",
+                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs transition-colors active:scale-95",
                   isFinanceActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -747,7 +747,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground font-medium transition-all active:scale-95 cursor-pointer"
+                className="h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors active:scale-95 cursor-pointer"
               >
                 <Sliders className="size-4" />
                 <span className="truncate">Menu</span>
@@ -775,12 +775,12 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <div className="p-6 space-y-4 text-xs">
  {/* Box informativo de transição de identidade */}
  <div className="rounded-2xl border border-border/60 bg-muted/30 p-3.5 space-y-2">
- <div className="flex items-center justify-between text-[11px]">
+ <div className="flex items-center justify-between text-xs">
  <span className="text-muted-foreground">Ambiente Atual:</span>
  <span className="font-bold text-foreground">Loja {activeStore?.name || "Matriz"}</span>
  </div>
  <div className="h-px bg-border/60" />
- <div className="flex items-center justify-between text-[11px]">
+ <div className="flex items-center justify-between text-xs">
  <span className="text-muted-foreground">Destino:</span>
  <span className="font-bold text-primary">Perfil Pessoal ({userDisplayName})</span>
  </div>

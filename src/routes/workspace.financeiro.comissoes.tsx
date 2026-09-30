@@ -229,53 +229,53 @@ function CommissionsPage() {
       {/* ── KPIS FINANCEIROS DE COMISSÕES ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
             Total Pago em Comissões
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {formatMoney(kpis.totalPaidCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Repasses liquidados à equipe
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Clock className="size-3.5 text-amber-500" />
             Pendente a Quitar
           </span>
           <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
             {formatMoney(kpis.totalPendingCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Aguardando liberação financeira
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <TrendingUp className="size-3.5 text-primary" />
             Média por Pedido
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {formatMoney(kpis.avgCommissionCents)}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Comissão média calculada
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Users className="size-3.5 text-foreground" />
             Vendedores Ativos
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.activeSellers}
           </div>
-          <p className="text-[11px] text-muted-foreground font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             Membros da equipe comercial
           </p>
         </div>
@@ -392,26 +392,26 @@ function CommissionsPage() {
                       >
                         {formatMoney(c.amountCents)}
                         {c.amountCents < 0 && (
-                          <span className="ml-1 text-[10px] text-muted-foreground font-normal">
+                          <span className="ml-1 text-xs text-muted-foreground font-normal">
                             (Estorno)
                           </span>
                         )}
                       </TableCell>
                       <TableCell>
                         {c.status === "paid" ? (
-                          <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold">
+                          <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold">
                             Paga
                           </Badge>
                         ) : c.status === "cancelled" ? (
-                          <Badge variant="outline" className="text-rose-600 border-rose-500/30 bg-rose-500/10 text-[10px] font-bold">
+                          <Badge variant="outline" className="text-rose-600 border-rose-500/30 bg-rose-500/10 text-xs font-bold">
                             Cancelada
                           </Badge>
                         ) : c.amountCents < 0 ? (
-                          <Badge variant="outline" className="text-rose-600 border-rose-500/30 bg-rose-500/10 text-[10px] font-bold">
+                          <Badge variant="outline" className="text-rose-600 border-rose-500/30 bg-rose-500/10 text-xs font-bold">
                             Estorno Pendente
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-amber-600 border-amber-500/30 bg-amber-500/10 text-[10px] font-bold">
+                          <Badge variant="outline" className="text-amber-600 border-amber-500/30 bg-amber-500/10 text-xs font-bold">
                             A Pagar
                           </Badge>
                         )}
@@ -470,10 +470,10 @@ function CommissionsPage() {
                       <TableRow key={seller.id} className="border-border/40 hover:bg-muted/30 transition-colors">
                         <TableCell className="font-medium text-xs">
                           <div className="font-bold text-foreground">{seller.full_name || "Sem nome"}</div>
-                          <div className="text-[11px] text-muted-foreground font-mono">{seller.email || "Sem e-mail"}</div>
+                          <div className="text-xs text-muted-foreground font-mono">{seller.email || "Sem e-mail"}</div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="text-[10px] font-bold capitalize">
+                          <Badge variant="outline" className="text-xs font-bold capitalize">
                             {seller.role}
                           </Badge>
                         </TableCell>

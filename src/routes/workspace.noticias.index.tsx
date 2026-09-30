@@ -280,12 +280,12 @@ function WorkspaceNoticiasIndexPage() {
 
  <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
- <Badge variant="outline" className="text-[10px] uppercase font-mono">
+ <Badge variant="outline" className="text-xs uppercase font-mono">
  {art.category}
  </Badge>
  <Badge
  variant={art.status === "published" ? "default" : "secondary"}
- className="text-[10px]"
+ className="text-xs"
  >
  {art.status === "published" ? "Publicado" : "Rascunho"}
  </Badge>
@@ -422,7 +422,7 @@ function WorkspaceNoticiasIndexPage() {
                       }}
                     />
                     {!isHealthyImageUrl(mined.ai_suggested_cover_url) && (
-                      <span className="absolute bottom-0 right-0 rounded-tl-md bg-amber-500 text-[8px] font-bold px-1 text-white" title="Fallback fotográfico em alta definição">
+                      <span className="absolute bottom-0 right-0 rounded-tl-md bg-amber-500 text-xs font-bold px-1 text-white" title="Fallback fotográfico em alta definição">
                         HD
                       </span>
                     )}
@@ -430,14 +430,14 @@ function WorkspaceNoticiasIndexPage() {
  <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
  {mined.ai_suggested_kicker && (
- <Badge variant="outline" className="text-[10px] font-mono uppercase text-primary">
+ <Badge variant="outline" className="text-xs font-mono uppercase text-primary">
  {mined.ai_suggested_kicker}
  </Badge>
  )}
- <span className="text-[11px] font-mono text-muted-foreground">
+ <span className="text-xs font-mono text-muted-foreground">
  {mined.source_domain}
  </span>
- <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+ <span className="text-xs font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">
  Score {mined.quality_score || 75}/100
  </span>
  </div>
@@ -526,7 +526,7 @@ function WorkspaceNoticiasIndexPage() {
  </>
  )}
  </div>
- <Badge variant="outline" className="text-[10px]">
+ <Badge variant="outline" className="text-xs">
  {tip.status === "pending" ? "Pendente" : tip.status}
  </Badge>
  </div>
@@ -536,7 +536,7 @@ function WorkspaceNoticiasIndexPage() {
  </p>
 
  <div className="pt-2 border-t border-border/40 flex items-center justify-between">
- <span className="text-[11px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  {new Date(tip.created_at).toLocaleDateString("pt-BR", {
  day: "2-digit",
  month: "short",
