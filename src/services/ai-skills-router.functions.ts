@@ -449,8 +449,8 @@ ${input.inputs ? `\nDados complementares:\n${JSON.stringify(input.inputs, null, 
       systemPrompt: definition.systemPrompt,
       module: `ai-skill:${input.skillSlug}`,
       authContext: {
-        userId: identity?.id,
-        storeId: identity?.store_id,
+        userId: identity?.id || undefined,
+        storeId: identity?.store_id || undefined,
         userRole: identity?.role,
       },
     });
@@ -460,7 +460,7 @@ ${input.inputs ? `\nDados complementares:\n${JSON.stringify(input.inputs, null, 
     }
 
     // Gravação da Execução na Tabela ai_skill_runs (Prompt 03 - Fase A/E)
-    supabase
+    void supabase
       .from("ai_skill_runs")
       .insert({
         skill_id: skillRow.id,
@@ -475,7 +475,9 @@ ${input.inputs ? `\nDados complementares:\n${JSON.stringify(input.inputs, null, 
         latency_ms: gatewayRes.metadata.latencyMs,
         accepted: true,
       })
-      .catch((err) => console.error("[ai-skills] Erro ao registrar run da skill:", err));
+      .then(({ error }) => {
+        if (error) console.error("[ai-skills] Erro ao registrar run da skill:", error);
+      });
 
     return {
       success: true,

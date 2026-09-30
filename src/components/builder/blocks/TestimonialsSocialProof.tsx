@@ -128,7 +128,9 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-semibold text-foreground">{t.name}</span>
                     {t.verified && (
-                      <CheckCircle2 className="size-3.5 text-emerald-500" title="Verificado" />
+                      <span title="Verificado" className="inline-flex items-center">
+                        <CheckCircle2 className="size-3.5 text-emerald-500" />
+                      </span>
                     )}
                   </div>
                   {t.role && (

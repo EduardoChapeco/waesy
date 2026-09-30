@@ -94,7 +94,7 @@ export function LinkedInProfileImportModal({
         const normalized: LinkedInImportResult = {
           headline: tr.headline,
           summary: tr.summary,
-          experiences: (tr.experiences || []).map((exp) => ({
+          experiences: (tr.experiences || []).map((exp: any) => ({
             id: exp.id || `exp_${Date.now()}_${Math.random()}`,
             title: exp.title,
             company: exp.company,

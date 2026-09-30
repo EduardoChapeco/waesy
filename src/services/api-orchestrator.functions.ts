@@ -529,6 +529,7 @@ export interface UnifiedAiCallOptions {
   userPrompt?: string;
   prompt?: string;
   feature?: string;
+  taskType?: string;
   fileBase64?: string;
   fileMime?: string;
   responseFormat?: "json_object" | "text";

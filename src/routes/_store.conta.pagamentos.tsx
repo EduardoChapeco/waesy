@@ -3,6 +3,7 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Receipt, QrCode, Save, Check, FileText, CreditCard, ArrowRight, CheckCircle2, Clock, AlertCircle, Handshake, UploadCloud, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -379,7 +380,7 @@ function CustomerInstallmentsPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             <Button asChild size="sm" variant="outline" className="h-8 text-xs rounded-xl">
-                              <Link to="/_store/conta/pedidos" search={{ orderId: order.id } as any}>
+                              <Link to="/conta/pedidos" search={{ orderId: order.id } as any}>
                                 Detalhes
                               </Link>
                             </Button>

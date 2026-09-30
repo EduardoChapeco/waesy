@@ -34,7 +34,7 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
   }, [installmentCents, priceCents, maxInstallments]);
 
   const discountPercent = useMemo(() => {
-    if (originalPriceCents && originalPriceCents > priceCents) {
+    if (originalPriceCents && priceCents && originalPriceCents > priceCents) {
       return Math.round(((originalPriceCents - priceCents) / originalPriceCents) * 100);
     }
     return 24;

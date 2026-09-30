@@ -132,8 +132,13 @@ export function LeadVisualProposalSheet({
 
           const res = await parseUniversalDocumentOCR({
             data: {
-              base64Data,
-              mimeType: file.type || "image/jpeg",
+              files: [
+                {
+                  base64: base64Data,
+                  mimeType: file.type || "image/jpeg",
+                  name: file.name,
+                },
+              ],
               nicheHint: "tourism",
             },
           });

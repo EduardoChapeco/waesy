@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { Grid, Sparkles, Building2, Calendar, Compass, ArrowLeft, Share2, CheckCircle2, Plane, MapPin, MessageCircle, Maximize2, Edit3, Settings, CreditCard, QrCode, Truck, ShieldCheck, Star, Award, HeartHandshake, ImagePlus, Clock, Utensils, Car, Home as HomeIcon, Briefcase, Wrench, FileArchive, Tag, BadgePercent, Check, Info, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Handshake, Landmark, Coins, Receipt, FileSpreadsheet, BookOpenCheck, ShieldAlert, Bus, Ship, Train, Navigation, Route as RouteIcon, X, Users, Phone, Mail, MessageSquare, Send, Store as StoreIcon, User, Download, Loader2, FileText, Smartphone, Laptop, Tv, Gamepad2, Armchair, Shirt, GraduationCap, Crown, Bed } from "lucide-react";
+import { Grid, Sparkles, Building2, Calendar, Compass, ArrowLeft, Share2, CheckCircle2, Plane, MapPin, MessageCircle, Maximize2, Edit3, Settings, CreditCard, QrCode, Truck, ShieldCheck, Star, Award, HeartHandshake, ImagePlus, Clock, Utensils, Car, Home as HomeIcon, Briefcase, Wrench, FileArchive, Tag, BadgePercent, Check, Info, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Handshake, Landmark, Coins, Receipt, FileSpreadsheet, BookOpenCheck, ShieldAlert, Bus, Ship, Train, Navigation, Route as RouteIcon, X, Users, Phone, Mail, MessageSquare, Send, Store as StoreIcon, User, Download, Loader2, FileText, Smartphone, Laptop, Tv, Gamepad2, Armchair, Shirt, GraduationCap, Crown, Bed, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
@@ -68,6 +69,8 @@ export function EditorialShowcaseView({
   const [showChatInput, setShowChatInput] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showDesktopInstallments, setShowDesktopInstallments] = useState(false);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
+  const [isPixPaymentModalOpen, setIsPixPaymentModalOpen] = useState(false);
 
   const images: string[] =
     (Array.isArray(classified?.images) && classified.images.length > 0 ? classified.images : null) ||
@@ -255,6 +258,19 @@ export function EditorialShowcaseView({
   const storeProfileUrl = isCompany
     ? (store?.id ? `/perfil-da-loja?storeId=${store.id}` : store?.slug ? `/perfil-da-loja?slug=${store.slug}` : null)
     : (authorProfile?.id ? `/membro/${authorProfile.id}` : null);
+
+  const effectivePixKey: string | null =
+    classified?.pix_key ||
+    attrs?.pix_key ||
+    (isCompany ? (store?.pix_key || store?.settings?.pix_key) : null) ||
+    null;
+  const effectivePixReceiver: string | null =
+    (isCompany ? store?.name : authorProfile?.full_name) || classified?.author_name || null;
+  const effectivePaymentLink: string | null =
+    attrs?.payment_link ||
+    classified?.payment_link ||
+    attrs?.external_payment_url ||
+    null;
 
   // ── Parcelamento com ou sem juros ─────────────────────────────────────────
   const installmentsInterestFree = attrs.installments_interest_free !== false;

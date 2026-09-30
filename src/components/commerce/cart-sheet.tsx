@@ -22,6 +22,7 @@ export function CartSheet() {
  updateQty,
  removeItem,
  isCartUpdating,
+ refreshCart,
  } = useCartContext();
  const router = useRouter();
 

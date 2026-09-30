@@ -139,8 +139,9 @@ export function evaluateFeatureGovernanceGate(
     p1Notes.push('Contexto de Decisão verificado.');
   }
 
-  const riceResult = calculateRiceScore(proposal.riceParameters);
-  p1Notes.push(`RICE Score calculado: ${riceResult.score} (Rank: ${riceResult.rankTier}).`);
+  const riceScore = calculateRiceScore(proposal.riceParameters);
+  const rankTier = riceScore >= 500 ? "P0" : riceScore >= 200 ? "P1" : "P2";
+  p1Notes.push(`RICE Score calculado: ${riceScore} (Rank: ${rankTier}).`);
 
   if (proposal.earsSpecifications.length === 0) {
     p1Approved = false;

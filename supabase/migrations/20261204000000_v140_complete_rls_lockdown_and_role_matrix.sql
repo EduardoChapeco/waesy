@@ -137,13 +137,8 @@ DO $$ BEGIN
             AND workspace_members.profile_id = auth.uid()
         )
         OR EXISTS (
-          SELECT 1 FROM public.stores
-          WHERE stores.id = folders.store_id
-            AND stores.owner_id = auth.uid()
-        )
-        OR EXISTS (
           SELECT 1 FROM public.profiles
-          WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'superadmin')
+          WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'superadmin', 'platform_admin')
         )
       );
 
@@ -156,13 +151,8 @@ DO $$ BEGIN
             AND workspace_members.profile_id = auth.uid()
         )
         OR EXISTS (
-          SELECT 1 FROM public.stores
-          WHERE stores.id = folders.store_id
-            AND stores.owner_id = auth.uid()
-        )
-        OR EXISTS (
           SELECT 1 FROM public.profiles
-          WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'superadmin')
+          WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'superadmin', 'platform_admin')
         )
       );
 
@@ -175,13 +165,8 @@ DO $$ BEGIN
             AND workspace_members.profile_id = auth.uid()
         )
         OR EXISTS (
-          SELECT 1 FROM public.stores
-          WHERE stores.id = folders.store_id
-            AND stores.owner_id = auth.uid()
-        )
-        OR EXISTS (
           SELECT 1 FROM public.profiles
-          WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'superadmin')
+          WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'superadmin', 'platform_admin')
         )
       )
       WITH CHECK (
@@ -191,13 +176,8 @@ DO $$ BEGIN
             AND workspace_members.profile_id = auth.uid()
         )
         OR EXISTS (
-          SELECT 1 FROM public.stores
-          WHERE stores.id = folders.store_id
-            AND stores.owner_id = auth.uid()
-        )
-        OR EXISTS (
           SELECT 1 FROM public.profiles
-          WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'superadmin')
+          WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'superadmin', 'platform_admin')
         )
       );
 
@@ -210,13 +190,8 @@ DO $$ BEGIN
             AND workspace_members.profile_id = auth.uid()
         )
         OR EXISTS (
-          SELECT 1 FROM public.stores
-          WHERE stores.id = folders.store_id
-            AND stores.owner_id = auth.uid()
-        )
-        OR EXISTS (
           SELECT 1 FROM public.profiles
-          WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'superadmin')
+          WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'superadmin', 'platform_admin')
         )
       );
   END IF;

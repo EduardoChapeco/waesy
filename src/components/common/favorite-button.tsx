@@ -12,6 +12,7 @@ export interface FavoriteButtonProps {
   itemType?: string;
   resolvedId?: string;
   itemId?: string;
+  entityId?: string;
   variant?: "icon" | "button" | "pill";
   className?: string;
   size?: "sm" | "default" | "lg" | "icon";
@@ -23,6 +24,7 @@ export function FavoriteButton(props: FavoriteButtonProps) {
   const {
     entityType,
     resolvedId: incomingResolvedId,
+    entityId,
     variant = "icon",
     className,
     size,
@@ -32,7 +34,7 @@ export function FavoriteButton(props: FavoriteButtonProps) {
   const navigate = useNavigate();
 
   // Entidade canônica no backend: service é mapeado como product
-  const resolvedId = (incomingResolvedId || props.itemId || "") as string;
+  const resolvedId = (entityId || incomingResolvedId || props.itemId || "") as string;
   const resolvedType = (entityType || props.itemType || "product") as string;
   const backendEntityType = resolvedType === "service" ? "product" : resolvedType;
 

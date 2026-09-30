@@ -143,10 +143,11 @@ export function ClassifiedDetailMobile({
     }
     trackAndOpenWhatsApp({
       phone: cleanPhone,
-      text: `Olá! Vi seu anúncio "${classified.title}" no Waesy e gostaria de mais informações.`,
+      message: `Olá! Vi seu anúncio "${classified.title}" no Waesy e gostaria de mais informações.`,
       storeId: classified.store_id || classified.storeId || author?.id,
-      productId: classified.id,
-      leadType: "classified_inquiry",
+      entityId: classified.id,
+      entityType: "classified",
+      entityTitle: classified.title,
     });
   };
 
@@ -376,7 +377,7 @@ export function ClassifiedDetailMobile({
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge variant="outline" className="text-[10px] font-semibold text-primary border-primary/30 bg-primary/10">
-              {niche.label}
+              {niche.shortLabel || niche.title}
             </Badge>
             {classified.condition && (
               <Badge variant="secondary" className="text-[10px] font-medium">

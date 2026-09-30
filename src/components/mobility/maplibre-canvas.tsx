@@ -6,20 +6,22 @@ import { getPublicMapConfig } from "@/services/integrations.functions";
 import { getCanonicalMapStyle, setupMapResizeObserver } from "@/lib/map-styles";
 
 export interface MapPoint {
- lat: number;
- lng: number;
- label?: string;
+  lat: number;
+  lng: number;
+  label?: string;
 }
 
+export type MapLocationPoint = MapPoint;
+
 export interface MapMarkerItem {
- id: string;
- lat: number;
- lng: number;
- title: string;
- kind?: string;
- category?: string;
- avatar_url?: string | null;
- image_url?: string | null;
+  id: string;
+  lat: number;
+  lng: number;
+  title: string;
+  kind?: string;
+  category?: string;
+  avatar_url?: string | null;
+  image_url?: string | null;
 }
 
 export interface MapLibreCanvasProps {
@@ -36,22 +38,24 @@ export interface MapLibreCanvasProps {
   onMapClick?: (lat: number, lng: number) => void;
   provider?: "carto_voyager" | "carto_dark" | "osm_standard" | "google_maps" | "mapbox" | string | null;
   className?: string;
-};
+}
 
 const DEFAULT_CENTER = { lat: -27.1004, lng: -52.6152 }; // Chapecó - SC
 
 export function MapLibreCanvas({
- origin = null,
- destination = null,
- markers = [],
- selectedMarkerId = null,
- onMarkerClick,
- center = DEFAULT_CENTER,
- zoom = 13.5,
- pinMode = null,
- onMapClick,
- provider = null,
- className = "",
+  origin = null,
+  destination = null,
+  markers = [],
+  selectedMarkerId = null,
+  onMarkerClick,
+  center = DEFAULT_CENTER,
+  initialCenter,
+  zoom = 13.5,
+  initialZoom,
+  pinMode = null,
+  onMapClick,
+  provider = null,
+  className = "",
 }: MapLibreCanvasProps) {
  const mapContainer = useRef<HTMLDivElement>(null);
  const mapRef = useRef<any>(null);

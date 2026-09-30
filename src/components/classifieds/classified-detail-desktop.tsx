@@ -144,10 +144,11 @@ export function ClassifiedDetailDesktop({
     }
     trackAndOpenWhatsApp({
       phone: cleanPhone,
-      text: `Olá! Vi seu anúncio "${classified.title}" no Waesy e gostaria de mais informações.`,
+      message: `Olá! Vi seu anúncio "${classified.title}" no Waesy e gostaria de mais informações.`,
       storeId: classified.store_id || classified.storeId || author?.id,
-      productId: classified.id,
-      leadType: "classified_inquiry",
+      entityId: classified.id,
+      entityType: "classified",
+      entityTitle: classified.title,
     });
   };
 
@@ -264,7 +265,7 @@ export function ClassifiedDetailDesktop({
             Classificados
           </Link>
           <span>/</span>
-          <span className="text-foreground/80 font-medium">{niche.label}</span>
+          <span className="text-foreground/80 font-medium">{niche.shortLabel || niche.title}</span>
           <span>/</span>
           <span className="text-foreground truncate max-w-xs font-semibold">{classified.title}</span>
         </div>
@@ -408,7 +409,7 @@ export function ClassifiedDetailDesktop({
           <div className="space-y-2 pb-4 border-b border-border/50">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10">
-                {niche.label}
+                {niche.shortLabel || niche.title}
               </Badge>
               {classified.condition && (
                 <Badge variant="secondary" className="text-xs font-medium">

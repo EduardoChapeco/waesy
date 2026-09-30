@@ -32,7 +32,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
-const INTENT_MAP: Record<string, { label: string; color: string; desc: string }> = {
+export type IntentKey = "ready_to_buy" | "warm" | "bargain_hunter" | "curious" | "vip";
+
+const INTENT_MAP: Record<IntentKey, { label: string; color: string; desc: string }> = {
   ready_to_buy: {
     label: "Pronto para Comprar",
     color: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
@@ -60,6 +62,13 @@ const INTENT_MAP: Record<string, { label: string; color: string; desc: string }>
   },
 };
 
+export function getIntentInfo(intent?: string | null) {
+  if (intent && intent in INTENT_MAP) {
+    return INTENT_MAP[intent as IntentKey];
+  }
+  return INTENT_MAP.curious;
+}
+
 export function StorePersonasMatrix() {
   const [selectedIntent, setSelectedIntent] = useState<
     "all" | "curious" | "warm" | "ready_to_buy" | "bargain_hunter" | "vip"
@@ -85,7 +94,7 @@ export function StorePersonasMatrix() {
     <div className="space-y-6">
       {/* ── 1. Painel de Distribuição de Intenção (Bento Row) ── */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
-        {(Object.keys(INTENT_MAP) as Array<keyof typeof INTENT_MAP>).map((intentKey) => {
+        {(Object.keys(INTENT_MAP) as IntentKey[]).map((intentKey) => {
           const cfg = INTENT_MAP[intentKey];
           const count = intentCounts[intentKey] || 0;
           const isSelected = selectedIntent === intentKey;
@@ -192,7 +201,7 @@ export function StorePersonasMatrix() {
             {/* ── Mobile View: WhatsApp List Edge-to-Edge (<640px) ── */}
             <div className="block sm:hidden border-y border-border/40 divide-y divide-border/40 -mx-4 bg-card">
               {personas.map((p) => {
-                const intentInfo = INTENT_MAP[p.intent_classification] || INTENT_MAP.curious;
+                const intentInfo = getIntentInfo(p.intent_classification);
                 const topNiche = Array.isArray(p.top_niches) && p.top_niches[0] ? p.top_niches[0].split(":")[0] : "geral";
                 const recentQuery = Array.isArray(p.recent_queries) && p.recent_queries[0] ? p.recent_queries[0] : null;
 
@@ -240,7 +249,7 @@ export function StorePersonasMatrix() {
             {/* ── Desktop View: Bento Grid (>=640px) ── */}
             <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {personas.map((p) => {
-                const intentInfo = INTENT_MAP[p.intent_classification] || INTENT_MAP.curious;
+                const intentInfo = getIntentInfo(p.intent_classification);
                 const topNiches = Array.isArray(p.top_niches) ? p.top_niches : [];
                 const recentQueries = Array.isArray(p.recent_queries) ? p.recent_queries : [];
 
@@ -336,9 +345,9 @@ export function StorePersonasMatrix() {
                   </div>
                   <Badge
                     variant="outline"
-                    className={`text-[10px] font-mono ${INTENT_MAP[activePersona.intent_classification]?.color}`}
+                    className={`text-[10px] font-mono ${getIntentInfo(activePersona.intent_classification).color}`}
                   >
-                    {INTENT_MAP[activePersona.intent_classification]?.label}
+                    {getIntentInfo(activePersona.intent_classification).label}
                   </Badge>
                 </div>
                 <SheetDescription className="text-xs text-muted-foreground mt-1">

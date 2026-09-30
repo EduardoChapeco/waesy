@@ -18,7 +18,6 @@ import { cn } from "@/lib/utils";
 import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
-import { triggerCivilIdentityRippleCascade } from "@/services/deep-core.functions";
 
 export const Route = createFileRoute("/_store/conta/perfil")({
   head: () => ({ meta: [{ title: "Perfil Civil e Identidade | Waesy" }] }),
@@ -236,14 +235,6 @@ function ProfileCivilPage() {
           },
         },
       });
-
-      await triggerCivilIdentityRippleCascade({
-        data: {
-          fullName: formData.fullName.trim(),
-          avatarUrl: formData.avatarUrl || undefined,
-          phone: formData.phone.replace(/\D/g, "") || undefined,
-        },
-      }).catch(() => null);
 
       toast.success("Conta Civil e preferências salvas com sucesso!");
       router.invalidate();

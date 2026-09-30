@@ -11,13 +11,13 @@ export interface ContractSemanticVariable {
   key: string;            // Ex: "cliente_nome"
   token: string;          // Ex: "{{cliente_nome}}"
   label: string;          // Ex: "Nome Completo do Cliente"
-  category: "geral" | "financeiro" | "turismo" | "automotivo" | "imobiliario" | "juridico" | "condicional" | "rh";
+  category: "geral" | "financeiro" | "turismo" | "automotivo" | "imobiliario" | "juridico" | "condicional" | "rh" | "comodato";
   example: string;        // Ex: "Carlos Eduardo Silveira"
   description: string;    // Ex: "Nome completo do comprador ou contratante"
 }
 
 export interface ContractNicheGroup {
-  id: "geral" | "financeiro" | "turismo" | "automotivo" | "imobiliario" | "juridico" | "condicional" | "rh";
+  id: "geral" | "financeiro" | "turismo" | "automotivo" | "imobiliario" | "juridico" | "condicional" | "rh" | "comodato";
   name: string;
   icon: string;
   description: string;

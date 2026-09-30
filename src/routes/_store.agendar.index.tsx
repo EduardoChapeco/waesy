@@ -10,6 +10,7 @@ import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

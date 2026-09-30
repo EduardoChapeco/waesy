@@ -552,7 +552,7 @@ function MarketplaceHubPage() {
           </div>
           <Button
             size="sm"
-            onClick={() => openConnectModal(PLATFORMS_CATALOG[1])}
+            onClick={() => handleOpenConfig(PLATFORMS_CATALOG[1])}
             className="h-11 rounded-xl text-xs font-bold px-5 shrink-0"
           >
             Ativar Integração

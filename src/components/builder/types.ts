@@ -47,11 +47,13 @@ export const HeroBlockDataSchema = z.object({
   primaryCta: z.object({
     label: z.string(),
     href: z.string().default("#"),
+    onClick: z.custom<() => void>().optional(),
   }),
   secondaryCta: z
     .object({
       label: z.string(),
       href: z.string().default("#"),
+      onClick: z.custom<() => void>().optional(),
     })
     .optional(),
   imageUrl: z.string().optional(),

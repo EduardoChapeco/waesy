@@ -34,12 +34,6 @@ export default function VerifySerialPage() {
       } else {
         setError(res?.error || "Certidão de autenticidade não localizada.");
       }
-
-    if (rows && rows.length > 0) {
-      setData(rows[0]);
-    } else {
-      setError('Certidão de autenticidade não localizada no registro oficial.');
-    }
  } catch (err: any) {
  setError(err.message || 'Erro ao consultar a certidão de autenticidade.');
  } finally {

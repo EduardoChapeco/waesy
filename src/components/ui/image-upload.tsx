@@ -15,6 +15,7 @@ const PRESET_ASPECT_RATIOS: Record<AspectRatioPreset, number | undefined> = {
  cover: 3 / 1, // 3:1 (Capa de Perfil de Membro — IDÊNTICO ao aspect-[3/1] da tela)
  banner: 21 / 9, // 21:9 (Top Banners Hero de Loja)
  header: 4 / 1, // 4:1 (Banners Panorâmicos de Topo)
+ portrait: 9 / 16, // 9:16 (Stories, Reels, Mobile Portrait)
  free: undefined, // Livre
 };
 

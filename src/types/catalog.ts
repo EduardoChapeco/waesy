@@ -124,6 +124,7 @@ export interface VariantDTO {
  ean?: string | null;
  /** Effective price cents (override or product default — server-computed). */
  effectivePriceCents: number;
+ compareAtCents?: number | null;
  /** Server-computed. Never trust a client-side stock value. */
  availableQty: number;
  /** Attribute key-value pairs. Only string values (e.g. color name, size). */

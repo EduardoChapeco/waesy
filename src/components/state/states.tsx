@@ -59,8 +59,32 @@ function StateShell({
  );
 }
 
-export function EmptyState(props: Omit<StateShellProps, "icon" | "tone"> & { minimal?: boolean }) {
- return <StateShell icon={Inbox} tone="neutral" minimal={props.minimal ?? true} {...props} />;
+export function EmptyState(
+  props: Omit<StateShellProps, "icon" | "tone"> & {
+    icon?: LucideIcon;
+    actionLabel?: string;
+    onAction?: () => void;
+    minimal?: boolean;
+  }
+) {
+  const { icon: CustomIcon, action, actionLabel, onAction, ...rest } = props;
+  const effectiveAction =
+    action ||
+    (actionLabel && onAction ? (
+      <Button onClick={onAction} size="sm">
+        {actionLabel}
+      </Button>
+    ) : null);
+
+  return (
+    <StateShell
+      icon={CustomIcon || Inbox}
+      tone="neutral"
+      action={effectiveAction}
+      minimal={props.minimal ?? true}
+      {...rest}
+    />
+  );
 }
 
 export function ErrorState({

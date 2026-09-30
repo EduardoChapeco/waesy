@@ -416,6 +416,6 @@ export const executeSquad = createServerFn({ method: "POST" })
     return runSquadGraphExecution(
       input.squadSlug,
       { prompt: input.prompt, context: input.context },
-      { userId: identity?.id, storeId: identity?.store_id }
+      { userId: identity?.id || undefined, storeId: identity?.store_id || undefined }
     );
   });

@@ -14,8 +14,8 @@ export const Route = createFileRoute("/workspace/conteudo/receitas")({
   head: () => ({ meta: [{ title: "Curadoria de Receitas | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const recipes = await listAdminMinedRecipesFn({ data: { limit: 100 } });
-      return { recipes };
+      const res = await listAdminMinedRecipesFn({ data: { limit: 100 } });
+      return { recipes: res?.recipes || [] };
     } catch (err) {
       console.error("[loader:workspace.conteudo.receitas] Error:", err);
       return { recipes: [] };
@@ -120,11 +120,11 @@ function WorkspaceRecipesManagementPage() {
                     ...r,
                     title: editForm.title.trim(),
                     category: editForm.category.trim(),
-                    cuisine: editForm.cuisine.trim() || undefined,
-                    prep_time: editForm.prep_time.trim() || undefined,
-                    cook_time: editForm.cook_time.trim() || undefined,
-                    recipe_yield: editForm.recipe_yield.trim() || undefined,
-                    cover_image_url: editForm.cover_image_url.trim() || undefined,
+                    cuisine: editForm.cuisine.trim() || null,
+                    prep_time: editForm.prep_time.trim() || null,
+                    cook_time: editForm.cook_time.trim() || null,
+                    recipe_yield: editForm.recipe_yield.trim() || null,
+                    cover_image_url: editForm.cover_image_url.trim() || null,
                     ingredients,
                     instructions,
                   }
@@ -153,16 +153,18 @@ function WorkspaceRecipesManagementPage() {
             title: editForm.title.trim(),
             description: "",
             category: editForm.category.trim(),
-            cuisine: editForm.cuisine.trim() || undefined,
-            prep_time: editForm.prep_time.trim() || undefined,
-            cook_time: editForm.cook_time.trim() || undefined,
-            total_time: undefined,
-            recipe_yield: editForm.recipe_yield.trim() || undefined,
-            cover_image_url: editForm.cover_image_url.trim() || undefined,
+            cuisine: editForm.cuisine.trim() || null,
+            prep_time: editForm.prep_time.trim() || null,
+            cook_time: editForm.cook_time.trim() || null,
+            total_time: null,
+            recipe_yield: editForm.recipe_yield.trim() || null,
+            cover_image_url: editForm.cover_image_url.trim() || null,
             ingredients,
             instructions,
-            status: "active",
+            source_url: "",
             source_domain: "manual_curation",
+            source_name: "Manual",
+            status: "active",
             created_at: new Date().toISOString(),
           };
 

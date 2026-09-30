@@ -740,6 +740,9 @@ const upsertClassifiedInput = z.object({
  ai_instructions: z.string().optional(),
  ai_agent_enabled: z.boolean().optional(),
  form_id: z.string().uuid().nullable().optional(),
+ validity_days: z.coerce.number().int().optional(),
+ stock_limit: z.coerce.number().int().optional(),
+ offer_limit: z.coerce.number().int().optional(),
 });
 
 export const upsertClassified = createServerFn({ method: "POST" })

@@ -29,6 +29,8 @@ export const recordUserBehavior = createServerFn({ method: "POST" })
  "quote_request",
  "booking_complete",
  "order_complete",
+ "share_item",
+ "download_pdf",
  ]),
  entityType: z.enum([
  "product",
@@ -38,6 +40,8 @@ export const recordUserBehavior = createServerFn({ method: "POST" })
  "tourism",
  "directory",
  "service",
+ "event",
+ "recipe",
  ]),
  entityId: z.string().uuid().optional(),
  categorySlug: z.string().optional(),

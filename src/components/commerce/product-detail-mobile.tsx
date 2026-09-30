@@ -37,7 +37,7 @@ export interface ProductDetailViewProps {
   isFollowingStore: boolean;
   handleToggleFollow: () => Promise<void>;
   isOwner: boolean;
-  storeLocation: string;
+  storeLocation?: string | null;
   storePhone?: string;
   setSizeGuideOpen: (open: boolean) => void;
   setIsReportModalOpen: (open: boolean) => void;

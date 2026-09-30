@@ -878,7 +878,7 @@ function ProductContent({
     isFollowingStore,
     handleToggleFollow,
     isOwner,
-    storeLocation,
+    storeLocation: storeLocation || "",
     storePhone: (product as any)?.store?.phone || (product as any)?.store?.whatsapp,
     setSizeGuideOpen,
     setIsReportModalOpen,

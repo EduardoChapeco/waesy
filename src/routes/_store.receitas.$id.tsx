@@ -11,8 +11,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/receitas/$id")({
-  head: ({ loaderData }) => {
-    const recipe = loaderData?.recipe;
+  head: ({ loaderData }: any) => {
+    const recipe = loaderData?.recipe as MinedRecipeDTO | null | undefined;
     const title = recipe ? `${recipe.title} | Receitas Waesy` : "Receita | Waesy Gastronomia";
     const description = recipe?.description || "Veja ingredientes, tempo de preparo e modo de fazer completo.";
     const imageUrl = recipe?.cover_image_url || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=1200&q=80";
@@ -48,7 +48,7 @@ export const Route = createFileRoute("/_store/receitas/$id")({
 });
 
 function RecipeDetailPage() {
-  const { recipe, isOwner } = Route.useLoaderData();
+  const { recipe, isOwner } = (Route.useLoaderData() as any) || {};
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
   const [completedSteps, setCompletedSteps] = useState<Record<number, boolean>>({});
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
@@ -147,7 +147,7 @@ function RecipeDetailPage() {
     cookTime: recipe.cook_time || undefined,
     totalTime: recipe.total_time || undefined,
     recipeIngredient: recipe.ingredients,
-    recipeInstructions: recipe.instructions.map((step) => ({
+    recipeInstructions: (recipe.instructions || []).map((step: string) => ({
       "@type": "HowToStep",
       text: step,
     })),

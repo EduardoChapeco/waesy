@@ -133,7 +133,7 @@ export const Route = createFileRoute("/_store/classificados/$id")({
       ]);
       return {
         classified: result?.classified || null,
-        status: result?.status || (result?.classified ? "active" : "not_found"),
+        status: (result?.status ?? "not_found") as any,
         isOwner: result?.isOwner || false,
         canManage: result?.canManage || false,
         viewerContext: result?.viewerContext || "anonymous",

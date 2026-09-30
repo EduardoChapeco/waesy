@@ -18,6 +18,7 @@ export interface AiQuotaStatusDTO {
   monthlyUsed: number;
   remainingQuota: number;
   hasByokConfigured: boolean;
+  hasActiveBYOK?: boolean;
   byokProvider?: string | null;
   activeEngineMode: "NATIVE_QUOTA" | "BYOK_FALLBACK" | "QUOTA_EXHAUSTED";
   renewalDate: string;

@@ -98,7 +98,7 @@ function DeliveryCourierPage() {
       await recordCourierArrival({
         data: {
           orderId: delivery.order_id,
-          courierId: delivery.courier_id || "courier-active",
+          courierId: delivery.courier_id || undefined,
           latitude: lat,
           longitude: lng,
         },

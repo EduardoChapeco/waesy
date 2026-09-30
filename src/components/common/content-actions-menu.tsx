@@ -347,7 +347,7 @@ export function ContentActionsMenu({
  <ReportDialog
  open={reportDialogOpen}
  onOpenChange={setReportDialogOpen}
- entityType={entityType}
+ entityType={entityType === "service" ? "product" : entityType}
  entityId={entityId}
  entityTitle={title}
  />

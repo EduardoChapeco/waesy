@@ -61,6 +61,7 @@ interface AccountGroup {
 }
 
 function AccountDashboardPage() {
+  const navigate = useNavigate();
   const loaderData = (Route.useLoaderData() || {}) as any;
   const orders = loaderData.orders || [];
   const profile = loaderData.profile || null;

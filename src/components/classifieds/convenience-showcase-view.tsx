@@ -23,6 +23,7 @@ export interface ConveniencePreviewData {
   storeName?: string;
   storeSlug?: string;
   storeLogo?: string;
+  storeId?: string;
   authorName?: string;
   authorAvatar?: string;
   authorId?: string;

@@ -34,6 +34,8 @@ export interface ServerIdentity {
   isPlatformAdmin?: boolean;
   /** @deprecated use identity.id instead */
   userId?: string | null;
+  isCivilContext?: boolean;
+  activeContext?: string;
 }
 
 export const STAFF_ROLES = [

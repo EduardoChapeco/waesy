@@ -10,7 +10,8 @@ import { submitFounderLead } from "@/services/launch.functions";
 import type { CnpjCompanyDTO } from "@/services/public-apis.functions";
 
 interface FounderSignupSheetProps {
-  open: boolean;
+  open?: boolean;
+  isOpen?: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: (result: {
     companyName: string;
@@ -24,9 +25,11 @@ interface FounderSignupSheetProps {
 
 export function FounderSignupSheet({
   open,
+  isOpen,
   onOpenChange,
   onSuccess,
 }: FounderSignupSheetProps) {
+  const effectiveOpen = open ?? isOpen ?? false;
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [businessIdentifier, setBusinessIdentifier] = useState("");
@@ -113,7 +116,7 @@ export function FounderSignupSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={effectiveOpen} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
         className="rounded-t-[2rem] max-w-lg mx-auto p-6 space-y-5 border-t border-border/80 shadow-2xl max-h-[92vh] overflow-y-auto"

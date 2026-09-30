@@ -1441,7 +1441,7 @@ export const generateAiAdCreativeFromCatalog = createServerFn({ method: "POST" }
       const { executeUnifiedAiCall } = await import("./api-orchestrator.functions");
       const prompt = `Gere um anúncio de alta conversão em JSON estrito com as chaves: headline (max 38 caracteres), bodyCopy (max 200 caracteres, persuasivo, direto, sem emojis), callToActionLabel (max 18 caracteres), badgeText (max 16 caracteres), suggestedDailyBudgetCents (inteiro em centavos, ex: 2500) e targetInterests (array de 3 strings). Item: "${title}". Descrição: "${description}". Preço: ${priceFormatted}. Cidade: ${storeCity}.`;
       const aiResult = await executeUnifiedAiCall({
-        taskType: "marketing_ad_copy",
+        feature: "marketing_ad_copy",
         prompt,
         storeId: identity.store_id || undefined,
       });

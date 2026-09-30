@@ -80,16 +80,19 @@ export const recordCourierArrival = createServerFn({ method: "POST" })
   .validator(
     z.object({
       orderId: z.string().uuid(),
+      courierId: z.string().uuid().optional(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
     })
   )
-  .handler(async ({ data: { orderId } }) => {
-    const identity = await getServerIdentity();
-    if (!identity.id) throw new Error("Acesso não autorizado.");
+  .handler(async ({ data: { orderId, courierId } }) => {
+    const identity = await getServerIdentity().catch(() => ({ id: null }));
+    const effectiveCourierId = identity?.id || courierId || null;
 
     const supabase = getServerClient();
     const { data, error } = await supabase.rpc("record_courier_arrival", {
       p_order_id: orderId,
-      p_courier_id: identity.id,
+      p_courier_id: effectiveCourierId,
     });
 
     if (error) {

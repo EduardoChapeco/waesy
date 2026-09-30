@@ -86,6 +86,7 @@ export const Route = createFileRoute("/_store/mercado")({
  loader: async ({ location }) => {
    try {
  const search = location.search as CatalogSearch;
+ const activeCity = (search as any)?.city || (search as any)?.cidade || undefined;
  const [productsRes, categoriesRes, attributesRes, feedRes, bannersRes, hotpagesRes, flyersRes] = await Promise.all([
  listPublishedProducts({
  data: {

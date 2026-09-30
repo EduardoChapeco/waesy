@@ -145,7 +145,7 @@ export function TemplateVoucherA4({
  </div>
  <div>
  <span className="text-[10px] text-slate-500">CÓDIGO DE RESERVA HOTEL</span>
- <p className="font-mono font-bold text-sm text-slate-900">{voucher.hotel_data?.confirmationCode || (voucher.code ? voucher.code.toUpperCase() : '-')}</p>
+ <p className="font-mono font-bold text-sm text-slate-900">{voucher.hotel_data?.confirmationCode || (voucher.voucher_number ? voucher.voucher_number.toUpperCase() : '-')}</p>
  </div>
  </div>
  </div>

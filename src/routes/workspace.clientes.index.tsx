@@ -47,6 +47,7 @@ function CarteiraClientesPage() {
   const team = loaderData?.team || [];
   const store = loaderData?.store || null;
   const router = useRouter();
+  const { t, nicheId } = useNicheTranslation(store);
 
  const isTourism =
  store?.settings?.niche === "tourism" ||
