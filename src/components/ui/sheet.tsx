@@ -32,7 +32,7 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-background p-6 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out",
+  "fixed z-50 gap-4 bg-background p-6 transition ease-in-out data-[state=closed]:duration-200 data-[state=open]:duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out",
   {
     variants: {
       side: {
@@ -44,13 +44,13 @@ const sheetVariants = cva(
           "inset-y-0 right-0 h-full w-full border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
       },
       size: {
-        default: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
+        default: "w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl",
         sm: "w-full sm:max-w-xl md:max-w-2xl",
         md: "w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl",
-        lg: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[65vw]",
-        xl: "w-full sm:max-w-4xl md:max-w-5xl lg:max-w-[70vw]",
-        "70": "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
-        wide: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
+        lg: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl",
+        xl: "w-full sm:max-w-4xl md:max-w-5xl lg:max-w-6xl",
+        "70": "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl",
+        wide: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl",
         full: "w-full max-w-full",
       },
     },
@@ -174,7 +174,7 @@ export function SheetPage({
         side={side}
         size="wide"
         className={cn(
-          "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background border-l border-border",
+          "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background border-l border-border",
           contentClassName,
         )}
       >

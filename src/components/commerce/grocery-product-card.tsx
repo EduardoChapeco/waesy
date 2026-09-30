@@ -104,7 +104,7 @@ export function GroceryProductCard({
     return (
       <div
         className={cn(
-          "group relative flex items-center justify-between w-full min-h-[112px] sm:min-h-[124px] rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all overflow-hidden pl-28 sm:pl-36 pr-3.5 py-3 gap-3",
+          "group relative flex items-center justify-between w-full min-h-[112px] sm:min-h-[124px] rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-colors content-auto-card overflow-hidden pl-28 sm:pl-36 pr-3.5 py-3 gap-3",
           className,
         )}
       >
@@ -136,7 +136,7 @@ export function GroceryProductCard({
           )}
 
           {product.isOutOfStock && (
-            <div className="absolute inset-0 bg-background/70 backdrop-blur-xs flex items-center justify-center">
+            <div className="absolute inset-0 bg-background/85 flex items-center justify-center">
               <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground bg-card px-1.5 py-0.5 rounded-lg">
                 Esgotado
               </span>
@@ -241,7 +241,7 @@ export function GroceryProductCard({
  return (
  <div
  className={cn(
- "group relative flex flex-col justify-between rounded-2xl bg-card border border-border/60 hover:border-foreground/20 transition-all overflow-hidden p-0",
+ "group relative flex flex-col justify-between rounded-2xl bg-card border border-border/60 hover:border-foreground/20 transition-colors content-auto-card overflow-hidden p-0",
  className,
  )}
  >
@@ -277,7 +277,7 @@ export function GroceryProductCard({
 
  {/* Stock out badge */}
  {product.isOutOfStock && (
- <div className="absolute inset-0 bg-background/70 backdrop-blur-xs flex items-center justify-center">
+ <div className="absolute inset-0 bg-background/85 flex items-center justify-center">
  <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground bg-card px-2.5 py-1 rounded-lg ">
  Esgotado
  </span>

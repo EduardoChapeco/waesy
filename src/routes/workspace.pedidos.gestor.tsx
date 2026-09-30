@@ -345,7 +345,7 @@ function KDSPage() {
  background: #fff;
  }
  .no-print {
- display: none !important;
+ display: none;
  }
  }
  `}</style>

@@ -3,7 +3,6 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import "maplibre-gl/dist/maplibre-gl.css";
 
 /*
  * ============================================================================
@@ -1005,10 +1004,22 @@
   navigation: auto;
 }
 
-/* 2. Virtualização nativa para listas e feeds longos */
-.content-visibility-auto {
+/* 2. Virtualização nativa para listas e feeds longos (Prompt 16 / docs/PERFORMANCE.md) */
+.content-visibility-auto,
+.content-auto,
+.virtual-item {
   content-visibility: auto;
-  contain-intrinsic-size: 0 80px;
+  contain-intrinsic-size: 0 120px;
+}
+
+.content-auto-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 280px;
+}
+
+.content-auto-row {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 48px;
 }
 
 /* 3. Prevenção de Layout Shift (CLS) */

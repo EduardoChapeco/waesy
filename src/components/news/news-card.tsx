@@ -33,7 +33,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
       <Link
         to="/noticias/$slug"
         params={{ slug: article.slug }}
-        className="group relative flex items-center gap-3.5 p-3 rounded-2xl bg-card border border-border/60 hover-elevate transition-all w-full min-w-[280px] sm:min-w-[320px] max-w-[360px] h-[145px] sm:h-[155px] shrink-0 select-none overflow-hidden"
+        className="group relative flex items-center gap-3.5 p-3 rounded-2xl bg-card border border-border/60 hover-elevate transition-colors w-full content-auto-card min-w-[280px] sm:min-w-[320px] max-w-[360px] h-[145px] sm:h-[155px] shrink-0 select-none overflow-hidden"
       >
         {/* Thumbnail Quadrada com cantos arredondados contínuos */}
         <div className="size-24 sm:size-28 rounded-xl overflow-hidden bg-muted shrink-0 relative aspect-square">
@@ -51,7 +51,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
           )}
 
           {article.reading_time_minutes && (
-            <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/75 backdrop-blur-xs text-[9px] font-mono text-white">
+            <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/85 text-[9px] font-mono text-white">
               {article.reading_time_minutes}m
             </span>
           )}
@@ -83,7 +83,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
 
   // ── Modo Completo: Padrão Apple HIG com tipografia fluida e touch target de 44px ──
   return (
-    <article className="group relative flex flex-col rounded-2xl bg-card border border-border/60 overflow-hidden hover-elevate transition-all duration-300">
+    <article className="group relative flex flex-col rounded-2xl bg-card border border-border/60 overflow-hidden hover-elevate transition-colors duration-200 content-auto-card">
       {/* ── 1. Imagem / Vídeo Full Bleed ── */}
       <Link
         to="/noticias/$slug"
@@ -117,7 +117,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
         {/* Badges Flutuantes sobre a Imagem */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
           {article.kicker ? (
-            <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-black/70 backdrop-blur-md text-white border border-white/10">
+            <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-black/85 text-white border border-white/10">
               {article.kicker}
             </span>
           ) : (
@@ -125,7 +125,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
           )}
 
           <div className="flex items-center gap-1.5 pointer-events-auto">
-            <span className="px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-mono text-white flex items-center gap-1 border border-white/10">
+            <span className="px-2.5 py-1 rounded-md bg-black/85 text-[10px] font-mono text-white flex items-center gap-1 border border-white/10">
               <Clock className="size-3" />
               {article.reading_time_minutes || 3} min
             </span>
@@ -134,7 +134,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
             <button
               type="button"
               onClick={handleShare}
-              className="size-9 rounded-full bg-black/70 backdrop-blur-md text-white hover:bg-black/90 border border-white/10 flex items-center justify-center cursor-pointer transition-all active:scale-95 touch-manipulation"
+              className="size-9 rounded-full bg-black/85 text-white hover:bg-black/90 border border-white/10 flex items-center justify-center cursor-pointer transition-colors active:scale-95 touch-manipulation"
               title="Compartilhar notícia"
               aria-label="Compartilhar notícia"
             >

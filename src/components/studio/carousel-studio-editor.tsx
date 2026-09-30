@@ -9,7 +9,6 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import html2canvas from "html2canvas";
 import { Download, Copy, Check, Share2, ChevronLeft, ChevronRight, Star, Layers, Palette, Type, Maximize2, Save, RefreshCw, X } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { saveStudioProject, publishStudioCarouselToSocial, refineSlideTextWithAI, type RefinedSlideOption } from "@/services/studio.functions";
@@ -160,6 +159,7 @@ export function CarouselStudioEditor({
       const originalTransform = artboardEl.style.transform;
       artboardEl.style.transform = "scale(1)";
 
+      const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(artboardEl, {
         width: 1080,
         height: 1350,
@@ -200,6 +200,7 @@ export function CarouselStudioEditor({
       const originalTransform = artboardEl.style.transform;
       artboardEl.style.transform = "scale(1)";
 
+      const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(artboardEl, {
         width: 1080,
         height: 1350,

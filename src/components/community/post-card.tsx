@@ -115,7 +115,7 @@ export function PostCard(props: PostCardProps) {
  }
 
  return (
- <article className="flex flex-col rounded-2xl bg-card p-4 sm:p-5 transition-all hover:border-border/80 border border-border/70 relative">
+ <article className="flex flex-col rounded-2xl bg-card p-4 sm:p-5 transition-colors hover:border-border/80 border border-border/70 relative content-auto-card">
  {/* ── 1. Header do Post ────────────────────────────────────────── */}
  <div className="flex items-center justify-between gap-3 mb-3">
  <div className="flex items-center gap-3 min-w-0">
@@ -254,7 +254,7 @@ export function PostCard(props: PostCardProps) {
 
  {/* ── 3. Renderização Específica por Template de Post ────────── */}
  <div
- className={`w-full transition-all duration-300 origin-top ${
+ className={`w-full transition-transform duration-200 origin-top ${
  isCommentsOpen ? "scale-[0.95] -translate-y-1 opacity-90" : "scale-100"
  }`}
  >
@@ -276,7 +276,7 @@ export function PostCard(props: PostCardProps) {
  setIsPlayingAudio(!isPlayingAudio);
  toast(isPlayingAudio ? "Áudio pausado" : "Reproduzindo matéria por voz sintetizada...");
  }}
- className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+ className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${
  isPlayingAudio
  ? "bg-emerald-500 text-white animate-pulse"
  : "bg-white/10 hover:bg-white/20 text-white/90"
@@ -315,7 +315,7 @@ export function PostCard(props: PostCardProps) {
  />
  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs text-white">
- <span className="font-bold flex items-center gap-1 bg-black/60 backdrop-blur-xs px-2.5 py-1 rounded-lg">
+ <span className="font-bold flex items-center gap-1 bg-black/75 px-2.5 py-1 rounded-lg">
  <Layers className="size-3 text-warning" />
  <span>{item.metadata?.category || "Inovação & Cidades"}</span>
  </span>
@@ -475,10 +475,10 @@ export function PostCard(props: PostCardProps) {
  )}
  {/* Tag Minimalista de Destino sobre a Foto */}
  <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
- <span className="bg-black/60 backdrop-blur-md text-white font-bold text-[11px] px-2.5 py-1 rounded-xl truncate shadow-xs">
+ <span className="bg-black/75 text-white font-bold text-[11px] px-2.5 py-1 rounded-xl truncate shadow-xs">
  {item.metadata?.dest_city || item.location_name || "Experiência"}
  </span>
- <span className="bg-black/40 backdrop-blur-md text-white/90 text-[10px] font-medium px-2 py-0.5 rounded-lg flex items-center gap-1">
+ <span className="bg-black/75 text-white/90 text-[10px] font-medium px-2 py-0.5 rounded-lg flex items-center gap-1">
  <Eye className="size-2.5" /> Ver
  </span>
  </div>
@@ -532,7 +532,7 @@ export function PostCard(props: PostCardProps) {
  className="absolute left-3 top-3 w-[55%] h-[85%] rounded-2xl overflow-hidden -rotate-2 hover:rotate-0 hover:scale-105 hover:z-30 transition-all duration-300 cursor-pointer border-2 border-background"
  >
  <img src={item.media_urls[0]} alt="Foto 1" className="size-full object-cover" />
- <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] font-bold text-white bg-black/60 backdrop-blur-xs px-2 py-0.5 rounded-md">
+ <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] font-bold text-white bg-black/75 px-2 py-0.5 rounded-md">
  <span className="flex items-center gap-1">
  <Heart className="size-2.5 fill-current text-destructive" /> Foto 1
  </span>
@@ -548,7 +548,7 @@ export function PostCard(props: PostCardProps) {
  className="absolute right-3 top-3 w-[45%] h-[55%] rounded-2xl overflow-hidden rotate-3 hover:rotate-0 hover:scale-105 hover:z-30 transition-all duration-300 cursor-pointer border-2 border-background"
  >
  <img src={item.media_urls[1]} alt="Foto 2" className="size-full object-cover" />
- <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] font-bold text-white bg-black/60 backdrop-blur-xs px-2 py-0.5 rounded-md">
+ <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] font-bold text-white bg-black/75 px-2 py-0.5 rounded-md">
  <span className="flex items-center gap-1">
  <Heart className="size-2.5 fill-current text-destructive" /> Foto 2
  </span>
@@ -564,7 +564,7 @@ export function PostCard(props: PostCardProps) {
  className="absolute left-[30%] bottom-3 w-[45%] h-[55%] rounded-2xl overflow-hidden -rotate-1 z-20 hover:rotate-0 hover:scale-105 hover:z-30 transition-all duration-300 cursor-pointer border-2 border-background"
  >
  <img src={item.media_urls[2]} alt="Foto 3" className="size-full object-cover" />
- <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] font-bold text-white bg-black/60 backdrop-blur-xs px-2 py-0.5 rounded-md">
+ <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] font-bold text-white bg-black/75 px-2 py-0.5 rounded-md">
  <span className="flex items-center gap-1">
  <Heart className="size-2.5 fill-current text-destructive" /> Foto 3
  </span>
@@ -628,7 +628,7 @@ export function PostCard(props: PostCardProps) {
  )}
 
  {/* Dots */}
- <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/40 backdrop-blur-xs px-2.5 py-1 rounded-full">
+ <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-full">
  {item.media_urls.map((_, idx) => (
  <div
  key={idx}

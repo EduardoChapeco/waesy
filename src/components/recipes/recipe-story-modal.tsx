@@ -3,7 +3,6 @@ import { Download, Share2, Copy, Check, X, Star, Clock, Users, ChefHat } from "l
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import html2canvas from "html2canvas";
 import type { MinedRecipeDTO } from "@/services/mining.functions";
 
 interface RecipeStoryModalProps {
@@ -40,6 +39,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
       setIsGenerating(true);
       toast.info("Renderizando Story 9:16...");
 
+      const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(cardRef.current, {
         scale: 2,
         useCORS: true,

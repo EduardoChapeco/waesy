@@ -57,6 +57,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
 
     import("maplibre-gl").then((maplibreglModule: any) => {
       if (!isMounted || !mapContainer.current || map.current) return;
+      import("maplibre-gl/dist/maplibre-gl.css" as any).catch(() => {});
       const maplibregl: any = maplibreglModule.default || maplibreglModule;
 
       const stored = typeof window !== "undefined" ? getStoredLocation() : null;

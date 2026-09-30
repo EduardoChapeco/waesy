@@ -1,5 +1,5 @@
 {
-  "prompt_atual": 15,
+  "prompt_atual": 16,
   "commit": "HEAD",
   "inventario": {
     "modulos_com_ia": 14,
@@ -163,6 +163,51 @@
       "score": 22,
       "depende_de": [],
       "estado": "fechado"
+    },
+    {
+      "id": "I-0011",
+      "prompt": 16,
+      "tipo": "performance-carregamento",
+      "evidencia": "src/styles.css:6",
+      "causa_raiz": "maplibre-gl.css importado globalmente no topo de styles.css onerando o caminho crítico de 381 rotas",
+      "correcao": "Desvinculado de styles.css e carregado dinamicamente via import() sob demanda nos componentes de mapa",
+      "impacto": 4,
+      "alcance": 5,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 26,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0012",
+      "prompt": 16,
+      "tipo": "design-lint-p0",
+      "evidencia": "src/routes/workspace.pedidos.gestor.tsx:348,src/routes/workspace_.pedidos.$id.recibo.tsx:265-271",
+      "causa_raiz": "4 ocorrências de !important residuais em folhas de estilo de impressão em workspace.pedidos.gestor.tsx e recibo.tsx",
+      "correcao": "Removido !important preservando comportamento padrão de impressão",
+      "impacto": 5,
+      "alcance": 3,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 28,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0013",
+      "prompt": 16,
+      "tipo": "performance-jank",
+      "evidencia": "src/components/community/post-card.tsx,src/components/news/news-card.tsx,src/components/commerce/offer-card.tsx",
+      "causa_raiz": "Uso decorativo de backdrop-blur e transition-all em cards de feed roláveis gerando recalculo massivo de GPU e frame drops",
+      "correcao": "Substituído por fundos opacos/tonais com WCAG AAA, transition-colors e virtualização nativa via content-visibility: auto",
+      "impacto": 4,
+      "alcance": 4,
+      "confianca": 5,
+      "esforco": 2,
+      "score": 25,
+      "depende_de": [],
+      "estado": "fechado"
     }
   ],
   "entregues": [
@@ -189,7 +234,10 @@
     "ia/14-mapa.md",
     "ia/14-ledger.json",
     "ia/15-relatorio.md",
-    "src/hooks/use-mobile.test.ts"
+    "src/hooks/use-mobile.test.ts",
+    "ia/16-relatorio.md",
+    "ia/16-ledger.json",
+    "src/hooks/anti-jank.test.ts"
   ],
   "selos": [
     "ZERO_MOCKS_VERIFIED",
@@ -205,7 +253,11 @@
     "DIAGNOSTIC_STRICT_NO_CODE_CHANGE_VERIFIED",
     "WINDOW_SIZE_CLASS_PROVIDER_ACTIVE",
     "BREAKPOINT_DRIFT_ERADICATED",
-    "NATIVE_PRIMITIVES_WINDOW_VARIANT_CERTIFIED"
+    "NATIVE_PRIMITIVES_WINDOW_VARIANT_CERTIFIED",
+    "MAPLIBRE_CSS_DECOUPLED_FROM_CRITICAL_PATH",
+    "ZERO_IMPORTANT_IN_TSX_CERTIFIED",
+    "NATIVE_VIRTUALIZATION_CONTENT_AUTO_ACTIVE",
+    "PROMPT_16_ALL_TESTS_GREEN"
   ],
   "decisoes": [
     "DEC-001",
@@ -228,6 +280,7 @@
     "DEC-018",
     "DEC-019",
     "DEC-020",
-    "DEC-021"
+    "DEC-021",
+    "DEC-022"
   ]
 }

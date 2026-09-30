@@ -232,6 +232,7 @@ export function BusinessLocationPicker({
 
    import("maplibre-gl").then((maplibreglModule) => {
      if (!isMounted || !mapContainer.current || map.current) return;
+     import("maplibre-gl/dist/maplibre-gl.css" as any).catch(() => {});
      const maplibregl = (maplibreglModule as any).default || maplibreglModule;
 
      try {

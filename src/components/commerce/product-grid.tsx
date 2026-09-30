@@ -77,7 +77,7 @@ export function ProductGrid({
  return (
  <div
  key={product.id}
- className="group flex items-stretch justify-between rounded-2xl bg-card hover:border-foreground/30 transition-all overflow-hidden w-full h-[140px] sm:h-[155px] p-0"
+ className="group flex items-stretch justify-between rounded-2xl bg-card hover:border-foreground/30 transition-colors content-auto-card overflow-hidden w-full h-[140px] sm:h-[155px] p-0"
  >
  {/* Esquerda: Imagem FULL BLEED */}
  <Link

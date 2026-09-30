@@ -262,13 +262,13 @@ function ReceiptPrintPage() {
           __html: `
           @media print {
             body {
-              background-color: white !important;
-              color: black !important;
+              background-color: white;
+              color: black;
               margin: 0;
               padding: 0;
             }
             .print\\:hidden {
-              display: none !important;
+              display: none;
             }
             @page {
               margin: 0.8cm;

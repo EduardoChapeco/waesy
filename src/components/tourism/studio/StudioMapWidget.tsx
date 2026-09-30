@@ -59,6 +59,7 @@ export function StudioMapWidget({
 
     import("maplibre-gl").then((maplibreglModule) => {
       if (!isMounted || !mapContainer.current || mapRef.current) return;
+      import("maplibre-gl/dist/maplibre-gl.css" as any).catch(() => {});
       const maplibregl = (maplibreglModule as any).default || maplibreglModule;
 
       const initialCenter: [number, number] = localWaypoints.length > 0

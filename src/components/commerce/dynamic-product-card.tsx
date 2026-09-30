@@ -36,9 +36,9 @@ export function DynamicProductCard({ product }: DynamicProductCardProps) {
  to="/produto/$slug"
  params={{ slug: product.slug }}
  className={cn(
- "group flex flex-col h-full squircle squircle-hover overflow-hidden border bg-card transition-all duration-300",
+ "group flex flex-col h-full squircle squircle-hover overflow-hidden border bg-card transition-colors duration-200 content-auto-card",
  product.isBoosted &&
- "border-warning/50 shadow-glow ring-1 ring-warning/30 bg-warning/5 backdrop-blur-md",
+ "border-warning/50 ring-1 ring-warning/30 bg-warning/10",
  )}
  >
  <div className="relative aspect-square w-full squircle-media bg-muted/50">

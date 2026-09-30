@@ -26,7 +26,7 @@ export function StoreCard({
  to="/diretorio/$id"
  params={{ id }}
  className={cn(
- "group relative flex flex-col justify-between w-full rounded-2xl bg-card border border-border/60 hover:border-primary/50 transition-all duration-200 overflow-hidden select-none block shadow-2xs",
+ "group relative flex flex-col justify-between w-full rounded-2xl bg-card border border-border/60 hover:border-primary/50 transition-colors duration-200 content-auto-card overflow-hidden select-none block shadow-2xs",
  className,
  )}
  >
@@ -48,7 +48,7 @@ export function StoreCard({
  {/* Status Badge */}
  <div className="absolute top-3 right-3 z-10">
  <span
- className={`px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider backdrop-blur-md ${
+ className={`px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider  ${
  is_open
  ? "bg-emerald-600/95 text-white "
  : "bg-black/60 text-white/80 border border-white/20"

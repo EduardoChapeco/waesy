@@ -116,7 +116,7 @@ export function OfferCard({
       to="/produto/$slug"
       params={{ slug }}
       className={cn(
-        "group relative flex flex-row items-stretch w-full h-36 sm:h-40 rounded-2xl bg-card border border-border/70 hover:border-primary/50 transition-all duration-200 overflow-hidden select-none p-0 shadow-2xs",
+        "group relative flex flex-row items-stretch w-full h-36 sm:h-40 rounded-2xl bg-card border border-border/70 hover:border-primary/50 transition-colors duration-200 content-auto-card overflow-hidden select-none p-0 shadow-2xs",
         className,
       )}
     >
@@ -132,7 +132,7 @@ export function OfferCard({
         {/* Badge de Desconto no Topo da Imagem */}
         {discountVal > 0 && (
           <div className="absolute top-2 left-2 z-10">
-            <span className="px-1.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-black/85 backdrop-blur-md text-white border border-white/20">
+            <span className="px-1.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-black/90 text-white border border-white/20">
               {discountVal}% OFF
             </span>
           </div>
@@ -141,7 +141,7 @@ export function OfferCard({
         {/* Timer de Oferta Relâmpago no Rodapé da Imagem */}
         {timeLeft && (
           <div className="absolute bottom-2 inset-x-1.5 flex items-center justify-center z-10">
-            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-mono font-bold bg-black/85 backdrop-blur-md text-white">
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-mono font-bold bg-black/90 text-white">
               <Clock className="size-2.5" />
               <span>{timeLeft}</span>
             </div>
