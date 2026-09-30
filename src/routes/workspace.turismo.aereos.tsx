@@ -411,7 +411,7 @@ export default function FlightsPage() {
                     className="h-11 uppercase font-mono font-bold tracking-widest text-base rounded-xl"
                     maxLength={10}
                   />
-                  <span className="text-[10px] text-muted-foreground">Código de 6 letras/números da reserva</span>
+                  <span className="text-xs text-muted-foreground">Código de 6 letras/números da reserva</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -422,7 +422,7 @@ export default function FlightsPage() {
                     onChange={(e) => setTicketNumber(e.target.value)}
                     className="h-11 font-mono text-sm rounded-xl"
                   />
-                  <span className="text-[10px] text-muted-foreground">Bilhete oficial emitido pela consolidadora</span>
+                  <span className="text-xs text-muted-foreground">Bilhete oficial emitido pela consolidadora</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -481,7 +481,7 @@ export default function FlightsPage() {
                 <div className="space-y-1.5 md:col-span-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-semibold">Origem (IATA + Cidade)</Label>
-                    <span className="text-[10px] text-muted-foreground font-mono">Malha Central</span>
+                    <span className="text-xs text-muted-foreground font-mono">Malha Central</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <Input
@@ -505,7 +505,7 @@ export default function FlightsPage() {
                         key={hub}
                         type="button"
                         onClick={() => handleSelectOrigin(hub)}
-                        className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                        className={`text-xs font-mono px-1.5 py-0.5 rounded-md border transition-colors cursor-pointer ${
                           originIata === hub ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground hover:bg-muted border-border/60"
                         }`}
                       >
@@ -518,7 +518,7 @@ export default function FlightsPage() {
                 <div className="space-y-1.5 md:col-span-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-semibold">Destino (IATA + Cidade)</Label>
-                    <span className="text-[10px] text-muted-foreground font-mono">Malha Central</span>
+                    <span className="text-xs text-muted-foreground font-mono">Malha Central</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <Input
@@ -542,7 +542,7 @@ export default function FlightsPage() {
                         key={hub}
                         type="button"
                         onClick={() => handleSelectDestination(hub)}
-                        className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                        className={`text-xs font-mono px-1.5 py-0.5 rounded-md border transition-colors cursor-pointer ${
                           destinationIata === hub ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground hover:bg-muted border-border/60"
                         }`}
                       >
@@ -629,7 +629,7 @@ export default function FlightsPage() {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold">Tarifa Base (R$)</Label>
+                  <Label className="text-xs text-muted-foreground/75 font-semibold">Tarifa Base (R$)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -640,7 +640,7 @@ export default function FlightsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold">Taxas Embarque (R$)</Label>
+                  <Label className="text-xs text-muted-foreground/75 font-semibold">Taxas Embarque (R$)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -651,7 +651,7 @@ export default function FlightsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold">Taxa RAV / DU Agência (R$)</Label>
+                  <Label className="text-xs text-muted-foreground/75 font-semibold">Taxa RAV / DU Agência (R$)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -662,7 +662,7 @@ export default function FlightsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Comissão Agência (R$)</Label>
+                  <Label className="text-xs text-muted-foreground/75 font-semibold text-emerald-600 dark:text-emerald-400">Comissão Agência (R$)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -727,7 +727,7 @@ export default function FlightsPage() {
                       <div className="flex items-center gap-2">
                         <h3 className="text-base font-bold text-foreground">{it.title}</h3>
                         {meta?.consolidator && (
-                          <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-secondary text-secondary-foreground border border-border/50">
+                          <span className="px-2 py-0.5 rounded-md text-xs text-muted-foreground/75 font-semibold bg-secondary text-secondary-foreground border border-border/50">
                             {meta.consolidator}
                           </span>
                         )}
@@ -747,7 +747,7 @@ export default function FlightsPage() {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(primarySeg.record_locator!, 'Localizador PNR')}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] sm:min-h-[28px] rounded-xl text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-11 sm:min-h-9 sm:min-h-9 sm:min-h-8 rounded-xl text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
                         title="Clique para copiar localizador"
                       >
                         <Hash className="size-3.5" />
@@ -798,26 +798,26 @@ export default function FlightsPage() {
                         <div>
                           <p className="text-xl font-extrabold tracking-tight text-foreground">{seg.origin_iata}</p>
                           <p className="text-xs text-muted-foreground">{seg.origin_city || 'Origem'}</p>
-                          <p className="text-[11px] font-mono font-medium text-muted-foreground mt-0.5">
+                          <p className="text-xs text-muted-foreground/75 font-mono font-medium text-muted-foreground mt-0.5">
                             {new Date(seg.departure_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
 
                         <div className="flex flex-col items-center px-4">
                           <ArrowRight className="size-4 text-primary" />
-                          <span className="text-[10px] text-muted-foreground mt-0.5">Voo Direto</span>
+                          <span className="text-xs text-muted-foreground mt-0.5">Voo Direto</span>
                         </div>
 
                         <div>
                           <p className="text-xl font-extrabold tracking-tight text-foreground">{seg.destination_iata}</p>
                           <p className="text-xs text-muted-foreground">{seg.destination_city || 'Destino'}</p>
-                          <p className="text-[11px] font-mono font-medium text-muted-foreground mt-0.5">
+                          <p className="text-xs text-muted-foreground/75 font-mono font-medium text-muted-foreground mt-0.5">
                             {new Date(seg.arrival_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+                      <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs text-muted-foreground/75 text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Briefcase className="size-3.5 text-muted-foreground" />
                           {seg.baggage || 'Franquia Padrão'}

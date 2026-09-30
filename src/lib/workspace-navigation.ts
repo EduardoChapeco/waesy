@@ -50,12 +50,15 @@ const GROUP_AGENTIC_INTELLIGENCE: NavGroup = {
   items: [
     { path: "/workspace/squads", label: "Squads", icon: Bot },
     { path: "/workspace/skills", label: "Skills", icon: Sparkles },
-    { path: "/workspace/mining", label: "Importações", icon: Database },
-    { path: "/workspace/conteudo/receitas", label: "Receitas", icon: ChefHat },
+    { path: "/workspace/marketing/brand-kit", label: "Brand Kit", icon: Palette },
+    { path: "/workspace/marketing/canvas-bmc", label: "Modelo BMC", icon: LayoutGrid },
+    { path: "/workspace/marketing/swot", label: "Matriz SWOT", icon: Compass },
+    { path: "/workspace/marketing/canvas-pecados", label: "7 Pecados", icon: Flame },
     { path: "/workspace/simlab/focus-group", label: "SimLab", icon: Users },
     { path: "/workspace/inteligencia/radar", label: "Radar", icon: Target },
+    { path: "/workspace/mining", label: "Importações", icon: Database },
+    { path: "/workspace/conteudo/receitas", label: "Receitas", icon: ChefHat },
     { path: "/workspace/simulacao", label: "Simulações", icon: Sliders },
-    { path: "/workspace/marketing/canvas-pecados", label: "Canvas", icon: Flame },
     { path: "/workspace/onboarding/revisao", label: "Catálogo Mestre", icon: Layers },
   ],
 };
@@ -468,6 +471,8 @@ const GROUP_MARKETING_VITRINE: NavGroup = {
   items: [
     { path: "/workspace/marketing/vitrine", label: "Vitrine", icon: LayoutGrid },
     { path: "/workspace/marketing/brand-kit", label: "Brand Kit", icon: Palette },
+    { path: "/workspace/marketing/canvas-bmc", label: "Modelo BMC", icon: LayoutDashboard },
+    { path: "/workspace/marketing/swot", label: "Matriz SWOT", icon: Compass },
     { path: "/workspace/cms/paginas", label: "Páginas", icon: FileText },
     { path: "/workspace/cms/stories", label: "Stories", icon: Flame },
     { path: "/workspace/marketing/stories", label: "Stories de Marketing", icon: Flame },

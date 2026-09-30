@@ -348,11 +348,11 @@ function WorkspaceTripDetailPage() {
                 <span className="text-xs font-mono font-bold text-muted-foreground uppercase">
                   {trip.trip_number}
                 </span>
-                <Badge variant="outline" className="text-[10px] font-bold uppercase">
+                <Badge variant="outline" className="text-xs font-bold uppercase">
                   {trip.status}
                 </Badge>
                 {trip.operator_name && (
-                  <Badge variant="secondary" className="text-[10px] font-semibold bg-primary/10 text-primary border-primary/20">
+                  <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
                     Operadora: {trip.operator_name}
                   </Badge>
                 )}
@@ -423,9 +423,9 @@ function WorkspaceTripDetailPage() {
                 const walletUrl = `${origin}/viajante/carteira`;
                 const contractUrl = (trip as any).contract_token ? `${origin}/contrato/${(trip as any).contract_token}` : "";
                 const msg = encodeURIComponent(
-                  `Olá ${trip.client_name}! ✈️ Segue o seu Kit de Viagem para ${trip.destination_city} (Ref: ${trip.trip_number}):\n\n` +
-                  `🎟️ Carteira Digital de Embarque & Vouchers: ${walletUrl}\n` +
-                  (contractUrl ? `📄 Contrato de Intermediação Assinado: ${contractUrl}\n\n` : "\n") +
+                  `Olá ${trip.client_name}! ️ Segue o seu Kit de Viagem para ${trip.destination_city} (Ref: ${trip.trip_number}):\n\n` +
+                  `️ Carteira Digital de Embarque & Vouchers: ${walletUrl}\n` +
+                  (contractUrl ? ` Contrato de Intermediação Assinado: ${contractUrl}\n\n` : "\n") +
                   `Estamos à disposição no plantão da agência para qualquer apoio antes ou durante a viagem!`
                 );
                 window.open(`https://wa.me/55${rawPhone}?text=${msg}`, "_blank");
@@ -442,12 +442,12 @@ function WorkspaceTripDetailPage() {
         {/* Metadados Rápidos */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-border/60 text-xs">
           <div>
-            <span className="text-[11px] text-muted-foreground block">Cliente Titular</span>
+            <span className="text-xs text-muted-foreground/75 text-muted-foreground block">Cliente Titular</span>
             <span className="font-bold text-foreground">{trip.client_name}</span>
           </div>
 
           <div>
-            <span className="text-[11px] text-muted-foreground block">Período de Viagem</span>
+            <span className="text-xs text-muted-foreground/75 text-muted-foreground block">Período de Viagem</span>
             <span className="font-bold text-foreground">
               {trip.travel_start_date ? new Date(trip.travel_start_date).toLocaleDateString("pt-BR") : "A definir"}
               {trip.travel_end_date && ` até ${new Date(trip.travel_end_date).toLocaleDateString("pt-BR")}`}
@@ -455,14 +455,14 @@ function WorkspaceTripDetailPage() {
           </div>
 
           <div>
-            <span className="text-[11px] text-muted-foreground block">Passageiros</span>
+            <span className="text-xs text-muted-foreground/75 text-muted-foreground block">Passageiros</span>
             <span className="font-bold text-foreground">
               {aggregate.passengers.length || (trip.adults_count + trip.children_count)} pessoa(s)
             </span>
           </div>
 
           <div>
-            <span className="text-[11px] text-muted-foreground block">Valor Total</span>
+            <span className="text-xs text-muted-foreground/75 text-muted-foreground block">Valor Total</span>
             <span className="font-bold text-primary">{formatMoney(trip.total_cents)}</span>
           </div>
         </div>
@@ -472,7 +472,7 @@ function WorkspaceTripDetailPage() {
       <div className="flex items-center gap-1 border-b border-border/80 overflow-x-auto pb-px">
         <button
           onClick={() => setActiveTab("overview")}
-          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "overview"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -484,7 +484,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("passengers")}
-          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "passengers"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -496,7 +496,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("locators")}
-          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "locators"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -508,7 +508,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("contract")}
-          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "contract"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -520,7 +520,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("vouchers")}
-          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "vouchers"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -532,7 +532,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("financial")}
-          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "financial"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -568,7 +568,7 @@ function WorkspaceTripDetailPage() {
                 />
                 <div className="space-y-0.5 min-w-0">
                   <span className="font-bold text-foreground block">1. Validade de Documentos</span>
-                  <span className="text-[11px] text-muted-foreground block leading-tight">
+                  <span className="text-xs text-muted-foreground/75 text-muted-foreground block leading-tight">
                     RG &lt; 10 anos ou Passaporte válido por mais de 6 meses + Visto aplicável.
                   </span>
                 </div>
@@ -582,7 +582,7 @@ function WorkspaceTripDetailPage() {
                 />
                 <div className="space-y-0.5 min-w-0">
                   <span className="font-bold text-foreground block">2. Contrato Assinado</span>
-                  <span className="text-[11px] text-muted-foreground block leading-tight">
+                  <span className="text-xs text-muted-foreground/75 text-muted-foreground block leading-tight">
                     Minuta de intermediação turística aceita ou assinada com hash SHA-256.
                   </span>
                 </div>
@@ -596,7 +596,7 @@ function WorkspaceTripDetailPage() {
                 />
                 <div className="space-y-0.5 min-w-0">
                   <span className="font-bold text-foreground block">3. Vouchers e Apólices Emitidos</span>
-                  <span className="text-[11px] text-muted-foreground block leading-tight">
+                  <span className="text-xs text-muted-foreground/75 text-muted-foreground block leading-tight">
                     Bilhetes carregados e disponíveis na Carteira Digital do Viajante (PWA).
                   </span>
                 </div>
@@ -610,7 +610,7 @@ function WorkspaceTripDetailPage() {
                 />
                 <div className="space-y-0.5 min-w-0">
                   <span className="font-bold text-foreground block">4. Check-in e Disparo de Kit</span>
-                  <span className="text-[11px] text-muted-foreground block leading-tight">
+                  <span className="text-xs text-muted-foreground/75 text-muted-foreground block leading-tight">
                     Check-in aéreo concluído e kit de viagem disparado no WhatsApp do cliente.
                   </span>
                 </div>
@@ -638,7 +638,7 @@ function WorkspaceTripDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 {trip.operator_contacts?.emergency_phone && (
                   <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-medium">
+                    <span className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1.5 font-medium">
                       <Phone className="size-3.5 text-amber-500" /> Plantão de Emergência 24h
                     </span>
                     <p className="font-mono font-bold text-foreground text-sm">
@@ -648,7 +648,7 @@ function WorkspaceTripDetailPage() {
                 )}
                 {trip.operator_contacts?.commercial_phone && (
                   <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-medium">
+                    <span className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1.5 font-medium">
                       <Phone className="size-3.5 text-primary" /> Suporte Comercial
                     </span>
                     <p className="font-mono font-bold text-foreground text-sm">
@@ -658,7 +658,7 @@ function WorkspaceTripDetailPage() {
                 )}
                 {trip.operator_contacts?.support_email && (
                   <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-medium">
+                    <span className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1.5 font-medium">
                       <Mail className="size-3.5 text-muted-foreground" /> Desk Operacional
                     </span>
                     <p className="font-mono text-foreground text-xs truncate">
@@ -683,7 +683,7 @@ function WorkspaceTripDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {(trip.tariff_rules.cancellation_deadline || trip.tariff_rules.cancel_deadline) && (
                   <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-1">
-                    <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 block">
+                    <span className="text-xs text-muted-foreground/75 font-bold text-amber-700 dark:text-amber-400 block">
                       Prazo Limite de Cancelamento
                     </span>
                     <p className="text-foreground text-xs">
@@ -694,7 +694,7 @@ function WorkspaceTripDetailPage() {
 
                 {(trip.tariff_rules.cancellation_penalty || trip.tariff_rules.cancel_penalty_text) && (
                   <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
-                    <span className="text-[11px] font-bold text-muted-foreground block">
+                    <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground block">
                       Penalidades e Multas de Cancelamento
                     </span>
                     <p className="text-foreground text-xs">
@@ -705,7 +705,7 @@ function WorkspaceTripDetailPage() {
 
                 {(trip.tariff_rules.baggage_rules || trip.tariff_rules.baggage_allowance_summary) && (
                   <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1 sm:col-span-2">
-                    <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground flex items-center gap-1.5">
                       <Luggage className="size-3.5 text-primary" /> Franquia de Bagagem Oficial
                     </span>
                     <p className="text-foreground text-xs">
@@ -734,22 +734,22 @@ function WorkspaceTripDetailPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
-                  <span className="text-[11px] text-muted-foreground block">Forma de Pagamento</span>
+                  <span className="text-xs text-muted-foreground/75 text-muted-foreground block">Forma de Pagamento</span>
                   <p className="font-bold text-foreground">
                     {trip.payment_method || trip.financial_details?.payment_method || "A Definir"}
                   </p>
                 </div>
 
                 <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
-                  <span className="text-[11px] text-muted-foreground block">Condição de Parcelamento</span>
+                  <span className="text-xs text-muted-foreground/75 text-muted-foreground block">Condição de Parcelamento</span>
                   <p className="font-bold text-foreground">
                     {trip.installments_count || trip.financial_details?.installments_count || 1}x sem juros
                   </p>
                 </div>
 
                 <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
-                  <span className="text-[11px] text-muted-foreground block">Status Financeiro</span>
-                  <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30 font-bold uppercase">
+                  <span className="text-xs text-muted-foreground/75 text-muted-foreground block">Status Financeiro</span>
+                  <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30 font-bold uppercase">
                     Confirmado
                   </Badge>
                 </div>
@@ -769,10 +769,10 @@ function WorkspaceTripDetailPage() {
                             Parcela {inst.number || idx + 1}: {inst.amount_cents ? formatMoney(inst.amount_cents) : "—"}
                           </span>
                           {inst.due_date && (
-                            <p className="text-[11px] text-muted-foreground">Vencimento: {inst.due_date}</p>
+                            <p className="text-xs text-muted-foreground/75 text-muted-foreground">Vencimento: {inst.due_date}</p>
                           )}
                           {inst.barcode && (
-                            <p className="font-mono text-[10px] text-muted-foreground break-all">
+                            <p className="font-mono text-xs text-muted-foreground break-all">
                               Linha: {inst.barcode}
                             </p>
                           )}
@@ -818,17 +818,17 @@ function WorkspaceTripDetailPage() {
                   >
                     <div>
                       <span className="font-bold text-foreground">
-                        {f.origin} ➔ {f.destination}
+                        {f.origin}  {f.destination}
                       </span>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground/75 text-muted-foreground">
                         {f.airline || "Cia Aérea"} • Voo {f.flight_number || "—"} {f.date && `• ${f.date}`}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-3 font-mono text-[11px]">
+                    <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground/75">
                       {f.locator && (
                         <div className="bg-card px-2.5 py-1 rounded-lg border border-border/80">
-                          <span className="text-[9px] text-muted-foreground block uppercase">PNR</span>
+                          <span className="text-xs text-muted-foreground block uppercase">PNR</span>
                           <span className="font-bold text-foreground">{f.locator}</span>
                         </div>
                       )}
@@ -863,13 +863,13 @@ function WorkspaceTripDetailPage() {
                     <div className="flex items-start justify-between gap-2">
                       <span className="font-bold text-foreground">{h.name}</span>
                       {h.confirmation && (
-                        <span className="font-mono text-[10px] bg-card px-2 py-0.5 rounded border border-border">
+                        <span className="font-mono text-xs bg-card px-2 py-0.5 rounded border border-border">
                           Loc: {h.confirmation}
                         </span>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1.5 text-[11px] text-muted-foreground">
+                    <div className="grid grid-cols-2 gap-1.5 text-xs text-muted-foreground/75 text-muted-foreground">
                       <span>Regime: <strong className="text-foreground">{h.meal_plan || "Café"}</strong></span>
                       <span>Quarto: <strong className="text-foreground">{h.room_type || "Standard"}</strong></span>
                       <span>Check-in: <strong className="text-foreground">{h.checkin || "—"}</strong></span>
@@ -913,7 +913,7 @@ function WorkspaceTripDetailPage() {
                 <Users className="size-4 text-primary" />
                 <span>Lista Oficial de Viajantes e Controle de Documentação</span>
               </h3>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground/75 text-muted-foreground">
                 Documentos completos extraídos via OCR ou editados pelo agente, com monitoramento automático de validade de passaportes.
               </p>
             </div>
@@ -949,7 +949,7 @@ function WorkspaceTripDetailPage() {
               <Users className="size-10 mx-auto text-muted-foreground/40" />
               <div className="space-y-1">
                 <p className="font-semibold text-foreground">Nenhum passageiro detalhado cadastrado</p>
-                <p className="text-[11px]">Importe um voucher via OCR ou adicione os viajantes manualmente.</p>
+                <p className="text-xs text-muted-foreground/75">Importe um voucher via OCR ou adicione os viajantes manualmente.</p>
               </div>
               <Button
                 type="button"
@@ -986,12 +986,12 @@ function WorkspaceTripDetailPage() {
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-foreground text-sm">{pax.full_name}</span>
                             {pax.is_lead_passenger && (
-                              <Badge variant="outline" className="text-[9px] font-bold text-primary border-primary/30">
+                              <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30">
                                 Titular
                               </Badge>
                             )}
                           </div>
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground/75 text-muted-foreground">
                             Nacionalidade: <strong className="text-foreground">{pax.nationality || "Brasileira"}</strong>
                             {pax.birth_date && ` • Nascimento: ${pax.birth_date}`}
                           </span>
@@ -1027,34 +1027,34 @@ function WorkspaceTripDetailPage() {
                       {/* Caixa de Documentos & Validade */}
                       <div className="p-2.5 rounded-lg bg-card border border-border/70 space-y-2">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground/75 text-muted-foreground">
                             {docTypeLabel}: <strong className="font-mono text-foreground">{pax.document || "Não cadastrado"}</strong>
                           </span>
-                          <Badge variant="outline" className="text-[9px] uppercase font-mono">
+                          <Badge variant="outline" className="text-xs uppercase font-mono">
                             {pax.document_type || "Doc"}
                           </Badge>
                         </div>
 
-                        <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50 text-[11px]">
+                        <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50 text-xs text-muted-foreground/75">
                           <span className="text-muted-foreground">
                             Validade: <strong className="font-mono text-foreground">{pax.document_expiry || "Não informada"}</strong>
                           </span>
 
                           {/* Badge de Alerta de Validade */}
                           {validity.status === "expired" && (
-                            <Badge className="text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 gap-1">
+                            <Badge className="text-xs font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 gap-1">
                               <AlertTriangle className="size-3" />
                               <span>{validity.label}</span>
                             </Badge>
                           )}
                           {validity.status === "warning" && (
-                            <Badge className="text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 gap-1">
+                            <Badge className="text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 gap-1">
                               <AlertTriangle className="size-3" />
                               <span>{validity.label}</span>
                             </Badge>
                           )}
                           {validity.status === "valid" && (
-                            <Badge className="text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 gap-1">
+                            <Badge className="text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 gap-1">
                               <CheckCircle2 className="size-3" />
                               <span>{validity.label}</span>
                             </Badge>
@@ -1063,7 +1063,7 @@ function WorkspaceTripDetailPage() {
                       </div>
 
                       {pax.seat_number && (
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground/75 text-muted-foreground">
                           Assento Reservado: <strong className="font-mono text-foreground">{pax.seat_number}</strong>
                         </p>
                       )}
@@ -1084,7 +1084,7 @@ function WorkspaceTripDetailPage() {
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Localizadores e Confirmações de Fornecedores
               </h3>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground/75 text-muted-foreground">
                 Códigos PNR de companhias aéreas, reservas de hotéis, apólices de seguros e transfers.
               </p>
             </div>
@@ -1119,14 +1119,14 @@ function WorkspaceTripDetailPage() {
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-foreground">{item.provider_name}</span>
-                      <Badge variant="outline" className="text-[9px] uppercase font-mono">
+                      <Badge variant="outline" className="text-xs uppercase font-mono">
                         {item.item_type}
                       </Badge>
-                      <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-500/30 font-bold uppercase">
+                      <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30 font-bold uppercase">
                         {item.status}
                       </Badge>
                     </div>
-                    {item.notes && <p className="text-[11px] text-muted-foreground">{item.notes}</p>}
+                    {item.notes && <p className="text-xs text-muted-foreground/75 text-muted-foreground">{item.notes}</p>}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -1161,7 +1161,7 @@ function WorkspaceTripDetailPage() {
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Contrato Digital de Viagem
               </h3>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground/75 text-muted-foreground">
                 Documento jurídico vinculado com assinatura eletrônica e fé pública.
               </p>
             </div>
@@ -1181,13 +1181,13 @@ function WorkspaceTripDetailPage() {
               <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between">
                 <div>
                   <h4 className="font-bold text-foreground">{aggregate.contract.contract_title}</h4>
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground/75 text-muted-foreground">
                     Contratante: {aggregate.contract.client_name} • CPF: {aggregate.contract.client_document}
                   </span>
                 </div>
                 <Badge
                   variant="outline"
-                  className={`text-[10px] font-bold uppercase ${
+                  className={`text-xs font-bold uppercase ${
                     aggregate.contract.status === "signed"
                       ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/10"
                       : "text-amber-600 border-amber-500/30 bg-amber-500/10"
@@ -1199,7 +1199,7 @@ function WorkspaceTripDetailPage() {
 
               <div className="p-3.5 rounded-xl border border-border/60 bg-card space-y-2">
                 <span className="font-bold text-foreground block">Cláusulas e Condições Gerais:</span>
-                <p className="text-muted-foreground leading-relaxed text-[11px]">
+                <p className="text-muted-foreground leading-relaxed text-xs text-muted-foreground/75">
                   {aggregate.contract.package_summary}
                 </p>
                 <div className="pt-2 flex items-center gap-2">
@@ -1229,7 +1229,7 @@ function WorkspaceTripDetailPage() {
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Voucher Oficial de Embarque (Padrão A4)
               </h3>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground/75 text-muted-foreground">
                 Documento de apresentação com código de autenticidade e QR Code para embarque.
               </p>
             </div>
@@ -1286,27 +1286,27 @@ function WorkspaceTripDetailPage() {
           {/* 1. KPIs FINANCEIROS & MARGEM DA AGÊNCIA */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
-              <span className="text-[11px] font-semibold text-muted-foreground block">Venda Bruta (Cliente)</span>
+              <span className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground block">Venda Bruta (Cliente)</span>
               <span className="text-base sm:text-lg font-bold text-foreground">
                 {formatMoney(financialGrossCents)}
               </span>
-              <span className="text-[10px] text-muted-foreground block">Valor final contratado</span>
+              <span className="text-xs text-muted-foreground block">Valor final contratado</span>
             </div>
 
             <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
-              <span className="text-[11px] font-semibold text-muted-foreground block">Custo Operadora B2B</span>
+              <span className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground block">Custo Operadora B2B</span>
               <span className="text-base sm:text-lg font-bold text-muted-foreground">
                 {formatMoney(financialOperatorNetCents)}
               </span>
-              <span className="text-[10px] text-muted-foreground block">{financialOperatorName || "Operadora"} líquida</span>
+              <span className="text-xs text-muted-foreground block">{financialOperatorName || "Operadora"} líquida</span>
             </div>
 
             <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-1">
-              <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 block">Lucro Bruto Agência</span>
+              <span className="text-xs text-muted-foreground/75 font-semibold text-emerald-800 dark:text-emerald-300 block">Lucro Bruto Agência</span>
               <span className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400">
                 {formatMoney(Math.max(0, financialGrossCents - financialOperatorNetCents))}
               </span>
-              <span className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 block">
+              <span className="text-xs text-emerald-700/80 dark:text-emerald-400/80 block">
                 {financialGrossCents > 0
                   ? `${(((financialGrossCents - financialOperatorNetCents) / financialGrossCents) * 100).toFixed(1)}% de margem`
                   : "0%"}
@@ -1314,11 +1314,11 @@ function WorkspaceTripDetailPage() {
             </div>
 
             <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 space-y-1">
-              <span className="text-[11px] font-semibold text-primary block">Comissão do Consultor</span>
+              <span className="text-xs text-muted-foreground/75 font-semibold text-primary block">Comissão do Consultor</span>
               <span className="text-base sm:text-lg font-bold text-primary">
                 {formatMoney(Math.round(Math.max(0, financialGrossCents - financialOperatorNetCents) * (financialAgentPercent / 100)))}
               </span>
-              <span className="text-[10px] text-primary/80 block">{financialAgentPercent}% do lucro agência</span>
+              <span className="text-xs text-primary/80 block">{financialAgentPercent}% do lucro agência</span>
             </div>
           </div>
 
@@ -1423,7 +1423,7 @@ function WorkspaceTripDetailPage() {
                   <Barcode className="size-4 text-primary" />
                   Carnê & Boletos Bancários ({financialInstallments.length} parcelas)
                 </h3>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground/75 text-muted-foreground">
                   Suporte às 3 modalidades: extração por IA, upload manual ou link externo da financiadora.
                 </p>
               </div>
@@ -1482,7 +1482,7 @@ function WorkspaceTripDetailPage() {
                   className="rounded-xl text-xs font-bold gap-1.5 h-9 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer"
                 >
                   {isOcrBoletoLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Barcode className="size-3.5" />}
-                  <span>{isOcrBoletoLoading ? "Lendo Carnê..." : "⚡ Importar Carnê (OCR IA)"}</span>
+                  <span>{isOcrBoletoLoading ? "Lendo Carnê..." : " Importar Carnê (OCR IA)"}</span>
                 </Button>
 
                 <Button
@@ -1512,8 +1512,8 @@ function WorkspaceTripDetailPage() {
               <div className="py-8 text-center space-y-2 border border-dashed border-border/70 rounded-xl">
                 <Barcode className="size-8 text-muted-foreground mx-auto" />
                 <p className="text-xs font-bold text-foreground">Nenhum boleto registrado nesta viagem</p>
-                <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
-                  Utilize o botão "⚡ Importar Carnê (OCR IA)" para ler um PDF bancário com todas as parcelas ou adicione manualmente.
+                <p className="text-xs text-muted-foreground/75 text-muted-foreground max-w-sm mx-auto">
+                  Utilize o botão " Importar Carnê (OCR IA)" para ler um PDF bancário com todas as parcelas ou adicione manualmente.
                 </p>
               </div>
             ) : (
@@ -1550,23 +1550,23 @@ function WorkspaceTripDetailPage() {
                             </span>
                             <Badge
                               variant={isPaid ? "default" : "secondary"}
-                              className={`text-[9px] px-1.5 py-0 font-bold ${
+                              className={`text-xs px-1.5 py-0 font-bold ${
                                 isPaid ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
                               }`}
                             >
                               {isPaid ? "PAGA" : "PENDENTE"}
                             </Badge>
                             {inst.bank_name && (
-                              <span className="text-[10px] text-muted-foreground">({inst.bank_name})</span>
+                              <span className="text-xs text-muted-foreground">({inst.bank_name})</span>
                             )}
                           </div>
 
-                          <span className="text-[11px] text-muted-foreground block mt-0.5">
+                          <span className="text-xs text-muted-foreground/75 text-muted-foreground block mt-0.5">
                             Vencimento: <strong className="text-foreground">{inst.due_date || "Não informada"}</strong>
                           </span>
 
                           {inst.digitable_line && (
-                            <span className="font-mono text-[10px] text-muted-foreground/80 truncate block max-w-xs sm:max-w-md">
+                            <span className="font-mono text-xs text-muted-foreground/80 truncate block max-w-xs sm:max-w-md">
                               {inst.digitable_line}
                             </span>
                           )}
@@ -1775,7 +1775,7 @@ function WorkspaceTripDetailPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 overflow-y-auto"
+          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl p-6 overflow-y-auto"
         >
           <SheetHeader className="pb-4 border-b border-border/60">
             <SheetTitle className="text-sm font-bold text-foreground">
@@ -1936,7 +1936,7 @@ function WorkspaceTripDetailPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6"
+          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl p-6"
         >
           <SheetHeader className="pb-4 border-b border-border/60">
             <SheetTitle className="text-sm font-bold text-foreground">
@@ -1974,7 +1974,7 @@ function WorkspaceTripDetailPage() {
 
               {(locatorForm.itemType as string) === "hotel" && (
                 <div className="space-y-1.5 p-3 rounded-xl bg-primary/5 border border-primary/20">
-                  <Label className="text-[11px] font-bold text-primary flex items-center gap-1">
+                  <Label className="text-xs text-muted-foreground/75 font-bold text-primary flex items-center gap-1">
                     <Compass className="size-3" />
                     <span>Banco de Hotéis e Resorts Renomados (Preset Canônico)</span>
                   </Label>

@@ -481,7 +481,7 @@ export function UnifiedNewProductPage() {
  size="sm"
  onClick={() => setIsImportModalOpen(true)}
  className="rounded-xl text-xs font-bold gap-1.5 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer hidden sm:flex"
- title="Copiar catálogo completo de loja antiga"
+ title="Copiar Catálogo"
  >
  <Store className="size-3.5" />
  <span>Copiar Loja Antiga</span>

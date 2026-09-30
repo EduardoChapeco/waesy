@@ -259,7 +259,7 @@ export function MemberPublicProfileView({
 
  if (!profile) {
  return (
- <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center space-y-4">
+ <div className="min-h-96 flex flex-col items-center justify-center p-8 text-center space-y-4">
  <div className="size-16 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground">
  <User className="size-8" />
  </div>
@@ -358,7 +358,7 @@ export function MemberPublicProfileView({
  <img
  src={previewMediaUrl}
  alt="Mídia ampliada"
- className="max-w-full max-h-[90vh] object-contain rounded-2xl"
+ className="max-w-full max-h-screen object-contain rounded-2xl"
  onClick={(e) => e.stopPropagation()}
  />
  </div>
@@ -429,7 +429,7 @@ export function MemberPublicProfileView({
                     <Settings className="size-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="rounded-t-3xl p-6 space-y-4 max-h-[85vh]">
+                <SheetContent side="bottom" className="rounded-t-3xl p-6 space-y-4 max-h-screen">
                   <SheetHeader className="text-left pb-2 border-b border-border/40">
                     <SheetTitle className="text-base font-bold">Configurações e Gestão</SheetTitle>
                   </SheetHeader>
@@ -562,7 +562,7 @@ export function MemberPublicProfileView({
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-9 min-h-[44px] px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/70 sm:hidden cursor-pointer"
+                className="h-9 min-h-11 px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/70 sm:hidden cursor-pointer"
               >
                 <Link to="/conta/perfil" search={{ tab: "criador" }}>
                   <Layers className="size-3.5 text-primary" />
@@ -574,7 +574,7 @@ export function MemberPublicProfileView({
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-9 min-h-[44px] px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/70 sm:hidden cursor-pointer"
+                className="h-9 min-h-11 px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/70 sm:hidden cursor-pointer"
               >
                 <Link to="/conta/perfil" search={{ tab: "dados" }}>
                   <Edit3 className="size-3.5" />
@@ -615,7 +615,7 @@ export function MemberPublicProfileView({
                   title="Alterar Foto"
                 >
                   <Camera className="size-4 sm:size-5" />
-                  <span className="text-[10px]">Alterar</span>
+                  <span className="text-xs">Alterar</span>
                 </Link>
               )}
             </div>
@@ -631,7 +631,7 @@ export function MemberPublicProfileView({
                   bannerList.map((banner, idx) => (
                     <div
                       key={idx}
-                      className="h-full min-w-full sm:min-w-[280px] md:min-w-[360px] lg:min-w-[420px] rounded-xl overflow-hidden relative shrink-0 snap-center bg-muted/40 group"
+                      className="h-full min-w-full sm:min-w-72 md:min-w-80 lg:min-w-96 rounded-xl overflow-hidden relative shrink-0 snap-center bg-muted/40 group"
                     >
                       <img
                         src={banner.imageUrl}
@@ -661,7 +661,7 @@ export function MemberPublicProfileView({
                 <Link
                   to="/conta/perfil"
                   search={{ tab: isCreator ? "criador" : "dados" }}
-                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2 sm:px-2.5 py-1 rounded-xl border border-border/60 text-[10px] sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors z-20"
+                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2 sm:px-2.5 py-1 rounded-xl border border-border/60 text-xs sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors z-20"
                 >
                   <Camera className="size-3" />
                   <span className="hidden sm:inline">Alterar Capa</span>
@@ -671,19 +671,19 @@ export function MemberPublicProfileView({
           </div>
 
           {/* Stats no Final (Seguidores, Seguindo, Curtidas) */}
-          <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-[240px] shrink-0 bg-background/90 backdrop-blur-md rounded-2xl border border-border/50 p-2 sm:p-4 flex flex-col justify-center">
+          <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-60 shrink-0 bg-background/90 backdrop-blur-md rounded-2xl border border-border/50 p-2 sm:p-4 flex flex-col justify-center">
             <div className="grid grid-cols-3 gap-2 text-center w-full">
               <div>
                 <p className="text-sm sm:text-base md:text-lg font-black text-foreground">{followersCount}</p>
-                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium truncate">Seguidores</p>
+                <p className="text-xs sm:text-xs text-muted-foreground/75 text-muted-foreground font-medium truncate">Seguidores</p>
               </div>
               <div>
                 <p className="text-sm sm:text-base md:text-lg font-black text-foreground">{stats.followingCount || 0}</p>
-                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium truncate">Seguindo</p>
+                <p className="text-xs sm:text-xs text-muted-foreground/75 text-muted-foreground font-medium truncate">Seguindo</p>
               </div>
               <div>
                 <p className="text-sm sm:text-base md:text-lg font-black text-foreground font-mono">{stats.totalLikes || stats.postsCount || 0}</p>
-                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium truncate">Curtidas</p>
+                <p className="text-xs sm:text-xs text-muted-foreground/75 text-muted-foreground font-medium truncate">Curtidas</p>
               </div>
             </div>
           </div>
@@ -713,10 +713,10 @@ export function MemberPublicProfileView({
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs border border-amber-500/20">
         <Star className="size-3.5 fill-amber-500 text-amber-500" />
         <span>{realStoreRating.toFixed(1)}</span>
-        <span className="text-[10px] font-medium text-muted-foreground">({realStoreReviewsCount})</span>
+        <span className="text-xs font-medium text-muted-foreground">({realStoreReviewsCount})</span>
       </span>
     ) : (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted text-muted-foreground text-[11px] font-medium border border-border/50">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted text-muted-foreground text-xs text-muted-foreground/75 font-medium border border-border/50">
         Sem avaliações ainda
       </span>
     )
@@ -725,7 +725,7 @@ export function MemberPublicProfileView({
 
  {profile.occupation && (
  <div className="pt-0.5">
- <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border border-border/50 bg-transparent text-muted-foreground">
+ <span className="px-2.5 py-0.5 rounded-lg text-xs text-muted-foreground/75 font-semibold border border-border/50 bg-transparent text-muted-foreground">
  {profile.occupation}
  </span>
  </div>
@@ -850,7 +850,7 @@ export function MemberPublicProfileView({
  <button
  type="button"
  onClick={() => setIsBioExpanded(!isBioExpanded)}
- className="text-[11px] font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-0.5"
+ className="text-xs text-muted-foreground/75 font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-0.5"
  >
  {isBioExpanded ? "Ver menos" : "...mais"}
  </button>
@@ -905,7 +905,7 @@ export function MemberPublicProfileView({
  href={link.url}
  target="_blank"
  rel="noopener noreferrer"
- className="block w-full aspect-[16/9] rounded-2xl overflow-hidden border border-border/60 relative group hover:border-border transition-all select-none"
+ className="block w-full aspect-video rounded-2xl overflow-hidden border border-border/60 relative group hover:border-border transition-all select-none"
  >
  <img
  src={link.imageUrl}
@@ -945,12 +945,12 @@ export function MemberPublicProfileView({
 
  {/* Mini-Banner de Destaque Delicado & Proporcional (16:9 Fiel ao Recorte) */}
  {profile.featured_banner_url && (
- <div className="pt-2 max-w-[320px] sm:max-w-[360px]">
+ <div className="pt-2 max-w-xs sm:max-w-sm">
  <a
  href={profile.featured_banner_link || "#"}
  target={profile.featured_banner_link ? "_blank" : undefined}
  rel="noopener noreferrer"
- className="block w-full aspect-[16/9] rounded-2xl overflow-hidden border border-border/60 relative group select-none hover:border-border transition-all"
+ className="block w-full aspect-video rounded-2xl overflow-hidden border border-border/60 relative group select-none hover:border-border transition-all"
  >
  <img
  src={profile.featured_banner_url}
@@ -958,7 +958,7 @@ export function MemberPublicProfileView({
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
- <span className="text-[11px] font-bold text-white flex items-center gap-1 drop-">
+ <span className="text-xs text-muted-foreground/75 font-bold text-white flex items-center gap-1 drop-">
  <span>Acessar</span>
  <ExternalLink className="size-3" />
  </span>
@@ -983,7 +983,7 @@ export function MemberPublicProfileView({
  <Star className="size-6 text-primary" />
  )}
  </div>
- <span className="text-[11px] font-bold text-foreground/90 max-w-[64px] truncate text-center">
+ <span className="text-xs text-muted-foreground/75 font-bold text-foreground/90 max-w-16 truncate text-center">
  {hl.title}
  </span>
  </div>
@@ -1077,7 +1077,7 @@ export function MemberPublicProfileView({
  <div className="flex flex-wrap items-center gap-1.5 text-xs text-foreground/80 font-medium">
  <span>{exp.company}</span>
  {exp.store_id && (
- <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary font-bold">
+ <Badge variant="secondary" className="text-xs px-1.5 py-0 h-4 bg-primary/10 text-primary font-bold">
  Empresa Waesy
  </Badge>
  )}
@@ -1157,7 +1157,7 @@ export function MemberPublicProfileView({
  className="w-full h-10 rounded-2xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllExperiences(!showAllExperiences)}
  >
- <span>{showAllExperiences ? "Recolher experiências" : `Exibir todas as ${experiences.length} experiências ➔`}</span>
+ <span>{showAllExperiences ? "Recolher experiências" : `Exibir todas as ${experiences.length} experiências `}</span>
  </Button>
  )}
  </div>
@@ -1253,7 +1253,7 @@ export function MemberPublicProfileView({
  className="w-full h-10 rounded-2xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllEducations(!showAllEducations)}
  >
- <span>{showAllEducations ? "Recolher formações" : `Exibir todas as ${educations.length} formações ➔`}</span>
+ <span>{showAllEducations ? "Recolher formações" : `Exibir todas as ${educations.length} formações `}</span>
  </Button>
  )}
  </div>
@@ -1343,7 +1343,7 @@ export function MemberPublicProfileView({
  className="w-full h-10 rounded-2xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllCertifications(!showAllCertifications)}
  >
- <span>{showAllCertifications ? "Recolher certificados" : `Exibir todas as ${certifications.length} licenças ➔`}</span>
+ <span>{showAllCertifications ? "Recolher certificados" : `Exibir todas as ${certifications.length} licenças `}</span>
  </Button>
  )}
  </div>
@@ -1393,7 +1393,7 @@ export function MemberPublicProfileView({
  </div>
  <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
- <Badge variant="outline" className="text-[10px] font-mono font-bold text-primary border-primary/30">
+ <Badge variant="outline" className="text-xs font-mono font-bold text-primary border-primary/30">
  {lic.council}/{lic.uf || "BR"}
  </Badge>
  <h3 className="text-xs font-bold text-foreground font-mono">
@@ -1405,7 +1405,7 @@ export function MemberPublicProfileView({
  {lic.specialty}
  </p>
  )}
- <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-0.5">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground/75 text-muted-foreground pt-0.5">
  <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
  <Check className="size-3" />
  <span>Ativo / Regular</span>
@@ -1419,7 +1419,7 @@ export function MemberPublicProfileView({
  href={lic.document_url}
  target="_blank"
  rel="noopener noreferrer"
- className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline pt-1"
+ className="inline-flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-primary hover:underline pt-1"
  >
  <span>Ver Comprovante Anexo</span>
  <ExternalLink className="size-3" />
@@ -1538,7 +1538,7 @@ export function MemberPublicProfileView({
  className="w-full h-10 rounded-2xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllProjects(!showAllProjects)}
  >
- <span>{showAllProjects ? "Recolher projetos" : `Exibir todos os ${projects.length} projetos ➔`}</span>
+ <span>{showAllProjects ? "Recolher projetos" : `Exibir todos os ${projects.length} projetos `}</span>
  </Button>
  )}
  </div>
@@ -1585,7 +1585,7 @@ export function MemberPublicProfileView({
  {vol.start_date} – {vol.is_current ? "o momento" : vol.end_date}
  </p>
  {vol.cause && (
- <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-lg bg-muted/60 font-semibold">
+ <Badge variant="secondary" className="text-xs px-2 py-0.5 rounded-lg bg-muted/60 font-semibold">
  {vol.cause}
  </Badge>
  )}
@@ -1804,10 +1804,10 @@ export function MemberPublicProfileView({
  />
  ) : (
  <div className="size-full p-2.5 sm:p-4 flex flex-col justify-between bg-gradient-to-br from-muted/40 via-muted/20 to-background">
- <p className="line-clamp-3 sm:line-clamp-4 font-medium leading-relaxed text-[10px] sm:text-xs text-foreground/90">
+ <p className="line-clamp-3 sm:line-clamp-4 font-medium leading-relaxed text-xs sm:text-xs text-foreground/90">
  {p.content || p.content_text}
  </p>
- <div className="flex items-center justify-between text-[9px] text-muted-foreground pt-1 border-t border-border/30">
+ <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/30">
  <span>{formatDate(p.created_at)}</span>
  <MessageSquare className="size-2.5 text-muted-foreground/50" />
  </div>
@@ -1928,7 +1928,7 @@ export function MemberPublicProfileView({
  <p className="text-xs text-muted-foreground">
  {evt.event_date ? formatDate(evt.event_date) : "Data a definir"} • {evt.location || evt.city || "Chapecó"}
  </p>
- <Badge variant="secondary" className="text-[10px]">
+ <Badge variant="secondary" className="text-xs">
  {evt.is_free ? "Gratuito" : formatMoney(evt.price_cents || 0)}
  </Badge>
  </div>
@@ -1951,14 +1951,14 @@ export function MemberPublicProfileView({
  if (sectionKey === "banner" && creatorProfile?.banner_url) {
  return (
  <div key="banner" className="space-y-3">
- <div className="aspect-video sm:aspect-[21/9] w-full rounded-2xl overflow-hidden relative border border-border/40">
+ <div className="aspect-video sm:aspect-video w-full rounded-2xl overflow-hidden relative border border-border/40">
  <img
  src={creatorProfile.banner_url}
  alt={creatorProfile.banner_title || "Banner da marca"}
  className="w-full h-full object-cover"
  />
  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 sm:p-6 text-white space-y-1">
- <span className="text-[10px] uppercase tracking-wider font-semibold text-primary-foreground/80">
+ <span className="text-xs uppercase tracking-wider font-semibold text-primary-foreground/80">
  Destaque da Marca
  </span>
  <h3 className="text-lg sm:text-2xl font-black">
@@ -2018,7 +2018,7 @@ export function MemberPublicProfileView({
 
  <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
  <div>
- <span className="text-[10px] text-muted-foreground uppercase font-medium">Cupom 10% OFF</span>
+ <span className="text-xs text-muted-foreground uppercase font-medium">Cupom 10% OFF</span>
  <p className="text-xs font-mono font-bold text-primary">{couponCode}</p>
  </div>
  <Button
@@ -2095,7 +2095,7 @@ export function MemberPublicProfileView({
  </div>
 
  <div className="p-4 space-y-1">
- <span className="text-[10px] text-muted-foreground uppercase font-medium">
+ <span className="text-xs text-muted-foreground uppercase font-medium">
  {p.storeName || p.store?.name || "Loja Parceira"}
  </span>
  <h4 className="text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
@@ -2155,7 +2155,7 @@ export function MemberPublicProfileView({
  <p className="text-xs text-muted-foreground">
  {evt.event_date ? formatDate(evt.event_date) : "A Confirmar"} • {evt.location || evt.city || "Chapecó"}
  </p>
- <Badge variant="secondary" className="text-[10px]">
+ <Badge variant="secondary" className="text-xs">
  {evt.is_free ? "Gratuito" : formatMoney(evt.price_cents || 0)}
  </Badge>
  </div>
@@ -2218,7 +2218,7 @@ export function MemberPublicProfileView({
  params={{ id: item.id }}
  className="group rounded-2xl bg-muted/20 hover:bg-muted/40 transition-all overflow-hidden flex flex-col"
  >
- <div className="aspect-[4/3] bg-muted/40 relative overflow-hidden">
+ <div className="aspect-4/3 bg-muted/40 relative overflow-hidden">
  {item.images?.[0] ? (
  <img
  src={item.images[0]}
@@ -2546,7 +2546,7 @@ function AvailabilityEditModal({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0 flex items-center justify-between">
  <SheetTitle className="text-xl font-extrabold text-foreground">Disponibilidade de Perfil</SheetTitle>
  </div>
@@ -2700,7 +2700,7 @@ function AboutEditModal({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0 flex items-center justify-between">
  <SheetTitle className="text-xl font-extrabold text-foreground">Sobre e Título</SheetTitle>
  </div>
@@ -2849,7 +2849,7 @@ function ExperienceEditModal({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0 flex items-center justify-between">
  <SheetTitle className="text-xl font-extrabold text-foreground">
  {item ? "Editar Experiência" : "Adicionar Experiência"}
@@ -2880,7 +2880,7 @@ function ExperienceEditModal({
  />
  {companySuggestions.length > 0 && (
  <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-card rounded-2xl border border-border/80 p-2 space-y-1 max-h-48 overflow-y-auto no-scrollbar">
- <p className="text-[10px] font-bold text-muted-foreground px-2 py-0.5">
+ <p className="text-xs font-bold text-muted-foreground px-2 py-0.5">
  Lojas do ecossistema Waesy:
  </p>
  {companySuggestions.map((s) => (
@@ -2893,7 +2893,7 @@ function ExperienceEditModal({
  {s.logo_url ? <img src={s.logo_url} className="size-full object-cover" /> : <Store className="size-3 text-primary" />}
  </div>
  <span className="text-xs font-bold text-foreground">{s.name}</span>
- <Badge variant="secondary" className="text-[9px] ml-auto">
+ <Badge variant="secondary" className="text-xs ml-auto">
  Waesy
  </Badge>
  </div>
@@ -3020,7 +3020,7 @@ function ExperienceEditModal({
  ))}
  <label className="size-16 rounded-xl border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/40 cursor-pointer transition-colors">
  <Upload className="size-4" />
- <span className="text-[9px] font-bold mt-1">Subir Mídia</span>
+ <span className="text-xs font-bold mt-1">Subir Mídia</span>
  <input type="file" multiple accept="image/*,.pdf" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
  </label>
  </div>
@@ -3093,7 +3093,7 @@ function EducationEditModal({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0 flex items-center justify-between">
  <SheetTitle className="text-xl font-extrabold text-foreground">
  {item ? "Editar Formação" : "Adicionar Formação Acadêmica"}
@@ -3228,7 +3228,7 @@ function CertificationEditModal({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0 flex items-center justify-between">
  <SheetTitle className="text-xl font-extrabold text-foreground">
  {item ? "Editar Certificação" : "Adicionar Certificação"}
@@ -3348,7 +3348,7 @@ function ProjectEditModal({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0 flex items-center justify-between">
  <SheetTitle className="text-xl font-extrabold text-foreground">
  {item ? "Editar Projeto" : "Adicionar Projeto"}
@@ -3491,7 +3491,7 @@ function VolunteeringEditModal({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0 flex items-center justify-between">
  <SheetTitle className="text-xl font-extrabold text-foreground">
  {item ? "Editar Voluntariado" : "Adicionar Voluntariado"}
@@ -3630,7 +3630,7 @@ function CausesEditModal({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0 flex items-center justify-between">
  <SheetTitle className="text-xl font-extrabold text-foreground">Causas Sociais</SheetTitle>
  </div>
@@ -3652,7 +3652,7 @@ function CausesEditModal({
  : "bg-muted/40 text-muted-foreground hover:bg-muted/80 hover:text-foreground"
  )}
  >
- {isSelected ? "✓ " : "+ "}
+ {isSelected ? " " : "+ "}
  {cause}
  </button>
  );
@@ -3714,7 +3714,7 @@ function LanguagesEditModal({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0 flex items-center justify-between">
  <SheetTitle className="text-xl font-extrabold text-foreground">Idiomas</SheetTitle>
  </div>

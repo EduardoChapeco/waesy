@@ -249,7 +249,7 @@ function CustomerDetailPage() {
               asChild
               variant="outline"
               size="sm"
-              className="gap-1.5 font-bold text-xs min-h-[44px]"
+              className="gap-1.5 font-bold text-xs min-h-11"
             >
               <Link
                 to="/workspace/turismo/cotacoes"
@@ -268,8 +268,8 @@ function CustomerDetailPage() {
               variant="outline"
               size="sm"
               onClick={handleSharePortalLink}
-              title="Compartilhar link da Central do Passageiro para preenchimento de preferências e acompanhantes"
-              className="gap-1.5 font-bold text-xs min-h-[44px] text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+              title="Compartilhar Central do Passageiro"
+              className="gap-1.5 font-bold text-xs min-h-11 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
             >
               <Smartphone className="size-3.5" />
               Central do Passageiro
@@ -278,7 +278,7 @@ function CustomerDetailPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsTravelerModalOpen(true)}
-              className="gap-1.5 font-bold text-xs min-h-[44px] cursor-pointer"
+              className="gap-1.5 font-bold text-xs min-h-11 cursor-pointer"
             >
               <Luggage className="size-3.5 text-primary" />
               Preferências de Viagem
@@ -287,7 +287,7 @@ function CustomerDetailPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsCreditModalOpen(true)}
-              className="gap-1.5 font-bold text-xs min-h-[44px]"
+              className="gap-1.5 font-bold text-xs min-h-11"
             >
               <Gift className="size-3.5" />
               Conceder Crédito
@@ -295,7 +295,7 @@ function CustomerDetailPage() {
             <Button
               size="sm"
               onClick={() => setIsClinicalModalOpen(true)}
-              className="gap-1.5 font-bold text-xs min-h-[44px]"
+              className="gap-1.5 font-bold text-xs min-h-11"
             >
               <HeartPulse className="size-3.5" />
               Novo Atendimento
@@ -386,7 +386,7 @@ function CustomerDetailPage() {
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Recência</span>
             <div className="text-lg sm:text-xl font-black text-foreground">{data.daysSinceLastOrder || 0}d</div>
             <span className="text-[10px] text-muted-foreground">
-              {(data.daysSinceLastOrder || 0) > 60 ? "⚠️ Risco Churn" : "Ativo"}
+              {(data.daysSinceLastOrder || 0) > 60 ? "️ Risco Churn" : "Ativo"}
             </span>
           </div>
         </div>
@@ -847,7 +847,7 @@ function CustomerDetailPage() {
               </div>
               <div className="flex flex-wrap gap-2 pt-1">
                 <Badge variant={isPcd ? "destructive" : "outline"} className="text-xs">
-                  {isPcd ? "♿ Passageiro PCD Declarado" : "Não PCD"}
+                  {isPcd ? "Passageiro PCD Declarado" : "Não PCD"}
                 </Badge>
                 <Badge variant={isWheelchair ? "destructive" : "outline"} className="text-xs">
                   {isWheelchair ? "Requer Cadeira de Rodas (WCHR)" : "Locomoção Normal"}
@@ -1079,7 +1079,7 @@ function CustomerDetailPage() {
                 className="text-xs"
               />
             </div>
-            <Button onClick={handleSaveCrm} disabled={isSavingCrm} className="gap-1.5 font-bold text-xs min-h-[44px]">
+            <Button onClick={handleSaveCrm} disabled={isSavingCrm} className="gap-1.5 font-bold text-xs min-h-11">
               <Save className="size-3.5" />
               {isSavingCrm ? "Salvando..." : "Salvar Ficha"}
             </Button>

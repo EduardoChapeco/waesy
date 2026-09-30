@@ -66,11 +66,11 @@ const STATUS_FILTERS = [
 ];
 
 const TRIP_TYPE_OPTIONS = [
- { id: "air_package", label: "✈️ Pacote Completo (Voo + Hotel)" },
- { id: "hotel_only", label: "🏨 Somente Hospedagem / Resort" },
- { id: "cruise", label: "🚢 Cruzeiro Marítimo" },
- { id: "bus", label: "🚌 Excursão Rodoviária" },
- { id: "visa_assistance", label: "🛂 Assessoria de Visto / Passaporte" },
+ { id: "air_package", label: "️ Pacote Completo (Voo + Hotel)" },
+ { id: "hotel_only", label: " Somente Hospedagem / Resort" },
+ { id: "cruise", label: " Cruzeiro Marítimo" },
+ { id: "bus", label: " Excursão Rodoviária" },
+ { id: "visa_assistance", label: " Assessoria de Visto / Passaporte" },
 ];
 
 export default function AgencyQuotesPage() {
@@ -223,7 +223,7 @@ export default function AgencyQuotesPage() {
  toolDescription="O pipeline de cotações, orçamentos e captação de passageiros para pacotes aéreos, cruzeiros e hotéis foi projetado especificamente para agências de viagens e turismo."
  store={store}
  >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100dvh-8.5rem)] pb-20">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-screen pb-20">
         {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
         <WorkspaceCanonicalToolbar
           tabs={[
@@ -342,7 +342,7 @@ export default function AgencyQuotesPage() {
               className="h-8 rounded-xl text-xs font-bold gap-1.5 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer"
             >
               <FileText size={14} />
-              <span>{isOcrLoading ? "Lendo..." : "⚡ Importar Operadora (OCR)"}</span>
+              <span>{isOcrLoading ? "Lendo..." : " Importar Operadora (OCR)"}</span>
             </Button>
 
             <span className="text-xs text-muted-foreground font-mono hidden sm:inline">
@@ -371,7 +371,7 @@ export default function AgencyQuotesPage() {
           </div>
         ) : viewMode === "kanban" ? (
           /* Visualização de Funil Kanban por Estágios */
-          <div className="flex gap-4 overflow-x-auto pb-4 min-h-[calc(100dvh-16rem)] no-scrollbar">
+          <div className="flex gap-4 overflow-x-auto pb-4 min-h-96 no-scrollbar">
             {[
               { id: "new", title: "Novas Solicitações", icon: Clock, color: "#3b82f6" },
               { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, color: "#f59e0b" },
@@ -384,7 +384,7 @@ export default function AgencyQuotesPage() {
               return (
                 <div
                   key={col.id}
-                  className="flex-none w-[320px] bg-muted/20 border border-border/70 rounded-2xl flex flex-col shadow-2xs"
+                  className="flex-none w-80 bg-muted/20 border border-border/70 rounded-2xl flex flex-col shadow-2xs"
                   style={{ borderTop: `3px solid ${col.color}` }}
                 >
                   {/* Cabeçalho da Coluna */}
@@ -393,7 +393,7 @@ export default function AgencyQuotesPage() {
                       <ColIcon size={16} style={{ color: col.color }} weight="bold" />
                       <h3 className="text-xs font-bold text-foreground">{col.title}</h3>
                     </div>
-                    <Badge variant="outline" className="font-mono text-[10px] h-5 px-1.5">
+                    <Badge variant="outline" className="font-mono text-xs h-5 px-1.5">
                       {colQuotes.length}
                     </Badge>
                   </div>
@@ -401,7 +401,7 @@ export default function AgencyQuotesPage() {
                   {/* Cards da Coluna */}
                   <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
                     {colQuotes.length === 0 ? (
-                      <div className="h-28 rounded-xl border border-dashed border-border/60 flex items-center justify-center text-[11px] text-muted-foreground text-center p-3">
+                      <div className="h-28 rounded-xl border border-dashed border-border/60 flex items-center justify-center text-xs text-muted-foreground/75 text-muted-foreground text-center p-3">
                         Nenhum lead nesta etapa
                       </div>
                     ) : (
@@ -417,11 +417,11 @@ export default function AgencyQuotesPage() {
                           >
                             <div className="space-y-1.5">
                               <div className="flex items-center justify-between gap-1">
-                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-primary/10 text-primary truncate max-w-[170px]">
+                                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-primary/10 text-primary truncate max-w-44">
                                   {q.destination_city}
                                 </span>
                                 {q.quote_amount_cents && q.quote_amount_cents > 0 ? (
-                                  <span className="text-[11px] font-mono font-black text-foreground">
+                                  <span className="text-xs text-muted-foreground/75 font-mono font-black text-foreground">
                                     {formatMoney(q.quote_amount_cents)}
                                   </span>
                                 ) : null}
@@ -431,12 +431,12 @@ export default function AgencyQuotesPage() {
                                 {q.contact_name}
                               </div>
 
-                              <div className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
+                              <div className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1 font-mono">
                                 <MapPin size={11} className="shrink-0" />
                                 <span className="truncate">{q.origin_city} → {q.destination_city}</span>
                               </div>
 
-                              <div className="text-[11px] text-muted-foreground flex items-center gap-2 font-mono">
+                              <div className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-2 font-mono">
                                 <Users size={11} className="shrink-0" />
                                 <span>
                                   {q.adults_count} ad
@@ -511,7 +511,7 @@ export default function AgencyQuotesPage() {
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => createProposalMutation.mutate(q)}
-                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] rounded-xl sm:rounded-lg font-bold text-primary hover:bg-primary/10"
+                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 rounded-xl sm:rounded-lg font-bold text-primary hover:bg-primary/10"
                                   title="Criar Proposta no Studio"
                                 >
                                   Lâmina
@@ -521,7 +521,7 @@ export default function AgencyQuotesPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => openManageModal(q)}
-                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] rounded-xl sm:rounded-lg font-bold gap-1 cursor-pointer"
+                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 rounded-xl sm:rounded-lg font-bold gap-1 cursor-pointer"
                                 >
                                   Gerenciar
                                 </Button>
@@ -542,14 +542,14 @@ export default function AgencyQuotesPage() {
  const cleanWhatsapp = (q.contact_whatsapp || "").replace(/\D/g, "");
  const tripTypeLabel =
  q.trip_type === "air_package"
- ? "✈️ Voo + Hotel"
+ ? "️ Voo + Hotel"
  : q.trip_type === "hotel_only"
- ? "🏨 Somente Hotel"
+ ? " Somente Hotel"
  : q.trip_type === "cruise"
- ? "🚢 Cruzeiro"
+ ? " Cruzeiro"
  : q.trip_type === "bus"
- ? "🚌 Rodoviário"
- : "🛂 Visto Americano";
+ ? " Rodoviário"
+ : " Visto Americano";
 
  const waMessage = encodeURIComponent(
  `Olá ${q.contact_name}! Sou da agência de viagens no Waesy e recebi sua solicitação de cotação para ${q.destination_city} (${q.adults_count} adultos${q.children_count > 0 ? `, ${q.children_count} crianças` : ""}). Preparei algumas opções incríveis para você!`
@@ -585,7 +585,7 @@ export default function AgencyQuotesPage() {
  <div className="space-y-3">
  {/* Top Header do Card */}
  <div className="flex items-center justify-between gap-2">
- <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary">
+ <span className="text-xs text-muted-foreground/75 font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary">
  {tripTypeLabel}
  </span>
  <div className="flex items-center gap-1.5">
@@ -594,7 +594,7 @@ export default function AgencyQuotesPage() {
  {formatMoney(q.quote_amount_cents)}
  </span>
  )}
- <span className={`text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-md border ${statusBadgeVariant}`}>
+ <span className={`text-xs font-mono uppercase font-bold px-2 py-0.5 rounded-md border ${statusBadgeVariant}`}>
  {statusLabel}
  </span>
  </div>
@@ -614,14 +614,14 @@ export default function AgencyQuotesPage() {
  </div>
 
  {(q.departure_date || q.return_date) && (
- <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-1 font-mono">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground/75 text-muted-foreground pt-1 font-mono">
  <CalendarDots size={12} />
  <span>
  {q.departure_date ? formatDate(q.departure_date) : "Data a definir"} até{" "}
  {q.return_date ? formatDate(q.return_date) : "Data a definir"}
  </span>
  {q.flexible_dates && (
- <Badge variant="secondary" className="text-[9px] py-0 px-1.5">
+ <Badge variant="secondary" className="text-xs py-0 px-1.5">
  +/- 3 dias
  </Badge>
  )}
@@ -651,14 +651,14 @@ export default function AgencyQuotesPage() {
  </div>
 
  {q.special_notes && (
- <p className="text-[11px] italic bg-muted/20 p-2.5 rounded-xl border border-border/40 text-muted-foreground line-clamp-2">
+ <p className="text-xs text-muted-foreground/75 italic bg-muted/20 p-2.5 rounded-xl border border-border/40 text-muted-foreground line-clamp-2">
  "{q.special_notes}"
  </p>
  )}
 
  {q.agency_notes && (
- <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 text-[11px] text-muted-foreground">
- <span className="font-semibold block text-[10px] uppercase text-foreground">Nota Interna:</span>
+ <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground/75 text-muted-foreground">
+ <span className="font-semibold block text-xs uppercase text-foreground">Nota Interna:</span>
  <span>{q.agency_notes}</span>
  </div>
  )}
@@ -671,7 +671,7 @@ export default function AgencyQuotesPage() {
  <span className="text-xs font-bold text-foreground block truncate">
  {q.contact_name}
  </span>
- <span className="text-[10px] font-mono text-muted-foreground">
+ <span className="text-xs font-mono text-muted-foreground">
  {q.contact_whatsapp}
  </span>
  </div>
@@ -742,7 +742,7 @@ export default function AgencyQuotesPage() {
  <Sheet open={!!managingQuote} onOpenChange={(o) => !o && setManagingQuote(null)}>
    <SheetContent
      size="wide"
-     className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-[70vw] p-0 flex flex-col h-full bg-card overflow-hidden"
+     className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-2xl p-0 flex flex-col h-full bg-card overflow-hidden"
    >
      <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
        <div className="flex items-center justify-between">
@@ -778,11 +778,11 @@ export default function AgencyQuotesPage() {
        {/* Card Resumo do Lead */}
        <div className="p-4 rounded-2xl bg-muted/40 border border-border/40 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
          <div>
-           <span className="text-[10px] uppercase font-bold text-muted-foreground block">Destino Desejado</span>
+           <span className="text-xs uppercase font-bold text-muted-foreground block">Destino Desejado</span>
            <strong className="text-foreground text-sm font-semibold">{managingQuote?.destination_city || "A Definir"}</strong>
          </div>
          <div>
-           <span className="text-[10px] uppercase font-bold text-muted-foreground block">Passageiros</span>
+           <span className="text-xs uppercase font-bold text-muted-foreground block">Passageiros</span>
            <strong className="text-foreground text-sm font-semibold">
              {managingQuote?.adults_count || 1} adultos {managingQuote?.children_count ? `+ ${managingQuote.children_count} crianças` : ""}
              {Array.isArray(managingQuote?.children_ages) && managingQuote.children_ages.length > 0
@@ -791,7 +791,7 @@ export default function AgencyQuotesPage() {
            </strong>
          </div>
          <div>
-           <span className="text-[10px] uppercase font-bold text-muted-foreground block">WhatsApp / Contato</span>
+           <span className="text-xs uppercase font-bold text-muted-foreground block">WhatsApp / Contato</span>
            <div className="flex items-center gap-2 mt-0.5">
              <strong className="text-foreground text-sm font-mono font-medium">{managingQuote?.contact_whatsapp || "Não informado"}</strong>
              {managingQuote?.contact_whatsapp && (
@@ -810,14 +810,14 @@ export default function AgencyQuotesPage() {
            </div>
          </div>
          <div>
-           <span className="text-[10px] uppercase font-bold text-muted-foreground block">Data de Solicitação</span>
+           <span className="text-xs uppercase font-bold text-muted-foreground block">Data de Solicitação</span>
            <strong className="text-foreground text-sm font-medium">{managingQuote?.created_at ? formatDate(managingQuote.created_at) : "Recente"}</strong>
          </div>
        </div>
 
        {managingQuote?.special_notes && (
          <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1.5">
-           <span className="text-[10px] uppercase font-bold text-muted-foreground block flex items-center gap-1.5">
+           <span className="text-xs uppercase font-bold text-muted-foreground block flex items-center gap-1.5">
              <FileText size={12} className="text-primary" />
              <span>Dossiê Completo da Cotação</span>
            </span>

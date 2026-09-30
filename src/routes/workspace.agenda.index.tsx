@@ -464,7 +464,7 @@ function AdminAppointmentsPage() {
  target="_blank"
  rel="noopener noreferrer"
  className="min-h-[38px] min-w-[38px] rounded-xl text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer transition-colors"
- title="Enviar Lembrete / Confirmação no WhatsApp"
+ title="Enviar Lembrete"
  >
  <MessageCircle className="size-3.5" />
  </a>

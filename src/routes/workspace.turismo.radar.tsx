@@ -305,7 +305,7 @@ export default function TurismoRadarPage() {
       />
 
       <WorkspaceDashboardSheet
-        title="Telemetria de Inteligência de Mercado Turístico"
+        title="Radar de Mercado"
         open={isMetricsOpen}
         onOpenChange={setIsMetricsOpen}
         items={dashboardMetrics}

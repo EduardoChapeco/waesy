@@ -22,7 +22,7 @@ CREATE INDEX IF NOT EXISTS idx_stores_plan_tier ON public.stores(plan_tier);
 CREATE TABLE IF NOT EXISTS public.marketplace_compliance (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   store_id uuid NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
-  company_id uuid REFERENCES public.companies(id) ON DELETE SET NULL,
+  company_id uuid REFERENCES public.stores(id) ON DELETE SET NULL,
   cnpj varchar(18) NOT NULL UNIQUE,
   legal_name varchar(255) NOT NULL,
   trade_name varchar(255),

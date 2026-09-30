@@ -38,7 +38,7 @@ export function CompanyNotificationsBell() {
         >
           <Bell className="size-4 text-foreground" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 size-4 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center animate-pulse">
+            <span className="absolute -top-1 -right-1 size-4 rounded-full bg-rose-500 text-white text-xs font-bold flex items-center justify-center">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -49,7 +49,7 @@ export function CompanyNotificationsBell() {
         <div className="p-2 border-b border-border/40 flex items-center justify-between">
           <span className="text-xs font-bold text-foreground">Alertas da Empresa</span>
           {unreadCount > 0 && (
-            <Badge variant="secondary" className="text-[10px] font-bold">
+            <Badge variant="secondary" className="text-xs text-muted-foreground/75 font-bold">
               {unreadCount} novos
             </Badge>
           )}
@@ -74,15 +74,15 @@ export function CompanyNotificationsBell() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-bold text-xs text-foreground line-clamp-1">{n.title}</span>
-                  <span className="text-[9.5px] text-muted-foreground shrink-0">
+                  <span className="text-xs text-muted-foreground/75 text-muted-foreground shrink-0">
                     {new Date(n.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
-                <p className="text-[11.5px] text-foreground/80 leading-snug line-clamp-2">
+                <p className="text-xs text-foreground/80 leading-snug line-clamp-2">
                   {n.message}
                 </p>
                 {n.author_name && (
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-0.5">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground/75 text-muted-foreground pt-0.5">
                     <User className="size-2.5" />
                     <span>{n.author_name}</span>
                   </div>

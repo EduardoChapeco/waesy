@@ -41,9 +41,9 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
   const testimonials = data.testimonials && data.testimonials.length > 0 ? data.testimonials : [
     {
       id: "t-1",
-      name: "Dra. Carolina Mendes",
-      role: "Sócia no Mendes & Associados",
-      avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+      name: "Carolina Mendes",
+      role: "Mendes & Associados",
+      avatarUrl: "",
       rating: 5,
       comment: "A plataforma transformou nossa presença digital. O site transmite sobriedade e segurança, e a captação de novos clientes aumentou significativamente.",
       verified: true,
@@ -51,8 +51,8 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
     {
       id: "t-2",
       name: "Rodrigo Silveira",
-      role: "Diretor Comercial na NeoLog",
-      avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
+      role: "NeoLog",
+      avatarUrl: "",
       rating: 5,
       comment: "A velocidade e o design limpo superaram qualquer ferramenta que usamos antes. Sem poluição visual, direto ao ponto.",
       verified: true,
@@ -60,8 +60,8 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
     {
       id: "t-3",
       name: "Mariana Vasconcelos",
-      role: "Fundadora da Viva Turismo",
-      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      role: "Viva Turismo",
+      avatarUrl: "",
       rating: 5,
       comment: "Nossas lâminas de roteiros ficaram impecáveis. Os viajantes elogiam a clareza e facilidade de fechar contratos diretamente pelo celular.",
       verified: true,

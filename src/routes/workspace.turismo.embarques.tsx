@@ -430,10 +430,10 @@ function WorkspaceBoardingPage() {
     ];
 
     let customWhatsAppText = `Olá, *${dep.client_name}*! Seguem os dados essenciais do seu embarque para *${dep.destination}*:\n\n`;
-    if (dep.airline_locator) customWhatsAppText += `✈️ *Localizador (PNR):* ${dep.airline_locator}\n`;
-    if (dep.airline_code || dep.flight_number) customWhatsAppText += `🛫 *Voo:* ${dep.airline_code || ''} ${dep.flight_number || ''}\n`;
-    customWhatsAppText += `📅 *Data de Embarque:* ${depDate}\n`;
-    if (dep.hotel_name) customWhatsAppText += `🏨 *Hospedagem:* ${dep.hotel_name}\n`;
+    if (dep.airline_locator) customWhatsAppText += `️ *Localizador (PNR):* ${dep.airline_locator}\n`;
+    if (dep.airline_code || dep.flight_number) customWhatsAppText += ` *Voo:* ${dep.airline_code || ''} ${dep.flight_number || ''}\n`;
+    customWhatsAppText += ` *Data de Embarque:* ${depDate}\n`;
+    if (dep.hotel_name) customWhatsAppText += ` *Hospedagem:* ${dep.hotel_name}\n`;
     customWhatsAppText += `\nLembrando de levar documento original com foto (RG/CNH ou Passaporte). Desejamos uma excelente viagem!`;
 
     setCompanionCardData({
@@ -515,7 +515,7 @@ function WorkspaceBoardingPage() {
     : null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col min-h-[calc(100dvh-4rem)] pb-12 overflow-x-hidden">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col min-h-screen pb-12 overflow-x-hidden">
       {/* ── Canonical Toolbar ── */}
       <WorkspaceCanonicalToolbar
         viewModes={[
@@ -550,7 +550,7 @@ function WorkspaceBoardingPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`min-h-[44px] sm:min-h-[32px] h-11 sm:h-7 px-4 sm:px-2.5 rounded-xl text-xs sm:text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
+                className={`min-h-11 sm:min-h-11 sm:min-h-9 h-11 sm:h-7 px-4 sm:px-2.5 rounded-xl text-xs sm:text-xs text-muted-foreground/75 font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
                   activeTab === tab.id
                     ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
                     : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -611,7 +611,7 @@ function WorkspaceBoardingPage() {
               {/* Day headers */}
               <div className="grid grid-cols-7 sm:grid-cols-7 border-b border-border/60 bg-muted/30">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
-                  <div key={d} className="text-center text-[11px] font-semibold text-muted-foreground py-2">{d}</div>
+                  <div key={d} className="text-center text-xs text-muted-foreground/75 font-semibold text-muted-foreground py-2">{d}</div>
                 ))}
               </div>
 
@@ -619,7 +619,7 @@ function WorkspaceBoardingPage() {
               <div className="grid grid-cols-7 sm:grid-cols-7">
                 {/* Empty cells */}
                 {Array.from({ length: firstDay }, (_, i) => (
-                  <div key={`empty-${i}`} className="min-h-[80px] sm:min-h-[100px] border-b border-r border-border/40 bg-muted/10" />
+                  <div key={`empty-${i}`} className="min-h-20 sm:min-h-24 border-b border-r border-border/40 bg-muted/10" />
                 ))}
 
                 {/* Day cells */}
@@ -636,7 +636,7 @@ function WorkspaceBoardingPage() {
                     <div
                       key={day}
                       onClick={() => setSelectedDay(isSelected ? null : dayDate)}
-                      className={`min-h-[80px] sm:min-h-[100px] border-b border-r border-border/40 p-1.5 cursor-pointer transition-colors ${
+                      className={`min-h-20 sm:min-h-24 border-b border-r border-border/40 p-1.5 cursor-pointer transition-colors ${
                         isSelected ? 'bg-primary/5 border-primary/30' :
                         isWeekend ? 'bg-muted/10' : 'bg-card hover:bg-muted/20'
                       }`}
@@ -648,7 +648,7 @@ function WorkspaceBoardingPage() {
                           {day}
                         </span>
                         {dayCards.length > 0 && (
-                          <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                          <span className="text-xs font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
                             {dayCards.length}
                           </span>
                         )}
@@ -660,19 +660,19 @@ function WorkspaceBoardingPage() {
                             <div
                               key={card.id}
                               onClick={(e) => { e.stopPropagation(); setSelectedDepartureId(card.id); }}
-                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded truncate cursor-pointer ${
+                              className={`text-xs font-medium px-1.5 py-0.5 rounded truncate cursor-pointer ${
                                 days <= 0 ? 'bg-emerald-500/15 text-emerald-700' :
                                 days <= 2 ? 'bg-red-500/15 text-red-700 animate-pulse' :
                                 days <= 7 ? 'bg-amber-500/15 text-amber-700' :
                                 'bg-primary/10 text-primary'
                               }`}
                             >
-                              ✈ {card.client_name}
+                               {card.client_name}
                             </div>
                           );
                         })}
                         {dayCards.length > 2 && (
-                          <div className="text-[9px] text-muted-foreground pl-1">+{dayCards.length - 2} mais</div>
+                          <div className="text-xs text-muted-foreground pl-1">+{dayCards.length - 2} mais</div>
                         )}
                       </div>
                     </div>
@@ -715,24 +715,24 @@ function WorkspaceBoardingPage() {
               <Loader2 className="size-4 animate-spin mr-2" />Carregando embarques...
             </div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto pb-4 min-h-[calc(100dvh-12rem)]">
+            <div className="flex gap-4 overflow-x-auto pb-4 min-h-96">
               {DEPARTURE_STAGES.map(col => {
                 const colCards = filteredKanban.filter(c => c.stage === col.id);
                 return (
                   <div
                     key={col.id}
-                    className="flex-none w-[300px] sm:w-[320px] bg-muted/20 border border-border rounded-2xl flex flex-col"
+                    className="flex-none w-80 sm:w-80 bg-muted/20 border border-border rounded-2xl flex flex-col"
                   >
                     <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0">
                       <div>
                         <h3 className="text-xs font-bold text-foreground">{col.label}</h3>
-                        <p className="text-[10px] text-muted-foreground">{col.desc}</p>
+                        <p className="text-xs text-muted-foreground">{col.desc}</p>
                       </div>
-                      <Badge variant="outline" className="font-mono text-[10px] h-5 px-1.5">{colCards.length}</Badge>
+                      <Badge variant="outline" className="font-mono text-xs h-5 px-1.5">{colCards.length}</Badge>
                     </div>
                     <div className="flex-1 overflow-y-auto p-3 space-y-2.5 no-scrollbar">
                       {colCards.length === 0 ? (
-                        <div className="h-24 rounded-xl border border-dashed border-border/60 flex items-center justify-center text-[11px] text-muted-foreground">
+                        <div className="h-24 rounded-xl border border-dashed border-border/60 flex items-center justify-center text-xs text-muted-foreground/75 text-muted-foreground">
                           Sem viagens
                         </div>
                       ) : (
@@ -752,7 +752,7 @@ function WorkspaceBoardingPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 flex flex-col h-full bg-card overflow-hidden"
+          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl max-sm:!h-dvh max-sm:!inset-0 max-sm:!rounded-none border-l p-0 flex flex-col h-full bg-card overflow-hidden"
         >
           {detailLoading ? (
             <div className="flex-1 flex items-center justify-center">
@@ -766,7 +766,7 @@ function WorkspaceBoardingPage() {
                   <Plane className="size-4 text-primary" />
                   <span className="truncate">{detail.client_name}</span>
                   {daysUntilDeparture !== null && (
-                    <Badge variant="outline" className={`ml-auto text-[10px] shrink-0 ${
+                    <Badge variant="outline" className={`ml-auto text-xs shrink-0 ${
                       daysUntilDeparture <= 0 ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30' :
                       daysUntilDeparture <= 2 ? 'bg-red-500/10 text-red-700 border-red-500/30' :
                       daysUntilDeparture <= 7 ? 'bg-amber-500/10 text-amber-700 border-amber-500/30' :
@@ -778,7 +778,7 @@ function WorkspaceBoardingPage() {
                 </SheetTitle>
 
                 {/* Meta info */}
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground font-mono pt-1">
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground/75 text-muted-foreground font-mono pt-1">
                   <span className="flex items-center gap-1"><MapPin className="size-3" />{detail.destination}</span>
                   <span className="flex items-center gap-1"><Calendar className="size-3" />
                     {new Date(detail.departure_date).toLocaleDateString('pt-BR')}
@@ -791,7 +791,7 @@ function WorkspaceBoardingPage() {
                 {(detail.airline_code || detail.hotel_name) && (
                   <div className="flex flex-wrap gap-2 pt-1">
                     {detail.airline_code && (
-                      <div className="flex items-center gap-1.5 text-[11px] bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2 py-1 rounded-lg">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/75 bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2 py-1 rounded-lg">
                         <Plane className="size-3" />
                         <span className="font-semibold">{detail.airline_code}</span>
                         {detail.flight_number && <span>{detail.flight_number}</span>}
@@ -804,7 +804,7 @@ function WorkspaceBoardingPage() {
                       </div>
                     )}
                     {detail.hotel_name && (
-                      <div className="flex items-center gap-1.5 text-[11px] bg-pink-500/10 text-pink-700 dark:text-pink-400 px-2 py-1 rounded-lg">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/75 bg-pink-500/10 text-pink-700 dark:text-pink-400 px-2 py-1 rounded-lg">
                         <Hotel className="size-3" />
                         <span className="font-semibold">{detail.hotel_name}</span>
                       </div>
@@ -815,7 +815,7 @@ function WorkspaceBoardingPage() {
                 {/* Checklist progress bar */}
                 {totalRequired > 0 && (
                   <div className="pt-2">
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                       <span>Checklist: {completedRequired}/{totalRequired} itens obrigatórios</span>
                       <span className="font-semibold text-foreground">{detail.checklist_completed_pct || 0}%</span>
                     </div>
@@ -833,11 +833,11 @@ function WorkspaceBoardingPage() {
 
                 {/* Stage selector */}
                 <div className="flex items-center gap-2 pt-1.5">
-                  <span className="text-xs sm:text-[11px] text-muted-foreground font-medium">Etapa:</span>
+                  <span className="text-xs sm:text-xs text-muted-foreground/75 text-muted-foreground font-medium">Etapa:</span>
                   <select
                     value={detail.stage}
                     onChange={e => stageMutation.mutate({ id: detail.id, stage: e.target.value })}
-                    className="h-10 sm:h-7 px-3 sm:px-2 rounded-xl border border-input bg-background text-xs sm:text-[11px] font-semibold focus:outline-none flex-1 cursor-pointer"
+                    className="h-10 sm:h-7 px-3 sm:px-2 rounded-xl border border-input bg-background text-xs sm:text-xs text-muted-foreground/75 font-semibold focus:outline-none flex-1 cursor-pointer"
                   >
                     {DEPARTURE_STAGES.map(s => (
                       <option key={s.id} value={s.id}>{s.label}</option>
@@ -863,7 +863,7 @@ function WorkspaceBoardingPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => exportGuiaPdf(detail)}
-                    className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] font-bold gap-1.5 rounded-xl border-border cursor-pointer shrink-0"
+                    className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 font-bold gap-1.5 rounded-xl border-border cursor-pointer shrink-0"
                     title="Exportar Guia de Embarque PDF"
                   >
                     <Download className="size-3.5 sm:size-3" />
@@ -876,8 +876,8 @@ function WorkspaceBoardingPage() {
                     variant="default"
                     size="sm"
                     onClick={() => handleOpenCompanionForDeparture(detail)}
-                    className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] font-bold gap-1.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shrink-0 shadow-xs"
-                    title="Cartão Digital de Embarque 9:16 (WhatsApp)"
+                    className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 font-bold gap-1.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shrink-0 shadow-xs"
+                    title="Cartão de Embarque"
                   >
                     <Smartphone className="size-3.5 sm:size-3" />
                     <span>Cartão 9:16</span>
@@ -894,7 +894,7 @@ function WorkspaceBoardingPage() {
                     <button
                       key={tab.id}
                       onClick={() => setDetailTab(tab.id as any)}
-                      className={`min-h-[44px] sm:min-h-[36px] px-4 py-2.5 sm:py-2 text-xs sm:text-[11px] font-semibold border-b-2 transition-colors cursor-pointer flex items-center justify-center ${
+                      className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 sm:py-2 text-xs sm:text-xs text-muted-foreground/75 font-semibold border-b-2 transition-colors cursor-pointer flex items-center justify-center ${
                         detailTab === tab.id
                           ? 'border-primary text-primary font-bold'
                           : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -913,7 +913,7 @@ function WorkspaceBoardingPage() {
                   <div className="p-5 space-y-4">
                     {Object.entries(checklistByCategory).map(([category, items]) => (
                       <div key={category}>
-                        <div className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md mb-2 ${CATEGORY_COLORS[category as ChecklistCategory]}`}>
+                        <div className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md mb-2 ${CATEGORY_COLORS[category as ChecklistCategory]}`}>
                           {CATEGORY_LABELS[category as ChecklistCategory]}
                         </div>
                         <div className="space-y-1.5">
@@ -936,11 +936,11 @@ function WorkspaceBoardingPage() {
                                 <p className={`text-xs font-medium leading-snug ${item.is_completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                                   {item.label}
                                   {item.is_required && !item.is_completed && (
-                                    <span className="ml-1.5 text-[9px] text-red-500 font-bold">OBRIG.</span>
+                                    <span className="ml-1.5 text-xs text-red-500 font-bold">OBRIG.</span>
                                   )}
                                 </p>
                                 {item.due_days_before && daysUntilDeparture !== null && !item.is_completed && (
-                                  <p className={`text-[10px] mt-0.5 ${
+                                  <p className={`text-xs mt-0.5 ${
                                     daysUntilDeparture <= item.due_days_before
                                       ? 'text-amber-600 font-semibold'
                                       : 'text-muted-foreground'
@@ -962,12 +962,12 @@ function WorkspaceBoardingPage() {
 
                     {/* Add item */}
                     <div className="pt-3 border-t border-border/60">
-                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Adicionar Item</p>
+                      <p className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider mb-2">Adicionar Item</p>
                       <div className="flex gap-2">
                         <select
                           value={newItemCategory}
                           onChange={e => setNewItemCategory(e.target.value as ChecklistCategory)}
-                          className="h-9 px-2 rounded-xl border border-input bg-background text-[11px] focus:outline-none shrink-0"
+                          className="h-9 px-2 rounded-xl border border-input bg-background text-xs text-muted-foreground/75 focus:outline-none shrink-0"
                         >
                           {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
                             <option key={k} value={k}>{v}</option>
@@ -1003,23 +1003,23 @@ function WorkspaceBoardingPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-semibold text-foreground truncate">{DOC_TYPE_LABELS[doc.document_type]}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">{doc.file_name || 'Documento'}</p>
+                          <p className="text-xs text-muted-foreground truncate">{doc.file_name || 'Documento'}</p>
                           {doc.ocr_status === 'completed' && doc.passenger_name && (
-                            <p className="text-[10px] text-emerald-600">OCR: {doc.passenger_name}</p>
+                            <p className="text-xs text-emerald-600">OCR: {doc.passenger_name}</p>
                           )}
                           {doc.valid_until && (
-                            <p className="text-[10px] text-amber-600">
+                            <p className="text-xs text-amber-600">
                               Válido até: {new Date(doc.valid_until).toLocaleDateString('pt-BR')}
                             </p>
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <Badge variant="outline" className={`text-[9px] ${
+                          <Badge variant="outline" className={`text-xs ${
                             doc.ocr_status === 'completed' ? 'text-emerald-600 border-emerald-500/30' :
                             doc.ocr_status === 'pending' ? 'text-amber-600 border-amber-500/30' :
                             'text-muted-foreground'
                           }`}>
-                            {doc.ocr_status === 'completed' ? 'OCR ✓' : doc.ocr_status === 'pending' ? 'Aguardando OCR' : 'Sem OCR'}
+                            {doc.ocr_status === 'completed' ? 'OCR ' : doc.ocr_status === 'pending' ? 'Aguardando OCR' : 'Sem OCR'}
                           </Badge>
                           <a href={doc.file_url} target="_blank" rel="noreferrer" className="h-7 w-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground">
                             <ExternalLink className="size-3" />
@@ -1034,12 +1034,12 @@ function WorkspaceBoardingPage() {
 
                     {/* Upload */}
                     <div className="pt-3 border-t border-border/60 space-y-2">
-                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Anexar Documento</p>
+                      <p className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider">Anexar Documento</p>
                       <div className="flex gap-2">
                         <select
                           value={docType}
                           onChange={e => setDocType(e.target.value as DocumentType)}
-                          className="h-9 px-2 rounded-xl border border-input bg-background text-[11px] focus:outline-none"
+                          className="h-9 px-2 rounded-xl border border-input bg-background text-xs text-muted-foreground/75 focus:outline-none"
                         >
                           {Object.entries(DOC_TYPE_LABELS).map(([k, v]) => (
                             <option key={k} value={k}>{v}</option>
@@ -1073,7 +1073,7 @@ function WorkspaceBoardingPage() {
                 {detailTab === 'flight' && (
                   <div className="p-5 space-y-4">
                     <div className="space-y-3">
-                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Informações do Voo</p>
+                      <p className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider">Informações do Voo</p>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <Label className="text-xs">CIA Aérea</Label>
@@ -1101,14 +1101,14 @@ function WorkspaceBoardingPage() {
                           <ExternalLink className="size-3" />
                         </a>
                       ) : (
-                        <p className="text-[11px] text-muted-foreground text-center">
+                        <p className="text-xs text-muted-foreground/75 text-muted-foreground text-center">
                           Informe a CIA aérea para obter o link de check-in automático.
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-3 border-t border-border/60 pt-4">
-                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Hotel e Hospedagem</p>
+                      <p className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider">Hotel e Hospedagem</p>
                       <div className="space-y-1">
                         <Label className="text-xs">Nome do Hotel / Pousada</Label>
                         <Input defaultValue={detail.hotel_name || ''} placeholder="Ex: Hotel Serrano" className="h-9 text-xs" id="hotel_name_input" />
@@ -1173,14 +1173,14 @@ function WorkspaceBoardingPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 px-3 text-[11px] text-destructive hover:text-destructive cursor-pointer"
+                  className="h-8 px-3 text-xs text-muted-foreground/75 text-destructive hover:text-destructive cursor-pointer"
                   onClick={() => {
                     if (window.confirm('Remover este embarque?')) deleteMutation.mutate(detail.id);
                   }}
                 >
                   <X className="size-3 mr-1" /> Remover
                 </Button>
-                <p className="text-[10px] text-muted-foreground font-mono">
+                <p className="text-xs text-muted-foreground font-mono">
                   Criado em {detail.created_at ? new Date(detail.created_at).toLocaleDateString('pt-BR') : '—'}
                 </p>
               </div>
@@ -1194,7 +1194,7 @@ function WorkspaceBoardingPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 flex flex-col h-full bg-card overflow-hidden"
+          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl max-sm:!h-dvh max-sm:!inset-0 max-sm:!rounded-none border-l p-0 flex flex-col h-full bg-card overflow-hidden"
         >
           <SheetHeader className="px-5 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <SheetTitle className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -1210,7 +1210,7 @@ function WorkspaceBoardingPage() {
             <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-4">
               {crmCustomers.length > 0 && (
                 <div className="space-y-1.5 p-3 rounded-xl border border-border/70 bg-muted/20">
-                  <Label className="text-[11px] font-semibold text-muted-foreground">Vincular Cliente da Carteira (CRM)</Label>
+                  <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">Vincular Cliente da Carteira (CRM)</Label>
                   <select
                     className="w-full h-9 px-2.5 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none"
                     onChange={e => {
@@ -1277,7 +1277,7 @@ function WorkspaceBoardingPage() {
                 </div>
 
                 <div className="space-y-1 sm:col-span-2 border-t border-border/60 pt-3">
-                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Voo (Opcional)</p>
+                  <p className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider">Voo (Opcional)</p>
                 </div>
 
                 <div className="space-y-1">
@@ -1311,7 +1311,7 @@ function WorkspaceBoardingPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-[11px] text-emerald-700 dark:text-emerald-400">
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs text-muted-foreground/75 text-emerald-700 dark:text-emerald-400">
                 <Star className="size-3 inline mr-1.5" />
                 Checklist automático de <strong>{destinationType === 'domestic' ? 'destino nacional' : destinationType === 'international' ? 'destino internacional' : 'cruzeiro'}</strong> será criado com {destinationType === 'domestic' ? '6' : destinationType === 'international' ? '13' : '7'} itens.
               </div>
@@ -1338,7 +1338,7 @@ function WorkspaceBoardingPage() {
               Cartão Digital de Embarque 9:16 (WhatsApp)
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 max-h-[85vh] overflow-y-auto no-scrollbar flex justify-center">
+          <div className="p-4 max-h-screen overflow-y-auto no-scrollbar flex justify-center">
             {companionCardData && (
               <DigitalCompanionCard {...companionCardData} />
             )}
@@ -1355,7 +1355,7 @@ function WorkspaceBoardingPage() {
               Scanner Inteligente de Embarque e Bilhetes
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 max-h-[80vh] overflow-y-auto no-scrollbar">
+          <div className="p-4 max-h-screen overflow-y-auto no-scrollbar">
             <MultimodalOcrUploader
               nicheHint="tourism"
               showPreviewModal={false}
@@ -1395,32 +1395,32 @@ function DepartureCard({
       <div className="flex items-start justify-between gap-1 mb-2">
         <div>
           <h4 className="text-xs font-bold text-foreground leading-tight">{card.client_name}</h4>
-          <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
             <MapPin className="size-2.5" />{card.destination}
           </p>
         </div>
-        <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
+        <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
           daysUntil <= 0 ? 'bg-emerald-500/20 text-emerald-700' :
           daysUntil <= 2 ? 'bg-red-500/20 text-red-700 animate-pulse' :
           daysUntil <= 7 ? 'bg-amber-500/20 text-amber-700' :
           'bg-muted text-muted-foreground'
         }`}>
-          {daysUntil <= 0 ? '✈ Hoje/Passado' : `em ${daysUntil}d`}
+          {daysUntil <= 0 ? ' Hoje/Passado' : `em ${daysUntil}d`}
         </span>
       </div>
 
       {!compact && (
         <>
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono mb-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono mb-2">
             <span>{new Date(card.departure_date).toLocaleDateString('pt-BR')}</span>
             <span>·</span>
             <span>{card.passengers_count}pax</span>
-            {card.airline_code && <><span>·</span><span className="text-indigo-600">✈{card.airline_code}</span></>}
+            {card.airline_code && <><span>·</span><span className="text-indigo-600">{card.airline_code}</span></>}
           </div>
 
           {/* Checklist progress */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between text-[9px] text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Checklist</span>
               <span className={pct === 100 ? 'text-emerald-600 font-semibold' : pct < 50 ? 'text-red-600 font-semibold' : 'text-amber-600 font-semibold'}>{pct}%</span>
             </div>

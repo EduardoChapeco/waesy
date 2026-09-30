@@ -861,7 +861,7 @@ function UnifiedIntegrationsHubPage() {
 
             <IntegrationCard
               provider="pix_direto"
-              title="Chave PIX Direta (Manual / QR Code)"
+              title="Chave PIX Direta"
               description="Recebimento direto na conta bancária do lojista sem intermediários. Requer conferência manual do comprovante."
               icon={CreditCard}
               existingSetting={settings.find((s: any) => s.provider === "pix_direto")}

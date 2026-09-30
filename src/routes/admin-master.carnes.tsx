@@ -232,9 +232,9 @@ function AdminMasterCarnesPage() {
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            ⏳ Comprovantes em Análise
+            Comprovantes em análise
             {(overview?.pendingConciliationCount || 0) > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-[10px]">
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-xs text-muted-foreground/75">
                 {overview?.pendingConciliationCount}
               </span>
             )}
@@ -351,31 +351,31 @@ function AdminMasterCarnesPage() {
                             </span>
 
                             {isPaid && (
-                              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px] py-0">
+                              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs text-muted-foreground/75 py-0">
                                 Quitada
                               </Badge>
                             )}
 
                             {!isPaid && isPending && (
-                              <Badge variant="outline" className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] py-0 animate-pulse">
-                                ⏳ Comprovante Enviado
+                              <Badge variant="outline" className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs text-muted-foreground/75 py-0 ">
+                                Comprovante enviado
                               </Badge>
                             )}
 
                             {!isPaid && isRejected && (
-                              <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px] py-0">
+                              <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-xs text-muted-foreground/75 py-0">
                                 Recusada pela Loja
                               </Badge>
                             )}
 
                             {!isPaid && !isPending && isLate && (
-                              <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px] py-0">
+                              <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-xs text-muted-foreground/75 py-0">
                                 Em Atraso ({inst.late_days || 1}d)
                               </Badge>
                             )}
 
                             {!isPaid && !isPending && !isLate && (
-                              <Badge variant="outline" className="bg-muted text-muted-foreground text-[10px] py-0">
+                              <Badge variant="outline" className="bg-muted text-muted-foreground text-xs text-muted-foreground/75 py-0">
                                 A Vencer
                               </Badge>
                             )}
@@ -400,7 +400,7 @@ function AdminMasterCarnesPage() {
                               {formatMoney(finalAmount)}
                             </span>
                             {Number(inst.fine_cents || 0) + Number(inst.interest_accrued_cents || 0) > 0 && (
-                              <span className="text-[10px] text-rose-500 block">
+                              <span className="text-xs text-muted-foreground/75 text-rose-500 block">
                                 Encargos: +{formatMoney(Number(inst.fine_cents || 0) + Number(inst.interest_accrued_cents || 0))}
                               </span>
                             )}
@@ -513,7 +513,7 @@ function AdminMasterCarnesPage() {
                 placeholder="Ex: Auditoria realizada após comprovante TED legítimo. Loja informada e parcela liquidada..."
                 value={interventionReason}
                 onChange={(e) => setInterventionReason(e.target.value)}
-                className="text-xs min-h-[75px] rounded-xl"
+                className="text-xs min-h-20 rounded-xl"
                 required
               />
             </div>

@@ -51,26 +51,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
 
-export type WixBlockCategory = "all" | "basic" | "layout" | "sections" | "interactive";
+import { MediaUploader } from "@/components/admin/builder/MediaUploader";
 
-export const WIX_CATEGORY_CONFIG: { id: WixBlockCategory; label: string; icon: any }[] = [
-  { id: "all", label: "Todos", icon: Sparkles },
-  { id: "basic", label: "Básico", icon: LayoutTemplate },
-  { id: "layout", label: "Layout", icon: Layers },
-  { id: "sections", label: "Seções", icon: Tag },
-  { id: "interactive", label: "Interativo", icon: MessageSquare },
-];
-
-export const BLOCK_TO_WIX_CATEGORY: Record<string, "basic" | "layout" | "sections" | "interactive"> = {
-  hero_minimal_split: "basic",
-  bento_asymmetric_4: "layout",
-  pricing_three_tiers: "sections",
-  testimonials_social_proof: "sections",
-  faq_clean_accordion: "sections",
-  hero_interactive_carousel: "interactive",
-  media_gallery_mosaic: "interactive",
-  contact_form_direct: "interactive",
-};
+export {
+  type WixBlockCategory,
+  WIX_CATEGORY_CONFIG,
+  BLOCK_TO_WIX_CATEGORY,
+} from "./registry";
 
 const BLOCK_ICONS: Record<string, any> = {
   hero_minimal_split: LayoutTemplate,
@@ -81,6 +68,366 @@ const BLOCK_ICONS: Record<string, any> = {
   testimonials_social_proof: MessageSquare,
   contact_form_direct: Mail,
   faq_clean_accordion: HelpCircle,
+};
+
+interface BlockContentFieldsProps {
+  selectedBlock: OmniBlockInstance;
+  onUpdateConfig: (key: string, value: any) => void;
+}
+
+export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
+  selectedBlock,
+  onUpdateConfig,
+}) => {
+  const config = selectedBlock.config as any;
+
+  return (
+    <div className="space-y-4">
+      {/* 1. Título Padrão */}
+      {config.title !== undefined && (
+        <div>
+          <label className="block text-xs font-semibold text-foreground mb-1">
+            Título da Seção
+          </label>
+          <Input
+            value={config.title || ""}
+            onChange={(e) => onUpdateConfig("title", e.target.value)}
+            className="h-9 rounded-lg text-xs"
+          />
+        </div>
+      )}
+
+      {/* 2. Subtítulo / Descrição */}
+      {config.subtitle !== undefined && (
+        <div>
+          <label className="block text-xs font-semibold text-foreground mb-1">
+            Subtítulo / Descrição
+          </label>
+          <Textarea
+            value={config.subtitle || ""}
+            onChange={(e) => onUpdateConfig("subtitle", e.target.value)}
+            rows={3}
+            className="rounded-lg text-xs resize-none"
+          />
+        </div>
+      )}
+
+      {/* 3. Badge Superior */}
+      {config.badgeText !== undefined && (
+        <div>
+          <label className="block text-xs font-semibold text-foreground mb-1">
+            Pílula Superior (Badge)
+          </label>
+          <Input
+            value={config.badgeText || ""}
+            onChange={(e) => onUpdateConfig("badgeText", e.target.value)}
+            className="h-9 rounded-lg text-xs"
+          />
+        </div>
+      )}
+
+      {/* 4. Imagem Principal Simples (Upload Real para Storage - Zero Mocks) */}
+      {config.imageUrl !== undefined && (
+        <div className="pt-2 border-t border-border/40 space-y-1.5">
+          <label className="block text-xs font-semibold text-foreground">
+            Imagem Principal (Upload Real para Storage)
+          </label>
+          <MediaUploader
+            value={config.imageUrl || ""}
+            onChange={(url) => onUpdateConfig("imageUrl", url)}
+            bucket="store-assets"
+            folder="builder"
+            label="Imagem de Destaque"
+          />
+        </div>
+      )}
+
+      {/* 5. Galeria de Mídia Mosaico (Uploads Reais E2E) */}
+      {selectedBlock.type === "media_gallery_mosaic" && (
+        <div className="pt-2 border-t border-border/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">Fotos da Galeria</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const current = config.items || [];
+                const newItem = {
+                  id: `g-${Date.now()}`,
+                  imageUrl: "",
+                  title: "Nova Foto",
+                  caption: "",
+                };
+                onUpdateConfig("items", [...current, newItem]);
+              }}
+              className="h-7 text-xs px-2 rounded-lg gap-1 cursor-pointer"
+            >
+              <Plus className="size-3" />
+              Adicionar Foto
+            </Button>
+          </div>
+
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+            {(config.items || []).map((item: any, idx: number) => (
+              <div key={item.id || idx} className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                  <span>Foto #{idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = config.items || [];
+                      onUpdateConfig(
+                        "items",
+                        current.filter((_: any, i: number) => i !== idx)
+                      );
+                    }}
+                    className="text-destructive hover:underline text-xs cursor-pointer"
+                  >
+                    Remover
+                  </button>
+                </div>
+                <MediaUploader
+                  value={item.imageUrl || ""}
+                  onChange={(url) => {
+                    const current = [...(config.items || [])];
+                    current[idx] = { ...current[idx], imageUrl: url };
+                    onUpdateConfig("items", current);
+                  }}
+                  bucket="store-assets"
+                  folder="builder"
+                  label="Mídia da Galeria"
+                />
+                <Input
+                  value={item.title || ""}
+                  onChange={(e) => {
+                    const current = [...(config.items || [])];
+                    current[idx] = { ...current[idx], title: e.target.value };
+                    onUpdateConfig("items", current);
+                  }}
+                  placeholder="Título da foto"
+                  className="h-8 text-xs"
+                />
+                <Input
+                  value={item.caption || ""}
+                  onChange={(e) => {
+                    const current = [...(config.items || [])];
+                    current[idx] = { ...current[idx], caption: e.target.value };
+                    onUpdateConfig("items", current);
+                  }}
+                  placeholder="Legenda da foto"
+                  className="h-8 text-xs"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 6. Carrossel de Destaques (Slides com Upload Real) */}
+      {selectedBlock.type === "hero_interactive_carousel" && (
+        <div className="pt-2 border-t border-border/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">Slides do Carrossel</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const current = config.slides || [];
+                const newSlide = {
+                  id: `slide-${Date.now()}`,
+                  title: "Novo Slide",
+                  subtitle: "Descrição do slide em destaque",
+                  imageUrl: "",
+                  ctaText: "Ver Mais",
+                  ctaHref: "#",
+                };
+                onUpdateConfig("slides", [...current, newSlide]);
+              }}
+              className="h-7 text-xs px-2 rounded-lg gap-1 cursor-pointer"
+            >
+              <Plus className="size-3" />
+              Adicionar Slide
+            </Button>
+          </div>
+
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+            {(config.slides || []).map((slide: any, idx: number) => (
+              <div key={slide.id || idx} className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                  <span>Slide #{idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = config.slides || [];
+                      onUpdateConfig(
+                        "slides",
+                        current.filter((_: any, i: number) => i !== idx)
+                      );
+                    }}
+                    className="text-destructive hover:underline text-xs cursor-pointer"
+                  >
+                    Remover
+                  </button>
+                </div>
+                <MediaUploader
+                  value={slide.imageUrl || ""}
+                  onChange={(url) => {
+                    const current = [...(config.slides || [])];
+                    current[idx] = { ...current[idx], imageUrl: url };
+                    onUpdateConfig("slides", current);
+                  }}
+                  bucket="store-assets"
+                  folder="builder"
+                  label="Imagem do Slide"
+                />
+                <Input
+                  value={slide.title || ""}
+                  onChange={(e) => {
+                    const current = [...(config.slides || [])];
+                    current[idx] = { ...current[idx], title: e.target.value };
+                    onUpdateConfig("slides", current);
+                  }}
+                  placeholder="Título do Slide"
+                  className="h-8 text-xs"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 7. Depoimentos de Clientes (Avatares com Upload Real) */}
+      {selectedBlock.type === "testimonials_social_proof" && (
+        <div className="pt-2 border-t border-border/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">Depoimentos</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const current = config.testimonials || [];
+                const newT = {
+                  id: `t-${Date.now()}`,
+                  name: "Nome do Cliente",
+                  role: "Empresa / Cidade",
+                  avatarUrl: "",
+                  rating: 5,
+                  comment: "Excelente experiência e atendimento pontual.",
+                  verified: true,
+                };
+                onUpdateConfig("testimonials", [...current, newT]);
+              }}
+              className="h-7 text-xs px-2 rounded-lg gap-1 cursor-pointer"
+            >
+              <Plus className="size-3" />
+              Adicionar
+            </Button>
+          </div>
+
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+            {(config.testimonials || []).map((t: any, idx: number) => (
+              <div key={t.id || idx} className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                  <span>Depoimento #{idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = config.testimonials || [];
+                      onUpdateConfig(
+                        "testimonials",
+                        current.filter((_: any, i: number) => i !== idx)
+                      );
+                    }}
+                    className="text-destructive hover:underline text-xs cursor-pointer"
+                  >
+                    Remover
+                  </button>
+                </div>
+                <MediaUploader
+                  value={t.avatarUrl || ""}
+                  onChange={(url) => {
+                    const current = [...(config.testimonials || [])];
+                    current[idx] = { ...current[idx], avatarUrl: url };
+                    onUpdateConfig("testimonials", current);
+                  }}
+                  bucket="store-assets"
+                  folder="builder"
+                  aspect={1}
+                  cropShape="round"
+                  label="Foto do Cliente"
+                />
+                <Input
+                  value={t.name || ""}
+                  onChange={(e) => {
+                    const current = [...(config.testimonials || [])];
+                    current[idx] = { ...current[idx], name: e.target.value };
+                    onUpdateConfig("testimonials", current);
+                  }}
+                  placeholder="Nome do Cliente"
+                  className="h-8 text-xs"
+                />
+                <Input
+                  value={t.role || ""}
+                  onChange={(e) => {
+                    const current = [...(config.testimonials || [])];
+                    current[idx] = { ...current[idx], role: e.target.value };
+                    onUpdateConfig("testimonials", current);
+                  }}
+                  placeholder="Cargo ou Cidade"
+                  className="h-8 text-xs"
+                />
+                <Textarea
+                  value={t.comment || ""}
+                  onChange={(e) => {
+                    const current = [...(config.testimonials || [])];
+                    current[idx] = { ...current[idx], comment: e.target.value };
+                    onUpdateConfig("testimonials", current);
+                  }}
+                  rows={2}
+                  placeholder="Comentário do cliente"
+                  className="text-xs resize-none"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 8. Botão Principal (CTA) */}
+      {config.primaryCta && (
+        <div className="pt-2 border-t border-border/40 space-y-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Botão Principal (CTA)
+          </span>
+          <Input
+            value={config.primaryCta.label || ""}
+            onChange={(e) =>
+              onUpdateConfig("primaryCta", {
+                ...config.primaryCta,
+                label: e.target.value,
+              })
+            }
+            placeholder="Texto do Botão"
+            className="h-9 rounded-lg text-xs"
+          />
+          <Input
+            value={config.primaryCta.href || ""}
+            onChange={(e) =>
+              onUpdateConfig("primaryCta", {
+                ...config.primaryCta,
+                href: e.target.value,
+              })
+            }
+            placeholder="Link de Destino (#contato)"
+            className="h-9 rounded-lg text-xs"
+          />
+        </div>
+      )}
+    </div>
+  );
 };
 
 interface OmniEditorProps {
@@ -238,6 +585,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             </Button>
           )}
 
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-tight shrink-0">
+            <Sparkles className="size-3.5" />
+            <span>Waesy Builder</span>
+          </div>
+
           {/* Nome do Projeto com Renomeação Inline */}
           {isEditingTitle ? (
             <input
@@ -253,7 +605,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 }
               }}
               autoFocus
-              className="text-xs sm:text-sm font-bold bg-muted/60 text-foreground px-2 py-1 rounded-lg border border-foreground/30 outline-hidden max-w-[160px] sm:max-w-xs"
+              className="text-xs sm:text-sm font-bold bg-muted/60 text-foreground px-2 py-1 rounded-lg border border-foreground/30 outline-hidden max-w-40 sm:max-w-xs"
             />
           ) : (
             <div
@@ -264,10 +616,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               className="flex items-center gap-1.5 cursor-pointer group px-2 py-1 rounded-lg hover:bg-muted/50 transition-colors min-w-0"
               title="Clique para renomear"
             >
-              <span className="text-xs sm:text-sm font-bold tracking-tight text-foreground truncate max-w-[140px] sm:max-w-[220px]">
+              <span className="text-xs sm:text-sm font-bold tracking-tight text-foreground truncate max-w-36 sm:max-w-56">
                 {document.title}
               </span>
-              <span className="text-[10px] text-muted-foreground font-mono hidden sm:inline">
+              <span className="text-xs text-muted-foreground/75 text-muted-foreground font-mono hidden sm:inline">
                 /{document.slug}
               </span>
             </div>
@@ -371,7 +723,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           key={cat.id}
                           type="button"
                           onClick={() => setActiveBlockCategory(cat.id)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer ${
                             isActive
                               ? "bg-foreground text-background shadow-xs"
                               : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -403,7 +755,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           </div>
                           <Plus className="size-3.5 text-muted-foreground group-hover:text-foreground group-hover:scale-110 transition-transform" />
                         </div>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-1 pl-8">
+                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 pl-8">
                           {block.description}
                         </p>
                       </div>
@@ -421,11 +773,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
                           {tpl.name}
                         </span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-semibold">
+                        <span className="text-xs text-muted-foreground/75 px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-semibold">
                           {tpl.badge}
                         </span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 mb-2.5">
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2.5">
                         {tpl.description}
                       </p>
                       <div className="flex items-center gap-1.5 pt-1.5 border-t border-border/40">
@@ -434,7 +786,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           size="sm"
                           variant="outline"
                           onClick={() => setPreviewTemplate(tpl)}
-                          className="h-7 px-2 text-[10px] font-semibold gap-1 rounded-lg flex-1 cursor-pointer"
+                          className="h-7 px-2 text-xs text-muted-foreground/75 font-semibold gap-1 rounded-lg flex-1 cursor-pointer"
                         >
                           <Eye className="size-3" />
                           <span>Ver ao Vivo</span>
@@ -443,7 +795,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           type="button"
                           size="sm"
                           onClick={() => handleApplyTemplate(tpl.id)}
-                          className="h-7 px-2 text-[10px] font-bold rounded-lg flex-1 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                          className="h-7 px-2 text-xs text-muted-foreground/75 font-bold rounded-lg flex-1 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                         >
                           <span>Usar Modelo</span>
                         </Button>
@@ -490,7 +842,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     {/* Barra Flutuante de Ações no Bloco (Desktop Hover) */}
                     {!isPreviewMode && (
                       <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 backdrop-blur-md border border-border/80 rounded-xl p-1 shadow-lg flex items-center gap-1 z-30">
-                        <span className="text-[10px] font-mono text-muted-foreground px-2">
+                        <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground px-2">
                           {def.name}
                         </span>
                         <button
@@ -572,73 +924,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {inspectorTab === "content" ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1">
-                      Título da Seção
-                    </label>
-                    <Input
-                      value={(selectedBlock.config as any).title || ""}
-                      onChange={(e) => handleUpdateConfig("title", e.target.value)}
-                      className="h-9 rounded-lg text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1">
-                      Subtítulo / Descrição
-                    </label>
-                    <Textarea
-                      value={(selectedBlock.config as any).subtitle || ""}
-                      onChange={(e) => handleUpdateConfig("subtitle", e.target.value)}
-                      rows={3}
-                      className="rounded-lg text-xs resize-none"
-                    />
-                  </div>
-
-                  {(selectedBlock.config as any).badgeText !== undefined && (
-                    <div>
-                      <label className="block text-xs font-semibold text-foreground mb-1">
-                        Pílula Superior (Badge)
-                      </label>
-                      <Input
-                        value={(selectedBlock.config as any).badgeText || ""}
-                        onChange={(e) => handleUpdateConfig("badgeText", e.target.value)}
-                        className="h-9 rounded-lg text-xs"
-                      />
-                    </div>
-                  )}
-
-                  {(selectedBlock.config as any).primaryCta && (
-                    <div className="pt-2 border-t border-border/40 space-y-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Botão Principal (CTA)
-                      </span>
-                      <Input
-                        value={(selectedBlock.config as any).primaryCta.label || ""}
-                        onChange={(e) =>
-                          handleUpdateConfig("primaryCta", {
-                            ...(selectedBlock.config as any).primaryCta,
-                            label: e.target.value,
-                          })
-                        }
-                        placeholder="Texto do Botão"
-                        className="h-9 rounded-lg text-xs"
-                      />
-                      <Input
-                        value={(selectedBlock.config as any).primaryCta.href || ""}
-                        onChange={(e) =>
-                          handleUpdateConfig("primaryCta", {
-                            ...(selectedBlock.config as any).primaryCta,
-                            href: e.target.value,
-                          })
-                        }
-                        placeholder="Link de Destino (#contato)"
-                        className="h-9 rounded-lg text-xs"
-                      />
-                    </div>
-                  )}
-                </div>
+                <BlockContentFields
+                  selectedBlock={selectedBlock}
+                  onUpdateConfig={handleUpdateConfig}
+                />
               ) : (
                 /* Aba de Estilo Isolado */
                 <div className="space-y-4">
@@ -741,7 +1030,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   {isSelected && (
                     <div className="absolute top-2 left-2 z-30 bg-background/95 backdrop-blur-md border border-border/80 rounded-lg px-2 py-0.5 shadow-xs flex items-center gap-1.5">
                       <span className="size-1.5 rounded-full bg-primary animate-pulse" />
-                      <span className="text-[10px] font-bold text-foreground">{def.name}</span>
+                      <span className="text-xs text-muted-foreground/75 font-bold text-foreground">{def.name}</span>
                     </div>
                   )}
 
@@ -760,7 +1049,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               className="h-11 flex-1 flex flex-col items-center justify-center rounded-xl text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors"
             >
               <Plus className="size-4" />
-              <span className="text-[10px] font-semibold mt-0.5">Blocos</span>
+              <span className="text-xs text-muted-foreground/75 font-semibold mt-0.5">Blocos</span>
             </button>
 
             <button
@@ -774,7 +1063,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               className="h-11 flex-1 flex flex-col items-center justify-center rounded-xl text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors disabled:opacity-30"
             >
               <Settings2 className="size-4" />
-              <span className="text-[10px] font-semibold mt-0.5">Editar</span>
+              <span className="text-xs text-muted-foreground/75 font-semibold mt-0.5">Editar</span>
             </button>
 
             <button
@@ -782,7 +1071,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               className="h-11 flex-1 flex flex-col items-center justify-center rounded-xl text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors"
             >
               <LayoutTemplate className="size-4" />
-              <span className="text-[10px] font-semibold mt-0.5">Modelos</span>
+              <span className="text-xs text-muted-foreground/75 font-semibold mt-0.5">Modelos</span>
             </button>
 
             <button
@@ -791,7 +1080,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               className="h-11 flex-1 flex flex-col items-center justify-center rounded-xl text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors disabled:opacity-30"
             >
               <Layers className="size-4" />
-              <span className="text-[10px] font-semibold mt-0.5">Ordem</span>
+              <span className="text-xs text-muted-foreground/75 font-semibold mt-0.5">Ordem</span>
             </button>
           </div>
         )}
@@ -842,7 +1131,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     </div>
                     <div className="min-w-0">
                       <h4 className="text-xs font-bold text-foreground truncate">{block.name}</h4>
-                      <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                         {block.description}
                       </p>
                     </div>
@@ -893,72 +1182,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               </div>
 
               {mobileInspectorTab === "content" ? (
-                <div className="space-y-3.5 pt-1">
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1">
-                      Título da Seção
-                    </label>
-                    <Input
-                      value={(selectedBlock.config as any).title || ""}
-                      onChange={(e) => handleUpdateConfig("title", e.target.value)}
-                      className="h-10 rounded-xl text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1">
-                      Subtítulo / Descrição
-                    </label>
-                    <Textarea
-                      value={(selectedBlock.config as any).subtitle || ""}
-                      onChange={(e) => handleUpdateConfig("subtitle", e.target.value)}
-                      rows={3}
-                      className="rounded-xl text-xs resize-none"
-                    />
-                  </div>
-
-                  {(selectedBlock.config as any).badgeText !== undefined && (
-                    <div>
-                      <label className="block text-xs font-semibold text-foreground mb-1">
-                        Pílula Superior (Badge)
-                      </label>
-                      <Input
-                        value={(selectedBlock.config as any).badgeText || ""}
-                        onChange={(e) => handleUpdateConfig("badgeText", e.target.value)}
-                        className="h-10 rounded-xl text-xs"
-                      />
-                    </div>
-                  )}
-
-                  {(selectedBlock.config as any).primaryCta && (
-                    <div className="pt-2 border-t border-border/40 space-y-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Botão Principal (CTA)
-                      </span>
-                      <Input
-                        value={(selectedBlock.config as any).primaryCta.label || ""}
-                        onChange={(e) =>
-                          handleUpdateConfig("primaryCta", {
-                            ...(selectedBlock.config as any).primaryCta,
-                            label: e.target.value,
-                          })
-                        }
-                        placeholder="Texto do Botão"
-                        className="h-10 rounded-xl text-xs"
-                      />
-                      <Input
-                        value={(selectedBlock.config as any).primaryCta.href || ""}
-                        onChange={(e) =>
-                          handleUpdateConfig("primaryCta", {
-                            ...(selectedBlock.config as any).primaryCta,
-                            href: e.target.value,
-                          })
-                        }
-                        placeholder="Link de Destino (#contato)"
-                        className="h-10 rounded-xl text-xs"
-                      />
-                    </div>
-                  )}
+                <div className="pt-1">
+                  <BlockContentFields
+                    selectedBlock={selectedBlock}
+                    onUpdateConfig={handleUpdateConfig}
+                  />
                 </div>
               ) : (
                 /* Aba de Estilo Mobile */
@@ -1048,11 +1276,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               >
                 <div className="flex items-center justify-between mb-1">
                   <h4 className="text-xs font-bold text-foreground">{tpl.name}</h4>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-semibold">
+                  <span className="text-xs text-muted-foreground/75 px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-semibold">
                     {tpl.badge}
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground line-clamp-2 mb-3">
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                   {tpl.description}
                 </p>
                 <div className="flex items-center gap-2 pt-2 border-t border-border/40">
@@ -1112,7 +1340,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     }}
                     className="flex-1 pr-2 cursor-pointer min-w-0"
                   >
-                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider block">
+                    <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground uppercase tracking-wider block">
                       {def.name}
                     </span>
                     <h4 className="text-xs font-bold text-foreground truncate">{title}</h4>
@@ -1170,3 +1398,6 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     </div>
   );
 };
+
+export const WaesyBuilder = OmniEditor;
+export type WaesyBuilderProps = OmniEditorProps;

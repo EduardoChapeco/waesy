@@ -254,53 +254,67 @@ export function ClassifiedDetailMobile({
 
   return (
     <div className="w-full min-h-[100dvh] bg-background text-foreground pb-28 select-none">
-      {/* ── 1. HERO DE MÍDIA NATIVO EDGE-TO-EDGE (Sem margens, toca no topo absoluto) ── */}
+      {/* ── 1. HERO DE MÍDIA NATIVO EDGE-TO-EDGE COM SNAP SCROLL (Instagram/ML Style) ── */}
       <div className="relative w-full aspect-[4/3] bg-muted/30 overflow-hidden">
         {images.length > 0 ? (
           <>
-            {isVideoUrl(images[activeImage]) ? (
-              <video
-                src={images[activeImage]}
-                controls
-                playsInline
-                className="size-full object-contain bg-black"
-              />
-            ) : (
-              <img
-                src={images[activeImage]}
-                alt={classified.title}
-                className="size-full object-cover cursor-pointer"
-                onClick={() => setFullscreenImage(images[activeImage])}
-              />
-            )}
+            <div
+              className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar"
+              onScroll={(e) => {
+                const target = e.currentTarget;
+                if (target.clientWidth > 0) {
+                  const idx = Math.round(target.scrollLeft / target.clientWidth);
+                  if (idx !== activeImage && idx >= 0 && idx < images.length) {
+                    setActiveImage(idx);
+                  }
+                }
+              }}
+            >
+              {images.map((imgUrl, idx) => (
+                <div
+                  key={idx}
+                  className="w-full h-full shrink-0 snap-center relative"
+                >
+                  {isVideoUrl(imgUrl) ? (
+                    <video
+                      src={imgUrl}
+                      controls
+                      playsInline
+                      className="size-full object-contain bg-black"
+                    />
+                  ) : (
+                    <img
+                      src={imgUrl}
+                      alt={`${classified.title} - foto ${idx + 1}`}
+                      className="size-full object-cover cursor-pointer"
+                      onClick={() => setFullscreenImage(imgUrl)}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
 
-            {/* Contador de Fotos */}
+            {/* Indicador de Dots / Paginação Silenciosa */}
             {images.length > 1 && (
-              <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-mono font-medium pointer-events-none">
-                {activeImage + 1} / {images.length}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md z-10 pointer-events-none">
+                {images.map((_, idx) => (
+                  <span
+                    key={idx}
+                    className={`h-1.5 rounded-full transition-all duration-200 ${
+                      activeImage === idx
+                        ? "w-4 bg-white"
+                        : "w-1.5 bg-white/40"
+                    }`}
+                  />
+                ))}
               </div>
             )}
 
-            {/* Controles de Próxima/Anterior em Toque */}
+            {/* Contador Numérico Discreto no Canto */}
             {images.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setActiveImage((prev) => (prev > 0 ? prev - 1 : images.length - 1))}
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition-transform"
-                  aria-label="Foto anterior"
-                >
-                  <ChevronLeft className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveImage((prev) => (prev < images.length - 1 ? prev + 1 : 0))}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition-transform"
-                  aria-label="Próxima foto"
-                >
-                  <ChevronRight className="size-4" />
-                </button>
-              </>
+              <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-mono font-medium pointer-events-none z-10">
+                {activeImage + 1}/{images.length}
+              </div>
             )}
           </>
         ) : (

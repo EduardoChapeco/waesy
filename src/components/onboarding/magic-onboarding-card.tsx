@@ -8,7 +8,8 @@
  */
 
 import React, { useState } from "react";
-import { Globe, ArrowRight, CheckCircle2, Loader2, Sparkles, AlertCircle, RefreshCw } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Globe, ArrowRight, CheckCircle2, Loader2, Sparkles, AlertCircle, RefreshCw, Palette, LayoutGrid, Compass, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -87,7 +88,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
           </div>
         </div>
 
-        <Badge variant="outline" className="text-[11px] font-mono border-border">
+        <Badge variant="outline" className="text-xs font-mono border-border">
           {formatPlatformTokens(ONBOARDING_AI_COST)} Tokens
         </Badge>
       </div>
@@ -164,7 +165,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
               <CheckCircle2 className="size-4" />
               <span>Configuração concluída</span>
             </div>
-            <Badge variant="secondary" className="text-[10px]">
+            <Badge variant="secondary" className="text-xs">
               {completedResult.brand_dna?.archetype || "DNA Ativo"}
             </Badge>
           </div>
@@ -186,20 +187,50 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
 
           {/* Mini Paleta do Brandkit */}
           {completedResult.theme_colors && (
-            <div className="pt-2 border-t border-border/60 flex items-center gap-2">
-              <span className="text-[11px] font-medium text-foreground">Paleta:</span>
-              <div className="flex items-center gap-1">
-                {Object.values(completedResult.theme_colors).filter(Boolean).map((hex, i) => (
-                  <div
-                    key={i}
-                    className="size-4 rounded-full border border-black/10 shadow-xs"
-                    style={{ backgroundColor: hex }}
-                    title={hex}
-                  />
-                ))}
+            <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-foreground">Paleta:</span>
+                <div className="flex items-center gap-1">
+                  {Object.values(completedResult.theme_colors).filter(Boolean).map((hex, i) => (
+                    <div
+                      key={i}
+                      className="size-4 rounded-full border border-black/10 shadow-xs"
+                      style={{ backgroundColor: hex }}
+                      title={hex}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           )}
+
+          {/* Atalhos Rápidos para os Módulos Criados */}
+          <div className="pt-3 border-t border-border/60 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-1.5 justify-start">
+              <Link to="/workspace/marketing/brand-kit">
+                <Palette className="size-3.5 text-primary" />
+                <span>Brand Kit</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-1.5 justify-start">
+              <Link to="/workspace/marketing/canvas-bmc">
+                <LayoutGrid className="size-3.5 text-primary" />
+                <span>Modelo BMC</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-1.5 justify-start">
+              <Link to="/workspace/marketing/swot">
+                <Compass className="size-3.5 text-primary" />
+                <span>Matriz SWOT</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-1.5 justify-start">
+              <Link to="/workspace/marketing/canvas-pecados">
+                <Flame className="size-3.5 text-primary" />
+                <span>7 Pecados</span>
+              </Link>
+            </Button>
+          </div>
         </div>
       )}
     </div>

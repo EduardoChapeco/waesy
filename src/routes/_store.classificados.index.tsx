@@ -98,7 +98,7 @@ function ClassifiedsIndexErrorComponent({ error }: { error: any }) {
         </p>
       </div>
       {error?.message && (
-        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
           {error.message}
         </pre>
       )}
@@ -156,16 +156,16 @@ const CLASSIFIEDS_HOTPAGES = [
 ];
 
 const CLASSIFIED_CHIPS: FilterChipOption[] = [
-  { id: "todos", label: "Todos", emoji: "🏷️", icon: Tag },
-  { id: "real_estate", label: "Imóveis", emoji: "🏠", icon: Home },
-  { id: "vehicle", label: "Veículos", emoji: "🚗", icon: CarIcon },
-  { id: "business", label: "Negócios", emoji: "💼", icon: Briefcase },
-  { id: "travel", label: "Viagens", emoji: "✈️", icon: Plane },
-  { id: "food", label: "Gastronomia", emoji: "🍲", icon: Utensils },
-  { id: "sale", label: "Desapego", emoji: "💻", icon: LaptopIcon },
-  { id: "digital", label: "Digitais", emoji: "📁", icon: FileText },
-  { id: "service", label: "Serviços", emoji: "🛠️", icon: WrenchIcon },
-  { id: "donation", label: "Doações", emoji: "🎁", icon: Gift },
+  { id: "todos", label: "Todos", icon: Tag },
+  { id: "real_estate", label: "Imóveis", icon: Home },
+  { id: "vehicle", label: "Veículos", icon: CarIcon },
+  { id: "business", label: "Negócios", icon: Briefcase },
+  { id: "travel", label: "Viagens", icon: Plane },
+  { id: "food", label: "Gastronomia", icon: Utensils },
+  { id: "sale", label: "Desapego", icon: LaptopIcon },
+  { id: "digital", label: "Digitais", icon: FileText },
+  { id: "service", label: "Serviços", icon: WrenchIcon },
+  { id: "donation", label: "Doações", icon: Gift },
 ];
 
 const REAL_ESTATE_DEAL_TYPES = [
@@ -242,13 +242,13 @@ const BUSINESS_POINT_OPTIONS = [
 
 const FOOD_SUBNICHE_OPTIONS = [
   { id: "todos", label: "Toda Gastronomia" },
-  { id: "pizzaria", label: "🍕 Pizzaria" },
-  { id: "hamburgueria", label: "🍔 Hamburgueria" },
-  { id: "confeitaria", label: "🎂 Doces e Bolos" },
-  { id: "marmitaria", label: "🍱 Marmitaria" },
-  { id: "cafe", label: "☕ Cafeteria" },
-  { id: "padaria", label: "🥖 Panificação" },
-  { id: "artesanal", label: "🧀 Queijos e Vinhos" },
+  { id: "pizzaria", label: "Pizzaria" },
+  { id: "hamburgueria", label: "Hamburgueria" },
+  { id: "confeitaria", label: "Doces e Bolos" },
+  { id: "marmitaria", label: "Marmitaria" },
+  { id: "cafe", label: "Cafeteria" },
+  { id: "padaria", label: "Panificação" },
+  { id: "artesanal", label: "Queijos e Vinhos" },
 ];
 
 const BUSINESS_GOAL_OPTIONS = [
@@ -266,11 +266,11 @@ const SERVICE_AUDIENCE_OPTIONS = [
 
 const SERVICE_SUBNICHE_OPTIONS = [
   { id: "todos", label: "Todas Áreas" },
-  { id: "oab", label: "⚖️ Jurídico" },
-  { id: "crea", label: "📐 Engenharia" },
-  { id: "crm", label: "🩺 Saúde" },
-  { id: "crc", label: "📊 Contabilidade" },
-  { id: "tech", label: "💻 Tecnologia" },
+  { id: "oab", label: "Jurídico" },
+  { id: "crea", label: "Engenharia" },
+  { id: "crm", label: "Saúde" },
+  { id: "crc", label: "Contabilidade" },
+  { id: "tech", label: "Tecnologia" },
 ];
 
 function ClassifiedsMasterPage() {
@@ -668,7 +668,7 @@ function ClassifiedsMasterPage() {
               <SlidersHorizontal className="size-4 shrink-0" />
               <span className="hidden sm:inline">Filtros</span>
               {activeFiltersCount > 0 && (
-                <span className="size-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shrink-0">
+                <span className="size-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">
                   {activeFiltersCount}
                 </span>
               )}
@@ -799,13 +799,13 @@ function ClassifiedsMasterPage() {
 
         {/* ── MODAL FULL DE FILTROS AVANÇADOS (V117 100dvh ML-FILTER MODAL) ── */}
         <Dialog open={mobileFilterSheetOpen} onOpenChange={setMobileFilterSheetOpen}>
-          <DialogContent className="w-screen h-[100dvh] max-w-none sm:max-w-lg sm:h-auto sm:max-h-[85vh] rounded-none sm:rounded-2xl p-5 space-y-4 overflow-y-auto">
+          <DialogContent className="w-screen h-dvh max-w-none sm:max-w-lg sm:h-auto sm:max-h-screen rounded-none sm:rounded-2xl p-5 space-y-4 overflow-y-auto">
             <DialogHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/40">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="size-4 text-primary" />
                 <DialogTitle className="text-base font-bold">Filtros Avançados</DialogTitle>
                 {activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className="text-[10px] font-mono font-bold">
+                  <Badge variant="secondary" className="text-xs font-mono font-bold">
                     {activeFiltersCount} ativo{activeFiltersCount > 1 ? "s" : ""}
                   </Badge>
                 )}
@@ -827,7 +827,7 @@ function ClassifiedsMasterPage() {
             <div className="space-y-4 text-xs">
               {/* 1. Cidades */}
               <div className="space-y-2">
-                <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
                   Cidade / Região
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -863,7 +863,7 @@ function ClassifiedsMasterPage() {
 
               {/* 2. Condições Comerciais */}
               <div className="space-y-2.5 pt-2 border-t border-border/40">
-                <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
                   Condições Comerciais
                 </span>
                 <div className="space-y-2.5 bg-muted/20 p-3 rounded-xl border border-border/40">
@@ -905,7 +905,7 @@ function ClassifiedsMasterPage() {
 
               {/* 3. Modalidade de Entrega */}
               <div className="space-y-2 pt-2 border-t border-border/40">
-                <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
                   Modalidade de Entrega
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -935,11 +935,11 @@ function ClassifiedsMasterPage() {
               {/* IMÓVEIS */}
               {selectedCategory === "real_estate" && (
                 <div className="space-y-3 pt-2 border-t border-border/40">
-                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
                     Opções de Imóveis e Hospedagem
                   </span>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Finalidade</Label>
+                    <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Finalidade</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {REAL_ESTATE_DEAL_TYPES.map((dt) => (
                         <button
@@ -959,7 +959,7 @@ function ClassifiedsMasterPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Comodidades</Label>
+                    <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Comodidades</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {REAL_ESTATE_FACETS.map((facet) => {
                         const isChecked = selectedAmenities.includes(facet.id);
@@ -988,11 +988,11 @@ function ClassifiedsMasterPage() {
               {/* VEÍCULOS */}
               {selectedCategory === "vehicle" && (
                 <div className="space-y-3 pt-2 border-t border-border/40">
-                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
                     Opções de Veículos
                   </span>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Câmbio</Label>
+                    <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Câmbio</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {VEHICLE_GEARBOX_OPTIONS.map((opt) => (
                         <button
@@ -1012,7 +1012,7 @@ function ClassifiedsMasterPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Combustível</Label>
+                    <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Combustível</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {VEHICLE_FUEL_OPTIONS.map((opt) => (
                         <button
@@ -1047,7 +1047,7 @@ function ClassifiedsMasterPage() {
               {/* DESAPEGOS */}
               {selectedCategory === "sale" && (
                 <div className="space-y-2 pt-2 border-t border-border/40">
-                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
                     Subcategorias de Desapego
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -1073,7 +1073,7 @@ function ClassifiedsMasterPage() {
               {/* GASTRONOMIA */}
               {selectedCategory === "food" && (
                 <div className="space-y-2 pt-2 border-t border-border/40">
-                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
                     Especialidade Gastronômica
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -1099,11 +1099,11 @@ function ClassifiedsMasterPage() {
               {/* SERVIÇOS */}
               {selectedCategory === "service" && (
                 <div className="space-y-3 pt-2 border-t border-border/40">
-                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
                     Opções de Serviços
                   </span>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Público-Alvo</Label>
+                    <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Público-Alvo</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {SERVICE_AUDIENCE_OPTIONS.map((opt) => (
                         <button
@@ -1123,7 +1123,7 @@ function ClassifiedsMasterPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Área de Atuação</Label>
+                    <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Área de Atuação</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {SERVICE_SUBNICHE_OPTIONS.map((opt) => (
                         <button
@@ -1143,7 +1143,7 @@ function ClassifiedsMasterPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Modalidade</Label>
+                    <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Modalidade</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {SERVICE_MODALITY_OPTIONS.map((opt) => (
                         <button
@@ -1168,11 +1168,11 @@ function ClassifiedsMasterPage() {
               {/* NEGÓCIOS & M&A */}
               {selectedCategory === "business" && (
                 <div className="space-y-3 pt-2 border-t border-border/40">
-                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
                     Empresas à Venda
                   </span>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Objetivo</Label>
+                    <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Objetivo</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {BUSINESS_GOAL_OPTIONS.map((opt) => (
                         <button
@@ -1192,7 +1192,7 @@ function ClassifiedsMasterPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Tipo de Ponto Comercial</Label>
+                    <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Tipo de Ponto Comercial</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {BUSINESS_POINT_OPTIONS.map((opt) => (
                         <button
@@ -1228,7 +1228,7 @@ function ClassifiedsMasterPage() {
               {/* VAGAS */}
               {(selectedCategory === "job" || selectedCategory === "job_offer") && (
                 <div className="space-y-2 pt-2 border-t border-border/40">
-                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
                     Regime de Contratação
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -1314,7 +1314,7 @@ function ClassifiedsMasterPage() {
               return (
                 <div
                   key={item.id}
-                  className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[144px] pl-32 sm:pl-48 w-full"
+                  className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-36 pl-32 sm:pl-48 w-full"
                 >
                   <Link
                     to="/classificados/$id"
@@ -1334,27 +1334,27 @@ function ClassifiedsMasterPage() {
                       </div>
                     )}
                     <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
-                      <Badge className="bg-background/95 text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md">
+                      <Badge className="bg-background/95 text-foreground font-mono text-xs uppercase font-bold px-1.5 py-0.5 rounded-md">
                         {itemNiche.shortLabel}
                       </Badge>
                       {(item.is_boosted || item.attributes?.is_boosted) && (
-                        <Badge variant="outline" className="border-border/60 text-foreground font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+                        <Badge variant="outline" className="border-border/60 text-foreground font-mono text-xs font-bold px-1.5 py-0.5 rounded-md">
                           Destaque
                         </Badge>
                       )}
                     </div>
                   </Link>
 
-                  <div className="p-3.5 sm:p-4 flex flex-col justify-between min-h-[144px] gap-2">
+                  <div className="p-3.5 sm:p-4 flex flex-col justify-between min-h-36 gap-2">
                     <Link to="/classificados/$id" params={{ id: item.id }} className="space-y-1.5 block cursor-pointer">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {(item.attributes?.accepts_trade || item.accepts_trade) && (
-                          <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 rounded-md">
+                          <Badge variant="secondary" className="text-xs font-mono px-1.5 py-0 rounded-md">
                             Aceita Troca
                           </Badge>
                         )}
                         {(item.attributes?.accepts_card || item.accepts_card) && (
-                          <Badge variant="outline" className="text-[9px] font-mono px-1.5 py-0 rounded-md">
+                          <Badge variant="outline" className="text-xs font-mono px-1.5 py-0 rounded-md">
                             {Number(item.attributes?.max_installments) > 1
                               ? `Cartão até ${item.attributes.max_installments}x`
                               : "Aceita Cartão"}
@@ -1370,7 +1370,7 @@ function ClassifiedsMasterPage() {
                         <span className="text-lg sm:text-xl font-black text-foreground font-mono">
                           {formatMoney(item.price_cents || 0)}
                           {(itemNiche.priceSuffix || (isAluguel ? " /mês" : isTemporada ? " /diária" : "")) && (
-                            <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                            <span className="text-xs font-normal text-muted-foreground ml-1">
                               {itemNiche.priceSuffix || (isAluguel ? "/mês" : "/diária")}
                             </span>
                           )}
@@ -1497,13 +1497,13 @@ function ClassifiedsMasterPage() {
                                 </div>
                               )}
                               <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
-                                <Badge className="bg-background/95 text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md border border-border/40">
+                                <Badge className="bg-background/95 text-foreground font-mono text-xs uppercase font-bold px-1.5 py-0.5 rounded-md border border-border/40">
                                   {itemNiche.shortLabel}
                                 </Badge>
                                 {item.deal_type && (
                                   <Badge
                                     variant="secondary"
-                                    className="text-[9px] uppercase font-mono font-bold px-2 py-0.5 bg-background/90 text-foreground border border-border/40 rounded-md"
+                                    className="text-xs uppercase font-mono font-bold px-2 py-0.5 bg-background/90 text-foreground border border-border/40 rounded-md"
                                   >
                                     {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
                                   </Badge>
@@ -1516,7 +1516,7 @@ function ClassifiedsMasterPage() {
                                 <span className="text-lg sm:text-xl font-black text-foreground font-mono block">
                                   {formatMoney(item.price_cents || 0)}
                                   {(itemNiche.priceSuffix || (isAluguel ? " /mês" : isTemporada ? " /diária" : "")) && (
-                                    <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                                    <span className="text-xs font-normal text-muted-foreground ml-1">
                                       {itemNiche.priceSuffix || (isAluguel ? "/mês" : "/diária")}
                                     </span>
                                   )}
@@ -1527,7 +1527,7 @@ function ClassifiedsMasterPage() {
                                 </h3>
                               </div>
 
-                              <div className="pt-2 text-[11px] text-muted-foreground font-mono flex items-center justify-between h-4">
+                              <div className="pt-2 text-xs text-muted-foreground/75 text-muted-foreground font-mono flex items-center justify-between h-4">
                                 <span className="flex items-center gap-1 truncate">
                                   <MapPin size={11} weight="bold" className="shrink-0 text-primary" />
                                   <span className="truncate">{item.location_name || item.location_text || "Regional"}</span>
@@ -1612,19 +1612,19 @@ function ClassifiedsMasterPage() {
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
-                        <Badge className="bg-background/95 text-foreground font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded-lg border border-border/40">
+                        <Badge className="bg-background/95 text-foreground font-mono text-xs uppercase font-bold px-2 py-0.5 rounded-lg border border-border/40">
                           {itemNiche.shortLabel}
                         </Badge>
                         {item.deal_type && (
                           <Badge
                             variant="secondary"
-                            className="text-[9px] uppercase font-mono font-bold px-1.5 py-0.5 bg-background/90 text-foreground border border-border/40 rounded-md"
+                            className="text-xs uppercase font-mono font-bold px-1.5 py-0.5 bg-background/90 text-foreground border border-border/40 rounded-md"
                           >
                             {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
                           </Badge>
                         )}
                         {(item.is_boosted || item.attributes?.is_boosted) && (
-                          <Badge variant="secondary" className="bg-background/90 text-foreground border border-border/40 text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+                          <Badge variant="secondary" className="bg-background/90 text-foreground border border-border/40 text-xs font-bold px-1.5 py-0.5 rounded-md">
                             Destaque
                           </Badge>
                         )}

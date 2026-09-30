@@ -69,16 +69,16 @@ export function SeasonalMarketingCalendarWidget({
   const getImpactBadge = (impact: string) => {
     switch (impact) {
       case "extremo":
-        return <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 text-[10px]">Impacto Extremo 🔥</Badge>;
+        return <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 text-xs">Impacto Extremo</Badge>;
       case "alto":
-        return <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-[10px]">Pico Comercial 🚀</Badge>;
+        return <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs">Pico Comercial</Badge>;
       default:
-        return <Badge variant="secondary" className="text-[10px]">Oportunidade</Badge>;
+        return <Badge variant="secondary" className="text-xs">Oportunidade</Badge>;
     }
   };
 
   return (
-    <Card className="p-4 sm:p-5 border-border/50 bg-card rounded-2xl shadow-sm space-y-4">
+    <Card className="p-4 sm:p-5 border-border/50 bg-card rounded-2xl space-y-4">
       {/* CABEÇALHO DO WIDGET */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export function SeasonalMarketingCalendarWidget({
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <span>Calendário Editorial e Vendas Sazonais</span>
+              <span>Calendário Sazonal</span>
               <Star className="size-3 text-amber-500" />
             </h3>
             <p className="text-xs text-foreground font-medium">
@@ -109,7 +109,7 @@ export function SeasonalMarketingCalendarWidget({
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
-              {primaryEvent.days_until === 0 ? "É HOJE!" : `Em ${primaryEvent.days_until} dias`}
+              {primaryEvent.days_until === 0 ? "Hoje" : `Em ${primaryEvent.days_until} dias`}
             </span>
             <span className="text-muted-foreground text-xs">•</span>
             <span className="text-xs font-mono font-medium text-foreground">
@@ -117,7 +117,7 @@ export function SeasonalMarketingCalendarWidget({
             </span>
             {getImpactBadge(primaryEvent.commercial_impact)}
             {primaryEvent.city_name && (
-              <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 h-4">
+              <Badge variant="outline" className="text-xs gap-1 px-1.5 py-0 h-4">
                 <MapPin className="size-2.5" />
                 <span>{primaryEvent.city_name}</span>
               </Badge>
@@ -134,8 +134,8 @@ export function SeasonalMarketingCalendarWidget({
           {primaryEvent.suggested_promotional_actions && primaryEvent.suggested_promotional_actions.length > 0 && (
             <div className="flex items-center gap-1.5 pt-1 overflow-x-auto no-scrollbar">
               {primaryEvent.suggested_promotional_actions.map((act, i) => (
-                <span key={i} className="text-[10px] bg-background border border-border/40 text-muted-foreground px-2 py-0.5 rounded-full whitespace-nowrap">
-                  💡 {act}
+                <span key={i} className="text-xs bg-background border border-border/40 text-muted-foreground px-2 py-0.5 rounded-full whitespace-nowrap">
+                  {act}
                 </span>
               ))}
             </div>
@@ -146,7 +146,7 @@ export function SeasonalMarketingCalendarWidget({
           to="/workspace/marketing/promocoes"
           className="shrink-0"
         >
-          <Button size="sm" className="rounded-xl text-xs font-bold h-8 gap-1.5 bg-primary text-primary-foreground">
+          <Button size="sm" className="rounded-xl text-xs font-bold min-h-11 sm:min-h-9 sm:h-9 gap-1.5 bg-primary text-primary-foreground">
             <Gift className="size-3.5" />
             <span>Ativar Oferta</span>
           </Button>
@@ -163,16 +163,16 @@ export function SeasonalMarketingCalendarWidget({
             >
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-foreground truncate">{item.name}</span>
-                <span className="text-[10px] font-mono font-medium text-muted-foreground shrink-0">
+                <span className="text-xs font-mono font-medium text-muted-foreground shrink-0">
                   em {item.days_until}d
                 </span>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-muted-foreground/75 text-muted-foreground">
                 <span>{item.date.split("-").reverse().slice(0, 2).join("/")}</span>
                 {item.commercial_impact === "extremo" ? (
-                  <span className="text-rose-500 font-bold text-[10px]">Pico Máximo</span>
+                  <span className="text-rose-500 font-bold text-xs">Pico Máximo</span>
                 ) : (
-                  <span className="text-[10px]">Comercial</span>
+                  <span className="text-xs">Comercial</span>
                 )}
               </div>
             </div>

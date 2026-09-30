@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ShoppingBag, Store, Truck, Utensils, RefreshCw, CheckCircle2, AlertCircle, Link2, Unlink, Sliders, ExternalLink, ChevronRight, TrendingUp, Package, Copy, Plus, PlayCircle, Search, Check, Radio, FileCode2, History, Barcode } from "lucide-react";
+import { ShoppingBag, Store, Truck, Utensils, RefreshCw, CheckCircle2, AlertCircle, Link2, Unlink, Sliders, ExternalLink, ChevronRight, TrendingUp, Package, Copy, Plus, Search, Check, Radio, FileCode2, History, Barcode } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listMarketplaceConnectors, saveMarketplaceConnector, disconnectMarketplaceConnector, triggerSyncConnector, getMarketplaceFinancialSummary, syncProductStockToMarketplaces, mapProductToMarketplace, deleteProductChannelListing, listProductMarketplaceMappings, importProductFromMercadoLivre, calculateAndApplyChannelPricing, listMarketplaceSyncLogs, type MarketplaceConnectorDTO, type MarketplacePlatform, type ProductMarketplaceMappingDTO, type MarketplaceSyncLogDTO } from "@/services/marketplace-hub.functions";
-import { listStoreWebhookEvents, reprocessWebhookEvent, simulateMarketplaceOrder } from "@/services/marketplace-webhooks.functions";
+import { listStoreWebhookEvents, reprocessWebhookEvent } from "@/services/marketplace-webhooks.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
@@ -76,7 +76,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Mercado Livre",
     category: "ecommerce",
     icon: ShoppingBag,
-    color: "bg-muted text-foreground",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://developers.mercadolivre.com.br/",
     badgeLabel: "MLB Sync",
     credentialFields: [
@@ -91,7 +91,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "iFood",
     category: "food",
     icon: Utensils,
-    color: "from-red-500 to-rose-600",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://developer.ifood.com.br/",
     badgeLabel: "OpenDelivery v1.0",
     credentialFields: [
@@ -105,7 +105,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Shopee Brasil",
     category: "ecommerce",
     icon: Store,
-    color: "bg-muted text-foreground",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://open.shopee.com.br/",
     badgeLabel: "Shopee Open API",
     credentialFields: [
@@ -119,7 +119,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Amazon Brasil",
     category: "ecommerce",
     icon: Package,
-    color: "bg-muted text-foreground",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://developer-docs.amazon.com/sp-api/",
     badgeLabel: "SP-API Brasil",
     credentialFields: [
@@ -135,7 +135,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Magazine Luiza",
     category: "ecommerce",
     icon: Store,
-    color: "from-blue-500 to-indigo-600",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://developers.magazineluiza.com.br/",
     badgeLabel: "IntegraCommerce",
     credentialFields: [
@@ -149,7 +149,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Melhor Envio",
     category: "logistics",
     icon: Truck,
-    color: "from-emerald-500 to-teal-600",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://docs.melhorenvio.com.br/",
     badgeLabel: "Cotação de Frete",
     credentialFields: [
@@ -161,7 +161,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Correios (CWS)",
     category: "logistics",
     icon: Truck,
-    color: "from-yellow-600 to-blue-600",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://cws.correios.com.br/",
     badgeLabel: "CWS Contrato",
     credentialFields: [
@@ -176,7 +176,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Loggi",
     category: "logistics",
     icon: Truck,
-    color: "from-blue-600 to-sky-500",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://docs.loggi.com/",
     badgeLabel: "Logística",
     credentialFields: [
@@ -189,7 +189,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Jadlog",
     category: "logistics",
     icon: Truck,
-    color: "from-red-600 to-rose-700",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://www.jadlog.com.br/jadlog/servicos",
     badgeLabel: "Cargas Expressas",
     credentialFields: [
@@ -204,7 +204,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Rappi",
     category: "food",
     icon: Utensils,
-    color: "from-orange-400 to-red-500",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://developer.rappi.com/",
     badgeLabel: "REST / Webhooks",
     credentialFields: [
@@ -217,7 +217,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Amo Delivery",
     category: "food",
     icon: Utensils,
-    color: "from-pink-500 to-rose-600",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://amodelivery.com/",
     badgeLabel: "Delivery Local",
     credentialFields: [
@@ -230,7 +230,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Google Meu Negócio",
     category: "ecommerce",
     icon: Store,
-    color: "from-blue-500 to-green-500",
+    color: "bg-muted text-foreground border border-border/60",
     docUrl: "https://developers.google.com/my-business/",
     badgeLabel: "Business Profile API",
     credentialFields: [
@@ -261,7 +261,6 @@ function MarketplaceHubPage() {
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [webhookModalOpen, setWebhookModalOpen] = useState(false);
   const [mappingModalOpen, setMappingModalOpen] = useState(false);
-  const [testOrderModalOpen, setTestOrderModalOpen] = useState(false);
 
   // Form states for Connector Config
   const [formValues, setFormValues] = useState<Record<string, string>>({});
@@ -275,12 +274,6 @@ function MarketplaceHubPage() {
   const [externalListingId, setExternalListingId] = useState("");
   const [externalSku, setExternalSku] = useState("");
   const [priceMarginPercent, setPriceMarginPercent] = useState(0);
-
-  // Form states for Simulated Order Test
-  const [testPlatform, setTestPlatform] = useState<"mercadolivre" | "ifood" | "shopee" | "amazon">("mercadolivre");
-  const [testCustomerName, setTestCustomerName] = useState("Eduardo Teste");
-  const [testProductTitle, setTestProductTitle] = useState("Produto Demonstração Integração");
-  const [testAmountReais, setTestAmountReais] = useState("149.90");
 
   // Queries
   const { data: connectors = initialConnectors } = useQuery({
@@ -398,19 +391,6 @@ function MarketplaceHubPage() {
     },
   });
 
-  const simulateOrderMutation = useMutation({
-    mutationFn: (payload: any) => simulateMarketplaceOrder({ data: payload }),
-    onSuccess: (res) => {
-      toast.success(res.message);
-      setTestOrderModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["marketplace-webhook-events"] });
-      queryClient.invalidateQueries({ queryKey: ["marketplace-financial-summary"] });
-    },
-    onError: (err: any) => {
-      toast.error(err.message || "Falha ao simular pedido.");
-    },
-  });
-
   // Handlers
   const handleOpenConfig = (p: PlatformMeta) => {
     setSelectedPlatform(p);
@@ -487,17 +467,6 @@ function MarketplaceHubPage() {
       externalListingId,
       externalSku: externalSku || undefined,
       priceMarginPercent: Number(priceMarginPercent) || 0,
-    });
-  };
-
-  const handleSimulateOrder = () => {
-    const cents = Math.round(Number(testAmountReais.replace(",", ".")) * 100) || 10000;
-    simulateOrderMutation.mutate({
-      platform: testPlatform,
-      customerName: testCustomerName,
-      productTitle: testProductTitle,
-      totalAmountCents: cents,
-      sku: "SKU-TEST-01",
     });
   };
 
@@ -694,7 +663,7 @@ function MarketplaceHubPage() {
                   <div className="space-y-1">
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <div className="flex items-center gap-3">
-                        <div className={cn("size-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white shadow-xs", item.color)}>
+                        <div className="size-10 rounded-xl bg-muted text-foreground border border-border/60 flex items-center justify-center shadow-2xs">
                           <Icon className="size-5" />
                         </div>
                         <div>
@@ -1330,80 +1299,6 @@ function MarketplaceHubPage() {
               disabled={mapProductMutation.isPending || !externalListingId.trim()}
             >
               {mapProductMutation.isPending ? "Salvando..." : "Salvar Mapeamento"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal 4: Testar Pedido Simulado */}
-      <Dialog open={testOrderModalOpen} onOpenChange={setTestOrderModalOpen}>
-        <DialogContent className="max-w-md rounded-2xl p-6">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold flex items-center gap-2">
-              <PlayCircle className="size-4 text-primary" /> Testar Pedido de Marketplace
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Gera uma venda simulada com gravação no banco, baixa de estoque e entrada na lista de pedidos / expedição WMS.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Canal Simulado</Label>
-              <select
-                value={testPlatform}
-                onChange={(e) => setTestPlatform(e.target.value as any)}
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs"
-              >
-                <option value="mercadolivre">Mercado Livre Brasil</option>
-                <option value="ifood">iFood Delivery</option>
-                <option value="shopee">Shopee Brasil</option>
-                <option value="amazon">Amazon Brasil</option>
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Nome do Comprador</Label>
-              <Input
-                value={testCustomerName}
-                onChange={(e) => setTestCustomerName(e.target.value)}
-                className="h-10 text-xs rounded-xl"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Título do Item</Label>
-              <Input
-                value={testProductTitle}
-                onChange={(e) => setTestProductTitle(e.target.value)}
-                className="h-10 text-xs rounded-xl"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Valor Total da Venda (R$)</Label>
-              <Input
-                value={testAmountReais}
-                onChange={(e) => setTestAmountReais(e.target.value)}
-                className="h-10 text-xs rounded-xl font-mono"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">
-            <Button
-              variant="outline"
-              className="h-10 rounded-xl text-xs cursor-pointer"
-              onClick={() => setTestOrderModalOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              className="h-10 rounded-xl text-xs font-semibold bg-foreground text-background cursor-pointer"
-              onClick={handleSimulateOrder}
-              disabled={simulateOrderMutation.isPending}
-            >
-              {simulateOrderMutation.isPending ? "Disparando..." : "Disparar Webhook de Teste"}
             </Button>
           </div>
         </DialogContent>

@@ -158,32 +158,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
       title: "Portfólio & Galeria Visual",
       subtitle: "Conheça de perto a atmosfera, produtos e experiências exclusivas.",
       layout: "mosaic",
-      items: [
-        {
-          id: "g-1",
-          imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
-          title: "Design de Produto",
-          caption: "Acabamento premium e ergonomia",
-        },
-        {
-          id: "g-2",
-          imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
-          title: "Tecnologia & Precisão",
-          caption: "Materiais de alta durabilidade",
-        },
-        {
-          id: "g-3",
-          imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
-          title: "Pureza Acústica",
-          caption: "Engenharia de som de estúdio",
-        },
-        {
-          id: "g-4",
-          imageUrl: "https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=800&q=80",
-          title: "Estilo & Conforto",
-          caption: "Projetado para uso contínuo",
-        },
-      ],
+      items: [],
     } as MediaGalleryBlockData,
   },
 
@@ -244,9 +219,9 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
       testimonials: [
         {
           id: "t-1",
-          name: "Dra. Carolina Mendes",
-          role: "Sócia no Mendes & Associados",
-          avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+          name: "Carolina Mendes",
+          role: "Mendes & Associados",
+          avatarUrl: "",
           rating: 5,
           comment: "A plataforma transformou nossa presença digital. O site transmite sobriedade e segurança, e a captação de novos clientes aumentou significativamente.",
           verified: true,
@@ -254,8 +229,8 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
         {
           id: "t-2",
           name: "Rodrigo Silveira",
-          role: "Diretor Comercial na NeoLog",
-          avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
+          role: "NeoLog",
+          avatarUrl: "",
           rating: 5,
           comment: "A velocidade e o design limpo superaram qualquer ferramenta que usamos antes. Sem poluição visual, direto ao ponto.",
           verified: true,
@@ -263,8 +238,8 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
         {
           id: "t-3",
           name: "Mariana Vasconcelos",
-          role: "Fundadora da Viva Turismo",
-          avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+          role: "Viva Turismo",
+          avatarUrl: "",
           rating: 5,
           comment: "Nossas lâminas de roteiros ficaram impecáveis. Os viajantes elogiam a clareza e facilidade de fechar contratos diretamente pelo celular.",
           verified: true,
@@ -335,3 +310,26 @@ export function getSiteBlockById(id: string): SiteBuilderBlockDefinition {
   const found = SITE_BUILDER_BLOCKS.find((b) => b.id === id);
   return found || SITE_BUILDER_BLOCKS[0];
 }
+
+import { Sparkles, LayoutTemplate, Layers, Tag, MessageSquare } from "lucide-react";
+
+export type WixBlockCategory = "all" | "basic" | "layout" | "sections" | "interactive";
+
+export const WIX_CATEGORY_CONFIG: { id: WixBlockCategory; label: string; icon: any }[] = [
+  { id: "all", label: "Todos", icon: Sparkles },
+  { id: "basic", label: "Básico", icon: LayoutTemplate },
+  { id: "layout", label: "Layout", icon: Layers },
+  { id: "sections", label: "Seções", icon: Tag },
+  { id: "interactive", label: "Interativo", icon: MessageSquare },
+];
+
+export const BLOCK_TO_WIX_CATEGORY: Record<string, "basic" | "layout" | "sections" | "interactive"> = {
+  hero_minimal_split: "basic",
+  bento_asymmetric_4: "layout",
+  pricing_three_tiers: "sections",
+  testimonials_social_proof: "sections",
+  faq_clean_accordion: "sections",
+  hero_interactive_carousel: "interactive",
+  media_gallery_mosaic: "interactive",
+  contact_form_direct: "interactive",
+};

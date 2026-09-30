@@ -15,631 +15,640 @@ import { SeasonalMarketingCalendarWidget } from "@/components/admin/marketing/se
 import { PolymorphicDashboardRenderer } from "@/components/workspace/dashboard/PolymorphicDashboardRenderer";
 
 export const Route = createFileRoute("/workspace/")({
- head: () => ({ meta: [{ title: "Operação | Workspace Waesy" }] }),
- loader: async () => {
-   try {
- let session: any = null;
- try {
- session = await getUserSession();
- } catch {
- session = null;
- }
+  head: () => ({ meta: [{ title: "Operação | Workspace Waesy" }] }),
+  loader: async () => {
+    try {
+      let session: any = null;
+      try {
+        session = await getUserSession();
+      } catch {
+        session = null;
+      }
 
- const memberships = session?.memberships || [];
- const activeStoreId = session?.store_id || memberships[0]?.store_id || null;
- const activeStore = memberships.find((m: any) => m.store_id === activeStoreId) || memberships[0] || null;
+      const memberships = session?.memberships || [];
+      const activeStoreId = session?.store_id || memberships[0]?.store_id || null;
+      const activeStore = memberships.find((m: any) => m.store_id === activeStoreId) || memberships[0] || null;
 
- const dashboardMetrics = await getDashboardData().catch(() => ({
- salesTodayCents: 0,
- salesMonthCents: 0,
- salesLastMonthCents: 0,
- growthPercentage: null,
- ordersTodayCount: 0,
- ordersMonthCount: 0,
- ordersBreakdown: {
- awaitingPayment: 0,
- needsSeparation: 0,
- shippedOrReady: 0,
- completed: 0,
- cancelled: 0,
- pendingBackorders: 0,
- },
- lowStockItems: [],
- criticalStockCount: 0,
- newCustomers30d: 0,
+      const dashboardMetrics = await getDashboardData().catch(() => ({
+        salesTodayCents: 0,
+        salesMonthCents: 0,
+        salesLastMonthCents: 0,
+        growthPercentage: null,
+        ordersTodayCount: 0,
+        ordersMonthCount: 0,
+        ordersBreakdown: {
+          awaitingPayment: 0,
+          needsSeparation: 0,
+          shippedOrReady: 0,
+          completed: 0,
+          cancelled: 0,
+          pendingBackorders: 0,
+        },
+        lowStockItems: [],
+        criticalStockCount: 0,
+        newCustomers30d: 0,
         newLeads30d: 0,
- abandonedCartsCount: 0,
- recentActivities: [],
- activeCashRegister: null,
- setupChecklist: [],
- setupProgressPercentage: 100,
- } as DashboardMetrics));
+        abandonedCartsCount: 0,
+        recentActivities: [],
+        activeCashRegister: null,
+        setupChecklist: [],
+        setupProgressPercentage: 100,
+      } as DashboardMetrics));
 
- return {
- session,
- activeStore,
- memberships,
- dashboardMetrics,
- };
-   } catch (err) {
-     console.error("[loader:workspace.index] Unhandled loader error:", err);
-     return { session: null, activeStore: null, memberships: null, dashboardMetrics: null };
-   }
- },
- component: WorkspaceDashboardPage,
+      return {
+        session,
+        activeStore,
+        memberships,
+        dashboardMetrics,
+      };
+    } catch (err) {
+      console.error("[loader:workspace.index] Unhandled loader error:", err);
+      return { session: null, activeStore: null, memberships: null, dashboardMetrics: null };
+    }
+  },
+  component: WorkspaceDashboardPage,
 });
 
 export default function WorkspaceDashboardPage() {
- const { activeStore, dashboardMetrics } = ((Route.useLoaderData?.() as any) || {});
- const semantics = getNicheSemantics(activeStore);
+  const { activeStore, dashboardMetrics } = ((Route.useLoaderData?.() as any) || {});
+  const semantics = getNicheSemantics(activeStore);
 
- const [isShareModalOpen, setIsShareModalOpen] = useState(false);
- const [isOpenNow, setIsOpenNow] = useState(() => {
- const pauseUntil = activeStore?.settings?.emergency_pause_until;
- if (!pauseUntil) return true;
- return new Date(pauseUntil).getTime() <= Date.now();
- });
- const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isOpenNow, setIsOpenNow] = useState(() => {
+    const pauseUntil = activeStore?.settings?.emergency_pause_until;
+    if (!pauseUntil) return true;
+    return new Date(pauseUntil).getTime() <= Date.now();
+  });
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
 
- const handleToggleStoreStatus = async () => {
- if (isTogglingStatus) return;
- const nextState = !isOpenNow;
- setIsTogglingStatus(true);
- try {
- await toggleStoreOpenStatus({
- data: {
- isOpen: nextState,
- pauseMinutes: nextState ? undefined : 60,
- },
- });
- setIsOpenNow(nextState);
- toast.success(
- nextState
- ? "Loja reaberta! Recebimento de pedidos ativo."
- : "Loja pausada por 60 min! Novos pedidos bloqueados temporariamente."
- );
- } catch (err: any) {
- toast.error(err.message || "Erro ao alterar status operacional da loja.");
- } finally {
- setIsTogglingStatus(false);
- }
- };
+  const handleToggleStoreStatus = async () => {
+    if (isTogglingStatus) return;
+    const nextState = !isOpenNow;
+    setIsTogglingStatus(true);
+    try {
+      await toggleStoreOpenStatus({
+        data: {
+          isOpen: nextState,
+          pauseMinutes: nextState ? undefined : 60,
+        },
+      });
+      setIsOpenNow(nextState);
+      toast.success(
+        nextState
+          ? "Loja reaberta! Recebimento de pedidos ativo."
+          : "Loja pausada por 60 min! Novos pedidos bloqueados temporariamente."
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao alterar status operacional da loja.");
+    } finally {
+      setIsTogglingStatus(false);
+    }
+  };
 
- const criticalStockCount = dashboardMetrics?.criticalStockCount || 0;
- const recentActivities = dashboardMetrics?.recentActivities || [];
+  const criticalStockCount = dashboardMetrics?.criticalStockCount || 0;
+  const recentActivities = dashboardMetrics?.recentActivities || [];
 
- // Mapeia os atalhos de canais e vitrine de forma estritamente contextual por nicho
- const getContextualChannelLinks = () => {
- switch (semantics.nicheId) {
- case "tourism":
- return [
- { label: "Excursões", path: "/workspace/turismo/grupos", icon: Bus },
- { label: "Frota", path: "/workspace/turismo/frota", icon: Bus },
- { label: "Cotações", path: "/workspace/turismo/cotacoes", icon: Plane },
- { label: "Propostas", path: "/workspace/turismo/propostas", icon: FileSpreadsheet },
- { label: "Contratos", path: "/workspace/turismo/contratos", icon: FileText },
- ];
- case "gastronomy":
- return [
- { label: "Cozinha", path: "/workspace/pdv/cozinha", icon: ChefHat },
- { label: "Reservas", path: "/workspace/reservas", icon: UtensilsCrossed },
- { label: "Comandas", path: "/workspace/pdv/comandas", icon: UtensilsCrossed },
- { label: "Caixa", path: "/workspace/pdv", icon: CreditCard },
- { label: "Relatórios", path: "/workspace/relatorios/gastronomia", icon: BarChart3 },
- { label: "Delivery", path: "/workspace/pedidos/gestor", icon: Store },
- ];
- case "services":
- return [
- { label: "Agenda", path: "/workspace/agenda", icon: Calendar },
- { label: "Serviços", path: "/workspace/agenda/servicos", icon: Layers },
- { label: "Pacotes", path: "/workspace/pacotes", icon: Ticket },
- { label: "Promoções", path: "/workspace/marketing/promocoes", icon: Flame },
- ];
- case "legal":
- return [
- { label: "Processos", path: "/workspace/advocacia", icon: Scale },
- { label: "Audiências", path: "/workspace/agenda", icon: Calendar },
- { label: "Honorários", path: "/workspace/orcamentos", icon: FileText },
- ];
- case "real_estate":
- return [
- { label: "Imóveis", path: "/workspace/catalogo/produtos", icon: Building2 },
- { label: "Vistorias", path: "/workspace/imoveis/manutencoes", icon: Wrench },
- { label: "Propostas", path: "/workspace/orcamentos", icon: FileText },
- ];
- case "jobs":
- return [
- { label: "Candidaturas", path: "/workspace/empregos/candidatos", icon: Briefcase },
- { label: "Talentos", path: "/workspace/clientes", icon: Users },
- { label: "Carreiras", path: "/workspace/marketing/vitrine", icon: Megaphone },
- ];
- case "education":
- return [
- { label: "Aulas", path: "/workspace/agenda", icon: Calendar },
- { label: "Cursos", path: "/workspace/agenda/servicos", icon: GraduationCap },
- { label: "Alunos", path: "/workspace/clientes", icon: Users },
- ];
- case "events":
- return [
- { label: "Eventos", path: "/workspace/eventos", icon: Ticket },
- { label: "Divulgação", path: "/workspace/marketing/banners", icon: Megaphone },
- { label: "Ingressos", path: "/workspace/financeiro/pagamentos", icon: DollarSign },
- ];
- case "vehicles":
- return [
- { label: "Veículos", path: "/workspace/catalogo/produtos", icon: CarFront },
- { label: "Propostas", path: "/workspace/orcamentos", icon: FileText },
- { label: "Leads", path: "/workspace/clientes", icon: Users },
- ];
- case "pet":
- return [
- { label: "Agenda", path: "/workspace/agenda", icon: Calendar },
- { label: "Procedimentos", path: "/workspace/agenda/servicos", icon: Layers },
- { label: "Produtos", path: "/workspace/catalogo/produtos", icon: Package },
- ];
- case "retail":
- default:
- return [
- { label: "Banners", path: "/workspace/marketing/banners", icon: Megaphone },
- { label: "Promoções", path: "/workspace/marketing/promocoes", icon: Flame },
- { label: "Catálogo", path: "/workspace/catalogo/produtos", icon: Package },
- ];
- }
- };
+  // Mapeia os atalhos de canais e vitrine de forma estritamente contextual por nicho
+  const getContextualChannelLinks = () => {
+    switch (semantics.nicheId) {
+      case "tourism":
+        return [
+          { label: "Excursões", path: "/workspace/turismo/grupos", icon: Bus },
+          { label: "Frota", path: "/workspace/turismo/frota", icon: Bus },
+          { label: "Cotações", path: "/workspace/turismo/cotacoes", icon: Plane },
+          { label: "Propostas", path: "/workspace/turismo/propostas", icon: FileSpreadsheet },
+          { label: "Contratos", path: "/workspace/turismo/contratos", icon: FileText },
+        ];
+      case "gastronomy":
+        return [
+          { label: "Cozinha", path: "/workspace/pdv/cozinha", icon: ChefHat },
+          { label: "Reservas", path: "/workspace/reservas", icon: UtensilsCrossed },
+          { label: "Comandas", path: "/workspace/pdv/comandas", icon: UtensilsCrossed },
+          { label: "Caixa", path: "/workspace/pdv", icon: CreditCard },
+          { label: "Relatórios", path: "/workspace/relatorios/gastronomia", icon: BarChart3 },
+          { label: "Delivery", path: "/workspace/pedidos/gestor", icon: Store },
+        ];
+      case "services":
+        return [
+          { label: "Agenda", path: "/workspace/agenda", icon: Calendar },
+          { label: "Serviços", path: "/workspace/agenda/servicos", icon: Layers },
+          { label: "Pacotes", path: "/workspace/pacotes", icon: Ticket },
+          { label: "Promoções", path: "/workspace/marketing/promocoes", icon: Flame },
+        ];
+      case "legal":
+        return [
+          { label: "Processos", path: "/workspace/advocacia", icon: Scale },
+          { label: "Audiências", path: "/workspace/agenda", icon: Calendar },
+          { label: "Honorários", path: "/workspace/orcamentos", icon: FileText },
+        ];
+      case "real_estate":
+        return [
+          { label: "Imóveis", path: "/workspace/catalogo/produtos", icon: Building2 },
+          { label: "Vistorias", path: "/workspace/imoveis/manutencoes", icon: Wrench },
+          { label: "Propostas", path: "/workspace/orcamentos", icon: FileText },
+        ];
+      case "jobs":
+        return [
+          { label: "Candidaturas", path: "/workspace/empregos/candidatos", icon: Briefcase },
+          { label: "Talentos", path: "/workspace/clientes", icon: Users },
+          { label: "Carreiras", path: "/workspace/marketing/vitrine", icon: Megaphone },
+        ];
+      case "education":
+        return [
+          { label: "Aulas", path: "/workspace/agenda", icon: Calendar },
+          { label: "Cursos", path: "/workspace/agenda/servicos", icon: GraduationCap },
+          { label: "Alunos", path: "/workspace/clientes", icon: Users },
+        ];
+      case "events":
+        return [
+          { label: "Eventos", path: "/workspace/eventos", icon: Ticket },
+          { label: "Divulgação", path: "/workspace/marketing/banners", icon: Megaphone },
+          { label: "Ingressos", path: "/workspace/financeiro/pagamentos", icon: DollarSign },
+        ];
+      case "vehicles":
+        return [
+          { label: "Veículos", path: "/workspace/catalogo/produtos", icon: CarFront },
+          { label: "Propostas", path: "/workspace/orcamentos", icon: FileText },
+          { label: "Leads", path: "/workspace/clientes", icon: Users },
+        ];
+      case "pet":
+        return [
+          { label: "Agenda", path: "/workspace/agenda", icon: Calendar },
+          { label: "Procedimentos", path: "/workspace/agenda/servicos", icon: Layers },
+          { label: "Produtos", path: "/workspace/catalogo/produtos", icon: Package },
+        ];
+      case "retail":
+      default:
+        return [
+          { label: "Banners", path: "/workspace/marketing/banners", icon: Megaphone },
+          { label: "Promoções", path: "/workspace/marketing/promocoes", icon: Flame },
+          { label: "Catálogo", path: "/workspace/catalogo/produtos", icon: Package },
+        ];
+    }
+  };
 
- const channelLinks = getContextualChannelLinks();
+  const channelLinks = getContextualChannelLinks();
 
- const getOrdersDestination = () => {
- if (semantics.nicheId === "gastronomy") return "/workspace/pedidos/gestor";
- if (semantics.nicheId === "tourism") return "/workspace/turismo/cotacoes";
- if (semantics.nicheId === "legal") return "/workspace/advocacia";
- if (semantics.nicheId === "jobs") return "/workspace/empregos/candidatos";
- return "/workspace/pedidos";
- };
+  const getOrdersDestination = () => {
+    if (semantics.nicheId === "gastronomy") return "/workspace/pedidos/gestor";
+    if (semantics.nicheId === "tourism") return "/workspace/turismo/cotacoes";
+    if (semantics.nicheId === "legal") return "/workspace/advocacia";
+    if (semantics.nicheId === "jobs") return "/workspace/empregos/candidatos";
+    return "/workspace/pedidos";
+  };
 
- const getCatalogCardDetails = () => {
- if (semantics.nicheId === "gastronomy") {
- return {
- path: "/workspace/catalogo/produtos",
- subtitle: "Cardápio Ativo",
- };
- }
- if (semantics.nicheId === "tourism") {
- return {
- path: "/workspace/turismo/propostas",
- subtitle: "Disponibilidade Ativa",
- };
- }
- if (semantics.nicheId === "services") {
- return {
- path: "/workspace/agenda/servicos",
- subtitle: "Grade Disponível",
- };
- }
- if (semantics.nicheId === "legal") {
- return {
- path: "/workspace/advocacia",
- subtitle: "Prazos em Dia",
- };
- }
- if (semantics.nicheId === "jobs") {
- return {
- path: "/workspace/empregos/candidatos",
- subtitle: "Vagas Publicadas",
- };
- }
- return {
- path: "/workspace/catalogo/produtos",
- subtitle: criticalStockCount === 0 ? "Estoque Regular" : `${criticalStockCount} item(ns) com baixo estoque`,
- };
- };
+  const getCatalogCardDetails = () => {
+    if (semantics.nicheId === "gastronomy") {
+      return {
+        path: "/workspace/catalogo/produtos",
+        subtitle: "Cardápio Ativo",
+      };
+    }
+    if (semantics.nicheId === "tourism") {
+      return {
+        path: "/workspace/turismo/propostas",
+        subtitle: "Disponibilidade Ativa",
+      };
+    }
+    if (semantics.nicheId === "services") {
+      return {
+        path: "/workspace/agenda/servicos",
+        subtitle: "Grade Disponível",
+      };
+    }
+    if (semantics.nicheId === "legal") {
+      return {
+        path: "/workspace/advocacia",
+        subtitle: "Prazos em Dia",
+      };
+    }
+    if (semantics.nicheId === "jobs") {
+      return {
+        path: "/workspace/empregos/candidatos",
+        subtitle: "Vagas Publicadas",
+      };
+    }
+    return {
+      path: "/workspace/catalogo/produtos",
+      subtitle: criticalStockCount === 0 ? "Estoque Regular" : `${criticalStockCount} item(ns) com baixo estoque`,
+    };
+  };
 
- const catalogDetails = getCatalogCardDetails();
+  const catalogDetails = getCatalogCardDetails();
 
- return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-4 sm:space-y-6 animate-in fade-in duration-200">
- {/* ── 1. Top Header com Identificação do Negócio ── */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-card border border-border/60">
- <div className="space-y-1">
- <div className="flex items-center gap-2">
- <span className="text-xs font-semibold text-muted-foreground">
- {activeStore?.name || "Meu Espaço"}
- </span>
- <Badge variant="outline" className="text-[10px] bg-muted/40 font-semibold">
- {semantics.name}
- </Badge>
- </div>
- <h1 className="text-xl font-bold tracking-tight text-foreground">
- Visão Geral
- </h1>
- </div>
+  return (
+    <div className="w-full max-w-7xl mx-auto px-3.5 sm:px-4 md:px-0 space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+      {/* ── 1. Top Header com Identificação do Negócio ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-card border border-border/40">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground/80">
+              {activeStore?.name || "Meu Espaço"}
+            </span>
+            <Badge variant="outline" className="text-xs py-0 px-2 bg-muted/40 font-semibold border-border/40">
+              {semantics.name}
+            </Badge>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Visão Geral
+          </h1>
+        </div>
 
- {/* Quick Top Actions Contextuais */}
- <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap no-scrollbar">
- {/* Chave de Operação Instantânea "Loja Aberta / Pausada" */}
- <button
- type="button"
- onClick={handleToggleStoreStatus}
- disabled={isTogglingStatus}
- className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
- isOpenNow
- ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
- : "bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20"
- }`}
- title="Clique para alternar o status operacional da loja"
- >
- {isTogglingStatus ? (
- <Loader2 className="size-3.5 animate-spin" />
- ) : (
- <span className={`size-2 rounded-full ${isOpenNow ? "bg-emerald-500" : "bg-rose-500"}`} />
- )}
- <span>{isOpenNow ? "Loja Aberta" : "Loja Pausada"}</span>
- </button>
+        {/* Quick Top Actions Contextuais */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap no-scrollbar">
+          {/* Chave de Operação Instantânea "Loja Aberta / Pausada" */}
+          <button
+            type="button"
+            onClick={handleToggleStoreStatus}
+            disabled={isTogglingStatus}
+            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-colors cursor-pointer min-h-11 sm:min-h-9 ${
+              isOpenNow
+                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15"
+                : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/15"
+            }`}
+            title="Clique para alternar o status operacional da loja"
+          >
+            {isTogglingStatus ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <span className={`size-2 rounded-full ${isOpenNow ? "bg-emerald-500" : "bg-rose-500"}`} />
+            )}
+            <span>{isOpenNow ? "Loja Aberta" : "Loja Pausada"}</span>
+          </button>
 
- {/* Botão de Divulgação & QR Code */}
- <Button
- type="button"
- variant="outline"
- size="sm"
- onClick={() => setIsShareModalOpen(true)}
- className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/80"
- >
- <QrCode className="size-3.5 text-primary" />
- <span>Divulgar</span>
- </Button>
+          {/* Botão de Divulgação & QR Code */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsShareModalOpen(true)}
+            className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9"
+          >
+            <QrCode className="size-3.5 text-primary" />
+            <span>Divulgar</span>
+          </Button>
 
- <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold">
- <Link to="/workspace/lojas">
- Trocar Loja
- </Link>
- </Button>
+          <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9">
+            <Link to="/workspace/lojas">
+              Trocar Loja
+            </Link>
+          </Button>
 
- {activeStore?.slug && (
- <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold gap-1.5 border-border/80">
- <Link to="/diretorio/$id" params={{ id: activeStore.slug }}>
- <Store className="size-3.5 text-primary" />
- <span>Vitrine Pública</span>
- </Link>
- </Button>
- )}
+          {activeStore?.slug && (
+            <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold gap-1.5 border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9">
+              <Link to="/diretorio/$id" params={{ id: activeStore.slug }}>
+                <Store className="size-3.5 text-primary" />
+                <span>Vitrine Pública</span>
+              </Link>
+            </Button>
+          )}
 
- <Button asChild size="sm" variant="ghost" className="rounded-xl text-xs font-semibold gap-1 text-primary hover:text-primary hover:bg-primary/10">
- <Link to="/workspace/marketing/vitrine">
- <Layers className="size-3.5" />
- <span>Vitrine</span>
- </Link>
- </Button>
+          <Button asChild size="sm" variant="ghost" className="rounded-xl text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 min-h-11 sm:min-h-9">
+            <Link to="/workspace/marketing/vitrine">
+              <Layers className="size-3.5" />
+              <span>Vitrine</span>
+            </Link>
+          </Button>
 
- {semantics.primaryQuickAction ? (
- <Button asChild size="sm" className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground">
- <Link to={semantics.primaryQuickAction.path as any}>
- {semantics.primaryQuickAction.label}
- </Link>
- </Button>
- ) : (
- <Button asChild size="sm" className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground">
- <Link to="/workspace/pdv">
-          PDV
-        </Link>
- </Button>
- )}
- </div>
- </div>
+          {/* Ação Primária Única da Tela */}
+          {semantics.primaryQuickAction ? (
+            <Button asChild size="sm" className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground shadow-none min-h-11 sm:min-h-9 px-4">
+              <Link to={semantics.primaryQuickAction.path as any}>
+                {semantics.primaryQuickAction.label}
+              </Link>
+            </Button>
+          ) : (
+            <Button asChild size="sm" className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground shadow-none min-h-11 sm:min-h-9 px-4">
+              <Link to="/workspace/pdv">
+                PDV
+              </Link>
+            </Button>
+          )}
+        </div>
+      </div>
 
- {/* ── 2. Destaque de Faturamento Mensal Real ── */}
- <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-foreground text-background flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
- <div className="space-y-1">
- <span className="text-xs font-semibold uppercase tracking-wider opacity-70">
- Faturamento do Mês
- </span>
- <div className="text-3xl sm:text-4xl font-bold font-mono tracking-tight">
- {formatMoney(dashboardMetrics?.salesMonthCents || 0)}
- </div>
- <div className="flex items-center gap-2 pt-1 text-xs opacity-90">
- {dashboardMetrics?.growthPercentage != null && (
- <span className={`inline-flex items-center gap-1 font-semibold ${
- dashboardMetrics.growthPercentage >= 0 ? "text-emerald-400" : "text-rose-400"
- }`}>
- {dashboardMetrics.growthPercentage >= 0 ? (
- <TrendingUp className="size-3.5" />
- ) : (
- <TrendingDown className="size-3.5" />
- )}
- {dashboardMetrics.growthPercentage >= 0 ? `+${dashboardMetrics.growthPercentage}%` : `${dashboardMetrics.growthPercentage}%`} vs mês anterior
- </span>
- )}
- </div>
- </div>
+      {/* ── 2. Bento Grid Operacional de Alta Performance (12 Colunas) ── */}
+      <div className="grid grid-cols-12 gap-3.5 sm:gap-4 lg:gap-5 items-stretch">
+        {/* Herói de Faturamento do Mês (7/8 cols no Desktop, 12 cols no Mobile) */}
+        <div className="col-span-12 lg:col-span-7 xl:col-span-8 p-5 sm:p-6 rounded-2xl bg-card border border-border/40 flex flex-col justify-between gap-5">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/75">
+                Faturamento do Mês
+              </span>
+              {dashboardMetrics?.growthPercentage != null && (
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold ${
+                  dashboardMetrics.growthPercentage >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                }`}>
+                  {dashboardMetrics.growthPercentage >= 0 ? (
+                    <TrendingUp className="size-3.5" />
+                  ) : (
+                    <TrendingDown className="size-3.5" />
+                  )}
+                  {dashboardMetrics.growthPercentage >= 0 ? `+${dashboardMetrics.growthPercentage}%` : `${dashboardMetrics.growthPercentage}%`} vs mês anterior
+                </span>
+              )}
+            </div>
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-bold font-mono tracking-tight text-foreground">
+              {formatMoney(dashboardMetrics?.salesMonthCents || 0)}
+            </div>
+          </div>
 
- <div className="flex items-center gap-2.5">
- <Link
- to="/workspace/financeiro/caixa"
- className="px-4 py-2 rounded-xl bg-background text-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
- >
- Fluxo de Caixa
- </Link>
- <Link
- to={catalogDetails.path as any}
- className="px-4 py-2 rounded-xl bg-background/10 hover:bg-background/20 text-background text-xs font-semibold border border-background/20 transition-colors"
- >
- {semantics.catalogTitle}
- </Link>
- </div>
- </div>
+          <div className="flex items-center gap-2 pt-3 border-t border-border/30">
+            <Link
+              to="/workspace/financeiro/caixa"
+              className="inline-flex items-center justify-center min-h-11 sm:min-h-9 px-4 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors"
+            >
+              Fluxo de Caixa
+            </Link>
+            <Link
+              to={catalogDetails.path as any}
+              className="inline-flex items-center justify-center min-h-11 sm:min-h-9 px-4 rounded-xl bg-muted/60 hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+            >
+              {semantics.catalogTitle}
+            </Link>
+          </div>
+        </div>
 
- {/* ── 3. Grid Tático de 4 Métricas Reais ── */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
- <Link
- to={getOrdersDestination() as any}
- className="p-4 rounded-2xl bg-card hover:border-primary/50 transition-all active:scale-[0.98] group flex flex-col justify-between"
- >
- <div className="flex items-center justify-between">
- <div className="size-10 rounded-xl bg-info/10 text-info flex items-center justify-center">
- <ShoppingBag className="size-5" />
- </div>
- <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
- </div>
- <div className="mt-3">
- <p className="text-xs font-bold text-muted-foreground">{semantics.ordersLabel}</p>
- <p className="text-sm font-black text-foreground mt-0.5">
- {dashboardMetrics?.ordersTodayCount || 0} registro(s) hoje
- </p>
- </div>
- </Link>
+        {/* 4 Métricas Táticas Integradas (5/4 cols no Desktop, 12 cols no Mobile) */}
+        <div className="col-span-12 lg:col-span-5 xl:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 h-full">
+          {/* Card 1: Pedidos */}
+          <Link
+            to={getOrdersDestination() as any}
+            className="p-4 rounded-2xl bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <ShoppingBag className="size-4" />
+              </div>
+              <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
+            </div>
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-muted-foreground/75 truncate">{semantics.ordersLabel}</p>
+              <p className="text-sm font-bold tracking-tight text-foreground mt-0.5 font-mono">
+                {dashboardMetrics?.ordersTodayCount || 0} hoje
+              </p>
+            </div>
+          </Link>
 
- <Link
- to="/workspace/clientes"
- className="p-4 rounded-2xl bg-card hover:border-primary/50 transition-all group flex flex-col justify-between"
- >
- <div className="flex items-center justify-between">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
- <Users className="size-5" />
- </div>
- <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
- </div>
- <div className="mt-3">
- <p className="text-xs font-bold text-muted-foreground">{semantics.customerLabel}</p>
- <p className="text-sm font-black text-foreground mt-0.5">
- {dashboardMetrics?.newCustomers30d ?? 0} novos no mês
- </p>
- </div>
- </Link>
+          {/* Card 2: Clientes */}
+          <Link
+            to="/workspace/clientes"
+            className="p-4 rounded-2xl bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <Users className="size-4" />
+              </div>
+              <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
+            </div>
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-muted-foreground/75 truncate">{semantics.customerLabel}</p>
+              <p className="text-sm font-bold tracking-tight text-foreground mt-0.5 font-mono">
+                +{dashboardMetrics?.newCustomers30d ?? 0} no mês
+              </p>
+            </div>
+          </Link>
 
- <Link
- to="/workspace/financeiro/caixa"
- className="p-4 rounded-2xl bg-card hover:border-primary/50 transition-all group flex flex-col justify-between"
- >
- <div className="flex items-center justify-between">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
- <DollarSign className="size-5" />
- </div>
- <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
- </div>
- <div className="mt-3">
- <p className="text-xs font-bold text-muted-foreground">Faturamento Hoje</p>
- <p className="text-sm font-black text-foreground mt-0.5 font-mono">
- {formatMoney(dashboardMetrics?.salesTodayCents || 0)}
- </p>
- </div>
- </Link>
+          {/* Card 3: Vendas Hoje */}
+          <Link
+            to="/workspace/financeiro/caixa"
+            className="p-4 rounded-2xl bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <DollarSign className="size-4" />
+              </div>
+              <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
+            </div>
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-muted-foreground/75 truncate">Vendas Hoje</p>
+              <p className="text-sm font-bold tracking-tight text-foreground mt-0.5 font-mono truncate">
+                {formatMoney(dashboardMetrics?.salesTodayCents || 0)}
+              </p>
+            </div>
+          </Link>
 
- <Link
- to={catalogDetails.path as any}
- className="p-4 rounded-2xl bg-card hover:border-primary/50 transition-all group flex flex-col justify-between"
- >
- <div className="flex items-center justify-between">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
- <Package className="size-5" />
- </div>
- <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
- </div>
- <div className="mt-3">
- <p className="text-xs font-bold text-muted-foreground">{semantics.stockLabel || semantics.catalogTitle}</p>
- <p className="text-sm font-black text-foreground mt-0.5">
- {catalogDetails.subtitle}
- </p>
- </div>
- </Link>
- </div>
+          {/* Card 4: Catálogo / Estoque */}
+          <Link
+            to={catalogDetails.path as any}
+            className="p-4 rounded-2xl bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <Package className="size-4" />
+              </div>
+              <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
+            </div>
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-muted-foreground/75 truncate">{semantics.stockLabel || semantics.catalogTitle}</p>
+              <p className="text-sm font-bold tracking-tight text-foreground mt-0.5 truncate">
+                {catalogDetails.subtitle}
+              </p>
+            </div>
+          </Link>
+        </div>
+      </div>
 
- {/* ── 3.5. Calendário Editorial & Vendas Sazonais (Inteligência de Varejo) ── */}
- <SeasonalMarketingCalendarWidget
- cityName={activeStore?.city}
- stateCode={activeStore?.state}
- sector={semantics.nicheId}
- />
+      {/* ── 3. Calendário Sazonal & Inteligência Comercial ── */}
+      <SeasonalMarketingCalendarWidget
+        cityName={activeStore?.city}
+        stateCode={activeStore?.state}
+        sector={semantics.nicheId}
+      />
 
- {/* ── 4. Matriz Bilateral: Atividades Reais & Vitrine / Canais Contextuais ── */}
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
- {/* Atividades Recentes do Banco de Dados */}
- <Card className="lg:col-span-2 p-5 border-border bg-card rounded-2xl space-y-4">
- <div className="flex items-center justify-between pb-3">
- <div className="flex items-center gap-2">
- <Clock className="size-4 text-primary" />
- <h3 className="font-bold text-sm text-foreground">Atividades</h3>
- </div>
- <Link to={getOrdersDestination() as any} className="text-xs text-primary font-bold hover:underline">
- Ver todos os registros
- </Link>
- </div>
+      {/* ── 4. Matriz Bilateral: Atividades Reais & Vitrine / Canais Contextuais ── */}
+      <div className="grid grid-cols-12 gap-3.5 sm:gap-4 lg:gap-5 items-stretch">
+        {/* Atividades Recentes do Banco de Dados (8 cols no Desktop, 12 cols no Mobile) */}
+        <Card className="col-span-12 lg:col-span-8 p-5 border border-border/40 bg-card rounded-2xl flex flex-col justify-between h-full space-y-4 shadow-none">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border/30">
+              <div className="flex items-center gap-2">
+                <Clock className="size-4 text-primary" />
+                <h3 className="font-bold text-sm text-foreground">Atividades</h3>
+              </div>
+              <Link to={getOrdersDestination() as any} className="text-xs text-primary font-semibold hover:underline">
+                Ver todos os registros
+              </Link>
+            </div>
 
- {recentActivities.length === 0 ? (
- <div className="py-8 text-center space-y-1 rounded-2xl bg-muted/20">
- <Clock className="size-6 text-muted-foreground/40 mx-auto mb-1" />
- <p className="text-xs font-semibold text-muted-foreground">Nenhuma atividade recente</p>
- </div>
- ) : (
- <div className="space-y-2.5">
- {recentActivities.map((act: any) => (
- <div
- key={act.id}
- className="flex items-center justify-between p-3 rounded-2xl bg-muted/30 text-xs hover:border-primary/40 transition-colors"
- >
- <div className="flex items-center gap-3">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
- <CheckCircle2 className="size-4" />
- </div>
- <div>
- <p className="font-bold text-foreground">{act.title}</p>
- <p className="text-muted-foreground text-[11px]">{act.subtitle}</p>
- </div>
- </div>
- <div className="text-right">
- <span className="text-[11px] font-mono text-muted-foreground block">{act.timeDisplay}</span>
- {act.totalCents != null && (
- <span className="text-xs font-bold font-mono text-foreground">{formatMoney(act.totalCents)}</span>
- )}
- </div>
- </div>
- ))}
- </div>
- )}
- </Card>
+            {recentActivities.length === 0 ? (
+              <div className="py-8 text-center space-y-1 rounded-2xl bg-muted/20">
+                <Clock className="size-6 text-muted-foreground/40 mx-auto mb-1" />
+                <p className="text-xs font-semibold text-muted-foreground/75">Nenhuma atividade recente</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {recentActivities.map((act: any) => (
+                  <div
+                    key={act.id}
+                    className="flex items-center justify-between p-3 rounded-xl bg-muted/20 text-xs hover:bg-muted/40 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="size-4" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">{act.title}</p>
+                        <p className="text-muted-foreground/75 text-xs">{act.subtitle}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-mono text-muted-foreground/75 block">{act.timeDisplay}</span>
+                      {act.totalCents != null && (
+                        <span className="text-xs font-bold font-mono text-foreground">{formatMoney(act.totalCents)}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Card>
 
- {/* Vitrine & Ferramentas Contextuais da Empresa */}
- <Card className="p-5 border-border bg-card rounded-2xl space-y-4">
- <div className="flex items-center justify-between pb-3">
- <div className="flex items-center gap-2">
- <Megaphone className="size-4 text-primary" />
- <h3 className="font-bold text-sm text-foreground">Canais</h3>
- </div>
- <Badge variant="secondary" className="text-[10px]">Ativo</Badge>
- </div>
+        {/* Vitrine & Ferramentas Contextuais da Empresa (4 cols no Desktop, 12 cols no Mobile) */}
+        <Card className="col-span-12 lg:col-span-4 p-5 border border-border/40 bg-card rounded-2xl flex flex-col justify-between h-full space-y-4 shadow-none">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-3 border-b border-border/30">
+              <div className="flex items-center gap-2">
+                <Megaphone className="size-4 text-primary" />
+                <h3 className="font-bold text-sm text-foreground">Canais</h3>
+              </div>
+              <Badge variant="secondary" className="text-xs">Ativo</Badge>
+            </div>
 
- <div className="space-y-2 pt-2">
- {channelLinks.map((link, idx) => {
- const Icon = link.icon;
- return (
- <Link
- key={idx}
- to={link.path as any}
- className="flex items-center justify-between p-2.5 rounded-xl hover:bg-muted/60 text-xs font-medium transition-colors group"
- >
- <div className="flex items-center gap-2">
- <Icon className="size-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
- <span>{link.label}</span>
- </div>
- <ArrowUpRight className="size-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
- </Link>
- );
- })}
- </div>
- </Card>
- </div>
+            <div className="space-y-1.5 pt-1">
+              {channelLinks.map((link, idx) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={idx}
+                    to={link.path as any}
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-muted/60 text-xs font-medium transition-colors group min-h-11 sm:min-h-9"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon className="size-4 text-muted-foreground/80 group-hover:text-foreground transition-colors" />
+                      <span className="text-foreground">{link.label}</span>
+                    </div>
+                    <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
+      </div>
 
- {/* ── 5. Departamentos Corporativos Universais (Visão 360° da Empresa) ── */}
- <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-card border border-border/80 space-y-3 sm:space-y-4">
- <div className="flex items-center justify-between">
- <div className="space-y-0.5">
- <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
- <Layers className="size-4 text-primary" />
- <span>Departamentos</span>
- </h3>
- </div>
- </div>
+      {/* ── 5. Departamentos Corporativos Universais (Visão 360° da Empresa) ── */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/40 space-y-3 sm:space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-border/30">
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Layers className="size-4 text-primary" />
+            <span>Departamentos</span>
+          </h3>
+        </div>
 
- <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 pt-1 sm:pt-2">
- {/* 1. Vitrine & Marketing */}
- <Link
- to="/workspace/marketing/banners"
- className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/40 transition-all text-left group flex flex-col justify-between"
- >
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
- <Megaphone className="size-4" />
- </div>
- <div>
- <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">Marketing</p>
- <p className="text-[10px] text-muted-foreground">Vitrine</p>
- </div>
- </Link>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 pt-1">
+          {/* 1. Vitrine & Marketing */}
+          <Link
+            to="/workspace/marketing/banners"
+            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+          >
+            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2.5">
+              <Megaphone className="size-4" />
+            </div>
+            <div>
+              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">Marketing</p>
+              <p className="text-xs text-muted-foreground/75">Vitrine</p>
+            </div>
+          </Link>
 
- {/* 2. Vendas & CRM */}
- <Link
- to={semantics.nicheId === "tourism" ? "/workspace/comercial" : "/workspace/pedidos"}
- className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/40 transition-all text-left group flex flex-col justify-between"
- >
- <div className="size-8 rounded-xl bg-info/10 text-info flex items-center justify-center mb-3">
- <ShoppingBag className="size-4" />
- </div>
- <div>
- <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">
- {semantics.nicheId === "tourism" ? "Comercial" : "Vendas"}
- </p>
- <p className="text-[10px] text-muted-foreground">
- {semantics.nicheId === "tourism" ? "Funil & CRM" : "Pedidos & PDV"}
- </p>
- </div>
- </Link>
+          {/* 2. Vendas & CRM */}
+          <Link
+            to={semantics.nicheId === "tourism" ? "/workspace/comercial" : "/workspace/pedidos"}
+            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+          >
+            <div className="size-8 rounded-xl bg-info/10 text-info flex items-center justify-center mb-2.5">
+              <ShoppingBag className="size-4" />
+            </div>
+            <div>
+              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
+                {semantics.nicheId === "tourism" ? "Comercial" : "Vendas"}
+              </p>
+              <p className="text-xs text-muted-foreground/75">
+                {semantics.nicheId === "tourism" ? "Funil & CRM" : "Pedidos & PDV"}
+              </p>
+            </div>
+          </Link>
 
- {/* 3. Financeiro & Caixa */}
- <Link
- to="/workspace/financeiro/caixa"
- className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/40 transition-all text-left group flex flex-col justify-between"
- >
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
- <DollarSign className="size-4" />
- </div>
- <div>
- <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">Financeiro</p>
- <p className="text-[10px] text-muted-foreground">Caixa</p>
- </div>
- </Link>
+          {/* 3. Financeiro & Caixa */}
+          <Link
+            to="/workspace/financeiro/caixa"
+            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+          >
+            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2.5">
+              <DollarSign className="size-4" />
+            </div>
+            <div>
+              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">Financeiro</p>
+              <p className="text-xs text-muted-foreground/75">Caixa</p>
+            </div>
+          </Link>
 
- {/* 4. RH & Pessoas */}
- <Link
- to="/workspace/configuracoes/equipe"
- className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/40 transition-all text-left group flex flex-col justify-between"
- >
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
- <Users className="size-4" />
- </div>
- <div>
- <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">Equipe</p>
- <p className="text-[10px] text-muted-foreground">Folha</p>
- </div>
- </Link>
+          {/* 4. RH & Pessoas */}
+          <Link
+            to="/workspace/configuracoes/equipe"
+            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+          >
+            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2.5">
+              <Users className="size-4" />
+            </div>
+            <div>
+              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">Equipe</p>
+              <p className="text-xs text-muted-foreground/75">Folha</p>
+            </div>
+          </Link>
 
- {/* 5. Logística & Estoque */}
- <Link
- to={semantics.nicheId === "tourism" ? "/workspace/turismo/embarques" : "/workspace/estoque"}
- className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/40 transition-all text-left group flex flex-col justify-between"
- >
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
- {semantics.nicheId === "tourism" ? <Bus className="size-4" /> : <Package className="size-4" />}
- </div>
- <div>
- <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">
- {semantics.nicheId === "tourism" ? "Operações" : "Logística"}
- </p>
- <p className="text-[10px] text-muted-foreground">
- {semantics.nicheId === "tourism" ? "Embarques" : "Estoque"}
- </p>
- </div>
- </Link>
+          {/* 5. Logística & Estoque */}
+          <Link
+            to={semantics.nicheId === "tourism" ? "/workspace/turismo/embarques" : "/workspace/estoque"}
+            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+          >
+            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2.5">
+              {semantics.nicheId === "tourism" ? <Bus className="size-4" /> : <Package className="size-4" />}
+            </div>
+            <div>
+              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
+                {semantics.nicheId === "tourism" ? "Operações" : "Logística"}
+              </p>
+              <p className="text-xs text-muted-foreground/75">
+                {semantics.nicheId === "tourism" ? "Embarques" : "Estoque"}
+              </p>
+            </div>
+          </Link>
 
- {/* 6. Governança & Config */}
- <Link
- to="/workspace/configuracoes"
- className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/40 transition-all text-left group flex flex-col justify-between"
- >
- <div className="size-8 rounded-xl bg-slate-500/10 text-slate-600 flex items-center justify-center mb-3">
- <Store className="size-4" />
- </div>
- <div>
- <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">Governança</p>
- <p className="text-[10px] text-muted-foreground">Geral</p>
- </div>
- </Link>
- </div>
- </div>
+          {/* 6. Governança & Config */}
+          <Link
+            to="/workspace/configuracoes"
+            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+          >
+            <div className="size-8 rounded-xl bg-muted text-muted-foreground flex items-center justify-center mb-2.5">
+              <Store className="size-4" />
+            </div>
+            <div>
+              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">Governança</p>
+              <p className="text-xs text-muted-foreground/75">Geral</p>
+            </div>
+          </Link>
+        </div>
+      </div>
 
- {/* Modal Canônico de Divulgação da Loja & QR Code */}
- <StoreShareQrModal
- open={isShareModalOpen}
- onOpenChange={setIsShareModalOpen}
- store={activeStore}
- />
- </div>
- );
+      {/* Modal Canônico de Divulgação da Loja & QR Code */}
+      <StoreShareQrModal
+        open={isShareModalOpen}
+        onOpenChange={setIsShareModalOpen}
+        store={activeStore}
+      />
+    </div>
+  );
 }
-

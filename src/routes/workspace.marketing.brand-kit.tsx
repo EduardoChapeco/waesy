@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Palette, Save, Wand2, RefreshCw, CheckCircle2, Plus, Trash2, Eye, Type, Layers, Image as ImageIcon, Sliders } from "lucide-react";
+import { Palette, Save, Wand2, RefreshCw, CheckCircle2, Plus, Trash2, Eye, Type, Layers, Image as ImageIcon, Sliders, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveBrandKit, getBrandKit, generateBrandKitWithAI, type BrandKitDTO } from "@/services/studio.functions";
 import { getStoreSettings } from "@/services/store.functions";
+import { extractBrandDnaFromUrl } from "@/services/brand-kit.functions";
 
 export const Route = createFileRoute("/workspace/marketing/brand-kit")({
   head: () => ({
@@ -272,6 +273,46 @@ export function BrandKitPage() {
     }
   };
 
+  const [extractUrl, setExtractUrl] = useState("");
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [showExtractInput, setShowExtractInput] = useState(false);
+
+  const handleExtractFromUrl = async () => {
+    if (!extractUrl.trim()) return;
+    setIsExtracting(true);
+    toast.info("Analisando identidade visual do site...", {
+      description: "Extraindo cores dominantes, tipografia e arquétipo.",
+    });
+    try {
+      const extracted = await extractBrandDnaFromUrl({
+        data: {
+          url: extractUrl.trim(),
+          storeId: store?.id,
+        },
+      });
+      if (extracted) {
+        update({
+          color_primary: extracted.colors.primary || form.color_primary,
+          color_secondary: extracted.colors.secondary || form.color_secondary,
+          color_accent: extracted.colors.accent || form.color_accent,
+          color_bg_dark: extracted.colors.background || form.color_bg_dark,
+          color_text_dark: extracted.colors.text || form.color_text_dark,
+          font_heading: extracted.typography.heading || form.font_heading,
+          font_body: extracted.typography.body || form.font_body,
+          logo_url: extracted.logos?.main_url || form.logo_url,
+        });
+        toast.success("DNA visual extraído com sucesso!", {
+          description: `Arquétipo inferido: ${extracted.archetype}`,
+        });
+        setShowExtractInput(false);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao extrair identidade da URL.");
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
   const handleAIMagic = async () => {
     setIsGenerating(true);
     toast.info("Diretor de Arte IA operando...", {
@@ -394,6 +435,15 @@ export function BrandKitPage() {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setShowExtractInput((v) => !v)}
+                className="h-9 px-4 rounded-xl text-xs font-medium gap-2"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                Extrair de URL
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleAIMagic}
                 disabled={isGenerating}
                 className="h-9 px-4 rounded-xl text-xs font-medium gap-2"
@@ -420,6 +470,33 @@ export function BrandKitPage() {
               </Button>
             </div>
           </div>
+
+          {showExtractInput && (
+            <div className="flex items-center gap-2 p-3 bg-muted/40 border border-border/40 rounded-xl mt-3 animate-in fade-in duration-150">
+              <Input
+                placeholder="https://exemplo.com.br (website ou landing page da marca)"
+                value={extractUrl}
+                onChange={(e) => setExtractUrl(e.target.value)}
+                className="h-9 text-xs flex-1 bg-background"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleExtractFromUrl();
+                }}
+              />
+              <Button
+                size="sm"
+                onClick={handleExtractFromUrl}
+                disabled={isExtracting || !extractUrl.trim()}
+                className="h-9 px-4 text-xs gap-2"
+              >
+                {isExtracting ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Globe className="w-3.5 h-3.5" />
+                )}
+                {isExtracting ? "Extraindo..." : "Extrair"}
+              </Button>
+            </div>
+          )}
 
           {/* Abas */}
           <div className="flex items-center gap-1 mt-4 border-t border-border/20 pt-3 overflow-x-auto">

@@ -624,7 +624,7 @@ function WorkspaceComercialPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-5 min-h-[calc(100dvh-120px)] pb-12 overflow-x-hidden">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-5 min-h-screen pb-12 overflow-x-hidden">
       <div className="flex items-center justify-between px-1">
         <p className="text-xs font-medium text-muted-foreground">Pipeline de oportunidades, CRM e propostas comerciais</p>
         <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
@@ -670,11 +670,11 @@ function WorkspaceComercialPage() {
                 const el = document.getElementById(`kanban-col-${s.id}`);
                 el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
               }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer min-h-[44px]"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer min-h-11"
             >
               <span className={cn("size-2 rounded-full", s.dotColor)} />
               <span>{s.title}</span>
-              <span className="text-[10px] font-mono px-1 rounded-md bg-muted text-muted-foreground">{count}</span>
+              <span className="text-xs font-mono px-1 rounded-md bg-muted text-muted-foreground">{count}</span>
             </button>
           );
         })}
@@ -699,7 +699,7 @@ function WorkspaceComercialPage() {
           return (
             <div
               key={stage.id}
-              className="flex flex-col rounded-2xl border border-border/70 bg-card w-[calc(100vw-2.5rem)] sm:w-[330px] min-w-[calc(100vw-2.5rem)] sm:min-w-[330px] shrink-0 min-h-[580px] lg:min-h-[calc(100dvh-320px)] shadow-2xs transition-all snap-center"
+              className="flex flex-col rounded-2xl border border-border/70 bg-card w-full sm:w-80 sm:w-80 min-w-full sm:w-80 sm:min-w-80 shrink-0 min-h-96 lg:min-h-96 shadow-2xs transition-all snap-center"
             >
               {/* Header da Coluna com Somatório e Ação Rápida */}
               <div className="p-3.5 pb-2.5 border-b border-border/60 bg-muted/25 rounded-t-2xl space-y-1.5 sticky top-0 z-10">
@@ -710,7 +710,7 @@ function WorkspaceComercialPage() {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge variant="secondary" className="text-[10px] font-mono px-1.5 py-0 h-5">
+                    <Badge variant="secondary" className="text-xs font-mono px-1.5 py-0 h-5">
                       {stageLeads.length}
                     </Badge>
                     <Button
@@ -728,7 +728,7 @@ function WorkspaceComercialPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
                   <span className="truncate">{stage.description}</span>
                   {stageTotalCents > 0 && (
                     <span className="font-bold text-foreground shrink-0">{formatMoney(stageTotalCents)}</span>
@@ -737,7 +737,7 @@ function WorkspaceComercialPage() {
               </div>
 
               {/* Lista de Cards da Coluna */}
-              <div className="p-3 space-y-3 flex-1 overflow-y-auto no-scrollbar max-h-[calc(100dvh-380px)] [scrollbar-width:thin]">
+              <div className="p-3 space-y-3 flex-1 overflow-y-auto no-scrollbar max-h-96 [scrollbar-width:thin]">
                 {stageLeads.length === 0 ? (
                   <div className="h-36 rounded-xl border border-dashed border-border/70 flex flex-col items-center justify-center p-4 text-center text-muted-foreground gap-1.5">
                     <span className="text-xs font-medium">Nenhum lead nesta etapa</span>
@@ -748,7 +748,7 @@ function WorkspaceComercialPage() {
                         setNewLeadTargetStage(stage.id);
                         setIsNewLeadOpen(true);
                       }}
-                      className="h-7 px-3 rounded-xl text-[11px] font-bold gap-1.5 border-border/60 hover:bg-muted cursor-pointer mt-1"
+                      className="h-7 px-3 rounded-xl text-xs text-muted-foreground/75 font-bold gap-1.5 border-border/60 hover:bg-muted cursor-pointer mt-1"
                     >
                       <Plus className="size-3" />
                       <span>Adicionar Lead</span>
@@ -786,7 +786,7 @@ function WorkspaceComercialPage() {
           <div className="space-y-6">
             <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
                   TravelAgências Standard
                 </span>
                 <span className="text-xs text-muted-foreground">Etapa: {STAGES.find((s) => s.id === newLeadTargetStage)?.title}</span>
@@ -806,7 +806,7 @@ function WorkspaceComercialPage() {
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Nome Completo *</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Nome Completo *</Label>
                     <Input
                       value={newLeadForm.name}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -816,7 +816,7 @@ function WorkspaceComercialPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Telefone / WhatsApp *</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Telefone / WhatsApp *</Label>
                     <Input
                       value={newLeadForm.phone}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, phone: e.target.value }))}
@@ -825,7 +825,7 @@ function WorkspaceComercialPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">E-mail</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">E-mail</Label>
                     <Input
                       type="email"
                       value={newLeadForm.email}
@@ -835,7 +835,7 @@ function WorkspaceComercialPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Canal / Origem</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Canal / Origem</Label>
                     <Select
                       value={newLeadForm.source}
                       onValueChange={(val) => setNewLeadForm((prev) => ({ ...prev, source: val }))}
@@ -863,7 +863,7 @@ function WorkspaceComercialPage() {
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1 sm:col-span-2">
-                    <Label className="text-[11px] font-semibold">Destino de Interesse</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Destino de Interesse</Label>
                     <Input
                       value={newLeadForm.destination}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, destination: e.target.value }))}
@@ -872,7 +872,7 @@ function WorkspaceComercialPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Tipo de Interesse</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Tipo de Interesse</Label>
                     <Select
                       value={newLeadForm.interestType}
                       onValueChange={(val) => setNewLeadForm((prev) => ({ ...prev, interestType: val }))}
@@ -890,7 +890,7 @@ function WorkspaceComercialPage() {
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Período Flexível / Mês</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Período Flexível / Mês</Label>
                     <Input
                       value={newLeadForm.interestPeriod}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, interestPeriod: e.target.value }))}
@@ -899,7 +899,7 @@ function WorkspaceComercialPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Data Prevista de Ida</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Data Prevista de Ida</Label>
                     <Input
                       type="date"
                       value={newLeadForm.travelStart}
@@ -908,7 +908,7 @@ function WorkspaceComercialPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Data Prevista de Volta</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Data Prevista de Volta</Label>
                     <Input
                       type="date"
                       value={newLeadForm.travelEnd}
@@ -927,7 +927,7 @@ function WorkspaceComercialPage() {
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Adultos (ADT)</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Adultos (ADT)</Label>
                     <Input
                       type="number"
                       min={1}
@@ -935,10 +935,10 @@ function WorkspaceComercialPage() {
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxAdults: Number(e.target.value) || 1 }))}
                       className="h-8 text-xs rounded-xl font-mono"
                     />
-                    <span className="text-[9px] text-muted-foreground block">≥ 12 anos</span>
+                    <span className="text-xs text-muted-foreground block">≥ 12 anos</span>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Crianças (CHD)</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Crianças (CHD)</Label>
                     <Input
                       type="number"
                       min={0}
@@ -946,10 +946,10 @@ function WorkspaceComercialPage() {
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxChildren: Number(e.target.value) || 0 }))}
                       className="h-8 text-xs rounded-xl font-mono"
                     />
-                    <span className="text-[9px] text-muted-foreground block">2 a 11 anos</span>
+                    <span className="text-xs text-muted-foreground block">2 a 11 anos</span>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Bebês (INF)</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Bebês (INF)</Label>
                     <Input
                       type="number"
                       min={0}
@@ -957,12 +957,12 @@ function WorkspaceComercialPage() {
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxInfants: Number(e.target.value) || 0 }))}
                       className="h-8 text-xs rounded-xl font-mono"
                     />
-                    <span className="text-[9px] text-muted-foreground block">0 a 23 meses</span>
+                    <span className="text-xs text-muted-foreground block">0 a 23 meses</span>
                   </div>
                 </div>
                 {newLeadForm.paxChildren > 0 && (
                   <div className="space-y-1 pt-1">
-                    <Label className="text-[11px] font-semibold">Idades das Crianças</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Idades das Crianças</Label>
                     <Input
                       value={newLeadForm.paxAgesStr}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxAgesStr: e.target.value }))}
@@ -981,7 +981,7 @@ function WorkspaceComercialPage() {
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Orçamento Estimado (R$)</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Orçamento Estimado (R$)</Label>
                     <CurrencyField
                       value={newLeadForm.estimatedValueCents}
                       onChange={(cents) => setNewLeadForm((prev) => ({ ...prev, estimatedValueCents: cents ?? 0 }))}
@@ -989,7 +989,7 @@ function WorkspaceComercialPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">Vendedor Responsável</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Vendedor Responsável</Label>
                     <Select
                       value={newLeadForm.assignedTo || "none"}
                       onValueChange={(val) => setNewLeadForm((prev) => ({ ...prev, assignedTo: val === "none" ? "" : val }))}
@@ -1013,7 +1013,7 @@ function WorkspaceComercialPage() {
 
                 {/* Seleção de Tags Populares */}
                 <div className="space-y-1.5 pt-1">
-                  <Label className="text-[11px] font-semibold">Tags de Segmentação</Label>
+                  <Label className="text-xs text-muted-foreground/75 font-semibold">Tags de Segmentação</Label>
                   <div className="flex flex-wrap gap-1.5">
                     {POPULAR_TAGS.map((t) => {
                       const tagStr = `${t.name}:${t.color}`;
@@ -1024,7 +1024,7 @@ function WorkspaceComercialPage() {
                           type="button"
                           onClick={() => handleToggleNewLeadTag(tagStr)}
                           className={cn(
-                            "text-[10px] font-bold uppercase px-2 py-0.5 rounded-md transition-all cursor-pointer border",
+                            "text-xs font-bold uppercase px-2 py-0.5 rounded-md transition-all cursor-pointer border",
                             isSelected
                               ? "text-white border-transparent shadow-xs"
                               : "text-muted-foreground border-border bg-background hover:border-primary/40"
@@ -1039,7 +1039,7 @@ function WorkspaceComercialPage() {
                 </div>
 
                 <div className="space-y-1 pt-1">
-                  <Label className="text-[11px] font-semibold">Observações / Notas Iniciais</Label>
+                  <Label className="text-xs text-muted-foreground/75 font-semibold">Observações / Notas Iniciais</Label>
                   <Textarea
                     value={newLeadForm.notes}
                     onChange={(e) => setNewLeadForm((prev) => ({ ...prev, notes: e.target.value }))}
@@ -1083,10 +1083,10 @@ function WorkspaceComercialPage() {
               <div className="space-y-5">
                 <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
                       Ficha 360° do Lead
                     </span>
-                    <Badge variant="outline" className="text-[10px] font-mono">
+                    <Badge variant="outline" className="text-xs font-mono">
                       ID: {selectedLead.id.slice(0, 8)}
                     </Badge>
                   </div>
@@ -1107,7 +1107,7 @@ function WorkspaceComercialPage() {
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2.5 rounded-xl border border-border/80 bg-background hover:bg-muted text-foreground flex items-center justify-center gap-1.5 font-semibold text-xs transition-colors min-h-[44px]"
+                      className="p-2.5 rounded-xl border border-border/80 bg-background hover:bg-muted text-foreground flex items-center justify-center gap-1.5 font-semibold text-xs transition-colors min-h-11"
                     >
                       <Phone className="size-3.5 shrink-0 text-emerald-600" />
                       <span className="truncate">WhatsApp</span>
@@ -1126,7 +1126,7 @@ function WorkspaceComercialPage() {
                       estimated_value_cents: selectedLead.estimated_value_cents,
                       passenger_count: selectedLead.pax_count,
                     })}
-                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-[44px]"
+                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-11"
                   >
                     <FileText className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">Gerar Proposta</span>
@@ -1141,7 +1141,7 @@ function WorkspaceComercialPage() {
                       estimated_value_cents: selectedLead.estimated_value_cents,
                       notes: selectedLead.notes,
                     })}
-                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-[44px]"
+                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-11"
                   >
                     <Calculator className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">Comissão</span>
@@ -1155,7 +1155,7 @@ function WorkspaceComercialPage() {
                       fullName: selectedLead.full_name,
                       destination: selectedLead.destination,
                     })}
-                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-[44px]"
+                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-11"
                   >
                     <Plane className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">Malha Aérea</span>
@@ -1165,7 +1165,7 @@ function WorkspaceComercialPage() {
                     type="button"
                     variant="outline"
                     onClick={handleCopyMagicLink}
-                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-[44px]"
+                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-11"
                   >
                     {copiedMagicLink ? (
                       <Check className="size-3.5 shrink-0 text-emerald-600" />
@@ -1218,7 +1218,7 @@ function WorkspaceComercialPage() {
                     <FileSignature className="size-3 shrink-0" />
                     <span>Contratos</span>
                     {customer360Data?.contracts?.length ? (
-                      <Badge variant="secondary" className="text-[9px] h-4 px-1">
+                      <Badge variant="secondary" className="text-xs h-4 px-1">
                         {customer360Data.contracts.length}
                       </Badge>
                     ) : null}
@@ -1248,7 +1248,7 @@ function WorkspaceComercialPage() {
                     )}
                   >
                     <span>Checklist</span>
-                    <Badge variant="secondary" className="text-[9px] h-4 px-1">
+                    <Badge variant="secondary" className="text-xs h-4 px-1">
                       {editLeadForm.checklist.filter((i) => i.done).length}/{editLeadForm.checklist.length}
                     </Badge>
                   </button>
@@ -1346,7 +1346,7 @@ function WorkspaceComercialPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 rounded-xl bg-muted/20 border border-border/60">
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-semibold">Adultos</Label>
+                        <Label className="text-xs text-muted-foreground/75 font-semibold">Adultos</Label>
                         <Input
                           type="number"
                           min={1}
@@ -1356,7 +1356,7 @@ function WorkspaceComercialPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-semibold">Crianças</Label>
+                        <Label className="text-xs text-muted-foreground/75 font-semibold">Crianças</Label>
                         <Input
                           type="number"
                           min={0}
@@ -1366,7 +1366,7 @@ function WorkspaceComercialPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-semibold">Bebês</Label>
+                        <Label className="text-xs text-muted-foreground/75 font-semibold">Bebês</Label>
                         <Input
                           type="number"
                           min={0}
@@ -1404,11 +1404,11 @@ function WorkspaceComercialPage() {
                             <span className="text-xs font-bold text-foreground">
                               {customer360Data.customer.full_name || "Cliente Oficial"}
                             </span>
-                            <Badge variant="outline" className="text-[10px] font-mono border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+                            <Badge variant="outline" className="text-xs font-mono border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
                               Perfil Canônico
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground/75 text-muted-foreground">
                             <div>
                               <span className="font-semibold text-foreground">Documento:</span> {customer360Data.customer.document || "Não informado"}
                             </div>
@@ -1435,7 +1435,7 @@ function WorkspaceComercialPage() {
                               <History className="size-3.5 text-muted-foreground" />
                               <span>Outras Oportunidades Deste Cliente</span>
                             </span>
-                            <span className="text-[10px] text-muted-foreground font-mono">
+                            <span className="text-xs text-muted-foreground font-mono">
                               {customer360Data.otherLeads.length} outra(s)
                             </span>
                           </div>
@@ -1453,13 +1453,13 @@ function WorkspaceComercialPage() {
                                 >
                                   <div className="space-y-0.5">
                                     <p className="font-bold text-foreground">{ol.title || ol.destination || "Oportunidade"}</p>
-                                    <p className="text-[10px] text-muted-foreground">
+                                    <p className="text-xs text-muted-foreground">
                                       Criado em {new Date(ol.created_at).toLocaleDateString("pt-BR")}
                                     </p>
                                   </div>
                                   <div className="text-right space-y-1">
                                     <span className="font-mono font-semibold block">{formatMoney(ol.estimated_value_cents || 0)}</span>
-                                    <Badge variant="secondary" className="text-[9px] uppercase">
+                                    <Badge variant="secondary" className="text-xs uppercase">
                                       {ol.status}
                                     </Badge>
                                   </div>
@@ -1499,13 +1499,13 @@ function WorkspaceComercialPage() {
                           <FileSignature className="size-3.5 text-primary" />
                           <span>Emitir Contrato com Assinatura Eletrônica</span>
                         </span>
-                        <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+                        <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
                           SHA-256 Tamper Seal
                         </Badge>
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label className="text-[11px] font-semibold">Título do Contrato</Label>
+                        <Label className="text-xs text-muted-foreground/75 font-semibold">Título do Contrato</Label>
                         <Input
                           value={contractForm.title}
                           onChange={(e) => setContractForm((prev) => ({ ...prev, title: e.target.value }))}
@@ -1515,7 +1515,7 @@ function WorkspaceComercialPage() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label className="text-[11px] font-semibold">Resumo dos Serviços Inclusos</Label>
+                        <Label className="text-xs text-muted-foreground/75 font-semibold">Resumo dos Serviços Inclusos</Label>
                         <Textarea
                           value={contractForm.packageSummary}
                           onChange={(e) => setContractForm((prev) => ({ ...prev, packageSummary: e.target.value }))}
@@ -1527,7 +1527,7 @@ function WorkspaceComercialPage() {
 
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1.5">
-                          <Label className="text-[11px] font-semibold">Valor Total (R$)</Label>
+                          <Label className="text-xs text-muted-foreground/75 font-semibold">Valor Total (R$)</Label>
                           <CurrencyField
                             value={contractForm.totalValueCents}
                             onChange={(val) => setContractForm((prev) => ({ ...prev, totalValueCents: val ?? 0 }))}
@@ -1535,7 +1535,7 @@ function WorkspaceComercialPage() {
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-[11px] font-semibold">Condição de Pagamento</Label>
+                          <Label className="text-xs text-muted-foreground/75 font-semibold">Condição de Pagamento</Label>
                           <Input
                             value={contractForm.paymentConditions}
                             onChange={(e) => setContractForm((prev) => ({ ...prev, paymentConditions: e.target.value }))}
@@ -1575,7 +1575,7 @@ function WorkspaceComercialPage() {
                                 <Badge
                                   variant="outline"
                                   className={cn(
-                                    "text-[9px] font-mono",
+                                    "text-xs font-mono",
                                     ctr.status === "signed"
                                       ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
                                       : "border-amber-500/30 text-amber-600 bg-amber-500/10"
@@ -1585,9 +1585,9 @@ function WorkspaceComercialPage() {
                                 </Badge>
                               </div>
 
-                              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                              <div className="flex items-center justify-between text-xs text-muted-foreground/75 text-muted-foreground">
                                 <span>Valor: <strong className="text-foreground font-mono">{formatMoney(ctr.total_value_cents || 0)}</strong></span>
-                                <span>Token: <strong className="font-mono text-[10px]">{ctr.public_token}</strong></span>
+                                <span>Token: <strong className="font-mono text-xs">{ctr.public_token}</strong></span>
                               </div>
 
                               <div className="pt-2 border-t border-border/40 flex items-center justify-end gap-2">
@@ -1596,7 +1596,7 @@ function WorkspaceComercialPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleCopyContractLink(ctr.public_token)}
-                                  className="h-7 px-2.5 rounded-lg text-[11px] font-bold gap-1 cursor-pointer"
+                                  className="h-7 px-2.5 rounded-lg text-xs text-muted-foreground/75 font-bold gap-1 cursor-pointer"
                                 >
                                   <Copy className="size-3" />
                                   <span>Copiar Link</span>
@@ -1605,7 +1605,7 @@ function WorkspaceComercialPage() {
                                   to="/viajante/$token"
                                   params={{ token: ctr.public_token }}
                                   target="_blank"
-                                  className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-bold border border-border/60 hover:bg-muted/50 transition-colors"
+                                  className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs text-muted-foreground/75 font-bold border border-border/60 hover:bg-muted/50 transition-colors"
                                 >
                                   <ExternalLink className="size-3" />
                                   <span>Abrir</span>
@@ -1628,11 +1628,11 @@ function WorkspaceComercialPage() {
                           <Brain className="size-3.5 text-primary" />
                           <span>Inteligência Comportamental ("Brain")</span>
                         </span>
-                        <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+                        <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
                           Algoritmo Preditivo
                         </Badge>
                       </div>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
                         Cruza os cliques, buscas no portal, visualizações de vitrine e requisições de WhatsApp deste perfil consolidado.
                       </p>
                     </div>
@@ -1645,7 +1645,7 @@ function WorkspaceComercialPage() {
                           {(customer360Data?.customer?.behavioral_profile?.top_niches || []).map((n: any, idx: number) => (
                             <div key={idx} className="p-2.5 rounded-xl border border-border/60 bg-card flex items-center justify-between text-xs">
                               <span className="capitalize font-medium">{n.niche || "Geral"}</span>
-                              <span className="font-mono text-[11px] font-bold text-primary">{Number(n.total_score || 0).toFixed(0)} pts</span>
+                              <span className="font-mono text-xs text-muted-foreground/75 font-bold text-primary">{Number(n.total_score || 0).toFixed(0)} pts</span>
                             </div>
                           ))}
                         </div>
@@ -1666,14 +1666,14 @@ function WorkspaceComercialPage() {
                       ) : (
                         <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
                           {customer360Data.activities.map((act: any) => (
-                            <div key={act.id} className="p-2 rounded-lg border border-border/40 bg-card text-[11px] flex items-center justify-between">
+                            <div key={act.id} className="p-2 rounded-lg border border-border/40 bg-card text-xs text-muted-foreground/75 flex items-center justify-between">
                               <div>
                                 <span className="font-medium text-foreground">{act.content}</span>
-                                <span className="text-[9px] text-muted-foreground block">
+                                <span className="text-xs text-muted-foreground block">
                                   {new Date(act.created_at).toLocaleString("pt-BR")}
                                 </span>
                               </div>
-                              <Badge variant="secondary" className="text-[9px] uppercase">
+                              <Badge variant="secondary" className="text-xs uppercase">
                                 {act.type}
                               </Badge>
                             </div>
@@ -1689,7 +1689,7 @@ function WorkspaceComercialPage() {
                   <div className="space-y-4 pt-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-foreground">Tarefas de Atendimento</span>
-                      <span className="text-[10px] font-mono text-muted-foreground">
+                      <span className="text-xs font-mono text-muted-foreground">
                         {editLeadForm.checklist.filter((i) => i.done).length} de {editLeadForm.checklist.length} concluídas
                       </span>
                     </div>
@@ -1831,7 +1831,7 @@ function WorkspaceComercialPage() {
                               type="button"
                               onClick={() => handleToggleTag(tagStr)}
                               className={cn(
-                                "text-[10px] font-bold uppercase px-2 py-0.5 rounded-md transition-all cursor-pointer border",
+                                "text-xs font-bold uppercase px-2 py-0.5 rounded-md transition-all cursor-pointer border",
                                 isSelected
                                   ? "text-white border-transparent shadow-xs"
                                   : "text-muted-foreground border-border bg-background hover:border-primary/40"

@@ -174,7 +174,7 @@ function KDSPage() {
  async (payload: any) => {
  if (payload.eventType === "INSERT") {
  playOrderChime();
- toast.success(`🔔 Novo pedido #${(payload.new as any).id?.slice(0, 6)} recebido na cozinha!`);
+ toast.success(`Novo pedido #${(payload.new as any).id?.slice(0, 6)} recebido na cozinha!`);
  const newOrder = payload.new;
  if (!["draft", "cancelled", "refunded"].includes(newOrder.status)) {
  setOrders((prev) => {
@@ -323,7 +323,7 @@ function KDSPage() {
  toolDescription="O painel KDS (Kitchen Display System) em tempo real, com divisão de praças e tempos de cocção, é projetado especificamente para restaurantes e delivery de alimentação."
  store={store}
  >
- <div className="fixed inset-0 z-50 bg-background flex flex-col h-[100dvh] overflow-hidden text-foreground">
+ <div className="fixed inset-0 z-50 bg-background flex flex-col h-screen overflow-hidden text-foreground">
  {/* Estilos de Impressão (Bobina 80mm) */}
  <style>{`
  @media print {
@@ -363,7 +363,7 @@ function KDSPage() {
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-lg font-black tracking-tight leading-none">Gestor de Pedidos</h1>
- <Badge variant="outline" className="text-[10px] uppercase font-mono bg-muted text-muted-foreground border-border/80">
+ <Badge variant="outline" className="text-xs text-muted-foreground/75 uppercase font-mono bg-muted text-muted-foreground border-border/80">
  Balcão e Atendimento
  </Badge>
  </div>
@@ -439,7 +439,7 @@ function KDSPage() {
  )}
  >
  <span>Agora</span>
- <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0 h-4">
+ <Badge variant="secondary" className="font-mono text-xs text-muted-foreground/75 px-1.5 py-0 h-4">
  {nowCount}
  </Badge>
  </button>
@@ -455,7 +455,7 @@ function KDSPage() {
  )}
  >
  <span>Agendados</span>
- <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0 h-4">
+ <Badge variant="secondary" className="font-mono text-xs text-muted-foreground/75 px-1.5 py-0 h-4">
  {scheduledCount}
  </Badge>
  </button>
@@ -501,7 +501,7 @@ function KDSPage() {
  onClick={() => setSearchQuery("")}
  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
  >
- ✕
+ 
  </button>
  )}
  </div>
@@ -532,35 +532,35 @@ function KDSPage() {
  {/* 8 KPIs do Turno Operacional */}
  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Total Pedidos</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase">Total Pedidos</span>
  <p className="text-2xl font-black text-foreground font-mono">{kpis.total}</p>
  </div>
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[10px] font-bold text-emerald-600 uppercase">Concluídos</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-emerald-600 uppercase">Concluídos</span>
  <p className="text-2xl font-black text-emerald-600 font-mono">{kpis.completed}</p>
  </div>
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[10px] font-bold text-blue-600 uppercase">Em Fila</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-blue-600 uppercase">Em Fila</span>
  <p className="text-2xl font-black text-blue-600 font-mono">{kpis.active}</p>
  </div>
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[10px] font-bold text-rose-600 uppercase">Cancelados</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-rose-600 uppercase">Cancelados</span>
  <p className="text-2xl font-black text-rose-600 font-mono">{kpis.cancelled}</p>
  </div>
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Faturamento</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase">Faturamento</span>
  <p className="text-lg font-black text-foreground font-mono truncate">{formatMoney(kpis.revenue)}</p>
  </div>
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Ticket Médio</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase">Ticket Médio</span>
  <p className="text-lg font-black text-foreground font-mono truncate">{formatMoney(kpis.avgTicket)}</p>
  </div>
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[10px] font-bold text-amber-600 uppercase">TMP (Preparo)</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-amber-600 uppercase">TMP (Preparo)</span>
  <p className="text-xl font-black text-foreground font-mono">~{kpis.avgPrepTime}m</p>
  </div>
  <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
- <span className="text-[10px] font-bold text-purple-600 uppercase">TME (Entrega)</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-purple-600 uppercase">TME (Entrega)</span>
  <p className="text-xl font-black text-foreground font-mono">~{kpis.avgDeliveryTime}m</p>
  </div>
  </div>
@@ -595,11 +595,11 @@ function KDSPage() {
  <span className="font-mono font-bold text-sm text-foreground">
  #{ord.id.split("-")[0].toUpperCase()}
  </span>
- <Badge variant="outline" className={cn("text-[10px] font-bold border", ch.color)}>
+ <Badge variant="outline" className={cn("text-xs text-muted-foreground/75 font-bold border", ch.color)}>
  {ch.label}
  </Badge>
  </div>
- <Badge variant="secondary" className="text-[10px] uppercase font-bold">
+ <Badge variant="secondary" className="text-xs text-muted-foreground/75 uppercase font-bold">
  {ord.status}
  </Badge>
  </div>
@@ -683,7 +683,7 @@ function KDSPage() {
  #{ord.id.split("-")[0].toUpperCase()}
  </TableCell>
  <TableCell>
- <Badge variant="outline" className={cn("text-[10px] font-bold border", ch.color)}>
+ <Badge variant="outline" className={cn("text-xs text-muted-foreground/75 font-bold border", ch.color)}>
  {ch.label}
  </Badge>
  </TableCell>
@@ -694,13 +694,13 @@ function KDSPage() {
  {formatMoney(ord.total_cents)}
  </TableCell>
  <TableCell>
- <Badge variant="secondary" className="text-[10px] uppercase font-bold">
+ <Badge variant="secondary" className="text-xs text-muted-foreground/75 uppercase font-bold">
  {ord.status}
  </Badge>
  </TableCell>
  <TableCell>
  <div className="space-y-1">
- <div className="flex items-center justify-between text-[10px] font-mono">
+ <div className="flex items-center justify-between text-xs text-muted-foreground/75 font-mono">
  <span className={isLate ? "text-rose-500 font-bold" : "text-muted-foreground"}>
  {elapsed} min {isLate && "• ATRASO"}
  </span>
@@ -756,7 +756,7 @@ function KDSPage() {
  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Top 5 Mais Vendidos do Turno
  </h4>
- <Badge variant="outline" className="text-[10px] font-mono">
+ <Badge variant="outline" className="text-xs text-muted-foreground/75 font-mono">
  Curva ABC
  </Badge>
  </div>
@@ -770,7 +770,7 @@ function KDSPage() {
  {topProducts.map((prod, idx) => (
  <div key={prod.title} className="flex items-center justify-between p-2 rounded-xl bg-muted/20 text-xs">
  <div className="flex items-center gap-2">
- <span className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] font-mono">
+ <span className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs text-muted-foreground/75 font-mono">
  {idx + 1}
  </span>
  <span className="font-semibold text-foreground">{prod.title}</span>
@@ -791,7 +791,7 @@ function KDSPage() {
  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Vendas por Canal de Origem
  </h4>
- <Badge variant="outline" className="text-[10px] font-mono">
+ <Badge variant="outline" className="text-xs text-muted-foreground/75 font-mono">
  Omnichannel
  </Badge>
  </div>
@@ -897,7 +897,7 @@ function KDSPage() {
  </span>
  <span
  className={cn(
- "text-[10px] font-semibold px-2 py-0.5 rounded-md font-mono flex items-center gap-1",
+ "text-xs text-muted-foreground/75 font-semibold px-2 py-0.5 rounded-md font-mono flex items-center gap-1",
  isLate
  ? "bg-rose-500/10 text-rose-500 border border-rose-500/20"
  : "bg-muted text-muted-foreground",
@@ -921,14 +921,14 @@ function KDSPage() {
  return (
  <Badge
  variant="outline"
- className={cn("text-[10px] px-1.5 py-0 h-4 font-bold border", ch.color)}
+ className={cn("text-xs text-muted-foreground/75 px-1.5 py-0 h-4 font-bold border", ch.color)}
  >
  {ch.label}
  </Badge>
  );
  })()}
  {order.customer_snapshot?.phone && (
- <span className="text-[10px] text-muted-foreground font-mono">
+ <span className="text-xs text-muted-foreground/75 text-muted-foreground font-mono">
  {order.customer_snapshot.phone}
  </span>
  )}
@@ -971,7 +971,7 @@ function KDSPage() {
  </span>
  </div>
  {options.length > 0 && (
- <div className="text-[10px] text-muted-foreground mt-0.5 ml-4 pl-1.5 border-l border-border/60 space-y-0.5">
+ <div className="text-xs text-muted-foreground/75 text-muted-foreground mt-0.5 ml-4 pl-1.5 border-l border-border/60 space-y-0.5">
  {options.map((opt: any, idx: number) => (
  <div key={idx}>+ {opt.label || opt.name}</div>
  ))}
@@ -1005,7 +1005,7 @@ function KDSPage() {
  type="button"
  variant="outline"
  size="icon"
- title="Ver / Imprimir Recibo Formal A4"
+ title="Imprimir Recibo"
  className="size-11 sm:size-9 rounded-xl text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
  onClick={(e) => {
  e.stopPropagation();
@@ -1092,7 +1092,7 @@ function KDSPage() {
  {(() => {
  const ch = getChannelInfo(selectedOrder);
  return (
- <Badge variant="outline" className={cn("text-[10px] font-bold border", ch.color)}>
+ <Badge variant="outline" className={cn("text-xs text-muted-foreground/75 font-bold border", ch.color)}>
  {ch.label}
  </Badge>
  );
@@ -1201,7 +1201,7 @@ function KDSPage() {
  {/* Observações da Comanda */}
  {selectedOrder.customer_snapshot?.notes && (
  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 space-y-0.5">
- <span className="font-bold text-[10px] uppercase">Observações do Cliente:</span>
+ <span className="font-bold text-xs text-muted-foreground/75 uppercase">Observações do Cliente:</span>
  <p className="text-xs">{selectedOrder.customer_snapshot.notes}</p>
  </div>
  )}
@@ -1246,7 +1246,7 @@ function KDSPage() {
  <div className="space-y-4">
  {/* Dados do Cliente */}
  <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Cliente</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase">Cliente</span>
  <p className="text-base font-bold text-foreground">
  {selectedOrder.customer_snapshot?.name || selectedOrder.customer?.name || "Cliente Avulso"}
  </p>
@@ -1260,7 +1260,7 @@ function KDSPage() {
 
  {/* Modalidade de Expedição */}
  <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-3">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">
+ <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase">
  Tipo de Atendimento
  </span>
  {selectedOrder.shipping_method === "pickup" ? (
@@ -1407,7 +1407,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  onClick={() => window.open(`/workspace/pedidos/${selectedOrder.id}/recibo`, "_blank")}
- title="Ver / Imprimir Recibo Formal A4"
+ title="Imprimir Recibo"
  className="size-11 rounded-xl shrink-0 text-foreground/80 hover:bg-muted cursor-pointer"
  >
  <FileText className="size-5" />
@@ -1445,7 +1445,7 @@ function KDSPage() {
  </Button>
  ) : (
  <Badge variant="outline" className="flex-1 h-11 justify-center rounded-xl text-xs font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
- ✓ Pedido Finalizado
+  Pedido Finalizado
  </Badge>
  )}
  </div>
@@ -1566,7 +1566,7 @@ function KDSPage() {
  <span className="font-mono font-bold text-xs">
  #{ord.id.split("-")[0].toUpperCase()}
  </span>
- <Badge variant="destructive" className="text-[10px] font-bold">
+ <Badge variant="destructive" className="text-xs text-muted-foreground/75 font-bold">
  +{elapsed - 30} min atrasado
  </Badge>
  </div>

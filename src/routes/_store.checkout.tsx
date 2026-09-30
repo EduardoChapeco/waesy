@@ -725,7 +725,7 @@ export function CheckoutPage() {
     return (
       <div className="w-full max-w-5xl mx-auto py-16 text-center space-y-6 px-0 sm:px-4">
  <div className="size-16 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
- <ShoppingBag className="size-8 stroke-[1.5]" />
+ <ShoppingBag className="size-8" strokeWidth={1.5} />
  </div>
  <div className="space-y-1">
  <h2 className="text-xl font-bold text-foreground">Sua sacola está vazia</h2>
@@ -758,7 +758,7 @@ export function CheckoutPage() {
  {storeProfile?.name || "Checkout Seguro"}
  </span>
  {storeProfile?.type && (
- <span className="text-[11px] font-semibold text-muted-foreground uppercase">
+ <span className="text-xs font-semibold text-muted-foreground uppercase">
  • {storeProfile.type}
  </span>
  )}
@@ -780,7 +780,7 @@ export function CheckoutPage() {
                 <Store className="size-3.5 text-primary" />
                 <span>Omni-Checkout: Pedidos Segregados por Loja ({globalCarts.length} lojas)</span>
               </span>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 Cada loja possui frete e pedido independentes
               </span>
             </div>
@@ -791,7 +791,7 @@ export function CheckoutPage() {
                   <div
                     key={c.storeId || c.id}
                     className={cn(
-                      "flex items-center gap-2 p-2 rounded-xl border text-xs min-w-[200px] shrink-0 transition-colors",
+                      "flex items-center gap-2 p-2 rounded-xl border text-xs min-w-52 shrink-0 transition-colors",
                       isCurrentStore
                         ? "bg-card border-foreground/30 shadow-2xs"
                         : "bg-muted/40 border-border/60 opacity-80 hover:opacity-100"
@@ -801,12 +801,12 @@ export function CheckoutPage() {
                       <p className="font-semibold text-foreground truncate text-xs">
                         {c.storeName || "Loja"}
                       </p>
-                      <p className="text-[10px] text-muted-foreground font-mono">
+                      <p className="text-xs text-muted-foreground/75 text-muted-foreground font-mono">
                         {c.items?.length || 0} itens · {formatMoney(c.subtotalCents || 0)}
                       </p>
                     </div>
                     {isCurrentStore ? (
-                      <Badge variant="default" className="text-[10px] font-mono h-6 shrink-0">
+                      <Badge variant="default" className="text-xs text-muted-foreground/75 font-mono h-6 shrink-0">
                         Ativa
                       </Badge>
                     ) : (
@@ -814,7 +814,7 @@ export function CheckoutPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => navigate({ to: "/checkout", search: { store: c.storeId } })}
-                        className="h-6 text-[10px] font-bold rounded-lg px-2"
+                        className="h-6 text-xs text-muted-foreground/75 font-bold rounded-lg px-2"
                       >
                         Finalizar
                       </Button>
@@ -841,7 +841,7 @@ export function CheckoutPage() {
                     onClick={() => canNavigate && setActiveStep(step.number)}
                     disabled={!canNavigate}
                     className={cn(
-                      "flex items-center gap-1.5 pb-1 text-xs transition-colors select-none cursor-pointer border-b-2 -mb-[9px]",
+                      "flex items-center gap-1.5 pb-1 text-xs transition-colors select-none cursor-pointer border-b-2 -mb-px",
                       isActive
                         ? "border-foreground font-bold text-foreground"
                         : isCompleted
@@ -849,8 +849,8 @@ export function CheckoutPage() {
                         : "border-transparent text-muted-foreground/60 cursor-not-allowed font-normal"
                     )}
                   >
-                    <span className={cn("font-mono text-[11px]", isCompleted ? "text-emerald-600 dark:text-emerald-400 font-bold" : "")}>
-                      {isCompleted ? "✓" : `${step.number}.`}
+                    <span className={cn("font-mono text-xs", isCompleted ? "text-emerald-600 dark:text-emerald-400 font-bold" : "")}>
+                      {isCompleted ? "" : `${step.number}.`}
                     </span>
                     <span>{step.label}</span>
                   </button>
@@ -876,11 +876,11 @@ export function CheckoutPage() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-xs font-bold text-foreground truncate">{formData.customerName || userProfile.fullName}</p>
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-bold text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
-                      Confirmado ✓
+                    <Badge variant="secondary" className="text-xs text-muted-foreground/75 px-1.5 py-0 font-bold text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+                      Confirmado 
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     {formData.customerEmail || userProfile.email} {formData.customerPhone ? `• ${formData.customerPhone}` : ""}
                   </p>
                 </div>
@@ -954,7 +954,7 @@ export function CheckoutPage() {
                         <Label className="text-xs font-bold text-foreground">
                           {checkoutConfig?.cpfOnReceipt?.label || "Deseja CPF na Nota Fiscal?"}
                         </Label>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           Emissão oficial do cupom fiscal com seu documento
                         </p>
                       </div>
@@ -1016,7 +1016,7 @@ export function CheckoutPage() {
                         <Label className="text-xs font-bold text-foreground">
                           Informações Complementares ({storeProfile.name})
                         </Label>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           Dados necessários para a emissão e processamento deste pedido.
                         </p>
                       </div>
@@ -1048,7 +1048,7 @@ export function CheckoutPage() {
  placeholder={f.placeholder || "Digite sua resposta..."}
  rows={2}
  required={f.required}
- className="w-full rounded-xl border border-input bg-card p-3 text-base sm:text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none min-h-[80px]"
+ className="w-full rounded-xl border border-input bg-card p-3 text-base sm:text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none min-h-20"
  />
  ) : (
  <Input
@@ -1116,7 +1116,7 @@ export function CheckoutPage() {
  <Truck size={20} className={formData.shippingMethod !== "pickup" ? "text-background" : "text-muted-foreground"} />
  <div>
  <p className="text-xs font-bold">Entrega no Endereço</p>
- <p className={cn("text-[10px]", formData.shippingMethod !== "pickup" ? "text-background/80" : "text-muted-foreground")}>
+ <p className={cn("text-xs text-muted-foreground/75", formData.shippingMethod !== "pickup" ? "text-background/80" : "text-muted-foreground")}>
  Receba em casa ou trabalho
  </p>
  </div>
@@ -1135,7 +1135,7 @@ export function CheckoutPage() {
  <Store size={20} className={formData.shippingMethod === "pickup" ? "text-background" : "text-muted-foreground"} />
  <div>
  <p className="text-xs font-bold">Retirar na Loja</p>
- <p className={cn("text-[10px]", formData.shippingMethod === "pickup" ? "text-background/80" : "text-muted-foreground")}>
+ <p className={cn("text-xs text-muted-foreground/75", formData.shippingMethod === "pickup" ? "text-background/80" : "text-muted-foreground")}>
  Grátis no balcão
  </p>
  </div>
@@ -1199,15 +1199,15 @@ export function CheckoutPage() {
  {addr.street || "Rua"}, {addr.number}
  </span>
  {addr.is_default && (
- <Badge variant="secondary" className="text-[9px] font-bold px-1.5 py-0">
+ <Badge variant="secondary" className="text-xs font-bold px-1.5 py-0">
  Padrão
  </Badge>
  )}
  </div>
- <p className="text-[11px] text-muted-foreground truncate">
+ <p className="text-xs text-muted-foreground truncate">
  {addr.neighborhood} - {addr.city}/{addr.state}
  </p>
- <p className="font-mono text-[10px] text-muted-foreground">{addr.zipcode}</p>
+ <p className="font-mono text-xs text-muted-foreground/75 text-muted-foreground">{addr.zipcode}</p>
  </button>
  );
  })}
@@ -1227,7 +1227,7 @@ export function CheckoutPage() {
  size="sm"
  onClick={handleGPSLocation}
  disabled={isLocatingGPS}
- className="rounded-xl h-7 px-2.5 text-[11px] font-bold gap-1 cursor-pointer"
+ className="rounded-xl h-7 px-2.5 text-xs font-bold gap-1 cursor-pointer"
  >
  {isLocatingGPS ? (
  <Loader2 size={12} className="animate-spin text-primary" />
@@ -1250,7 +1250,7 @@ export function CheckoutPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-muted-foreground">CEP *</Label>
+ <Label className="text-xs font-bold text-muted-foreground">CEP *</Label>
  <CepField
  value={formData.shippingAddress.zipcode}
  onChange={(masked, clean) => {
@@ -1273,7 +1273,7 @@ export function CheckoutPage() {
  </div>
 
  <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-bold text-muted-foreground">Rua / Avenida *</Label>
+ <Label className="text-xs font-bold text-muted-foreground">Rua / Avenida *</Label>
  <Input
  placeholder="Nome da rua"
  value={formData.shippingAddress.street}
@@ -1288,7 +1288,7 @@ export function CheckoutPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-muted-foreground">Número *</Label>
+ <Label className="text-xs font-bold text-muted-foreground">Número *</Label>
  <Input
  placeholder="123"
  value={formData.shippingAddress.number}
@@ -1303,7 +1303,7 @@ export function CheckoutPage() {
  </div>
 
  <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-bold text-muted-foreground">Complemento</Label>
+ <Label className="text-xs font-bold text-muted-foreground">Complemento</Label>
  <Input
  placeholder="Apto, bloco, etc."
  value={formData.shippingAddress.complement}
@@ -1318,7 +1318,7 @@ export function CheckoutPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-muted-foreground">Bairro *</Label>
+ <Label className="text-xs font-bold text-muted-foreground">Bairro *</Label>
  <Input
  placeholder="Bairro"
  value={formData.shippingAddress.neighborhood}
@@ -1333,7 +1333,7 @@ export function CheckoutPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-muted-foreground">Cidade *</Label>
+ <Label className="text-xs font-bold text-muted-foreground">Cidade *</Label>
  <Input
  placeholder="Cidade"
  value={formData.shippingAddress.city}
@@ -1348,7 +1348,7 @@ export function CheckoutPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-muted-foreground">UF *</Label>
+ <Label className="text-xs font-bold text-muted-foreground">UF *</Label>
  <Input
  placeholder="SC"
  maxLength={2}
@@ -1395,12 +1395,12 @@ export function CheckoutPage() {
  <div className="space-y-0.5">
  <p className="font-bold text-xs text-foreground">{rateName}</p>
  {rate.notice && (
- <p className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
+ <p className="text-xs text-muted-foreground/75 font-medium text-amber-600 dark:text-amber-400">
  {rate.notice}
  </p>
  )}
  {rate.estimated_days !== undefined && (
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground">
  Previsão: {rate.estimated_days === 0 ? "Hoje (Expressa)" : `${rate.estimated_days} ${rate.estimated_days === 1 ? "dia útil" : "dias úteis"}`}
  </p>
  )}
@@ -1445,7 +1445,7 @@ export function CheckoutPage() {
  )}
  >
  <p className="font-bold text-xs text-foreground">{slot.label}</p>
- {slot.sub && <p className="text-[10px] text-muted-foreground">{slot.sub}</p>}
+ {slot.sub && <p className="text-xs text-muted-foreground/75 text-muted-foreground">{slot.sub}</p>}
  </button>
  );
  })}
@@ -1459,17 +1459,17 @@ export function CheckoutPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-foreground">Entregar na porta de casa / apartamento</span>
-                    <Badge variant="outline" className="text-[10px] font-mono font-bold text-primary border-primary/30">
+                    <Badge variant="outline" className="text-xs text-muted-foreground/75 font-mono font-bold text-primary border-primary/30">
                       +{formatMoney(doorDeliveryFeeCents)}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     O entregador sobe até o apartamento ou entra no condomínio para entregar diretamente na sua porta.
                   </p>
                   <button
                     type="button"
                     onClick={() => setIsPolicySheetOpen(true)}
-                    className="text-[10px] text-primary font-semibold hover:underline cursor-pointer flex items-center gap-1"
+                    className="text-xs text-muted-foreground/75 text-primary font-semibold hover:underline cursor-pointer flex items-center gap-1"
                   >
                     <ShieldCheck className="size-3" /> Ver Políticas Pétreas de Entrega
                   </button>
@@ -1486,7 +1486,7 @@ export function CheckoutPage() {
                 <div className="p-3.5 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3 animate-in fade-in duration-150">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div className="space-y-1">
-                      <Label className="text-[11px] font-bold text-foreground">Bloco / Torre / Edifício</Label>
+                      <Label className="text-xs font-bold text-foreground">Bloco / Torre / Edifício</Label>
                       <Input
                         placeholder="Ex: Bloco B, Torre 2"
                         value={apartmentDetails.blockTower}
@@ -1495,7 +1495,7 @@ export function CheckoutPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[11px] font-bold text-foreground">Código de Acesso / Interfone</Label>
+                      <Label className="text-xs font-bold text-foreground">Código de Acesso / Interfone</Label>
                       <Input
                         placeholder="Ex: Interfone 402, Ramal 12"
                         value={apartmentDetails.intercomCode}
@@ -1504,7 +1504,7 @@ export function CheckoutPage() {
                       />
                     </div>
                   </div>
-                  <p className="text-[10px] text-amber-700 dark:text-amber-400 font-medium leading-relaxed">
+                  <p className="text-xs text-muted-foreground/75 text-amber-700 dark:text-amber-400 font-medium leading-relaxed">
                     Aviso Pétreo: Caso as normas do condomínio impeçam a subida de entregadores, a entrega será finalizada na portaria e o valor da taxa não é reembolsado.
                   </p>
                 </div>
@@ -1518,7 +1518,7 @@ export function CheckoutPage() {
  <Label className="text-xs font-bold text-foreground">
  {checkoutConfig?.receiverInfo?.label || "Quem irá receber o pedido?"}
  </Label>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Ajuda o entregador ou portaria no momento da entrega
  </p>
  </div>
@@ -1576,7 +1576,7 @@ export function CheckoutPage() {
  <Label className="text-xs font-bold text-foreground">
  Se algum item estiver em falta no mercado:
  </Label>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Como a equipe de separação da loja deve proceder
  </p>
  </div>
@@ -1603,7 +1603,7 @@ export function CheckoutPage() {
                         )}
                       >
                         <div className="text-xs font-semibold leading-tight">{pol.label}</div>
-                        <div className="text-[10px] text-muted-foreground mt-0.5">{pol.desc}</div>
+                        <div className="text-xs text-muted-foreground/75 text-muted-foreground mt-0.5">{pol.desc}</div>
                       </button>
                     );
                   })}
@@ -1618,7 +1618,7 @@ export function CheckoutPage() {
                   <Label className="text-xs font-bold text-foreground">
                     Enviar talheres e guardanapos descartáveis?
                   </Label>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Ajude o meio ambiente caso já tenha talheres em seu local
                   </p>
                 </div>
@@ -1660,8 +1660,8 @@ export function CheckoutPage() {
  ? `${storeProfile.address}, ${storeProfile.city || ""}`
  : "Endereço principal da loja informado no pedido"}
  </p>
- <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
- ✓ Custo de frete: R$ 0,00 (Retirada Grátis)
+ <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+  Custo de frete: R$ 0,00 (Retirada Grátis)
  </p>
  </div>
  )}
@@ -1711,7 +1711,7 @@ export function CheckoutPage() {
  ? "PIX Direto para a Loja"
  : "PIX Instantâneo"}
  </p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {storeProfile?.settings?.payment_processing_mode === "direct_store"
  ? (storeProfile?.settings?.pix_key
  ? `Chave Pix oficial: ${storeProfile.settings.pix_key}`
@@ -1738,7 +1738,7 @@ export function CheckoutPage() {
  storeProfile?.settings?.payment_processing_mode === "direct_store" &&
  storeProfile?.settings?.payment_instructions && (
  <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground space-y-1 animate-in fade-in-50">
- <span className="text-[10px] font-bold uppercase text-foreground tracking-wider block">
+ <span className="text-xs text-muted-foreground/75 font-bold uppercase text-foreground tracking-wider block">
  Instruções da Loja para Pagamento Pix:
  </span>
  <p className="text-foreground/90 leading-relaxed">
@@ -1764,7 +1764,7 @@ export function CheckoutPage() {
  <CreditCard className="size-5 text-primary shrink-0" strokeWidth={1.75} />
  <div>
  <p className="text-xs font-bold text-foreground">Cartão de Crédito Online</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Até {maxInstallments}x no cartão
  </p>
  </div>
@@ -1774,7 +1774,7 @@ export function CheckoutPage() {
  {formData.paymentMethod === "credit_card" && (
  <div className="p-4 rounded-2xl bg-muted/20 space-y-3.5 animate-in fade-in-50">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-muted-foreground">Número do Cartão *</Label>
+ <Label className="text-xs font-bold text-muted-foreground">Número do Cartão *</Label>
  <CreditCardNumberInput
  value={creditCardData.number}
  onChange={(formatted, _brand, clean) =>
@@ -1785,7 +1785,7 @@ export function CheckoutPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-muted-foreground">Nome Impresso no Cartão *</Label>
+ <Label className="text-xs font-bold text-muted-foreground">Nome Impresso no Cartão *</Label>
  <Input
  placeholder="Como está gravado no cartão"
  value={creditCardData.holderName}
@@ -1796,7 +1796,7 @@ export function CheckoutPage() {
 
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-muted-foreground">Validade (MM/AA) *</Label>
+ <Label className="text-xs font-bold text-muted-foreground">Validade (MM/AA) *</Label>
  <CardExpiryInput
  value={creditCardData.expiryDate}
  onChange={(formatted) =>
@@ -1806,7 +1806,7 @@ export function CheckoutPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-muted-foreground">CVV *</Label>
+ <Label className="text-xs font-bold text-muted-foreground">CVV *</Label>
  <CardCvvInput
  value={creditCardData.cvv}
  onChange={(cvv) =>
@@ -1819,7 +1819,7 @@ export function CheckoutPage() {
 
  {installmentOptions.length > 0 && (
  <div className="space-y-1">
- <Label className="text-[11px] font-bold text-muted-foreground">Parcelamento</Label>
+ <Label className="text-xs font-bold text-muted-foreground">Parcelamento</Label>
  <Select
  value={String(selectedInstallment)}
  onValueChange={(v) => setSelectedInstallment(Number(v))}
@@ -1872,7 +1872,7 @@ export function CheckoutPage() {
  <div>
  <p className="text-xs font-bold text-foreground">{pm.name}</p>
  {pm.instructions && (
- <p className="text-[10px] text-muted-foreground">{pm.instructions}</p>
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground">{pm.instructions}</p>
  )}
  </div>
  </button>
@@ -1916,7 +1916,7 @@ export function CheckoutPage() {
  <button
  type="button"
  onClick={() => setActiveStep(2)}
- className="text-[11px] text-primary font-bold hover:underline cursor-pointer"
+ className="text-xs text-primary font-bold hover:underline cursor-pointer"
  >
  Alterar
  </button>
@@ -1945,7 +1945,7 @@ export function CheckoutPage() {
  <button
  type="button"
  onClick={() => setActiveStep(3)}
- className="text-[11px] text-primary font-bold hover:underline cursor-pointer"
+ className="text-xs text-primary font-bold hover:underline cursor-pointer"
  >
  Alterar
  </button>
@@ -1996,7 +1996,7 @@ export function CheckoutPage() {
           </Button>
         </div>
 
-        <div className="text-[11px] text-muted-foreground text-center sm:text-right pt-2 leading-relaxed">
+        <div className="text-xs text-muted-foreground text-center sm:text-right pt-2 leading-relaxed">
           Ao pedir, concorda com as nossas{" "}
           <button
             type="button"
@@ -2026,7 +2026,7 @@ export function CheckoutPage() {
  {item.quantity}x {item.product?.title || item.title || "Produto"}
  </p>
  {item.variant_name && (
- <p className="text-[10px] text-muted-foreground">{item.variant_name}</p>
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground">{item.variant_name}</p>
  )}
                       {/* Observação por item */}
                       <div className="mt-1">
@@ -2045,7 +2045,7 @@ export function CheckoutPage() {
                           <button
                             type="button"
                             onClick={() => setOpenItemNoteId(item.id)}
-                            className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer select-none"
+                            className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer select-none"
                           >
                             + Observação do item
                           </button>
@@ -2147,7 +2147,7 @@ export function CheckoutPage() {
      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
    >
    <div className="flex flex-col">
-   <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Total</span>
+   <span className="text-xs text-muted-foreground/75 text-muted-foreground uppercase font-bold tracking-wider">Total</span>
    <span className="text-base font-black font-mono text-foreground leading-tight">{formatMoney(checkoutTotalCents)}</span>
    </div>
    <Button

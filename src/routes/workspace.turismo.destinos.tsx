@@ -669,28 +669,28 @@ export default function WorkspaceDestinationsPage() {
  )}
 
  <div className="absolute top-3 left-3 flex items-center gap-1.5">
- <Badge className="bg-background/95 text-foreground border border-border/80 text-[10px] font-semibold shadow-xs">
+ <Badge className="bg-background/95 text-foreground border border-border/80 text-xs font-semibold shadow-xs">
  {dest.state ? `${dest.state} • ${dest.country}` : dest.country}
  </Badge>
  </div>
 
  {dest.iata_gateway && (
  <div className="absolute top-3 right-3">
- <Badge className="bg-primary text-primary-foreground font-mono font-bold text-[10px] border-none shadow-xs">
- ✈️ {dest.iata_gateway}
+ <Badge className="bg-primary text-primary-foreground font-mono font-bold text-xs border-none shadow-xs">
+ ️ {dest.iata_gateway}
  </Badge>
  </div>
  )}
 
  <div className="absolute bottom-2 left-2 flex items-center gap-1">
  {dest.average_rating > 0 && (
- <Badge className="bg-primary text-primary-foreground text-[9px] font-bold border-none gap-0.5 py-0.5 font-mono">
+ <Badge className="bg-primary text-primary-foreground text-xs font-bold border-none gap-0.5 py-0.5 font-mono">
  <span>Nota {dest.average_rating.toFixed(1)}</span>
  </Badge>
  )}
 
  {dest.sections && dest.sections.length > 0 && (
- <Badge variant="secondary" className="bg-background/95 text-foreground border border-border/80 text-[9px] font-mono gap-1 py-0.5 shadow-xs">
+ <Badge variant="secondary" className="bg-background/95 text-foreground border border-border/80 text-xs font-mono gap-1 py-0.5 shadow-xs">
  <Layers className="size-2.5 text-primary" />
  <span>{dest.sections.length} seções</span>
  </Badge>
@@ -699,7 +699,7 @@ export default function WorkspaceDestinationsPage() {
 
  {dest.gallery_urls && dest.gallery_urls.length > 0 && (
  <div className="absolute bottom-2 right-2">
- <Badge variant="secondary" className="bg-background/95 text-foreground border border-border/80 text-[9px] font-mono gap-1 py-0.5 shadow-xs">
+ <Badge variant="secondary" className="bg-background/95 text-foreground border border-border/80 text-xs font-mono gap-1 py-0.5 shadow-xs">
  <ImageIcon className="size-2.5" />
  <span>+{dest.gallery_urls.length} fotos</span>
  </Badge>
@@ -722,12 +722,12 @@ export default function WorkspaceDestinationsPage() {
  </p>
 
  {dest.description && (
- <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground line-clamp-2 leading-relaxed">
  {dest.description.replace(/###.+/g, "")}
  </p>
  )}
 
- <div className="space-y-1 pt-1.5 text-[11px] text-muted-foreground border-t border-border/40">
+ <div className="space-y-1 pt-1.5 text-xs text-muted-foreground/75 text-muted-foreground border-t border-border/40">
  {dest.best_season && (
  <p className="flex items-center gap-1.5 truncate">
  <Sun className="size-3 text-amber-500 shrink-0" />
@@ -735,7 +735,7 @@ export default function WorkspaceDestinationsPage() {
  </p>
  )}
 
- <div className="flex items-center justify-between font-mono text-[10px]">
+ <div className="flex items-center justify-between font-mono text-xs">
  <span className="flex items-center gap-1">
  <Hotel className="size-3 text-primary shrink-0" />
  <span>{dest.hotels_count || 0} hotéis vinculados</span>
@@ -810,7 +810,7 @@ export default function WorkspaceDestinationsPage() {
  <SheetTitle className="text-base font-bold text-foreground flex items-center gap-2">
  <span>{editingDestination ? `Editar Destino: ${name || "Sem Nome"}` : "Studio CMS de Destinos Turísticos"}</span>
  {state && (
- <Badge variant="outline" className="text-[10px] font-bold">
+ <Badge variant="outline" className="text-xs font-bold">
  {state} • {country}
  </Badge>
  )}
@@ -823,7 +823,7 @@ export default function WorkspaceDestinationsPage() {
  <div className="flex items-center gap-2">
  {iataGateway && (
  <Badge className="font-mono text-xs font-bold bg-primary text-primary-foreground shadow-xs">
- ✈️ {iataGateway}
+ ️ {iataGateway}
  </Badge>
  )}
  </div>
@@ -871,12 +871,12 @@ export default function WorkspaceDestinationsPage() {
  {/* Seletor Canônico em Cascata Oficial */}
  <div className="p-4 rounded-2xl bg-muted/40 border border-border/70 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+ <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
  <Compass className="size-3.5 text-primary" />
  Autopreenchimento Canônico Oficial (Garante Mensuração Sem Duplicidade)
  </span>
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
  Selecione um polo turístico consagrado para preencher automaticamente o Estado (UF), Cidade oficial, código de aeroporto IATA, clima e fotos profissionais:
  </p>
 
@@ -924,7 +924,7 @@ export default function WorkspaceDestinationsPage() {
 
  {/* Busca Global Instantânea em todos os 120+ Destinos */}
  <div className="pt-2 border-t border-border/40 space-y-1.5">
- <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+ <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground flex items-center gap-1">
  <Search className="size-3" />
  <span>Ou busque em toda a base nacional/internacional por nome ou aeroporto:</span>
  </Label>
@@ -948,7 +948,7 @@ export default function WorkspaceDestinationsPage() {
  <span className="font-semibold text-foreground">
  {dest.name} ({dest.state})
  </span>
- <Badge variant="outline" className="font-mono text-[10px]">
+ <Badge variant="outline" className="font-mono text-xs">
  IATA: {dest.iata}
  </Badge>
  </div>
@@ -1014,7 +1014,7 @@ export default function WorkspaceDestinationsPage() {
  <div className="space-y-1">
  <Label className="text-xs font-bold flex items-center justify-between">
  <span>Aeroporto IATA Principal</span>
- <span className="text-[10px] text-muted-foreground font-mono">Ex: NVT, POA</span>
+ <span className="text-xs text-muted-foreground font-mono">Ex: NVT, POA</span>
  </Label>
  <select
  value={iataGateway}
@@ -1092,7 +1092,7 @@ export default function WorkspaceDestinationsPage() {
  <div className="flex items-center justify-between">
  <div className="space-y-0.5">
  <Label className="text-xs font-bold">Galeria de Mídias e Fotos do Destino</Label>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground">
  Imagens em alta resolução de praias, pontos turísticos, hotéis e passeios para ilustrar roteiros.
  </p>
  </div>
@@ -1166,7 +1166,7 @@ export default function WorkspaceDestinationsPage() {
  >
  <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
  <div className="absolute top-1 left-1">
- <Badge className="bg-black/60 text-[9px] text-white border-none py-0 px-1.5 font-mono">
+ <Badge className="bg-black/60 text-xs text-white border-none py-0 px-1.5 font-mono">
  #{idx + 1}
  </Badge>
  </div>
@@ -1187,7 +1187,7 @@ export default function WorkspaceDestinationsPage() {
  >
  <UploadCloud className="size-8 text-muted-foreground/60" />
  <span className="font-semibold text-foreground">Nenhuma foto adicional na galeria</span>
- <span className="text-[11px]">Clique para enviar imagens do seu dispositivo ou cole uma URL acima</span>
+ <span className="text-xs text-muted-foreground/75">Clique para enviar imagens do seu dispositivo ou cole uma URL acima</span>
  </div>
  )}
  </div>
@@ -1203,7 +1203,7 @@ export default function WorkspaceDestinationsPage() {
  Adicionar Bloco de Conteúdo Rico ao Destino
  </span>
  </div>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground">
  Monte a página do destino adicionando seções modulares para encantar o cliente na vitrine e nas propostas:
  </p>
 
@@ -1223,7 +1223,7 @@ export default function WorkspaceDestinationsPage() {
  className="p-3 rounded-xl border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all text-left space-y-0.5 cursor-pointer shadow-2xs"
  >
  <span className="text-xs font-bold text-foreground block">{item.label}</span>
- <span className="text-[10px] text-muted-foreground block leading-tight">{item.desc}</span>
+ <span className="text-xs text-muted-foreground block leading-tight">{item.desc}</span>
  </button>
  ))}
  </div>
@@ -1234,7 +1234,7 @@ export default function WorkspaceDestinationsPage() {
  <div className="p-10 rounded-2xl border border-border/60 bg-muted/10 text-center space-y-2">
  <Layers className="size-8 mx-auto text-muted-foreground/40" />
  <p className="text-xs font-bold text-foreground">Nenhuma seção personalizada adicionada ainda</p>
- <p className="text-[11px] text-muted-foreground max-w-md mx-auto">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground max-w-md mx-auto">
  Clique em um dos botões acima para adicionar seções de Foto + Texto, Atrações, Gastronomia ou FAQ, ou aplique um modelo canônico na aba 1.
  </p>
  </div>
@@ -1245,10 +1245,10 @@ export default function WorkspaceDestinationsPage() {
  {/* Top bar da Seção */}
  <div className="flex items-center justify-between pb-2.5 border-b border-border/60">
  <div className="flex items-center gap-2">
- <Badge className="bg-primary/10 text-primary border-none text-[10px] font-mono font-bold">
+ <Badge className="bg-primary/10 text-primary border-none text-xs font-mono font-bold">
  #{idx + 1}
  </Badge>
- <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider">
+ <Badge variant="outline" className="text-xs font-bold uppercase tracking-wider">
  {section.type === "photo_text"
  ? "Foto + Texto"
  : section.type === "highlights_grid"
@@ -1302,7 +1302,7 @@ export default function WorkspaceDestinationsPage() {
  {/* Campos da Seção */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Título da Seção *</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Título da Seção *</Label>
  <Input
  value={section.title}
  onChange={(e) => handleUpdateSection(idx, { title: e.target.value })}
@@ -1311,7 +1311,7 @@ export default function WorkspaceDestinationsPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Subtítulo / Chamada</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Subtítulo / Chamada</Label>
  <Input
  value={section.subtitle || ""}
  onChange={(e) => handleUpdateSection(idx, { subtitle: e.target.value })}
@@ -1326,7 +1326,7 @@ export default function WorkspaceDestinationsPage() {
  <div className="space-y-3 pt-1">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Foto da Seção</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Foto da Seção</Label>
  <ImageUpload
  value={section.media_urls?.[0] || ""}
  onChange={(url) => handleUpdateSection(idx, { media_urls: [url] })}
@@ -1337,7 +1337,7 @@ export default function WorkspaceDestinationsPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Alinhamento da Imagem</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Alinhamento da Imagem</Label>
  <select
  value={section.layout_variant || "left"}
  onChange={(e) => handleUpdateSection(idx, { layout_variant: e.target.value as any })}
@@ -1351,7 +1351,7 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Conteúdo / Texto Editorial</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Conteúdo / Texto Editorial</Label>
  <Textarea
  value={section.content_text || ""}
  onChange={(e) => handleUpdateSection(idx, { content_text: e.target.value })}
@@ -1367,7 +1367,7 @@ export default function WorkspaceDestinationsPage() {
  {section.type !== "photo_text" && (
  <div className="space-y-2.5 pt-1">
  <div className="flex items-center justify-between">
- <Label className="text-[11px] font-bold">
+ <Label className="text-xs text-muted-foreground/75 font-bold">
  Itens / Cartões da Seção ({section.items?.length || 0})
  </Label>
  <Button
@@ -1384,7 +1384,7 @@ export default function WorkspaceDestinationsPage() {
  };
  handleUpdateSection(idx, { items: [...currentItems, newItem] });
  }}
- className="rounded-xl text-[11px] font-bold h-7 px-2.5 gap-1"
+ className="rounded-xl text-xs text-muted-foreground/75 font-bold h-7 px-2.5 gap-1"
  >
  <Plus className="size-3" />
  <span>+ Adicionar Item</span>
@@ -1465,7 +1465,7 @@ export default function WorkspaceDestinationsPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Nome do Viajante *</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Nome do Viajante *</Label>
  <Input
  value={newReviewAuthor}
  onChange={(e) => setNewReviewAuthor(e.target.value)}
@@ -1474,7 +1474,7 @@ export default function WorkspaceDestinationsPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Cidade / Estado</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Cidade / Estado</Label>
  <Input
  value={newReviewCity}
  onChange={(e) => setNewReviewCity(e.target.value)}
@@ -1483,7 +1483,7 @@ export default function WorkspaceDestinationsPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Nota de Avaliação (1 a 5)</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Nota de Avaliação (1 a 5)</Label>
  <div className="flex items-center gap-1 pt-1">
  {[1, 2, 3, 4, 5].map((s) => (
  <button
@@ -1505,7 +1505,7 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Depoimento do Viajante *</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Depoimento do Viajante *</Label>
  <Textarea
  value={newReviewComment}
  onChange={(e) => setNewReviewComment(e.target.value)}
@@ -1535,7 +1535,7 @@ export default function WorkspaceDestinationsPage() {
  Depoimentos Registrados ({reviews.length})
  </h4>
  {reviews.length > 0 && (
- <span className="text-[11px] font-bold text-primary flex items-center gap-1">
+ <span className="text-xs text-muted-foreground/75 font-bold text-primary flex items-center gap-1">
  <Award className="size-3.5 text-primary" />
  Média Geral: {(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)} / 5.0
  </span>
@@ -1562,20 +1562,20 @@ export default function WorkspaceDestinationsPage() {
  <span className="font-bold text-xs text-foreground block leading-tight">
  {rev.author_name}
  </span>
- <span className="text-[10px] text-muted-foreground block">
+ <span className="text-xs text-muted-foreground block">
  {rev.author_city || "Viajante Verificado"}
  </span>
  </div>
  </div>
 
  <div className="flex items-center gap-0.5">
- <span className="px-2 py-0.5 rounded-md bg-muted text-foreground font-mono font-bold text-[10px]">
+ <span className="px-2 py-0.5 rounded-md bg-muted text-foreground font-mono font-bold text-xs">
  Nota {rev.rating} / 5
  </span>
  </div>
  </div>
 
- <p className="text-[11px] text-muted-foreground leading-relaxed italic">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed italic">
  "{rev.comment}"
  </p>
 
@@ -1598,7 +1598,7 @@ export default function WorkspaceDestinationsPage() {
  <TabsContent value="tags" className="m-0 space-y-5">
  <div className="space-y-2">
  <Label className="text-xs font-bold">Segmentos e Perfil do Destino</Label>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground">
  Selecione as tags que definem o perfil deste destino para alimentar buscas inteligentes e filtros do CRM:
  </p>
 
@@ -1631,7 +1631,7 @@ export default function WorkspaceDestinationsPage() {
  </Label>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Título de SEO (Title Tag)</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Título de SEO (Title Tag)</Label>
  <Input
  value={seoTitle}
  onChange={(e) => setSeoTitle(e.target.value)}
@@ -1641,7 +1641,7 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Meta Descrição</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Meta Descrição</Label>
  <Textarea
  value={seoDescription}
  onChange={(e) => setSeoDescription(e.target.value)}
@@ -1691,19 +1691,19 @@ export default function WorkspaceDestinationsPage() {
  {/* Barra de Atributos Chave */}
  <div className="grid grid-cols-2 sm:grid-cols-4 p-4 border-b border-border bg-muted/20 gap-3 text-xs">
  <div>
- <span className="text-[10px] text-muted-foreground uppercase font-bold block">Melhor Época</span>
+ <span className="text-xs text-muted-foreground uppercase font-bold block">Melhor Época</span>
  <span className="font-semibold text-foreground">{bestSeason || "Ano Todo"}</span>
  </div>
  <div>
- <span className="text-[10px] text-muted-foreground uppercase font-bold block">Fuso Horário</span>
+ <span className="text-xs text-muted-foreground uppercase font-bold block">Fuso Horário</span>
  <span className="font-semibold text-foreground">{timezone.split(" ")[0]}</span>
  </div>
  <div>
- <span className="text-[10px] text-muted-foreground uppercase font-bold block">Clima Predominante</span>
+ <span className="text-xs text-muted-foreground uppercase font-bold block">Clima Predominante</span>
  <span className="font-semibold text-foreground">{climateType}</span>
  </div>
  <div>
- <span className="text-[10px] text-muted-foreground uppercase font-bold block">Aeroporto Gateway</span>
+ <span className="text-xs text-muted-foreground uppercase font-bold block">Aeroporto Gateway</span>
  <span className="font-semibold text-foreground font-mono">{iataGateway || "Não informado"}</span>
  </div>
  </div>
@@ -1713,7 +1713,7 @@ export default function WorkspaceDestinationsPage() {
  {sections.map((sec, i) => (
  <div key={sec.id || i} className="space-y-4">
  <div>
- <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">
+ <span className="text-xs text-muted-foreground/75 font-bold text-primary uppercase tracking-wider block">
  {sec.subtitle || "Destaque"}
  </span>
  <h2 className="text-lg font-bold text-foreground">{sec.title}</h2>
@@ -1739,12 +1739,12 @@ export default function WorkspaceDestinationsPage() {
  <div className="flex items-center justify-between">
  <h4 className="text-xs font-bold text-foreground">{item.title}</h4>
  {item.badge && (
- <Badge variant="outline" className="text-[9px] font-bold">
+ <Badge variant="outline" className="text-xs font-bold">
  {item.badge}
  </Badge>
  )}
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
  {item.description}
  </p>
  </div>

@@ -1065,6 +1065,50 @@ export async function persistOnboardingResults(
     await supabase.from("briefings").insert(briefingPayload);
   }
 
+  // D2. Upsert em public.store_business_model_canvas (9 Blocos de Osterwalder)
+  try {
+    let parsedBizModel: any = null;
+    if (consolidated.briefing.business_model_text) {
+      parsedBizModel = JSON.parse(consolidated.briefing.business_model_text);
+    }
+    if (parsedBizModel && typeof parsedBizModel === "object") {
+      const toBmcItems = (arr: any, prefix: string) => {
+        if (!Array.isArray(arr)) return [];
+        return arr.map((item: any, i: number) => ({
+          id: `${prefix}-${i + 1}`,
+          text: typeof item === "string" ? item : (item?.text || String(item)),
+          confidence: 0.95,
+        }));
+      };
+
+      const bmcPayload = {
+        store_id: storeId,
+        key_partners: toBmcItems(parsedBizModel.key_partners, "kp"),
+        key_activities: toBmcItems(parsedBizModel.key_activities, "ka"),
+        key_resources: toBmcItems(parsedBizModel.key_resources, "kr"),
+        value_propositions: parsedBizModel.value_proposition
+          ? [{ id: "vp-1", text: parsedBizModel.value_proposition, confidence: 0.95 }]
+          : [],
+        customer_relationships: toBmcItems(parsedBizModel.customer_relationships, "cr"),
+        channels: toBmcItems(parsedBizModel.distribution_channels, "ch"),
+        customer_segments: toBmcItems(parsedBizModel.target_segments, "cs"),
+        cost_structure: toBmcItems(parsedBizModel.cost_structure, "co"),
+        revenue_streams: toBmcItems(parsedBizModel.revenue_streams, "rs"),
+        generated_by_job_id: jobId,
+        ai_model: "waesy-ai-concilio",
+        confidence: 0.95,
+        edited_by_human: false,
+        updated_at: now,
+      };
+
+      await supabase
+        .from("store_business_model_canvas")
+        .upsert(bmcPayload, { onConflict: "store_id" });
+    }
+  } catch (bmcErr) {
+    console.warn("[onboarding-pipeline] Aviso ao persistir store_business_model_canvas:", bmcErr);
+  }
+
   // E. Inserir produtos reais detectados (se existirem)
   let createdProductsCount = 0;
   if (consolidated.suggested_products && consolidated.suggested_products.length > 0) {
@@ -1105,6 +1149,75 @@ export async function persistOnboardingResults(
     },
     { onConflict: "store_id" }
   );
+
+  // G. Auto-calibração dos 4 Squads Agênticos da Loja com DNA e briefings do Onboarding
+  try {
+    const { listStoreSquads } = await import("./squads-runtime.functions");
+    const squads = await listStoreSquads(storeId);
+
+    for (const ss of squads) {
+      const dept = ss.template.department;
+      let squadAnswers: Record<string, any> = {};
+      let runtimeSettings: Record<string, any> = {};
+
+      if (dept === "marketing") {
+        squadAnswers = {
+          archetype: consolidated.brand_dna.archetype,
+          tone_of_voice: consolidated.brand_dna.tone_of_voice,
+          content_pillars: consolidated.brand_dna.content_pillars,
+        };
+        runtimeSettings = {
+          primary_color: consolidated.brand_kit.primary_color,
+          tagline: consolidated.tagline,
+          tone_rules: consolidated.brand_dna.tone_rules,
+          seven_sins_triggers: consolidated.brand_dna.seven_sins_triggers,
+        };
+      } else if (dept === "accounting") {
+        squadAnswers = {
+          pricing_strategy: "Margem calibrada conforme mercado regional",
+          split_payment_ready: true,
+        };
+        runtimeSettings = {
+          business_model: consolidated.briefing.business_model_text,
+          swot_strengths: consolidated.briefing.swot_strengths,
+        };
+      } else if (dept === "human_resources") {
+        squadAnswers = {
+          service_culture: "Atendimento acolhedor e ágil",
+          hospitality_focus: true,
+        };
+        runtimeSettings = {
+          company_name: consolidated.company_name,
+          category: consolidated.category,
+        };
+      } else if (dept === "executive_strategy") {
+        squadAnswers = {
+          value_proposition: consolidated.tagline,
+          swot_analysis: {
+            strengths: consolidated.briefing.swot_strengths,
+            weaknesses: consolidated.briefing.swot_weaknesses,
+            opportunities: consolidated.briefing.swot_opportunities,
+            threats: consolidated.briefing.swot_threats,
+          },
+        };
+        runtimeSettings = {
+          competitors: consolidated.briefing.competitors,
+          ideal_customer_profile: consolidated.briefing.ideal_customer_profile,
+        };
+      }
+
+      await supabase
+        .from("store_squads")
+        .update({
+          onboarding_answers: squadAnswers,
+          runtime_settings: runtimeSettings,
+          updated_at: now,
+        })
+        .eq("id", ss.id);
+    }
+  } catch (sqErr) {
+    console.warn("[onboarding-pipeline] Aviso ao auto-calibrar squads da loja:", sqErr);
+  }
 
   return { createdProductsCount };
 }

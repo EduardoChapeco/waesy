@@ -1141,7 +1141,7 @@ function PdvTerminal() {
  size="sm"
  onClick={handlePrintBlindClosing}
  className="h-9 rounded-xl text-xs font-bold gap-1 px-2.5 border-border/80 text-foreground hover:bg-muted"
- title="Conferência Cega / Fechamento de Turno"
+ title="Fechamento de Turno"
  >
  <Printer className="size-3.5 text-primary" />
  <span className="hidden xl:inline">Conferência Cega</span>

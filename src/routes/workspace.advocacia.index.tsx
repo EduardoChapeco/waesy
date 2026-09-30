@@ -299,7 +299,7 @@ function WorkspaceAdvocaciaPage() {
  label: `Fatal • ${diffHours}h restantes`,
  variant: "fatal",
  className:
- "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40 font-black animate-pulse",
+ "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40 font-semibold",
  };
  }
  if (diffHours <= 48) {
@@ -438,7 +438,7 @@ function WorkspaceAdvocaciaPage() {
  <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 font-mono">
  Fatais (&lt; 48h)
  </span>
- <AlertTriangle className="size-3.5 text-rose-500 animate-pulse" />
+ <AlertTriangle className="size-3.5 text-rose-500" />
  </div>
  <p className="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400 font-mono">
  {deadlinesDigest?.urgentCount || 0}

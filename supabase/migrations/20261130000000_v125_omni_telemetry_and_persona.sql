@@ -77,15 +77,18 @@ ALTER TABLE public.telemetry_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ai_persona_profiles ENABLE ROW LEVEL SECURITY;
 
 -- search_history:
+DROP POLICY IF EXISTS "Allow public insert to search_history" ON public.search_history;
 CREATE POLICY "Allow public insert to search_history"
   ON public.search_history FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can read own search history" ON public.search_history;
 CREATE POLICY "Users can read own search history"
   ON public.search_history FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Service role full access search_history" ON public.search_history;
 CREATE POLICY "Service role full access search_history"
   ON public.search_history FOR ALL
   TO service_role
@@ -93,15 +96,18 @@ CREATE POLICY "Service role full access search_history"
   WITH CHECK (true);
 
 -- telemetry_logs:
+DROP POLICY IF EXISTS "Allow public insert to telemetry_logs" ON public.telemetry_logs;
 CREATE POLICY "Allow public insert to telemetry_logs"
   ON public.telemetry_logs FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can read own telemetry logs" ON public.telemetry_logs;
 CREATE POLICY "Users can read own telemetry logs"
   ON public.telemetry_logs FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Service role full access telemetry_logs" ON public.telemetry_logs;
 CREATE POLICY "Service role full access telemetry_logs"
   ON public.telemetry_logs FOR ALL
   TO service_role
@@ -109,11 +115,13 @@ CREATE POLICY "Service role full access telemetry_logs"
   WITH CHECK (true);
 
 -- ai_persona_profiles:
+DROP POLICY IF EXISTS "Users can read own ai_persona_profile" ON public.ai_persona_profiles;
 CREATE POLICY "Users can read own ai_persona_profile"
   ON public.ai_persona_profiles FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Service role full access ai_persona_profiles" ON public.ai_persona_profiles;
 CREATE POLICY "Service role full access ai_persona_profiles"
   ON public.ai_persona_profiles FOR ALL
   TO service_role

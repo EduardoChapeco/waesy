@@ -119,20 +119,20 @@ export function FounderSignupSheet({
     <Sheet open={effectiveOpen} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-[2rem] max-w-lg mx-auto p-6 space-y-5 border-t border-border/80 shadow-2xl max-h-[92vh] overflow-y-auto"
+        className="rounded-t-3xl max-w-lg mx-auto p-6 space-y-5 border-t border-border/80 shadow-md max-h-screen overflow-y-auto"
       >
         <SheetHeader className="text-left space-y-2">
           <div className="flex items-center justify-between">
             <Badge
               variant="outline"
-              className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[11px] font-bold gap-1 px-2.5 py-0.5 animate-pulse"
+              className="bg-muted text-muted-foreground border-border text-xs font-medium gap-1 px-2.5 py-0.5"
             >
               <Star className="size-3" />
               <span>Membro Fundador 2027</span>
             </Badge>
             <div className="flex items-center gap-1.5">
-              <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] text-muted-foreground font-mono font-medium">
+              <div className="size-1.5 rounded-full bg-emerald-500" />
+              <span className="text-xs text-muted-foreground/75 text-muted-foreground font-mono font-medium">
                 Vagas Abertas
               </span>
             </div>
@@ -185,7 +185,7 @@ export function FounderSignupSheet({
                 <Building2 className="size-3.5 text-primary" />
                 <span>Minha Empresa (CNPJ, @ ou Nome)</span>
               </Label>
-              <span className="text-[10px] text-muted-foreground">Opcional</span>
+              <span className="text-xs text-muted-foreground/75 text-muted-foreground">Opcional</span>
             </div>
             <Input
               type="text"
@@ -194,7 +194,7 @@ export function FounderSignupSheet({
               placeholder="Ex: 00.000.000/0001-00 ou @sualoja"
               className="h-11 rounded-xl text-xs bg-muted/20 border-border"
             />
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <p className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1">
               <CheckCircle2 className="size-3 text-emerald-500 shrink-0" />
               CNPJ? Buscamos logo e dados oficiais automaticamente.
             </p>
@@ -212,7 +212,7 @@ export function FounderSignupSheet({
                   key={c}
                   type="button"
                   onClick={() => setCity(c === "Outra cidade" ? "" : c)}
-                  className={`text-[11px] font-semibold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                  className={`text-xs text-muted-foreground/75 font-semibold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
                     city === c
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-muted/30 text-muted-foreground border-border/60 hover:border-primary/40"
@@ -234,14 +234,14 @@ export function FounderSignupSheet({
           </div>
 
           {/* Benefício em Destaque */}
-          <div className="rounded-xl bg-gradient-to-r from-primary/5 via-primary/8 to-amber-500/5 border border-primary/20 p-3.5 space-y-2">
+          <div className="rounded-xl bg-muted/40 border border-border/60 p-3.5 space-y-2">
             <div className="flex items-center gap-2">
               <Ticket className="size-4 text-primary shrink-0" />
               <strong className="text-xs text-foreground font-bold">
                 Benefícios exclusivos de Fundador
               </strong>
             </div>
-            <ul className="space-y-1 text-[11px] text-muted-foreground pl-1">
+            <ul className="space-y-1 text-xs text-muted-foreground/75 text-muted-foreground pl-1">
               {[
                 "Número da sorte automático para viagens em 2027",
                 "Perfil digital verificado na plataforma Waesy",
@@ -260,7 +260,7 @@ export function FounderSignupSheet({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-12 rounded-xl text-sm font-bold gap-2 cursor-pointer shadow-md bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg transition-all"
+            className="w-full h-12 rounded-xl text-sm font-bold gap-2 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
           >
             {isSubmitting ? (
               <>
@@ -275,7 +275,7 @@ export function FounderSignupSheet({
             )}
           </Button>
 
-          <p className="text-center text-[10px] text-muted-foreground">
+          <p className="text-center text-xs text-muted-foreground/75 text-muted-foreground">
             Gratuito • Sem spam • Dados protegidos pela LGPD
           </p>
         </form>

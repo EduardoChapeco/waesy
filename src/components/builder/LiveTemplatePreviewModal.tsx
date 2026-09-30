@@ -44,11 +44,11 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
                 <DialogTitle className="text-sm font-bold text-foreground truncate">
                   {template.name}
                 </DialogTitle>
-                <Badge variant="outline" className="text-[10px] font-semibold border-border bg-muted/50 text-muted-foreground shrink-0">
+                <Badge variant="outline" className="text-xs text-muted-foreground/75 font-semibold border-border bg-muted/50 text-muted-foreground shrink-0">
                   {template.badge}
                 </Badge>
               </div>
-              <DialogDescription className="text-[11px] text-muted-foreground truncate hidden sm:block">
+              <DialogDescription className="text-xs text-muted-foreground truncate hidden sm:block">
                 Visualização ao vivo com renderização real dos blocos e interatividade nativa.
               </DialogDescription>
             </div>
@@ -109,11 +109,11 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
         </header>
 
         {/* ── 2. Área de Renderização Ao Vivo (Sandboxed Live Canvas) ── */}
-        <div className="flex-1 bg-muted/20 overflow-y-auto p-4 sm:p-8 flex justify-center items-start">
+        <div className="flex-1 bg-muted/20 overflow-y-auto p-2 sm:p-8 flex justify-center items-start overflow-x-hidden">
           <div
             className={`transition-all duration-300 ${
               viewport === "mobile"
-                ? "w-[390px] min-h-[844px] shadow-2xl rounded-3xl border border-border/80 overflow-hidden bg-background my-auto"
+                ? "w-full max-w-[390px] min-h-[780px] shadow-2xl rounded-3xl border border-border/80 overflow-hidden bg-background my-2 shrink-0"
                 : "w-full max-w-6xl shadow-sm bg-background rounded-2xl border border-border/60 my-2"
             }`}
           >

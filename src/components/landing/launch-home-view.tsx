@@ -135,20 +135,20 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
   }, [createdProfile]);
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden min-h-[100dvh] bg-background text-foreground flex flex-col selection:bg-primary/20 pb-20 sm:pb-28">
+    <div className="w-full max-w-full overflow-x-hidden min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 pb-20 sm:pb-28">
       {/* ── HEADER SUPERIOR ELEGANTE (APPLE HIG) ── */}
       <header className="sticky top-0 z-40 w-full max-w-full bg-background/85 backdrop-blur-md border-b border-border/70">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo Waesy */}
           <Link to="/" className="flex items-center gap-2.5 group cursor-pointer">
-            <div className="size-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-lg shadow-xs group-hover:scale-105 transition-transform">
+            <div className="size-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-lg  group-hover:scale-105 transition-transform">
               W
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-base tracking-tight text-foreground leading-none">
                 waesy
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium">
+              <span className="text-xs text-muted-foreground/75 text-muted-foreground font-medium">
                 plataforma regional
               </span>
             </div>
@@ -172,7 +172,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
               asChild
               variant="outline"
               size="sm"
-              className="text-xs font-bold rounded-xl border-border/80 hover:bg-muted text-foreground h-9 px-3.5 gap-1.5 shadow-2xs cursor-pointer"
+              className="text-xs font-bold rounded-xl border-border/80 hover:bg-muted text-foreground h-9 px-3.5 gap-1.5  cursor-pointer"
             >
               <Link to="/entrar">
                 <LogIn className="size-3.5 text-primary" />
@@ -184,7 +184,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             <Button
               size="sm"
               onClick={() => setIsSheetOpen(true)}
-              className="rounded-xl text-xs font-bold bg-primary text-primary-foreground h-9 px-3.5 gap-1.5 shadow-xs cursor-pointer hover:bg-primary/90"
+              className="rounded-xl text-xs font-bold bg-primary text-primary-foreground h-9 px-3.5 gap-1.5  cursor-pointer hover:bg-primary/90"
             >
               <Star className="size-3.5" />
               <span>Seja Fundador</span>
@@ -200,7 +200,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
         <section className="text-center space-y-4 sm:space-y-5 w-full max-w-2xl mx-auto pt-1 sm:pt-2 px-1">
           <Badge
             variant="outline"
-            className="rounded-full bg-primary/10 text-primary border-primary/20 text-xs font-bold px-3.5 py-1 inline-flex items-center gap-1.5 shadow-2xs animate-pulse"
+            className="rounded-full bg-primary/10 text-primary border-primary/20 text-xs font-bold px-3.5 py-1 inline-flex items-center gap-1.5  "
           >
             <Star className="size-3.5" />
             <span>{settings.hero_badge}</span>
@@ -218,17 +218,17 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-1 max-w-full">
             <div className="text-center px-1">
               <div className="text-xl sm:text-2xl font-black text-foreground font-mono">2027</div>
-              <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Circuito</div>
+              <div className="text-xs text-muted-foreground/75 text-muted-foreground font-semibold uppercase tracking-wide">Circuito</div>
             </div>
             <div className="w-px h-8 bg-border/60" />
             <div className="text-center px-1">
               <div className="text-xl sm:text-2xl font-black text-primary font-mono">100%</div>
-              <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Gratuito</div>
+              <div className="text-xs text-muted-foreground/75 text-muted-foreground font-semibold uppercase tracking-wide">Gratuito</div>
             </div>
             <div className="w-px h-8 bg-border/60" />
             <div className="text-center px-1">
               <div className="text-xl sm:text-2xl font-black text-foreground font-mono">2&nbsp;<span className="text-primary">cidades</span></div>
-              <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Chapecó &amp; SMO</div>
+              <div className="text-xs text-muted-foreground/75 text-muted-foreground font-semibold uppercase tracking-wide">Chapecó &amp; SMO</div>
             </div>
           </div>
 
@@ -236,7 +236,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             <Button
               size="lg"
               onClick={() => setIsSheetOpen(true)}
-              className="w-full sm:w-auto h-12 rounded-2xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground px-6 gap-2 shadow-xs hover:bg-primary/90 transition-all cursor-pointer"
+              className="w-full sm:w-auto h-12 rounded-2xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground px-6 gap-2  hover:bg-primary/90 transition-all cursor-pointer"
             >
               <span>Garantir Vaga de Membro Fundador</span>
               <ArrowRight className="size-4" />
@@ -283,7 +283,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             {(settings.event_info?.perks || []).map((perk, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-border/70 bg-card p-4 space-y-2 shadow-2xs hover:border-primary/40 transition-colors"
+                className="rounded-2xl border border-border/70 bg-card p-4 space-y-2  hover:border-primary/40 transition-colors"
               >
                 <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                   0{i + 1}
@@ -310,7 +310,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             </div>
             <Button
               onClick={() => setIsSheetOpen(true)}
-              className="rounded-xl text-xs font-bold bg-primary text-primary-foreground h-11 px-5 shrink-0 shadow-xs cursor-pointer"
+              className="rounded-xl text-xs font-bold bg-primary text-primary-foreground h-11 px-5 shrink-0  cursor-pointer"
             >
               Participar da Lista
             </Button>
@@ -320,7 +320,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
         {/* 4. DEMONSTRAÇÃO DO SMARTPHONE MOCKUP 3D COM CONSULTA DE INSCRIÇÃO */}
         <section className="space-y-4 pt-2 text-center">
           <div className="space-y-1">
-            <Badge variant="outline" className="text-[11px] font-bold text-muted-foreground border-border">
+            <Badge variant="outline" className="text-xs text-muted-foreground/75 font-bold text-muted-foreground border-border">
               Visualização Antecipada
             </Badge>
             <h3 className="text-xl sm:text-2xl font-bold text-foreground">
@@ -336,7 +336,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             onSubmit={handleLookup}
             className="max-w-md mx-auto p-3 rounded-2xl bg-muted/20 border border-border/80 space-y-2 text-left"
           >
-            <p className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+            <p className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground flex items-center gap-1.5">
               <Search className="size-3.5 text-primary" />
               <span>Já garantiu sua vaga? Consulte seu bilhete oficial da sorte:</span>
             </p>
@@ -435,7 +435,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
               <Link
                 key={idx}
                 to={nicho.to as any}
-                className="rounded-2xl border border-border/80 bg-card p-3.5 space-y-2 text-center flex flex-col items-center justify-center hover:border-primary/40 hover:shadow-xs transition-all cursor-pointer group"
+                className="rounded-2xl border border-border/80 bg-card p-3.5 space-y-2 text-center flex flex-col items-center justify-center hover:border-primary/40 hover: transition-all cursor-pointer group"
               >
                 <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                   <nicho.icon className="size-4" />
@@ -443,7 +443,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
                 <h4 className="text-xs font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
                   {nicho.title}
                 </h4>
-                <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">
+                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-tight line-clamp-2">
                   {nicho.desc}
                 </p>
               </Link>
@@ -458,20 +458,20 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
         style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 72px), 80px)" }}
       >
         <div className="max-w-md mx-auto pointer-events-auto">
-          <div className="rounded-2xl bg-card border border-border/80 p-2 shadow-xs flex items-center justify-between gap-3">
+          <div className="rounded-2xl bg-card border border-border/80 p-2  flex items-center justify-between gap-3">
             <div className="pl-2 min-w-0">
-              <div className="flex items-center gap-1 text-[11px] font-bold text-primary">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-primary">
                 <Star className="size-3 shrink-0" />
                 <span className="truncate">Circuito 2027 Aberto</span>
               </div>
-              <p className="text-[10px] text-muted-foreground truncate">
+              <p className="text-xs text-muted-foreground/75 text-muted-foreground truncate">
                 Chances multiplicadas no sorteio de viagens
               </p>
             </div>
 
             <Button
               onClick={() => setIsSheetOpen(true)}
-              className="h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground px-4 gap-1.5 shrink-0 shadow-xs cursor-pointer hover:bg-primary/90"
+              className="h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground px-4 gap-1.5 shrink-0  cursor-pointer hover:bg-primary/90"
             >
               <span>Garantir Vaga</span>
               <ArrowRight className="size-3.5" />

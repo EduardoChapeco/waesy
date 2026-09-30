@@ -230,7 +230,7 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
   });
 
   it("13. Deve validar a taxonomia de categorias estilo Wix (V133 Benchmark)", async () => {
-    const { BLOCK_TO_WIX_CATEGORY, WIX_CATEGORY_CONFIG } = await import("./OmniEditor");
+    const { BLOCK_TO_WIX_CATEGORY, WIX_CATEGORY_CONFIG } = await import("./registry");
 
     expect(WIX_CATEGORY_CONFIG.length).toBe(5);
     const categoryIds = WIX_CATEGORY_CONFIG.map((c) => c.id);

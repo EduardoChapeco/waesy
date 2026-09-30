@@ -12,9 +12,8 @@ export interface VitrineEngineSelectorProps {
 }
 
 /**
- * Seletor de Arquitetura em Grandes Cards Minimalistas (Apple HIG)
- * Permite alternar diretamente entre Empresas e Classificados
- * sem jargões técnicos e sem poluição de números.
+ * Seletor de Vitrine em Grandes Cards Silenciosos (Apple HIG / Silent Design)
+ * Alterna diretamente entre Empresas e Classificados sem contadores numéricos ou jargões técnicos.
  */
 export function VitrineEngineSelector({
   activeMode,
@@ -24,10 +23,10 @@ export function VitrineEngineSelector({
   return (
     <div
       role="tablist"
-      aria-label="Filtrar tipo de visualização"
-      className={cn("w-full grid grid-cols-2 gap-2.5 sm:gap-3.5", className)}
+      aria-label="Tipo de visualização"
+      className={cn("w-full grid grid-cols-2 gap-3 sm:gap-4", className)}
     >
-      {/* ── Card 1: Empresas / Lojas ── */}
+      {/* ── Card 1: Empresas ── */}
       <button
         type="button"
         role="tab"
@@ -35,42 +34,33 @@ export function VitrineEngineSelector({
         tabIndex={activeMode === "marketplace" ? 0 : -1}
         onClick={() => onModeChange("marketplace")}
         className={cn(
-          "group relative flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 cursor-pointer select-none active:scale-98",
+          "group relative flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
           activeMode === "marketplace"
-            ? "bg-foreground text-background border-foreground font-bold shadow-xs"
-            : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70 shadow-2xs"
+            ? "bg-card border-foreground/30 text-foreground shadow-xs ring-1 ring-foreground/15"
+            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/50"
         )}
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <div
-            className={cn(
-              "size-10 sm:size-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
-              activeMode === "marketplace"
-                ? "bg-background/15 text-background"
-                : "bg-muted text-foreground group-hover:bg-muted/80"
-            )}
-          >
-            <Buildings
-              size={22}
-              weight={activeMode === "marketplace" ? "fill" : "bold"}
-              className="shrink-0"
-            />
-          </div>
-          <div className="text-left min-w-0">
-            <span className="block text-sm sm:text-base font-bold tracking-tight truncate leading-tight">
-              Empresas
-            </span>
-            <span
-              className={cn(
-                "block text-[11px] sm:text-xs truncate font-normal leading-tight mt-0.5",
-                activeMode === "marketplace"
-                  ? "text-background/80"
-                  : "text-muted-foreground"
-              )}
-            >
-              Comércio e serviços
-            </span>
-          </div>
+        <div
+          className={cn(
+            "size-11 sm:size-12 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+            activeMode === "marketplace"
+              ? "bg-primary/10 text-primary"
+              : "bg-muted text-muted-foreground group-hover:text-foreground"
+          )}
+        >
+          <Buildings
+            size={24}
+            weight={activeMode === "marketplace" ? "fill" : "bold"}
+            className="shrink-0"
+          />
+        </div>
+        <div className="text-left min-w-0">
+          <span className="block text-base sm:text-lg font-bold tracking-tight truncate leading-tight">
+            Empresas
+          </span>
+          <span className="block text-xs text-muted-foreground truncate leading-tight mt-0.5">
+            Lojas e serviços
+          </span>
         </div>
       </button>
 
@@ -82,44 +72,36 @@ export function VitrineEngineSelector({
         tabIndex={activeMode === "classifieds" ? 0 : -1}
         onClick={() => onModeChange("classifieds")}
         className={cn(
-          "group relative flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 cursor-pointer select-none active:scale-98",
+          "group relative flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
           activeMode === "classifieds"
-            ? "bg-foreground text-background border-foreground font-bold shadow-xs"
-            : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70 shadow-2xs"
+            ? "bg-card border-foreground/30 text-foreground shadow-xs ring-1 ring-foreground/15"
+            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/50"
         )}
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <div
-            className={cn(
-              "size-10 sm:size-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
-              activeMode === "classifieds"
-                ? "bg-background/15 text-background"
-                : "bg-muted text-foreground group-hover:bg-muted/80"
-            )}
-          >
-            <Tag
-              size={22}
-              weight={activeMode === "classifieds" ? "fill" : "bold"}
-              className="shrink-0"
-            />
-          </div>
-          <div className="text-left min-w-0">
-            <span className="block text-sm sm:text-base font-bold tracking-tight truncate leading-tight">
-              Classificados
-            </span>
-            <span
-              className={cn(
-                "block text-[11px] sm:text-xs truncate font-normal leading-tight mt-0.5",
-                activeMode === "classifieds"
-                  ? "text-background/80"
-                  : "text-muted-foreground"
-              )}
-            >
-              Ofertas e desapegos
-            </span>
-          </div>
+        <div
+          className={cn(
+            "size-11 sm:size-12 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+            activeMode === "classifieds"
+              ? "bg-primary/10 text-primary"
+              : "bg-muted text-muted-foreground group-hover:text-foreground"
+          )}
+        >
+          <Tag
+            size={24}
+            weight={activeMode === "classifieds" ? "fill" : "bold"}
+            className="shrink-0"
+          />
+        </div>
+        <div className="text-left min-w-0">
+          <span className="block text-base sm:text-lg font-bold tracking-tight truncate leading-tight">
+            Classificados
+          </span>
+          <span className="block text-xs text-muted-foreground truncate leading-tight mt-0.5">
+            Produtos e desapegos
+          </span>
         </div>
       </button>
     </div>
   );
 }
+

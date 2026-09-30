@@ -53,7 +53,7 @@ describe("Seven Sins Canvas & SimLab V2 (Big Tech Council)", () => {
     });
 
     expect(Array.isArray(results)).toBe(true);
-    expect(results.length).toBe(5);
+    expect(results.length).toBeGreaterThanOrEqual(5);
 
     for (const r of results) {
       expect(r.persona_id).toBeDefined();

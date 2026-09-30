@@ -1,614 +1,614 @@
 {
-  "timestamp": "2026-09-30T13:01:29.439Z",
-  "inspectedFiles": 53,
+  "timestamp": "2026-09-30T16:49:16.539Z",
+  "inspectedFiles": 1502,
   "counts": {
-    "P0": 429,
-    "P1": 1542,
-    "P2": 40,
-    "P3": 71
+    "P0": 6672,
+    "P1": 22556,
+    "P2": 814,
+    "P3": 1357
   },
-  "totalViolations": 2082,
+  "totalViolations": 31399,
   "passed": false,
   "violationsSample": [
     {
       "id": "DL-02",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
-      "match": "leading-[1.08]"
+      "match": "min-h-[100dvh]"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
-      "match": "aspect-[4/5]"
+      "match": "w-[68px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
-      "match": "aspect-[4/5]"
+      "match": "text-[10px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
-      "match": "min-w-[240px]"
+      "match": "max-w-[120px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "text-[9px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "min-h-[100dvh]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "pl-[84px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "pl-[280px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-[calc(100dvh-4rem)]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "min-h-[56px]"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
       "match": "size-3"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
       "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
       "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
       "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
       "match": "size-8"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
-      "match": "size-3"
+      "match": "size-7"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P1",
-      "match": "size-3"
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-8"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
     },
     {
       "id": "DL-15",
-      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "file": "src\\components\\admin\\admin-shell.tsx",
       "severity": "P0",
       "match": "onClick sem focus-visible"
     },
     {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "min-h-[100dvh]"
+      "id": "DL-27",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P0",
+      "match": "!anim"
+    },
+    {
+      "id": "DL-26",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P2",
+      "match": "duration-700"
+    },
+    {
+      "id": "DL-26",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P2",
+      "match": "duration-500"
+    },
+    {
+      "id": "DL-26",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P2",
+      "match": "duration-600"
+    },
+    {
+      "id": "DL-26",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P2",
+      "match": "duration-500"
+    },
+    {
+      "id": "DL-26",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P2",
+      "match": "duration-700"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P3",
+      "match": "transition-all"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
       "severity": "P1",
-      "match": "aspect-[21/9]"
+      "match": "min-h-[80px]"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-8"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-4"
+    },
+    {
+      "id": "DL-15",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P0",
+      "match": "onClick sem focus-visible"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-01",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "#6366f1"
+    },
+    {
+      "id": "DL-01",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "#25D366"
+    },
+    {
+      "id": "DL-01",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "#ffffff"
+    },
+    {
+      "id": "DL-01",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "hsl(263, 70%, 50%)"
+    },
+    {
+      "id": "DL-01",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "hsl(0, 84%, 60%)"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "max-h-[420px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "stroke-[1.5]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "aspect-[16/9]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "max-h-[480px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "scale-[1.01]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "aspect-[16/9]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "max-h-[500px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "scale-[1.01]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "scale-[1.01]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "scale-[1.01]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
       "match": "text-[11px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
       "match": "text-[11px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "w-[380px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "text-[10px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "text-[9px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "text-[10px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
       "match": "text-[11px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
       "match": "text-[11px]"
     },
     {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "scale-[0.99]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "max-h-[90vh]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "max-w-[90vw]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "max-h-[90vh]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "max-w-[90vw]"
+      "id": "DL-04",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P0",
+      "match": "! Como"
     },
     {
       "id": "DL-04",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P0",
-      "match": "!url"
+      "match": "! Entraremos"
     },
     {
       "id": "DL-04",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P0",
-      "match": "!cleanPhone"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P0",
-      "match": "! Vi"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P0",
-      "match": "!classified"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P0",
-      "match": "!attrs"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P0",
-      "match": "!isDonation"
+      "match": "!isOpen"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
-      "match": "h-10"
+      "match": "size-3"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
-      "match": "size-4"
+      "match": "size-3"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
-      "match": "h-10"
+      "match": "size-3"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
-      "match": "size-4"
+      "match": "h-8"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-7"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
       "match": "size-10"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
-      "match": "h-10"
+      "match": "size-5"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-2"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
       "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "h-10"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "size-10"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P1",
       "match": "size-6"
     },
     {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
       "id": "DL-15",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P0",
       "match": "onClick sem focus-visible"
     },
     {
-      "id": "DL-18",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "bg-black"
-    },
-    {
-      "id": "DL-18",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "bg-white"
-    },
-    {
-      "id": "DL-18",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "bg-white"
-    },
-    {
-      "id": "DL-18",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
-      "severity": "P1",
-      "match": "text-white"
-    },
-    {
       "id": "DL-27",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P3",
       "match": "transition-all"
     },
     {
       "id": "DL-27",
-      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
       "severity": "P3",
       "match": "transition-all"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "file": "src\\components\\admin\\builder\\builder-canvas.tsx",
       "severity": "P1",
-      "match": "min-h-[100dvh]"
+      "match": "max-w-[1440px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "file": "src\\components\\admin\\builder\\builder-canvas.tsx",
       "severity": "P1",
-      "match": "aspect-[4/3]"
+      "match": "min-h-[calc(100dvh-100px)]"
     },
     {
       "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "file": "src\\components\\admin\\builder\\builder-canvas.tsx",
       "severity": "P1",
       "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "stroke-[1.5]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "pb-[calc(0.65rem+env(safe-area-inset-bottom))]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[9px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[9px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "max-h-[90vh]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "max-w-[95vw]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "max-h-[90vh]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P1",
-      "match": "max-w-[95vw]"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P0",
-      "match": "!url"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P0",
-      "match": "!cleanPhone"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P0",
-      "match": "! Vi"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
-      "severity": "P0",
-      "match": "!isDescExpanded"
     }
   ]
 }

@@ -215,7 +215,7 @@ function WorkspaceNoticiasIndexPage() {
                     variant="ghost"
                     onClick={() => setIsUpgradeModalOpen(true)}
                     className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
-                    title="Configurar Chave de IA própria (BYOK) ou Plano"
+                    title="Configurar Chave IA"
                   >
                     <Star className="size-3.5 text-primary" />
                     <span>Curadoria IA (BYOK)</span>
@@ -461,7 +461,7 @@ function WorkspaceNoticiasIndexPage() {
                     onClick={() => handleGenerateCarouselFromMined(mined)}
                     disabled={isGeneratingCarousel}
                     className="rounded-xl font-bold text-xs border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 gap-1 h-8"
-                    title="Gerar Carrossel no Studio para Instagram"
+                    title="Gerar Carrossel"
                   >
                     <Star className="size-3.5" />
                     Carrossel

@@ -287,6 +287,7 @@ import { Route as WorkspaceMarketingAnunciosRouteImport } from './routes/workspa
 import { Route as WorkspaceMarketingBannersRouteImport } from './routes/workspace.marketing.banners'
 import { Route as WorkspaceMarketingBrandKitRouteImport } from './routes/workspace.marketing.brand-kit'
 import { Route as WorkspaceMarketingBriefingRouteImport } from './routes/workspace.marketing.briefing'
+import { Route as WorkspaceMarketingCanvasBmcRouteImport } from './routes/workspace.marketing.canvas-bmc'
 import { Route as WorkspaceMarketingCanvasPecadosRouteImport } from './routes/workspace.marketing.canvas-pecados'
 import { Route as WorkspaceMarketingCarrinhosRouteImport } from './routes/workspace.marketing.carrinhos'
 import { Route as WorkspaceMarketingConcursosRouteImport } from './routes/workspace.marketing.concursos'
@@ -302,6 +303,7 @@ import { Route as WorkspaceMarketingPublicacoesRouteImport } from './routes/work
 import { Route as WorkspaceMarketingSocialRouteImport } from './routes/workspace.marketing.social'
 import { Route as WorkspaceMarketingStoriesRouteImport } from './routes/workspace.marketing.stories'
 import { Route as WorkspaceMarketingStudioRouteImport } from './routes/workspace.marketing.studio'
+import { Route as WorkspaceMarketingSwotRouteImport } from './routes/workspace.marketing.swot'
 import { Route as WorkspaceMarketingTelemetriaRouteImport } from './routes/workspace.marketing.telemetria'
 import { Route as WorkspaceMarketingVitrineRouteImport } from './routes/workspace.marketing.vitrine'
 import { Route as WorkspaceMasterInfluencersRouteImport } from './routes/workspace.master.influencers'
@@ -1826,6 +1828,12 @@ const WorkspaceMarketingBriefingRoute =
     path: '/marketing/briefing',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceMarketingCanvasBmcRoute =
+  WorkspaceMarketingCanvasBmcRouteImport.update({
+    id: '/marketing/canvas-bmc',
+    path: '/marketing/canvas-bmc',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceMarketingCanvasPecadosRoute =
   WorkspaceMarketingCanvasPecadosRouteImport.update({
     id: '/marketing/canvas-pecados',
@@ -1916,6 +1924,11 @@ const WorkspaceMarketingStudioRoute =
     path: '/marketing/studio',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceMarketingSwotRoute = WorkspaceMarketingSwotRouteImport.update({
+  id: '/marketing/swot',
+  path: '/marketing/swot',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceMarketingTelemetriaRoute =
   WorkspaceMarketingTelemetriaRouteImport.update({
     id: '/marketing/telemetria',
@@ -2663,6 +2676,7 @@ export interface FileRoutesByFullPath {
   '/workspace/marketing/banners': typeof WorkspaceMarketingBannersRoute
   '/workspace/marketing/brand-kit': typeof WorkspaceMarketingBrandKitRoute
   '/workspace/marketing/briefing': typeof WorkspaceMarketingBriefingRoute
+  '/workspace/marketing/canvas-bmc': typeof WorkspaceMarketingCanvasBmcRoute
   '/workspace/marketing/canvas-pecados': typeof WorkspaceMarketingCanvasPecadosRoute
   '/workspace/marketing/carrinhos': typeof WorkspaceMarketingCarrinhosRoute
   '/workspace/marketing/concursos': typeof WorkspaceMarketingConcursosRoute
@@ -2678,6 +2692,7 @@ export interface FileRoutesByFullPath {
   '/workspace/marketing/social': typeof WorkspaceMarketingSocialRoute
   '/workspace/marketing/stories': typeof WorkspaceMarketingStoriesRoute
   '/workspace/marketing/studio': typeof WorkspaceMarketingStudioRoute
+  '/workspace/marketing/swot': typeof WorkspaceMarketingSwotRoute
   '/workspace/marketing/telemetria': typeof WorkspaceMarketingTelemetriaRoute
   '/workspace/marketing/vitrine': typeof WorkspaceMarketingVitrineRoute
   '/workspace/master/influencers': typeof WorkspaceMasterInfluencersRoute
@@ -3035,6 +3050,7 @@ export interface FileRoutesByTo {
   '/workspace/marketing/banners': typeof WorkspaceMarketingBannersRoute
   '/workspace/marketing/brand-kit': typeof WorkspaceMarketingBrandKitRoute
   '/workspace/marketing/briefing': typeof WorkspaceMarketingBriefingRoute
+  '/workspace/marketing/canvas-bmc': typeof WorkspaceMarketingCanvasBmcRoute
   '/workspace/marketing/canvas-pecados': typeof WorkspaceMarketingCanvasPecadosRoute
   '/workspace/marketing/carrinhos': typeof WorkspaceMarketingCarrinhosRoute
   '/workspace/marketing/concursos': typeof WorkspaceMarketingConcursosRoute
@@ -3050,6 +3066,7 @@ export interface FileRoutesByTo {
   '/workspace/marketing/social': typeof WorkspaceMarketingSocialRoute
   '/workspace/marketing/stories': typeof WorkspaceMarketingStoriesRoute
   '/workspace/marketing/studio': typeof WorkspaceMarketingStudioRoute
+  '/workspace/marketing/swot': typeof WorkspaceMarketingSwotRoute
   '/workspace/marketing/telemetria': typeof WorkspaceMarketingTelemetriaRoute
   '/workspace/marketing/vitrine': typeof WorkspaceMarketingVitrineRoute
   '/workspace/master/influencers': typeof WorkspaceMasterInfluencersRoute
@@ -3418,6 +3435,7 @@ export interface FileRoutesById {
   '/workspace/marketing/banners': typeof WorkspaceMarketingBannersRoute
   '/workspace/marketing/brand-kit': typeof WorkspaceMarketingBrandKitRoute
   '/workspace/marketing/briefing': typeof WorkspaceMarketingBriefingRoute
+  '/workspace/marketing/canvas-bmc': typeof WorkspaceMarketingCanvasBmcRoute
   '/workspace/marketing/canvas-pecados': typeof WorkspaceMarketingCanvasPecadosRoute
   '/workspace/marketing/carrinhos': typeof WorkspaceMarketingCarrinhosRoute
   '/workspace/marketing/concursos': typeof WorkspaceMarketingConcursosRoute
@@ -3433,6 +3451,7 @@ export interface FileRoutesById {
   '/workspace/marketing/social': typeof WorkspaceMarketingSocialRoute
   '/workspace/marketing/stories': typeof WorkspaceMarketingStoriesRoute
   '/workspace/marketing/studio': typeof WorkspaceMarketingStudioRoute
+  '/workspace/marketing/swot': typeof WorkspaceMarketingSwotRoute
   '/workspace/marketing/telemetria': typeof WorkspaceMarketingTelemetriaRoute
   '/workspace/marketing/vitrine': typeof WorkspaceMarketingVitrineRoute
   '/workspace/master/influencers': typeof WorkspaceMasterInfluencersRoute
@@ -3801,6 +3820,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/banners'
     | '/workspace/marketing/brand-kit'
     | '/workspace/marketing/briefing'
+    | '/workspace/marketing/canvas-bmc'
     | '/workspace/marketing/canvas-pecados'
     | '/workspace/marketing/carrinhos'
     | '/workspace/marketing/concursos'
@@ -3816,6 +3836,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/social'
     | '/workspace/marketing/stories'
     | '/workspace/marketing/studio'
+    | '/workspace/marketing/swot'
     | '/workspace/marketing/telemetria'
     | '/workspace/marketing/vitrine'
     | '/workspace/master/influencers'
@@ -4173,6 +4194,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/banners'
     | '/workspace/marketing/brand-kit'
     | '/workspace/marketing/briefing'
+    | '/workspace/marketing/canvas-bmc'
     | '/workspace/marketing/canvas-pecados'
     | '/workspace/marketing/carrinhos'
     | '/workspace/marketing/concursos'
@@ -4188,6 +4210,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/social'
     | '/workspace/marketing/stories'
     | '/workspace/marketing/studio'
+    | '/workspace/marketing/swot'
     | '/workspace/marketing/telemetria'
     | '/workspace/marketing/vitrine'
     | '/workspace/master/influencers'
@@ -4555,6 +4578,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/banners'
     | '/workspace/marketing/brand-kit'
     | '/workspace/marketing/briefing'
+    | '/workspace/marketing/canvas-bmc'
     | '/workspace/marketing/canvas-pecados'
     | '/workspace/marketing/carrinhos'
     | '/workspace/marketing/concursos'
@@ -4570,6 +4594,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/social'
     | '/workspace/marketing/stories'
     | '/workspace/marketing/studio'
+    | '/workspace/marketing/swot'
     | '/workspace/marketing/telemetria'
     | '/workspace/marketing/vitrine'
     | '/workspace/master/influencers'
@@ -6674,6 +6699,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceMarketingBriefingRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/marketing/canvas-bmc': {
+      id: '/workspace/marketing/canvas-bmc'
+      path: '/marketing/canvas-bmc'
+      fullPath: '/workspace/marketing/canvas-bmc'
+      preLoaderRoute: typeof WorkspaceMarketingCanvasBmcRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/marketing/canvas-pecados': {
       id: '/workspace/marketing/canvas-pecados'
       path: '/marketing/canvas-pecados'
@@ -6777,6 +6809,13 @@ declare module '@tanstack/react-router' {
       path: '/marketing/studio'
       fullPath: '/workspace/marketing/studio'
       preLoaderRoute: typeof WorkspaceMarketingStudioRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/marketing/swot': {
+      id: '/workspace/marketing/swot'
+      path: '/marketing/swot'
+      fullPath: '/workspace/marketing/swot'
+      preLoaderRoute: typeof WorkspaceMarketingSwotRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/marketing/telemetria': {
@@ -7985,6 +8024,7 @@ interface WorkspaceRouteChildren {
   WorkspaceMarketingBannersRoute: typeof WorkspaceMarketingBannersRoute
   WorkspaceMarketingBrandKitRoute: typeof WorkspaceMarketingBrandKitRoute
   WorkspaceMarketingBriefingRoute: typeof WorkspaceMarketingBriefingRoute
+  WorkspaceMarketingCanvasBmcRoute: typeof WorkspaceMarketingCanvasBmcRoute
   WorkspaceMarketingCanvasPecadosRoute: typeof WorkspaceMarketingCanvasPecadosRoute
   WorkspaceMarketingCarrinhosRoute: typeof WorkspaceMarketingCarrinhosRoute
   WorkspaceMarketingConcursosRoute: typeof WorkspaceMarketingConcursosRoute
@@ -8000,6 +8040,7 @@ interface WorkspaceRouteChildren {
   WorkspaceMarketingSocialRoute: typeof WorkspaceMarketingSocialRoute
   WorkspaceMarketingStoriesRoute: typeof WorkspaceMarketingStoriesRoute
   WorkspaceMarketingStudioRoute: typeof WorkspaceMarketingStudioRoute
+  WorkspaceMarketingSwotRoute: typeof WorkspaceMarketingSwotRoute
   WorkspaceMarketingTelemetriaRoute: typeof WorkspaceMarketingTelemetriaRoute
   WorkspaceMarketingVitrineRoute: typeof WorkspaceMarketingVitrineRoute
   WorkspaceMasterInfluencersRoute: typeof WorkspaceMasterInfluencersRoute
@@ -8154,6 +8195,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceMarketingBannersRoute: WorkspaceMarketingBannersRoute,
   WorkspaceMarketingBrandKitRoute: WorkspaceMarketingBrandKitRoute,
   WorkspaceMarketingBriefingRoute: WorkspaceMarketingBriefingRoute,
+  WorkspaceMarketingCanvasBmcRoute: WorkspaceMarketingCanvasBmcRoute,
   WorkspaceMarketingCanvasPecadosRoute: WorkspaceMarketingCanvasPecadosRoute,
   WorkspaceMarketingCarrinhosRoute: WorkspaceMarketingCarrinhosRoute,
   WorkspaceMarketingConcursosRoute: WorkspaceMarketingConcursosRoute,
@@ -8169,6 +8211,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceMarketingSocialRoute: WorkspaceMarketingSocialRoute,
   WorkspaceMarketingStoriesRoute: WorkspaceMarketingStoriesRoute,
   WorkspaceMarketingStudioRoute: WorkspaceMarketingStudioRoute,
+  WorkspaceMarketingSwotRoute: WorkspaceMarketingSwotRoute,
   WorkspaceMarketingTelemetriaRoute: WorkspaceMarketingTelemetriaRoute,
   WorkspaceMarketingVitrineRoute: WorkspaceMarketingVitrineRoute,
   WorkspaceMasterInfluencersRoute: WorkspaceMasterInfluencersRoute,

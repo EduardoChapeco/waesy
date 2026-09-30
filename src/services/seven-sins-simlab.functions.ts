@@ -209,49 +209,33 @@ Gere o gancho persuasivo definitivo para este produto.`,
   };
 }
 
-// ── BASE DE PERSONAS SINTÉTICAS ──────────────────────────────────────────
-export const SIMLAB_BASE_PERSONAS = [
-  {
-    persona_id: "persona_lucas_universitario",
-    name: "Lucas Menezes, 23 anos",
-    archetype_label: "Universitário Pragmático e Ágil",
+import { CALIBRATED_PERSONAS_CATALOG, CalibratedPersonaDTO } from "../lib/simlab-calibrated-personas";
+
+// ── BASE DE PERSONAS SINTÉTICAS CALIBRADAS (IBGE / SIMLAB V2) ───────────────
+export const SIMLAB_BASE_PERSONAS = CALIBRATED_PERSONAS_CATALOG.map((p) => {
+  // Mapeia preferências de pecado baseadas nos trigger scores
+  const preferredSins: SinType[] = [];
+  if (p.trigger_scores.discount >= 7) preferredSins.push("ganancia");
+  if (p.trigger_scores.friction <= 4) preferredSins.push("preguica");
+  if (p.trigger_scores.authority >= 7) preferredSins.push("orgulho");
+  if (p.trigger_scores.hedonic >= 7) preferredSins.push("luxuria");
+  if (p.trigger_scores.social_proof >= 8) preferredSins.push("inveja");
+  if (p.calibration.cynicism >= 8) preferredSins.push("ira");
+  if (p.trigger_scores.hedonic >= 6 && p.trigger_scores.discount >= 6) preferredSins.push("gula");
+
+  // Bias inicial proporcional a necessidade cognitiva e cinismo
+  const baseBias = (10 - p.calibration.cynicism * 0.5 + p.trigger_scores.social_proof * 0.3) / 10;
+
+  return {
+    persona_id: p.code,
+    name: `${p.name}, ${p.age} anos (${p.city}-${p.state})`,
+    archetype_label: `${p.occupation} • Classe ${p.abep_class}`,
     avatar_url: null,
-    preferredSins: ["preguica", "ganancia", "gula"],
-    bias: 0.85,
-  },
-  {
-    persona_id: "persona_claudia_mae",
-    name: "Cláudia Silveira, 41 anos",
-    archetype_label: "Mãe Gestora e Família",
-    avatar_url: null,
-    preferredSins: ["ganancia", "ira", "orgulho"],
-    bias: 0.78,
-  },
-  {
-    persona_id: "persona_rodrigo_executivo",
-    name: "Rodrigo Carvalho, 36 anos",
-    archetype_label: "Executivo Sem Tempo e Status",
-    avatar_url: null,
-    preferredSins: ["orgulho", "preguica", "inveja"],
-    bias: 0.92,
-  },
-  {
-    persona_id: "persona_amanda_foodie",
-    name: "Amanda Fontana, 28 anos",
-    archetype_label: "Entusiasta Experiencial e Design",
-    avatar_url: null,
-    preferredSins: ["luxuria", "orgulho", "inveja"],
-    bias: 0.88,
-  },
-  {
-    persona_id: "persona_marcos_economico",
-    name: "Marcos Vinícius, 52 anos",
-    archetype_label: "Consumidor Tradicional Cético",
-    avatar_url: null,
-    preferredSins: ["ganancia", "ira"],
-    bias: 0.70,
-  },
-];
+    preferredSins: preferredSins.length > 0 ? preferredSins : ["ganancia" as SinType, "preguica" as SinType],
+    bias: Math.min(0.95, Math.max(0.65, Number(baseBias.toFixed(2)))),
+    details: p,
+  };
+});
 
 // ── LÓGICA DETERMINÍSTICA BASE (TESTES & OFFLINE) ──────────────────────────
 export function runSimLabPersonaTestLogic(data: {
@@ -263,7 +247,7 @@ export function runSimLabPersonaTestLogic(data: {
     const isPreferred = p.preferredSins.includes(data.sin);
     const score = Math.min(
       98,
-      Math.max(45, Math.round(p.bias * 100 + (isPreferred ? 12 : -8)))
+      Math.max(42, Math.round(p.bias * 100 + (isPreferred ? 14 : -10)))
     );
 
     let verbatim = "";
@@ -271,15 +255,15 @@ export function runSimLabPersonaTestLogic(data: {
     let fix: string | undefined;
 
     if (score >= 85) {
-      verbatim = `\"Essa headline me pegou de cara. A promessa é clara e toca exatamente no que me faz decidir comprar agora sem pensar duas vezes.\"`;
-    } else if (score >= 70) {
-      verbatim = `\"Gostei da abordagem e faz sentido, mas ainda precisaria confirmar o prazo exato de entrega ou garantia.\"`;
-      objection = "Dúvida sobre transparência de taxas, prazos ou garantia.";
-      fix = "Inserir prazo estimado ou garantia explícita (ex: 'Envio em até 24h' ou 'Satisfação garantida').";
+      verbatim = `\"Essa mensagem fala diretamente com o meu dia a dia em ${p.details.city}. A clareza me dá segurança imediata para fechar o pedido.\"`;
+    } else if (score >= 68) {
+      verbatim = `\"Achei a proposta interessante para a minha realidade, mas ainda fico com o pé atrás sobre a entrega e transparência real.\"`;
+      objection = `Dúvida sobre suporte pós-venda e agilidade de entrega na região de ${p.details.city}.`;
+      fix = "Incluir prazo de entrega garantido ou selo de suporte local.";
     } else {
-      verbatim = `\"Parece um anúncio comum como outros que vejo. Precisa de uma prova social mais forte para me convencer a agir imediatamente.\"`;
-      objection = "Falta de comprovação social ou garantia incontestável.";
-      fix = "Adicionar menção de satisfação comprovada ou depoimento real de cliente.";
+      verbatim = `\"Parece propaganda padronizada de internet. Se não me provar que pessoas de confiança aqui por perto recomendam, prefiro não arriscar.\"`;
+      objection = "Alto ceticismo e ausência de prova social ou garantia concreta.";
+      fix = "Inserir depoimento real com nome de cliente ou nota média de avaliações locais.";
     }
 
     return {
@@ -302,13 +286,18 @@ export async function runSimLabPersonaTestWithAI(data: {
   copyBody: string;
 }): Promise<SimLabPersonaResult[]> {
   try {
+    const personasContext = SIMLAB_BASE_PERSONAS.map(
+      (p, i) =>
+        `${i + 1}. [${p.persona_id}] ${p.name} - ${p.archetype_label} (Renda média R$ ${p.details.median_income_brl}, Canais: ${p.details.digital_behavior.channels.join(", ")}, Foco: ${p.details.psychography.values.join(", ")})`
+    ).join("\n");
+
     const aiRes = await executeUnifiedAiCall({
       systemPrompt: `Você é o Simulador de Foco e Comportamento do Consumidor (SimLab V2) da Waesy.
-Sua missão é avaliar com rigor e realismo como 5 personas consumidoras autênticas reagem ao anúncio apresentado.
+Sua missão é avaliar com rigor antropológico e realismo sociodemográfico (Censo IBGE / ABEP) como consumidores reais brasileiros do interior e capitais reagem ao anúncio apresentado.
 Para cada persona, retorne:
 - "persona_id": id exato da persona
 - "conversion_probability": número inteiro de 0 a 100
-- "reaction_verbatim": fala realista em primeira pessoa comentando o anúncio espontaneamente
+- "reaction_verbatim": fala realista em primeira pessoa comentando o anúncio espontaneamente com sotaque e contexto de sua região
 - "primary_objection": principal hesitação ou dúvida da persona
 - "recommended_fix": ajuste prático na copy para convencê-la
 
@@ -317,18 +306,14 @@ Retorne ESTRITAMENTE um JSON com o campo "personas": [...]`,
 Headline: "${data.copyHeadline}"
 Corpo: "${data.copyBody}"
 
-Personas para avaliar:
-1. persona_lucas_universitario (Lucas Menezes, 23 anos - Universitário Pragmático & Ágil, busca velocidade e preço)
-2. persona_claudia_mae (Cláudia Silveira, 41 anos - Mãe Gestora & Família, busca confiança e economia real)
-3. persona_rodrigo_executivo (Rodrigo Carvalho, 36 anos - Executivo Sem Tempo & Status, busca exclusividade e zero fricção)
-4. persona_amanda_foodie (Amanda Fontana, 28 anos - Entusiasta Experiencial & Design, busca estética e prazer)
-5. persona_marcos_economico (Marcos Vinícius, 52 anos - Consumidor Tradicional Cético, desconfia de promessas fáceis)`,
+Personas calibradas para avaliar:
+${personasContext}`,
       responseFormat: "json_object",
       temperature: 0.5,
     });
 
     const list = aiRes?.parsedJson?.personas;
-    if (Array.isArray(list) && list.length >= 5) {
+    if (Array.isArray(list) && list.length >= 4) {
       return SIMLAB_BASE_PERSONAS.map((bp) => {
         const found = list.find((item: any) => item.persona_id === bp.persona_id) || list[0];
         return {
@@ -337,7 +322,7 @@ Personas para avaliar:
           archetype_label: bp.archetype_label,
           avatar_url: bp.avatar_url,
           conversion_probability: Math.min(99, Math.max(25, Number(found.conversion_probability) || 70)),
-          reaction_verbatim: found.reaction_verbatim || "Gostei da proposta, mas preciso analisar mais.",
+          reaction_verbatim: found.reaction_verbatim || `Interessante para quem vive em ${bp.details.city}, mas preciso de mais transparência.`,
           primary_objection: found.primary_objection || undefined,
           recommended_fix: found.recommended_fix || undefined,
         };

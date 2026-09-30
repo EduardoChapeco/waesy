@@ -516,7 +516,7 @@ function ContasPagarPage() {
                           Liquidado
                         </Badge>
                       ) : isOverdue ? (
-                        <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 text-[11px] font-bold px-2 py-0.5 animate-pulse">
+                        <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 text-xs font-medium px-2 py-0.5">
                           Vencido
                         </Badge>
                       ) : isToday ? (
@@ -684,7 +684,7 @@ function ContasPagarPage() {
                               Pago em {ob.paid_at ? ob.paid_at.slice(0, 10).split("-").reverse().join("/") : "dia"}
                             </Badge>
                           ) : isOverdue ? (
-                            <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 text-[10px] font-bold animate-pulse">
+                            <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 text-xs font-medium">
                               Vencido
                             </Badge>
                           ) : isToday ? (

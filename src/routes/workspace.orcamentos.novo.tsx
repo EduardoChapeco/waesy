@@ -63,7 +63,7 @@ function NovoOrcamentoRouterPage() {
  </div>
  <div>
  <p className="text-xs font-bold text-foreground">Modo de Orçamento / Proposta</p>
- <p className="text-[11px] text-muted-foreground">Escolha o formato comercial ideal para este atendimento</p>
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground">Escolha o formato comercial ideal para este atendimento</p>
  </div>
  </div>
  <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/50 text-xs w-full sm:w-auto justify-center">
@@ -413,7 +413,7 @@ function NovoOrcamentoTravelosPage() {
  </Button>
  <div>
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-[10px] px-2 py-0.5 rounded-lg border-primary/30 text-primary bg-primary/10 font-bold">
+ <Badge variant="outline" className="text-xs px-2 py-0.5 rounded-lg border-primary/30 text-primary bg-primary/10 font-bold">
  Travelos e TravelAgências Standard
  </Badge>
  <span className="text-xs text-muted-foreground font-mono">
@@ -537,8 +537,8 @@ function NovoOrcamentoTravelosPage() {
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold">Cidade / Destino Principal *</Label>
  {destinationIata && (
- <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30 font-bold">
- ✈️ Gateway: {destinationIata}
+ <Badge variant="outline" className="text-xs font-mono text-primary border-primary/30 font-bold">
+  Gateway: {destinationIata}
  </Badge>
  )}
  </div>
@@ -559,7 +559,7 @@ function NovoOrcamentoTravelosPage() {
 
  {/* Chips Rápidos do Catálogo Canônico */}
  <div className="space-y-1 pt-1">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
  Destinos Populares (1 Toque com Voos & Roteiro):
  </span>
  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto no-scrollbar pr-1">
@@ -569,7 +569,7 @@ function NovoOrcamentoTravelosPage() {
  type="button"
  onClick={() => handleSelectCanonicalDestination(dest)}
  className={cn(
- "text-[10px] font-medium px-2.5 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5",
+ "text-xs font-medium px-2.5 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5",
  destinationIata === dest.iata || proposalData.destinationCity === dest.name
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
  : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60"
@@ -578,7 +578,7 @@ function NovoOrcamentoTravelosPage() {
  <span>{dest.name}</span>
  <span
  className={cn(
- "text-[8px] font-mono font-black px-1 rounded",
+ "text-xs font-mono font-black px-1 rounded",
  destinationIata === dest.iata || proposalData.destinationCity === dest.name
  ? "bg-white/20 text-white"
  : "bg-muted text-foreground"
@@ -603,15 +603,15 @@ function NovoOrcamentoTravelosPage() {
  <div className="min-w-0 flex-1">
  <div className="flex items-center gap-1.5">
  <h4 className="text-xs font-bold text-foreground truncate">{selectedCanonicalDest.name}</h4>
- <Badge variant="secondary" className="text-[8px] font-mono font-bold bg-primary/10 text-primary">
+ <Badge variant="secondary" className="text-xs font-mono font-bold bg-primary/10 text-primary">
  {selectedCanonicalDest.iata} • {selectedCanonicalDest.state}
  </Badge>
  </div>
- <p className="text-[10px] text-primary font-medium">
- ☀️ <strong>Melhor época:</strong> {selectedCanonicalDest.bestSeason}
+ <p className="text-xs text-primary font-medium">
+  <strong>Melhor época:</strong> {selectedCanonicalDest.bestSeason}
  </p>
- <p className="text-[10px] text-muted-foreground line-clamp-1">
- 🍽️ {selectedCanonicalDest.gastronomyTip}
+ <p className="text-xs text-muted-foreground line-clamp-1">
+  {selectedCanonicalDest.gastronomyTip}
  </p>
  </div>
  </div>
@@ -712,7 +712,7 @@ function NovoOrcamentoTravelosPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Cia Aérea</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Cia Aérea</Label>
  <Input
  value={flight.airline_name}
  onChange={(e) => {
@@ -724,7 +724,7 @@ function NovoOrcamentoTravelosPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Nº do Voo</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Nº do Voo</Label>
  <Input
  value={flight.flight_number || ""}
  onChange={(e) => {
@@ -736,7 +736,7 @@ function NovoOrcamentoTravelosPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Origem (IATA / Cidade)</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Origem (IATA / Cidade)</Label>
  <Input
  value={`${flight.origin_iata} - ${flight.origin_city}`}
  onChange={(e) => {
@@ -752,7 +752,7 @@ function NovoOrcamentoTravelosPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Destino (IATA / Cidade)</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Destino (IATA / Cidade)</Label>
  <Input
  value={`${flight.destination_iata} - ${flight.destination_city}`}
  onChange={(e) => {
@@ -771,7 +771,7 @@ function NovoOrcamentoTravelosPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Horário de Partida e Chegada</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Horário de Partida e Chegada</Label>
  <div className="flex items-center gap-2">
  <Input
  value={flight.departure_time}
@@ -782,7 +782,7 @@ function NovoOrcamentoTravelosPage() {
  placeholder="08:30"
  className="h-9 rounded-xl text-xs font-mono"
  />
- <span>➔</span>
+ <span></span>
  <Input
  value={flight.arrival_time}
  onChange={(e) => {
@@ -795,7 +795,7 @@ function NovoOrcamentoTravelosPage() {
  </div>
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Franquia de Bagagem</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Franquia de Bagagem</Label>
  <Input
  value={typeof flight.baggage_included === "string" ? flight.baggage_included : flight.baggage_included ? "Inclusa" : ""}
  onChange={(e) => {
@@ -807,7 +807,7 @@ function NovoOrcamentoTravelosPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Classe da Cabine</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Classe da Cabine</Label>
  <Select
  value={flight.cabin_class || "Econômica"}
  onValueChange={(val) =>
@@ -851,7 +851,7 @@ function NovoOrcamentoTravelosPage() {
  Opção {idx + 1}
  </Badge>
  <span className="text-xs font-bold text-foreground">{hotel.hotel_name}</span>
- <span className="text-xs text-amber-500">{"★".repeat(hotel.stars || 5)}</span>
+ <span className="text-xs text-amber-500">{"".repeat(hotel.stars || 5)}</span>
  </div>
  {hotels.length > 1 && (
  <Button
@@ -867,7 +867,7 @@ function NovoOrcamentoTravelosPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Nome do Hotel / Resort</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Nome do Hotel / Resort</Label>
  <Input
  value={hotel.hotel_name}
  onChange={(e) => {
@@ -879,7 +879,7 @@ function NovoOrcamentoTravelosPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Tipo de Quarto / Acomodação</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Tipo de Quarto / Acomodação</Label>
  <Input
  value={hotel.room_type}
  onChange={(e) => {
@@ -891,7 +891,7 @@ function NovoOrcamentoTravelosPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Regime de Alimentação</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Regime de Alimentação</Label>
  <Select
  value={hotel.board_basis}
  onValueChange={(val: any) =>
@@ -914,7 +914,7 @@ function NovoOrcamentoTravelosPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Foto de Capa do Hotel</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Foto de Capa do Hotel</Label>
  <ImageUpload
  value={hotel.image_url}
  onChange={(url) => setHotels((prev) => prev.map((h) => (h.id === hotel.id ? { ...h, image_url: url } : h)))}
@@ -924,7 +924,7 @@ function NovoOrcamentoTravelosPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Número de Noites</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Número de Noites</Label>
  <Input
  type="number"
  min={1}
@@ -988,7 +988,7 @@ function NovoOrcamentoTravelosPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Título do Dia</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Título do Dia</Label>
  <Input
  value={day.title}
  onChange={(e) => {
@@ -1000,7 +1000,7 @@ function NovoOrcamentoTravelosPage() {
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Foto de Destaque da Atração</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Foto de Destaque da Atração</Label>
  <ImageUpload
  value={day.image_url}
  onChange={(url) => setItinerary((prev) => prev.map((d) => (d.id === day.id ? { ...d, image_url: url } : d)))}
@@ -1012,7 +1012,7 @@ function NovoOrcamentoTravelosPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Descrição da Experiência</Label>
+ <Label className="text-xs text-muted-foreground/75 font-bold">Descrição da Experiência</Label>
  <Textarea
  value={day.description}
  onChange={(e) => {
@@ -1020,7 +1020,7 @@ function NovoOrcamentoTravelosPage() {
  setItinerary((prev) => prev.map((d) => (d.id === day.id ? { ...d, description: val } : d)));
  }}
  placeholder="Descreva as atividades, horários de saída, paradas e dicas..."
- className="rounded-xl text-xs min-h-[60px]"
+ className="rounded-xl text-xs min-h-16"
  />
  </div>
  </div>
@@ -1122,7 +1122,7 @@ function NovoOrcamentoTravelosPage() {
  <span className="text-foreground">Total do Pacote:</span>
  <span className="text-primary">{formatMoney(totalPriceCents)}</span>
  </div>
- <div className="flex justify-between text-[11px] text-muted-foreground">
+ <div className="flex justify-between text-xs text-muted-foreground/75 text-muted-foreground">
  <span>Opção Parcelada:</span>
  <span className="font-mono">{maxInstallments}x de {formatMoney(installmentValueCents)} sem juros</span>
  </div>
@@ -1143,7 +1143,7 @@ function NovoOrcamentoTravelosPage() {
  <Textarea
  value={includesText}
  onChange={(e) => setIncludesText(e.target.value)}
- className="rounded-xl text-xs min-h-[90px] font-mono leading-relaxed"
+ className="rounded-xl text-xs min-h-24 font-mono leading-relaxed"
  />
  </div>
  <div className="space-y-1.5">
@@ -1151,7 +1151,7 @@ function NovoOrcamentoTravelosPage() {
  <Textarea
  value={excludesText}
  onChange={(e) => setExcludesText(e.target.value)}
- className="rounded-xl text-xs min-h-[60px] font-mono leading-relaxed"
+ className="rounded-xl text-xs min-h-16 font-mono leading-relaxed"
  />
  </div>
  <div className="space-y-1.5">
@@ -1173,7 +1173,7 @@ function NovoOrcamentoTravelosPage() {
  placeholder="Ex: 1 Quarto Duplo + 1 Quarto Triplo (Família)"
  className="h-10 rounded-xl text-xs"
  />
- <p className="text-[11px] text-muted-foreground">Detalhamento de quartos para o template do WhatsApp</p>
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground">Detalhamento de quartos para o template do WhatsApp</p>
  </div>
  </div>
  </div>
@@ -1182,10 +1182,10 @@ function NovoOrcamentoTravelosPage() {
  {/* ─── AÇÃO DE SHARE WHATSAPP ─── */}
  <div className="p-5 rounded-2xl bg-card border border-border/80 space-y-3">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <span className="size-4 text-emerald-600 flex items-center justify-center text-sm">💬</span>
+ <span className="size-4 text-emerald-600 flex items-center justify-center text-sm"></span>
  <span>Compartilhar Cotação via WhatsApp</span>
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
  Gere um template profissional de proposta turística e envie diretamente para o cliente via WhatsApp.
  O template inclui destino, datas, passageiros, hotéis, voos, valores e condições de pagamento.
  </p>
@@ -1201,45 +1201,45 @@ function NovoOrcamentoTravelosPage() {
  const childrenLabel = proposalData.childrenCount > 0 ? ` + ${proposalData.childrenCount} criança${proposalData.childrenCount > 1 ? 's' : ''}` : '';
  const paxLine = `${adultsLabel}${childrenLabel} (${totalPax} PAX)`;
  const flightLines = flights.length > 0
- ? flights.map(f => `   ✈ ${f.type === 'outbound' ? 'Ida' : f.type === 'return' ? 'Volta' : 'Conexão'}: ${f.origin_iata} → ${f.destination_iata} | ${f.airline_name} | ${f.departure_time} – ${f.arrival_time}${f.baggage_included ? ` | Bagagem: ${f.baggage_included}` : ''}`).join('\n')
+ ? flights.map(f => `    ${f.type === 'outbound' ? 'Ida' : f.type === 'return' ? 'Volta' : 'Conexão'}: ${f.origin_iata} → ${f.destination_iata} | ${f.airline_name} | ${f.departure_time} – ${f.arrival_time}${f.baggage_included ? ` | Bagagem: ${f.baggage_included}` : ''}`).join('\n')
  : '   Voos a confirmar';
  const hotelLines = hotels.length > 0
- ? hotels.map(h => `   🏨 ${h.hotel_name} (${h.stars ? '★'.repeat(h.stars) : ''}) | ${h.nights_count || 1} noite${(h.nights_count || 1) > 1 ? 's' : ''} | ${h.board_basis === 'all_inclusive' ? 'All-Inclusive' : h.board_basis === 'breakfast' ? 'Café da Manhã' : h.board_basis === 'half_board' ? 'Meia Pensão' : 'Hospedagem'}`).join('\n')
+ ? hotels.map(h => `    ${h.hotel_name} (${h.stars ? ''.repeat(h.stars) : ''}) | ${h.nights_count || 1} noite${(h.nights_count || 1) > 1 ? 's' : ''} | ${h.board_basis === 'all_inclusive' ? 'All-Inclusive' : h.board_basis === 'breakfast' ? 'Café da Manhã' : h.board_basis === 'half_board' ? 'Meia Pensão' : 'Hospedagem'}`).join('\n')
  : '   Hotel a confirmar';
  const pixPrice = Math.round(totalPriceCents * 0.95);
- const installLine = maxInstallments > 1 ? `   💳 Parcelado: ${maxInstallments}x de ${formatMoney(installmentValueCents)} sem juros` : '';
+ const installLine = maxInstallments > 1 ? `    Parcelado: ${maxInstallments}x de ${formatMoney(installmentValueCents)} sem juros` : '';
 
  const lines = [
  `*PROPOSTA — ${proposalData.title || `Pacote ${dest}`}*`,
  ``,
  `Olá, *${clientName.split(' ')[0]}*! Segue seu roteiro personalizado:`,
  ``,
- `📍 *Destino:* ${dest}`,
- startDate ? `📅 *Período:* ${startDate}${endDate ? ` até ${endDate}` : ''}` : '',
- `👥 *Passageiros:* ${paxLine}`,
- roomDistribution ? `🛏️ *Quartos:* ${roomDistribution}` : '',
+ ` *Destino:* ${dest}`,
+ startDate ? ` *Período:* ${startDate}${endDate ? ` até ${endDate}` : ''}` : '',
+ ` *Passageiros:* ${paxLine}`,
+ roomDistribution ? ` *Quartos:* ${roomDistribution}` : '',
  ``,
- `✈️ *AÉREO*`,
+ ` *AÉREO*`,
  flightLines,
  ``,
- `🏨 *HOSPEDAGEM*`,
+ ` *HOSPEDAGEM*`,
  hotelLines,
  ``,
- `💰 *VALORES DO PACOTE*`,
- `   👤 Por pessoa: ${formatMoney(Math.round(totalPriceCents / totalPax))}`,
- `   📦 Total do Pacote: *${formatMoney(totalPriceCents)}*`,
- `   ⚡ À Vista via Pix (5% OFF): *${formatMoney(pixPrice)}*`,
+ ` *VALORES DO PACOTE*`,
+ `    Por pessoa: ${formatMoney(Math.round(totalPriceCents / totalPax))}`,
+ `    Total do Pacote: *${formatMoney(totalPriceCents)}*`,
+ `    À Vista via Pix (5% OFF): *${formatMoney(pixPrice)}*`,
  installLine,
  ``,
- `📌 *INCLUSO:*`,
+ ` *INCLUSO:*`,
  ...includesText.split('\n').filter(l => l.trim()).map(l => `   ${l}`),
  ``,
- `📌 *NÃO INCLUSO:*`,
+ ` *NÃO INCLUSO:*`,
  ...excludesText.split('\n').filter(l => l.trim()).map(l => `   ${l}`),
  ``,
  `⏳ *Proposta válida por ${validUntilDays} dias.*`,
  ``,
- `Entre em contato para confirmar disponibilidade e reservar sua viagem! 🌎`,
+ `Entre em contato para confirmar disponibilidade e reservar sua viagem! `,
  ].filter(l => l !== '').join('\n');
 
  const phone = proposalData.clientWhatsapp?.replace(/\D/g, '');
@@ -1252,7 +1252,7 @@ function NovoOrcamentoTravelosPage() {
  }}
  className="h-10 px-5 rounded-xl text-xs font-bold flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors cursor-pointer shadow-xs"
  >
- <span>💬</span>
+ <span></span>
  <span>Enviar Proposta via WhatsApp</span>
  </button>
 
@@ -1267,10 +1267,10 @@ function NovoOrcamentoTravelosPage() {
 
  const text = [
  `*${proposalData.title || `Pacote ${dest}`}*`,
- `📍 ${dest} | 👥 ${paxLine}`,
- `💰 Total: *${formatMoney(totalPriceCents)}* | Pix: *${formatMoney(pixPrice)}*${installLine}`,
+ ` ${dest} |  ${paxLine}`,
+ ` Total: *${formatMoney(totalPriceCents)}* | Pix: *${formatMoney(pixPrice)}*${installLine}`,
  `⏳ Válida por ${validUntilDays} dias.`,
- `Para mais detalhes, responda esta mensagem! 😊`,
+ `Para mais detalhes, responda esta mensagem! `,
  ].join('\n');
 
  navigator.clipboard?.writeText(text);
@@ -1278,7 +1278,7 @@ function NovoOrcamentoTravelosPage() {
  }}
  className="h-10 px-4 rounded-xl text-xs font-bold flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground border border-border/60 transition-colors cursor-pointer"
  >
- <span>📋</span>
+ <span></span>
  <span>Copiar Resumo</span>
  </button>
  </div>
@@ -1641,8 +1641,8 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <span>Destinatário / Cliente</span>
  </div>
  {customerId && (
- <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold">
- ✓ Cliente Vinculado ao CRM
+ <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-xs font-bold">
+  Cliente Vinculado ao CRM
  </Badge>
  )}
  </div>
@@ -1659,7 +1659,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  onFocus={() => {
  if (clientSearch.trim().length >= 1) setIsClientDropdownOpen(true);
  }}
- placeholder="🔍 Buscar cliente no CRM (Nome, CPF/CNPJ, WhatsApp ou E-mail)..."
+ placeholder=" Buscar cliente no CRM (Nome, CPF/CNPJ, WhatsApp ou E-mail)..."
  className="h-10 rounded-xl text-xs bg-muted/30 pl-3 pr-8 border-border/70"
  />
  {isLoadingCustomers && (
@@ -1670,7 +1670,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  {/* Dropdown de Resultados CRM */}
  {isClientDropdownOpen && clientSearch.trim().length >= 1 && (
  <div className="absolute left-0 right-0 top-11 z-50 rounded-xl bg-card border border-border/80 shadow-xs overflow-hidden animate-in fade-in-50 zoom-in-95">
- <div className="p-2 border-b border-border/60 bg-muted/40 flex items-center justify-between text-[11px] text-muted-foreground font-bold">
+ <div className="p-2 border-b border-border/60 bg-muted/40 flex items-center justify-between text-xs text-muted-foreground/75 text-muted-foreground font-bold">
  <span>Resultados da Carteira de Clientes ({crmCustomers.length})</span>
  <button
  type="button"
@@ -1697,13 +1697,13 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
  {c.full_name || c.legal_name}
  </p>
- <p className="text-[11px] text-muted-foreground truncate">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground truncate">
  {c.document && `Doc: ${c.document} • `}
  {c.phone && `Whats: ${c.phone} • `}
  {c.email}
  </p>
  </div>
- <Badge variant="outline" className="text-[10px] shrink-0">
+ <Badge variant="outline" className="text-xs shrink-0">
  Selecionar
  </Badge>
  </button>
@@ -1840,14 +1840,14 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  >
  <div className="flex items-center justify-between gap-2">
  <div className="flex items-center gap-2">
- <Badge variant="secondary" className="text-[10px] font-mono px-2 py-0.5">
+ <Badge variant="secondary" className="text-xs font-mono px-2 py-0.5">
  #{idx + 1}
  </Badge>
  <Select
  value={item.item_type}
  onValueChange={(val: any) => handleUpdateItem(item.id, { item_type: val })}
  >
- <SelectTrigger className="h-7 text-[11px] rounded-lg w-44 bg-background">
+ <SelectTrigger className="h-7 text-xs text-muted-foreground/75 rounded-lg w-44 bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1863,13 +1863,13 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  variant="ghost"
  size="sm"
  onClick={() => handleOpenCatalogForExistingItem(item.id)}
- className="h-7 px-2 text-[11px] font-bold text-primary hover:bg-primary/10 rounded-lg cursor-pointer"
+ className="h-7 px-2 text-xs text-muted-foreground/75 font-bold text-primary hover:bg-primary/10 rounded-lg cursor-pointer"
  >
- 🔍 Conectar Catálogo
+  Conectar Catálogo
  </Button>
 
  {item.sku && (
- <Badge variant="outline" className="text-[10px] font-mono">
+ <Badge variant="outline" className="text-xs font-mono">
  SKU: {item.sku}
  </Badge>
  )}
@@ -1890,7 +1890,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
  <div className="sm:col-span-5 space-y-1">
- <Label className="text-[11px] font-medium text-muted-foreground">
+ <Label className="text-xs text-muted-foreground/75 font-medium text-muted-foreground">
  Nome do Item / Descrição *
  </Label>
  <div className="flex items-center gap-2">
@@ -1912,7 +1912,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  </div>
 
  <div className="sm:col-span-2 space-y-1">
- <Label className="text-[11px] font-medium text-muted-foreground">Qtd</Label>
+ <Label className="text-xs text-muted-foreground/75 font-medium text-muted-foreground">Qtd</Label>
  <Input
  type="number"
  min={1}
@@ -1925,7 +1925,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  </div>
 
  <div className="sm:col-span-2 space-y-1">
- <Label className="text-[11px] font-medium text-muted-foreground">Valor Un. (R$)</Label>
+ <Label className="text-xs text-muted-foreground/75 font-medium text-muted-foreground">Valor Un. (R$)</Label>
  <CurrencyField
  value={item.unit_price_cents}
  onChange={(val) => handleUpdateItem(item.id, { unit_price_cents: val })}
@@ -1934,7 +1934,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  </div>
 
  <div className="sm:col-span-3 space-y-1">
- <Label className="text-[11px] font-medium text-muted-foreground">Total da Linha</Label>
+ <Label className="text-xs text-muted-foreground/75 font-medium text-muted-foreground">Total da Linha</Label>
  <div className="h-9 px-3 rounded-xl bg-muted/40 border border-border/50 flex items-center justify-end font-mono font-bold text-xs text-foreground">
  {formatMoney(Math.max(0, lineTotal))}
  </div>
@@ -1955,20 +1955,20 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  {/* Presets Rápidos de Condição */}
  <div className="space-y-1.5">
- <span className="text-[11px] font-bold text-muted-foreground">Modelos de Pagamento Rápidos:</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground">Modelos de Pagamento Rápidos:</span>
  <div className="flex flex-wrap gap-1.5">
  {[
- { label: "⚡ Pix à Vista (5% OFF)", text: "Pagamento à vista via Pix com 5% de desconto. Chave PIX informada após aprovação." },
- { label: "💳 10x sem Juros", text: "Parcelamento em até 10x sem juros no cartão de crédito." },
- { label: "🤝 50% Entrada + 50% Entrega", text: "50% de entrada na aprovação do pedido e saldo de 50% na conclusão / entrega dos serviços." },
- { label: "📄 Boleto Faturado 30/60/90 Dias", text: "Faturamento corporativo em 3 parcelas (30/60/90 dias) via boleto bancário mediante aprovação cadastral." },
- { label: "✈️ 20% Entrada + Saldo Parcelado", text: "Entrada facilitada de 20% no ato da contratação e o saldo restante em até 10x no cartão." },
+ { label: " Pix à Vista (5% OFF)", text: "Pagamento à vista via Pix com 5% de desconto. Chave PIX informada após aprovação." },
+ { label: " 10x sem Juros", text: "Parcelamento em até 10x sem juros no cartão de crédito." },
+ { label: " 50% Entrada + 50% Entrega", text: "50% de entrada na aprovação do pedido e saldo de 50% na conclusão / entrega dos serviços." },
+ { label: " Boleto Faturado 30/60/90 Dias", text: "Faturamento corporativo em 3 parcelas (30/60/90 dias) via boleto bancário mediante aprovação cadastral." },
+ { label: " 20% Entrada + Saldo Parcelado", text: "Entrada facilitada de 20% no ato da contratação e o saldo restante em até 10x no cartão." },
  ].map((preset) => (
  <button
  key={preset.label}
  type="button"
  onClick={() => applyConditionPreset(preset.text)}
- className="text-[10px] font-medium px-2.5 py-1 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors border border-border/50"
+ className="text-xs font-medium px-2.5 py-1 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors border border-border/50"
  >
  {preset.label}
  </button>
@@ -1983,7 +1983,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  value={conditions}
  onChange={(e) => setConditions(e.target.value)}
  placeholder="Ex: Pagamento 50% de entrada e 50% na entrega. Prazo de execução: 15 dias úteis."
- className="rounded-xl text-xs min-h-[75px]"
+ className="rounded-xl text-xs min-h-20"
  />
  </div>
 
@@ -1993,7 +1993,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  value={internalNotes}
  onChange={(e) => setInternalNotes(e.target.value)}
  placeholder="Ex: Negociação aprovada pelo gerente com 5% de margem extra."
- className="rounded-xl text-xs min-h-[50px]"
+ className="rounded-xl text-xs min-h-12"
  />
  </div>
  </div>
@@ -2037,7 +2037,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  onChange={(e) => setValidUntilDays(Number(e.target.value) || 7)}
  className="h-10 rounded-xl text-xs font-mono"
  />
- <p className="text-[11px] text-muted-foreground leading-tight">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-tight">
  Após este período, a proposta será marcada como expirada automaticamente.
  </p>
  </div>
@@ -2064,7 +2064,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  {customerData.phone && totalCents > 0 && (
  <button
  type="button"
- className="w-full h-11 mt-2 rounded-xl font-bold text-xs bg-[#25D366] hover:bg-[#128C7E] text-white flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
+ className="w-full h-11 mt-2 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
  onClick={() => {
    let msg = `*Orçamento Comercial*\n\n`;
    items.forEach(item => {
@@ -2114,7 +2114,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  type="button"
  onClick={() => setCatalogCategory("all")}
  className={cn(
- "px-2.5 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer",
+ "px-2.5 py-1 rounded-lg font-bold text-xs text-muted-foreground/75 whitespace-nowrap transition-colors cursor-pointer",
  catalogCategory === "all"
  ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground hover:text-foreground",
@@ -2128,7 +2128,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  type="button"
  onClick={() => setCatalogCategory(cat)}
  className={cn(
- "px-2.5 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer",
+ "px-2.5 py-1 rounded-lg font-bold text-xs text-muted-foreground/75 whitespace-nowrap transition-colors cursor-pointer",
  catalogCategory === cat
  ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground hover:text-foreground",
@@ -2142,7 +2142,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  </div>
  </DialogHeader>
 
- <ScrollArea className="max-h-[60vh] p-4">
+ <ScrollArea className="max-h-96 p-4">
  {isLoadingCatalog ? (
  <div className="py-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
  <Loader2 className="size-6 animate-spin text-primary" />
@@ -2181,7 +2181,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
  {product.title}
  </p>
- <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+ <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
  {variant?.sku && (
  <span className="font-mono bg-muted px-1 rounded">
  {variant.sku}
@@ -2199,7 +2199,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <Button
  type="button"
  size="sm"
- className="rounded-lg text-[10px] font-bold h-7 px-2.5 shrink-0"
+ className="rounded-lg text-xs font-bold h-7 px-2.5 shrink-0"
  >
  Inserir
  </Button>

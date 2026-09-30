@@ -150,8 +150,8 @@ export default function WorkspaceVouchersPage() {
             ? {
                 airline: flights[0].title?.split("·")[0]?.trim() || "Cia Aérea",
                 flightNumber: flights[0].title?.split("·")[1]?.trim() || "",
-                origin: flights[0].subtitle?.split("➔")[0]?.trim() || "",
-                destination: flights[0].subtitle?.split("➔")[1]?.trim() || "",
+                origin: flights[0].subtitle?.split("->")[0]?.trim() || "",
+                destination: flights[0].subtitle?.split("->")[1]?.trim() || "",
                 locator: extracted.code || "",
               }
             : {},
@@ -164,8 +164,8 @@ export default function WorkspaceVouchersPage() {
             : {},
           transfer_data: transfers[0]
             ? {
-                pickupLocation: transfers[0].title?.split("➔")[0]?.trim() || "",
-                dropoffLocation: transfers[0].title?.split("➔")[1]?.trim() || "",
+                pickupLocation: transfers[0].title?.split("->")[0]?.trim() || "",
+                dropoffLocation: transfers[0].title?.split("->")[1]?.trim() || "",
               }
             : {},
         },
@@ -256,14 +256,14 @@ export default function WorkspaceVouchersPage() {
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5">
-                    <span className="text-[10px] font-mono text-muted-foreground font-bold">
+                    <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground font-bold">
                       {v.voucher_number}
                     </span>
                     <h3 className="text-sm font-bold text-foreground leading-tight">
                       {v.passenger_name}
                     </h3>
                   </div>
-                  <Badge variant="outline" className="text-[10px] uppercase font-mono font-semibold">
+                  <Badge variant="outline" className="text-xs text-muted-foreground/75 uppercase font-mono font-semibold">
                     {VOUCHER_TYPE_LABELS[v.voucher_type as VoucherType]?.split("/")[0] || v.voucher_type}
                   </Badge>
                 </div>
@@ -276,9 +276,9 @@ export default function WorkspaceVouchersPage() {
                   <div className="p-3 rounded-xl bg-sky-500/5 border border-sky-500/20 text-xs space-y-1">
                     <p className="font-bold text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
                       <Plane className="size-3.5 shrink-0" />
-                      <span>{v.flight_data.airline || "Cia Aérea"} ({v.flight_data.origin || "ORIG"} ➔ {v.flight_data.destination || "DEST"})</span>
+                      <span>{v.flight_data.airline || "Cia Aérea"} ({v.flight_data.origin || "ORIG"} → {v.flight_data.destination || "DEST"})</span>
                     </p>
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
                       <span>Voo: {v.flight_data.flightNumber || "-"}</span>
                       <span>Assento: {v.flight_data.seat || "-"}</span>
                     </div>
@@ -291,7 +291,7 @@ export default function WorkspaceVouchersPage() {
                       <Building2 className="size-3.5 shrink-0" />
                       <span>{v.hotel_data.hotelName || "Hotel / Resort"}</span>
                     </p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {[v.hotel_data.roomType, v.hotel_data.boardBasis].filter(Boolean).join(" · ") || "Acomodação conforme reserva"}
                     </p>
                   </div>
@@ -301,9 +301,9 @@ export default function WorkspaceVouchersPage() {
                   <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/20 text-xs space-y-1">
                     <p className="font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1.5">
                       <Car className="size-3.5 shrink-0" />
-                      <span>{v.transfer_data.pickupLocation || "Origem"} ➔ {v.transfer_data.dropoffLocation || "Destino"}</span>
+                      <span>{v.transfer_data.pickupLocation || "Origem"} → {v.transfer_data.dropoffLocation || "Destino"}</span>
                     </p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {v.transfer_data.vehicleType || "Veículo Executivo"}
                     </p>
                   </div>
@@ -317,7 +317,7 @@ export default function WorkspaceVouchersPage() {
                     variant="outline"
                     onClick={() => setCompanionModalVoucher(v)}
                     className="h-11 sm:h-8 px-3 rounded-xl text-xs font-bold gap-1.5 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
-                    title="Visualizar Cartão 9:16 para WhatsApp e Stories"
+                    title="Visualizar Cartão"
                   >
                     <Smartphone className="size-4 sm:size-3.5" />
                     <span>Cartão 9:16</span>
@@ -488,7 +488,7 @@ export default function WorkspaceVouchersPage() {
                     title={
                       companionModalVoucher.title ||
                       (companionModalVoucher.voucher_type === "flight"
-                        ? `${companionModalVoucher.flight_data?.origin || "Origem"} ➔ ${companionModalVoucher.flight_data?.destination || "Destino"}`
+                        ? `${companionModalVoucher.flight_data?.origin || "Origem"} -> ${companionModalVoucher.flight_data?.destination || "Destino"}`
                         : companionModalVoucher.hotel_data?.hotelName || "Voucher de Viagem")
                     }
                     subtitle={companionModalVoucher.title}
@@ -550,7 +550,7 @@ function buildCompanionSections(v: any): CompanionCardSectionItem[] {
       type: "flight",
       badge: v.flight_data.seat ? `Assento: ${v.flight_data.seat}` : "Voo Confirmado",
       title: `${v.flight_data.airline || "Cia Aérea"} · ${v.flight_data.flightNumber || "Voo"}`,
-      subtitle: `${v.flight_data.origin || "Origem"} ➔ ${v.flight_data.destination || "Destino"}`,
+      subtitle: `${v.flight_data.origin || "Origem"} -> ${v.flight_data.destination || "Destino"}`,
       details: [
         { label: "Embarque", value: v.flight_data.departureTime || "-", highlight: true },
         { label: "Chegada", value: v.flight_data.arrivalTime || "-" },
@@ -583,7 +583,7 @@ function buildCompanionSections(v: any): CompanionCardSectionItem[] {
     sections.push({
       type: "transport",
       badge: "Transfer Executivo",
-      title: `${v.transfer_data.pickupLocation || "Origem"} ➔ ${v.transfer_data.dropoffLocation || "Destino"}`,
+      title: `${v.transfer_data.pickupLocation || "Origem"} -> ${v.transfer_data.dropoffLocation || "Destino"}`,
       subtitle: v.transfer_data.vehicleType || "Veículo Executivo",
       details: [
         { label: "Horário de Coleta", value: v.transfer_data.pickupTime || "A combinar", highlight: true },

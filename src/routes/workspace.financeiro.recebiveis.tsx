@@ -508,7 +508,7 @@ Assinatura da Loja (Consignante)`;
         >
           <Receipt className="h-4 w-4" />
           <span>Carnês e Caderninho</span>
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+          <Badge variant="secondary" className="text-xs text-muted-foreground/75 px-1.5 py-0 h-4">
             {carnes.length}
           </Badge>
         </button>
@@ -527,7 +527,7 @@ Assinatura da Loja (Consignante)`;
           <span>Condicionais e Malas</span>
           <Badge
             variant="outline"
-            className="text-[10px] px-1.5 py-0 h-4 border-indigo-200 text-indigo-600 dark:text-indigo-400"
+            className="text-xs text-muted-foreground/75 px-1.5 py-0 h-4 border-indigo-200 text-indigo-600 dark:text-indigo-400"
           >
             {condicionaisList.filter((c: any) => c.status !== "closed").length} ativas
           </Badge>
@@ -646,7 +646,7 @@ Assinatura da Loja (Consignante)`;
           >
             ⏳ Conciliações
             {(report?.pendingConciliationCount || 0) > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-[10px]">
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-xs text-muted-foreground/75">
                 {report?.pendingConciliationCount}
               </span>
             )}
@@ -781,31 +781,31 @@ Assinatura da Loja (Consignante)`;
                               </span>
 
                               {isPaid && (
-                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px] py-0">
+                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs text-muted-foreground/75 py-0">
                                   Quitada
                                 </Badge>
                               )}
 
                               {!isPaid && isPending && (
-                                <Badge variant="outline" className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] py-0 animate-pulse">
-                                  ⏳ Comprovante Enviado
+                                <Badge variant="outline" className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs py-0">
+                                  Comprovante enviado
                                 </Badge>
                               )}
 
                               {!isPaid && isRejected && (
-                                <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px] py-0">
+                                <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-xs text-muted-foreground/75 py-0">
                                   Comprovante Recusado
                                 </Badge>
                               )}
 
                               {!isPaid && !isPending && isOverdue && (
-                                <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px] py-0">
+                                <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-xs text-muted-foreground/75 py-0">
                                   Vencida ({inst.late_days || 1}d)
                                 </Badge>
                               )}
 
                               {!isPaid && !isPending && !isOverdue && (
-                                <Badge variant="outline" className="bg-muted text-muted-foreground text-[10px] py-0">
+                                <Badge variant="outline" className="bg-muted text-muted-foreground text-xs text-muted-foreground/75 py-0">
                                   A Vencer
                                 </Badge>
                               )}
@@ -1039,22 +1039,22 @@ Assinatura da Loja (Consignante)`;
                             <span className="font-semibold text-foreground text-sm">{cond.customerName}</span>
                             <span className="text-xs text-muted-foreground">{cond.customerPhone}</span>
                             {isOverdue && (
-                              <Badge variant="destructive" className="text-[10px] px-2 py-0 h-4">
+                              <Badge variant="destructive" className="text-xs text-muted-foreground/75 px-2 py-0 h-4">
                                 Atrasada
                               </Badge>
                             )}
                             {isDueToday && (
-                              <Badge className="text-[10px] px-2 py-0 h-4 bg-amber-500/15 text-amber-700 dark:text-amber-400 border-0">
+                              <Badge className="text-xs text-muted-foreground/75 px-2 py-0 h-4 bg-amber-500/15 text-amber-700 dark:text-amber-400 border-0">
                                 Vence Hoje
                               </Badge>
                             )}
                             {!isOverdue && !isDueToday && !isClosed && (
-                              <Badge variant="secondary" className="text-[10px] px-2 py-0 h-4">
+                              <Badge variant="secondary" className="text-xs text-muted-foreground/75 px-2 py-0 h-4">
                                 Em Prova
                               </Badge>
                             )}
                             {isClosed && (
-                              <Badge className="text-[10px] px-2 py-0 h-4 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-0">
+                              <Badge className="text-xs text-muted-foreground/75 px-2 py-0 h-4 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-0">
                                 Finalizada
                               </Badge>
                             )}
@@ -1085,7 +1085,7 @@ Assinatura da Loja (Consignante)`;
                           variant="outline"
                           className="h-11 sm:h-8 px-3 text-xs rounded-xl font-medium border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs"
                           onClick={() => handleGenerateCondicionalContract(cond)}
-                          title="Gerar Termo de Responsabilidade com Assinatura Digital"
+                          title="Gerar Termo"
                         >
                           <FileText className="h-4 w-4 sm:h-3.5 sm:w-3.5 mr-1" />
                           <span className="hidden sm:inline">Termo /</span> Contrato
@@ -1123,7 +1123,7 @@ Assinatura da Loja (Consignante)`;
                               <p className="font-semibold text-foreground">{formatMoney(item.priceCents)}</p>
                               <span
                                 className={cn(
-                                  "text-[10px] font-medium",
+                                  "text-xs text-muted-foreground/75 font-medium",
                                   item.status === "bought"
                                     ? "text-emerald-600"
                                     : item.status === "returned"
@@ -1394,7 +1394,7 @@ Assinatura da Loja (Consignante)`;
                   />
                   <div className="space-y-0.5">
                     <span className="text-xs font-semibold text-foreground block">
-                      📅 Lembrete Amigável
+                      Lembrete Amigável
                     </span>
                     <span className="text-[11px] text-muted-foreground block">
                       Avisa sobre o vencimento próximo da parcela com instruções de pagamento.
@@ -1412,7 +1412,7 @@ Assinatura da Loja (Consignante)`;
                   />
                   <div className="space-y-0.5">
                     <span className="text-xs font-semibold text-foreground block">
-                      ⚠️ Aviso de Vencimento
+                      ️ Aviso de Vencimento
                     </span>
                     <span className="text-[11px] text-muted-foreground block">
                       Alerta sobre juros de mora e pede a regularização imediata da dívida.
@@ -1430,7 +1430,7 @@ Assinatura da Loja (Consignante)`;
                   />
                   <div className="space-y-0.5">
                     <span className="text-xs font-semibold text-foreground block">
-                      🎁 Oferta de Desconto para Quitação
+                      Oferta de Desconto para Quitação
                     </span>
                     <span className="text-[11px] text-muted-foreground block">
                       Oferece um percentual de desconto caso o cliente quite a parcela hoje.
@@ -1885,7 +1885,7 @@ Assinatura da Loja (Consignante)`;
                               : "border-border/60 text-muted-foreground hover:text-foreground",
                           )}
                         >
-                          🛍️ Comprou
+                          ️ Comprou
                         </button>
                         <button
                           type="button"
