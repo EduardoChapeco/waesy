@@ -67,33 +67,88 @@ function slugify(text: string): string {
 
 export async function autoPromoteMinedArticle(supabase: any, article: any) {
   try {
-    const title = article.ai_structured_title || article.raw_title;
-    if (!title || title.length < 5) return;
+    const title = (article.ai_structured_title || article.raw_title || "").trim();
+    if (!title || title.length < 10) return;
+
+    const coverUrl =
+      article.ai_suggested_cover_url ||
+      (Array.isArray(article.raw_images) ? article.raw_images[0] : null);
+
+    // V143 Truth Engine: Zero Stock Photo / Unsplash Fallbacks.
+    if (!isHealthyImageUrl(coverUrl)) {
+      return;
+    }
+
+    const rawMarkdown = String(article.extracted_markdown || "").trim();
+    const paragraphs = rawMarkdown
+      .split(/\n+/)
+      .map((p) => p.trim())
+      .filter(
+        (p) =>
+          p.length > 40 &&
+          !p.includes("Esta matéria foi apurada originalmente pela equipe de jornalismo")
+      );
+
+    if (paragraphs.length < 3) {
+      return;
+    }
+
+    const subtitle = (article.ai_summary || paragraphs[0]).slice(0, 240);
+    const bodyParagraphs =
+      paragraphs[0].slice(0, 120) === subtitle.slice(0, 120)
+        ? paragraphs.slice(1, 8)
+        : paragraphs.slice(0, 7);
+
+    if (bodyParagraphs.length < 2) {
+      return;
+    }
+
+    const contentSections = bodyParagraphs.map((content) => ({
+      type: "paragraph" as const,
+      content,
+    }));
 
     const baseSlug = slugify(title);
     const slug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
-    const summary = article.ai_summary || article.raw_description || (article.extracted_markdown ? article.extracted_markdown.slice(0, 250) : "Notícia regional atualizada.");
-    const content = article.extracted_markdown || summary;
-    const coverUrl = article.ai_suggested_cover_url || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&auto=format&fit=crop&q=80";
 
-    const { data: existingNews } = await supabase
+    let existingQuery = supabase
       .from("news_articles")
       .select("id")
-      .ilike("title", title.trim())
-      .maybeSingle();
+      .ilike("title", title);
+
+    if (article.source_url) {
+      const { data: byUrl } = await supabase
+        .from("news_articles")
+        .select("id")
+        .eq("source_url", article.source_url)
+        .maybeSingle();
+      if (byUrl) return;
+    }
+
+    const { data: existingNews } = await existingQuery.maybeSingle();
 
     if (!existingNews) {
       await supabase.from("news_articles").insert({
-        title: title.trim(),
+        store_id: article.store_id || "5108ce27-2df1-4ce2-89f2-681fea6dba95",
+        title,
         slug,
-        summary: summary.slice(0, 350),
-        content,
-        kicker: article.ai_suggested_kicker || "Regional",
-        cover_url: coverUrl,
+        subtitle,
+        content_sections: contentSections,
+        kicker: article.ai_suggested_kicker || "SANTA CATARINA",
+        cover_media_url: coverUrl,
+        cover_media_type: "image",
+        category: article.ai_category || "cidade",
+        tags: Array.isArray(article.ai_tags) && article.ai_tags.length > 0 ? article.ai_tags : ["notícias", "santa catarina"],
+        ai_summary: article.ai_summary || bodyParagraphs[0].slice(0, 260),
+        ai_keywords: Array.isArray(article.ai_tags) ? article.ai_tags : [],
+        source_url: article.source_url || null,
+        source_type: "crawler",
+        author_name: article.source_domain || "Redação Regional",
+        quality_score: Math.max(85, Number(article.quality_score || 88)),
+        curation_status: "approved",
         status: "published",
-        published_at: new Date().toISOString(),
-        reading_time_minutes: Math.max(2, Math.ceil((content.length || 500) / 800)),
-        store_id: article.store_id || null,
+        published_at: article.published_at || new Date().toISOString(),
+        reading_time_minutes: Math.max(2, Math.ceil(rawMarkdown.split(/\s+/).length / 160)),
       });
     }
   } catch (err) {

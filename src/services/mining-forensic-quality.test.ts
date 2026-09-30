@@ -1,14 +1,26 @@
 import { describe, it, expect } from "vitest";
-import { validateMechanicalCompleteness, isHealthyImageUrl, getFallbackThematicImage, calculateTitleSimilarity } from "./mining/integrity-gate";
-import { resolveImageUrl, sanitizeParagraphs } from "./mining/mechanical-extractor";
+import {
+  validateMechanicalCompleteness,
+  isHealthyImageUrl,
+  getFallbackThematicImage,
+  calculateTitleSimilarity,
+} from "./mining/integrity-gate";
+import {
+  resolveImageUrl,
+  sanitizeParagraphs,
+  extractContentMechanically,
+} from "./mining/mechanical-extractor";
+import { cleanHtmlText } from "@/lib/mining/scraper-utils";
+import { curateWithEditorialSquad } from "./mining/editorial-squad";
 
-describe("Mining Pipeline — Forensic Integrity Gate & Sanitization", () => {
-  describe("1. Image Health & Thematic Fallbacks", () => {
-    it("recognizes healthy image URLs and rejects 1x1 tracking pixels and spacers", () => {
-      expect(isHealthyImageUrl("https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200")).toBe(true);
-      expect(isHealthyImageUrl("https://portal.com.br/wp-content/uploads/2026/09/foto.jpg")).toBe(true);
-      
-      // Broken / tracking / spacer patterns
+describe("V143 Mining Pipeline — Forensic Integrity Gate, Anti-Unsplash & Deep Curation", () => {
+  describe("1. Image Health & Zero Unsplash Fallbacks", () => {
+    it("recognizes authentic publisher image URLs and rejects Unsplash stock photos and 1x1 pixels", () => {
+      expect(isHealthyImageUrl("https://s2-g1.glbimg.com/foto-real-chapeco.jpg")).toBe(true);
+      expect(isHealthyImageUrl("https://static.ndmais.com.br/2026/09/weg-investimento.jpg")).toBe(true);
+
+      // V143 Truth Engine: Unsplash stock photos and tracking pixels must be rejected
+      expect(isHealthyImageUrl("https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200")).toBe(false);
       expect(isHealthyImageUrl("https://example.com/spacer.gif")).toBe(false);
       expect(isHealthyImageUrl("https://example.com/1x1.png")).toBe(false);
       expect(isHealthyImageUrl("https://analytics.portal.com/pixel.gif?id=99")).toBe(false);
@@ -17,22 +29,21 @@ describe("Mining Pipeline — Forensic Integrity Gate & Sanitization", () => {
       expect(isHealthyImageUrl(null)).toBe(false);
     });
 
-    it("provides curated high-definition CDN fallback images by category", () => {
-      const cityImage = getFallbackThematicImage("cidade");
-      const sportsImage = getFallbackThematicImage("esportes");
-      const cultureImage = getFallbackThematicImage("cultura");
-      const economyImage = getFallbackThematicImage("economia");
-      const nullFallback = getFallbackThematicImage(null);
-
-      expect(cityImage).toContain("https://images.unsplash.com");
-      expect(sportsImage).toContain("https://images.unsplash.com");
-      expect(cultureImage).toContain("https://images.unsplash.com");
-      expect(economyImage).toContain("https://images.unsplash.com");
-      expect(nullFallback).toContain("https://images.unsplash.com");
+    it("returns empty string from getFallbackThematicImage instead of synthetic Unsplash URLs", () => {
+      expect(getFallbackThematicImage("cidade")).toBe("");
+      expect(getFallbackThematicImage("economia")).toBe("");
+      expect(getFallbackThematicImage(null)).toBe("");
     });
   });
 
-  describe("2. URL Resolution & Paragraph Sanitization", () => {
+  describe("2. HTML Entity Decoding & Paragraph Sanitization", () => {
+    it("decodes numeric, hexadecimal and named HTML entities in titles and body text", () => {
+      const rawTitle = "Policial homenageado morre aos 37 anos em SC: &#8216;Coração bondoso&#8217; &amp; exemplo";
+      expect(cleanHtmlText(rawTitle)).toBe(
+        "Policial homenageado morre aos 37 anos em SC: ‘Coração bondoso’ & exemplo"
+      );
+    });
+
     it("resolves relative image URLs against base domain", () => {
       const baseUrl = "https://g1.globo.com/sc/santa-catarina/noticia/2026/09/chapeco-obras.ghtml";
       expect(resolveImageUrl("/assets/capa.jpg", baseUrl)).toBe("https://g1.globo.com/assets/capa.jpg");
@@ -56,54 +67,81 @@ describe("Mining Pipeline — Forensic Integrity Gate & Sanitization", () => {
     });
   });
 
-  describe("3. Mechanical Completeness Validation (Anti-Shallow Gate)", () => {
-    it("approves complete articles with rich content and rejects shallow stubs", () => {
+  describe("3. Mechanical Completeness Validation (Anti-Shallow & Anti-Live-Stream Stub Gate)", () => {
+    it("approves complete multi-paragraph articles with publisher image and rejects shallow or live-stream stubs", () => {
       const completeArticle = {
         title: "Abertura de novas conexões aéreas fortalece turismo no Oeste Catarinense",
         lead: "Voos diretos conectam Chapecó a novos destinos com projeção de crescimento de 30% na malha.",
-        bodyMarkdown: "O aeroporto regional de Chapecó anunciou a expansão das rotas comerciais regulares com conexões diretas para novos polos industriais e turísticos do Sul do país.\n\nA medida atende a uma demanda histórica de entidades empresariais e agências de viagens que articulavam a ampliação da capacidade de atendimento aos passageiros.\n\nSegundo dados da concessionária aeroportuária, a expectativa é atingir mais de 80 mil embarques e desembarques mensais durante a alta temporada.",
-        wordCount: 88,
+        bodyMarkdown:
+          "O aeroporto regional de Chapecó anunciou a expansão das rotas comerciais regulares com conexões diretas para novos polos industriais e turísticos do Sul do país, ampliando a oferta de assentos para empresários e viajantes.\n\nA medida atende a uma demanda histórica de entidades empresariais e agências de viagens que articulavam a ampliação da capacidade de atendimento aos passageiros durante todo o ano.\n\nSegundo dados da concessionária aeroportuária, a expectativa é atingir mais de 80 mil embarques e desembarques mensais durante a alta temporada, impulsionando a hotelaria e o setor de eventos.",
+        bodyText:
+          "O aeroporto regional de Chapecó anunciou a expansão das rotas comerciais regulares com conexões diretas para novos polos industriais e turísticos do Sul do país, ampliando a oferta de assentos para empresários e viajantes. A medida atende a uma demanda histórica de entidades empresariais e agências de viagens que articulavam a ampliação da capacidade de atendimento aos passageiros durante todo o ano. Segundo dados da concessionária aeroportuária, a expectativa é atingir mais de 80 mil embarques e desembarques mensais durante a alta temporada, impulsionando a hotelaria e o setor de eventos.",
+        wordCount: 92,
         paragraphCount: 3,
-        coverImageUrl: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200",
+        coverImageUrl: "https://s2-g1.glbimg.com/aeroporto-chapeco.jpg",
         galleryImages: [],
-        author: "Assessoria Regional",
+        author: "Redação Regional",
         publishedAt: new Date().toISOString(),
-        extractionMethod: "css_selector",
+        method: "css_selector",
+        contentType: "noticia",
       };
 
       const validResult = validateMechanicalCompleteness(completeArticle as any);
       expect(validResult.isValid).toBe(true);
-      expect(validResult.qualityScore).toBeGreaterThanOrEqual(70);
+      expect(validResult.hasCoverImage).toBe(true);
+      expect(validResult.qualityScore).toBeGreaterThanOrEqual(75);
 
-      // Shallow article (e.g. paywall stub or headline only)
-      const shallowArticle = {
-        title: "Notícia Rápida",
-        lead: "",
-        bodyMarkdown: "Texto curto de apenas dez palavras que não contém nada relevante.",
-        wordCount: 11,
-        paragraphCount: 1,
-        coverImageUrl: null,
-        galleryImages: [],
-        author: null,
-        publishedAt: null,
-        extractionMethod: "readability",
+      // Live stream TV schedule stub must be blocked
+      const liveStreamStub = {
+        ...completeArticle,
+        title: "AO VIVO: assista à programação da NSC TV",
       };
+      const stubResult = validateMechanicalCompleteness(liveStreamStub as any);
+      expect(stubResult.isValid).toBe(false);
+      expect(stubResult.flags).toContain("LIVE_STREAM_OR_VIDEO_INDEX_STUB");
 
-      const shallowResult = validateMechanicalCompleteness(shallowArticle as any);
-      expect(shallowResult.isValid).toBe(false);
-      expect(shallowResult.flags).toContain("EMPTY_BODY_DETECTED");
+      // Single-paragraph article repeating the lead must be blocked
+      const repeatingBodyArticle = {
+        ...completeArticle,
+        paragraphCount: 1,
+        bodyText: completeArticle.lead,
+      };
+      const repeatingResult = validateMechanicalCompleteness(repeatingBodyArticle as any);
+      expect(repeatingResult.isValid).toBe(false);
     });
 
-    it("accurately computes title similarity to cluster related reports", () => {
-      const t1 = "Prefeitura de Chapecó anuncia novo hospital na Grande Efapi";
-      const t2 = "Prefeitura anuncia novo hospital regional na Efapi em Chapecó";
-      const t3 = "Chuva forte causa alagamentos em Florianópolis";
+    it("extracts all paragraphs from JSON-LD @graph and DOM without repeating subtitle in mobile_sections", async () => {
+      const html = `
+        <html>
+          <head>
+            <meta property="og:title" content="WEG anuncia investimento de R$ 840 milhões em geradores" />
+            <meta property="og:description" content="Aporte milionário ampliará capacidade fabril para 50 unidades diárias." />
+            <meta property="og:image" content="https://static.ndmais.com.br/weg-fabrica.jpg" />
+          </head>
+          <body>
+            <article>
+              <p>A multinacional catarinense WEG confirmou nesta semana um pacote de investimentos de R$ 840 milhões voltado à expansão da produção de geradores de grande porte.</p>
+              <p>O plano estratégico contempla novas linhas automatizadas de montagem e testes, mirando atender à crescente demanda de data centers e infraestrutura energética.</p>
+              <p>Com a ampliação, a capacidade instalada passará a entregar até 50 unidades por dia até o final do próximo ciclo operacional.</p>
+            </article>
+          </body>
+        </html>
+      `;
 
-      const simHigh = calculateTitleSimilarity(t1, t2);
-      const simLow = calculateTitleSimilarity(t1, t3);
+      const extracted = await extractContentMechanically("https://ndmais.com.br/economia/weg-investimento/", html);
+      expect(extracted.paragraphCount).toBe(3);
+      expect(extracted.coverImageUrl).toBe("https://static.ndmais.com.br/weg-fabrica.jpg");
 
-      expect(simHigh).toBeGreaterThan(0.5);
-      expect(simLow).toBeLessThan(0.2);
+      const curated = await curateWithEditorialSquad({
+        rawTitle: extracted.title,
+        rawText: extracted.bodyMarkdown,
+        sourceName: "ND Mais",
+        sourceUrl: "https://ndmais.com.br/economia/weg-investimento/",
+      });
+
+      expect(curated.mobile_sections.length).toBeGreaterThanOrEqual(2);
+      // Subtitle must NOT be identical to mobile_sections[0].content
+      expect(calculateTitleSimilarity(curated.subtitle, curated.mobile_sections[0].content)).toBeLessThan(0.65);
     });
   });
 });

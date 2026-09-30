@@ -66,3 +66,11 @@
 - **Fundamentação:** AGENTS.md B.4, B.8, B.11, DESIGN.md e Master Prompt V142.
 - **Consequências:** Faturamento atômico por centavos inteiros com desconto automático de 50% para assinantes Waesy Max, intercalação 1:4 determinística em Classificados e Catálogo, bloqueio total de vazamento de tier para tráfego externo e prova matemática de ROI transacional.
 
+## DEC-009: Master Prompt V143 (Fase 2) — Purga de Anúncios Falsos & Refatoração Profunda do Motor de Notícias e Curadoria IA
+- **Data:** 2026-09-30
+- **Contexto:** Remoção de todos os anúncios sintéticos (`classifieds` com fotos do `images.unsplash.com`), vagas fictícias (`jobs`) e editais fictícios (`mined_tenders`), além da refatoração completa do pipeline de mineração e curadoria de notícias (`mechanical-extractor.ts`, `integrity-gate.ts`, `editorial-squad.ts`, `mining.functions.ts`, `news.functions.ts`) para erradicar matérias rasas de 1 parágrafo, repetição de subtítulo no corpo, imagens genéricas do Unsplash e links de programação de TV ao vivo.
+- **Decisão:** Purgados 13 classificados sintéticos, 10 vagas sintéticas, 8 editais sintéticos e 41 stubs de notícias no Supabase (`jfuebqmltksyznovhlwa`), preservando os 5 anúncios reais de clientes (`post-media/classifieds/...`). Refatorados o extrator mecânico (suporte a `@graph` JSON-LD, extração integral de `<p>` e decodificação de entidades HTML), o Gate de Integridade (bloqueio de `images.unsplash.com`, stubs `"AO VIVO"`/`"VÍDEOS:"` e matérias `< 3` parágrafos) e o Squad Editorial (desacoplamento estrito entre `subtitle` e `mobile_sections[0]`), republicando 49 matérias reais completas com média de 6.6 parágrafos e `og:image` original dos veículos (`s2-g1.glbimg.com`, `static.ndmais.com.br`).
+- **Fundamentação:** AGENTS.md B.1, B.8, B.11 e Master Prompt V143 (`SPEC-V143-PHASE2-ANTI-FAKE-ADS-AND-DEEP-NEWS-CURATION.md`).
+- **Consequências:** Zero anúncios ou imagens sintéticas do Unsplash no banco de produção, zero matérias com repetição de subtítulo ou texto genérico de preenchimento, e 7/7 testes verdes na suíte forense (`mining-forensic-quality.test.ts`).
+
+

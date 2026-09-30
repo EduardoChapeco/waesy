@@ -144,41 +144,41 @@ export function isHealthyImageUrl(url: string | null | undefined): boolean {
   const forbiddenPatterns = [
     "pixel.gif", "spacer.gif", "blank.gif", "1x1", "tracking",
     "avatar/default", "gravatar.com/avatar/default", "data:image",
-    "clear.gif", "dot.gif", "shim.gif"
+    "clear.gif", "dot.gif", "shim.gif", "images.unsplash.com",
+    "unsplash.com/photo", "placeholder", "default-thumb"
   ];
 
   return !forbiddenPatterns.some((p) => trimmed.includes(p));
 }
 
-export function getFallbackThematicImage(category?: string | null): string {
-  const cat = (category || "noticia").toLowerCase();
-  if (cat.includes("event") || cat.includes("show") || cat.includes("festa")) {
-    return "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&auto=format&fit=crop&q=80";
-  }
-  if (cat.includes("cultura") || cat.includes("arte") || cat.includes("teatro")) {
-    return "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=1200&auto=format&fit=crop&q=80";
-  }
-  if (cat.includes("municip") || cat.includes("gov") || cat.includes("public") || cat.includes("edital")) {
-    return "https://images.unsplash.com/photo-1577495508048-b635879837f1?w=1200&auto=format&fit=crop&q=80";
-  }
-  if (cat.includes("econ") || cat.includes("negoc") || cat.includes("finan")) {
-    return "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80";
-  }
-  if (cat.includes("esport") || cat.includes("futebol") || cat.includes("jogo")) {
-    return "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&auto=format&fit=crop&q=80";
-  }
-  return "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&auto=format&fit=crop&q=80";
+export function getFallbackThematicImage(_category?: string | null): string {
+  // V143 Truth Engine: Zero Stock Photo / Unsplash Fallbacks.
+  // Se a matéria não possuir imagem jornalística real da fonte original, retorna string vazia.
+  return "";
 }
 
+const NON_NEWS_STUB_PATTERNS = [
+  /\bao vivo\b/i,
+  /assista à programação/i,
+  /acompanhe a programação/i,
+  /^vídeos?:\s/i,
+  /\bbom dia santa catarina\b/i,
+  /\bjornal do almoço\b/i,
+  /\bgiro cidades\b/i,
+  /\bhoróscopo do dia\b/i,
+  /\bresultado da lotofácil\b/i,
+  /\bresultado da mega-sena\b/i,
+];
+
 /**
- * Validador de Integridade Mecânica Rigoroso (Gate Anti-Corpo Vazio)
+ * Validador de Integridade Mecânica Rigoroso (Gate Anti-Corpo Vazio & Anti-Stub)
  */
 export function validateMechanicalCompleteness(result: MechanicalExtractionResult): IntegrityValidationResult {
   const flags: string[] = [];
   const words = result.wordCount;
   const paragraphs = result.paragraphCount;
 
-  // 1. Verificação de Título Válido
+  // 1. Verificação de Título Válido e Barragem de Stubs de Programação/Vídeo
   const cleanTitle = (result.title || "").trim().toLowerCase();
   if (!result.title || cleanTitle.length < 8 || INVALID_TITLES.has(cleanTitle) || result.title === "Sem título") {
     return {
@@ -189,6 +189,18 @@ export function validateMechanicalCompleteness(result: MechanicalExtractionResul
       paragraphCount: paragraphs,
       hasCoverImage: !!result.coverImageUrl,
       flags: ["TITLE_MISSING_OR_GENERIC"],
+    };
+  }
+
+  if (NON_NEWS_STUB_PATTERNS.some((pattern) => pattern.test(result.title))) {
+    return {
+      isValid: false,
+      reason: `Pauta identificada como grade de programação de TV ou índice de vídeo sem matéria escrita: "${result.title}".`,
+      qualityScore: 0,
+      wordCount: words,
+      paragraphCount: paragraphs,
+      hasCoverImage: !!result.coverImageUrl,
+      flags: ["LIVE_STREAM_OR_VIDEO_INDEX_STUB"],
     };
   }
 
@@ -206,11 +218,11 @@ export function validateMechanicalCompleteness(result: MechanicalExtractionResul
     };
   }
 
-  // 3. Verificação de Corpo Vazio ou Repetição do Título
-  if (words < 40) {
+  // 3. Verificação de Corpo Vazio ou Repetição do Título/Subtítulo
+  if (words < 75) {
     return {
       isValid: false,
-      reason: `Conteúdo mecânico insuficiente (${words} palavras). O artigo não possui texto de matéria real.`,
+      reason: `Conteúdo mecânico insuficiente (${words} palavras). A matéria exige apuração completa com múltiplos parágrafos.`,
       qualityScore: 10,
       wordCount: words,
       paragraphCount: paragraphs,
@@ -219,13 +231,13 @@ export function validateMechanicalCompleteness(result: MechanicalExtractionResul
     };
   }
 
-  // Se o corpo for apenas uma cópia exata do título
+  // Se o corpo for apenas uma cópia exata do título ou do lead/subtítulo
   const normalizedTitle = normalizeText(result.title);
   const normalizedBody = normalizeText(result.bodyText || (result as any).bodyMarkdown);
-  if (normalizedBody === normalizedTitle || (words < 50 && normalizedBody.startsWith(normalizedTitle))) {
+  if (normalizedBody === normalizedTitle || (words < 85 && normalizedBody.startsWith(normalizedTitle))) {
     return {
       isValid: false,
-      reason: "Corpo do artigo idêntico ao título (conteúdo não foi extraído).",
+      reason: "Corpo do artigo idêntico ao título (conteúdo completo não foi extraído).",
       qualityScore: 15,
       wordCount: words,
       paragraphCount: paragraphs,
@@ -234,25 +246,45 @@ export function validateMechanicalCompleteness(result: MechanicalExtractionResul
     };
   }
 
-  // 4. Limite Mínimo Específico por Categoria
+  if (result.lead && calculateTitleSimilarity(result.lead, result.bodyText) > 0.88) {
+    return {
+      isValid: false,
+      reason: "Corpo do artigo apenas repete a síntese/subtítulo sem desenvolver a notícia.",
+      qualityScore: 20,
+      wordCount: words,
+      paragraphCount: paragraphs,
+      hasCoverImage: !!result.coverImageUrl,
+      flags: ["BODY_REPEATS_SUBTITLE"],
+    };
+  }
+
+  // 4. Limite Mínimo Específico por Categoria (Notícias exigem >= 2 parágrafos reais)
   if (result.contentType === "noticia" || result.contentType === "artigo") {
-    if (words < 100) {
-      flags.push("SHORT_NEWS_ARTICLE");
-    }
     if (paragraphs < 2) {
-      flags.push("FEW_PARAGRAPHS");
+      return {
+        isValid: false,
+        reason: `Artigo com apenas ${paragraphs} parágrafo(s). Requer múltiplos parágrafos estruturados.`,
+        qualityScore: 25,
+        wordCount: words,
+        paragraphCount: paragraphs,
+        hasCoverImage: !!result.coverImageUrl,
+        flags: ["FEW_PARAGRAPHS"],
+      };
+    }
+    if (words < 110) {
+      flags.push("SHORT_NEWS_ARTICLE");
     }
   }
 
   // 5. Cálculo de Score de Qualidade (0 a 100)
-  let score = 40; // Base por ter passado no gate inicial
+  let score = 45; // Base por ter passado no gate rigoroso
 
   // Bônus de extensão de texto
-  if (words >= 300) score += 25;
-  else if (words >= 180) score += 15;
-  else if (words >= 100) score += 10;
+  if (words >= 350) score += 25;
+  else if (words >= 200) score += 18;
+  else if (words >= 110) score += 10;
 
-  // Bônus de imagem de capa saudável
+  // Bônus de imagem de capa saudável (e penalidade se não possuir imagem original real)
   const hasHealthyCover = isHealthyImageUrl(result.coverImageUrl);
   if (hasHealthyCover) {
     score += 15;
@@ -261,8 +293,8 @@ export function validateMechanicalCompleteness(result: MechanicalExtractionResul
   }
 
   // Bônus de autor e data de publicação
-  if (result.author) score += 10;
-  if (result.publishedAt) score += 10;
+  if (result.author) score += 8;
+  if (result.publishedAt) score += 7;
 
   return {
     isValid: true,

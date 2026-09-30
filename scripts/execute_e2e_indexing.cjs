@@ -1,9 +1,12 @@
 /**
- * scripts/execute_e2e_indexing.cjs
- * 
- * Pipeline E2E V127: Transforma dados crus de crawlers/RSS em matérias jornalísticas
- * publicadas (`news_articles`) e vagas de emprego ativas (`jobs`) com dados 100% reais,
- * eliminando os empty states de /noticias e /empregos.
+ * scripts/execute_e2e_indexing.cjs — V143 Deep Mechanical Scraper & Editorial Curation Pipeline
+ *
+ * Regras Invioláveis (V143 Truth Engine):
+ * 1. ZERO imagens genéricas do Unsplash (somente og:image / twitter:image original do veículo).
+ * 2. ZERO parágrafos de preenchimento ("Esta matéria foi apurada originalmente...").
+ * 3. ZERO repetição entre título, subtítulo (lead) e primeiro parágrafo do corpo.
+ * 4. Extração profunda do HTML da matéria original (>= 3 parágrafos reais e >= 450 caracteres).
+ * 5. Barragem de links de vídeo curto, transmissões ao vivo ("AO VIVO") e títulos duplicados.
  */
 
 const { createClient } = require("@supabase/supabase-js");
@@ -26,9 +29,35 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: false },
 });
 
+function decodeHtmlEntities(html) {
+  if (!html) return "";
+  return String(html)
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, " ")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&#(\d+);/g, (_, dec) => {
+      const code = parseInt(dec, 10);
+      return Number.isFinite(code) && code > 0 ? String.fromCodePoint(code) : " ";
+    })
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+      const code = parseInt(hex, 16);
+      return Number.isFinite(code) && code > 0 ? String.fromCodePoint(code) : " ";
+    })
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0*39;|&apos;|&lsquo;|&rsquo;/gi, "'")
+    .replace(/&ldquo;|&rdquo;/gi, '"')
+    .replace(/&ndash;|&mdash;/gi, "—")
+    .replace(/&hellip;/gi, "...")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function slugify(text) {
-  return text
-    .toString()
+  return decodeHtmlEntities(text)
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -37,20 +66,156 @@ function slugify(text) {
     .slice(0, 75);
 }
 
-const FALLBACK_COVERS = {
-  cidade: "https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=1200&q=80",
-  economia: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=80",
-  tecnologia: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
-  geral: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1200&q=80",
-  empregos: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80"
-};
+function normalizeForComparison(text) {
+  return decodeHtmlEntities(text)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-async function runE2EIndexing() {
+function jaccardSimilarity(a, b) {
+  const wordsA = new Set(normalizeForComparison(a).split(/\s+/).filter((w) => w.length > 2));
+  const wordsB = new Set(normalizeForComparison(b).split(/\s+/).filter((w) => w.length > 2));
+  if (wordsA.size === 0 || wordsB.size === 0) return 0;
+  let intersection = 0;
+  for (const w of wordsA) {
+    if (wordsB.has(w)) intersection++;
+  }
+  const union = new Set([...wordsA, ...wordsB]).size;
+  return union === 0 ? 0 : intersection / union;
+}
+
+const STUB_PATTERNS = [
+  /\bao vivo\b/i,
+  /assista à programação/i,
+  /acompanhe a programação/i,
+  /^vídeos?:\s/i,
+  /\bbom dia santa catarina\b/i,
+  /\bjornal do almoço\b/i,
+  /\bgiro cidades\b/i,
+  /\bhoróscopo\b/i,
+];
+
+const REJECTED_PARAGRAPH_PATTERNS = [
+  "receba as notícias",
+  "participe do nosso canal",
+  "whatsapp",
+  "telegram",
+  "siga nosso instagram",
+  "assine nossa newsletter",
+  "todos os direitos reservados",
+  "política de privacidade",
+  "clique aqui",
+  "cookies",
+  "leia também",
+  "veja também",
+  "confira também",
+  "esta matéria foi apurada originalmente pela equipe de jornalismo",
+];
+
+function isValidEditorialParagraph(p) {
+  const lower = p.toLowerCase().trim();
+  if (lower.length < 55) return false;
+  return !REJECTED_PARAGRAPH_PATTERNS.some((sub) => lower.includes(sub));
+}
+
+function extractMetaTag(html, prop) {
+  const r1 = new RegExp(`<meta[^>]+(?:property|name)=["']${prop}["'][^>]+content=["']([^"']+)["']`, "i");
+  const r2 = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${prop}["']`, "i");
+  const m = html.match(r1) || html.match(r2);
+  return m?.[1] ? decodeHtmlEntities(m[1]) : null;
+}
+
+async function scrapeFullArticle(url) {
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8",
+    },
+    redirect: "follow",
+    signal: AbortSignal.timeout(15000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const html = await response.text();
+  const ogImage =
+    extractMetaTag(html, "og:image") ||
+    extractMetaTag(html, "og:image:secure_url") ||
+    extractMetaTag(html, "twitter:image");
+
+  const ogDescription =
+    extractMetaTag(html, "og:description") ||
+    extractMetaTag(html, "description");
+
+  // Remove blocos não-editoriais
+  const cleanedHtml = html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+    .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, "")
+    .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, "")
+    .replace(/<aside\b[^<]*(?:(?!<\/aside>)<[^<]*)*<\/aside>/gi, "");
+
+  const articleMatch = cleanedHtml.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
+  const candidateSources = articleMatch ? [articleMatch[1], cleanedHtml] : [cleanedHtml];
+
+  let rawParagraphs = [];
+  for (const sourceHtml of candidateSources) {
+    const extracted = [];
+    const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+    let m;
+    while ((m = pRegex.exec(sourceHtml)) !== null) {
+      const text = decodeHtmlEntities(m[1]);
+      if (isValidEditorialParagraph(text)) {
+        if (!extracted.some((existing) => jaccardSimilarity(existing, text) > 0.8)) {
+          extracted.push(text);
+        }
+      }
+    }
+    if (extracted.length >= 3) {
+      rawParagraphs = extracted;
+      break;
+    }
+    if (extracted.length > rawParagraphs.length) {
+      rawParagraphs = extracted;
+    }
+  }
+
+  return {
+    ogImage,
+    ogDescription,
+    paragraphs: rawParagraphs,
+  };
+}
+
+function classifyArticle(title, lead, feedCategory) {
+  const text = `${title} ${lead} ${feedCategory || ""}`.toLowerCase();
+  if (/(eleiç|tse|stf|governo|prefeito|câmara|deputad|senad|polític|lula|trump)/i.test(text)) {
+    return { category: "politica", kicker: "POLÍTICA & GESTÃO" };
+  }
+  if (/(weg|investimento|dólar|ibovespa|inflação|mercado|economia|tarifa|petróleo|agronegócio|bets|apostas)/i.test(text)) {
+    return { category: "economia", kicker: "ECONOMIA & MERCADO" };
+  }
+  if (/(ia\b|inteligência artificial|nvidia|spacex|starship|tecnologia|data center|inovação|tiguan|volkswagen)/i.test(text)) {
+    return { category: "tecnologia", kicker: "TECNOLOGIA & INOVAÇÃO" };
+  }
+  if (/(polícia|policial|preso|delegacia|acidente|temporal|granizo|bombeiros|foragido|assassinado|helicóptero)/i.test(text)) {
+    return { category: "urgente", kicker: "PLANTÃO & SEGURANÇA" };
+  }
+  return { category: "cidade", kicker: "SANTA CATARINA" };
+}
+
+async function runDeepNewsCuration() {
   console.log("═══════════════════════════════════════════════════════════════════════");
-  console.log("  PIPELINE E2E V127: PROCESSAMENTO & PUBLICAÇÃO REAL NA VITRINE       ");
+  console.log("  V143 DEEP MECHANICAL SCRAPER & EDITORIAL CURATION PIPELINE           ");
   console.log("═══════════════════════════════════════════════════════════════════════\n");
 
-  // 1. Obter a loja raiz (Waesy Matriz)
   const { data: rootStore } = await supabase
     .from("stores")
     .select("id, name")
@@ -59,370 +224,162 @@ async function runE2EIndexing() {
     .single();
 
   const storeId = rootStore?.id || "5108ce27-2df1-4ce2-89f2-681fea6dba95";
-  console.log(`Loja editorial vinculada: ${rootStore?.name || "Waesy Matriz"} (${storeId})`);
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // ETAPA 1: PUBLICAR MATÉRIAS DE NOTÍCIAS DOS FEEDS RSS ATIVOS
-  // ─────────────────────────────────────────────────────────────────────────────
-  console.log("\n[ETAPA 1] Promovendo notícias reais de rss_feed_items para news_articles...");
 
   const { data: rawRssItems, error: rssErr } = await supabase
     .from("rss_feed_items")
     .select("id, title, description, link, author, pub_date, image_url, rss_feed_id, rss_feeds(name, category, region)")
     .order("pub_date", { ascending: false, nullsFirst: false })
-    .limit(40);
+    .limit(60);
 
   if (rssErr) {
-    console.error("Erro ao buscar itens de RSS:", rssErr.message);
-  } else {
-    console.log(`Itens RSS disponíveis para publicação: ${rawRssItems.length}`);
-    let publishedArticles = 0;
-
-    for (const item of rawRssItems) {
-      const feedMeta = item.rss_feeds || {};
-      const sourceName = feedMeta.name || "Redação Regional";
-      const categoryRaw = (feedMeta.category || "geral").toLowerCase();
-      
-      let category = "cidade";
-      let kicker = "SANTA CATARINA";
-      if (categoryRaw.includes("tech") || categoryRaw.includes("tecnologia")) {
-        category = "tecnologia";
-        kicker = "INOVAÇÃO & TECH";
-      } else if (categoryRaw.includes("econ") || categoryRaw.includes("agro") || categoryRaw.includes("financ")) {
-        category = "economia";
-        kicker = "ECONOMIA & NEGÓCIOS";
-      }
-
-      const baseSlug = slugify(item.title);
-      const shortId = item.id.slice(0, 8);
-      const slug = `${baseSlug}-${shortId}`;
-
-      const coverUrl = item.image_url || FALLBACK_COVERS[category] || FALLBACK_COVERS.geral;
-
-      const contentSections = [
-        {
-          type: "paragraph",
-          content: item.description || "Informações apuradas sobre os acontecimentos recentes da região.",
-        },
-        {
-          type: "paragraph",
-          content: `Esta matéria foi apurada originalmente pela equipe de jornalismo do(a) ${sourceName}. Acompanhe desdobramentos completos e comunicados oficiais no portal oficial da entidade.`,
-        }
-      ];
-
-      const { data: inserted, error: insertErr } = await supabase
-        .from("news_articles")
-        .upsert({
-          store_id: storeId,
-          title: item.title,
-          slug: slug,
-          kicker: kicker,
-          subtitle: item.description?.slice(0, 220) || null,
-          content_sections: contentSections,
-          cover_media_url: coverUrl,
-          cover_media_type: "image",
-          category: category,
-          tags: ["notícias", category, feedMeta.region || "SC"],
-          reading_time_minutes: 3,
-          views_count: Math.floor(Math.random() * 85) + 15,
-          status: "published",
-          published_at: item.pub_date || new Date().toISOString(),
-          source_url: item.link,
-          source_type: "rss",
-          quality_score: 85,
-          curation_status: "auto",
-          author_name: sourceName,
-          rss_feed_id: item.rss_feed_id,
-        }, {
-          onConflict: "store_id,slug",
-        })
-        .select("id")
-        .single();
-
-      if (!insertErr && inserted) {
-        publishedArticles++;
-        await supabase
-          .from("rss_feed_items")
-          .update({ status: "published" })
-          .eq("id", item.id);
-      }
-    }
-
-    console.log(`✓ Matérias jornalísticas publicadas em news_articles: ${publishedArticles}`);
+    console.error("Erro ao buscar rss_feed_items:", rssErr.message);
+    process.exit(1);
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // ETAPA 2: POPULAR VAGAS REAIS EM JOBS (SANTA CATARINA & REGIONAL)
-  // ─────────────────────────────────────────────────────────────────────────────
-  console.log("\n[ETAPA 2] Inserindo vagas reais de emprego na tabela jobs...");
+  const seenUrls = new Set();
+  const seenTitles = [];
+  let publishedCount = 0;
+  let rejectedCount = 0;
 
-  const REAL_JOBS_CATALOG = [
-    {
-      title: "Vendedor(a) Comercial Interno",
-      company_name: "Distribuidora Regional Oeste",
-      category: "comercial",
-      location: "Chapecó, SC (Centro)",
-      location_city: "Chapecó",
-      location_state: "SC",
-      workplace_type: "Presencial",
-      contract_type: "CLT",
-      salary_display: "R$ 2.450,00 + Comissões",
-      salary_min_cents: 245000,
-      salary_max_cents: 420000,
-      description: "Atuar no atendimento direto a clientes de varejo e pequenas empresas, elaboração de orçamentos, fechamento de pedidos no PDV e pós-venda.",
-      requirements: ["Experiência com vendas de balcão ou televendas", "Boa comunicação verbal", "Ensino Médio Completo"],
-      benefits: ["Vale Refeição", "Vale Transporte", "Comissão sobre vendas", "Plano Odontológico"],
-      contact_whatsapp: "49999010001",
-      contact_email: "vagas@distribuidorawest.com.br",
-      is_featured: true,
-      data_quality_score: 95
-    },
-    {
-      title: "Desenvolvedor(a) Full Stack TypeScript/React",
-      company_name: "TechOeste Soluções Digitais",
-      category: "tech",
-      location: "Chapecó, SC ou Remoto",
-      location_city: "Chapecó",
-      location_state: "SC",
-      workplace_type: "Híbrido",
-      contract_type: "CLT",
-      salary_display: "R$ 6.500,00 - R$ 9.000,00",
-      salary_min_cents: 650000,
-      salary_max_cents: 900000,
-      description: "Desenvolvimento de aplicações web de alto tráfego com TanStack Router, React, Tailwind CSS e Postgres no backend. Participação em sprints ágeis.",
-      requirements: ["Domínio de TypeScript e React moderno", "Experiência com APIs REST e Postgres", "Git e testes unitários"],
-      benefits: ["Plano de Saúde Unimed", "Vale Alimentação R$ 850", "Gympass", "Auxílio Home Office"],
-      contact_whatsapp: "49999010002",
-      contact_email: "carreiras@techoeste.com.br",
-      is_featured: true,
-      data_quality_score: 98
-    },
-    {
-      title: "Conferente e Operador de Logística",
-      company_name: "Transportes & Logística Catarinense",
-      category: "operacional",
-      location: "Chapecó, SC (Distrito Industrial)",
-      location_city: "Chapecó",
-      location_state: "SC",
-      workplace_type: "Presencial",
-      contract_type: "CLT",
-      salary_display: "R$ 2.680,00 + Adicional",
-      salary_min_cents: 268000,
-      salary_max_cents: 310000,
-      description: "Conferência de carga e descarga de mercadorias, bipagem de notas fiscais eletrônicas, organização de paletes no armazém central e expedição.",
-      requirements: ["Ensino médio completo", "Desejável curso de operador de empilhadeira", "Disponibilidade de horários"],
-      benefits: ["Refeição no local", "Transporte fretado", "Seguro de Vida", "Cesta de Natal"],
-      contact_whatsapp: "49999010003",
-      contact_email: "rh@tlcatarinense.com.br",
-      is_featured: false,
-      data_quality_score: 92
-    },
-    {
-      title: "Auxiliar de Produção Industrial",
-      company_name: "Agroindústria Chapecó Alimentos",
-      category: "operacional",
-      location: "Chapecó, SC",
-      location_city: "Chapecó",
-      location_state: "SC",
-      workplace_type: "Presencial",
-      contract_type: "CLT",
-      salary_display: "R$ 2.200,00 + Benefícios",
-      salary_min_cents: 220000,
-      salary_max_cents: 280000,
-      description: "Atuar na linha de processamento de alimentos, seguindo rigorosos padrões sanitários e de boas práticas de fabricação (BPF).",
-      requirements: ["Maior de 18 anos", "Disponibilidade para trabalhar em turnos", "Não exige experiência prévia"],
-      benefits: ["Restaurante interno", "Assistência médica e odontológica", "Participação nos Lucros (PLR)", "Auxílio creche"],
-      contact_whatsapp: "49999010004",
-      contact_email: "recrutamento@chapecoalimentos.ind.br",
-      is_featured: false,
-      data_quality_score: 90
-    },
-    {
-      title: "Enfermeiro(a) Assistencial",
-      company_name: "Hospital & Maternidade Regional",
-      category: "saude",
-      location: "Chapecó, SC (Passo dos Fortes)",
-      location_city: "Chapecó",
-      location_state: "SC",
-      workplace_type: "Presencial",
-      contract_type: "CLT",
-      salary_display: "R$ 4.850,00 (Piso Nacional + Insalubridade)",
-      salary_min_cents: 485000,
-      salary_max_cents: 550000,
-      description: "Coordenação dos cuidados de enfermagem em leitos de internação, administração de medicações complexas e passagem de plantão com prontuário eletrônico.",
-      requirements: ["Graduação completa em Enfermagem", "Registro ativo no COREN/SC", "Desejável experiência hospitalar"],
-      benefits: ["Adicional de Insalubridade", "Plano de Saúde", "Alimentação no hospital", "Folgas programadas"],
-      contact_whatsapp: "49999010005",
-      contact_email: "rh@hospitalregionalsc.com.br",
-      is_featured: true,
-      data_quality_score: 96
-    },
-    {
-      title: "Estagiário(a) em Administração & Finanças",
-      company_name: "Assessoria Contábil & Tributária Oeste",
-      category: "estagio",
-      location: "Chapecó, SC (Centro)",
-      location_city: "Chapecó",
-      location_state: "SC",
-      workplace_type: "Presencial",
-      contract_type: "Estágio",
-      salary_display: "Bolsa de R$ 1.400,00 + VT",
-      salary_min_cents: 140000,
-      salary_max_cents: 140000,
-      description: "Auxílio no lançamento de contas a pagar e receber, conciliação bancária, conferência de recibos e atendimento telefônico a clientes.",
-      requirements: ["Cursando Administração, Ciências Contábeis ou Economia a partir da 3ª fase", "Conhecimento intermediário de Excel"],
-      benefits: ["Bolsa auxílio", "Auxílio transporte", "Possibilidade de efetivação após 12 meses"],
-      contact_whatsapp: "49999010006",
-      contact_email: "estagio@assessoriaoeste.com.br",
-      is_featured: false,
-      data_quality_score: 88
-    },
-    {
-      title: "Farmacêutico(a) Responsável Técnico",
-      company_name: "Rede Drogaria Mais Saúde",
-      category: "saude",
-      location: "Xanxerê, SC",
-      location_city: "Xanxerê",
-      location_state: "SC",
-      workplace_type: "Presencial",
-      contract_type: "CLT",
-      salary_display: "R$ 4.700,00 (Piso CRF)",
-      salary_min_cents: 470000,
-      salary_max_cents: 520000,
-      description: "Responsabilidade técnica da loja, dispensação de medicamentos controlados (SNGPC), atenção farmacêutica, aplicação de injetáveis e testes rápidos.",
-      requirements: ["Graduação em Farmácia", "CRF/SC Ativo e regular", "Perfil acolhedor e atencioso"],
-      benefits: ["Piso da categoria", "Comissão sobre dermocosméticos", "Desconto em medicamentos", "Seguro de Vida"],
-      contact_whatsapp: "49999010007",
-      contact_email: "vagas@drogariamaissaude.com.br",
-      is_featured: false,
-      data_quality_score: 93
-    },
-    {
-      title: "Motorista Entregador CNH B ou C",
-      company_name: "Expresso Cargas Chapecó",
-      category: "operacional",
-      location: "Chapecó, SC e Região",
-      location_city: "Chapecó",
-      location_state: "SC",
-      workplace_type: "Presencial",
-      contract_type: "CLT",
-      salary_display: "R$ 2.950,00 + Diárias",
-      salary_min_cents: 295000,
-      salary_max_cents: 350000,
-      description: "Realizar entregas e coletas de encomendas no comércio e residências de Chapecó e cidades vizinhas com veículo utilitário da empresa.",
-      requirements: ["CNH categoria B ou C com EAR (Exerce Atividade Remunerada)", "Pontualidade e responsabilidade no trânsito"],
-      benefits: ["Diárias de alimentação em viagem", "Vale Refeição R$ 750", "Uniforme completo", "Premiação por zero avarias"],
-      contact_whatsapp: "49999010008",
-      contact_email: "frota@expressocargas.com.br",
-      is_featured: false,
-      data_quality_score: 91
-    },
-    {
-      title: "Gerente de Loja & Atendimento",
-      company_name: "Magazine Moda Brasil",
-      category: "comercial",
-      location: "Concórdia, SC",
-      location_city: "Concórdia",
-      location_state: "SC",
-      workplace_type: "Presencial",
-      contract_type: "CLT",
-      salary_display: "R$ 4.200,00 + Bônus por Metas",
-      salary_min_cents: 420000,
-      salary_max_cents: 650000,
-      description: "Liderança da equipe de consultores de vendas, acompanhamento de metas de faturamento diário, gestão de estoque e visual merchandising da vitrine.",
-      requirements: ["Experiência comprovada em liderança de equipes de varejo", "Conhecimento de rotinas de loja e abertura/fechamento de caixa"],
-      benefits: ["Bônus trimestral por superação de metas", "Desconto de 40% em produtos da rede", "Plano de Saúde"],
-      contact_whatsapp: "49999010009",
-      contact_email: "vagas@modabrasil.com.br",
-      is_featured: true,
-      data_quality_score: 94
-    },
-    {
-      title: "Técnico(a) em Agropecuária de Campo",
-      company_name: "Cooperativa Agroindustrial do Sul",
-      category: "operacional",
-      location: "São Miguel do Oeste, SC",
-      location_city: "São Miguel do Oeste",
-      location_state: "SC",
-      workplace_type: "Presencial",
-      contract_type: "CLT",
-      salary_display: "R$ 3.800,00 + Veículo da Empresa",
-      salary_min_cents: 380000,
-      salary_max_cents: 460000,
-      description: "Visitas técnicas a propriedades rurais associadas, orientação sobre manejo nutricional e sanitário, assistência técnica no cultivo de grãos e pastagens.",
-      requirements: ["Formação Técnica em Agropecuária ou Zootecnia", "CNH B definitiva", "Gosto por trabalho de campo"],
-      benefits: ["Veículo e combustível fornecidos pela empresa", "Plano de Saúde Unimed", "Previdência Privada", "Notebook e celular"],
-      contact_whatsapp: "49999010010",
-      contact_email: "talentos@coopagrosul.com.br",
-      is_featured: true,
-      data_quality_score: 97
-    }
-  ];
+  for (const item of rawRssItems || []) {
+    const cleanTitle = decodeHtmlEntities(item.title || "");
+    const url = (item.link || "").trim();
 
-  let insertedJobs = 0;
-  for (const job of REAL_JOBS_CATALOG) {
-    // Verifica se já existe vaga com mesmo título e empresa
-    const { data: existingJob } = await supabase
-      .from("jobs")
-      .select("id")
-      .eq("title", job.title)
-      .eq("company_name", job.company_name)
-      .maybeSingle();
-
-    if (existingJob) {
+    if (!cleanTitle || cleanTitle.length < 15 || !url) {
+      rejectedCount++;
       continue;
     }
 
-    const { error: jobErr } = await supabase
-      .from("jobs")
-      .insert({
-        store_id: storeId,
-        title: job.title,
-        company_name: job.company_name,
-        category: job.category,
-        location: job.location,
-        location_city: job.location_city,
-        location_state: job.location_state,
-        workplace_type: job.workplace_type,
-        contract_type: job.contract_type,
-        salary_display: job.salary_display,
-        salary_min_cents: job.salary_min_cents,
-        salary_max_cents: job.salary_max_cents,
-        description: job.description,
-        requirements: job.requirements,
-        benefits: job.benefits,
-        contact_whatsapp: job.contact_whatsapp,
-        contact_email: job.contact_email,
-        is_featured: job.is_featured,
-        status: "active",
-        is_external: false,
-        application_mode: "whatsapp",
-        data_quality_score: job.data_quality_score,
-      });
+    // 1. Barrar transmissões ao vivo, programas de TV e páginas de vídeo curto
+    if (STUB_PATTERNS.some((p) => p.test(cleanTitle)) || url.includes("/video/") || url.includes("/edicao/")) {
+      console.log(`  [REJEITADO - STUB/VÍDEO] ${cleanTitle}`);
+      rejectedCount++;
+      continue;
+    }
 
-    if (!jobErr) {
-      insertedJobs++;
-    } else {
-      console.warn(`[Aviso ao inserir vaga] ${job.title}: ${jobErr.message}`);
+    // 2. Barrar duplicatas exatas de URL ou similaridade de título (> 0.65)
+    if (seenUrls.has(url) || seenTitles.some((t) => jaccardSimilarity(t, cleanTitle) > 0.65)) {
+      console.log(`  [REJEITADO - DUPLICADO] ${cleanTitle}`);
+      rejectedCount++;
+      continue;
+    }
+
+    try {
+      const scraped = await scrapeFullArticle(url);
+      const coverUrl = scraped.ogImage || item.image_url;
+
+      // 3. Exigir imagem real do veículo (Zero Unsplash / Zero Sem Imagem)
+      if (!coverUrl || !coverUrl.startsWith("http") || coverUrl.includes("images.unsplash.com")) {
+        console.log(`  [REJEITADO - SEM IMAGEM REAL] ${cleanTitle}`);
+        rejectedCount++;
+        continue;
+      }
+
+      // 4. Exigir no mínimo 3 parágrafos reais substanciais
+      if (scraped.paragraphs.length < 3) {
+        console.log(`  [REJEITADO - CORPO RASO (${scraped.paragraphs.length} parágrafos)] ${cleanTitle}`);
+        rejectedCount++;
+        continue;
+      }
+
+      // 5. Estruturação Editorial Sem Repetição:
+      let subtitle = decodeHtmlEntities(scraped.ogDescription || "");
+      let bodyParagraphs = scraped.paragraphs;
+
+      if (!subtitle || subtitle.length < 40 || jaccardSimilarity(subtitle, cleanTitle) > 0.75) {
+        subtitle = scraped.paragraphs[0].slice(0, 250);
+        bodyParagraphs = scraped.paragraphs.slice(1, 9);
+      } else if (jaccardSimilarity(subtitle, scraped.paragraphs[0]) > 0.6) {
+        bodyParagraphs = scraped.paragraphs.slice(1, 9);
+      } else {
+        bodyParagraphs = scraped.paragraphs.slice(0, 8);
+      }
+
+      if (bodyParagraphs.length < 2) {
+        rejectedCount++;
+        continue;
+      }
+
+      const contentSections = bodyParagraphs.map((p, idx) => ({
+        type: "paragraph",
+        ...(idx === 0
+          ? { heading: "Contexto e Apuração" }
+          : idx === 3
+          ? { heading: "Desdobramentos" }
+          : {}),
+        content: p,
+      }));
+
+      // Síntese executiva (ai_summary) extraída dos fatos centrais dos parágrafos 2 e 3
+      const aiSummary = `${bodyParagraphs[0].split(/(?<=[.!?])\s+/)[0]} ${
+        bodyParagraphs[1] ? bodyParagraphs[1].split(/(?<=[.!?])\s+/)[0] : ""
+      }`.slice(0, 320);
+
+      const feedMeta = item.rss_feeds || {};
+      const sourceName = feedMeta.name || (url.includes("g1.globo.com") ? "G1 Santa Catarina" : "ND Mais");
+      const { category, kicker } = classifyArticle(cleanTitle, subtitle, feedMeta.category);
+
+      const slug = `${slugify(cleanTitle)}-${item.id.slice(0, 6)}`;
+      const totalWords = bodyParagraphs.join(" ").split(/\s+/).length;
+      const readingTime = Math.max(2, Math.min(8, Math.ceil(totalWords / 160)));
+      const qualityScore = Math.min(98, 82 + Math.min(16, bodyParagraphs.length * 2));
+
+      const { error: insertErr } = await supabase
+        .from("news_articles")
+        .upsert(
+          {
+            store_id: storeId,
+            title: cleanTitle,
+            slug,
+            kicker,
+            subtitle: subtitle.slice(0, 260),
+            content_sections: contentSections,
+            cover_media_url: coverUrl,
+            cover_media_type: "image",
+            category,
+            tags: [category, "santa catarina", sourceName.toLowerCase()],
+            ai_summary: aiSummary,
+            ai_keywords: [category, sourceName, "Santa Catarina"],
+            reading_time_minutes: readingTime,
+            views_count: 0,
+            unique_views_count: 0,
+            status: "published",
+            published_at: item.pub_date || new Date().toISOString(),
+            source_url: url,
+            source_type: "rss",
+            quality_score: qualityScore,
+            curation_status: "approved",
+            author_name: sourceName,
+            rss_feed_id: item.rss_feed_id,
+          },
+          { onConflict: "store_id,slug" }
+        );
+
+      if (!insertErr) {
+        seenUrls.add(url);
+        seenTitles.push(cleanTitle);
+        publishedCount++;
+        await supabase.from("rss_feed_items").update({ status: "published", image_url: coverUrl }).eq("id", item.id);
+        console.log(`  ✓ [PUBLICADA] (${bodyParagraphs.length} parágrafos | Score ${qualityScore}) ${cleanTitle.slice(0, 72)}...`);
+      } else {
+        console.warn(`  x Erro ao salvar ${cleanTitle}:`, insertErr.message);
+      }
+    } catch (err) {
+      console.log(`  [REJEITADO - FALHA HTTP] ${cleanTitle}: ${err.message}`);
+      rejectedCount++;
     }
   }
 
-  console.log(`✓ Novas vagas de emprego ativas registradas em jobs: ${insertedJobs}`);
-
-  // Auditoria final de contagens
-  const { count: totalArticles } = await supabase.from("news_articles").select("*", { count: "exact", head: true });
-  const { count: totalJobs } = await supabase.from("jobs").select("*", { count: "exact", head: true });
-
-  console.log("\n───────────────────────────────────────────────────────────────────────");
-  console.log("  STATUS FINAL DO BANCO DE DADOS (PÓS-INDEXAÇÃO E2E):");
-  console.log(`  • news_articles (Total): ${totalArticles}`);
-  console.log(`  • jobs (Total): ${totalJobs}`);
+  console.log("\n═══════════════════════════════════════════════════════════════════════");
+  console.log(`  RESUMO DA CURADORIA PROFUNDA V143:`);
+  console.log(`  • Matérias Qualificadas Publicadas: ${publishedCount}`);
+  console.log(`  • Stubs/Vídeos/Duplicatas Barrados: ${rejectedCount}`);
   console.log("═══════════════════════════════════════════════════════════════════════\n");
 }
 
-runE2EIndexing()
+runDeepNewsCuration()
   .then(() => process.exit(0))
   .catch((err) => {
-    console.error("Falha na execução E2E:", err);
+    console.error("Erro fatal:", err);
     process.exit(1);
   });

@@ -86,7 +86,8 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  .from("news_articles")
  .select(
  `
- id, store_id, author_profile_id, title, slug, kicker, subtitle, content_sections,
+ id, store_id, author_profile_id, author_name, source_url, ai_summary, quality_score,
+ title, slug, kicker, subtitle, content_sections,
  cover_media_url, cover_media_type, category, tags, reading_time_minutes,
  views_count, unique_views_count, status, published_at, created_at,
  stores ( name, avatar_url ),
@@ -95,7 +96,7 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  )
  .eq("status", "published")
  .order("published_at", { ascending: false })
- .limit(limit);
+ .limit(limit * 2);
 
  if (data?.category && data.category !== "todas") {
  q = q.eq("category", data.category);
@@ -115,13 +116,21 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  return [];
  }
 
- return (articles || []).map((a: any) => ({
+ const qualifiedArticles = (articles || []).filter((a: any) => {
+ const sections = Array.isArray(a.content_sections) ? a.content_sections : [];
+ const cover = String(a.cover_media_url || "");
+ if (sections.length < 2) return false;
+ if (!cover || cover.includes("images.unsplash.com")) return false;
+ return true;
+ });
+
+ return qualifiedArticles.slice(0, limit).map((a: any) => ({
  id: a.id,
  store_id: a.store_id,
  store_name: a.stores?.name || "Portal de Notícias",
  store_avatar: a.stores?.avatar_url || null,
  author_profile_id: a.author_profile_id,
- author_name: a.profiles?.full_name || "Redação",
+ author_name: a.author_name || a.profiles?.full_name || "Redação",
  title: a.title,
  slug: a.slug,
  kicker: a.kicker,
@@ -162,7 +171,8 @@ export const getArticleDetail = createServerFn({ method: "GET" })
  .from("news_articles")
  .select(
  `
- id, store_id, author_profile_id, title, slug, kicker, subtitle, content_sections,
+ id, store_id, author_profile_id, author_name, source_url, ai_summary, quality_score,
+ title, slug, kicker, subtitle, content_sections,
  cover_media_url, cover_media_type, category, tags, reading_time_minutes,
  views_count, unique_views_count, status, published_at, created_at,
  stores ( name, avatar_url, slug ),

@@ -194,20 +194,43 @@ export async function fetchHtmlWithStealth(url: string, timeoutMs = 20000): Prom
 }
 
 /**
- * Camada 1: Extração por JSON-LD Schema.org
+ * Camada 1: Extração por JSON-LD Schema.org (com suporte a @graph)
  */
 function extractFromJsonLd(html: string, sourceUrl: string): Partial<MechanicalExtractionResult> | null {
   const jsonLdRegex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   let match;
+  let bestPartial: Partial<MechanicalExtractionResult> | null = null;
+
+  const flattenGraphItems = (node: any): any[] => {
+    if (!node || typeof node !== "object") return [];
+    if (Array.isArray(node)) return node.flatMap(flattenGraphItems);
+    if (Array.isArray(node["@graph"])) return [node, ...node["@graph"].flatMap(flattenGraphItems)];
+    return [node];
+  };
+
+  const resolveJsonLdImage = (imgField: any): string | undefined => {
+    if (!imgField) return undefined;
+    if (typeof imgField === "string") return imgField;
+    if (Array.isArray(imgField)) {
+      for (const entry of imgField) {
+        const resolved = resolveJsonLdImage(entry);
+        if (resolved) return resolved;
+      }
+      return undefined;
+    }
+    if (typeof imgField === "object" && typeof imgField.url === "string") return imgField.url;
+    return undefined;
+  };
 
   while ((match = jsonLdRegex.exec(html)) !== null) {
     try {
       const rawJson = match[1].trim();
       const parsed = JSON.parse(rawJson);
-      const items = Array.isArray(parsed) ? parsed : [parsed];
+      const items = flattenGraphItems(parsed);
 
       for (const item of items) {
-        const type = String(item["@type"] || "");
+        const rawType = item["@type"];
+        const type = Array.isArray(rawType) ? rawType.join(",") : String(rawType || "");
 
         // 1. Extração de Eventos
         if (type.includes("Event")) {
@@ -217,7 +240,7 @@ function extractFromJsonLd(html: string, sourceUrl: string): Partial<MechanicalE
           const endDate = item.endDate;
           const location = item.location?.name || item.location?.address?.addressLocality || "";
           const venue = item.location?.name || "";
-          const image = typeof item.image === "string" ? item.image : item.image?.url || item.image?.[0];
+          const image = resolveJsonLdImage(item.image);
           const ticketUrl = item.offers?.url || item.url || sourceUrl;
           const price = item.offers?.price ? parseFloat(item.offers.price) : undefined;
 
@@ -249,34 +272,46 @@ function extractFromJsonLd(html: string, sourceUrl: string): Partial<MechanicalE
         }
 
         // 2. Extração de Notícias e Artigos
-        if (type.includes("NewsArticle") || type.includes("Article") || type.includes("BlogPosting")) {
+        if (type.includes("NewsArticle") || type.includes("Article") || type.includes("BlogPosting") || type.includes("ReportageNewsArticle")) {
           const title = item.headline || item.name;
           const lead = item.description || "";
-          const body = item.articleBody || "";
+          const body = typeof item.articleBody === "string" ? item.articleBody : "";
           const author = typeof item.author === "string" ? item.author : item.author?.name || item.author?.[0]?.name;
           const publishedAt = item.datePublished || item.dateModified;
-          const image = typeof item.image === "string" ? item.image : item.image?.url || item.image?.[0];
+          const image = resolveJsonLdImage(item.image || item.thumbnailUrl);
 
-          if (title && (body.length > 100 || lead.length > 150)) {
-            const fullText = body || lead;
-            const paragraphs = fullText.split(/\n+/).filter((p: string) => p.trim().length > 20);
-            const markdown = paragraphs.length > 0 ? paragraphs.join("\n\n") : fullText;
-            const words = fullText.split(/\s+/).filter(Boolean).length;
+          if (title) {
+            const cleanedBody = cleanHtmlText(body);
+            const rawParagraphs = body
+              .split(/\r?\n+/)
+              .map((p: string) => cleanHtmlText(p))
+              .filter((p: string) => p.length > 35);
 
-            return {
+            const paragraphs = sanitizeParagraphs(rawParagraphs.length >= 2 ? rawParagraphs : []);
+            const words = cleanedBody.split(/\s+/).filter(Boolean).length;
+
+            const candidate: Partial<MechanicalExtractionResult> = {
               title: cleanHtmlText(title),
               lead: cleanHtmlText(lead).slice(0, 400),
-              bodyMarkdown: markdown,
-              bodyText: cleanHtmlText(fullText),
+              bodyMarkdown: paragraphs.length >= 2 ? paragraphs.join("\n\n") : cleanedBody,
+              bodyText: cleanedBody,
               author: author ? cleanHtmlText(author) : undefined,
               publishedAt,
               coverImageUrl: image || undefined,
               galleryImages: image ? [image] : [],
               wordCount: words,
-              paragraphCount: Math.max(1, paragraphs.length),
+              paragraphCount: paragraphs.length,
               method: "json_ld",
               contentType: type.includes("BlogPosting") ? "blog_post" : "noticia",
             };
+
+            // Somente retorna imediatamente se o JSON-LD contiver o corpo completo real (>= 120 palavras e >= 3 parágrafos)
+            if (words >= 120 && paragraphs.length >= 3) {
+              return candidate;
+            }
+            if (!bestPartial || (candidate.coverImageUrl && !bestPartial.coverImageUrl)) {
+              bestPartial = candidate;
+            }
           }
         }
       }
@@ -285,7 +320,7 @@ function extractFromJsonLd(html: string, sourceUrl: string): Partial<MechanicalE
     }
   }
 
-  return null;
+  return bestPartial;
 }
 
 /**
@@ -308,7 +343,7 @@ function extractFromMetaTags(html: string): {
 
   const title = getMeta("og:title") || getMeta("twitter:title") || html.match(/<title>([^<]+)<\/title>/i)?.[1]?.trim();
   const description = getMeta("og:description") || getMeta("twitter:description") || getMeta("description");
-  const image = getMeta("og:image") || getMeta("twitter:image");
+  const image = getMeta("og:image") || getMeta("og:image:secure_url") || getMeta("twitter:image");
   const author = getMeta("author") || getMeta("article:author");
   const publishedTime = getMeta("article:published_time") || getMeta("publication_date");
   const category = getMeta("article:section") || getMeta("category");
@@ -321,6 +356,21 @@ function extractFromMetaTags(html: string): {
     publishedTime: publishedTime || undefined,
     category: category ? cleanHtmlText(category) : undefined,
   };
+}
+
+/**
+ * Extrai todos os parágrafos <p> de dentro de um bloco HTML ou container específico
+ */
+function extractAllParagraphsFromHtml(containerHtml: string): string[] {
+  const pMatches = containerHtml.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi);
+  const list: string[] = [];
+  for (const m of pMatches) {
+    const text = cleanHtmlText(m[1]);
+    if (text.length > 30) {
+      list.push(text);
+    }
+  }
+  return list;
 }
 
 /**
@@ -343,6 +393,16 @@ function extractByDomainSelectors(html: string, domain: string): {
     publishedAt?: string;
   } = { paragraphs: [] };
 
+  // Remove menus, rodapés, scripts e blocos de "leia mais" antes de extrair parágrafos
+  const mainBodyHtml = html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+    .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, "")
+    .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, "")
+    .replace(/<aside\b[^<]*(?:(?!<\/aside>)<[^<]*)*<\/aside>/gi, "");
+
+  const articleBlock = mainBodyHtml.match(/<article[^>]*>([\s\S]*?)<\/article>/i)?.[1] || mainBodyHtml;
+
   // 1. G1 Globo
   if (domain.includes("g1.globo.com") || domain.includes("globo.com")) {
     const titleMatch = html.match(/<h1[^>]*class="[^"]*content-head__title[^"]*"[^>]*>([\s\S]*?)<\/h1>/i);
@@ -355,79 +415,29 @@ function extractByDomainSelectors(html: string, domain: string): {
     for (const m of pMatches) {
       result.paragraphs.push(cleanHtmlText(m[1]));
     }
+    if (result.paragraphs.length < 2) {
+      result.paragraphs = extractAllParagraphsFromHtml(articleBlock);
+    }
 
     const imgMatch = html.match(/<img[^>]*class="[^"]*content-media-figure__image[^"]*"[^>]*src="([^"]+)"/i);
     if (imgMatch) result.coverImage = imgMatch[1];
   }
 
-  // 2. UOL / Folha
-  else if (domain.includes("uol.com.br") || domain.includes("folha.uol.com.br")) {
-    const titleMatch = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  // 2. ND Mais / NSC Total / ClicRDC / UOL / CNN / Portais WordPress e Governamentais
+  else {
+    const titleMatch =
+      html.match(/<h1[^>]*class="[^"]*(?:entry-title|post__title|content-head__title|title)[^"]*"[^>]*>([\s\S]*?)<\/h1>/i) ||
+      html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
     if (titleMatch) result.title = cleanHtmlText(titleMatch[1]);
 
-    const pMatches = html.matchAll(/<(?:p|div)[^>]*class="[^"]*(?:c-news__body|text)[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/gi);
-    for (const m of pMatches) {
-      result.paragraphs.push(cleanHtmlText(m[1]));
-    }
-    if (result.paragraphs.length === 0) {
-      const genericP = html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi);
-      for (const m of genericP) result.paragraphs.push(cleanHtmlText(m[1]));
-    }
-  }
+    const subtitleMatch = html.match(/<h2[^>]*class="[^"]*(?:entry-subtitle|post__excerpt|subtitle|lead)[^"]*"[^>]*>([\s\S]*?)<\/h2>/i);
+    if (subtitleMatch) result.lead = cleanHtmlText(subtitleMatch[1]);
 
-  // 3. CNN Brasil
-  else if (domain.includes("cnnbrasil.com.br")) {
-    const titleMatch = html.match(/<h1[^>]*class="[^"]*post__title[^"]*"[^>]*>([\s\S]*?)<\/h1>/i) || html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-    if (titleMatch) result.title = cleanHtmlText(titleMatch[1]);
+    result.paragraphs = extractAllParagraphsFromHtml(articleBlock);
 
-    const pMatches = html.matchAll(/<div[^>]*class="[^"]*(?:post__content|single__content)[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/gi);
-    for (const m of pMatches) {
-      result.paragraphs.push(cleanHtmlText(m[1]));
-    }
-  }
-
-  // 4. NSC Total / Diário Catarinense
-  else if (domain.includes("nsctotal.com.br")) {
-    const titleMatch = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-    if (titleMatch) result.title = cleanHtmlText(titleMatch[1]);
-
-    const pMatches = html.matchAll(/<div[^>]*class="[^"]*content__body[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/gi) || html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi);
-    for (const m of pMatches) {
-      result.paragraphs.push(cleanHtmlText(m[1]));
-    }
-  }
-
-  // 5. ND Mais
-  else if (domain.includes("ndmais.com.br")) {
-    const titleMatch = html.match(/<h1[^>]*class="[^"]*entry-title[^"]*"[^>]*>([\s\S]*?)<\/h1>/i);
-    if (titleMatch) result.title = cleanHtmlText(titleMatch[1]);
-
-    const pMatches = html.matchAll(/<div[^>]*class="[^"]*entry-content[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/gi);
-    for (const m of pMatches) {
-      result.paragraphs.push(cleanHtmlText(m[1]));
-    }
-  }
-
-  // 6. ClicRDC (Oeste Catarinense / Chapecó)
-  else if (domain.includes("clicrdc.com.br")) {
-    const titleMatch = html.match(/<h1[^>]*class="[^"]*entry-title[^"]*"[^>]*>([\s\S]*?)<\/h1>/i) || html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-    if (titleMatch) result.title = cleanHtmlText(titleMatch[1]);
-
-    const pMatches = html.matchAll(/<div[^>]*class="[^"]*(?:entry-content|td-post-content)[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/gi);
-    for (const m of pMatches) {
-      result.paragraphs.push(cleanHtmlText(m[1]));
-    }
-  }
-
-  // 7. Prefeitura Municipal de Chapecó e Órgãos Públicos
-  else if (domain.includes("chapeco.sc.gov.br") || domain.includes(".gov.br") || domain.includes(".leg.br")) {
-    const titleMatch = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-    if (titleMatch) result.title = cleanHtmlText(titleMatch[1]);
-
-    const pMatches = html.matchAll(/<div[^>]*class="[^"]*(?:field-name-body|materia-conteudo|noticia-corpo|content-body)[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/gi) || html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi);
-    for (const m of pMatches) {
-      result.paragraphs.push(cleanHtmlText(m[1]));
-    }
+    const imgMatch =
+      articleBlock.match(/<img[^>]+(?:data-lazy-src|data-src|src)=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp)[^"']*)["']/i);
+    if (imgMatch) result.coverImage = imgMatch[1];
   }
 
   result.paragraphs = sanitizeParagraphs(result.paragraphs);
@@ -538,7 +548,14 @@ export async function extractContentMechanically(url: string, htmlContent?: stri
 
   // 2. Camada 1: JSON-LD Schema.org Padrão (NewsArticle / Article)
   const jsonLdResult = extractFromJsonLd(html, url);
-  if (jsonLdResult && jsonLdResult.title && jsonLdResult.wordCount && jsonLdResult.wordCount >= 80) {
+  if (
+    jsonLdResult &&
+    jsonLdResult.title &&
+    jsonLdResult.wordCount &&
+    jsonLdResult.wordCount >= 120 &&
+    jsonLdResult.paragraphCount &&
+    jsonLdResult.paragraphCount >= 3
+  ) {
     const rawCover = jsonLdResult.coverImageUrl;
     const coverImage = resolveImageUrl(rawCover, url);
     return {
