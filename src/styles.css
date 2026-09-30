@@ -59,6 +59,12 @@
   --content-workspace-max: 1440px;
   --content-media-max: 1200px;
 
+  /* ── Window Size Class Breakpoint Tokens (DESIGN.md Princípio 6 / Prompt 15) ── */
+  --breakpoint-compact-max: 599px;
+  --breakpoint-medium-min: 600px;
+  --breakpoint-medium-max: 839px;
+  --breakpoint-expanded-min: 840px;
+
   /* ── Organic Geometry & Squircle Family Tokens ────────── */
   --shape-soft: 8px;
   --shape-squircle: 12px;

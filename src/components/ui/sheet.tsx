@@ -6,6 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 const Sheet = SheetPrimitive.Root;
 
@@ -60,26 +61,55 @@ const sheetVariants = cva(
   },
 );
 
-interface SheetContentProps
+export type SheetWindowVariant = "auto" | "compact" | "expanded";
+
+export interface SheetContentProps
   extends
     React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
-    VariantProps<typeof sheetVariants> {}
+    VariantProps<typeof sheetVariants> {
+  windowVariant?: SheetWindowVariant;
+}
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", size = "default", className, children, ...props }, ref) => (
-  <SheetPortal>
-    <SheetOverlay />
-    <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side, size }), className)} {...props}>
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-lg opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-10">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </SheetPrimitive.Close>
-      {children}
-    </SheetPrimitive.Content>
-  </SheetPortal>
-));
+>(({ side, size = "default", windowVariant = "auto", className, children, ...props }, ref) => {
+  const { isCompact } = useWindowSizeClass();
+
+  const resolvedSide =
+    side ??
+    (windowVariant === "compact"
+      ? "bottom"
+      : windowVariant === "expanded"
+      ? "right"
+      : isCompact
+      ? "bottom"
+      : "right");
+
+  return (
+    <SheetPortal>
+      <SheetOverlay />
+      <SheetPrimitive.Content
+        ref={ref}
+        className={cn(
+          sheetVariants({ side: resolvedSide, size }),
+          resolvedSide === "bottom" && "p-4 sm:p-6",
+          className
+        )}
+        {...props}
+      >
+        {resolvedSide === "bottom" && (
+          <div className="mx-auto w-12 h-1.5 rounded-full bg-muted-foreground/20 mb-3 shrink-0" aria-hidden="true" />
+        )}
+        <SheetPrimitive.Close className="absolute right-4 top-4 rounded-xl p-2.5 opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-10 touch-manipulation">
+          <X className="size-4" />
+          <span className="sr-only">Close</span>
+        </SheetPrimitive.Close>
+        {children}
+      </SheetPrimitive.Content>
+    </SheetPortal>
+  );
+});
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
 const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (

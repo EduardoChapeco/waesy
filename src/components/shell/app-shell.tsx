@@ -10,6 +10,7 @@ import { GeolocationPermissionSheet } from "@/components/location/geolocation-pe
 import { PWAInstallBanner } from "@/components/commerce/pwa-install-banner";
 import { OfflineIndicator } from "./offline-indicator";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string): string {
   const map: Record<string, string> = {
@@ -93,8 +94,9 @@ export interface AppShellProps {
 }
 
 export function AppShell({ children, session, brandSettings }: AppShellProps) {
- const location = useLocation();
- const mainRef = useRef<HTMLElement>(null);
+  const location = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
+  const { isCompact } = useWindowSizeClass();
 
  useEffect(() => {
    if (typeof window !== "undefined") {
@@ -323,7 +325,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
       </div>
 
       {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe para liberar a barra de compra/conversão) */}
-      {!isDetailPage && <MobileNav session={session} userRole={session?.role} />}
+      {isCompact && !isDetailPage && <MobileNav session={session} userRole={session?.role} />}
 
       {/* Indicador Flutuante de Conexão Offline */}
       <OfflineIndicator />

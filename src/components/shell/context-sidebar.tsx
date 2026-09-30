@@ -5,6 +5,8 @@ import { type ContextConfig } from "@/lib/navigation-registry";
 import { PublishSheet } from "@/components/commerce/publish-sheet";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
 import { House, CalendarDots, Briefcase, Compass, Scissors, BookmarkSimple, ChatCircleDots, Package, Ticket, ArrowSquareOut, Gear, UserCircle, Storefront } from "@phosphor-icons/react";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export interface ContextSidebarProps {
   config: ContextConfig;
@@ -43,6 +45,12 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
   const isAuthenticated = Boolean(session?.user);
   const hasStore = Boolean(session?.user?.store_id || session?.user?.user_metadata?.store_id);
 
+  const { isCompact, isExpanded } = useWindowSizeClass();
+
+  if (isCompact) {
+    return null;
+  }
+
   const isCurrentActive = (item: { to: string; exact?: boolean }) => {
     if (item.exact) {
       return currentPath === item.to && (!item.to.includes("?") ? !location.searchStr : true);
@@ -55,14 +63,24 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-16 lg:w-56 shrink-0 h-full py-3 px-1.5 lg:px-2.5 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40 transition-[width] duration-200">
+    <aside
+      className={cn(
+        "flex flex-col shrink-0 h-full py-3 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40 transition-[width] duration-200",
+        isExpanded ? "w-56 px-2.5" : "w-16 px-1.5"
+      )}
+    >
       <div className="space-y-4">
-        {/* ── 1. MÓDULOS PRINCIPAIS (Compact Icon Rail no Tablet/Foldable md, Expandido no Desktop lg) ── */}
+        {/* ── 1. MÓDULOS PRINCIPAIS (Compact Navigation Rail no Medium, Expandido no Expanded) ── */}
         <div className="space-y-0.5">
-          <span className="hidden lg:block px-2.5 text-[10px] font-mono font-bold tracking-wider uppercase text-muted-foreground/70">
+          <span
+            className={cn(
+              "px-2.5 text-xs font-mono font-bold tracking-wider uppercase text-muted-foreground/70",
+              isExpanded ? "block" : "hidden"
+            )}
+          >
             Explorar
           </span>
-          <nav className="flex flex-col space-y-0.5 pt-0.5 lg:pt-1">
+          <nav className="flex flex-col space-y-0.5 pt-0.5">
             {MAIN_EXPLORER_ITEMS.map((item) => {
               const Icon = item.icon as any;
               const active = isCurrentActive(item);
@@ -74,33 +92,38 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                   to={item.to as any}
                   title={item.label}
                   aria-label={item.label}
-                  className={`flex items-center justify-center lg:justify-between h-10 lg:h-8.5 px-0 lg:px-2.5 rounded-xl text-xs transition-all cursor-pointer group ${
+                  className={cn(
+                    "flex items-center h-10 rounded-xl text-xs transition-colors cursor-pointer group",
+                    isExpanded ? "justify-between px-2.5" : "justify-center px-0",
                     active
                       ? "bg-primary/10 text-primary font-bold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"
-                  }`}
+                  )}
                 >
-                  <div className="flex items-center justify-center lg:justify-start gap-2.5 min-w-0">
+                  <div className={cn("flex items-center gap-2.5 min-w-0", isExpanded ? "justify-start" : "justify-center")}>
                     {(item as any).isLucide ? (
                       <Icon
-                        className={`size-4.5 lg:size-4 shrink-0 transition-colors ${
+                        className={cn(
+                          "shrink-0 transition-colors",
+                          isExpanded ? "size-4" : "size-5",
                           active
                             ? "text-primary"
                             : "text-muted-foreground group-hover:text-foreground"
-                        }`}
+                        )}
                       />
                     ) : (
                       <Icon
-                        size={18}
+                        size={isExpanded ? 16 : 18}
                         weight={active ? "fill" : "regular"}
-                        className={`shrink-0 transition-colors lg:size-4 ${
+                        className={cn(
+                          "shrink-0 transition-colors",
                           active
                             ? "text-primary"
                             : "text-muted-foreground group-hover:text-foreground"
-                        }`}
+                        )}
                       />
                     )}
-                    <div className="hidden lg:block truncate">
+                    <div className={cn("truncate", isExpanded ? "block" : "hidden")}>
                       {isPlacesBadge ? (
                         <PlacesHighlightBadge subtle={!active} className="text-xs" />
                       ) : (
@@ -117,7 +140,12 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
         {/* ── 2. PAINEL PESSOAL & REDE SOCIAL ── */}
         {isAuthenticated && (
           <div className="space-y-0.5 pt-1 border-t border-border/40">
-            <span className="hidden lg:block px-2.5 text-[10px] font-mono font-bold tracking-wider uppercase text-muted-foreground/70">
+            <span
+              className={cn(
+                "px-2.5 text-xs font-mono font-bold tracking-wider uppercase text-muted-foreground/70",
+                isExpanded ? "block" : "hidden"
+              )}
+            >
               Pessoal
             </span>
 
@@ -127,13 +155,22 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                   to="/workspace"
                   title="Workspace"
                   aria-label="Workspace"
-                  className="flex items-center justify-center lg:justify-between h-10 lg:h-8.5 px-0 lg:px-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 font-bold text-xs transition-all group cursor-pointer"
+                  className={cn(
+                    "flex items-center h-10 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 font-bold text-xs transition-colors group cursor-pointer",
+                    isExpanded ? "justify-between px-2.5" : "justify-center px-0"
+                  )}
                 >
                   <div className="flex items-center gap-2">
                     <Storefront size={16} weight="fill" />
-                    <span className="hidden lg:inline">Workspace</span>
+                    <span className={isExpanded ? "inline" : "hidden"}>Workspace</span>
                   </div>
-                  <ArrowSquareOut size={13} className="hidden lg:block text-primary/70 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowSquareOut
+                    size={13}
+                    className={cn(
+                      "text-primary/70 group-hover:translate-x-0.5 transition-transform",
+                      isExpanded ? "block" : "hidden"
+                    )}
+                  />
                 </Link>
               </div>
             )}
@@ -149,18 +186,23 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                     to={item.to as any}
                     title={item.label}
                     aria-label={item.label}
-                    className={`flex items-center justify-center lg:justify-start gap-2.5 h-10 lg:h-8.5 px-0 lg:px-2.5 rounded-xl text-xs transition-all cursor-pointer group ${
+                    className={cn(
+                      "flex items-center h-10 rounded-xl text-xs transition-colors cursor-pointer group",
+                      isExpanded ? "justify-start px-2.5 gap-2.5" : "justify-center px-0",
                       active
                         ? "bg-primary/10 text-primary font-bold"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"
-                    }`}
+                    )}
                   >
                     <Icon
-                      size={18}
+                      size={isExpanded ? 16 : 18}
                       weight={active ? "fill" : "regular"}
-                      className={`shrink-0 transition-colors lg:size-4 ${active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}
+                      className={cn(
+                        "shrink-0 transition-colors",
+                        active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                      )}
                     />
-                    <span className="hidden lg:inline truncate">{item.label}</span>
+                    <span className={cn("truncate", isExpanded ? "inline" : "hidden")}>{item.label}</span>
                   </Link>
                 );
               })}
@@ -170,7 +212,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
       </div>
 
       {/* ── 3. BOTÃO DE CRIAR & PUBLICAR ── */}
-      <div className="pt-2 hidden lg:block">
+      <div className={cn("pt-2", isExpanded ? "block" : "hidden")}>
         <PublishSheet />
       </div>
     </aside>

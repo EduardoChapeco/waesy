@@ -1,0 +1,107 @@
+{
+  "prompt_atual": 15,
+  "titulo": "MOTOR DE JANELA E PRIMITIVAS NATIVAS (ELIMINAR O ESPREMIMENTO)",
+  "commit": "HEAD",
+  "data_conclusao": "2026-09-30",
+  "inventario_remediacao": {
+    "provedor_janela": "src/hooks/use-mobile.tsx (WindowSizeProvider + useWindowSizeClass)",
+    "tokens_declarados": "src/styles.css (--breakpoint-compact-max, --breakpoint-medium-min, --breakpoint-medium-max, --breakpoint-expanded-min)",
+    "classes_canônicas": {
+      "compact": "< 600px",
+      "medium": "600px - 839px",
+      "expanded": ">= 840px"
+    },
+    "primitivas_com_variante_janela": [
+      "src/components/ui/card.tsx (Card, CardHeader, CardTitle, CardFooter)",
+      "src/components/ui/table.tsx (Table, TableRow, TableHead, TableCell)",
+      "src/components/ui/sheet.tsx (SheetContent - bottom em Compact, right em Expanded)",
+      "src/components/ui/dialog.tsx (DialogContent - full-screen em Compact, modal contido em Expanded)"
+    ],
+    "shell_bifurcado": [
+      "src/components/shell/app-shell.tsx",
+      "src/components/shell/mobile-nav.tsx (oculto em Medium e Expanded, liberando 64px)",
+      "src/components/shell/context-sidebar.tsx (Navigation Rail w-16 em Medium, Drawer w-56 em Expanded)"
+    ],
+    "telas_remediadas": [
+      "src/components/tourism/proposals/templates/TemplateVerticalPremium.tsx (I-0006)",
+      "src/components/commerce/travel/travel-package-detail-view.tsx (I-0008, I-0010)",
+      "src/components/classifieds/editorial-showcase-view.tsx (I-0009)",
+      "src/routes/_store.receitas.index.tsx (I-0010)"
+    ]
+  },
+  "achados_fechados": [
+    {
+      "id": "I-0006",
+      "prompt": 14,
+      "tipo": "layout-responsivo",
+      "evidencia": "src/components/tourism/proposals/templates/TemplateVerticalPremium.tsx:31-47",
+      "causa_raiz": "px-[60px], grid-cols-12 e text-[76px] estáticos sem prefixo responsivo gerando scroll horizontal involuntário de quase 300px no mobile",
+      "correcao": "Adicionados prefixos px-4 sm:px-8 lg:px-14, grid-cols-1 lg:grid-cols-12 e text-3xl sm:text-5xl lg:text-7xl responsivos sem scroll horizontal",
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0007",
+      "prompt": 14,
+      "tipo": "arquitetura-layout",
+      "evidencia": "src/hooks/use-mobile.tsx:3",
+      "causa_raiz": "MOBILE_BREAKPOINT = 768 trata tablets portrait como smartphone, gerando descontinuidade entre 600px e 839px (Classe Medium)",
+      "correcao": "Criado WindowSizeProvider e useWindowSizeClass com Compact (<600px), Medium (600-839px) e Expanded (>=840px), unificando MOBILE_BREAKPOINT em 600",
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0008",
+      "prompt": 14,
+      "tipo": "ux-sobreposicao",
+      "evidencia": "src/components/commerce/travel/travel-package-detail-view.tsx:1226",
+      "causa_raiz": "Barra inferior fixa incondicional (fixed bottom-0) cobre os últimos 84px de conteúdo e persiste fixa em monitores desktop de 1440px",
+      "correcao": "Barra inferior com left-0 right-0 e pb-28 em compact, e max-w-4xl centralizada em expanded; alvos táteis h-11",
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0009",
+      "prompt": 14,
+      "tipo": "design-truncamento",
+      "evidencia": "src/components/classifieds/editorial-showcase-view.tsx:937",
+      "causa_raiz": "grid-cols-4 rígido sem scroll horizontal ou empilhamento comprime rótulos em 90px de largura em celulares de 390px",
+      "correcao": "Abas configuradas em grid-cols-2 sm:grid-cols-4 com alvos táteis h-11 mínimos e zero compressão lateral",
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0010",
+      "prompt": 14,
+      "tipo": "tipografia-layout",
+      "evidencia": "src/components/commerce/travel/travel-package-detail-view.tsx:495,src/routes/_store.receitas.index.tsx:269",
+      "causa_raiz": "grid-cols-3 em telas compactas (<600px) quebra palavras longas (Intermediário, Dificuldade) em 3 linhas sobrepostas",
+      "correcao": "Metadados reorganizados em grid-cols-2 sm:grid-cols-3 e grid-cols-1 sm:grid-cols-3 sem quebra sobreposta de palavras",
+      "estado": "fechado"
+    }
+  ],
+  "entregues": [
+    "src/styles.css",
+    "src/hooks/use-mobile.tsx",
+    "src/routes/__root.tsx",
+    "src/components/shell/app-shell.tsx",
+    "src/components/shell/mobile-nav.tsx",
+    "src/components/shell/context-sidebar.tsx",
+    "src/components/ui/card.tsx",
+    "src/components/ui/table.tsx",
+    "src/components/ui/sheet.tsx",
+    "src/components/ui/dialog.tsx",
+    "src/components/tourism/proposals/templates/TemplateVerticalPremium.tsx",
+    "src/components/commerce/travel/travel-package-detail-view.tsx",
+    "src/components/classifieds/editorial-showcase-view.tsx",
+    "src/routes/_store.receitas.index.tsx",
+    "src/hooks/use-mobile.test.ts",
+    "ia/15-relatorio.md",
+    "ia/15-ledger.json"
+  ],
+  "selos": [
+    "WINDOW_SIZE_CLASS_PROVIDER_ACTIVE",
+    "BREAKPOINT_DRIFT_ERADICATED",
+    "NATIVE_PRIMITIVES_WINDOW_VARIANT_CERTIFIED",
+    "PROMPT_15_ALL_TESTS_GREEN"
+  ],
+  "decisoes": [
+    "DEC-021"
+  ]
+}

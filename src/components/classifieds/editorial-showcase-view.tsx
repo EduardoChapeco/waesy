@@ -934,7 +934,7 @@ export function EditorialShowcaseView({
 
         {/* ── Abas Canônicas (Fotos, Ficha Técnica, Aprofundamento, Explore/Pagamento) ── */}
         <div className="border-t border-border/40 pt-1">
-          <div className="grid grid-cols-4 border-b border-border/40">
+          <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-border/40 gap-1">
             <button
               type="button"
               onClick={() => setActiveTab("grid")}
@@ -947,7 +947,7 @@ export function EditorialShowcaseView({
               aria-label="Fotos"
             >
               <Grid className="size-4.5" />
-              <span className="text-[10.5px] sm:text-xs font-semibold tracking-tight">Fotos</span>
+              <span className="text-xs sm:text-xs font-semibold tracking-tight">Fotos</span>
             </button>
 
             <button
@@ -962,7 +962,7 @@ export function EditorialShowcaseView({
               aria-label={tabLabels.tab2}
             >
               <Building2 className="size-4.5" />
-              <span className="text-[10.5px] sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
+              <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
                 {isTravel ? "Hospedagem" : tabLabels.tab2}
               </span>
             </button>
@@ -979,7 +979,7 @@ export function EditorialShowcaseView({
               aria-label={tabLabels.tab3}
             >
               <Calendar className="size-4.5" />
-              <span className="text-[10.5px] sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
+              <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
                 {isTravel ? "Roteiro" : tabLabels.tab3}
               </span>
             </button>
@@ -996,7 +996,7 @@ export function EditorialShowcaseView({
               aria-label={tabLabels.tab4}
             >
               <Compass className="size-4.5" />
-              <span className="text-[10.5px] sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
+              <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
                 {isTravel ? "Condições" : tabLabels.tab4}
               </span>
             </button>
@@ -2524,7 +2524,7 @@ export function EditorialShowcaseView({
       </div>
 
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-3">
           {/* Lado Esquerdo: Valor Parcelado / Total Limpo (Sem cortes, clicável para abrir opções) */}
           <button
@@ -2570,7 +2570,7 @@ export function EditorialShowcaseView({
                   )}
                   <ChevronUp className="size-3.5 text-muted-foreground shrink-0 group-hover:translate-y-[-1px] transition-transform" />
                 </div>
-                <div className="flex items-center gap-1.5 text-[10.5px] sm:text-[11px] text-muted-foreground truncate">
+                <div className="flex items-center gap-1.5 text-xs sm:text-[11px] text-muted-foreground truncate">
                   {maxInstallments > 1 ? (
                     <>
                       <span>Total: {formatMoney(priceCents)}</span>

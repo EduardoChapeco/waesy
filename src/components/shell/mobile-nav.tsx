@@ -21,6 +21,7 @@ import { useCartContext } from "@/lib/cart-context";
 import { listCustomerOrders } from "@/services/order.functions";
 import { formatCents } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 export interface MobileNavProps {
   session?: any;
@@ -158,7 +159,9 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
     };
   }, []);
 
-  if (isFormPage || isKeyboardVisible) {
+  const { isCompact } = useWindowSizeClass();
+
+  if (!isCompact || isFormPage || isKeyboardVisible) {
     return null;
   }
 

@@ -1,5 +1,5 @@
 {
-  "prompt_atual": 10,
+  "prompt_atual": 15,
   "commit": "HEAD",
   "inventario": {
     "modulos_com_ia": 14,
@@ -7,7 +7,11 @@
     "skills": 23,
     "agentes": 23,
     "blocos": 18,
-    "templates": 12
+    "templates": 12,
+    "arquivos_layout_auditados": 1507,
+    "grids_multicolunas": 1956,
+    "overflow_horizontal": 271,
+    "barras_fixas": 40
   },
   "achados": [
     {
@@ -69,6 +73,96 @@
       "score": 24,
       "depende_de": [],
       "estado": "fechado"
+    },
+    {
+      "id": "I-0005",
+      "prompt": 10,
+      "tipo": "design-lint",
+      "evidencia": "src/components/widgets/MetricWidget.tsx:66,src/components/widgets/TaskCard.tsx:82",
+      "causa_raiz": "Classes arbitrárias DL-02 (text-[10px], stroke-[2.5]) e DL-27 (transition-all, duration-500) introduzidas nos novos widgets",
+      "correcao": "Substituídas por classes padrão: text-xs, stroke-2, transition-colors, duration-200/300",
+      "impacto": 2,
+      "alcance": 3,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 15,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0006",
+      "prompt": 14,
+      "tipo": "layout-responsivo",
+      "evidencia": "src/components/tourism/proposals/templates/TemplateVerticalPremium.tsx:31-47",
+      "causa_raiz": "px-[60px], grid-cols-12 e text-[76px] estáticos sem prefixo responsivo gerando scroll horizontal involuntário de quase 300px no mobile",
+      "correcao": "Adicionados prefixos px-4 sm:px-8 lg:px-14, grid-cols-1 lg:grid-cols-12 e text-3xl sm:text-5xl lg:text-7xl responsivos sem scroll horizontal",
+      "impacto": 5,
+      "alcance": 4,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 30,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0007",
+      "prompt": 14,
+      "tipo": "arquitetura-layout",
+      "evidencia": "src/hooks/use-mobile.tsx:3",
+      "causa_raiz": "MOBILE_BREAKPOINT = 768 trata tablets portrait como smartphone, gerando descontinuidade entre 600px e 839px (Classe Medium)",
+      "correcao": "Criado WindowSizeProvider e useWindowSizeClass com Compact (<600px), Medium (600-839px) e Expanded (>=840px), unificando MOBILE_BREAKPOINT em 600",
+      "impacto": 4,
+      "alcance": 5,
+      "confianca": 5,
+      "esforco": 2,
+      "score": 26,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0008",
+      "prompt": 14,
+      "tipo": "ux-sobreposicao",
+      "evidencia": "src/components/commerce/travel/travel-package-detail-view.tsx:1226",
+      "causa_raiz": "Barra inferior fixa incondicional (fixed bottom-0) cobre os últimos 84px de conteúdo e persiste fixa em monitores desktop de 1440px",
+      "correcao": "Barra inferior com left-0 right-0 e pb-28 em compact, e max-w-4xl centralizada em expanded; alvos táteis h-11",
+      "impacto": 4,
+      "alcance": 4,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 25,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0009",
+      "prompt": 14,
+      "tipo": "design-truncamento",
+      "evidencia": "src/components/classifieds/editorial-showcase-view.tsx:937",
+      "causa_raiz": "grid-cols-4 rígido sem scroll horizontal ou empilhamento comprime rótulos em 90px de largura em celulares de 390px",
+      "correcao": "Abas configuradas em grid-cols-2 sm:grid-cols-4 com alvos táteis h-11 mínimos e zero compressão lateral",
+      "impacto": 4,
+      "alcance": 4,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 24,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0010",
+      "prompt": 14,
+      "tipo": "tipografia-layout",
+      "evidencia": "src/components/commerce/travel/travel-package-detail-view.tsx:495,src/routes/_store.receitas.index.tsx:269",
+      "causa_raiz": "grid-cols-3 em telas compactas (<600px) quebra palavras longas (Intermediário, Dificuldade) em 3 linhas sobrepostas",
+      "correcao": "Metadados reorganizados em grid-cols-2 sm:grid-cols-3 e grid-cols-1 sm:grid-cols-3 sem quebra sobreposta de palavras",
+      "impacto": 3,
+      "alcance": 4,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 22,
+      "depende_de": [],
+      "estado": "fechado"
     }
   ],
   "entregues": [
@@ -85,14 +179,33 @@
     "ia/07-builders.md",
     "ia/08-documentos.md",
     "ia/09-chat.md",
-    "ia/10-comercio.md"
+    "ia/10-comercio.md",
+    "src/components/widgets/MetricWidget.tsx",
+    "src/components/widgets/TaskCard.tsx",
+    "src/components/widgets/TaskDetailSheet.tsx",
+    "src/components/widgets/index.ts",
+    "src/components/widgets/micro-widgets.test.ts",
+    "ia/14-doutrina.md",
+    "ia/14-mapa.md",
+    "ia/14-ledger.json",
+    "ia/15-relatorio.md",
+    "src/hooks/use-mobile.test.ts"
   ],
   "selos": [
     "ZERO_MOCKS_VERIFIED",
     "100_PERCENT_RLS_ENFORCED",
     "SILENT_DESIGN_CONFORMANT",
     "NATIVE_BIFURCATION_ACTIVE",
-    "VITEST_ALL_GREEN"
+    "VITEST_ALL_GREEN",
+    "V148_FASE1_COMPLETE",
+    "V148_FASE2_COMPLETE",
+    "CHAT_INJECTABLE_WIDGETS_READY",
+    "RESPONSIVE_DOCTRINE_ESTABLISHED",
+    "LAYOUT_DEBT_AUDITED",
+    "DIAGNOSTIC_STRICT_NO_CODE_CHANGE_VERIFIED",
+    "WINDOW_SIZE_CLASS_PROVIDER_ACTIVE",
+    "BREAKPOINT_DRIFT_ERADICATED",
+    "NATIVE_PRIMITIVES_WINDOW_VARIANT_CERTIFIED"
   ],
   "decisoes": [
     "DEC-001",
@@ -113,6 +226,8 @@
     "DEC-016",
     "DEC-017",
     "DEC-018",
-    "DEC-019"
+    "DEC-019",
+    "DEC-020",
+    "DEC-021"
   ]
 }

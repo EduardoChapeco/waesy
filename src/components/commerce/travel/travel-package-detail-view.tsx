@@ -3,6 +3,7 @@ import { Plane, Bus, Ship, Anchor, Layers, Hotel, Calendar, Compass, MapPin, Clo
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import type { TravelPackageData } from "@/types/travel-package";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
@@ -40,6 +41,7 @@ export function TravelPackageDetailView({
   const [activeTab, setActiveTab] = useState<"destination" | "resort" | "itinerary" | "explore">("destination");
   const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({ 1: true });
   const [selectedDepartureId, setSelectedDepartureId] = useState<string | null>(null);
+  const { isCompact, isExpanded } = useWindowSizeClass();
 
  const destination = (packageData?.destination || {}) as any;
  const resort = (packageData?.resort || {}) as any;
@@ -492,7 +494,7 @@ export function TravelPackageDetailView({
  </h3>
  <span className="text-[11px] text-muted-foreground font-mono">{gallery.length} fotos</span>
  </div>
- <div className="grid grid-cols-3 gap-1.5 rounded-2xl overflow-hidden border border-border/50">
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 rounded-2xl overflow-hidden border border-border/50">
  {gallery.slice(0, 6).map((imgUrl: string, i: number) => (
  <div key={i} className="aspect-square bg-muted/40 relative overflow-hidden group">
  <img
@@ -531,7 +533,7 @@ export function TravelPackageDetailView({
  </div>
 
  {/* 3 Estatísticas do Pacote */}
- <div className="flex-1 grid grid-cols-3 text-center divide-x divide-border/60">
+ <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 text-center divide-y sm:divide-y-0 sm:divide-x divide-border/60 gap-1.5 sm:gap-0">
  <div className="flex flex-col">
  <span className="font-bold text-sm sm:text-base text-foreground">
  {resort.duration_text || "—"}
@@ -651,7 +653,7 @@ export function TravelPackageDetailView({
  </h4>
  <span className="text-[11px] text-muted-foreground font-mono">{gallery.length} fotos</span>
  </div>
- <div className="grid grid-cols-3 gap-1.5 rounded-2xl overflow-hidden border border-border/50">
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 rounded-2xl overflow-hidden border border-border/50">
  {gallery.slice(0, 6).map((imgUrl: string, i: number) => (
  <div key={i} className="aspect-square bg-muted/40 overflow-hidden group">
  <img
@@ -1223,7 +1225,7 @@ export function TravelPackageDetailView({
  </main>
 
  {/* ── 3. Barra Fixa Inferior de Conversão (Bottom Booking Bar Dinâmica & Bilateral) ── */}
- <footer className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/80 p-3 sm:p-4 shadow-lg pb-safe">
+ <footer className={cn("fixed bottom-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/80 p-3 sm:p-4 shadow-lg pb-safe", isCompact ? "left-0 right-0" : "left-1/2 -translate-x-1/2 w-full max-w-4xl rounded-t-2xl border-x")}>
  <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
  <div className="flex flex-col">
  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">

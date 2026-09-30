@@ -305,6 +305,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/lib/cart-context";
+import { WindowSizeProvider } from "@/hooks/use-mobile";
 import { initSecuritySentinel } from "@/lib/security-sentinel";
 import { PwaUpdatePrompt } from "@/components/pwa/pwa-update-prompt";
 
@@ -363,13 +364,15 @@ function RootComponent() {
 
  return (
   <QueryClientProvider client={queryClient}>
-   <CartProvider>
+   <WindowSizeProvider>
+    <CartProvider>
     {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
     <Outlet />
     <Toaster />
     {/* Seamless Release Protocol (V120): toast de atualização silencioso */}
     <PwaUpdatePrompt />
    </CartProvider>
+  </WindowSizeProvider>
   </QueryClientProvider>
  );
 }

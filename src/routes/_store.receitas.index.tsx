@@ -134,7 +134,7 @@ function PublicRecipesPage() {
             className={cn(
               "text-xs sm:text-sm font-medium whitespace-nowrap transition-colors relative py-1 cursor-pointer",
               selectedCategory === cat
-                ? "text-foreground font-semibold after:absolute after:bottom-[-9px] after:left-0 after:right-0 after:h-0.5 after:bg-foreground"
+                ? "text-foreground font-semibold after:absolute after:-bottom-2 after:left-0 after:right-0 after:h-0.5 after:bg-foreground"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -201,7 +201,7 @@ function PublicRecipesPage() {
                 {/* Conteúdo do Card */}
                 <div className="p-4 space-y-2">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-[10px] uppercase font-mono py-0 px-1.5 text-primary border-primary/30">
+                    <Badge variant="outline" className="text-xs uppercase font-mono py-0 px-1.5 text-primary border-primary/30">
                       {rec.category || "Culinária"}
                     </Badge>
                     {rec.cuisine && (
@@ -255,7 +255,7 @@ function PublicRecipesPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
                 <div className="absolute bottom-3 left-4 right-4">
-                  <Badge variant="outline" className="text-[10px] uppercase font-mono py-0 px-2 text-primary border-primary/30 bg-background/80 mb-1.5">
+                  <Badge variant="outline" className="text-xs uppercase font-mono py-0 px-2 text-primary border-primary/30 bg-background/80 mb-1.5">
                     {selectedRecipe.category}
                   </Badge>
                   <h2 className="text-base sm:text-xl font-bold text-foreground leading-snug">
@@ -266,9 +266,9 @@ function PublicRecipesPage() {
 
               <div className="p-4 sm:p-6 space-y-6">
                 {/* Métricas Rápidas */}
-                <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-muted/40 border border-border/50 text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 rounded-xl bg-muted/40 border border-border/50 text-center">
                   <div>
-                    <span className="text-[10px] uppercase font-mono text-muted-foreground block">
+                    <span className="text-xs uppercase font-mono text-muted-foreground block">
                       Preparo
                     </span>
                     <span className="text-xs font-bold text-foreground">
@@ -276,7 +276,7 @@ function PublicRecipesPage() {
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-mono text-muted-foreground block">
+                    <span className="text-xs uppercase font-mono text-muted-foreground block">
                       Cozimento
                     </span>
                     <span className="text-xs font-bold text-foreground">
@@ -284,7 +284,7 @@ function PublicRecipesPage() {
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-mono text-muted-foreground block">
+                    <span className="text-xs uppercase font-mono text-muted-foreground block">
                       Rendimento
                     </span>
                     <span className="text-xs font-bold text-foreground">

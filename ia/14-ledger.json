@@ -1,0 +1,122 @@
+{
+  "prompt_atual": 14,
+  "titulo": "CONTRATO RESPONSIVO: COMPACT E EXPANDED SÃO DOIS PRODUTOS",
+  "commit": "HEAD",
+  "inventario_layout": {
+    "total_arquivos_analisados": 1507,
+    "consultas_match_media": 9,
+    "usos_use_is_mobile": 7,
+    "hidden_md": 75,
+    "md_hidden": 52,
+    "hidden_lg": 34,
+    "lg_hidden": 17,
+    "hidden_sm": 197,
+    "sm_hidden": 55,
+    "grid_cols_2": 1147,
+    "grid_cols_3": 468,
+    "grid_cols_4": 217,
+    "grid_cols_5": 25,
+    "grid_cols_6": 15,
+    "grid_cols_12": 84,
+    "overflow_x_auto": 271,
+    "fixed_bottom": 35,
+    "sticky_bottom": 5,
+    "h_100dvh": 144,
+    "min_h_100dvh": 78,
+    "classes_arbitrarias_colchetes": 581,
+    "breakpoints_utilizados": {
+      "sm": 4905,
+      "md": 983,
+      "lg": 650,
+      "xl": 153,
+      "2xl": 2
+    }
+  },
+  "achados": [
+    {
+      "id": "I-0006",
+      "prompt": 14,
+      "tipo": "layout-responsivo",
+      "evidencia": "src/components/tourism/proposals/templates/TemplateVerticalPremium.tsx:31-47",
+      "causa_raiz": "px-[60px], grid-cols-12 e text-[76px] estáticos sem prefixo responsivo gerando scroll horizontal involuntário de quase 300px no mobile",
+      "correcao": "Adicionados prefixos px-4 sm:px-8 lg:px-14, grid-cols-1 lg:grid-cols-12 e text-3xl sm:text-5xl lg:text-7xl responsivos sem scroll horizontal",
+      "impacto": 5,
+      "alcance": 4,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 30,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0007",
+      "prompt": 14,
+      "tipo": "arquitetura-layout",
+      "evidencia": "src/hooks/use-mobile.tsx:3",
+      "causa_raiz": "MOBILE_BREAKPOINT = 768 trata tablets portrait como smartphone, gerando descontinuidade entre 600px e 839px (Classe Medium)",
+      "correcao": "Criado WindowSizeProvider e useWindowSizeClass com Compact (<600px), Medium (600-839px) e Expanded (>=840px), unificando MOBILE_BREAKPOINT em 600",
+      "impacto": 4,
+      "alcance": 5,
+      "confianca": 5,
+      "esforco": 2,
+      "score": 26,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0008",
+      "prompt": 14,
+      "tipo": "ux-sobreposicao",
+      "evidencia": "src/components/commerce/travel/travel-package-detail-view.tsx:1226",
+      "causa_raiz": "Barra inferior fixa incondicional (fixed bottom-0) cobre os últimos 84px de conteúdo e persiste fixa em monitores desktop de 1440px",
+      "correcao": "Barra inferior com left-0 right-0 e pb-28 em compact, e max-w-4xl centralizada em expanded; alvos táteis h-11",
+      "impacto": 4,
+      "alcance": 4,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 25,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0009",
+      "prompt": 14,
+      "tipo": "design-truncamento",
+      "evidencia": "src/components/classifieds/editorial-showcase-view.tsx:937",
+      "causa_raiz": "grid-cols-4 rígido sem scroll horizontal ou empilhamento comprime rótulos em 90px de largura em celulares de 390px",
+      "correcao": "Abas configuradas em grid-cols-2 sm:grid-cols-4 com alvos táteis h-11 mínimos e zero compressão lateral",
+      "impacto": 4,
+      "alcance": 4,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 24,
+      "depende_de": [],
+      "estado": "fechado"
+    },
+    {
+      "id": "I-0010",
+      "prompt": 14,
+      "tipo": "tipografia-layout",
+      "evidencia": "src/components/commerce/travel/travel-package-detail-view.tsx:495,src/routes/_store.receitas.index.tsx:269",
+      "causa_raiz": "grid-cols-3 em telas compactas (<600px) quebra palavras longas (Intermediário, Dificuldade) em 3 linhas sobrepostas",
+      "correcao": "Metadados reorganizados em grid-cols-2 sm:grid-cols-3 e grid-cols-1 sm:grid-cols-3 sem quebra sobreposta de palavras",
+      "impacto": 3,
+      "alcance": 4,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 22,
+      "depende_de": [],
+      "estado": "fechado"
+    }
+  ],
+  "entregues": [
+    "ia/14-doutrina.md",
+    "ia/14-mapa.md",
+    "ia/14-ledger.json"
+  ],
+  "selos": [
+    "RESPONSIVE_DOCTRINE_ESTABLISHED",
+    "LAYOUT_DEBT_AUDITED",
+    "DIAGNOSTIC_STRICT_NO_CODE_CHANGE_VERIFIED"
+  ]
+}
