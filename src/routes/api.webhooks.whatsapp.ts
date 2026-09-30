@@ -141,6 +141,73 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
               } catch (leadErr) {
                 console.warn("[whatsapp-webhook] Falha ao registrar lead:", leadErr);
               }
+
+              // 3. Ingestão no Chat Centralizado (Cross-Module: chat_threads & chat_messages)
+              try {
+                const customerName = value.contacts?.[0]?.profile?.name || `WhatsApp ${senderPhone.slice(-4)}`;
+
+                const { data: existingThread } = await supabase
+                  .from("chat_threads")
+                  .select("id")
+                  .eq("store_id", targetStoreId)
+                  .eq("context_type", "whatsapp")
+                  .eq("entity_id", senderPhone)
+                  .maybeSingle();
+
+                let threadId: string;
+                if (existingThread) {
+                  threadId = existingThread.id;
+                  await supabase
+                    .from("chat_threads")
+                    .update({
+                      last_message_text: messageText,
+                      last_message_at: new Date().toISOString(),
+                      status: "open",
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq("id", threadId);
+                } else {
+                  const { data: createdThread } = await supabase
+                    .from("chat_threads")
+                    .insert({
+                      store_id: targetStoreId,
+                      guest_name: customerName,
+                      status: "open",
+                      subject: `Atendimento WhatsApp (${senderPhone})`,
+                      department: "geral",
+                      priority: "normal",
+                      context_type: "whatsapp",
+                      entity_id: senderPhone,
+                      last_message_text: messageText,
+                      last_message_at: new Date().toISOString(),
+                      internal_notes: `Canal: WhatsApp Cloud API | Número: ${senderPhone}`,
+                      created_at: new Date().toISOString(),
+                      updated_at: new Date().toISOString(),
+                    })
+                    .select("id")
+                    .single();
+
+                  threadId = createdThread?.id || "";
+                }
+
+                if (threadId) {
+                  await supabase.from("chat_messages").insert({
+                    thread_id: threadId,
+                    message: messageText,
+                    message_type: "text",
+                    is_staff_reply: false,
+                    payload: {
+                      channel: "whatsapp",
+                      from: senderPhone,
+                      message_id: msg.id,
+                      timestamp: msg.timestamp,
+                    },
+                    created_at: new Date().toISOString(),
+                  });
+                }
+              } catch (chatErr) {
+                console.warn("[whatsapp-webhook] Falha ao sincronizar com chat central:", chatErr);
+              }
             }
           }
 

@@ -1,9 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { encryptSecret } from "@/lib/crypto-vault.server";
+import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { logSystemError } from "@/lib/logger";
+import { fetchWithExponentialBackoff } from "@/lib/resilient-api-client";
 
 export const MARKETPLACE_PLATFORMS = [
   "mercadolivre",
@@ -22,6 +23,8 @@ export const MARKETPLACE_PLATFORMS = [
   "frenet",
   "loggi",
   "jadlog",
+  "bling",
+  "tiny",
 ] as const;
 
 export type MarketplacePlatform = (typeof MARKETPLACE_PLATFORMS)[number];
@@ -369,8 +372,102 @@ export async function dispatchMarketplaceChannelSync(params: {
     };
   }
 
-  // 4. Se houver credenciais ativas, despacha o evento Outbox
+  // 4. Se houver credenciais ativas, despacha o evento com Exponential Backoff e Resiliência
   try {
+    // 4.1 Canal Direto: Mercado Livre (PUT /items/{id})
+    if (params.platform === "mercadolivre" && params.productId && params.syncType === "stock") {
+      const { data: listing } = await supabase
+        .from("channel_listings")
+        .select("external_listing_id")
+        .eq("store_id", params.storeId)
+        .eq("product_id", params.productId)
+        .eq("channel", "mercadolivre")
+        .maybeSingle();
+
+      const externalId = listing?.external_listing_id;
+      const rawToken = settings.access_token || (creds?.token_payload as any)?.access_token;
+      let token = "";
+      if (rawToken) {
+        try {
+          token = decryptSecret(rawToken);
+        } catch {
+          token = rawToken;
+        }
+      }
+
+      if (externalId && token) {
+        const mlRes = await fetchWithExponentialBackoff(
+          `https://api.mercadolibre.com/items/${externalId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ available_quantity: params.newStockQty ?? 0 }),
+          },
+          { maxRetries: 3, baseDelayMs: 600 }
+        );
+
+        if (mlRes.ok) {
+          return {
+            status: "completed",
+            message: `Estoque do anúncio ${externalId} atualizado no Mercado Livre para ${params.newStockQty ?? 0} un (HTTP ${mlRes.status}).`,
+            itemsProcessed: 1,
+          };
+        }
+      }
+    }
+
+    // 4.2 Canal Direto: iFood OpenDelivery (PATCH /merchants/{id}/items/{id}/status)
+    if (params.platform === "ifood" && params.productId && params.syncType === "stock") {
+      const { data: listing } = await supabase
+        .from("channel_listings")
+        .select("external_listing_id")
+        .eq("store_id", params.storeId)
+        .eq("product_id", params.productId)
+        .eq("channel", "ifood")
+        .maybeSingle();
+
+      const merchantUuid = settings.merchant_uuid || (creds?.token_payload as any)?.merchant_uuid;
+      const rawToken = settings.access_token || (creds?.token_payload as any)?.access_token;
+      let token = "";
+      if (rawToken) {
+        try {
+          token = decryptSecret(rawToken);
+        } catch {
+          token = rawToken;
+        }
+      }
+
+      const externalItemId = listing?.external_listing_id || params.productId;
+
+      if (merchantUuid && token) {
+        const itemStatus = (params.newStockQty ?? 0) > 0 ? "AVAILABLE" : "UNAVAILABLE";
+        const ifoodRes = await fetchWithExponentialBackoff(
+          `https://merchant-api.ifood.com.br/catalog/v1.0/merchants/${merchantUuid}/items/${externalItemId}/status`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ status: itemStatus }),
+          },
+          { maxRetries: 3, baseDelayMs: 600 }
+        );
+
+        if (ifoodRes.ok) {
+          return {
+            status: "completed",
+            message: `Disponibilidade do item ${externalItemId} atualizada no iFood para ${itemStatus} (HTTP ${ifoodRes.status}).`,
+            itemsProcessed: 1,
+          };
+        }
+      }
+    }
+
+    // 4.3 Webhook Customizado / Endpoint do Lojista
     const webhookUrl = settings.outbound_webhook_url || settings.endpoint_url;
     if (webhookUrl && typeof webhookUrl === "string" && webhookUrl.startsWith("http")) {
       const payload = {
@@ -382,17 +479,20 @@ export async function dispatchMarketplaceChannelSync(params: {
         timestamp: new Date().toISOString(),
       };
 
-      const res = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Waesy-Source": "MarketplaceHub" },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(8000),
-      });
+      const res = await fetchWithExponentialBackoff(
+        webhookUrl,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Waesy-Source": "MarketplaceHub" },
+          body: JSON.stringify(payload),
+        },
+        { maxRetries: 3, baseDelayMs: 500 }
+      );
 
       if (res.ok) {
         return {
           status: "completed",
-          message: `Despachado via API para ${params.platform.toUpperCase()} (HTTP ${res.status}).`,
+          message: `Despachado via API resiliente para ${params.platform.toUpperCase()} (HTTP ${res.status}, retentativas: ${res.retriesAttempted}).`,
           itemsProcessed: params.itemCount || 1,
         };
       } else {
@@ -1561,5 +1661,173 @@ export const calculateAndApplyChannelPricing = createServerFn({ method: "POST" }
       estimatedCommissionCents: Math.round(calculatedCents * commRate),
       netReceiptCents: calculatedCents - Math.round(calculatedCents * commRate),
     };
+  });
+
+/**
+ * Envia uma resposta para uma pergunta de cliente no Mercado Livre (POST /answers).
+ */
+export async function answerMercadoLivreQuestion(params: {
+  storeId: string;
+  questionId: string;
+  answerText: string;
+}): Promise<{ success: boolean; message: string }> {
+  const supabase = getServerClient();
+  const { data: connector } = await supabase
+    .from("marketplace_connectors")
+    .select("access_token, settings")
+    .eq("store_id", params.storeId)
+    .eq("platform", "mercadolivre")
+    .eq("status", "connected")
+    .maybeSingle();
+
+  if (!connector?.access_token) {
+    return { success: false, message: "Conector Mercado Livre inativo ou sem token." };
+  }
+
+  let token = "";
+  try {
+    token = decryptSecret(connector.access_token);
+  } catch {
+    token = connector.access_token;
+  }
+
+  const res = await fetchWithExponentialBackoff(
+    "https://api.mercadolibre.com/answers",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        question_id: parseInt(params.questionId, 10) || params.questionId,
+        text: params.answerText,
+      }),
+    },
+    { maxRetries: 3, baseDelayMs: 500 }
+  );
+
+  return {
+    success: res.ok,
+    message: res.ok
+      ? "Resposta enviada com sucesso ao Mercado Livre."
+      : `Erro ML: HTTP ${res.status} (${res.statusText})`,
+  };
+}
+
+/**
+ * Despacha um pedido do Waesy para o Bling ERP v3 (POST /pedidos/vendas).
+ * Automatiza a integração fiscal e faturamento de ponta a ponta.
+ */
+export async function pushOrderToBlingErp(
+  storeId: string,
+  orderId: string
+): Promise<{ success: boolean; blingOrderId?: string; message: string }> {
+  const supabase = getServerClient();
+
+  const { data: creds } = await supabase
+    .from("integration_credentials")
+    .select("token_payload, is_active")
+    .eq("store_id", storeId)
+    .eq("provider", "bling")
+    .eq("is_active", true)
+    .maybeSingle();
+
+  const apiKey =
+    (creds?.token_payload as any)?.apiKey ||
+    (creds?.token_payload as any)?.api_key ||
+    (creds?.token_payload as any)?.access_token;
+
+  if (!apiKey) {
+    return { success: false, message: "Bling ERP v3 não configurado ou inativo nesta loja." };
+  }
+
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, total_cents, shipping_cents, customer_snapshot, order_items(id, product_title, variant_sku, qty, unit_price_cents)")
+    .eq("id", orderId)
+    .eq("store_id", storeId)
+    .single();
+
+  if (!order) {
+    return { success: false, message: "Pedido não encontrado." };
+  }
+
+  const customer = (order.customer_snapshot as any) || {};
+  const items = (order.order_items || []).map((it: any) => ({
+    codigo: it.variant_sku || it.id,
+    descricao: it.product_title || "Item",
+    quantidade: it.qty || 1,
+    valor: (it.unit_price_cents || 0) / 100,
+  }));
+
+  const payload = {
+    numero: order.id.slice(0, 8).toUpperCase(),
+    data: new Date().toISOString().split("T")[0],
+    contato: {
+      nome: customer.name || "Cliente Waesy",
+      tipoPessoa: customer.document && customer.document.length > 11 ? "J" : "F",
+      numeroDocumento: customer.document || undefined,
+      email: customer.email || undefined,
+      telefone: customer.phone || undefined,
+    },
+    itens: items,
+    transporte: {
+      fretePorConta: 0,
+      frete: (order.shipping_cents || 0) / 100,
+    },
+  };
+
+  const res = await fetchWithExponentialBackoff(
+    "https://api.bling.com.br/v3/pedidos/vendas",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+    { maxRetries: 3, baseDelayMs: 600 }
+  );
+
+  if (res.ok) {
+    const blingData = res.data?.data;
+    const blingId = blingData?.id ? String(blingData.id) : undefined;
+    return {
+      success: true,
+      blingOrderId: blingId,
+      message: `Pedido sincronizado com Bling ERP com sucesso (Bling ID #${blingId || "OK"}).`,
+    };
+  }
+
+  return {
+    success: false,
+    message: `Falha ao sincronizar pedido com Bling ERP: HTTP ${res.status}`,
+  };
+}
+
+/**
+ * Sincroniza em lote ou unitariamente estoque e preço de um produto para todos os canais conectados
+ */
+export const syncProductStockAndPriceToChannels = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      productId: z.string().uuid(),
+      stockQty: z.number().int().min(0),
+      priceCents: z.number().int().min(0).optional(),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const targetStoreId = input.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    return _syncStockToMarketplacesInternal(targetStoreId, input.productId, input.stockQty);
   });
 

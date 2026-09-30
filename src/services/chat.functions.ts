@@ -260,7 +260,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
 
  const { data: thread } = await db
  .from("chat_threads")
- .select("id, store_id")
+ .select("id, store_id, context_type, entity_id")
  .eq("id", input.threadId)
  .eq("store_id", identity.store_id)
  .single();
@@ -292,6 +292,31 @@ export const sendChatMessage = createServerFn({ method: "POST" })
  updated_at: new Date().toISOString(),
  })
  .eq("id", input.threadId);
+
+  // Cross-Module Outbound Dispatch: Disparo bidirecional para canais externos (WhatsApp / Mercado Livre)
+  if (thread.context_type === "whatsapp" && thread.entity_id) {
+    try {
+      const { sendWhatsAppNotification } = await import("./integrations.functions");
+      await sendWhatsAppNotification({
+        storeId: thread.store_id,
+        recipientPhone: thread.entity_id,
+        messageText: input.message,
+      });
+    } catch (waErr) {
+      console.warn("[chat.functions] Falha ao despachar resposta via WhatsApp:", waErr);
+    }
+  } else if (thread.context_type === "mercadolivre" && thread.entity_id) {
+    try {
+      const { answerMercadoLivreQuestion } = await import("./marketplace-hub.functions");
+      await answerMercadoLivreQuestion({
+        storeId: thread.store_id,
+        questionId: thread.entity_id,
+        answerText: input.message,
+      });
+    } catch (mlErr) {
+      console.warn("[chat.functions] Falha ao despachar resposta via Mercado Livre:", mlErr);
+    }
+  }
 
  return msg;
  } catch (e: any) {

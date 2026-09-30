@@ -20,6 +20,9 @@ export const inboundWebhookPayloadSchema = z.object({
     "nuvem_fiscal",
     "melhorenvio",
     "correios",
+    "bling",
+    "tiny",
+    "whatsapp",
   ]),
   eventId: z.string().optional(),
   topic: z.string().optional(),
@@ -414,6 +417,10 @@ export async function handleInboundWebhook(data: InboundWebhookPayload): Promise
       case "nuvem_fiscal":
         await processFiscalEvent(data.resourceId, data.payload, data.storeId);
         break;
+      case "bling":
+      case "tiny":
+        syncedOrderId = await processBlingEvent(data.resourceId, data.payload, data.storeId);
+        break;
       default:
         break;
     }
@@ -502,11 +509,21 @@ export async function retryFailedWebhooks(storeId?: string, maxAttempts = 10): P
  */
 async function processMercadoLivreEvent(resourceId?: string, payload: any = {}, storeId?: string): Promise<string | null> {
   const supabase = getServerClient();
-  const orderId = resourceId || payload.resource || payload.id || payload.order_id;
-  if (!orderId) return null;
-
   const targetStoreId = storeId || payload.store_id;
   if (!targetStoreId) return null;
+
+  // Intercepta perguntas de clientes no anúncio (topic = 'questions')
+  const isQuestion =
+    payload.topic === "questions" ||
+    String(resourceId || "").includes("/questions/") ||
+    Boolean(payload.text && (payload.item_id || payload.question_id));
+
+  if (isQuestion) {
+    return processMercadoLivreQuestion(resourceId, payload, targetStoreId);
+  }
+
+  const orderId = resourceId || payload.resource || payload.id || payload.order_id;
+  if (!orderId) return null;
 
   const totalAmountCents = Math.round((Number(payload.total_amount || payload.order_amount || 0)) * 100);
   const feeCents = Math.round((Number(payload.fee || payload.marketplace_fee || (totalAmountCents * 0.16 / 100))) * 100);
@@ -630,6 +647,39 @@ async function processIfoodEvent(resourceId?: string, payload: any = {}, storeId
 
   const targetStoreId = storeId || payload.store_id;
   if (!targetStoreId) return null;
+
+  // Acknowledge OpenDelivery event to iFood (evita reenvio em loop)
+  if (payload.id && targetStoreId) {
+    try {
+      const { data: ifoodConn } = await supabase
+        .from("marketplace_connectors")
+        .select("access_token")
+        .eq("store_id", targetStoreId)
+        .eq("platform", "ifood")
+        .eq("status", "connected")
+        .maybeSingle();
+
+      if (ifoodConn?.access_token) {
+        const { decryptSecret } = await import("@/lib/crypto-vault.server");
+        let token = "";
+        try {
+          token = decryptSecret(ifoodConn.access_token);
+        } catch {
+          token = ifoodConn.access_token;
+        }
+
+        fetch("https://merchant-api.ifood.com.br/order/v1.0/events/acknowledgment", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify([{ id: payload.id }]),
+          signal: AbortSignal.timeout(4000),
+        }).catch(() => null);
+      }
+    } catch {}
+  }
 
   const code = payload.code || payload.status;
   const statusMap: Record<string, string> = {
@@ -935,6 +985,207 @@ async function processFiscalEvent(resourceId?: string, payload: any = {}, storeI
     .from("store_nfe_invoices")
     .update(updateData)
     .or(`id.eq.${referenceId},nfe_key.eq.${referenceId}`);
+}
+
+/**
+ * Processa perguntas pré-venda do Mercado Livre e ingere na Central de Atendimento (Chat Threads)
+ */
+async function processMercadoLivreQuestion(
+  resourceId?: string,
+  payload: any = {},
+  storeId?: string
+): Promise<string | null> {
+  const supabase = getServerClient();
+  const targetStoreId = storeId || payload.store_id;
+  if (!targetStoreId) return null;
+
+  const rawQuestionId = String(
+    payload.id || payload.question_id || (resourceId ? resourceId.replace(/\D/g, "") : Date.now())
+  );
+  const questionText = payload.text || payload.question || "Dúvida do cliente no anúncio do Mercado Livre";
+  const itemId = payload.item_id || payload.resource || "Item";
+  const fromId = payload.from?.id ? String(payload.from.id) : "visitante";
+
+  // Busca ou cria thread em chat_threads
+  const { data: existingThread } = await supabase
+    .from("chat_threads")
+    .select("id")
+    .eq("store_id", targetStoreId)
+    .eq("context_type", "mercadolivre")
+    .eq("entity_id", rawQuestionId)
+    .maybeSingle();
+
+  let threadId: string;
+  if (existingThread) {
+    threadId = existingThread.id;
+  } else {
+    const { data: newThread, error: threadErr } = await supabase
+      .from("chat_threads")
+      .insert({
+        store_id: targetStoreId,
+        guest_name: `Comprador ML #${fromId}`,
+        guest_email: `ml_${fromId}@mercadolivre.user`,
+        status: "open",
+        subject: `Dúvida ML: Anúncio ${itemId}`,
+        department: "vendas",
+        priority: "normal",
+        context_type: "mercadolivre",
+        entity_id: rawQuestionId,
+        last_message_text: questionText,
+        last_message_at: new Date().toISOString(),
+        internal_notes: `Canal: Mercado Livre Questions API | Item: ${itemId} | Question ID: ${rawQuestionId}`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+    if (threadErr || !newThread) {
+      console.warn("[webhooks:mercadolivre:questions] Erro ao criar thread de chat:", threadErr);
+      return null;
+    }
+    threadId = newThread.id;
+  }
+
+  // Insere a pergunta do cliente em chat_messages
+  await supabase.from("chat_messages").insert({
+    thread_id: threadId,
+    message: questionText,
+    message_type: "text",
+    is_staff_reply: false,
+    payload: {
+      channel: "mercadolivre",
+      question_id: rawQuestionId,
+      item_id: itemId,
+      from_id: fromId,
+    },
+    created_at: new Date().toISOString(),
+  });
+
+  return threadId;
+}
+
+/**
+ * Processa webhook de NFe / Faturamento do Bling ERP v3 ou Tiny ERP v2 (E2E Cross-Module)
+ */
+async function processBlingEvent(
+  resourceId?: string,
+  payload: any = {},
+  storeId?: string
+): Promise<string | null> {
+  const supabase = getServerClient();
+  const targetStoreId = storeId || payload.store_id;
+
+  const eventType = String(payload.event || payload.tipo || payload.topic || "").toLowerCase();
+  const data = payload.data || payload.retorno || payload;
+
+  const pedidoNumero = String(data.pedido?.numero || data.numero_pedido || data.numero || resourceId || "").trim();
+  const nfeKey = data.chaveAcesso || data.chave_nfe || data.chave || null;
+  const danfeUrl = data.linkDanfe || data.danfe_url || data.link_danfe || null;
+  const xmlUrl = data.linkXml || data.xml_url || data.link_xml || null;
+  const nfeNumber = String(data.numero || data.numero_nfe || "");
+  const nfeSerie = String(data.serie || data.serie_nfe || "1");
+  const valorTotalCents = Math.round((Number(data.valorNota || data.valor_total || data.total || 0)) * 100);
+
+  if (!pedidoNumero && !nfeKey) {
+    console.warn("[webhooks:bling] Evento Bling recebido sem número de pedido ou chave de NFe.");
+    return null;
+  }
+
+  // 1. Localiza o pedido correspondente na tabela orders
+  let orderQuery = supabase
+    .from("orders")
+    .select("id, store_id, status, notes, cost_breakdown, customer_snapshot")
+    .limit(1);
+
+  if (targetStoreId) {
+    orderQuery = orderQuery.eq("store_id", targetStoreId);
+  }
+
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pedidoNumero);
+  if (isUuid) {
+    orderQuery = orderQuery.eq("id", pedidoNumero);
+  } else if (pedidoNumero) {
+    orderQuery = orderQuery.or(`notes.ilike.%#${pedidoNumero}%,notes.ilike.%Bling%${pedidoNumero}%`);
+  }
+
+  const { data: matchedOrder } = await orderQuery.maybeSingle();
+  const finalStoreId = targetStoreId || matchedOrder?.store_id;
+  if (!finalStoreId) return null;
+
+  const matchedOrderId = matchedOrder?.id || null;
+
+  // 2. Se o pedido foi localizado, anexa a NF-e à compra
+  if (matchedOrder) {
+    const updatedNotes = `${matchedOrder.notes || ""}\n[Bling ERP] NF-e ${nfeNumber || ""} emitida. Chave: ${nfeKey || "N/A"}`.trim();
+    const updatedCost = {
+      ...(matchedOrder.cost_breakdown || {}),
+      nfe_key: nfeKey,
+      danfe_url: danfeUrl,
+      bling_sync_at: new Date().toISOString(),
+    };
+
+    await supabase
+      .from("orders")
+      .update({
+        notes: updatedNotes,
+        cost_breakdown: updatedCost,
+        status: (eventType.includes("nfe") || eventType.includes("autorizad")) && matchedOrder.status === "processing"
+          ? "paid"
+          : matchedOrder.status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", matchedOrder.id);
+  }
+
+  // 3. Grava na tabela de notas fiscais store_nfe_invoices
+  if (nfeKey || nfeNumber) {
+    await supabase.from("store_nfe_invoices").upsert(
+      {
+        store_id: finalStoreId,
+        order_id: matchedOrderId,
+        invoice_type: "nfe",
+        nfe_number: nfeNumber || pedidoNumero,
+        nfe_serie: nfeSerie,
+        nfe_key: nfeKey,
+        danfe_pdf_url: danfeUrl,
+        xml_url: xmlUrl,
+        status: "issued",
+        valor_total_cents: valorTotalCents,
+        issued_at: new Date().toISOString(),
+        metadata: {
+          bling_event: eventType,
+          bling_data: data,
+          synced_via: "bling_webhook_v3",
+        },
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "store_id,nfe_key" }
+    );
+
+    // 4. Integração com Faturamento Automático (billing_invoices)
+    if (matchedOrderId) {
+      await supabase.from("billing_invoices").upsert(
+        {
+          store_id: finalStoreId,
+          order_id: matchedOrderId,
+          invoice_number: nfeNumber ? `NFE-${nfeNumber}` : `INV-${pedidoNumero}`,
+          status: "paid",
+          amount_cents: valorTotalCents,
+          pdf_url: danfeUrl,
+          xml_url: xmlUrl,
+          issued_at: new Date().toISOString(),
+          metadata: {
+            nfe_key: nfeKey,
+            erp_source: "bling",
+          },
+        },
+        { onConflict: "order_id" }
+      );
+    }
+  }
+
+  return matchedOrderId;
 }
 
 // ---------------------------------------------------------------------------
