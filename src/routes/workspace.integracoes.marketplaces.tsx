@@ -76,7 +76,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Mercado Livre",
     category: "ecommerce",
     icon: ShoppingBag,
-    color: "from-amber-400 to-yellow-500",
+    color: "bg-muted text-foreground",
     docUrl: "https://developers.mercadolivre.com.br/",
     badgeLabel: "MLB Sync",
     credentialFields: [
@@ -105,7 +105,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Shopee Brasil",
     category: "ecommerce",
     icon: Store,
-    color: "from-orange-500 to-amber-600",
+    color: "bg-muted text-foreground",
     docUrl: "https://open.shopee.com.br/",
     badgeLabel: "Shopee Open API",
     credentialFields: [
@@ -119,7 +119,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     name: "Amazon Brasil",
     category: "ecommerce",
     icon: Package,
-    color: "from-amber-600 to-neutral-800",
+    color: "bg-muted text-foreground",
     docUrl: "https://developer-docs.amazon.com/sp-api/",
     badgeLabel: "SP-API Brasil",
     credentialFields: [
@@ -875,7 +875,7 @@ function MarketplaceHubPage() {
                                 item.stock_on_hand > 5
                                   ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
                                   : item.stock_on_hand > 0
-                                  ? "border-amber-500/40 text-amber-600 bg-amber-500/10"
+                                  ? "border-border text-foreground bg-muted/50"
                                   : "border-rose-500/40 text-rose-600 bg-rose-500/10"
                               )}
                             >
@@ -1004,7 +1004,7 @@ function MarketplaceHubPage() {
                                 ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
                                 : evt.status === "failed"
                                 ? "border-rose-500/40 text-rose-600 bg-rose-500/10"
-                                : "border-amber-500/40 text-amber-600 bg-amber-500/10"
+                                : "border-border text-foreground bg-muted/50"
                             )}
                           >
                             {evt.status === "processed" ? "Processado" : evt.status === "failed" ? "Falha" : "Recebido"}

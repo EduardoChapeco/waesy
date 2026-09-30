@@ -49,14 +49,14 @@ export const Route = createFileRoute("/_store/noticias/")({
 });
 
 const CATEGORIES = [
-  { id: "todas", label: "Todas Notícias", emoji: "📰", icon: Tag },
-  { id: "urgente", label: "Última Hora", emoji: "⚡️", icon: Lightning },
-  { id: "cidade", label: "Cidade e Região", emoji: "🏙️", icon: Buildings },
-  { id: "cultura", label: "Cultura e Lazer", emoji: "🎭", icon: CalendarDots },
-  { id: "economia", label: "Economia e Negócios", emoji: "📈", icon: Briefcase },
-  { id: "esportes", label: "Esportes", emoji: "⚽️", icon: Trophy },
-  { id: "politica", label: "Política", emoji: "🏛️", icon: NewspaperClipping },
-  { id: "inovacao", label: "Inovação e Tech", emoji: "💡", icon: Lightbulb },
+  { id: "todas", label: "Todas", icon: Tag },
+  { id: "urgente", label: "Plant?o", icon: Lightning },
+  { id: "cidade", label: "Cidade", icon: Buildings },
+  { id: "cultura", label: "Cultura", icon: CalendarDots },
+  { id: "economia", label: "Economia", icon: Briefcase },
+  { id: "esportes", label: "Esportes", icon: Trophy },
+  { id: "politica", label: "Pol?tica", icon: NewspaperClipping },
+  { id: "tecnologia", label: "Tecnologia", icon: Lightbulb },
 ];
 
 export function NoticiasFeedPage() {
@@ -149,15 +149,13 @@ export function NoticiasFeedPage() {
                 type="button"
                 onClick={() => handleFilterCategory(cat.id)}
                 className={cn(
-                  "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+                  "h-11 px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                     : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
                 )}
               >
-                {cat.emoji && (
-                  <span className="text-sm leading-none shrink-0">{cat.emoji}</span>
-                )}
+                <cat.icon className="size-4 shrink-0" />
                 <span className="whitespace-nowrap">
                   {cat.label}
                 </span>

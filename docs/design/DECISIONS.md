@@ -73,4 +73,9 @@
 - **Fundamentação:** AGENTS.md B.1, B.8, B.11 e Master Prompt V143 (`SPEC-V143-PHASE2-ANTI-FAKE-ADS-AND-DEEP-NEWS-CURATION.md`).
 - **Consequências:** Zero anúncios ou imagens sintéticas do Unsplash no banco de produção, zero matérias com repetição de subtítulo ou texto genérico de preenchimento, e 7/7 testes verdes na suíte forense (`mining-forensic-quality.test.ts`).
 
-
+## DEC-010: Master Prompt V143 (Fase 3) — Executive Board E2E Audit, Sincronização DB-BFF-UI & Propagação de Design Silencioso
+- **Data:** 2026-09-30
+- **Contexto:** Auditoria recursiva E2E de todos os módulos e prompts anteriores (V125 a V143) para garantir zero arquivos vazios/stubs, alinhamento completo de colunas DB (`news_articles.author_name`, `source_url`, `ai_summary`, `quality_score`) com contratos BFF e componentes de leitura, registro da rota `/workspace/integracoes/marketplaces` na navegação do Workspace e erradicação de ruídos visuais (emojis, títulos compostos, badges âmbar/pulsantes) preservando 100% da capacidade funcional dos módulos.
+- **Decisão:** Atualizados `src/lib/workspace-navigation.ts` (inclusão de `/workspace/integracoes/marketplaces` e simplificação de 100% dos rótulos compostos em grupos e perfis operacionais), `src/routes/_store.noticias.index.tsx` (remoção de emojis, alinhamento do ID `tecnologia` com o banco e alvos de toque `h-11`), `src/routes/_store.noticias.$slug.tsx` (renderização de subtítulos de seções `section.heading`, síntese IA e atribuição de fonte original com alvos `h-11`), `src/routes/workspace.marketing.anuncios.tsx`, `src/routes/workspace.integracoes.marketplaces.tsx` e `src/routes/_store.classificados.index.tsx` (remoção de gradientes decorativos âmbar, `animate-pulse` e cabeçalhos compostos).
+- **Fundamentação:** AGENTS.md B.4, B.8, B.9, B.11, DESIGN.md (Silent Design / Apple HIG) e `anti-ai-design`.
+- **Consequências:** Navegação determinística sem itens órfãos, paridade total entre tabelas Supabase, DTOs BFF e UI de leitura, alvos de toque móveis >= 44px (`h-11`) e conformidade estrita com os Gates de Design.

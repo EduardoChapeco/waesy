@@ -381,10 +381,10 @@ function AnunciosWorkspacePage() {
                 </Badge>
               </div>
               <h2 className="text-base font-bold text-foreground">
-                {roiMetrics?.headlineProof || "Este impulsionamento gerou R$ 0,00 em pedidos (ROI 0%)"}
+                Atribuição de Receita
               </h2>
               <p className="text-xs text-muted-foreground">
-                {roiMetrics?.subProof || "Cruzamento determinístico entre Telemetria de Cliques (V125), Checkout (V139) e Faturas (V141)."}
+                {roiMetrics?.headlineProof || "R$ 0,00 atribuídos (ROI 0%)"} · {roiMetrics?.subProof || "Telemetria sincronizada com checkout e faturas."}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -517,22 +517,22 @@ function AnunciosWorkspacePage() {
           <SheetContent side="bottom" className="rounded-t-2xl max-w-xl mx-auto p-6 space-y-5">
             <SheetHeader className="space-y-1 text-left">
               <Badge variant="default" className="w-fit text-[10px]">Exclusivo Waesy Max</Badge>
-              <SheetTitle className="text-lg font-bold">Tráfego Externo e Automação</SheetTitle>
+              <SheetTitle className="text-lg font-bold">Tráfego Externo</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">
                 Conecte Meta Ads e Google Ads via OAuth 2.0, gere anúncios direto do seu catálogo e receba 50% de subsídio em todos os destaques internos da vitrine.
               </SheetDescription>
             </SheetHeader>
             <div className="space-y-2.5 text-xs">
               <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
-                <span className="font-medium">Integração Direta Meta Graph API & Google Ads</span>
+                <span className="font-medium">Conector Oficial Meta Graph API</span>
                 <Badge variant="outline" className="text-[10px]">Incluído</Badge>
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
-                <span className="font-medium">Desconto em Impulsionamentos na Vitrine Waesy</span>
+                <span className="font-medium">Subsídio em Destaques na Vitrine</span>
                 <Badge variant="outline" className="text-[10px]">50% OFF</Badge>
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
-                <span className="font-medium">Criador de Campanhas em 2 Cliques + ROI Fechado</span>
+                <span className="font-medium">Atribuição Determinística de Receita</span>
                 <Badge variant="outline" className="text-[10px]">Incluído</Badge>
               </div>
             </div>
@@ -977,7 +977,7 @@ function AnunciosWorkspacePage() {
                 title={isListeningVoice ? "Parar de ouvir" : "Falar comando por voz"}
                 className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors ${
                   isListeningVoice
-                    ? "bg-rose-500 text-white animate-pulse"
+                    ? "bg-destructive text-destructive-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >

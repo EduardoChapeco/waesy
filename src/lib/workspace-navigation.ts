@@ -360,7 +360,7 @@ const GROUP_PET: NavGroup = {
   icon: Dog,
   section: "niche",
   items: [
-    { path: "/workspace/agenda", label: "Banho e Tosa", icon: Calendar },
+    { path: "/workspace/agenda", label: "Estética Pet", icon: Calendar },
     { path: "/workspace/agenda/servicos", label: "Vacinas", icon: HeartPulse },
     { path: "/workspace/catalogo/produtos", label: "Produtos Pet", icon: Package },
     { path: "/workspace/pdv", label: "PDV", icon: Store },
@@ -491,6 +491,7 @@ const GROUP_MARKETING_VITRINE: NavGroup = {
     { path: "/workspace/marketing/publicacoes", label: "Publicações", icon: Newspaper },
     { path: "/workspace/marketing/briefing", label: "Briefing IA", icon: Bot },
     { path: "/workspace/marketing/anuncios", label: "Anúncios", icon: Megaphone },
+    { path: "/workspace/integracoes/marketplaces", label: "Marketplaces", icon: Globe },
     { path: "/workspace/marketing/social", label: "Social", icon: Share2 },
   ],
 };
@@ -524,7 +525,7 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
     { path: "/workspace/financeiro/pagamentos", label: "Repasses", icon: DollarSign },
     { path: "/workspace/financeiro/contas-pagar", label: "Contas a Pagar", icon: Receipt },
     { path: "/workspace/financeiro/recebiveis", label: "Recebíveis", icon: Receipt },
-    { path: "/workspace/financeiro/faturas", label: "Faturas & Razão", icon: Receipt },
+    { path: "/workspace/financeiro/faturas", label: "Faturas", icon: Receipt },
     { path: "/workspace/financeiro/comprovantes", label: "Comprovantes", icon: ShieldCheck },
     { path: "/workspace/financeiro/relatorios-canal", label: "DRE", icon: FileSpreadsheet },
     { path: "/workspace/financeiro/afiliados", label: "Afiliados", icon: Coins },
@@ -596,11 +597,11 @@ const GROUP_SETTINGS: NavGroup = {
   items: [
     { path: "/workspace/configuracoes", label: "Dados da Loja", icon: Settings },
     { path: "/workspace/configuracoes/conformidade", label: "Marketplace Oficial", icon: ShieldCheck },
-    { path: "/workspace/configuracoes/ai", label: "Cotas IA & BYOK", icon: Zap },
+    { path: "/workspace/configuracoes/ai", label: "Chaves IA", icon: Zap },
     { path: "/workspace/configuracoes/pwa", label: "Aplicativo PWA", icon: Smartphone },
     { path: "/workspace/configuracoes/privacidade-loja", label: "Privacidade", icon: Lock },
     { path: "/workspace/configuracoes/sessoes", label: "Auditoria", icon: ShieldCheck },
-    { path: "/workspace/integracoes/marketplaces", label: "Canais", icon: Globe },
+    { path: "/workspace/integracoes/marketplaces", label: "Marketplaces", icon: Globe },
     { path: "/workspace/configuracoes/inteligencia-artificial", label: "Automação", icon: Bot },
     { path: "/workspace/configuracoes/integracoes", label: "Integrações", icon: Link2 },
     { path: "/workspace/automacoes", label: "Automações", icon: Zap },
@@ -1079,12 +1080,12 @@ export function resolveWorkspaceNavigation(
       GROUP_OVERVIEW,
       {
         id: "pos-cashier",
-        label: "Frente de Caixa (PDV)",
+        label: "Frente de Caixa",
         icon: ShoppingBag,
         items: [
-          { path: "/workspace/pdv", label: "Abrir Frente de Caixa (PDV)", icon: ShoppingBag },
-          { path: "/workspace/pedidos", label: "Pedidos e Vendas do Dia", icon: ShoppingCart },
-          { path: "/workspace/financeiro/caixa", label: "Fluxo de Caixa e Turno", icon: Banknote },
+          { path: "/workspace/pdv", label: "Frente de Caixa", icon: ShoppingBag },
+          { path: "/workspace/pedidos", label: "Pedidos do Dia", icon: ShoppingCart },
+          { path: "/workspace/financeiro/caixa", label: "Caixa do Turno", icon: Banknote },
         ],
       },
     ];
@@ -1111,12 +1112,12 @@ export function resolveWorkspaceNavigation(
       GROUP_OVERVIEW,
       {
         id: "operations",
-        label: "Operações e Expedição",
+        label: "Expedição",
         icon: Boxes,
         items: [
-          { path: "/workspace/pedidos/gestor", label: "Gestor de Pedidos / KDS", icon: Clock },
-          { path: "/workspace/pedidos", label: "Separação e Picking", icon: Package },
-          { path: "/workspace/estoque", label: "Estoque e Insumos", icon: Boxes },
+          { path: "/workspace/pedidos/gestor", label: "Monitor KDS", icon: Clock },
+          { path: "/workspace/pedidos", label: "Separação", icon: Package },
+          { path: "/workspace/estoque", label: "Estoque", icon: Boxes },
         ],
       },
     ];
@@ -1128,12 +1129,12 @@ export function resolveWorkspaceNavigation(
       GROUP_OVERVIEW,
       {
         id: "specialist-agenda",
-        label: "Minha Agenda e Atendimentos",
+        label: "Minha Agenda",
         icon: Calendar,
         items: [
-          { path: "/workspace/agenda", label: "Minha Grade de Agendamentos", icon: Calendar },
+          { path: "/workspace/agenda", label: "Grade de Horários", icon: Calendar },
           { path: "/workspace/clientes", label: "Meus Clientes", icon: Users },
-          { path: "/workspace/pdv", label: "Lançar Comanda de Atendimento", icon: ShoppingBag },
+          { path: "/workspace/pdv", label: "Lançar Comanda", icon: ShoppingBag },
         ],
       },
     ];
@@ -1145,11 +1146,11 @@ export function resolveWorkspaceNavigation(
       GROUP_OVERVIEW,
       {
         id: "rh-module",
-        label: "RH e Recrutamento",
+        label: "Recrutamento",
         icon: Briefcase,
         items: [
-          { path: "/workspace/configuracoes/equipe", label: "Colaboradores e Folha", icon: Users },
-          { path: "/workspace/empregos/candidatos", label: "Vagas e Triagem (ATS)", icon: Briefcase },
+          { path: "/workspace/configuracoes/equipe", label: "Colaboradores", icon: Users },
+          { path: "/workspace/empregos/candidatos", label: "Candidaturas", icon: Briefcase },
           { path: "/workspace/clientes", label: "Banco de Talentos", icon: Users },
         ],
       },

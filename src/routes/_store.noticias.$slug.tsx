@@ -220,6 +220,18 @@ function NoticiaDetailPage() {
           />
         )}
 
+        {/* ── Síntese Editorial Curada (Quando distinta do subtítulo) ── */}
+        {(article as any).ai_summary && (article as any).ai_summary !== article.subtitle && (
+          <div className="p-4 rounded-xl border border-border/60 bg-card space-y-1">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+              Síntese Editorial
+            </span>
+            <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
+              {(article as any).ai_summary}
+            </p>
+          </div>
+        )}
+
         {/* ── Corpo do Artigo / Seções Estruturadas ── */}
         <div className="space-y-6 text-sm sm:text-base leading-relaxed text-foreground/90">
           {article.content_sections && article.content_sections.length > 0 ? (
@@ -228,7 +240,13 @@ function NoticiaDetailPage() {
               const showMidSponsor = idx === 1 && secondarySponsor;
 
               return (
-                <div key={idx} className="space-y-4">
+                <div key={idx} className="space-y-3">
+                  {section.heading && (
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground pt-2 tracking-tight">
+                      {String(section.heading)}
+                    </h2>
+                  )}
+
                   {section.type === "heading" && (
                     <h2 className="text-xl sm:text-2xl font-black text-foreground pt-4 tracking-tight">
                       {String(section.content)}
@@ -304,12 +322,28 @@ function NoticiaDetailPage() {
           )}
         </div>
 
+        {/* ── Fonte Original Verificada ── */}
+        {(article as any).source_url && (
+          <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
+            <span>Fonte: {article.author_name || "Imprensa Regional"}</span>
+            <a
+              href={(article as any).source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-foreground hover:underline inline-flex items-center gap-1 min-h-[44px]"
+            >
+              <span>Publicação original</span>
+              <ArrowRight className="size-3.5" />
+            </a>
+          </div>
+        )}
+
         {/* ── Evento Vinculado (Cross-Indexação Notícia ↔ Evento) ── */}
         {linkedEvent && (
           <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5 space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
               <Ticket className="size-4" />
-              <span>Evento e Ingressos Relacionados</span>
+              <span>Agenda Relacionada</span>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -342,9 +376,9 @@ function NoticiaDetailPage() {
                 </div>
               </div>
 
-              <Button asChild className="rounded-xl font-bold text-xs h-10 px-4 shrink-0">
+              <Button asChild className="rounded-xl font-bold text-xs h-11 px-4 shrink-0">
                 <Link to="/evento/$id" params={{ id: linkedEvent.id }}>
-                  <span>Ver Ingressos e RSVP</span>
+                  <span>Ver Ingressos</span>
                   <ArrowRight className="size-3.5 ml-1.5" />
                 </Link>
               </Button>

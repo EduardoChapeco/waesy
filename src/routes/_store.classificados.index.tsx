@@ -869,7 +869,7 @@ function ClassifiedsMasterPage() {
                 <div className="space-y-2.5 bg-muted/20 p-3 rounded-xl border border-border/40">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="sheet-boosted" className="text-xs cursor-pointer flex items-center gap-1.5">
-                      <Flame className="size-3.5 text-amber-500" />
+                      <Flame className="size-3.5 text-foreground" />
                       <span>Apenas Destaques</span>
                     </Label>
                     <Switch
@@ -1169,7 +1169,7 @@ function ClassifiedsMasterPage() {
               {selectedCategory === "business" && (
                 <div className="space-y-3 pt-2 border-t border-border/40">
                   <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
-                    Opções de Negócios & M&A
+                    Empresas à Venda
                   </span>
                   <div className="space-y-1.5">
                     <Label className="text-[11px] text-muted-foreground">Objetivo</Label>
@@ -1624,7 +1624,7 @@ function ClassifiedsMasterPage() {
                           </Badge>
                         )}
                         {(item.is_boosted || item.attributes?.is_boosted) && (
-                          <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+                          <Badge variant="secondary" className="bg-background/90 text-foreground border border-border/40 text-[9px] font-bold px-1.5 py-0.5 rounded-md">
                             Destaque
                           </Badge>
                         )}
