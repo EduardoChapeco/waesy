@@ -1057,15 +1057,31 @@ export const simulateMarketplaceOrder = createServerFn({ method: "POST" })
   .validator(
     z.object({
       platform: z.enum(["mercadolivre", "ifood", "shopee", "amazon"]),
-      customerName: z.string().min(2).default("Cliente Simulado Waesy"),
+      customerName: z.string().min(2).default("Cliente Sandbox"),
       productTitle: z.string().min(2).default("Item de Teste de Integração"),
       totalAmountCents: z.number().int().min(100).default(12900),
       sku: z.string().optional(),
     })
   )
   .handler(async ({ data }) => {
+    const supabase = getServerClient();
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin"]);
+
+    // V143 Truth Engine: Bloqueia geração de pedido se o conector oficial não estiver ativo com chave real encriptada
+    const { data: activeConn } = await supabase
+      .from("marketplace_connectors")
+      .select("id, status, access_token")
+      .eq("store_id", identity.store_id)
+      .eq("platform", data.platform)
+      .eq("status", "connected")
+      .maybeSingle();
+
+    if (!activeConn?.access_token) {
+      throw new Error(
+        `INTEGRAÇÃO INATIVA (${data.platform.toUpperCase()}): Simulações sem chave de API ativa foram expurgadas pelo Protocolo V143. Conecte sua API Key real antes de testar webhooks.`
+      );
+    }
 
     const externalId = `TEST-${Date.now().toString().slice(-6)}`;
     let payload: any = {};

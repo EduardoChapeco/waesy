@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { encryptSecret } from "@/lib/crypto-vault.server";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { logSystemError } from "@/lib/logger";
 
@@ -187,32 +188,55 @@ export const saveMarketplaceConnector = createServerFn({ method: "POST" })
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
 
-    // Extrai o token principal do credential_payload (suporta múltiplos nomes de campo)
+    // V143 Truth Engine & E2E Security: Valida credenciais reais e encripta com AES-256-GCM
     const creds = data.credential_payload || {};
     const primaryToken =
       data.access_token ||
       creds.access_token ||
       creds.api_token ||
       creds.api_key ||
+      creds.client_secret ||
+      creds.partner_key ||
+      creds.lwa_client_secret ||
       creds.refresh_token ||
       null;
 
-    // Armazena credenciais no settings.credentials (JSONB server-side somente)
+    if (data.status === "connected" && (!primaryToken || primaryToken.trim().length < 4)) {
+      throw new Error(
+        `CREDENCIAIS OBRIGATÓRIAS (${data.name}): Informe uma API Key, Access Token ou Client Secret autêntico para ativar a integração.`
+      );
+    }
+
+    const encryptedCredentials: Record<string, string> = {};
+    for (const [k, v] of Object.entries(creds)) {
+      if (typeof v === "string" && v.trim() !== "") {
+        const isSecretField =
+          k.includes("secret") ||
+          k.includes("token") ||
+          k.includes("key") ||
+          k.includes("password");
+        encryptedCredentials[k] = isSecretField ? encryptSecret(v.trim()) : v.trim();
+      }
+    }
+
+    const encryptedPrimaryToken = primaryToken ? encryptSecret(primaryToken.trim()) : null;
+    const rawRefresh = creds.refresh_token || data.refresh_token || null;
+    const encryptedRefreshToken = rawRefresh ? encryptSecret(rawRefresh.trim()) : null;
+
     const mergedSettings = {
       ...(data.settings || {}),
-      credentials: Object.fromEntries(
-        Object.entries(creds).filter(([, v]) => typeof v === "string" && v.trim() !== "")
-      ),
+      encryption_algorithm: "AES-256-GCM",
+      credentials: encryptedCredentials,
     };
 
     const payload = {
       store_id: targetStoreId,
       platform: data.platform,
       name: data.name,
-      external_account_id: data.external_account_id || null,
+      external_account_id: data.external_account_id || creds.seller_id || creds.merchant_uuid || creds.shop_id || null,
       account_nickname: data.account_nickname || null,
-      access_token: primaryToken,
-      refresh_token: creds.refresh_token || data.refresh_token || null,
+      access_token: encryptedPrimaryToken,
+      refresh_token: encryptedRefreshToken,
       status: data.status,
       settings: mergedSettings,
       updated_at: new Date().toISOString(),

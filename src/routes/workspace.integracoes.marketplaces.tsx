@@ -522,13 +522,7 @@ function MarketplaceHubPage() {
           description="Gestão unificada: conectores oficiais, mapeamento de SKUs, estoque ativo e conciliação de webhooks."
         />
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            className="h-10 rounded-xl text-xs font-medium cursor-pointer"
-            onClick={() => setTestOrderModalOpen(true)}
-          >
-            <PlayCircle className="size-3.5 mr-1.5 text-primary" /> Testar Pedido Simulado
-          </Button>
+          
           <Button asChild variant="outline" className="h-10 rounded-xl text-xs font-medium">
             <Link to="/workspace/fiscal/nfe">
               Módulo Fiscal (NF-e)
@@ -541,6 +535,30 @@ function MarketplaceHubPage() {
           </Button>
         </div>
       </div>
+
+      {/* V143 Truth Engine: Silent Empty State quando nenhum marketplace está conectado */}
+      {totalConnected === 0 && (
+        <div className="rounded-2xl border border-border/70 bg-card p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="size-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground grayscale shrink-0">
+              <Utensils className="size-6" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-foreground">iFood e Marketplaces não conectados</h3>
+              <p className="text-xs text-muted-foreground">
+                Zero vendas externas registradas ({formatMoney(0)}). Conecte sua chave de API oficial para sincronizar pedidos reais.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => openConnectModal(PLATFORMS_CATALOG[1])}
+            className="h-11 rounded-xl text-xs font-bold px-5 shrink-0"
+          >
+            Ativar Integração
+          </Button>
+        </div>
+      )}
 
       {/* Métricas Financeiras e Operacionais Reais */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">

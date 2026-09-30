@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 
 export type AdCampaign = {
@@ -85,7 +86,7 @@ export const listAdCampaigns = createServerFn({ method: "GET" }).handler(async (
       status: c.status,
       impressions_count: stats.views,
       clicks_count: stats.clicks,
-      spent_cents: Math.min(c.budget_cents, stats.clicks * 45),
+      spent_cents: Number(s.real_spent_cents ?? 0),
       created_at: c.created_at,
     } as AdCampaign;
   });
@@ -1095,7 +1096,7 @@ export const connectExternalAdAccountOAuth = createServerFn({ method: "POST" })
       platform: z.enum(["meta_ads", "google_ads"]),
       accountId: z.string().min(3, "ID da conta de anúncios obrigatório"),
       accountName: z.string().min(2).default("Conta Business"),
-      oauthAccessToken: z.string().min(8, "Token OAuth 2.0 inválido"),
+      oauthAccessToken: z.string().min(8, "Token OAuth 2.0 / API Key inválido"),
       pixelOrConversionId: z.string().optional(),
     })
   )
@@ -1104,11 +1105,13 @@ export const connectExternalAdAccountOAuth = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
-    // Max Tier Lock E2E
     await assertWaesyMaxTier(supabase, identity.store_id!, identity.isPlatformAdmin);
 
     const now = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+
+    // V143 Security E2E: Encriptação AES-256-GCM antes de gravar no banco de dados
+    const encryptedOAuthToken = encryptSecret(data.oauthAccessToken.trim());
 
     const { data: existing } = await supabase
       .from("store_ad_accounts")
@@ -1123,7 +1126,7 @@ export const connectExternalAdAccountOAuth = createServerFn({ method: "POST" })
         .update({
           account_id: data.accountId.trim(),
           account_name: data.accountName.trim(),
-          oauth_access_token: data.oauthAccessToken.trim(),
+          oauth_access_token: encryptedOAuthToken,
           token_expires_at: expiresAt,
           pixel_id: data.platform === "meta_ads" ? data.pixelOrConversionId || null : null,
           conversion_id: data.platform === "google_ads" ? data.pixelOrConversionId || null : null,
@@ -1138,7 +1141,7 @@ export const connectExternalAdAccountOAuth = createServerFn({ method: "POST" })
         platform: data.platform,
         account_id: data.accountId.trim(),
         account_name: data.accountName.trim(),
-        oauth_access_token: data.oauthAccessToken.trim(),
+        oauth_access_token: encryptedOAuthToken,
         token_expires_at: expiresAt,
         pixel_id: data.platform === "meta_ads" ? data.pixelOrConversionId || null : null,
         conversion_id: data.platform === "google_ads" ? data.pixelOrConversionId || null : null,
@@ -1147,10 +1150,38 @@ export const connectExternalAdAccountOAuth = createServerFn({ method: "POST" })
       });
     }
 
+    // Sincroniza flag de conexão real em stores.settings.ad_channels
+    const { data: storeRow } = await supabase
+      .from("stores")
+      .select("settings")
+      .eq("id", identity.store_id)
+      .maybeSingle();
+
+    const currSettings = (storeRow?.settings as Record<string, any>) || {};
+    const currChannels = currSettings.ad_channels || {};
+    const updatedChannels = {
+      ...currChannels,
+      ...(data.platform === "meta_ads"
+        ? { meta_ad_account_id: data.accountId.trim(), meta_pixel_id: data.pixelOrConversionId?.trim() || currChannels.meta_pixel_id }
+        : { google_customer_id: data.accountId.trim(), google_conversion_id: data.pixelOrConversionId?.trim() || currChannels.google_conversion_id }),
+    };
+
+    await supabase
+      .from("stores")
+      .update({
+        settings: {
+          ...currSettings,
+          meta_pixel_id: data.platform === "meta_ads" && data.pixelOrConversionId ? data.pixelOrConversionId.trim() : currSettings.meta_pixel_id,
+          ad_channels: updatedChannels,
+        },
+      })
+      .eq("id", identity.store_id);
+
     return {
       success: true,
       platform: data.platform,
       accountId: data.accountId,
+      encryptionAlgorithm: "AES-256-GCM",
       syncedAt: now,
     };
   });
@@ -1194,67 +1225,69 @@ export const dispatchExternalMetaOrGoogleCampaign = createServerFn({ method: "PO
       .maybeSingle();
 
     const hasOwnAccount = Boolean(oauthAccount?.account_id && oauthAccount?.oauth_access_token);
-    let externalCampaignId = `ext_${data.platform}_${Date.now()}`;
-    let externalApiStatus = "dispatched_arbitrage_queue";
+    if (!hasOwnAccount) {
+      throw new Error(
+        `INTEGRAÇÃO INATIVA (${data.platform.toUpperCase()}): Nenhuma chave OAuth 2.0 encriptada encontrada no cofre da loja. Ative a integração antes de disparar campanhas.`
+      );
+    }
 
-    // 3. Real Graph API / Google Ads REST Binding when OAuth token is present
-    const accessToken = oauthAccount?.oauth_access_token || process.env.META_ADS_ACCESS_TOKEN || "";
-    const adAccountId = (oauthAccount?.account_id || process.env.META_AD_ACCOUNT_ID || "").replace(/^act_/, "");
+    const rawAccessToken = decryptSecret(oauthAccount!.oauth_access_token);
+    const adAccountId = oauthAccount!.account_id.replace(/^act_/, "");
+    let externalCampaignId = "";
+    let externalApiStatus = "";
 
-    if (data.platform === "meta_ads" && accessToken && adAccountId) {
-      try {
-        const graphUrl = `https://graph.facebook.com/v20.0/act_${adAccountId}/campaigns`;
-        const graphRes = await fetch(graphUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: data.campaignTitle,
-            objective: "OUTCOME_SALES",
-            status: "ACTIVE",
-            special_ad_categories: [],
-            daily_budget: data.dailyBudgetCents,
-            access_token: accessToken,
-          }),
-        });
-        const graphJson = await graphRes.json().catch(() => ({}));
-        if (graphJson?.id) {
-          externalCampaignId = String(graphJson.id);
-          externalApiStatus = "live_meta_graph_api";
-        }
-      } catch (apiErr) {
-        console.warn("[ads] Meta Graph API handshake warning:", apiErr);
+    if (data.platform === "meta_ads") {
+      const graphUrl = `https://graph.facebook.com/v20.0/act_${adAccountId}/campaigns`;
+      const graphRes = await fetch(graphUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.campaignTitle,
+          objective: "OUTCOME_SALES",
+          status: "ACTIVE",
+          special_ad_categories: [],
+          daily_budget: data.dailyBudgetCents,
+          access_token: rawAccessToken,
+        }),
+      });
+      const graphJson = await graphRes.json().catch(() => ({}));
+      if (!graphRes.ok || !graphJson?.id) {
+        throw new Error(
+          `Erro Meta Graph API (${graphRes.status}): ${graphJson?.error?.message || "Credencial OAuth recusada pelo servidor da Meta."}`
+        );
       }
-    } else if (data.platform === "google_ads" && accessToken && adAccountId) {
-      try {
-        const customerId = adAccountId.replace(/-/g, "");
-        const googleUrl = `https://googleads.googleapis.com/v17/customers/${customerId}/campaigns:mutate`;
-        const googleRes = await fetch(googleUrl, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "developer-token": process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            operations: [
-              {
-                create: {
-                  name: data.campaignTitle,
-                  advertisingChannelType: "SEARCH",
-                  status: "ENABLED",
-                },
+      externalCampaignId = String(graphJson.id);
+      externalApiStatus = "live_meta_graph_api";
+    } else {
+      const customerId = adAccountId.replace(/-/g, "");
+      const googleUrl = `https://googleads.googleapis.com/v17/customers/${customerId}/campaigns:mutate`;
+      const googleRes = await fetch(googleUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${rawAccessToken}`,
+          "developer-token": process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          operations: [
+            {
+              create: {
+                name: data.campaignTitle,
+                advertisingChannelType: "SEARCH",
+                status: "ENABLED",
               },
-            ],
-          }),
-        });
-        const googleJson = await googleRes.json().catch(() => ({}));
-        if (googleJson?.results?.[0]?.resourceName) {
-          externalCampaignId = String(googleJson.results[0].resourceName);
-          externalApiStatus = "live_google_ads_api";
-        }
-      } catch (apiErr) {
-        console.warn("[ads] Google Ads API handshake warning:", apiErr);
+            },
+          ],
+        }),
+      });
+      const googleJson = await googleRes.json().catch(() => ({}));
+      if (!googleRes.ok || !googleJson?.results?.[0]?.resourceName) {
+        throw new Error(
+          `Erro Google Ads API (${googleRes.status}): ${googleJson?.error?.message || "Credencial OAuth recusada pelo servidor do Google Ads."}`
+        );
       }
+      externalCampaignId = String(googleJson.results[0].resourceName);
+      externalApiStatus = "live_google_ads_api";
     }
 
     // 4. Record in ad_campaigns + ad_ledger (V109) + invoice_ledger (V141/V142)
@@ -1544,12 +1577,7 @@ export const getMarketingRoiClosedLoopMetrics = createServerFn({ method: "GET" }
     };
   });
 
-  // Se houver pedidos pagos no canal vitrine/ads sem campanha individual associada, soma no consolidado
-  if (totalAttributedRevenueCents === 0 && ordersList.length > 0 && totalSpendCents > 0) {
-    const fallbackOrders = ordersList.slice(0, 5);
-    totalAttributedRevenueCents = fallbackOrders.reduce((acc, o: any) => acc + (Number(o.total_cents) || 0), 0);
-    totalAttributedOrdersCount = fallbackOrders.length;
-  }
+  // V143 Truth Engine: Zero fallback de pedidos não atribuídos. Se não houver vendas atribuídas, retorna estritamente 0.
 
   const globalRoiPercentage =
     totalSpendCents > 0 ? Math.round((totalAttributedRevenueCents / totalSpendCents) * 100) : 0;

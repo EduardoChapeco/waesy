@@ -106,6 +106,9 @@ function AnunciosWorkspacePage() {
   const [maxUpsellOpen, setMaxUpsellOpen] = useState(false);
   const [isUpgradingMax, setIsUpgradingMax] = useState(false);
   const [oauthTokenInput, setOauthTokenInput] = useState("");
+  const [activationSheetPlatform, setActivationSheetPlatform] = useState<"meta_ads" | "google_ads" | null>(null);
+  const isMetaConnected = Boolean(channelsSettings?.meta_ads?.connected || (tierStatus?.connectedOAuthAccounts || []).some((a: any) => a.platform === "meta_ads" && a.status === "connected"));
+  const isGoogleConnected = Boolean(channelsSettings?.google_ads?.connected || (tierStatus?.connectedOAuthAccounts || []).some((a: any) => a.platform === "google_ads" && a.status === "connected"));
   const [selectedCatalogItemId, setSelectedCatalogItemId] = useState<string>("");
   const [aiCreativePreview, setAiCreativePreview] = useState<any>(null);
   const [isGeneratingAiCreative, setIsGeneratingAiCreative] = useState(false);
@@ -564,247 +567,249 @@ function AnunciosWorkspacePage() {
           </SheetContent>
         </Sheet>
 
-        {/* ── CONDICIONAL: META ADS & INSTAGRAM ── */}
+        {/* ── CONDICIONAL: META ADS & INSTAGRAM (V143 TRUTH ENGINE EMPTY STATE) ── */}
         {activeTab === "meta_ads" && (
-          <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-6 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-foreground">Meta Ads</h3>
-                  <Badge variant={channelsSettings?.meta_ads?.connected ? "default" : "secondary"} className="text-[10px]">
-                    {channelsSettings?.meta_ads?.connected ? "Integrado" : "Pendente"}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Sincronização de catálogo de produtos com o Gerenciador de Comércio do Facebook e Pixel CAPI.
+          !isMetaConnected ? (
+            <div className="rounded-2xl border border-border/60 bg-card p-12 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="size-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground grayscale">
+                <Globe className="size-7" />
+              </div>
+              <div className="space-y-1 max-w-md">
+                <h3 className="text-base font-bold text-foreground">Meta Ads não conectado</h3>
+                <p className="text-xs text-muted-foreground">
+                  Nenhuma chave OAuth 2.0 ou Conta de Anúncios da Meta encontrada no cofre encriptado da loja.
                 </p>
               </div>
+              <Button
+                size="sm"
+                onClick={() => setActivationSheetPlatform("meta_ads")}
+                className="h-11 rounded-xl text-xs font-bold px-6"
+              >
+                Ativar Integração
+              </Button>
             </div>
-
-            {/* Feed XML/CSV de Produtos */}
-            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Globe className="size-3.5 text-primary" />
-                  Feed de Produtos para o Meta Catalog (CSV Oficial)
-                </span>
+          ) : (
+            <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-foreground">Meta Ads</h3>
+                    <Badge variant="default" className="text-[10px]">Conectado (AES-256-GCM)</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Conta Business sincronizada via Graph API v20.0 e Catálogo CSV ativo.
+                  </p>
+                </div>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => {
-                    if (!channelsSettings?.meta_ads?.catalog_feed_url) return;
-                    navigator.clipboard.writeText(channelsSettings.meta_ads.catalog_feed_url);
-                    setCopiedFeed("meta");
-                    toast.success("URL do Catálogo Meta copiada!");
-                    setTimeout(() => setCopiedFeed(null), 2000);
-                  }}
-                  className="h-7 text-xs gap-1"
+                  onClick={() => setActivationSheetPlatform("meta_ads")}
+                  className="h-11 rounded-xl text-xs font-semibold"
                 >
-                  {copiedFeed === "meta" ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
-                  <span>{copiedFeed === "meta" ? "Copiado" : "Copiar Feed URL"}</span>
+                  Atualizar Credenciais OAuth
                 </Button>
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                Cole este link no Gerenciador de Comércio do Meta (Catálogo &gt; Fontes de Dados &gt; Carregamento por Feed Programado).
-              </p>
-              <div className="p-2 rounded-lg bg-background font-mono text-[10px] text-muted-foreground break-all border">
-                {channelsSettings?.meta_ads?.catalog_feed_url || "Carregando feed..."}
-              </div>
-            </div>
 
-            {/* Form de Configuração Meta */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Pixel ID do Meta (Facebook / Instagram)</Label>
-                <Input
-                  value={metaPixelId}
-                  onChange={(e) => setMetaPixelId(e.target.value)}
-                  placeholder="Ex: 123456789012345"
-                  className="h-9 rounded-xl bg-background text-xs font-mono"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">ID da Conta de Anúncios (Ad Account ID)</Label>
-                <Input
-                  value={metaAdAccountId}
-                  onChange={(e) => setMetaAdAccountId(e.target.value)}
-                  placeholder="Ex: act_123456789"
-                  className="h-9 rounded-xl bg-background text-xs font-mono"
-                />
-              </div>
-
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-xs font-semibold">OAuth 2.0 Access Token (Meta Business Graph API)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="password"
-                    value={oauthTokenInput}
-                    onChange={(e) => setOauthTokenInput(e.target.value)}
-                    placeholder="EAABsbCS1iHgBO..."
-                    className="h-11 rounded-xl bg-background text-xs font-mono flex-1"
-                  />
+              <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Globe className="size-3.5 text-primary" />
+                    Feed de Produtos para o Meta Catalog (CSV Oficial)
+                  </span>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={async () => {
-                      if (!metaAdAccountId || !oauthTokenInput) {
-                        toast.error("Preencha o Ad Account ID e o Token OAuth 2.0.");
-                        return;
-                      }
-                      try {
-                        await connectExternalAdAccountOAuth({
-                          data: {
-                            platform: "meta_ads",
-                            accountId: metaAdAccountId,
-                            accountName: "Meta Business Account",
-                            oauthAccessToken: oauthTokenInput,
-                            pixelOrConversionId: metaPixelId,
-                          },
-                        });
-                        toast.success("Conta Meta Ads vinculada via OAuth 2.0!");
-                        setOauthTokenInput("");
-                        router.invalidate();
-                      } catch (err: any) {
-                        toast.error(err?.message || "Falha ao vincular OAuth Meta.");
-                      }
+                    onClick={() => {
+                      if (!channelsSettings?.meta_ads?.catalog_feed_url) return;
+                      navigator.clipboard.writeText(channelsSettings.meta_ads.catalog_feed_url);
+                      setCopiedFeed("meta");
+                      toast.success("URL do Catálogo Meta copiada!");
+                      setTimeout(() => setCopiedFeed(null), 2000);
                     }}
-                    className="h-11 rounded-xl text-xs font-semibold px-4"
+                    className="h-9 text-xs gap-1"
                   >
-                    Conectar OAuth 2.0
+                    {copiedFeed === "meta" ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
+                    <span>{copiedFeed === "meta" ? "Copiado" : "Copiar Feed URL"}</span>
                   </Button>
                 </div>
+                <div className="p-2 rounded-lg bg-background font-mono text-[10px] text-muted-foreground break-all border">
+                  {channelsSettings?.meta_ads?.catalog_feed_url}
+                </div>
               </div>
             </div>
-
-            <div className="flex justify-end pt-2">
-              <Button
-                size="sm"
-                disabled={isSavingChannels}
-                onClick={async () => {
-                  setIsSavingChannels(true);
-                  try {
-                    await saveStoreAdChannelsSettings({
-                      data: {
-                        meta_pixel_id: metaPixelId,
-                        meta_ad_account_id: metaAdAccountId,
-                      },
-                    });
-                    toast.success("Configurações do Meta Ads salvas com sucesso!");
-                    router.invalidate();
-                  } catch (e: any) {
-                    toast.error(e?.message || "Erro ao salvar Meta Ads.");
-                  } finally {
-                    setIsSavingChannels(false);
-                  }
-                }}
-                className="rounded-xl text-xs font-semibold px-4"
-              >
-                {isSavingChannels ? "Salvando..." : "Salvar Configurações Meta"}
-              </Button>
-            </div>
-          </div>
+          )
         )}
 
-        {/* ── CONDICIONAL: GOOGLE ADS & SHOPPING ── */}
+        {/* ── CONDICIONAL: GOOGLE ADS & SHOPPING (V143 TRUTH ENGINE EMPTY STATE) ── */}
         {activeTab === "google_ads" && (
-          <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-6 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-foreground">Google Ads e Merchant Center</h3>
-                  <Badge variant={channelsSettings?.google_ads?.connected ? "default" : "secondary"} className="text-[10px]">
-                    {channelsSettings?.google_ads?.connected ? "Integrado" : "Pendente"}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Feed XML compatível com Google Merchant Center para anúncios de Shopping e Performance Max.
+          !isGoogleConnected ? (
+            <div className="rounded-2xl border border-border/60 bg-card p-12 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="size-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground grayscale">
+                <Globe className="size-7" />
+              </div>
+              <div className="space-y-1 max-w-md">
+                <h3 className="text-base font-bold text-foreground">Google Ads não conectado</h3>
+                <p className="text-xs text-muted-foreground">
+                  Nenhuma chave OAuth 2.0 ou Customer ID do Google Ads encontrado no cofre encriptado da loja.
                 </p>
               </div>
+              <Button
+                size="sm"
+                onClick={() => setActivationSheetPlatform("google_ads")}
+                className="h-11 rounded-xl text-xs font-bold px-6"
+              >
+                Ativar Integração
+              </Button>
             </div>
-
-            {/* Feed XML do Google Merchant */}
-            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Globe className="size-3.5 text-primary" />
-                  Feed XML para o Google Merchant Center (RSS 2.0 Oficial)
-                </span>
+          ) : (
+            <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-foreground">Google Ads e Merchant Center</h3>
+                    <Badge variant="default" className="text-[10px]">Conectado (AES-256-GCM)</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Sincronização ativa com Google Ads API v17 e Merchant Center XML.
+                  </p>
+                </div>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => {
-                    if (!channelsSettings?.google_ads?.merchant_feed_url) return;
-                    navigator.clipboard.writeText(channelsSettings.google_ads.merchant_feed_url);
-                    setCopiedFeed("google");
-                    toast.success("URL do Feed Google copiada!");
-                    setTimeout(() => setCopiedFeed(null), 2000);
-                  }}
-                  className="h-7 text-xs gap-1"
+                  onClick={() => setActivationSheetPlatform("google_ads")}
+                  className="h-11 rounded-xl text-xs font-semibold"
                 >
-                  {copiedFeed === "google" ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
-                  <span>{copiedFeed === "google" ? "Copiado" : "Copiar Feed XML"}</span>
+                  Atualizar Credenciais OAuth
                 </Button>
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                Cole este link no Google Merchant Center (Produtos &gt; Feeds &gt; Adicionar Feed &gt; Busca Programada).
-              </p>
-              <div className="p-2 rounded-lg bg-background font-mono text-[10px] text-muted-foreground break-all border">
-                {channelsSettings?.google_ads?.merchant_feed_url || "Carregando feed..."}
+
+              <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Globe className="size-3.5 text-primary" />
+                    Feed XML para o Google Merchant Center (RSS 2.0 Oficial)
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      if (!channelsSettings?.google_ads?.merchant_feed_url) return;
+                      navigator.clipboard.writeText(channelsSettings.google_ads.merchant_feed_url);
+                      setCopiedFeed("google");
+                      toast.success("URL do Feed Google copiada!");
+                      setTimeout(() => setCopiedFeed(null), 2000);
+                    }}
+                    className="h-9 text-xs gap-1"
+                  >
+                    {copiedFeed === "google" ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
+                    <span>{copiedFeed === "google" ? "Copiado" : "Copiar Feed XML"}</span>
+                  </Button>
+                </div>
+                <div className="p-2 rounded-lg bg-background font-mono text-[10px] text-muted-foreground break-all border">
+                  {channelsSettings?.google_ads?.merchant_feed_url}
+                </div>
               </div>
             </div>
+          )
+        )}
 
-            {/* Form de Configuração Google */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* ── SHEET DE ATIVAÇÃO AUTÊNTICA DE API COM COFRE AES-256-GCM (FASE 3) ── */}
+        <Sheet open={Boolean(activationSheetPlatform)} onOpenChange={(open) => !open && setActivationSheetPlatform(null)}>
+          <SheetContent side="bottom" className="rounded-t-2xl max-w-xl mx-auto p-6 space-y-5">
+            <SheetHeader className="space-y-1 text-left">
+              <Badge variant="outline" className="w-fit text-[10px]">Cofre AES-256-GCM</Badge>
+              <SheetTitle className="text-lg font-bold">
+                {activationSheetPlatform === "google_ads" ? "Conectar Google Ads" : "Conectar Meta Ads"}
+              </SheetTitle>
+              <SheetDescription className="text-xs text-muted-foreground">
+                Insira o ID da Conta e o Access Token OAuth 2.0. A chave será encriptada com AES-256-GCM antes de persistir no banco.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">ID de Conversão Google / GTM</Label>
+                <Label className="text-xs font-semibold">
+                  {activationSheetPlatform === "google_ads" ? "Customer ID (Ex: 123-456-7890)" : "Ad Account ID (Ex: act_123456789)"}
+                </Label>
                 <Input
-                  value={googleConversionId}
-                  onChange={(e) => setGoogleConversionId(e.target.value)}
-                  placeholder="Ex: AW-123456789 ou GTM-XXXXXX"
-                  className="h-9 rounded-xl bg-background text-xs font-mono"
+                  value={activationSheetPlatform === "google_ads" ? googleCustomerId : metaAdAccountId}
+                  onChange={(e) =>
+                    activationSheetPlatform === "google_ads"
+                      ? setGoogleCustomerId(e.target.value)
+                      : setMetaAdAccountId(e.target.value)
+                  }
+                  placeholder={activationSheetPlatform === "google_ads" ? "123-456-7890" : "act_123456789"}
+                  className="h-11 rounded-xl bg-background text-xs font-mono"
                 />
               </div>
-
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">ID de Cliente do Google Ads (Customer ID)</Label>
+                <Label className="text-xs font-semibold">
+                  {activationSheetPlatform === "google_ads" ? "Conversion ID (Opcional)" : "Pixel ID (Opcional)"}
+                </Label>
                 <Input
-                  value={googleCustomerId}
-                  onChange={(e) => setGoogleCustomerId(e.target.value)}
-                  placeholder="Ex: 123-456-7890"
-                  className="h-9 rounded-xl bg-background text-xs font-mono"
+                  value={activationSheetPlatform === "google_ads" ? googleConversionId : metaPixelId}
+                  onChange={(e) =>
+                    activationSheetPlatform === "google_ads"
+                      ? setGoogleConversionId(e.target.value)
+                      : setMetaPixelId(e.target.value)
+                  }
+                  placeholder={activationSheetPlatform === "google_ads" ? "AW-123456789" : "123456789012345"}
+                  className="h-11 rounded-xl bg-background text-xs font-mono"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">OAuth 2.0 Access Token / Client Secret</Label>
+                <Input
+                  type="password"
+                  value={oauthTokenInput}
+                  onChange={(e) => setOauthTokenInput(e.target.value)}
+                  placeholder="Cole o token OAuth 2.0 oficial..."
+                  className="h-11 rounded-xl bg-background text-xs font-mono"
                 />
               </div>
             </div>
-
-            <div className="flex justify-end pt-2">
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="ghost" size="sm" onClick={() => setActivationSheetPlatform(null)} className="h-11 rounded-xl text-xs">
+                Cancelar
+              </Button>
               <Button
                 size="sm"
                 disabled={isSavingChannels}
                 onClick={async () => {
+                  const targetPlatform = activationSheetPlatform || "meta_ads";
+                  const accId = targetPlatform === "google_ads" ? googleCustomerId : metaAdAccountId;
+                  const pixId = targetPlatform === "google_ads" ? googleConversionId : metaPixelId;
+                  if (!accId.trim() || !oauthTokenInput.trim()) {
+                    toast.error("Informe o ID da Conta e o Token OAuth 2.0.");
+                    return;
+                  }
                   setIsSavingChannels(true);
                   try {
-                    await saveStoreAdChannelsSettings({
+                    await connectExternalAdAccountOAuth({
                       data: {
-                        google_conversion_id: googleConversionId,
-                        google_customer_id: googleCustomerId,
+                        platform: targetPlatform,
+                        accountId: accId.trim(),
+                        accountName: targetPlatform === "google_ads" ? "Google Ads Account" : "Meta Business Account",
+                        oauthAccessToken: oauthTokenInput.trim(),
+                        pixelOrConversionId: pixId.trim() || undefined,
                       },
                     });
-                    toast.success("Configurações do Google Ads salvas com sucesso!");
+                    toast.success("Credencial encriptada (AES-256-GCM) e integração ativada!");
+                    setOauthTokenInput("");
+                    setActivationSheetPlatform(null);
                     router.invalidate();
-                  } catch (e: any) {
-                    toast.error(e?.message || "Erro ao salvar Google Ads.");
+                  } catch (err: any) {
+                    toast.error(err?.message || "Erro ao ativar integração.");
                   } finally {
                     setIsSavingChannels(false);
                   }
                 }}
-                className="rounded-xl text-xs font-semibold px-4"
+                className="h-11 rounded-xl text-xs font-bold px-6"
               >
-                {isSavingChannels ? "Salvando..." : "Salvar Configurações Google"}
+                {isSavingChannels ? "Encriptando..." : "Salvar e Conectar API"}
               </Button>
             </div>
-          </div>
-        )}
+          </SheetContent>
+        </Sheet>
 
         {/* ── CONDICIONAL: GERADOR DE LINKS UTM ── */}
         {activeTab === "utm_builder" && (
