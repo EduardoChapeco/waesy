@@ -35,6 +35,7 @@ export interface ClassifiedNicheDefinition {
   canonicalCategory: "real_estate" | "vehicle" | "sale" | "service" | "job";
   dealType: "venda" | "aluguel" | "temporada" | "servico";
   title: string;
+  label?: string;
   shortLabel: string;
   subtitle: string;
   icon: any;

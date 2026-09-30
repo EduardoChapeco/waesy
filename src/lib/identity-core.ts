@@ -32,10 +32,10 @@ export interface ServerIdentity {
   fullName?: string | null;
   /** @deprecated use (identity.role === "platform_admin") instead */
   isPlatformAdmin?: boolean;
+  isCivilContext?: boolean;
+  activeContext?: string | null;
   /** @deprecated use identity.id instead */
   userId?: string | null;
-  isCivilContext?: boolean;
-  activeContext?: string;
 }
 
 export const STAFF_ROLES = [

@@ -111,7 +111,7 @@ export function ProceduralInfiniteFeed({
                   actionTo={section.action_to}
                 >
                   {section.items.map((prod: any) => (
-                    <div key={prod.id} className="w-[280px] sm:w-[320px] shrink-0 snap-start">
+                    <div key={prod.id} className="w-72 sm:w-80 shrink-0 snap-start">
                       <OfferCard {...prod} />
                     </div>
                   ))}

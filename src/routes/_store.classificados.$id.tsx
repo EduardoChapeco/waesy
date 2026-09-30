@@ -120,7 +120,7 @@ export const Route = createFileRoute("/_store/classificados/$id")({
   }> => {
     try {
       const [result, profileRes] = await Promise.all([
-        getPublicClassifiedById({ data: params.id }).catch((err) => ({
+        (getPublicClassifiedById({ data: params.id } as any) as Promise<any>).catch((err) => ({
           classified: null,
           status: "error" as const,
           errorMessage: err?.message || "Falha de conexão com o servidor.",

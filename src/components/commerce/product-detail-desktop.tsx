@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ImageOff, ShoppingBag, ChevronRight, Truck, ShieldCheck, Check, MapPin, MessageCircle, Play, Package, Minus, Plus, Loader2, ShieldAlert, BellRing } from "lucide-react";
+import { ImageOff, ShoppingBag, ChevronRight, Truck, ShieldCheck, Check, MapPin, Store, MessageCircle, Play, Package, Minus, Plus, Loader2, ShieldAlert, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -158,25 +158,21 @@ export function ProductDetailDesktop({
             </div>
           )}
 
-          {/* Selos de Confiança Desktop */}
+          {/* Informações da Loja e Denúncia */}
           <div className="p-4 rounded-2xl border border-border/50 bg-muted/20 flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5 font-medium text-foreground">
-                <ShieldCheck className="size-4 text-emerald-500" />
-                Pagamento Seguro
-              </span>
-              <span className="flex items-center gap-1.5 font-medium text-foreground">
-                <ShieldCheck className="size-4 text-emerald-500" />
-                Proteção Waesy
+                <Store className="size-4 text-muted-foreground" />
+                Vendido pela loja parceira
               </span>
             </div>
             <button
               type="button"
               onClick={() => setIsReportModalOpen(true)}
-              className="flex items-center gap-1 hover:text-destructive transition-colors text-[11px] cursor-pointer"
+              className="flex items-center gap-1 hover:text-destructive transition-colors text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/30 rounded-lg p-1"
             >
               <ShieldAlert className="size-3.5 text-destructive" />
-              Reportar oferta
+              <span>Reportar oferta</span>
             </button>
           </div>
         </div>

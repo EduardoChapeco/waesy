@@ -490,7 +490,7 @@ export function ConvenienceShowcaseView({
 
       const res = await createQuickOrder({
         data: {
-          storeId: classified?.store_id || previewData?.storeId || undefined,
+          storeId: classified?.store_id || (previewData as any)?.storeId || undefined,
           storeSlug: storeSlug || undefined,
           storeName: advertiserName,
           sellerPhone: cleanPhone,

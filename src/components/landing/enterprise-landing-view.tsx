@@ -654,7 +654,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
 
       {/* Sheet de Cadastro de Membro Fundador */}
       <FounderSignupSheet
-        isOpen={isFounderSheetOpen}
+        open={isFounderSheetOpen}
         onOpenChange={setIsFounderSheetOpen}
         onSuccess={(profile) => {
           setCreatedProfile(profile);

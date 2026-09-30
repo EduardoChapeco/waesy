@@ -12,7 +12,7 @@ import { submitModerationReport } from "@/services/moderation.functions";
 export interface ReportDialogProps {
  open: boolean;
  onOpenChange: (open: boolean) => void;
- entityType: "classified" | "post" | "event" | "product" | "profile" | "comment";
+ entityType: "classified" | "post" | "event" | "product" | "profile" | "comment" | "service";
  entityId: string;
  entityTitle?: string;
 }
@@ -52,7 +52,7 @@ export function ReportDialog({
  const handleSubmit = () => {
  reportMutation.mutate({
  data: {
- entityType,
+ entityType: (entityType === "service" ? "classified" : entityType) as any,
  entityId,
  entityTitle,
  reason: reason as any,

@@ -182,7 +182,7 @@ export function generateExperienceFromPrompt(
  content: {
  badges: [
  { title: 'Garantia de Qualidade', desc: 'Atendimento 100% humanizado' },
- { title: 'Pagamento Seguro', desc: 'PIX instantâneo e parcelamento' },
+ { title: 'Formas de Pagamento', desc: 'PIX instantâneo e cartões' },
  { title: 'Contratos Digitais', desc: 'Conformidade com a MP 2.200-2/2001' },
  ],
  },

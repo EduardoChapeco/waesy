@@ -18,10 +18,10 @@ interface TrustBadgesProps {
 
 export function TrustBadges({ content, design_tokens }: TrustBadgesProps) {
  const badges = content?.badges || [
- { icon: "shield", title: "Pagamento Seguro", description: "Seus dados estão protegidos" },
+ { icon: "shield", title: "Atendimento Local", description: "Comércio e serviços da sua cidade" },
  { icon: "truck", title: "Frete Expresso", description: "Entrega rápida para todo Brasil" },
  { icon: "return", title: "Troca Fácil", description: "1ª troca grátis em até 7 dias" },
- { icon: "award", title: "Qualidade Garantida", description: "Produtos 100% originais" },
+ { icon: "award", title: "Lojas Verificadas", description: "Identidade comercial cadastrada" },
  ];
 
  const getIcon = (iconName: string) => {

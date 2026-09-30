@@ -16,6 +16,15 @@ const StorePwaConfigSchema = z.object({
   orientation: z.enum(["portrait", "landscape", "any"]).default("portrait"),
   customDomain: z.string().optional().nullable(),
   isPublished: z.boolean().default(true),
+  settings: z.record(z.any()).optional().default({}),
+});
+
+// Schema de telemetria nativa PWA (Fase 3)
+const PwaTelemetryEventSchema = z.object({
+  storeId: z.string().uuid(),
+  eventType: z.enum(["prompt_shown", "prompt_accepted", "prompt_dismissed", "installed", "app_opened"]),
+  platform: z.string().default("unknown"),
+  userAgent: z.string().optional(),
 });
 
 describe("PWA Enterprise Builder & RBAC Enhancements (Audit & Completeness)", () => {
@@ -67,6 +76,100 @@ describe("PWA Enterprise Builder & RBAC Enhancements (Audit & Completeness)", ()
       icon192Url: "not-a-valid-url",
     });
     expect(invalidIconUrl.success).toBe(false);
+  });
+
+  it("persiste e valida blocos do App Builder em settings JSONB (BottomNav, Stories, Banner, QuickCheckout)", () => {
+    const pwaWithSettings = StorePwaConfigSchema.parse({
+      appName: "Armazém da Esquina",
+      shortName: "Armazém",
+      settings: {
+        showBottomNav: true,
+        showStoriesReel: true,
+        showPromoBanner: true,
+        bannerTitle: "Ofertas de Terça",
+        bannerSubtitle: "Descontos de até 30% em hortifrúti fresco",
+        showCategoryGrid: true,
+        showQuickCheckout: true,
+        quickCheckoutLabel: "Finalizar Compra Rápida",
+        splashAnimation: "pulse",
+      },
+    });
+
+    expect(pwaWithSettings.settings.showBottomNav).toBe(true);
+    expect(pwaWithSettings.settings.showStoriesReel).toBe(true);
+    expect(pwaWithSettings.settings.showPromoBanner).toBe(true);
+    expect(pwaWithSettings.settings.bannerTitle).toBe("Ofertas de Terça");
+    expect(pwaWithSettings.settings.quickCheckoutLabel).toBe("Finalizar Compra Rápida");
+    expect(pwaWithSettings.settings.splashAnimation).toBe("pulse");
+  });
+
+  it("valida payload determinístico de telemetria nativa PWA (Fase 3: Install & Launch)", () => {
+    const storeUuid = "123e4567-e89b-12d3-a456-426614174000";
+
+    const promptEvt = PwaTelemetryEventSchema.parse({
+      storeId: storeUuid,
+      eventType: "prompt_shown",
+      platform: "android",
+      userAgent: "Mozilla/5.0 (Linux; Android 14; Pixel 8)",
+    });
+    expect(promptEvt.eventType).toBe("prompt_shown");
+    expect(promptEvt.platform).toBe("android");
+
+    const installEvt = PwaTelemetryEventSchema.parse({
+      storeId: storeUuid,
+      eventType: "installed",
+      platform: "ios",
+      userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4)",
+    });
+    expect(installEvt.eventType).toBe("installed");
+
+    const openEvt = PwaTelemetryEventSchema.parse({
+      storeId: storeUuid,
+      eventType: "app_opened",
+      platform: "desktop",
+    });
+    expect(openEvt.eventType).toBe("app_opened");
+  });
+
+  it("calcula corretamente taxa de conversão e agrupamento de telemetria nativa", () => {
+    const rawEvents = [
+      { event_type: "prompt_shown", platform: "android" },
+      { event_type: "prompt_shown", platform: "android" },
+      { event_type: "prompt_shown", platform: "ios" },
+      { event_type: "prompt_accepted", platform: "android" },
+      { event_type: "prompt_accepted", platform: "ios" },
+      { event_type: "installed", platform: "android" },
+      { event_type: "installed", platform: "ios" },
+      { event_type: "app_opened", platform: "android" },
+      { event_type: "app_opened", platform: "android" },
+    ];
+
+    let totalInstalls = 0;
+    let promptsShown = 0;
+    let promptsAccepted = 0;
+    let appOpens = 0;
+    const platformBreakdown = { ios: 0, android: 0, desktop: 0, other: 0 };
+
+    for (const r of rawEvents) {
+      if (r.event_type === "installed") totalInstalls++;
+      else if (r.event_type === "prompt_shown") promptsShown++;
+      else if (r.event_type === "prompt_accepted") promptsAccepted++;
+      else if (r.event_type === "app_opened") appOpens++;
+
+      if (r.platform === "ios") platformBreakdown.ios++;
+      else if (r.platform === "android") platformBreakdown.android++;
+      else platformBreakdown.other++;
+    }
+
+    const conversionRatePct = promptsShown > 0 ? Math.round((promptsAccepted / promptsShown) * 100) : 0;
+
+    expect(totalInstalls).toBe(2);
+    expect(promptsShown).toBe(3);
+    expect(promptsAccepted).toBe(2);
+    expect(appOpens).toBe(2);
+    expect(conversionRatePct).toBe(67);
+    expect(platformBreakdown.android).toBe(6);
+    expect(platformBreakdown.ios).toBe(3);
   });
 
   it("garante proteção de rotas restritas financeiras contra papéis operacionais (vendedor, caixa, cozinha)", () => {

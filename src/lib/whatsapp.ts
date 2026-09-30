@@ -30,7 +30,10 @@ export interface TrackWhatsAppLeadParams {
  entityId?: string | null;
  entityTitle?: string | null;
  customMessage?: string;
- message?: string;
+  message?: string;
+  text?: string;
+  productId?: string;
+  leadType?: string;
  niche?: string;
  metadata?: Record<string, any>;
 }

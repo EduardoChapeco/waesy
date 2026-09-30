@@ -47,10 +47,10 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
               <Button
                 size="lg"
                 className="h-12 px-7 text-base font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group shadow-sm"
-                onClick={data.primaryCta.onClick}
-                asChild={!data.primaryCta.onClick}
+                onClick={(data.primaryCta as any)?.onClick}
+                asChild={!(data.primaryCta as any)?.onClick}
               >
-                {data.primaryCta.onClick ? (
+                {(data.primaryCta as any)?.onClick ? (
                   <span className="flex items-center gap-2">
                     {data.primaryCta.label}
                     <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
@@ -68,10 +68,10 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
                   variant="outline"
                   size="lg"
                   className="h-12 px-6 text-base font-medium rounded-xl border-border hover:bg-muted/50 transition-colors"
-                  onClick={data.secondaryCta.onClick}
-                  asChild={!data.secondaryCta.onClick}
+                  onClick={(data.secondaryCta as any)?.onClick}
+                  asChild={!(data.secondaryCta as any)?.onClick}
                 >
-                  {data.secondaryCta.onClick ? (
+                  {(data.secondaryCta as any)?.onClick ? (
                     <span className="flex items-center gap-2">
                       <Play className="size-4 fill-current opacity-80" />
                       {data.secondaryCta.label}

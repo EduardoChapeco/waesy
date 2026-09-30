@@ -1,614 +1,614 @@
 {
-  "timestamp": "2026-09-30T00:06:47.965Z",
-  "inspectedFiles": 29,
+  "timestamp": "2026-09-30T13:01:29.439Z",
+  "inspectedFiles": 53,
   "counts": {
-    "P0": 373,
-    "P1": 1224,
-    "P2": 84,
-    "P3": 31
+    "P0": 429,
+    "P1": 1542,
+    "P2": 40,
+    "P3": 71
   },
-  "totalViolations": 1712,
+  "totalViolations": 2082,
   "passed": false,
   "violationsSample": [
     {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!enabledModules"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!enabledModules"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!enabledModules"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!hasClassifieds"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!enabledModules"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!enabledModules"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!enabledModules"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!enabledModules"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!finalGroups"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!finalGroups"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!finalGroups"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!finalGroups"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!finalGroups"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!finalGroups"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!finalGroups"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!finalGroups"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\lib\\workspace-navigation.ts",
-      "severity": "P0",
-      "match": "!OWNER"
-    },
-    {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
       "severity": "P1",
-      "match": "text-[10px]"
+      "match": "leading-[1.08]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
       "severity": "P1",
-      "match": "min-h-[44px]"
+      "match": "aspect-[4/5]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
       "severity": "P1",
-      "match": "min-w-[44px]"
+      "match": "aspect-[4/5]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "severity": "P1",
+      "match": "min-w-[240px]"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "severity": "P1",
+      "match": "size-8"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-15",
+      "file": "src\\components\\builder\\blocks\\HeroMinimalSplit.tsx",
+      "severity": "P0",
+      "match": "onClick sem focus-visible"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "min-h-[100dvh]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "aspect-[21/9]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "max-h-[420px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "stroke-[1.5]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "aspect-[16/9]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "max-h-[480px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "scale-[1.01]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "aspect-[16/9]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "max-h-[500px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "scale-[1.01]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "scale-[1.01]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "scale-[1.01]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "scale-[0.99]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
       "match": "max-h-[90vh]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
-      "match": "text-[11px]"
+      "match": "max-w-[90vw]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
-      "match": "text-[10px]"
+      "match": "max-h-[90vh]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
-      "severity": "P1",
-      "match": "min-w-[130px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
+      "match": "max-w-[90vw]"
     },
     {
       "id": "DL-04",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P0",
-      "match": "!name"
+      "match": "!url"
     },
     {
       "id": "DL-04",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P0",
-      "match": "!slot"
+      "match": "!cleanPhone"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P0",
+      "match": "! Vi"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P0",
+      "match": "!classified"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P0",
+      "match": "!attrs"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P0",
+      "match": "!isDonation"
     },
     {
       "id": "DL-14",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "h-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
       "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "h-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
       "match": "size-4"
     },
     {
       "id": "DL-14",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
-      "match": "size-8"
+      "match": "size-10"
     },
     {
       "id": "DL-14",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
-      "match": "size-4"
+      "match": "h-10"
     },
     {
       "id": "DL-14",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
-      "severity": "P1",
-      "match": "h-7"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
-      "severity": "P1",
-      "match": "h-7"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
-      "severity": "P1",
-      "match": "h-8"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
-      "severity": "P1",
-      "match": "h-8"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
       "match": "size-3"
     },
     {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-2"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "h-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P1",
+      "match": "size-6"
+    },
+    {
       "id": "DL-15",
-      "file": "src\\routes\\workspace.agenda.recursos.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P0",
       "match": "onClick sem focus-visible"
     },
     {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
+      "id": "DL-18",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
-      "match": "text-[11px]"
+      "match": "bg-black"
     },
     {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
+      "id": "DL-18",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
-      "match": "text-[11px]"
+      "match": "bg-white"
     },
     {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
+      "id": "DL-18",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
-      "match": "text-[10px]"
+      "match": "bg-white"
     },
     {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
+      "id": "DL-18",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "text-[11px]"
-    },
-    {
-      "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "text-[10px]"
-    },
-    {
-      "id": "DL-04",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P0",
-      "match": "!secretKey"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-5"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-5"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "h-10"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "h-10"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "h-10"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "h-9"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "h-10"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "h-2"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-5"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-9"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-7"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-8"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-15",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
-      "severity": "P0",
-      "match": "onClick sem focus-visible"
+      "match": "text-white"
     },
     {
       "id": "DL-27",
-      "file": "src\\routes\\workspace.configuracoes.ai.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\classifieds\\classified-detail-desktop.tsx",
       "severity": "P3",
       "match": "transition-all"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "min-h-[100dvh]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "aspect-[4/3]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "stroke-[1.5]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
       "severity": "P1",
       "match": "text-[10px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
       "severity": "P1",
       "match": "text-[10px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
       "severity": "P1",
       "match": "text-[10px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
       "severity": "P1",
       "match": "text-[10px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
       "severity": "P1",
       "match": "text-[10px]"
     },
     {
       "id": "DL-02",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
       "severity": "P1",
       "match": "text-[10px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "text-[10px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "pb-[calc(0.65rem+env(safe-area-inset-bottom))]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "text-[9px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "text-[9px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "text-[10px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "text-[10px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "max-h-[90vh]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "max-w-[95vw]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "max-h-[90vh]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P1",
+      "match": "max-w-[95vw]"
     },
     {
       "id": "DL-04",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
       "severity": "P0",
-      "match": "!accountantEmail"
+      "match": "!url"
     },
     {
       "id": "DL-04",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
       "severity": "P0",
-      "match": "!accountantEmail"
+      "match": "!cleanPhone"
     },
     {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-6"
+      "id": "DL-04",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P0",
+      "match": "! Vi"
     },
     {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-10"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-5"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-10"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-5"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-5"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-8"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "h-8"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-3"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-4"
-    },
-    {
-      "id": "DL-14",
-      "file": "src\\routes\\workspace.configuracoes.parceiros.tsx",
-      "severity": "P1",
-      "match": "size-4"
+      "id": "DL-04",
+      "file": "src\\components\\classifieds\\classified-detail-mobile.tsx",
+      "severity": "P0",
+      "match": "!isDescExpanded"
     }
   ]
 }

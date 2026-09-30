@@ -824,7 +824,7 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
               has_flash_offer: true,
             };
           })
-          .filter((p: any) => p.discount_percent > 0);
+          .filter((p: any) => p.discount_percent > 0 && !p.cover_image.includes("unsplash.com") && !p.slug.includes("jaqueta-bomber"));
 
         if (validDeals.length >= 2) {
           return {
