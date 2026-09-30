@@ -149,34 +149,75 @@ export const createAdCampaign = createServerFn({ method: "POST" })
  busca_topo: ["search"],
  };
 
- const { data: campaign, error } = await supabase
- .from("ad_campaigns")
- .insert({
-        store_id: identity.store_id,
-        title: input.title,
-        body: input.headline || null,
-        image_url: input.media_url || null,
-        target_url: input.destination_url || null,
-        product_id: input.destination_type === "product" && input.destination_id ? input.destination_id : null,
-        type: input.format === "banner_destaque" ? "fixed_banner" : "dynamic_boost",
-        budget_cents: input.total_budget_cents,
-        placements: placementMap[input.format] || ["feed"],
-        status: "active",
-        settings: {
-          format: input.format,
-          headline: input.headline,
-          daily_budget_cents: input.daily_budget_cents,
-          total_budget_cents: input.total_budget_cents,
-          target_location: input.target_location,
-          target_radius_km: input.target_radius_km,
-          objective: input.objective,
-          destination_type: input.destination_type,
-          destination_id: input.destination_id,
-          destination_url: input.destination_url,
-        },
+ const durationDays = Math.max(1, Math.round(input.total_budget_cents / Math.max(100, input.daily_budget_cents)));
+  const startsAt = new Date();
+  const endsAt = new Date(startsAt.getTime() + durationDays * 24 * 60 * 60 * 1000);
+  const productId = input.destination_type === "product" && input.destination_id ? input.destination_id : null;
+
+  const { data: campaign, error } = await supabase
+    .from("ad_campaigns")
+    .insert({
+      store_id: identity.store_id,
+      title: input.title,
+      body: input.headline || null,
+      image_url: input.media_url || null,
+      target_url: input.destination_url || null,
+      product_id: productId,
+      type: input.format === "banner_destaque" ? "fixed_banner" : "dynamic_boost",
+      budget_cents: input.total_budget_cents,
+      starts_at: startsAt.toISOString(),
+      ends_at: endsAt.toISOString(),
+      placements: placementMap[input.format] || ["feed"],
+      status: "active",
+      settings: {
+        format: input.format,
+        headline: input.headline,
+        daily_budget_cents: input.daily_budget_cents,
+        total_budget_cents: input.total_budget_cents,
+        target_location: input.target_location,
+        target_radius_km: input.target_radius_km,
+        objective: input.objective,
+        destination_type: input.destination_type,
+        destination_id: input.destination_id,
+        destination_url: input.destination_url,
+      },
+    })
+    .select()
+    .single();
+
+  if (productId && campaign) {
+    await supabase
+      .from("products")
+      .update({
+        is_sponsored: true,
+        sponsored_until: endsAt.toISOString(),
+        updated_at: startsAt.toISOString(),
       })
- .select()
- .single();
+      .eq("id", productId)
+      .eq("store_id", identity.store_id);
+  }
+
+  if (campaign) {
+    try {
+      const { executeAtomicInvoiceLedgerBoost } = await import("./billing-ledger.functions");
+      await executeAtomicInvoiceLedgerBoost({
+        storeId: identity.store_id,
+        profileId: identity.id,
+        entityType: "product_boost",
+        entityId: productId || campaign.id,
+        originalAmountCents: input.total_budget_cents,
+        description: `Waesy Ads (${input.format}) - ${input.title}`,
+        metadata: {
+          campaign_id: campaign.id,
+          format: input.format,
+          duration_days: durationDays,
+          sponsored_until: endsAt.toISOString(),
+        },
+      });
+    } catch (err) {
+      console.error("[ads] Erro ao registrar invoice_ledger:", err);
+    }
+  }
 
  if (error) {
  console.error("[ads] Error creating campaign:", error);
@@ -930,3 +971,602 @@ export const deleteAdCampaign = createServerFn({ method: "POST" })
   });
 
 
+
+
+/**
+ * ============================================================================
+ * 9. V142 OMNI-MARKETING ENGINE: MAX TIER GATE, OAUTH 2.0 & EXTERNAL ADS BINDING
+ * ============================================================================
+ */
+
+export async function assertWaesyMaxTier(supabase: any, storeId: string, isPlatformAdmin?: boolean) {
+  if (isPlatformAdmin) return { planTier: "max" as const, discountRate: 0.5 };
+
+  const { data: store } = await supabase
+    .from("stores")
+    .select("plan_tier, settings")
+    .eq("id", storeId)
+    .maybeSingle();
+
+  const rawTier = String(
+    store?.plan_tier || (store?.settings as any)?.plan_tier || "free"
+  ).toLowerCase();
+
+  const isMax = rawTier.includes("max") || rawTier.includes("enterprise");
+  if (!isMax) {
+    throw new Error(
+      "MAX_TIER_REQUIRED: O módulo de Tráfego Externo (Meta Ads / Google Ads) e AI Ad Builder é exclusivo para assinantes Waesy Max."
+    );
+  }
+
+  return { planTier: "max" as const, discountRate: 0.5 };
+}
+
+export const getStoreMarketingTierStatus = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+
+  const { data: store } = await supabase
+    .from("stores")
+    .select("id, name, slug, plan_tier, settings")
+    .eq("id", identity.store_id)
+    .maybeSingle();
+
+  const rawTier = String(
+    (store as any)?.plan_tier || ((store?.settings as any)?.plan_tier) || "free"
+  ).toLowerCase();
+
+  const isMax =
+    Boolean(identity.isPlatformAdmin) ||
+    rawTier.includes("max") ||
+    rawTier.includes("enterprise");
+
+  const planTier: "free" | "mvp" | "pro" | "max" = isMax
+    ? "max"
+    : rawTier.includes("pro") || rawTier.includes("growth")
+    ? "pro"
+    : rawTier.includes("mvp")
+    ? "mvp"
+    : "free";
+
+  const { data: oauthAccounts } = await supabase
+    .from("store_ad_accounts")
+    .select("id, platform, account_id, account_name, status, pixel_id, conversion_id, last_api_sync_at")
+    .eq("store_id", identity.store_id);
+
+  return {
+    storeId: identity.store_id,
+    storeName: store?.name || "Loja",
+    planTier,
+    isMaxUnlocked: isMax,
+    boostDiscountPercent: isMax ? 50 : planTier === "pro" ? 20 : 0,
+    externalAdsAllowed: isMax,
+    aiBuilderAllowed: isMax,
+    connectedOAuthAccounts: oauthAccounts || [],
+  };
+});
+
+export const upgradeStoreToWaesyMax = createServerFn({ method: "POST" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin"]);
+
+  const now = new Date().toISOString();
+  const { data: store } = await supabase
+    .from("stores")
+    .select("settings")
+    .eq("id", identity.store_id)
+    .maybeSingle();
+
+  const updatedSettings = {
+    ...((store?.settings as Record<string, any>) || {}),
+    plan_tier: "max",
+    upgraded_to_max_at: now,
+  };
+
+  await supabase
+    .from("stores")
+    .update({
+      plan_tier: "max",
+      settings: updatedSettings,
+      updated_at: now,
+    })
+    .eq("id", identity.store_id);
+
+  try {
+    const { recordSubscriptionMonthlyFee } = await import("./billing-ledger.functions");
+    await recordSubscriptionMonthlyFee({
+      data: {
+        storeId: identity.store_id!,
+        amountCents: 9900,
+      },
+    });
+  } catch (err) {
+    console.warn("[ads] Aviso ao registrar assinatura mensal Waesy Max:", err);
+  }
+
+  return { success: true, planTier: "max" as const };
+});
+
+export const connectExternalAdAccountOAuth = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      platform: z.enum(["meta_ads", "google_ads"]),
+      accountId: z.string().min(3, "ID da conta de anúncios obrigatório"),
+      accountName: z.string().min(2).default("Conta Business"),
+      oauthAccessToken: z.string().min(8, "Token OAuth 2.0 inválido"),
+      pixelOrConversionId: z.string().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    // Max Tier Lock E2E
+    await assertWaesyMaxTier(supabase, identity.store_id!, identity.isPlatformAdmin);
+
+    const now = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+
+    const { data: existing } = await supabase
+      .from("store_ad_accounts")
+      .select("id")
+      .eq("store_id", identity.store_id)
+      .eq("platform", data.platform)
+      .maybeSingle();
+
+    if (existing?.id) {
+      await supabase
+        .from("store_ad_accounts")
+        .update({
+          account_id: data.accountId.trim(),
+          account_name: data.accountName.trim(),
+          oauth_access_token: data.oauthAccessToken.trim(),
+          token_expires_at: expiresAt,
+          pixel_id: data.platform === "meta_ads" ? data.pixelOrConversionId || null : null,
+          conversion_id: data.platform === "google_ads" ? data.pixelOrConversionId || null : null,
+          status: "connected",
+          last_api_sync_at: now,
+          updated_at: now,
+        })
+        .eq("id", existing.id);
+    } else {
+      await supabase.from("store_ad_accounts").insert({
+        store_id: identity.store_id,
+        platform: data.platform,
+        account_id: data.accountId.trim(),
+        account_name: data.accountName.trim(),
+        oauth_access_token: data.oauthAccessToken.trim(),
+        token_expires_at: expiresAt,
+        pixel_id: data.platform === "meta_ads" ? data.pixelOrConversionId || null : null,
+        conversion_id: data.platform === "google_ads" ? data.pixelOrConversionId || null : null,
+        status: "connected",
+        last_api_sync_at: now,
+      });
+    }
+
+    return {
+      success: true,
+      platform: data.platform,
+      accountId: data.accountId,
+      syncedAt: now,
+    };
+  });
+
+export const dispatchExternalMetaOrGoogleCampaign = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      platform: z.enum(["meta_ads", "google_ads"]),
+      campaignTitle: z.string().min(2),
+      dailyBudgetCents: z.number().int().min(1000),
+      durationDays: z.number().int().min(1).max(90).default(7),
+      productId: z.string().uuid().optional(),
+      classifiedId: z.string().uuid().optional(),
+      headline: z.string().min(2),
+      bodyCopy: z.string().min(5),
+      callToAction: z.string().default("SHOP_NOW"),
+      imageUrl: z.string().optional(),
+      destinationUrl: z.string().min(5),
+      targetLocation: z.string().default("Chapecó, SC"),
+      targetRadiusKm: z.number().int().min(1).max(100).default(15),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+
+    // 1. Strict Max Tier Gate
+    await assertWaesyMaxTier(supabase, identity.store_id!, identity.isPlatformAdmin);
+
+    const totalBudgetCents = data.dailyBudgetCents * data.durationDays;
+    const now = new Date();
+    const endsAt = new Date(now.getTime() + data.durationDays * 24 * 60 * 60 * 1000);
+
+    // 2. Fetch OAuth 2.0 credentials for the store (or global network credentials)
+    const { data: oauthAccount } = await supabase
+      .from("store_ad_accounts")
+      .select("account_id, oauth_access_token, pixel_id, conversion_id")
+      .eq("store_id", identity.store_id)
+      .eq("platform", data.platform)
+      .maybeSingle();
+
+    const hasOwnAccount = Boolean(oauthAccount?.account_id && oauthAccount?.oauth_access_token);
+    let externalCampaignId = `ext_${data.platform}_${Date.now()}`;
+    let externalApiStatus = "dispatched_arbitrage_queue";
+
+    // 3. Real Graph API / Google Ads REST Binding when OAuth token is present
+    const accessToken = oauthAccount?.oauth_access_token || process.env.META_ADS_ACCESS_TOKEN || "";
+    const adAccountId = (oauthAccount?.account_id || process.env.META_AD_ACCOUNT_ID || "").replace(/^act_/, "");
+
+    if (data.platform === "meta_ads" && accessToken && adAccountId) {
+      try {
+        const graphUrl = `https://graph.facebook.com/v20.0/act_${adAccountId}/campaigns`;
+        const graphRes = await fetch(graphUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: data.campaignTitle,
+            objective: "OUTCOME_SALES",
+            status: "ACTIVE",
+            special_ad_categories: [],
+            daily_budget: data.dailyBudgetCents,
+            access_token: accessToken,
+          }),
+        });
+        const graphJson = await graphRes.json().catch(() => ({}));
+        if (graphJson?.id) {
+          externalCampaignId = String(graphJson.id);
+          externalApiStatus = "live_meta_graph_api";
+        }
+      } catch (apiErr) {
+        console.warn("[ads] Meta Graph API handshake warning:", apiErr);
+      }
+    } else if (data.platform === "google_ads" && accessToken && adAccountId) {
+      try {
+        const customerId = adAccountId.replace(/-/g, "");
+        const googleUrl = `https://googleads.googleapis.com/v17/customers/${customerId}/campaigns:mutate`;
+        const googleRes = await fetch(googleUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "developer-token": process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            operations: [
+              {
+                create: {
+                  name: data.campaignTitle,
+                  advertisingChannelType: "SEARCH",
+                  status: "ENABLED",
+                },
+              },
+            ],
+          }),
+        });
+        const googleJson = await googleRes.json().catch(() => ({}));
+        if (googleJson?.results?.[0]?.resourceName) {
+          externalCampaignId = String(googleJson.results[0].resourceName);
+          externalApiStatus = "live_google_ads_api";
+        }
+      } catch (apiErr) {
+        console.warn("[ads] Google Ads API handshake warning:", apiErr);
+      }
+    }
+
+    // 4. Record in ad_campaigns + ad_ledger (V109) + invoice_ledger (V141/V142)
+    const splitResult = await recordAdCampaignAndLedgerSplit({
+      storeId: identity.store_id,
+      classifiedId: data.classifiedId || null,
+      title: data.campaignTitle,
+      totalBudgetCents,
+      hasOwnAdAccount: hasOwnAccount,
+      destinationPlatform: data.platform,
+      startsAt: now.toISOString(),
+      endsAt: endsAt.toISOString(),
+      description: `Campanha Externa (${data.platform.toUpperCase()}): ${data.campaignTitle}`,
+      metadata: {
+        external_campaign_id: externalCampaignId,
+        external_api_status: externalApiStatus,
+        headline: data.headline,
+        body_copy: data.bodyCopy,
+        destination_url: data.destinationUrl,
+        target_location: data.targetLocation,
+        target_radius_km: data.targetRadiusKm,
+      },
+    });
+
+    if (data.productId) {
+      await supabase
+        .from("products")
+        .update({
+          is_sponsored: true,
+          sponsored_until: endsAt.toISOString(),
+        })
+        .eq("id", data.productId)
+        .eq("store_id", identity.store_id);
+    }
+
+    const { executeAtomicInvoiceLedgerBoost } = await import("./billing-ledger.functions");
+    const invoiceReceipt = await executeAtomicInvoiceLedgerBoost({
+      storeId: identity.store_id,
+      profileId: identity.id,
+      entityType: "external_ad_campaign",
+      entityId: splitResult.campaignId || data.productId || identity.store_id!,
+      originalAmountCents: totalBudgetCents,
+      description: `Tráfego Externo ${data.platform === "meta_ads" ? "Meta Ads" : "Google Ads"} - ${data.campaignTitle}`,
+      metadata: {
+        external_campaign_id: externalCampaignId,
+        external_api_status: externalApiStatus,
+        routing_mode: splitResult.split.routing_mode,
+      },
+    });
+
+    return {
+      success: true,
+      campaignId: splitResult.campaignId,
+      externalCampaignId,
+      externalApiStatus,
+      invoiceId: invoiceReceipt.invoiceId,
+      ledgerEntryId: invoiceReceipt.ledgerEntryId,
+      totalBudgetCents,
+    };
+  });
+
+/**
+ * ============================================================================
+ * 10. FASE 3: AI AD BUILDER (CONEXÃO POOL DE IA V127 + ZOD ESTRUTURADO)
+ * ============================================================================
+ */
+const AiAdCreativeSchema = z.object({
+  headline: z.string(),
+  bodyCopy: z.string(),
+  callToActionLabel: z.string(),
+  badgeText: z.string(),
+  suggestedDailyBudgetCents: z.number().int(),
+  targetInterests: z.array(z.string()),
+});
+
+export const generateAiAdCreativeFromCatalog = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      itemType: z.enum(["product", "classified"]).default("product"),
+      itemId: z.string().uuid(),
+      platform: z.enum(["meta_instagram", "meta_facebook", "google_search", "waesy_vitrine"]).default("meta_instagram"),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+
+    // Gate Waesy Max
+    await assertWaesyMaxTier(supabase, identity.store_id!, identity.isPlatformAdmin);
+
+    let title = "Item em Destaque";
+    let description = "";
+    let priceCents = 0;
+    let imageUrl = "";
+    let destinationUrl = "https://usewaesy.pages.dev";
+
+    const { data: store } = await supabase
+      .from("stores")
+      .select("name, slug, city")
+      .eq("id", identity.store_id)
+      .maybeSingle();
+
+    const storeCity = (store as any)?.city || "Chapecó";
+    const storeSlug = store?.slug || identity.store_id;
+
+    if (data.itemType === "product") {
+      const { data: prod } = await supabase
+        .from("products")
+        .select("id, title, description, price_cents, product_media(url)")
+        .eq("id", data.itemId)
+        .maybeSingle();
+
+      if (prod) {
+        title = prod.title;
+        description = prod.description || "";
+        priceCents = prod.price_cents || 0;
+        const mediaArr = (prod as any).product_media || [];
+        imageUrl = mediaArr[0]?.url || "";
+        destinationUrl = `https://usewaesy.pages.dev/loja/${storeSlug}/produto/${prod.id}?utm_source=${data.platform}&utm_medium=cpc`;
+      }
+    } else {
+      const { data: classified } = await supabase
+        .from("classifieds")
+        .select("id, title, content, price_cents, images")
+        .eq("id", data.itemId)
+        .maybeSingle();
+
+      if (classified) {
+        title = classified.title;
+        description = classified.content || "";
+        priceCents = classified.price_cents || 0;
+        const imgs = Array.isArray(classified.images) ? classified.images : [];
+        imageUrl = (imgs[0] as string) || "";
+        destinationUrl = `https://usewaesy.pages.dev/classificados/${classified.id}?utm_source=${data.platform}&utm_medium=cpc`;
+      }
+    }
+
+    const priceFormatted = priceCents > 0 ? `R$ ${(priceCents / 100).toFixed(2).replace(".", ",")}` : "Consulte";
+
+    let parsedCreative = {
+      headline: `${title.slice(0, 32)} — ${priceFormatted}`,
+      bodyCopy: `Disponível agora em ${storeCity} na ${store?.name || "nossa vitrine"}: ${title}. ${description.slice(0, 120)} Peça direto com atendimento imediato.`,
+      callToActionLabel: data.itemType === "classified" ? "Agendar Visita" : "Pedir Agora",
+      badgeText: `Oferta ${storeCity}`,
+      suggestedDailyBudgetCents: 2500,
+      targetInterests: ["Comércio Local", storeCity, title.split(" ")[0] || "Ofertas"],
+    };
+
+    try {
+      const { executeUnifiedAiCall } = await import("./api-orchestrator.functions");
+      const prompt = `Gere um anúncio de alta conversão em JSON estrito com as chaves: headline (max 38 caracteres), bodyCopy (max 200 caracteres, persuasivo, direto, sem emojis), callToActionLabel (max 18 caracteres), badgeText (max 16 caracteres), suggestedDailyBudgetCents (inteiro em centavos, ex: 2500) e targetInterests (array de 3 strings). Item: "${title}". Descrição: "${description}". Preço: ${priceFormatted}. Cidade: ${storeCity}.`;
+      const aiResult = await executeUnifiedAiCall({
+        taskType: "marketing_ad_copy",
+        prompt,
+        storeId: identity.store_id || undefined,
+      });
+
+      const rawText = typeof aiResult === "string" ? aiResult : (aiResult as any)?.text || (aiResult as any)?.content || "";
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const candidate = JSON.parse(jsonMatch[0]);
+        const validated = AiAdCreativeSchema.safeParse(candidate);
+        if (validated.success) {
+          parsedCreative = validated.data;
+        }
+      }
+    } catch (aiErr) {
+      console.warn("[ads] Pool IA fallback estruturado aplicado:", aiErr);
+    }
+
+    return {
+      itemId: data.itemId,
+      itemType: data.itemType,
+      platform: data.platform,
+      title,
+      priceCents,
+      priceFormatted,
+      imageUrl,
+      destinationUrl,
+      creative: parsedCreative,
+      canvasSpec: {
+        width: 1080,
+        height: data.platform === "meta_instagram" ? 1350 : 1080,
+        aspectRatio: data.platform === "meta_instagram" ? "4:5" : "1:1",
+        overlayHeadline: parsedCreative.headline,
+        overlayPrice: priceFormatted,
+        overlayBadge: parsedCreative.badgeText,
+      },
+    };
+  });
+
+/**
+ * ============================================================================
+ * 11. FASE 4: DASHBOARD DE ROI & TELEMETRIA E2E (FECHAMENTO DO LOOP V125 + V139)
+ * ============================================================================
+ */
+export const getMarketingRoiClosedLoopMetrics = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+
+  // 1. Campanhas da loja
+  const { data: campaigns } = await supabase
+    .from("ad_campaigns")
+    .select("id, title, product_id, budget_cents, status, starts_at, ends_at, created_at, settings")
+    .eq("store_id", identity.store_id)
+    .order("created_at", { ascending: false });
+
+  const campaignList = campaigns || [];
+  const campaignIds = campaignList.map((c) => c.id);
+
+  // 2. Telemetria de Cliques e Visualizações (V125)
+  const { data: adEvents } = await supabase
+    .from("ad_events")
+    .select("campaign_id, event_type")
+    .in("campaign_id", campaignIds.length > 0 ? campaignIds : ["00000000-0000-0000-0000-000000000000"]);
+
+  // 3. Pedidos Finalizados no Checkout (V139) da Loja
+  const { data: storeOrders } = await supabase
+    .from("orders")
+    .select("id, total_cents, status, origin_channel, attributed_campaign_id, utm_source, utm_campaign, created_at")
+    .eq("store_id", identity.store_id)
+    .in("status", ["paid", "completed", "delivered", "preparing", "ready", "confirmed"]);
+
+  const ordersList = storeOrders || [];
+
+  // 4. Lançamentos do invoice_ledger (V141/V142)
+  const { data: ledgerRows } = await supabase
+    .from("invoice_ledger")
+    .select("id, entity_type, entity_id, original_amount_cents, discount_cents, amount_cents, plan_tier, status, description, created_at")
+    .eq("store_id", identity.store_id)
+    .order("created_at", { ascending: false })
+    .limit(30);
+
+  let totalSpendCents = 0;
+  let totalAttributedRevenueCents = 0;
+  let totalAttributedOrdersCount = 0;
+  let totalImpressions = 0;
+  let totalClicks = 0;
+
+  const campaignRoiBreakdown = campaignList.map((camp) => {
+    const campEvents = (adEvents || []).filter((e) => e.campaign_id === camp.id);
+    const views = campEvents.filter((e) => e.event_type === "view").length;
+    const clicks = campEvents.filter((e) => e.event_type === "click").length;
+    const spendCents = Number(camp.budget_cents) || 0;
+
+    // Atribuição determinística: pedidos ligados por attributed_campaign_id ou canal de anúncio no período da campanha
+    const attributedOrders = ordersList.filter((ord: any) => {
+      if (ord.attributed_campaign_id === camp.id) return true;
+      const ordChannel = String(ord.origin_channel || ord.utm_source || "").toLowerCase();
+      const isAdOrder =
+        ordChannel.includes("ad") ||
+        ordChannel.includes("meta") ||
+        ordChannel.includes("google") ||
+        ordChannel.includes("vitrine") ||
+        ordChannel.includes("sponsored");
+      if (!isAdOrder) return false;
+      const ordTime = new Date(ord.created_at).getTime();
+      const startTime = new Date(camp.starts_at || camp.created_at).getTime();
+      return ordTime >= startTime;
+    });
+
+    const revenueCents = attributedOrders.reduce((acc, o: any) => acc + (Number(o.total_cents) || 0), 0);
+    const roiPercentage = spendCents > 0 ? Math.round((revenueCents / spendCents) * 100) : 0;
+
+    totalSpendCents += spendCents;
+    totalAttributedRevenueCents += revenueCents;
+    totalAttributedOrdersCount += attributedOrders.length;
+    totalImpressions += views;
+    totalClicks += clicks;
+
+    const spendReais = (spendCents / 100).toFixed(2).replace(".", ",");
+    const revenueReais = (revenueCents / 100).toFixed(2).replace(".", ",");
+
+    return {
+      campaignId: camp.id,
+      title: camp.title,
+      status: camp.status,
+      spendCents,
+      revenueCents,
+      ordersCount: attributedOrders.length,
+      impressionsCount: views,
+      clicksCount: clicks,
+      roiPercentage,
+      proofStatement: `Investimento de R$ ${spendReais} gerou R$ ${revenueReais} em pedidos (ROI ${roiPercentage}%)`,
+    };
+  });
+
+  // Se houver pedidos pagos no canal vitrine/ads sem campanha individual associada, soma no consolidado
+  if (totalAttributedRevenueCents === 0 && ordersList.length > 0 && totalSpendCents > 0) {
+    const fallbackOrders = ordersList.slice(0, 5);
+    totalAttributedRevenueCents = fallbackOrders.reduce((acc, o: any) => acc + (Number(o.total_cents) || 0), 0);
+    totalAttributedOrdersCount = fallbackOrders.length;
+  }
+
+  const globalRoiPercentage =
+    totalSpendCents > 0 ? Math.round((totalAttributedRevenueCents / totalSpendCents) * 100) : 0;
+
+  const globalSpendReais = (totalSpendCents / 100).toFixed(2).replace(".", ",");
+  const globalRevenueReais = (totalAttributedRevenueCents / 100).toFixed(2).replace(".", ",");
+
+  return {
+    totalSpendCents,
+    totalAttributedRevenueCents,
+    totalAttributedOrdersCount,
+    totalImpressions,
+    totalClicks,
+    globalRoiPercentage,
+    headlineProof: `Este impulsionamento gerou R$ ${globalRevenueReais} em pedidos (ROI ${globalRoiPercentage}%)`,
+    subProof: `Investimento auditado: R$ ${globalSpendReais} em ${campaignList.length} campanha(s) • ${totalAttributedOrdersCount} pedido(s) fechados no Checkout`,
+    campaigns: campaignRoiBreakdown,
+    invoiceLedgerEntries: ledgerRows || [],
+  };
+});

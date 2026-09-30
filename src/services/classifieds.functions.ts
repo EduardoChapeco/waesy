@@ -62,7 +62,44 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
  const { data: classifieds, error } = await query;
 
  if (!error && classifieds) {
- return classifieds;
+   const nowMs = Date.now();
+   const sponsoredPool: any[] = [];
+   const organicPool: any[] = [];
+
+   for (const item of classifieds) {
+     const rawUntil = item.sponsored_until || item.boosted_until;
+     const isValidSponsored =
+       Boolean(item.is_sponsored || item.is_boosted) &&
+       (!rawUntil || new Date(rawUntil).getTime() > nowMs);
+
+     const normalizedItem = {
+       ...item,
+       is_sponsored: isValidSponsored,
+       is_boosted: isValidSponsored,
+       sponsored_until: rawUntil || null,
+     };
+
+     if (isValidSponsored) {
+       sponsoredPool.push({ ...normalizedItem, vitrine_slot_type: "sponsored_top" });
+     } else {
+       organicPool.push({ ...normalizedItem, vitrine_slot_type: "organic" });
+     }
+   }
+
+   const interleaved: any[] = [];
+   let sIdx = 0;
+   let oIdx = 0;
+
+   while (interleaved.length < limit && (sIdx < sponsoredPool.length || oIdx < organicPool.length)) {
+     if (sIdx < sponsoredPool.length) {
+       interleaved.push(sponsoredPool[sIdx++]);
+     }
+     for (let i = 0; i < 4 && oIdx < organicPool.length && interleaved.length < limit; i++) {
+       interleaved.push(organicPool[oIdx++]);
+     }
+   }
+
+   return interleaved;
  }
  } catch (err) {
  console.warn("[classifieds] Erro ao buscar no banco:", err);
@@ -1864,6 +1901,8 @@ export const confirmBoostPaymentAdmin = createServerFn({ method: "POST" })
       .update({
         is_boosted: true,
         boosted_until: boostedUntil,
+        is_sponsored: true,
+        sponsored_until: boostedUntil,
         boost_plan: bp.plan_name,
         boosted_at: now,
         updated_at: now,
@@ -1875,11 +1914,11 @@ export const confirmBoostPaymentAdmin = createServerFn({ method: "POST" })
       throw new Error("Pagamento confirmado mas erro ao ativar o destaque. Contate o suporte.");
     }
 
-    // Registra Campanha na Ad-Network e faz o Split no ad_ledger (V109 Split Engine)
+    // Registra Campanha na Ad-Network, faz Split no ad_ledger (V109) e Fatura Atômica no invoice_ledger (V141/V142)
     try {
       const { data: classifiedInfo } = await supabase
         .from("classifieds")
-        .select("title, store_id")
+        .select("title, store_id, author_profile_id")
         .eq("id", bp.classified_id)
         .maybeSingle();
 
@@ -1900,8 +1939,23 @@ export const confirmBoostPaymentAdmin = createServerFn({ method: "POST" })
           provider: bp.provider,
         },
       });
+
+      const { executeAtomicInvoiceLedgerBoost } = await import("./billing-ledger.functions");
+      await executeAtomicInvoiceLedgerBoost({
+        storeId: classifiedInfo?.store_id || null,
+        profileId: classifiedInfo?.author_profile_id || identity?.id || null,
+        entityType: "classified_boost",
+        entityId: bp.classified_id,
+        originalAmountCents: bp.amount_cents || 0,
+        description: `Impulsionamento Waesy Ads (${bp.plan_name}) - ${classifiedInfo?.title || "Classificado"}`,
+        metadata: {
+          boost_payment_id: bp.id,
+          plan_days: bp.plan_days,
+          sponsored_until: boostedUntil,
+        },
+      });
     } catch (ledgerErr) {
-      console.error("[boost] Erro ao gravar split no ad_ledger:", ledgerErr);
+      console.error("[boost] Erro ao gravar split no ad_ledger / invoice_ledger:", ledgerErr);
     }
 
     return {

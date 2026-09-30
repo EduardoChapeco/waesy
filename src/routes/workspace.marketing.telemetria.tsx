@@ -5,6 +5,7 @@ import { Eye, Percent, ShieldCheck, Megaphone, WhatsappLogo, CheckCircle, ChatCi
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getSponsorMetricsDashboard, type SponsorMetricsDTO } from "@/services/telemetry.functions";
+import { getMarketingRoiClosedLoopMetrics } from "@/services/ads.functions";
 import { getStoreWhatsAppAnalytics, listStoreWhatsAppLeads, updateWhatsAppLeadStatus, type WhatsAppLeadDTO, type WhatsAppAnalyticsDTO } from "@/services/whatsapp-leads.functions";
 
 export const Route = createFileRoute("/workspace/marketing/telemetria")({

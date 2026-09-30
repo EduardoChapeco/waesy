@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { getStorePixelConfig, saveStorePixelConfig, dispatchMetaCapiEvent, type StorePixelConfigDTO } from "@/services/pixels.functions";
+import { getStoreMarketingTierStatus, upgradeStoreToWaesyMax } from "@/services/ads.functions";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Lock } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +31,10 @@ export const Route = createFileRoute("/workspace/marketing/pixels")({
 
 export default function WorkspaceMarketingPixelsPage() {
   const router = useRouter();
-  const { config } = Route.useLoaderData();
+  const { config, tierStatus: initialTierStatus } = Route.useLoaderData() as any;
+  const [tierStatus, setTierStatus] = useState<any>(initialTierStatus || { planTier: "free", isMaxUnlocked: false });
+  const [maxUpsellOpen, setMaxUpsellOpen] = useState(false);
+  const [isUpgradingMax, setIsUpgradingMax] = useState(false);
 
   const [metaPixelId, setMetaPixelId] = useState(config?.meta_pixel_id || "");
   const [metaCapiToken, setMetaCapiToken] = useState(config?.meta_capi_token || "");

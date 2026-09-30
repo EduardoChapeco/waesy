@@ -9,12 +9,16 @@ import { z } from "zod";
 export type BillingFeeType =
   | "SUBSCRIPTION_MONTHLY"
   | "ORDER_MICROFEE_RANDOM"
-  | "EXTRA_USAGE";
+  | "EXTRA_USAGE"
+  | "AD_BOOST_SPONSORED"
+  | "EXTERNAL_ADS_BUDGET";
 
 export const BillingFeeTypeEnum = z.enum([
   "SUBSCRIPTION_MONTHLY",
   "ORDER_MICROFEE_RANDOM",
   "EXTRA_USAGE",
+  "AD_BOOST_SPONSORED",
+  "EXTERNAL_ADS_BUDGET",
 ]);
 
 export interface BillingLineItemDTO {

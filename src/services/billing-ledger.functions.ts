@@ -221,7 +221,11 @@ export const getStoreBillingStatement = createServerFn({ method: "GET" })
         totalMicrofees += item.amountCents;
       } else if (item.feeType === "SUBSCRIPTION_MONTHLY") {
         totalSubscription += item.amountCents;
-      } else if (item.feeType === "EXTRA_USAGE") {
+      } else if (
+        item.feeType === "EXTRA_USAGE" ||
+        item.feeType === "AD_BOOST_SPONSORED" ||
+        item.feeType === "EXTERNAL_ADS_BUDGET"
+      ) {
         totalExtraUsage += item.amountCents;
       }
     }
@@ -274,3 +278,163 @@ export const getStoreBillingStatement = createServerFn({ method: "GET" })
       discrepancyCents: 0,
     };
   });
+
+// ---------------------------------------------------------------------------
+// 4. LANÇAMENTO ATÔMICO NO INVOICE_LEDGER PARA WAESY ADS & TRÁFEGO EXTERNO (V142)
+// ---------------------------------------------------------------------------
+export async function executeAtomicInvoiceLedgerBoost(params: {
+  storeId?: string | null;
+  profileId?: string | null;
+  entityType: "product_boost" | "classified_boost" | "external_ad_campaign";
+  entityId: string;
+  originalAmountCents: number;
+  description: string;
+  metadata?: Record<string, any>;
+}) {
+  const supabase = getServerClient();
+  const now = new Date();
+
+  let planTier: "free" | "mvp" | "pro" | "max" = "free";
+
+  if (params.storeId) {
+    const { data: storeData } = await supabase
+      .from("stores")
+      .select("plan_tier, settings")
+      .eq("id", params.storeId)
+      .maybeSingle();
+
+    const rawTier = String(
+      (storeData as any)?.plan_tier ||
+        ((storeData?.settings as any)?.plan_tier) ||
+        "free"
+    ).toLowerCase();
+
+    if (rawTier.includes("max") || rawTier.includes("enterprise")) {
+      planTier = "max";
+    } else if (rawTier.includes("pro") || rawTier.includes("growth")) {
+      planTier = "pro";
+    } else if (rawTier.includes("mvp")) {
+      planTier = "mvp";
+    }
+  }
+
+  // Cálculo de desconto / inclusão para assinantes Waesy Max
+  let discountCents = 0;
+  let ledgerStatus: "paid" | "included_in_max" = "paid";
+
+  if (params.entityType !== "external_ad_campaign" && planTier === "max") {
+    // Assinantes Waesy Max têm 50% de subsídio em qualquer impulsionamento interno avulso
+    discountCents = Math.round(params.originalAmountCents * 0.5);
+  } else if (params.entityType !== "external_ad_campaign" && planTier === "pro") {
+    discountCents = Math.round(params.originalAmountCents * 0.2);
+  }
+
+  const finalAmountCents = Math.max(0, params.originalAmountCents - discountCents);
+  if (finalAmountCents === 0 && planTier === "max") {
+    ledgerStatus = "included_in_max";
+  }
+
+  let invoiceId: string | null = null;
+
+  // Se houver storeId, sincroniza atomicamente com billing_invoices e billing_line_items (V141)
+  if (params.storeId) {
+    const periodStart = new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString()
+      .split("T")[0];
+    const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      .toISOString()
+      .split("T")[0];
+
+    let { data: openInvoice } = await supabase
+      .from("billing_invoices")
+      .select("id, total_cents")
+      .eq("store_id", params.storeId)
+      .eq("status", "OPEN")
+      .gte("period_start", periodStart)
+      .lte("period_end", periodEnd)
+      .maybeSingle();
+
+    if (!openInvoice) {
+      const invoiceNumber = `FAT-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}-${params.storeId.slice(0, 4).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+      const { data: createdInv } = await supabase
+        .from("billing_invoices")
+        .insert({
+          store_id: params.storeId,
+          invoice_number: invoiceNumber,
+          period_start: periodStart,
+          period_end: periodEnd,
+          total_cents: 0,
+          status: "OPEN",
+        })
+        .select("id, total_cents")
+        .maybeSingle();
+      openInvoice = createdInv;
+    }
+
+    if (openInvoice?.id) {
+      invoiceId = openInvoice.id;
+      const feeType: BillingFeeType =
+        params.entityType === "external_ad_campaign"
+          ? "EXTERNAL_ADS_BUDGET"
+          : "AD_BOOST_SPONSORED";
+
+      await supabase.from("billing_line_items").insert({
+        invoice_id: invoiceId,
+        store_id: params.storeId,
+        origin_event_id: `BOOST-${params.entityId.slice(0, 8)}`,
+        description:
+          discountCents > 0
+            ? `${params.description} (Desconto Tier ${planTier.toUpperCase()}: -R$ ${(discountCents / 100).toFixed(2)})`
+            : params.description,
+        amount_cents: finalAmountCents,
+        fee_type: feeType,
+        created_at: now.toISOString(),
+      });
+
+      await supabase
+        .from("billing_invoices")
+        .update({
+          total_cents: (openInvoice.total_cents || 0) + finalAmountCents,
+          updated_at: now.toISOString(),
+        })
+        .eq("id", invoiceId);
+    }
+  }
+
+  // Registra no invoice_ledger canônico
+  const { data: ledgerEntry, error: ledgerError } = await supabase
+    .from("invoice_ledger")
+    .insert({
+      invoice_id: invoiceId,
+      store_id: params.storeId || null,
+      profile_id: params.profileId || null,
+      entity_type: params.entityType,
+      entity_id: params.entityId,
+      plan_tier: planTier,
+      original_amount_cents: params.originalAmountCents,
+      discount_cents: discountCents,
+      amount_cents: finalAmountCents,
+      currency: "BRL",
+      status: ledgerStatus,
+      description: params.description,
+      metadata: params.metadata || {},
+      created_at: now.toISOString(),
+    })
+    .select("*")
+    .maybeSingle();
+
+  if (ledgerError) {
+    console.error("[billing-ledger] Erro ao gravar invoice_ledger:", ledgerError);
+  }
+
+  return {
+    ledgerEntryId: ledgerEntry?.id || null,
+    invoiceId,
+    planTier,
+    originalAmountCents: params.originalAmountCents,
+    discountCents,
+    finalAmountCents,
+    status: ledgerStatus,
+  };
+}
+

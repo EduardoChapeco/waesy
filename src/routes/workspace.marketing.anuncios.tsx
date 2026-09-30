@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CurrencyField } from "@/components/ui/currency-field";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { formatMoney } from "@/lib/money";
-import { listAdCampaigns, toggleAdCampaignStatus, deleteAdCampaign, createAdCampaign, getStoreAdTargets, getStoreAdChannelsSettings, saveStoreAdChannelsSettings, generateUtmTrackingLink, type AdCampaign, type StoreAdChannelsDTO } from "@/services/ads.functions";
+import { listAdCampaigns, toggleAdCampaignStatus, deleteAdCampaign, createAdCampaign, getStoreAdTargets, getStoreAdChannelsSettings, saveStoreAdChannelsSettings, generateUtmTrackingLink, getStoreMarketingTierStatus, upgradeStoreToWaesyMax, connectExternalAdAccountOAuth, dispatchExternalMetaOrGoogleCampaign, generateAiAdCreativeFromCatalog, getMarketingRoiClosedLoopMetrics, type AdCampaign, type StoreAdChannelsDTO } from "@/services/ads.functions";
+import { Lock, ShieldCheck, ArrowUpRight, Layers } from "lucide-react";
 import { boostAdCampaignAtomic } from "@/services/deep-core.functions";
 import { WorkspaceCanonicalToolbar, type WorkspaceToolbarTab } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
@@ -25,18 +26,28 @@ export const Route = createFileRoute("/workspace/marketing/anuncios")({
   head: () => ({ meta: [{ title: "Campanhas | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const [campaigns, storeTargets, channelsSettings] = await Promise.all([
+      const [campaigns, storeTargets, channelsSettings, tierStatus, roiMetrics] = await Promise.all([
         listAdCampaigns().catch(() => []),
         getStoreAdTargets().catch(() => ({ products: [], storePhone: null, storeSlug: "" })),
         getStoreAdChannelsSettings().catch(() => null),
+        getStoreMarketingTierStatus().catch(() => ({ planTier: "free", isMaxUnlocked: false, boostDiscountPercent: 0, externalAdsAllowed: false, aiBuilderAllowed: false, connectedOAuthAccounts: [] })),
+        getMarketingRoiClosedLoopMetrics().catch(() => null),
       ]);
       return {
         campaigns: Array.isArray(campaigns) ? campaigns : [],
         storeTargets: storeTargets || { products: [], storePhone: null, storeSlug: "" },
         channelsSettings,
+        tierStatus,
+        roiMetrics,
       };
     } catch {
-      return { campaigns: [], storeTargets: { products: [], storePhone: null, storeSlug: "" }, channelsSettings: null };
+      return {
+        campaigns: [],
+        storeTargets: { products: [], storePhone: null, storeSlug: "" },
+        channelsSettings: null,
+        tierStatus: { planTier: "free", isMaxUnlocked: false, boostDiscountPercent: 0, externalAdsAllowed: false, aiBuilderAllowed: false, connectedOAuthAccounts: [] },
+        roiMetrics: null,
+      };
     }
   },
   errorComponent: WorkspaceAnunciosErrorComponent,
@@ -90,7 +101,15 @@ const QUICK_FORMATS = [
 
 function AnunciosWorkspacePage() {
   const router = useRouter();
-  const { campaigns: initialCampaigns, storeTargets, channelsSettings } = ((Route.useLoaderData?.() as any) || {});
+  const { campaigns: initialCampaigns, storeTargets, channelsSettings, tierStatus: initialTierStatus, roiMetrics } = ((Route.useLoaderData?.() as any) || {});
+  const [tierStatus, setTierStatus] = useState<any>(initialTierStatus || { planTier: "free", isMaxUnlocked: false, boostDiscountPercent: 0 });
+  const [maxUpsellOpen, setMaxUpsellOpen] = useState(false);
+  const [isUpgradingMax, setIsUpgradingMax] = useState(false);
+  const [oauthTokenInput, setOauthTokenInput] = useState("");
+  const [selectedCatalogItemId, setSelectedCatalogItemId] = useState<string>("");
+  const [aiCreativePreview, setAiCreativePreview] = useState<any>(null);
+  const [isGeneratingAiCreative, setIsGeneratingAiCreative] = useState(false);
+  const [isPublishingExternal, setIsPublishingExternal] = useState(false);
   const [campaigns, setCampaigns] = useState<AdCampaign[]>(() =>
     Array.isArray(initialCampaigns) ? initialCampaigns : []
   );
@@ -327,7 +346,13 @@ function AnunciosWorkspacePage() {
         <WorkspaceCanonicalToolbar
           tabs={tabs}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={(nextTab: string) => {
+            if ((nextTab === "meta_ads" || nextTab === "google_ads") && !tierStatus?.isMaxUnlocked) {
+              setMaxUpsellOpen(true);
+              return;
+            }
+            setActiveTab(nextTab);
+          }}
           searchPlaceholder="Buscar anúncio por título ou região..."
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
@@ -339,6 +364,205 @@ function AnunciosWorkspacePage() {
             onClick: () => setQuickCreateOpen(true),
           }}
         />
+
+        {/* ── FASE 4: DASHBOARD DE ROI & TELEMETRIA FECHADA (V125 + V139 + V141) ── */}
+        <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-[10px] uppercase tracking-wider font-bold">
+                  Retorno Auditado
+                </Badge>
+                <Badge variant={tierStatus?.isMaxUnlocked ? "default" : "secondary"} className="text-[10px]">
+                  Tier {String(tierStatus?.planTier || "free").toUpperCase()} {tierStatus?.boostDiscountPercent ? `(-${tierStatus.boostDiscountPercent}% no Boost)` : ""}
+                </Badge>
+              </div>
+              <h2 className="text-base font-bold text-foreground">
+                {roiMetrics?.headlineProof || "Este impulsionamento gerou R$ 0,00 em pedidos (ROI 0%)"}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {roiMetrics?.subProof || "Cruzamento determinístico entre Telemetria de Cliques (V125), Checkout (V139) e Faturas (V141)."}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {!tierStatus?.isMaxUnlocked && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setMaxUpsellOpen(true)}
+                  className="h-11 rounded-xl text-xs font-semibold gap-1.5"
+                >
+                  <Lock className="size-3.5" />
+                  Desbloquear Tráfego Externo
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* ── FASE 3: AI AD BUILDER (2 CLIQUES DO CATÁLOGO PARA META/GOOGLE/VITRINE) ── */}
+          <div className="pt-3 border-t border-border/40 flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+            <div className="flex-1 space-y-1">
+              <Label className="text-xs font-semibold">Gerador de Criativo por Catálogo</Label>
+              <Select
+                value={selectedCatalogItemId}
+                onValueChange={(v) => setSelectedCatalogItemId(v)}
+              >
+                <SelectTrigger className="h-11 rounded-xl bg-background text-xs">
+                  <SelectValue placeholder="Selecione um item do catálogo para gerar copy e arte..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {(storeTargets?.products || []).map((prod: any) => (
+                    <SelectItem key={prod.id} value={prod.id} className="text-xs">
+                      {prod.title} — {formatMoney(prod.price_cents || 0)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={isGeneratingAiCreative}
+              onClick={async () => {
+                if (!tierStatus?.isMaxUnlocked) {
+                  setMaxUpsellOpen(true);
+                  return;
+                }
+                const targetId = selectedCatalogItemId || storeTargets?.products?.[0]?.id;
+                if (!targetId) {
+                  toast.error("Cadastre ao menos um produto publicado no catálogo.");
+                  return;
+                }
+                setIsGeneratingAiCreative(true);
+                try {
+                  const res = await generateAiAdCreativeFromCatalog({
+                    data: {
+                      itemType: "product",
+                      itemId: targetId,
+                      platform: activeTab === "google_ads" ? "google_search" : "meta_instagram",
+                    },
+                  });
+                  setAiCreativePreview(res);
+                  toast.success("Criativo estruturado e Canvas 1080p prontos para publicação.");
+                } catch (err: any) {
+                  toast.error(err?.message || "Falha ao gerar criativo.");
+                } finally {
+                  setIsGeneratingAiCreative(false);
+                }
+              }}
+              className="h-11 rounded-xl text-xs font-semibold px-4"
+            >
+              {isGeneratingAiCreative ? "Processando..." : "1. Gerar Anúncio do Catálogo"}
+            </Button>
+            {aiCreativePreview && (
+              <Button
+                size="sm"
+                disabled={isPublishingExternal}
+                onClick={async () => {
+                  setIsPublishingExternal(true);
+                  try {
+                    const pub = await dispatchExternalMetaOrGoogleCampaign({
+                      data: {
+                        platform: activeTab === "google_ads" ? "google_ads" : "meta_ads",
+                        campaignTitle: aiCreativePreview.creative.headline,
+                        dailyBudgetCents: aiCreativePreview.creative.suggestedDailyBudgetCents || 2500,
+                        durationDays: 7,
+                        productId: aiCreativePreview.itemId,
+                        headline: aiCreativePreview.creative.headline,
+                        bodyCopy: aiCreativePreview.creative.bodyCopy,
+                        callToAction: aiCreativePreview.creative.callToActionLabel,
+                        imageUrl: aiCreativePreview.imageUrl || undefined,
+                        destinationUrl: aiCreativePreview.destinationUrl,
+                      },
+                    });
+                    toast.success(`Campanha publicada (${pub.externalApiStatus}) e debitada no Invoice Ledger!`);
+                    setAiCreativePreview(null);
+                    router.invalidate();
+                  } catch (err: any) {
+                    toast.error(err?.message || "Erro ao publicar campanha.");
+                  } finally {
+                    setIsPublishingExternal(false);
+                  }
+                }}
+                className="h-11 rounded-xl text-xs font-bold px-4"
+              >
+                {isPublishingExternal ? "Publicando..." : "2. Publicar Campanha Agora"}
+              </Button>
+            )}
+          </div>
+
+          {aiCreativePreview && (
+            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Headline Estruturada</span>
+                <p className="text-xs font-bold text-foreground">{aiCreativePreview.creative.headline}</p>
+                <span className="text-[10px] font-bold uppercase text-muted-foreground block pt-1">Canvas Spec</span>
+                <p className="text-[11px] font-mono text-muted-foreground">
+                  {aiCreativePreview.canvasSpec.width}x{aiCreativePreview.canvasSpec.height} ({aiCreativePreview.canvasSpec.aspectRatio}) • {aiCreativePreview.priceFormatted}
+                </p>
+              </div>
+              <div className="md:col-span-2 space-y-1">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Copy Persuasiva</span>
+                <p className="text-xs text-foreground leading-relaxed">{aiCreativePreview.creative.bodyCopy}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── SHEET SILENCIOSO DE UPSELL WAESY MAX (FASE 2 MAX TIER GATE) ── */}
+        <Sheet open={maxUpsellOpen} onOpenChange={setMaxUpsellOpen}>
+          <SheetContent side="bottom" className="rounded-t-2xl max-w-xl mx-auto p-6 space-y-5">
+            <SheetHeader className="space-y-1 text-left">
+              <Badge variant="default" className="w-fit text-[10px]">Exclusivo Waesy Max</Badge>
+              <SheetTitle className="text-lg font-bold">Tráfego Externo e Automação</SheetTitle>
+              <SheetDescription className="text-xs text-muted-foreground">
+                Conecte Meta Ads e Google Ads via OAuth 2.0, gere anúncios direto do seu catálogo e receba 50% de subsídio em todos os destaques internos da vitrine.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
+                <span className="font-medium">Integração Direta Meta Graph API & Google Ads</span>
+                <Badge variant="outline" className="text-[10px]">Incluído</Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
+                <span className="font-medium">Desconto em Impulsionamentos na Vitrine Waesy</span>
+                <Badge variant="outline" className="text-[10px]">50% OFF</Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
+                <span className="font-medium">Criador de Campanhas em 2 Cliques + ROI Fechado</span>
+                <Badge variant="outline" className="text-[10px]">Incluído</Badge>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="ghost" size="sm" onClick={() => setMaxUpsellOpen(false)} className="h-11 rounded-xl text-xs">
+                Agora não
+              </Button>
+              <Button
+                size="sm"
+                disabled={isUpgradingMax}
+                onClick={async () => {
+                  setIsUpgradingMax(true);
+                  try {
+                    const res = await upgradeStoreToWaesyMax();
+                    if (res?.success) {
+                      setTierStatus((prev: any) => ({ ...prev, planTier: "max", isMaxUnlocked: true, boostDiscountPercent: 50 }));
+                      setMaxUpsellOpen(false);
+                      toast.success("Waesy Max ativado! Comportas de tráfego externo liberadas.");
+                      router.invalidate();
+                    }
+                  } catch (e: any) {
+                    toast.error(e?.message || "Erro ao ativar Waesy Max.");
+                  } finally {
+                    setIsUpgradingMax(false);
+                  }
+                }}
+                className="h-11 rounded-xl text-xs font-bold px-5"
+              >
+                {isUpgradingMax ? "Ativando..." : "Ativar Waesy Max (R$ 99/mês)"}
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
 
         {/* ── CONDICIONAL: META ADS & INSTAGRAM ── */}
         {activeTab === "meta_ads" && (
@@ -408,6 +632,48 @@ function AnunciosWorkspacePage() {
                   placeholder="Ex: act_123456789"
                   className="h-9 rounded-xl bg-background text-xs font-mono"
                 />
+              </div>
+
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label className="text-xs font-semibold">OAuth 2.0 Access Token (Meta Business Graph API)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={oauthTokenInput}
+                    onChange={(e) => setOauthTokenInput(e.target.value)}
+                    placeholder="EAABsbCS1iHgBO..."
+                    className="h-11 rounded-xl bg-background text-xs font-mono flex-1"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      if (!metaAdAccountId || !oauthTokenInput) {
+                        toast.error("Preencha o Ad Account ID e o Token OAuth 2.0.");
+                        return;
+                      }
+                      try {
+                        await connectExternalAdAccountOAuth({
+                          data: {
+                            platform: "meta_ads",
+                            accountId: metaAdAccountId,
+                            accountName: "Meta Business Account",
+                            oauthAccessToken: oauthTokenInput,
+                            pixelOrConversionId: metaPixelId,
+                          },
+                        });
+                        toast.success("Conta Meta Ads vinculada via OAuth 2.0!");
+                        setOauthTokenInput("");
+                        router.invalidate();
+                      } catch (err: any) {
+                        toast.error(err?.message || "Falha ao vincular OAuth Meta.");
+                      }
+                    }}
+                    className="h-11 rounded-xl text-xs font-semibold px-4"
+                  >
+                    Conectar OAuth 2.0
+                  </Button>
+                </div>
               </div>
             </div>
 

@@ -283,45 +283,70 @@ export const listPublishedProducts = createServerFn({ method: "GET" })
 
  let products: ProductCardDTO[] = data.flatMap(explodeProductToCards);
 
- // --- PHASE 9: ADS ENGINE HIGHLIGHTS ---
- // Fetch active campaigns for the products in this page
- const productIds = Array.from(new Set(products.map((p) => p.id)));
- if (productIds.length > 0) {
- const { data: adsData } = await db
- .from("ad_campaigns")
- .select("product_id")
- .in("product_id", productIds)
- .eq("status", "active");
+ // --- V142: WAESY ADS VITRINE 1:4 INTERLEAVING ENGINE ---
+		const nowMs = Date.now();
+		const rawSponsoredMap = new Map<string, boolean>();
+		for (const rawProd of data as any[]) {
+			const isSpons =
+				Boolean(rawProd.is_sponsored) &&
+				(!rawProd.sponsored_until || new Date(rawProd.sponsored_until).getTime() > nowMs);
+			if (isSpons) {
+				rawSponsoredMap.set(rawProd.id, true);
+			}
+		}
 
- if (adsData && adsData.length > 0) {
- const boostedIds = new Set(adsData.map((ad) => ad.product_id));
- products = products.map((p) => ({
- ...p,
- isBoosted: boostedIds.has(p.id),
- }));
- }
- }
+		const productIds = Array.from(new Set(products.map((p) => p.id)));
+		if (productIds.length > 0) {
+			const { data: adsData } = await db
+				.from("ad_campaigns")
+				.select("product_id, ends_at")
+				.in("product_id", productIds)
+				.eq("status", "active");
 
- // Post-map sort for price (uses effective price from variant, not DB price_cents)
- if (params.sort === "price_asc") {
- products = products.sort((a, b) => a.priceCents - b.priceCents);
- } else if (params.sort === "price_desc") {
- products = products.sort((a, b) => b.priceCents - a.priceCents);
- } else if (params.sort === "in_stock") {
- products = products.filter((p) => !p.isOutOfStock);
- } else if (params.sort === "newest") {
- // Ensure boosted products appear first when sorting by newest/default
- products = products.sort((a, b) => {
- if (a.isBoosted && !b.isBoosted) return -1;
- if (!a.isBoosted && b.isBoosted) return 1;
- return 0; // fallback to DB original order
- });
- }
+			if (adsData && adsData.length > 0) {
+				for (const ad of adsData) {
+					if (ad.product_id && (!ad.ends_at || new Date(ad.ends_at).getTime() > nowMs)) {
+						rawSponsoredMap.set(ad.product_id, true);
+					}
+				}
+			}
+		}
 
- // Trim to requested limit after sorting
- products = products.slice(0, params.limit);
+		products = products.map((p) => ({
+			...p,
+			isBoosted: rawSponsoredMap.has(p.id),
+		}));
 
- return { status: "ok", data: products };
+		// Post-map sort for price (uses effective price from variant, not DB price_cents)
+		if (params.sort === "price_asc") {
+			products = products.sort((a, b) => a.priceCents - b.priceCents);
+		} else if (params.sort === "price_desc") {
+			products = products.sort((a, b) => b.priceCents - a.priceCents);
+		} else if (params.sort === "in_stock") {
+			products = products.filter((p) => !p.isOutOfStock);
+		} else {
+			// Algoritmo de Vitrine V142: 1 Patrocinado a cada 4 Orgânicos (is_sponsored = true & sponsored_until > NOW())
+			const sponsoredPool = products.filter((p) => p.isBoosted);
+			const organicPool = products.filter((p) => !p.isBoosted);
+			const interleaved: ProductCardDTO[] = [];
+			let sIdx = 0;
+			let oIdx = 0;
+
+			while (sIdx < sponsoredPool.length || oIdx < organicPool.length) {
+				if (sIdx < sponsoredPool.length) {
+					interleaved.push(sponsoredPool[sIdx++]);
+				}
+				for (let i = 0; i < 4 && oIdx < organicPool.length; i++) {
+					interleaved.push(organicPool[oIdx++]);
+				}
+			}
+			products = interleaved;
+		}
+
+		// Trim to requested limit after sorting
+		products = products.slice(0, params.limit);
+
+		return { status: "ok", data: products };
  } catch (e) {
  if (e instanceof SupabaseUnconfiguredError) {
  return {
