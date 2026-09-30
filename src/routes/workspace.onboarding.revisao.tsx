@@ -33,54 +33,8 @@ export function OnboardingReviewPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"multimodal" | "master_catalog" | "traditional">("multimodal");
 
-  // Estado Multimodal
-  const [items, setItems] = useState<ExtractedItem[]>([
-    {
-      id: "item_1",
-      name: "Filé Mignon ao Molho Madeira com Risoto",
-      category: "Pratos Principais",
-      description: "Medalhão grelhado ao molho madeira artesanal acompanhado de risoto cremoso de queijo parmesão.",
-      price_cents: 6890,
-      compare_at_cents: 7500,
-      dietary_tags: ["Sem Glúten"],
-    },
-    {
-      id: "item_2",
-      name: "Iscas de Tilápia Crocante com Molho Tártaro",
-      category: "Entradas & Petiscos",
-      description: "Iscas frescas empanadas em farinha panko com molho tártaro artesanal.",
-      price_cents: 4200,
-      compare_at_cents: null,
-      dietary_tags: ["Frutos do Mar"],
-    },
-    {
-      id: "item_3",
-      name: "Burger Artesanal da Casa no Pão Brioche",
-      category: "Pratos Principais",
-      description: "Blend de 180g na brasa, queijo cheddar inglês derretido, bacon crocante e cebola caramelizada.",
-      price_cents: 3690,
-      compare_at_cents: 4200,
-      dietary_tags: [],
-    },
-    {
-      id: "item_4",
-      name: "Soda Italiana de Frutas Vermelhas 400ml",
-      category: "Bebidas & Coquetéis",
-      description: "Xarope de frutas vermelhas, água gaseificada e hortelã fresca.",
-      price_cents: 1490,
-      compare_at_cents: null,
-      dietary_tags: ["Vegano"],
-    },
-    {
-      id: "item_5",
-      name: "Petit Gâteau com Sorvete de Baunilha",
-      category: "Sobremesas Artesanais",
-      description: "Bolo quente de chocolate nobre com centro cremoso e sorvete de baunilha.",
-      price_cents: 2490,
-      compare_at_cents: null,
-      dietary_tags: ["Vegetariano"],
-    },
-  ]);
+  // Estado Multimodal (dados reais obtidos da sessão de visão)
+  const [items, setItems] = useState<ExtractedItem[]>([]);
 
   const [isApproving, setIsApproving] = useState(false);
 
@@ -332,57 +286,65 @@ export function OnboardingReviewPage() {
               </div>
 
               <div className="space-y-3">
-                {items.map((item, idx) => (
-                  <div
-                    key={item.id}
-                    className="rounded-2xl bg-card border border-border/80 p-4 space-y-3 shadow-xs transition-colors hover:border-foreground/30"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-mono text-muted-foreground">#{idx + 1}</span>
-                      <Badge variant="secondary" className="text-[10px]">
-                        {item.category}
-                      </Badge>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItem(item.id)}
-                        className="text-muted-foreground hover:text-destructive p-1 rounded-md transition-colors"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="sm:col-span-2 space-y-1">
-                        <label className="text-[11px] font-medium text-muted-foreground">Nome do Prato/Produto</label>
-                        <Input
-                          value={item.name}
-                          onChange={(e) => handleUpdateItem(item.id, "name", e.target.value)}
-                          className="h-9 rounded-lg text-xs"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-medium text-muted-foreground">Preço (R$)</label>
-                        <Input
-                          value={(item.price_cents / 100).toFixed(2).replace(".", ",")}
-                          onChange={(e) => {
-                            const val = Math.round(parseFloat(e.target.value.replace(",", ".") || "0") * 100);
-                            handleUpdateItem(item.id, "price_cents", val);
-                          }}
-                          className="h-9 rounded-lg text-xs font-semibold"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[11px] font-medium text-muted-foreground">Descrição e Ingredientes</label>
-                      <Input
-                        value={item.description}
-                        onChange={(e) => handleUpdateItem(item.id, "description", e.target.value)}
-                        className="h-9 rounded-lg text-xs text-muted-foreground"
-                      />
-                    </div>
+                {items.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-border/80 p-8 text-center space-y-2 bg-card/40">
+                    <Package className="size-8 mx-auto text-muted-foreground/60" />
+                    <p className="text-xs font-semibold text-foreground">Nenhum item pendente de revisão</p>
+                    <p className="text-[11px] text-muted-foreground">Envie fotos na etapa multimodal ou utilize o catálogo mestre ao lado para adicionar produtos.</p>
                   </div>
-                ))}
+                ) : (
+                  items.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      className="rounded-2xl bg-card border border-border/80 p-4 space-y-3 shadow-xs transition-colors hover:border-foreground/30"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-mono text-muted-foreground">#{idx + 1}</span>
+                        <Badge variant="secondary" className="text-[10px]">
+                          {item.category}
+                        </Badge>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="text-muted-foreground hover:text-destructive p-1 rounded-md transition-colors"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2 space-y-1">
+                          <label className="text-[11px] font-medium text-muted-foreground">Nome do Prato/Produto</label>
+                          <Input
+                            value={item.name}
+                            onChange={(e) => handleUpdateItem(item.id, "name", e.target.value)}
+                            className="h-9 rounded-lg text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-medium text-muted-foreground">Preço (R$)</label>
+                          <Input
+                            value={(item.price_cents / 100).toFixed(2).replace(".", ",")}
+                            onChange={(e) => {
+                              const val = Math.round(parseFloat(e.target.value.replace(",", ".") || "0") * 100);
+                              handleUpdateItem(item.id, "price_cents", val);
+                            }}
+                            className="h-9 rounded-lg text-xs font-semibold"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-muted-foreground">Descrição e Ingredientes</label>
+                        <Input
+                          value={item.description}
+                          onChange={(e) => handleUpdateItem(item.id, "description", e.target.value)}
+                          className="h-9 rounded-lg text-xs text-muted-foreground"
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </section>
           </div>

@@ -1,9 +1,9 @@
 /**
- * magic-onboarding.functions.ts — Motor de Onboarding Mágico com Crawler IA (Firecrawl/Steel)
+ * magic-onboarding.functions.ts — Motor de Onboarding Guiado por IA (Waesy)
  * 
- * Substitui formulários manuais extensos por ingestão autônoma da URL da empresa.
- * Raspa site/Instagram, extrai Missão, Tom de Voz e Catálogo base, populando a loja automaticamente.
- * Tarifado de forma segura e transparente via Token Tollbooth (300 Tokens).
+ * Pipeline de Extração Real (Steel / Firecrawl / Groq) + Concílio de IAs em 5 Squads
+ * + Persistência Canônica em brand_kits, brand_dna_profiles, briefings, stores e products.
+ * Tarifado de forma segura e transparente via Token Tollbooth (20.000 Tokens da Plataforma).
  */
 
 import { createServerFn } from "@tanstack/react-start";
@@ -11,15 +11,29 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { requireTokensOrTollbooth } from "@/lib/token-tollbooth.server";
-import { extractContentMechanically } from "./mining/mechanical-extractor";
-import { executeUnifiedAiCall } from "./api-orchestrator.functions";
-import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
+import { ONBOARDING_AI_COST, ONBOARDING_AI_TIME_SAVED_MINUTES } from "@/config/platform-billing.config";
+import {
+  assertSafeUrl,
+  updateJobProgress,
+  captureWebEvidence,
+  fetchGoogleBusinessEvidence,
+  runDesignSquad,
+  runCopySquad,
+  runPrSquad,
+  runBusinessStrategistSquad,
+  runMarketAnalystSquad,
+  runConsolidationAndJudge,
+  persistOnboardingResults,
+  FinalConsolidatedBriefing,
+} from "./onboarding-pipeline.server";
 
 export interface MagicOnboardingResult {
+  job_id: string;
   company_name: string;
   category: string;
   bio: string;
   brand_voice: string;
+  tagline: string;
   contact: {
     whatsapp?: string;
     phone?: string;
@@ -36,11 +50,25 @@ export interface MagicOnboardingResult {
   }>;
   theme_colors?: {
     primary?: string;
+    secondary?: string;
     accent?: string;
+  };
+  brand_dna: {
+    archetype: string;
+    tone_of_voice: string;
+    seven_sins_triggers: Record<string, string>;
+  };
+  briefing: {
+    title: string;
+    swot_strengths: string[];
+    swot_opportunities: string[];
   };
   products_created_count: number;
 }
 
+/**
+ * Inicia ou executa o Onboarding Guiado por IA com tarifação em 20.000 Tokens da Plataforma.
+ */
 export const executeMagicOnboarding = createServerFn({ method: "POST" })
   .validator(
     z.object({
@@ -54,192 +82,164 @@ export const executeMagicOnboarding = createServerFn({ method: "POST" })
     const storeId = input.store_id || identity.store_id;
 
     if (!storeId) {
-      throw new Error("Nenhuma loja selecionada para aplicar o Onboarding Mágico.");
+      throw new Error("Nenhuma loja selecionada para aplicar o Onboarding Guiado por IA.");
     }
 
-    const domain = new URL(input.url).hostname.replace("www.", "");
+    const safeUrl = assertSafeUrl(input.url);
+    const domain = safeUrl.hostname.replace(/^www\./, "");
 
-    // 1. Função Core de Extração e Síntese de Marca
-    const processMagicCrawler = async (): Promise<MagicOnboardingResult> => {
-      // A. Extração mecânica stealth resiliente
-      const rawExtraction = await extractContentMechanically(input.url);
+    // 1. Cria o registro de Job Assíncrono para rastreamento no banco
+    const { data: jobRow, error: jobErr } = await supabase
+      .from("ai_async_jobs")
+      .insert({
+        task: "onboarding_ai_extraction",
+        store_id: storeId,
+        user_id: identity.id,
+        status: "processing",
+        progress_percent: 5,
+        payload: {
+          url: input.url,
+          domain,
+          store_id: storeId,
+          initiated_by: identity.email,
+        },
+      })
+      .select("id")
+      .single();
 
-      const combinedText = [
-        rawExtraction.title,
-        rawExtraction.lead,
-        rawExtraction.bodyText?.slice(0, 5000),
-      ].filter(Boolean).join("\n\n");
-
-      // B. Síntese com IA via Unified AI Call
-      const systemPrompt = `Você é o Diretor de Branding e Onboarding da Waesy.
-Sua missão é analisar o conteúdo extraído do site ou rede social de uma empresa e estruturar a identidade completa dela para o sistema de gestão.
-Retorne EXCLUSIVAMENTE um objeto JSON válido, sem comentários.`;
-
-      const userPrompt = `Analise os dados extraídos da URL: ${input.url} (Domínio: ${domain})
-Conteúdo coletado:
-${combinedText.slice(0, 4500)}
-
-Extraia e estruture no JSON rigoroso:
-{
-  "company_name": "Nome fantasia oficial da empresa",
-  "category": "gastronomia|turismo|comercio|servicos|hospedagem|saude|automotivo|outros",
-  "bio": "Bio comercial concisa e vendedora para o perfil público (máx 200 caracteres)",
-  "brand_voice": "Tom de voz da marca (ex: acolhedor, sofisticado, alegre, executivo, tradicional)",
-  "contact": {
-    "whatsapp": "Número com DDD somente dígitos se encontrado (ex: 49999998888)",
-    "phone": "Telefone fixo ou comercial",
-    "email": "E-mail de atendimento",
-    "city": "Cidade detectada ou ${getDefaultCity()}",
-    "state": "${getDefaultState()}",
-    "address": "Endereço físico se citado"
-  },
-  "suggested_products": [
-    {
-      "name": "Nome do produto ou serviço principal 1",
-      "description": "Breve descrição atraente",
-      "price_cents": 4900,
-      "category": "Categoria do item"
-    },
-    {
-      "name": "Nome do produto ou serviço 2",
-      "description": "Breve descrição",
-      "price_cents": 8900,
-      "category": "Categoria do item"
-    },
-    {
-      "name": "Nome do produto ou serviço 3",
-      "description": "Breve descrição",
-      "price_cents": 12000,
-      "category": "Categoria do item"
+    if (jobErr || !jobRow?.id) {
+      throw new Error(`Falha ao registrar job de onboarding: ${jobErr?.message || "Erro interno"}`);
     }
-  ],
-  "theme_colors": {
-    "primary": "#0f172a",
-    "accent": "#0284c7"
-  }
-}`;
 
-      const aiRes = await executeUnifiedAiCall({
-        systemPrompt,
-        userPrompt,
-        responseFormat: "json_object",
-        temperature: 0.2,
-      });
+    const jobId = jobRow.id;
 
-      const parsed = aiRes.parsedJson || (aiRes.content ? JSON.parse(aiRes.content) : {});
+    // 2. Função Core Transacional do Pipeline Completo
+    const processFullOnboardingPipeline = async (): Promise<MagicOnboardingResult> => {
+      try {
+        // A. Visita e captura com Firecrawl e Steel.dev (Screenshot + Scraping)
+        const evidence = await captureWebEvidence(input.url, storeId, jobId);
 
-      // Fallback seguro de nome se a IA não extrair
-      const companyName = parsed.company_name || domain.split(".")[0].toUpperCase();
-      const category = parsed.category || "comercio";
-      const bio = parsed.bio || `Empresa referência em ${companyName}. Qualidade e atendimento diferenciado.`;
-      const brandVoice = parsed.brand_voice || "profissional e acolhedor";
-      const contact = parsed.contact || {};
-      const suggestedProducts = Array.isArray(parsed.suggested_products) ? parsed.suggested_products : [];
+        // B. Verificação Google Meu Negócio / Places
+        const gmbEvidence = await fetchGoogleBusinessEvidence(storeId, evidence.domain);
+        evidence.googleBusiness = gmbEvidence;
 
-      // C. Popula a tabela stores atomicamente
-      const { data: currentStore } = await supabase
-        .from("stores")
-        .select("settings")
-        .eq("id", storeId)
-        .single();
+        await updateJobProgress(jobId, 45, "processing");
 
-      const existingSettings = currentStore?.settings || {};
-      const updatedSettings = {
-        ...existingSettings,
-        brand_voice: brandVoice,
-        magic_onboarded_at: new Date().toISOString(),
-        magic_onboarding_url: input.url,
-        theme_colors: parsed.theme_colors || { primary: "#0f172a", accent: "#0284c7" },
-      };
+        // C. Concílio de IAs: Execução paralela dos 5 squads especializados
+        const [designRes, copyRes, prRes, bizRes, marketRes] = await Promise.all([
+          runDesignSquad(evidence),
+          runCopySquad(evidence),
+          runPrSquad(evidence),
+          runBusinessStrategistSquad(evidence),
+          runMarketAnalystSquad(evidence),
+        ]);
 
-      await supabase
-        .from("stores")
-        .update({
-          name: companyName,
-          bio,
-          city: contact.city || getDefaultCity(),
-          state: contact.state || getDefaultState(),
-          address: contact.address || null,
-          phone: contact.phone || null,
-          contact_whatsapp: contact.whatsapp || null,
-          website: input.url,
-          settings: updatedSettings,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", storeId);
+        await updateJobProgress(jobId, 80, "processing");
 
-      // D. Popula catálogo base na tabela products
-      let createdProducts = 0;
-      if (suggestedProducts.length > 0) {
-        for (const item of suggestedProducts.slice(0, 5)) {
-          const { error: prodErr } = await supabase.from("products").insert({
-            store_id: storeId,
-            name: item.name,
-            description: item.description || item.name,
-            price_cents: Number(item.price_cents || 2900),
-            is_active: true,
-            status: "published",
-            metadata: {
-              source: "magic_onboarding_ai",
-              category_name: item.category || category,
-            },
-          });
-          if (!prodErr) createdProducts++;
-        }
-      }
-
-      // E. Sincroniza directory_listings
-      await supabase
-        .from("directory_listings")
-        .upsert(
-          {
-            store_id: storeId,
-            title: companyName,
-            description: bio,
-            category,
-            city: contact.city || getDefaultCity(),
-            state: contact.state || getDefaultState(),
-            address: contact.address || null,
-            phone: contact.phone || contact.whatsapp || null,
-            whatsapp: contact.whatsapp || null,
-            website: input.url,
-            is_active: true,
-            is_verified: true,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "store_id" }
+        // D. Juiz Final e Reconciliação
+        const consolidated: FinalConsolidatedBriefing = await runConsolidationAndJudge(
+          evidence,
+          designRes,
+          copyRes,
+          prRes,
+          bizRes,
+          marketRes
         );
 
-      return {
-        company_name: companyName,
-        category,
-        bio,
-        brand_voice: brandVoice,
-        contact,
-        suggested_products: suggestedProducts,
-        theme_colors: parsed.theme_colors,
-        products_created_count: createdProducts,
-      };
+        await updateJobProgress(jobId, 90, "processing");
+
+        // E. Persistência E2E Atômica (stores, brand_kits, brand_dna_profiles, briefings, products)
+        const { createdProductsCount } = await persistOnboardingResults(
+          storeId,
+          consolidated,
+          input.url,
+          jobId
+        );
+
+        // F. Finalização do Job
+        await updateJobProgress(jobId, 100, "completed", undefined, {
+          company_name: consolidated.company_name,
+          category: consolidated.category,
+          products_created_count: createdProductsCount,
+          archetype: consolidated.brand_dna.archetype,
+        });
+
+        return {
+          job_id: jobId,
+          company_name: consolidated.company_name,
+          category: consolidated.category,
+          bio: consolidated.bio,
+          tagline: consolidated.tagline,
+          brand_voice: consolidated.brand_dna.tone_of_voice,
+          contact: consolidated.contact,
+          suggested_products: consolidated.suggested_products,
+          theme_colors: {
+            primary: consolidated.brand_kit.primary_color,
+            secondary: consolidated.brand_kit.secondary_color,
+            accent: consolidated.brand_kit.accent_color,
+          },
+          brand_dna: {
+            archetype: consolidated.brand_dna.archetype,
+            tone_of_voice: consolidated.brand_dna.tone_of_voice,
+            seven_sins_triggers: consolidated.brand_dna.seven_sins_triggers,
+          },
+          briefing: {
+            title: consolidated.briefing.title,
+            swot_strengths: consolidated.briefing.swot_strengths,
+            swot_opportunities: consolidated.briefing.swot_opportunities,
+          },
+          products_created_count: createdProductsCount,
+        };
+      } catch (pipelineErr: any) {
+        // Marca job como failed e lança erro para acionar o auto-refund do Tollbooth
+        await updateJobProgress(jobId, 0, "failed", pipelineErr.message || "Erro no pipeline de onboarding");
+        throw pipelineErr;
+      }
     };
 
-    // 2. Interceptador Token Tollbooth (Tarifação Segura Pré-Voo com Auto-Refund)
+    // 3. Interceptador de Cobrança com Lock ACID e Auto-Refund (20.000 Tokens da Plataforma)
     const { result, tollboothReceipt } = await requireTokensOrTollbooth({
       storeId,
-      tokens: 300,
+      tokens: ONBOARDING_AI_COST,
       actionType: "burn_magic_onboarding",
       serviceCategory: "magic_onboarding",
-      description: `Onboarding Mágico via Crawler IA: ${domain}`,
-      timeSavedMinutes: 240, // Economiza ~4 horas de cadastro manual de produtos e bio
+      description: `Onboarding Guiado por IA: ${domain}`,
+      timeSavedMinutes: ONBOARDING_AI_TIME_SAVED_MINUTES,
       metadata: {
         target_url: input.url,
         domain,
+        job_id: jobId,
       },
-      executeAction: processMagicCrawler,
+      executeAction: processFullOnboardingPipeline,
     });
 
     return {
       success: true,
       result,
-      message: `Onboarding Mágico concluído com sucesso (-300 Tokens)! ${result.products_created_count} produtos cadastrados.`,
+      message: `Onboarding concluído com sucesso (${tollboothReceipt.tokensDeducted.toLocaleString("pt-BR")} Tokens debitados).`,
     };
+  });
+
+/**
+ * Consulta em tempo real o status e progresso percentual do Job Assíncrono no banco.
+ */
+export const getOnboardingJobStatus = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      jobId: z.string().uuid("ID de job inválido"),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const { data: job, error } = await supabase
+      .from("ai_async_jobs")
+      .select("id, status, progress_percent, error_message, result, started_at, finished_at")
+      .eq("id", input.jobId)
+      .maybeSingle();
+
+    if (error || !job) {
+      throw new Error("Job de onboarding não encontrado.");
+    }
+
+    return job;
   });

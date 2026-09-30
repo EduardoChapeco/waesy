@@ -40,32 +40,7 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
     color: styling?.textColor || undefined,
   };
 
-  const items = data.items && data.items.length > 0 ? data.items : [
-    {
-      id: "demo-1",
-      imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
-      title: "Design de Produto",
-      caption: "Acabamento premium e ergonomia",
-    },
-    {
-      id: "demo-2",
-      imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
-      title: "Tecnologia & Precisão",
-      caption: "Materiais de alta durabilidade",
-    },
-    {
-      id: "demo-3",
-      imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
-      title: "Som Acústico",
-      caption: "Pureza sonora em cada detalhe",
-    },
-    {
-      id: "demo-4",
-      imageUrl: "https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=800&q=80",
-      title: "Estilo & Conforto",
-      caption: "Feito para o uso diário",
-    },
-  ];
+  const items = (data.items || []).filter((item) => !!item.imageUrl);
 
   return (
     <section
@@ -90,8 +65,19 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
           </div>
         )}
 
-        {/* Grade Mosaico Dinâmica */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {/* Grade Mosaico Dinâmica ou Estado Vazio Honesto */}
+        {items.length === 0 ? (
+          <div className="rounded-3xl border-2 border-dashed border-border/80 p-12 text-center flex flex-col items-center justify-center bg-muted/10">
+            <div className="size-14 rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
+              <ImageIcon className="size-7" />
+            </div>
+            <h3 className="text-sm font-bold text-foreground">Galeria de Mídia Pronta</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mt-1">
+              Adicione fotos reais de produtos, espaço ou serviços no painel lateral de Conteúdo para compor o mosaico.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {items.map((item, index) => {
             const isFeatured = index === 0;
             return (
@@ -123,6 +109,7 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
             );
           })}
         </div>
+        )}
       </div>
 
       {/* Lightbox Modal */}

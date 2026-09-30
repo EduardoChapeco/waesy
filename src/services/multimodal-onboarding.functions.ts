@@ -190,77 +190,21 @@ export const parseMenuImagesMultimodal = createServerFn({ method: "POST" })
       const inputImages: string[] = (session.input_sources as any)?.image_urls || [];
       const aiExtraction = await extractMenuWithRealAI(inputImages, ocr_text_hint);
 
-      const extractedCategories: string[] = aiExtraction?.categories || [
-        "Entradas & Petiscos",
-        "Pratos Principais",
-        "Bebidas & Coquetéis",
-        "Sobremesas Artesanais",
-      ];
-      
-      const extractedProducts = aiExtraction?.products || [
-        {
-          temp_id: `prod_${Date.now()}_1`,
-          name: "Filé Mignon ao Molho Madeira com Risoto",
-          category: "Pratos Principais",
-          description: "Medalhão de filé mignon grelhado ao molho madeira artesanal, acompanhado de risoto cremoso de queijo parmesão.",
-          price_cents: 6890,
-          compare_at_cents: 7500,
-          portion: "Serve 1 a 2 pessoas",
-          dietary_tags: ["Sem Glúten"],
-          confidence: 0.96,
-        },
-        {
-          temp_id: `prod_${Date.now()}_2`,
-          name: "Iscas de Tilápia Crocante com Molho Tártaro",
-          category: "Entradas & Petiscos",
-          description: "Iscas de tilápia fresca empanadas em farinha especial crocante, servidas com limão siciliano e molho tártaro da casa.",
-          price_cents: 4200,
-          compare_at_cents: null,
-          portion: "Porção de 400g",
-          dietary_tags: ["Frutos do Mar"],
-          confidence: 0.94,
-        },
-        {
-          temp_id: `prod_${Date.now()}_3`,
-          name: "Burger Artesanal da Casa no Pão Brioche",
-          category: "Pratos Principais",
-          description: "Blend bovino de 180g grelhado na brasa, queijo cheddar inglês derretido, bacon crocante, cebola caramelizada e maionese defumada.",
-          price_cents: 3690,
-          compare_at_cents: 4200,
-          portion: "Individual",
-          dietary_tags: [],
-          confidence: 0.98,
-        },
-        {
-          temp_id: `prod_${Date.now()}_4`,
-          name: "Soda Italiana de Frutas Vermelhas 400ml",
-          category: "Bebidas & Coquetéis",
-          description: "Xarope artesanal de frutas vermelhas, água gaseificada premium, gelo e ramo de hortelã fresca.",
-          price_cents: 1490,
-          compare_at_cents: null,
-          portion: "400ml",
-          dietary_tags: ["Vegano", "Sem Glúten"],
-          confidence: 0.95,
-        },
-        {
-          temp_id: `prod_${Date.now()}_5`,
-          name: "Petit Gâteau com Sorvete de Baunilha",
-          category: "Sobremesas Artesanais",
-          description: "Bolo quente de chocolate nobre com centro cremoso e fluído, servido com bola de sorvete de baunilha em fava.",
-          price_cents: 2490,
-          compare_at_cents: null,
-          portion: "Individual",
-          dietary_tags: ["Vegetariano"],
-          confidence: 0.97,
-        }
-      ];
+      if (!aiExtraction || !aiExtraction.products || aiExtraction.products.length === 0) {
+        throw new Error("A visão computacional não identificou itens ou cardápio legível nas imagens fornecidas. Por favor envie imagens com melhor resolução ou iluminação.");
+      }
 
-      const businessProfile = aiExtraction?.business_profile || {
-        extracted_niche: "Gastronomia & Restaurante",
-        estimated_ticket_average_cents: 4500,
+      const extractedProducts = aiExtraction.products;
+      const extractedCategories: string[] = aiExtraction.categories && aiExtraction.categories.length > 0
+        ? aiExtraction.categories
+        : Array.from(new Set(extractedProducts.map((p) => p.category).filter(Boolean) as string[]));
+
+      const businessProfile = aiExtraction.business_profile || {
+        extracted_niche: "Gastronomia & Varejo",
+        estimated_ticket_average_cents: 0,
         currency: "BRL",
         visual_parser_model: "google/gemini-2.5-flash",
-        ocr_confidence_overall: 0.96,
+        ocr_confidence_overall: 0.85,
       };
 
       // Grava no banco remoto
