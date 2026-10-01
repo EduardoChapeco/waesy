@@ -921,7 +921,27 @@
   6. **Paridade WebMCP e Governança Multi-Tenant (F41, F42):**
      - Ferramentas `search_unified_listings` e `transact_unified_listing` registradas no `MCP_TOOL_REGISTRY` em `src/registries/mcp-tool-registry.ts`, com validação Zod, isolamento de tenant e limites de taxa.
   7. **Garantia por Testes Automatizados (Vitest):**
-     - 27/27 testes verdes em 4 suítes (`preview.test.ts`, `editor.test.ts`, `unified-listing.test.ts`, `unified-listing-workflow.test.ts`) com Exit Code 0.
-- **Fundamentação:** AGENTS.md B.1 a B.12, Princípio Zero-Mock, WCAG 2.2 AA, Regras P1 a P7 e Especificação F01 a F48.
-- **Consequências:** Motor de Anúncios Unificado e Vitrine Pública 100% implementados, testados e blindados ponta a ponta (F01 a F48 concluídos).
+ ## DEC-087: Implementação das Ondas 2 a 5 (G10 a G46) — Biblioteca Canônica de Nichos, Padrão de Conteúdo em 11 Blocos, Primitivas de Design System e Ledger Imutável de Estoque
+- **Data:** 2026-10-01
+- **Contexto:** Execução das Fases G10 a G46 do PLANO 3 — MOTOR DE OFERTAS, BIBLIOTECA DE NICHOS, PADRÃO DE CONTEÚDO, DESIGN SYSTEM E ESTOQUE.
+- **Decisão:**
+  1. **Biblioteca Canônica de Nichos (G10 a G18 - Onda 2):**
+     - Criação do pacote canônico declarativo em `src/lib/ad-engine/niche-packages/` com pacotes individuais para Turismo, Varejo, Mercado, Serviços, Imóveis, Veículos e Digital.
+     - Registro e validação de schema Zod em runtime (`registry.ts`), impedindo código de um nicho vazar para outro (G18) e mapeando os 15 arquétipos canônicos (A01 a A15) com regras de habilitação estritas.
+  2. **Padrão de Conteúdo em 11 Blocos (G19 a G26 - Onda 3):**
+     - Estruturação em blocos tipados B1 a B11 (`src/lib/ad-engine/content-blocks/`), eliminando texto livre desestruturado.
+     - Sanitizador rigoroso de HTML narrativa (G22) e catraca anti-vazamento P0 (`assertNoInternalLeaks`, G24), garantindo isolamento total de custos, margens e dados internos de fornecedores.
+     - Renderizadores multicanais para Web, Markdown, Texto Plano, Voucher e Minuta de Contrato (G23).
+  3. **Primitivas de Design System e CMS (G27 a G38 - Onda 4):**
+     - Implementação das primitivas em `src/components/ui/canonical/`: `CanonicalPage`, `CanonicalSection`, `CanonicalSplit`, `CanonicalBottomBar`, `CanonicalFieldGroup`, `CanonicalFormRow` e `CanonicalField`.
+     - 100% de conformidade com os tokens, touch target >= 44px (`h-11`) e foco `:focus-visible`.
+  4. **Estoque e Ledger Imutável (G39 a G46 - Onda 5):**
+     - Serviço BFF em `src/services/canonical-stock-ledger.functions.ts` operando na tabela `public.stock_movements`.
+     - Suporte a reserva, liberação, baixa atômica e prevenção de venda acima do disponível (E8).
+  5. **Verificação e Testes:**
+     - 30/30 testes verdes em 6 suítes Vitest (`niche-packages.test.ts`, `content-blocks.test.ts`, `canonical-stock-ledger.test.ts`, etc.).
+     - Zero violações P0 e zero violações P1 no Design Lint (`scripts/design-lint.mjs --changed`).
+- **Fundamentação:** AGENTS.md B.1 a B.12, Plano 3 (04_PLANO_3_MOTOR_DE_OFERTAS_E_NICHOS.md) e Regras E1 a E8.
+- **Consequências:** Base sólida, tipada, testada e blindada para todas as verticais e nichos da plataforma Waesy.
+
 
