@@ -898,3 +898,30 @@
       - `npm run build` gerando single-file `dist/_worker.js` e `dist/_routes.json` para Cloudflare Pages com Exit Code 0.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Prompt Zero, Método 8A, Regras R01 a R12.
 - **Consequências:** Bloco C concluído com 100% de integridade; repositório pronto para git push e continuidade imediata no Bloco D (F25 a F32).
+
+## DEC-086: Execução dos Blocos D, E e F (F25 a F48) — Preview Real, Fluxos Transacionais e Blindagem WebMCP
+- **Data:** 2026-10-01
+- **Contexto:** Conclusão integral das Fases F25 a F48 do PLANO DE IMPLEMENTAÇÃO — MOTOR DE ANÚNCIOS E VITRINE (F01 a F48), abrangendo preview em tempo real, geração de pedidos/reservas/orçamentos, integração bilateral com CRM e timeline, e paridade WebMCP com RLS de produção.
+- **Decisão:**
+  1. **Aplicação e Validação da Migração 20261221 no Supabase:**
+     - Correção e execução com sucesso da view relacional `unified_listings_view`, unificando `classifieds` e `products` com subquery de `product_media`.
+     - Índices de performance e RPC de auto-expiração `rpc_auto_expire_classifieds()` ativos no banco de produção.
+  2. **Preview Real e Responsivo em Iframe (`CanonicalListingPreviewFrame` - F25, F26, Regras P1 a P7):**
+     - Mesma árvore de componentes da página pública (`CanonicalListingView`) sem componentes duplicados (P1).
+     - Escala proporcional contida para viewports Mobile 390px, Tablet 768px e Desktop 1280px com zero scroll horizontal (P4).
+     - Modo simulação seguro com `isPreviewMode={true}` sem CTAs de consumidor no editor (P7).
+  3. **Estados Vazios, Erros e Degradação (`ListingEmptyState` - F30):**
+     - Tratamento específico para `not_found`, `expired`, `out_of_stock`, `unauthorized_draft` e `server_error`, garantindo zero telas mortas e ações contextuais em todos os cenários.
+  4. **Conformidade Estrita com Design Tokens (F31, AGENTS.md B.4, B.8):**
+     - Refatoração dos componentes para tokens canônicos: raios `rounded-lg`/`rounded-md`, grade espacial de 4px, `:focus-visible` em todos os elementos interativos, eliminação de classes arbitrárias entre colchetes e zero violações no `scripts/design-lint.mjs`.
+  5. **Orquestração de Fluxos Transacionais (`unified-listing-workflow.functions.ts` - F33 a F40):**
+     - `createUnifiedListingTransaction`: cria atomicamente negócio/pedido em `deals`, documentos por nicho (voucher turístico, contrato, ordem de serviço) e dispara eventos na timeline unificada (`domain-events.functions.ts`).
+     - `createListingQuoteProposal`: gera propostas com múltiplos cenários e validade configurável.
+     - `getListingNegotiationsAndLeads`: vinculação bilateral entre o anúncio e o CRM/Kanban (F37).
+  6. **Paridade WebMCP e Governança Multi-Tenant (F41, F42):**
+     - Ferramentas `search_unified_listings` e `transact_unified_listing` registradas no `MCP_TOOL_REGISTRY` em `src/registries/mcp-tool-registry.ts`, com validação Zod, isolamento de tenant e limites de taxa.
+  7. **Garantia por Testes Automatizados (Vitest):**
+     - 27/27 testes verdes em 4 suítes (`preview.test.ts`, `editor.test.ts`, `unified-listing.test.ts`, `unified-listing-workflow.test.ts`) com Exit Code 0.
+- **Fundamentação:** AGENTS.md B.1 a B.12, Princípio Zero-Mock, WCAG 2.2 AA, Regras P1 a P7 e Especificação F01 a F48.
+- **Consequências:** Motor de Anúncios Unificado e Vitrine Pública 100% implementados, testados e blindados ponta a ponta (F01 a F48 concluídos).
+

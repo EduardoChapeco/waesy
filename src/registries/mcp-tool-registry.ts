@@ -1884,6 +1884,141 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       };
     },
   },
+
+  // ─── 27. MOTOR CANÔNICO UNIFICADO DE ANÚNCIOS (F42) ──────────────────────
+  search_unified_listings: {
+    name: "search_unified_listings",
+    module: "catalog",
+    description: "Busca na View Canônica Unificada de anúncios (Classificados e Catálogo de Lojas) por nicho, cidade ou preço.",
+    tier: "public",
+    requiredScope: "public:read",
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_public",
+    inputZodSchema: z.object({
+      query: z.string().optional(),
+      niche: z.string().optional(),
+      origin: z.enum(["classified", "workspace"]).optional(),
+      maxPriceCents: z.number().int().positive().optional(),
+      limit: z.number().int().min(1).max(50).default(12),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Termo de busca no título ou descrição" },
+        niche: { type: "string", description: "Identificador do nicho (turismo, varejo, servico, etc.)" },
+        origin: { type: "string", enum: ["classified", "workspace"] },
+        maxPriceCents: { type: "number", description: "Preço máximo em centavos" },
+        limit: { type: "number", default: 12 },
+      },
+    },
+    handler: async (ctx, args) => {
+      let q = ctx.supabase
+        .from("unified_listings_view")
+        .select("id, origin, item_type, niche_id, category_id, title, price_cents, images, status, created_at")
+        .eq("status", "active")
+        .limit(args.limit || 12);
+
+      if (args.niche) {
+        q = q.eq("niche_id", args.niche);
+      }
+      if (args.origin) {
+        q = q.eq("origin", args.origin);
+      }
+      if (args.maxPriceCents) {
+        q = q.lte("price_cents", args.maxPriceCents);
+      }
+      if (args.query) {
+        q = q.ilike("title", `%${args.query}%`);
+      }
+
+      const { data, error } = await q;
+      if (error) {
+        throw new Error(`Falha na busca unificada: ${error.message}`);
+      }
+
+      return {
+        totalFound: data?.length || 0,
+        listings: (data || []).map((l: any) => ({
+          id: l.id,
+          origin: l.origin,
+          niche: l.niche_id,
+          title: l.title,
+          priceBrl: (l.price_cents || 0) / 100,
+          coverImage: l.images?.[0] || null,
+          status: l.status,
+        })),
+      };
+    },
+  },
+
+  transact_unified_listing: {
+    name: "transact_unified_listing",
+    module: "orders",
+    description: "Inicia atomicamente uma transação (compra, reserva turística ou solicitação de serviço) a partir de um anúncio canônico.",
+    tier: "public",
+    requiredScope: "public:write",
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      listingId: z.string().uuid("ID do anúncio inválido"),
+      origin: z.enum(["classified", "workspace"]),
+      transactionType: z.enum(["purchase", "booking", "quote", "service_order"]),
+      quantity: z.number().int().min(1).default(1),
+      notes: z.string().max(500).optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        listingId: { type: "string", description: "UUID do anúncio na View Canônica" },
+        origin: { type: "string", enum: ["classified", "workspace"] },
+        transactionType: { type: "string", enum: ["purchase", "booking", "quote", "service_order"] },
+        quantity: { type: "number", default: 1 },
+        notes: { type: "string" },
+      },
+      required: ["listingId", "origin", "transactionType"],
+    },
+    handler: async (ctx, args) => {
+      const { data: listing, error } = await ctx.supabase
+        .from("unified_listings_view")
+        .select("*")
+        .eq("id", args.listingId)
+        .single();
+
+      if (error || !listing) {
+        throw new Error("Anúncio não localizado para transação.");
+      }
+
+      const totalCents = Number(listing.price_cents || 0) * args.quantity;
+
+      const { data: deal, error: dealErr } = await ctx.supabase
+        .from("deals")
+        .insert({
+          classified_id: args.origin === "classified" ? args.listingId : null,
+          buyer_id: ctx.identity?.id || "00000000-0000-0000-0000-000000000000",
+          seller_id: listing.author_id,
+          status: "accepted",
+          proposed_price_cents: totalCents,
+          total_price_cents: totalCents,
+          deal_type: args.transactionType === "booking" ? "rental" : "sale",
+          is_direct_booking: true,
+          terms: args.notes || `Transação iniciada via WebMCP (${args.transactionType}).`,
+        })
+        .select("id")
+        .single();
+
+      if (dealErr || !deal) {
+        throw new Error(`Falha ao registrar negociação WebMCP: ${dealErr?.message}`);
+      }
+
+      return {
+        success: true,
+        dealId: deal.id,
+        transactionType: args.transactionType,
+        totalBrl: totalCents / 100,
+        listingTitle: listing.title,
+      };
+    },
+  },
 };
 
 /**

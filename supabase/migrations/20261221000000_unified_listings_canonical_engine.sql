@@ -43,10 +43,10 @@ UNION ALL
 SELECT 
   p.id,
   'workspace'::text AS origin,
-  COALESCE(p.metadata->>'item_type', 'product') AS item_type,
-  COALESCE(p.metadata->>'niche_id', 'varejo') AS niche_id,
-  COALESCE(p.category_id::text, 'geral') AS category_id,
-  COALESCE(p.metadata->>'author_id', '00000000-0000-0000-0000-000000000000')::uuid AS author_id,
+  COALESCE(p.attributes->>'item_type', 'product') AS item_type,
+  COALESCE(p.attributes->>'niche_id', 'varejo') AS niche_id,
+  COALESCE(p.type_id::text, 'geral') AS category_id,
+  COALESCE(p.context_profile_id, '00000000-0000-0000-0000-000000000000')::uuid AS author_id,
   s.organization_id,
   p.store_id,
   p.title,
@@ -54,12 +54,12 @@ SELECT
   p.description,
   p.price_cents,
   'un'::text AS selling_unit,
-  ARRAY[]::text[] AS images,
+  COALESCE((SELECT array_agg(pm.url ORDER BY pm.sort_order ASC) FROM public.product_media pm WHERE pm.product_id = p.id), ARRAY[]::text[]) AS images,
   p.status,
   NULL::timestamptz AS expires_at,
   p.created_at,
   p.updated_at,
-  COALESCE(p.metadata, '{}'::jsonb) AS attributes
+  COALESCE(p.attributes, '{}'::jsonb) AS attributes
 FROM public.products p
 LEFT JOIN public.stores s ON s.id = p.store_id;
 

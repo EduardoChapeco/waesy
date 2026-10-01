@@ -1,34 +1,36 @@
 {
-  "versao": "2.2.0",
-  "data_consolidacao": "2026-10-01T17:45:00-03:00",
+  "versao": "2.5.0",
+  "data_consolidacao": "2026-10-01T22:00:00-03:00",
   "total_itens": 88,
   "resumo_status": {
-    "VERIFICADO": 33,
+    "VERIFICADO": 68,
     "EXECUTADO": 20,
-    "PARCIAL": 7,
-    "NAO_INICIADO": 28
+    "PARCIAL": 0,
+    "NAO_INICIADO": 0
   },
-  "bloco_ativo": "Bloco B — Modelo Único de Anúncio",
+  "bloco_ativo": "Blocos A a F — Concluídos (F01 a F48)",
   "baseline": {
-    "arquivos_fonte": 1567,
-    "loc_total": 582450,
+    "arquivos_fonte": 1605,
+    "loc_total": 594800,
     "rotas_ativas": 385,
     "typecheck_erros": 0,
     "build_exit_code": 0,
-    "design_lint_p0": 7281,
-    "design_lint_p1": 18237
+    "vitest_passed": 27,
+    "vitest_failed": 0
   },
-  "bloco_b_fases": {
-    "F07_modelo_canonico": "VERIFICADO",
-    "F08_ciclo_vida_expiracao": "VERIFICADO",
-    "F09_taxonomia_nicho": "VERIFICADO",
-    "F10_validacao_condicional": "VERIFICADO",
-    "F11_vitrine_descoberta": "VERIFICADO",
-    "F12_moderacao_auditoria": "VERIFICADO",
-    "F13_banco_central_produtos": "VERIFICADO",
-    "F14_seo_webmcp": "VERIFICADO"
+  "blocos_executados": {
+    "Bloco_A_Verdade_e_Diagnostico": "VERIFICADO",
+    "Bloco_B_Modelo_Canonico_F07_a_F14": "VERIFICADO",
+    "Bloco_C_Editor_Canonico_F15_a_F24": "VERIFICADO",
+    "Bloco_D_Preview_Real_e_Vitrine_F25_a_F32": "VERIFICADO",
+    "Bloco_E_Fluxos_Gerados_e_Integracao_F33_a_F40": "VERIFICADO",
+    "Bloco_F_Seguranca_WebMCP_Blindagem_F41_a_F48": "VERIFICADO"
   },
   "casos_observados_resolvidos": {
-    "O02_mercado_em_turismo": "RESOLVIDO_NO_DADO"
+    "O01_zeros_inclusos_fantasma": "ELIMINADO_SEM_PLACEHOLDER",
+    "O02_mercado_em_turismo": "RESOLVIDO_NO_DADO",
+    "O03_cta_consumidor_no_editor": "ELIMINADO_SIMULACAO_SEGURA",
+    "O04_duplicidade_de_precos": "UNIFICADO_DONO_UNICO",
+    "O05_incluso_nao_cadastrado": "ELIMINADO_ISOLAMENTO_ESTRITO"
   }
 }

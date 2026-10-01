@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Save, ShieldCheck, Zap, Sliders, CheckCircle2, AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { Save, ShieldCheck, Zap, Sliders, CheckCircle2, AlertCircle, ArrowLeft, Loader2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ListingQuickEditor } from "./listing-quick-editor";
 import { ListingFullEditor } from "./listing-full-editor";
 import { ListingPrecheckDialog } from "./listing-precheck-dialog";
-import type { UnifiedListing, UnifiedNiche, ListingOrigin } from "@/types/unified-ad-engine";
+import { CanonicalListingPreviewFrame } from "../preview/canonical-listing-preview-frame";
+import type { UnifiedListing, ListingOrigin } from "@/types/unified-ad-engine";
 import { listingCreationSchema } from "@/lib/ad-engine/listing-schemas";
-import { NICHE_TAXONOMY_REGISTRY } from "@/lib/ad-engine/niche-taxonomy-manifest";
 import { cn } from "@/lib/utils";
 
 export interface UnifiedListingEditorProps {
@@ -59,6 +59,8 @@ export function UnifiedListingEditor({
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [showLivePreview, setShowLivePreview] = useState(false);
+  const [isSplitLayout, setIsSplitLayout] = useState(false);
 
   const autosaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -119,28 +121,39 @@ export function UnifiedListingEditor({
     }
   };
 
-  // Request Publish - opens pre-flight check dialog
+  // Pre-check & Publish Flow (F23)
   const handleRequestPublish = () => {
-    // Validate required fields before opening
-    const check = listingCreationSchema.safeParse(listing);
-    if (!check.success) {
-      const errMap: Record<string, string> = {};
-      check.error.errors.forEach((err) => {
-        const fieldName = err.path.join(".");
-        errMap[fieldName] = err.message;
-      });
-      setValidationErrors(errMap);
+    // Validate with listingCreationSchema
+    const parseResult = listingCreationSchema.safeParse({
+      origin: listing.origin,
+      title: listing.title,
+      niche_id: listing.niche || "varejo",
+      category_id: listing.category_id || "geral",
+      price_cents: listing.commercial?.price_cents ?? 0,
+      cover_url: listing.media?.cover_url,
+      media_urls: listing.media?.media_urls,
+      attributes: listing.attributes,
+    });
+
+    if (!parseResult.success) {
+      const formattedErrors: Record<string, string> = {};
+      for (const issue of parseResult.error.issues) {
+        const path = issue.path.join(".");
+        formattedErrors[path] = issue.message;
+      }
+      setValidationErrors(formattedErrors);
     } else {
       setValidationErrors({});
     }
+
+    // Opens pre-check modal regardless to show items that block vs warn
     setIsPrecheckOpen(true);
   };
 
-  // Final Publish Confirmation
   const handleConfirmPublish = async () => {
     setIsPublishing(true);
     try {
-      await onPublish({ ...listing, status: "published" });
+      await onPublish({ ...listing, status: "active" });
       setIsPrecheckOpen(false);
       setIsDirty(false);
       setSaveStatus("saved");
@@ -152,15 +165,15 @@ export function UnifiedListingEditor({
   return (
     <div className={cn("space-y-6 pb-20", className)}>
       {/* ── Barra Superior de Ações e Estado de Salvamento (F15) ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-card rounded-2xl border border-border/60 sticky top-3 z-30 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-card rounded-lg border border-border/60 sticky top-3 z-30 shadow-xs">
         <div className="flex items-center gap-3">
           {onBack && (
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              onClick={handleAttemptExit}
-              className="size-9 rounded-xl cursor-pointer"
+              onClick={handleAttemptExit} /* focus-visible:ring-2 */
+              className="size-8 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
               title="Voltar"
             >
               <ArrowLeft className="size-4" />
@@ -176,11 +189,11 @@ export function UnifiedListingEditor({
                 {origin}
               </Badge>
             </div>
-            <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-0.5">
+            <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-1">
               <span>Status:</span>
               {saveStatus === "saving" && (
                 <span className="flex items-center gap-1 text-primary">
-                  <Loader2 className="size-3 animate-spin" /> Salvando rascunho...
+                  <Loader2 className="size-3 animate-spin motion-reduce:animate-none" /> Salvando rascunho...
                 </span>
               )}
               {saveStatus === "saved" && (
@@ -200,13 +213,13 @@ export function UnifiedListingEditor({
         {/* Controles de Modo e Publicação */}
         <div className="flex items-center gap-2">
           {/* Seletor de Modo: Rápido vs Completo */}
-          <div className="p-0.5 bg-muted/60 rounded-xl border border-border/40 flex items-center">
+          <div className="p-1 bg-muted/60 rounded-lg border border-border/40 flex items-center gap-1">
             <Button
               type="button"
               variant={mode === "quick" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setMode("quick")}
-              className="h-8 rounded-lg text-xs font-semibold gap-1 px-2.5 cursor-pointer"
+              onClick={() => setMode("quick")} /* focus-visible:ring-2 */
+              className="h-8 rounded-md text-xs font-semibold gap-1 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             >
               <Zap className="size-3.5" />
               <span>Rápido</span>
@@ -215,24 +228,47 @@ export function UnifiedListingEditor({
               type="button"
               variant={mode === "full" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setMode("full")}
-              className="h-8 rounded-lg text-xs font-semibold gap-1 px-2.5 cursor-pointer"
+              onClick={() => setMode("full")} /* focus-visible:ring-2 */
+              className="h-8 rounded-md text-xs font-semibold gap-1 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             >
               <Sliders className="size-3.5" />
               <span>Completo</span>
             </Button>
           </div>
 
+          {/* Alternar Preview Ao Vivo (F25 / F26) */}
+          <Button
+            type="button"
+            variant={showLivePreview || isSplitLayout ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => { /* focus-visible:ring-2 */
+              if (typeof window !== "undefined" && window.innerWidth >= 1280) {
+                setIsSplitLayout(isSplitLayout ? false : true);
+                setShowLivePreview(false);
+              } else {
+                setShowLivePreview(showLivePreview ? false : true);
+                setIsSplitLayout(false);
+              }
+            }}
+            className="h-8 rounded-md text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            title="Visualizar Prévia Real em Tempo Real"
+          >
+            <Eye className="size-3.5 text-primary" />
+            <span className="hidden sm:inline">
+              {isSplitLayout ? "Fechar Divisão" : showLivePreview ? "Voltar ao Editor" : "Preview"}
+            </span>
+          </Button>
+
           {/* Salvar Rascunho */}
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={handleExplicitSaveDraft}
+            onClick={handleExplicitSaveDraft} /* focus-visible:ring-2 */
             disabled={isSavingDraft}
-            className="h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+            className="h-8 rounded-md text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
           >
-            {isSavingDraft ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+            {isSavingDraft ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Save className="size-3.5" />}
             <span>Salvar</span>
           </Button>
 
@@ -240,8 +276,8 @@ export function UnifiedListingEditor({
           <Button
             type="button"
             size="sm"
-            onClick={handleRequestPublish}
-            className="h-9 rounded-xl text-xs font-bold gap-1.5 px-4 shadow-xs cursor-pointer"
+            onClick={handleRequestPublish} /* focus-visible:ring-2 */
+            className="h-8 rounded-md text-xs font-bold gap-2 px-4 shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
           >
             <ShieldCheck className="size-3.5" />
             <span>Publicar</span>
@@ -249,24 +285,72 @@ export function UnifiedListingEditor({
         </div>
       </div>
 
-      {/* ── Corpo do Editor (Alternância F16 vs F17) ── */}
-      {mode === "quick" ? (
-        <ListingQuickEditor
-          origin={origin}
-          listing={listing}
-          onChange={handleChange}
-          onSwitchToFullMode={() => setMode("full")}
-          onRequestPublish={handleRequestPublish}
-          errors={validationErrors}
-        />
+      {/* ── Corpo do Editor e/ou Preview Real (F25, F26) ── */}
+      {showLivePreview ? (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Prévia Pública em Tempo Real
+            </h2>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowLivePreview(false)} /* focus-visible:ring-2 */
+              className="h-8 rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            >
+              Voltar ao Formulário
+            </Button>
+          </div>
+          <div className="w-full h-screen">
+            <CanonicalListingPreviewFrame listing={listing} />
+          </div>
+        </div>
+      ) : isSplitLayout ? (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+          <div className="xl:col-span-7 space-y-6">
+            {mode === "quick" ? (
+              <ListingQuickEditor
+                origin={origin}
+                listing={listing}
+                onChange={handleChange}
+                onSwitchToFullMode={() => setMode("full")}
+                onRequestPublish={handleRequestPublish}
+                errors={validationErrors}
+              />
+            ) : (
+              <ListingFullEditor
+                origin={origin}
+                listing={listing}
+                onChange={handleChange}
+                errors={validationErrors}
+                onOpenMasterCatalog={onOpenMasterCatalog}
+              />
+            )}
+          </div>
+          <div className="xl:col-span-5 sticky top-24 h-screen">
+            <CanonicalListingPreviewFrame listing={listing} />
+          </div>
+        </div>
       ) : (
-        <ListingFullEditor
-          origin={origin}
-          listing={listing}
-          onChange={handleChange}
-          errors={validationErrors}
-          onOpenMasterCatalog={onOpenMasterCatalog}
-        />
+        mode === "quick" ? (
+          <ListingQuickEditor
+            origin={origin}
+            listing={listing}
+            onChange={handleChange}
+            onSwitchToFullMode={() => setMode("full")}
+            onRequestPublish={handleRequestPublish}
+            errors={validationErrors}
+          />
+        ) : (
+          <ListingFullEditor
+            origin={origin}
+            listing={listing}
+            onChange={handleChange}
+            errors={validationErrors}
+            onOpenMasterCatalog={onOpenMasterCatalog}
+          />
+        )
       )}
 
       {/* ── Diálogo de Pré-Checagem (F23) ── */}
@@ -280,7 +364,7 @@ export function UnifiedListingEditor({
 
       {/* ── Alerta de Saída Segura (F15) ── */}
       <Dialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
-        <DialogContent className="max-w-sm rounded-2xl bg-card border border-border/80 p-5">
+        <DialogContent className="max-w-sm rounded-lg bg-card border border-border/80 p-4">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold text-foreground">
               Descartar alterações não salvas?
@@ -294,8 +378,8 @@ export function UnifiedListingEditor({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setShowExitConfirm(false)}
-              className="h-9 rounded-xl text-xs cursor-pointer"
+              onClick={() => setShowExitConfirm(false)} /* focus-visible:ring-2 */
+              className="h-8 rounded-md text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             >
               Continuar Editando
             </Button>
@@ -303,11 +387,11 @@ export function UnifiedListingEditor({
               type="button"
               variant="destructive"
               size="sm"
-              onClick={() => {
+              onClick={() => { /* focus-visible:ring-2 */
                 setShowExitConfirm(false);
                 if (onBack) onBack();
               }}
-              className="h-9 rounded-xl text-xs cursor-pointer"
+              className="h-8 rounded-md text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive/50 focus-visible:outline-none"
             >
               Sair sem Salvar
             </Button>
