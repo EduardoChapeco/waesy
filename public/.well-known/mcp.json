@@ -1,0 +1,14 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schema/mcp-discovery.json",
+  "name": "Waesy MCP Server",
+  "version": "2.2.0",
+  "description": "Model Context Protocol endpoint for Waesy commerce, logistics, tourism, and services.",
+  "endpoint": "/api/mcp/v1/tools/call",
+  "manifest": "/api/webmcp.json",
+  "openapi": "/api/openapi.json",
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": true
+  }
+}

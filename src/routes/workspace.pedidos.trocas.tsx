@@ -168,6 +168,64 @@ function ResolutionDrawer({
             </p>
           </div>
 
+          {/* Evidência Fotográfica & Perícia Visual de IA */}
+          {exchange?.claimPhotoUrl ? (
+            <div className="p-4 bg-muted/20 border border-border/60 rounded-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                  <Camera className="size-4 text-primary" />
+                  Evidência Fotográfica da Avaria
+                </Label>
+                <a
+                  href={exchange.claimPhotoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary hover:underline flex items-center gap-1 font-semibold focus-visible:ring-2 focus-visible:ring-primary/20 rounded"
+                >
+                  <span>Ver Alta Resolução</span>
+                  <ExternalLink className="size-3" />
+                </a>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 items-start">
+                <img
+                  src={exchange.claimPhotoUrl}
+                  alt="Evidência do produto"
+                  className="w-full sm:w-36 h-28 object-cover rounded-lg border border-border/70 shrink-0"
+                />
+                <div className="space-y-2 flex-1">
+                  {exchange.forensicStatus === "flagged" || exchange.isAiFlagged ? (
+                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-xs space-y-1">
+                      <div className="flex items-center gap-2 font-bold text-destructive">
+                        <ShieldAlert className="size-4 shrink-0" />
+                        <span>Alerta de Imagem Sintética (IA)</span>
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Risco alto: padrões visuais ou fonte de imagem indicam possível geração por IA ou foto da web.
+                        Recomenda-se conferência física no balcão antes de liberar estorno.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs space-y-1">
+                      <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">
+                        <ShieldCheck className="size-4 shrink-0" />
+                        <span>Selo de Autenticidade: Foto Autêntica Verificada</span>
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Metadados e artefatos visuais consistentes com fotografia real do produto pelo consumidor.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 bg-muted/20 border border-border/40 rounded-lg text-xs text-muted-foreground flex items-center gap-2">
+              <Camera className="size-4 text-muted-foreground" />
+              <span>Nenhuma foto de avaria anexada pelo cliente.</span>
+            </div>
+          )}
+
           <div className="space-y-4">
             <div>
               <Label className="text-xs font-semibold mb-2 block text-muted-foreground uppercase tracking-wider">
@@ -573,7 +631,17 @@ function ExchangesDashboardPage() {
                   </TableCell>
                   <TableCell className="text-xs font-medium text-foreground">{ex.customerName}</TableCell>
                   <TableCell className="text-xs text-muted-foreground max-w-xs truncate" title={ex.reason}>
-                    {ex.reason}
+                    <div className="flex items-center gap-2">
+                      {ex.claimPhotoUrl && (
+                        <Camera className="size-4 text-primary shrink-0" />
+                      )}
+                      {ex.forensicStatus === "flagged" ? (
+                        <ShieldAlert className="size-4 text-destructive shrink-0" />
+                      ) : ex.forensicStatus === "verified" ? (
+                        <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
+                      ) : null}
+                      <span className="truncate">{ex.reason}</span>
+                    </div>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground font-mono">
                     {formatDate(ex.requestedAt)}
@@ -633,8 +701,30 @@ function ExchangesDashboardPage() {
                           </Badge>
                         </div>
 
-                        <div className="text-xs text-foreground p-2.5 bg-muted/30 border border-border/40 rounded-lg">
-                          <span className="font-semibold text-muted-foreground">Motivo:</span> {ex.reason}
+                        <div className="text-xs text-foreground p-2 bg-muted/30 border border-border/40 rounded-lg space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-muted-foreground">Motivo:</span>
+                            {ex.forensicStatus === "flagged" ? (
+                              <Badge variant="destructive" className="text-xs px-2 py-0 h-4 font-semibold">
+                                <ShieldAlert className="size-3 mr-1" /> IA Suspeita
+                              </Badge>
+                            ) : ex.forensicStatus === "verified" ? (
+                              <Badge variant="outline" className="text-xs px-2 py-0 h-4 font-semibold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+                                <ShieldCheck className="size-3 mr-1" /> Foto Real
+                              </Badge>
+                            ) : null}
+                          </div>
+                          <p className="line-clamp-2">{ex.reason}</p>
+                          {ex.claimPhotoUrl && (
+                            <div className="pt-1 flex items-center gap-2">
+                              <img
+                                src={ex.claimPhotoUrl}
+                                alt="Avaria"
+                                className="size-8 rounded object-cover border border-border/60 shrink-0"
+                              />
+                              <span className="text-xs text-muted-foreground truncate">Foto anexada</span>
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex justify-between items-center text-xs text-muted-foreground font-mono">

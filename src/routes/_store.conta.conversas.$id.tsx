@@ -235,7 +235,7 @@ function CustomerChatPage() {
               )}
               {!isClosed && (
                 <span
-                  className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 border-2 border-background"
+                  className="absolute bottom-0 right-0 size-2.5 rounded-full bg-primary border-2 border-background"
                   title="Online"
                 />
               )}
@@ -246,7 +246,7 @@ function CustomerChatPage() {
                 {storeData?.name || thread?.subject || "Atendimento"}
               </h2>
               {isPeerTyping ? (
-                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 animate-pulse truncate">
+                <p className="text-xs font-semibold text-primary animate-pulse truncate">
                   Digitando...
                 </p>
               ) : (
@@ -295,6 +295,9 @@ function CustomerChatPage() {
       {/* ── Timeline de Mensagens ── */}
       <div
         ref={chatContainerRef}
+        role="log"
+        aria-live="polite"
+        aria-label="Histórico de mensagens"
         className="flex-1 space-y-2.5 overflow-y-auto no-scrollbar py-3 px-3 sm:px-4"
       >
         <div className="flex justify-center my-2">
@@ -307,7 +310,7 @@ function CustomerChatPage() {
         {(!messages || messages.length === 0) && (
           <div className="text-center py-12 text-muted-foreground space-y-1.5 select-none">
             <ShieldCheck className="size-10 mx-auto text-muted-foreground/30" strokeWidth={1.25} />
-            <p className="text-xs text-gray-400">Envie uma mensagem para iniciar.</p>
+            <p className="text-xs text-muted-foreground">Envie uma mensagem para iniciar.</p>
           </div>
         )}
 
@@ -407,15 +410,15 @@ function CustomerChatPage() {
 
                 {/* Rodapé Inline da Bolha estilo WhatsApp: Horário + Ticks de Leitura */}
                 <div className="flex items-center justify-end gap-1 mt-1">
-                  <span className="text-xs text-gray-400 font-mono leading-none">
+                  <span className="text-xs text-muted-foreground font-mono leading-none">
                     {formatDate(msg.createdAt)}
                   </span>
                   {!isStaff && (
                     <span className="inline-flex items-center">
                       {readStatus === "sent" ? (
-                        <Check className="size-3 text-gray-400 stroke-[2.2]" />
+                        <Check className="size-3 text-muted-foreground stroke-2" />
                       ) : (
-                        <CheckCheck className="size-3.5 text-sky-500 stroke-[2.4]" />
+                        <CheckCheck className="size-3.5 text-primary stroke-2" />
                       )}
                     </span>
                   )}

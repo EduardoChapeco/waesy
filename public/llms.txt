@@ -1,0 +1,98 @@
+# Waesy Platform - LLM & Autonomous AI Agent Guidelines
+
+> Waesy is an integrated local commerce, logistics, tourism, and services operating system for Brazilian cities and communities.
+
+## Autonomous Agent Integration (WebMCP & MCP Protocol)
+
+Waesy exposes a unified surface for external AI agents (Cursor, Windsurf, Claude, OpenAI GPT, Perplexity, custom autonomous squad agents) adhering to the Model Context Protocol (v1).
+
+- **WebMCP Manifest**: `https://waesy.pages.dev/api/webmcp.json`
+- **OpenAPI 3.1 Specification**: `https://waesy.pages.dev/api/openapi.json`
+- **MCP Tool Dispatcher**: `POST https://waesy.pages.dev/api/mcp/v1/tools/call`
+- **Protocol Discovery**: `https://waesy.pages.dev/.well-known/mcp.json`
+
+## Security & Multi-Tenant Model
+
+1. **Tier 1 (Public Tools)**:
+   - Sanitized, read-only access to local products, directory merchants, delivery coverage, and public booking slots.
+   - Zero exposure of internal margins, wholesale costs, or private documents.
+   - Rate-limited per IP (`webmcp_tool_call_public`).
+
+2. **Tier 2 (Store Staff Tools)**:
+   - Operations scoped strictly to an authorized `storeId`.
+   - Requires Supabase Auth JWT token or active staff session.
+   - Enforces strict Multi-Tenant Deny-by-Default (`assertStoreAccess`). Any attempt to access cross-tenant records returns immediate `403 Forbidden`.
+   - Rate-limited per store (`webmcp_tool_call_staff`, `webmcp_batch_dispatch`).
+
+3. **Append-Only Audit Trail**:
+   - All invocations are logged into `system_audit_logs` with latency, caller, tenant scope, and telemetry.
+
+## Available Domain Capabilities (26 Derived Tools across 14 Modules)
+
+- **Catalog & Products (`catalog`)**:
+  - `search_catalog_products`: Public search for local inventory, prices in BRL, and store availability.
+  - `query_master_catalog`: Global EAN-13 catalog lookup.
+  - `catalog_get_product_details`: Complete product specifications, images, and inventory.
+  - `catalog_list_categories`: Taxonomy and navigation hierarchy.
+  - `update_product_stock`: Idempotent inventory adjustment for store staff.
+
+- **Business Directory (`directory`)**:
+  - `get_store_directory_info`: Merchant profiles, reputation, address, verified status.
+  - `directory_list_featured_stores`: High-rated local merchants by city and category.
+
+- **Logistics & WMS (`logistics`)**:
+  - `check_delivery_coverage`: CEP postal code coverage, MotoLink express, PAC, Sedex estimates.
+  - `wms_list_pending_orders`: Orders ready for warehouse picking and fulfillment.
+  - `logistics_track_shipment`: Real-time parcel tracking and courier events.
+
+- **Orders & Checkout (`orders`)**:
+  - `orders_get_order_details`: Detailed order line items, payment state, customer contact.
+  - `orders_update_order_status`: Operational order status transitions (confirmed, preparing, dispatched, delivered).
+
+- **Scheduling & Services (`scheduling`)**:
+  - `scheduling_list_available_slots`: Available calendar slots for local appointments.
+
+- **Tourism & Travel (`tourism`)**:
+  - `tourism_get_trip_manifest`: Passenger manifest, transport locators, itinerary details.
+  - `tourism_list_proposals`: Travel proposals and itineraries.
+
+- **Commercial Proposals (`proposals`)**:
+  - `proposals_list_store_proposals`: Active quotes and budgets with status tracking.
+
+- **Digital Contracts (`contracts`)**:
+  - `contracts_get_contract_status`: Digital signature audit status and signer verification.
+
+- **Financial & Cash Register (`financial`)**:
+  - `pos_get_cash_status`: Real-time cash register balance and open shifts.
+  - `financial_get_cash_flow_summary`: Gross revenue, payout balances, payment method breakdown.
+
+- **Team & HR (`hr`)**:
+  - `hr_list_team_members`: Active workspace staff and role assignments.
+
+- **Marketing & Synthetic AI (`marketing`, `simulation`)**:
+  - `simlab_run_survey`: Econometric demand simulations against synthetic census samples.
+  - `generate_marketing_post`: Multi-agent automated editorial carousel generation.
+  - `generate_ad_campaign_proposal`: Meta/Google ads targeting and budget proposals.
+  - `analyze_competitor_dna`: Market intelligence and competitor brand positioning.
+
+- **Fiscal & Invoicing (`fiscal`)**:
+  - `fiscal_get_invoice_status`: Electronic invoices (NF-e/NFC-e) and DANFE access keys.
+
+- **Integrations (`integrations`)**:
+  - `marketplaces_get_sync_health`: Sync diagnostic with Mercado Livre, iFood, Shopee, Amazon.
+
+- **Customer Support & RMA (`support`)**:
+  - `support_list_active_threads`: Open customer chat threads requiring staff assistance.
+  - `support_get_rma_case_status`: Exchange/return claims with AI photo forensics diagnostics.
+
+## Protocol Resources & Prompts
+
+- **Resources**:
+  - `store://{storeId}/catalog`
+  - `store://{storeId}/financial-summary`
+  - `store://{storeId}/tourism-manifest`
+  - `public://directory/cities`
+- **Prompts**:
+  - `customer_inquiry_assistant`
+  - `product_recommendation_prompt`
+  - `tourism_trip_briefing`

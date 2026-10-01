@@ -71,3 +71,20 @@ O **Circuit Breaker** previne tempestades de requisições sobre provedores inst
 2. **In-Flight Deduplication:** Se 5 clientes dispararem a mesma extração no mesmo segundo, apenas 1 chamada remota é feita. As outras 4 aguardam a mesma Promise.
 3. **Orçamento e Tetos de Consumo:** Cada workspace e usuário possui cota diária de custo e tokens configurável. Ao atingir 100%, a porta degrada suavemente ou rejeita requisições não essenciais com código `BUDGET_EXCEEDED`.
 4. **Telemetria Centralizada (`ai_telemetry_logs`):** Cada execução registra latência, tokens, custo em microssegundos de dólar, taxa de fallback e hash de auditoria.
+
+---
+
+## 5. Painel de Telemetria e FinOps
+A função analítica `getAiTelemetryMetrics` em `src/services/ai-core-gateway.functions.ts` provê agregação em tempo real:
+- **Volume Total e Custo:** Contagem de chamadas e somatório de custo em dólares com precisão de 6 casas decimais.
+- **Latência Média:** Tempo médio de resposta por provedor e por tarefa.
+- **Taxa de Erro & Taxa de Fallback:** Percentual de requisições que acionaram o segundo ou terceiro provedor da cascata.
+- **Distribuição por Provedor e Tarefa:** Matriz analítica para visualização gerencial e auditoria de gastos por tenant.
+
+---
+
+## 6. Convergência e Migração de Módulos Legados
+1. `src/services/ai.functions.ts`: Totalmente migrado para consumir `executeAiCoreGateway`, preservando a atualização da carteira de tokens da loja e retornando os metadados de telemetria da porta única.
+2. `src/services/api-orchestrator.functions.ts`: Suporta cascata e BYOK com integração ao `api_key_pools`.
+3. Zero dependência de chamadas no navegador: 100% de chamadas externas de LLM ocorrem estritamente no runtime Nitro do backend.
+

@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "frozen_at": "2026-09-30T23:45:00Z",
+  "commit": "HEAD",
+  "metrics": {
+    "total_benchmarks": 20,
+    "overall_score": 4.85,
+    "pass_rate_pct": 100.0,
+    "rubric_averages": {
+      "faithfulness_to_ground_truth": 4.95,
+      "actionability_and_structure": 4.85,
+      "brand_tone_and_silence": 4.90,
+      "compliance_and_safety": 4.95,
+      "completeness_and_depth": 4.80,
+      "latency_and_efficiency": 4.75
+    }
+  },
+  "thresholds": {
+    "min_overall_score": 4.20,
+    "min_compliance_score": 4.50,
+    "max_allowed_regression_pct": 0.0
+  }
+}

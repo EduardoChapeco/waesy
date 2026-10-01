@@ -1,0 +1,295 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-09-30T23:45:00Z",
+  "description": "Conjunto de referência canônico para aferição de qualidade e regressão de IA",
+  "benchmarks": [
+    {
+      "id": "BENCH-RH-01",
+      "category": "rh",
+      "capability": "screen_resume",
+      "input": {
+        "jobTitle": "Entregador Motoboy",
+        "requiredSkills": ["CNH A", "Pontualidade", "Conhecimento de rotas"],
+        "minExperienceYears": 1,
+        "resumeText": "Possuo CNH A definitiva há 3 anos, excelente pontualidade e conhecimento das rotas da cidade."
+      },
+      "expectedOutputs": {
+        "minFitScorePct": 60,
+        "requiredMatchedSkills": ["CNH A"],
+        "requiresHumanApproval": true
+      }
+    },
+    {
+      "id": "BENCH-RH-02",
+      "category": "rh",
+      "capability": "generate_job_description",
+      "input": {
+        "jobTitle": "Atendente de Loja",
+        "department": "Vendas",
+        "workplaceType": "presencial",
+        "seniority": "junior",
+        "keyResponsibilities": ["Operar caixa", "Atender clientes"]
+      },
+      "expectedOutputs": {
+        "titleContains": "Atendente de Loja",
+        "requiresHumanApproval": false
+      }
+    },
+    {
+      "id": "BENCH-RH-03",
+      "category": "rh",
+      "capability": "interview_guide",
+      "input": {
+        "jobTitle": "Gerente de Restaurante",
+        "focusAreas": ["comportamental", "lideranca"]
+      },
+      "expectedOutputs": {
+        "minQuestions": 3,
+        "containsStarMethod": true
+      }
+    },
+    {
+      "id": "BENCH-RH-04",
+      "category": "rh",
+      "capability": "candidate_summary",
+      "input": {
+        "candidateName": "Carlos Silva",
+        "interviewNotes": "Demonstrou liderança em crises anteriores e ótima comunicação.",
+        "fitScorePct": 85
+      },
+      "expectedOutputs": {
+        "requiresHumanApproval": true,
+        "advice": "avancar_proposta"
+      }
+    },
+    {
+      "id": "BENCH-RH-05",
+      "category": "rh",
+      "capability": "screen_resume",
+      "input": {
+        "jobTitle": "Desenvolvedor Frontend",
+        "requiredSkills": ["React", "TypeScript", "Tailwind CSS"],
+        "minExperienceYears": 2,
+        "resumeText": "Experiência de 4 anos com React, TypeScript e Tailwind CSS em projetos corporativos."
+      },
+      "expectedOutputs": {
+        "minFitScorePct": 90,
+        "requiredMatchedSkills": ["React", "TypeScript", "Tailwind CSS"],
+        "requiresHumanApproval": true
+      }
+    },
+    {
+      "id": "BENCH-CONT-01",
+      "category": "contabil",
+      "capability": "classify_transaction",
+      "input": {
+        "description": "Gasolina para entrega motoboy",
+        "amountCents": 15000,
+        "isExpense": true
+      },
+      "expectedOutputs": {
+        "expectedCategory": "Logística e Fretes",
+        "expectedCostCenter": "Operação de Entrega"
+      }
+    },
+    {
+      "id": "BENCH-CONT-02",
+      "category": "contabil",
+      "capability": "reconcile_receipt",
+      "input": {
+        "transactionId": "TX-123",
+        "amountCents": 5000,
+        "receiptTextOrId": "REC-999",
+        "expectedAmountCents": 5000
+      },
+      "expectedOutputs": {
+        "matched": true,
+        "discrepancyCents": 0
+      }
+    },
+    {
+      "id": "BENCH-CONT-03",
+      "category": "contabil",
+      "capability": "reconcile_receipt",
+      "input": {
+        "transactionId": "TX-124",
+        "amountCents": 4500,
+        "receiptTextOrId": "REC-998",
+        "expectedAmountCents": 5000
+      },
+      "expectedOutputs": {
+        "matched": false,
+        "discrepancyCents": -500,
+        "requiresHumanApproval": true
+      }
+    },
+    {
+      "id": "BENCH-CONT-04",
+      "category": "contabil",
+      "capability": "audit_fiscal_inconsistency",
+      "input": {
+        "invoiceNumber": "NF-00123",
+        "totalCents": 10000,
+        "orderCents": 12000,
+        "taxCents": 800
+      },
+      "expectedOutputs": {
+        "hasInconsistencies": true,
+        "requiresHumanApproval": true
+      }
+    },
+    {
+      "id": "BENCH-CONT-05",
+      "category": "contabil",
+      "capability": "fiscal_calendar_alerts",
+      "input": {
+        "referenceMonth": 10,
+        "referenceYear": 2026,
+        "companyRegime": "simples_nacional"
+      },
+      "expectedOutputs": {
+        "minObligations": 2,
+        "containsDas": true
+      }
+    },
+    {
+      "id": "BENCH-FIN-01",
+      "category": "financeiro",
+      "capability": "conversational_expense_entry",
+      "input": {
+        "message": "Paguei 180 reais de gasolina pro motoboy ontem"
+      },
+      "expectedOutputs": {
+        "expectedAmountCents": 18000,
+        "expectedCategory": "logistica_entrega"
+      }
+    },
+    {
+      "id": "BENCH-FIN-02",
+      "category": "financeiro",
+      "capability": "conversational_expense_entry",
+      "input": {
+        "message": "Almoço de equipe 250 reais restaurante central"
+      },
+      "expectedOutputs": {
+        "expectedAmountCents": 25000,
+        "expectedCategory": "alimentacao"
+      }
+    },
+    {
+      "id": "BENCH-FIN-03",
+      "category": "financeiro",
+      "capability": "cash_flow_forecast",
+      "input": {
+        "currentBalanceCents": 100000,
+        "expectedReceivables7dCents": 50000,
+        "expectedPayables7dCents": 20000,
+        "expectedReceivables30dCents": 150000,
+        "expectedPayables30dCents": 80000
+      },
+      "expectedOutputs": {
+        "projectedBalance7dCents": 130000,
+        "liquidityRisk": "baixo"
+      }
+    },
+    {
+      "id": "BENCH-FIN-04",
+      "category": "financeiro",
+      "capability": "overdue_reminder_copy",
+      "input": {
+        "customerName": "Maria Oliveira",
+        "amountCents": 12000,
+        "daysOverdue": 2,
+        "pixCopyPaste": "00020126580014BR.GOV.BCB.PIX..."
+      },
+      "expectedOutputs": {
+        "tone": "amigavel",
+        "cdcCompliant": true
+      }
+    },
+    {
+      "id": "BENCH-FIN-05",
+      "category": "financeiro",
+      "capability": "period_financial_summary",
+      "input": {
+        "grossRevenueCents": 1000000,
+        "cmvCents": 400000,
+        "operatingExpensesCents": 300000
+      },
+      "expectedOutputs": {
+        "grossProfitCents": 600000,
+        "netEbitdaCents": 300000,
+        "grossMarginPct": 60.0,
+        "ebitdaMarginPct": 30.0
+      }
+    },
+    {
+      "id": "BENCH-JUR-01",
+      "category": "juridico",
+      "capability": "review_contract_clause",
+      "input": {
+        "clauseText": "Em caso de rescisão, incidirá multa de 50% sobre o valor total do contrato, sendo irrevogavel e irretratavel.",
+        "contractType": "prestacao_servicos"
+      },
+      "expectedOutputs": {
+        "riskLevel": "abusiva",
+        "requiresHumanApproval": true
+      }
+    },
+    {
+      "id": "BENCH-JUR-02",
+      "category": "juridico",
+      "capability": "generate_nda",
+      "input": {
+        "disclosingPartyName": "Loja Exemplo Ltda",
+        "receivingPartyName": "Fornecedor Beta",
+        "validityYears": 3,
+        "purpose": "Parceria de tecnologia de ponta"
+      },
+      "expectedOutputs": {
+        "jurisdictionCity": "Chapecó / SC",
+        "requiresHumanApproval": true
+      }
+    },
+    {
+      "id": "BENCH-JUR-03",
+      "category": "juridico",
+      "capability": "legal_demand_triage",
+      "input": {
+        "demandText": "Citação judicial para contestação em autos de execução",
+        "senderType": "judicial"
+      },
+      "expectedOutputs": {
+        "urgency": "critica",
+        "fatalDeadlineDays": 5
+      }
+    },
+    {
+      "id": "BENCH-JUR-04",
+      "category": "juridico",
+      "capability": "legal_demand_triage",
+      "input": {
+        "demandText": "Notificação preliminar Procon sobre pedido em atraso",
+        "senderType": "procon"
+      },
+      "expectedOutputs": {
+        "urgency": "alta",
+        "fatalDeadlineDays": 10
+      }
+    },
+    {
+      "id": "BENCH-JUR-05",
+      "category": "juridico",
+      "capability": "compliance_checklist",
+      "input": {
+        "hasPrivacyPolicy": false,
+        "storesCourierGpsData": true,
+        "sharesDataWithThirdParties": true
+      },
+      "expectedOutputs": {
+        "complianceScorePct": 40,
+        "lgpdStatus": "inadequado"
+      }
+    }
+  ]
+}

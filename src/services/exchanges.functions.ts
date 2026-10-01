@@ -4,6 +4,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getSSRClient } from "@/lib/server-access";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { logSystemError } from "@/lib/logger";
+import { parseRmaForensics } from "@/services/rma.functions";
 
 export const requestExchange = createServerFn({ method: "POST" })
   .validator(
@@ -66,44 +67,95 @@ export const listExchanges = createServerFn({ method: "GET" }).handler(async () 
     const identity = await getServerIdentity();
     if (!identity.id || !identity.store_id) return [];
 
-    const { data: exchanges, error } = await supabase
-      .from("exchanges")
-      .select(
-        "id, status, reason, created_at, total_value_cents, resolution_type, original_order_id, orders:original_order_id(id, public_token, total_cents, customer_snapshot)",
-      )
-      .eq("store_id", identity.store_id)
-      .order("created_at", { ascending: false });
+    const [exchangesRes, rmaRes] = await Promise.all([
+      supabase
+        .from("exchanges")
+        .select(
+          "id, status, reason, created_at, total_value_cents, resolution_type, original_order_id, orders:original_order_id(id, public_token, total_cents, customer_snapshot)",
+        )
+        .eq("store_id", identity.store_id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("rma_requests")
+        .select(
+          "id, status, type, notes, created_at, order_id, orders:order_id(id, public_token, total_cents, customer_snapshot), profiles:customer_id(full_name)",
+        )
+        .eq("store_id", identity.store_id)
+        .order("created_at", { ascending: false }),
+    ]);
 
-    if (error || !exchanges) {
-      console.error("[exchanges.functions] listExchanges query error:", error);
-      await logSystemError({
-        route: "listExchanges",
-        page_url: "/workspace/pedidos/trocas",
-        schema_name: "public",
-        table_name: "exchanges",
-        contract_name: "listExchanges",
-        error_message: error?.message || "Falha ao carregar trocas",
-      });
-      return [];
+    const items: any[] = [];
+
+    // Mapear trocas registradas diretamente
+    if (exchangesRes.data) {
+      for (const ex of exchangesRes.data) {
+        const order = (ex as any).orders;
+        const custName =
+          order?.customer_snapshot?.full_name ||
+          order?.customer_snapshot?.name ||
+          "Cliente";
+        const forensics = parseRmaForensics(ex.reason);
+        items.push({
+          id: ex.id,
+          status: ex.status,
+          reason: forensics.cleanNotes || ex.reason,
+          claimPhotoUrl: forensics.claimPhotoUrl,
+          forensicStatus: forensics.forensicStatus,
+          forensicRisk: forensics.forensicRisk,
+          isAiFlagged: forensics.isAiFlagged,
+          requestedAt: ex.created_at,
+          orderToken: order?.public_token || "N/A",
+          orderTotal: ex.total_value_cents || order?.total_cents || 0,
+          customerName: custName,
+          resolutionType: ex.resolution_type,
+          source: "exchange",
+        });
+      }
     }
 
-    return exchanges.map((ex: any) => {
-      const order = ex.orders;
-      const custName =
-        order?.customer_snapshot?.full_name ||
-        order?.customer_snapshot?.name ||
-        "Cliente";
-      return {
-        id: ex.id,
-        status: ex.status,
-        reason: ex.reason,
-        requestedAt: ex.created_at,
-        orderToken: order?.public_token || "N/A",
-        orderTotal: ex.total_value_cents || order?.total_cents || 0,
-        customerName: custName,
-        resolutionType: ex.resolution_type,
-      };
-    });
+    // Mapear solicitações de RMA (Portal B2C do cliente)
+    if (rmaRes.data) {
+      for (const rma of rmaRes.data) {
+        const mappedStatus =
+          rma.status === "pending"
+            ? "requested"
+            : rma.status === "authorized" || rma.status === "received" || rma.status === "inspected" || rma.status === "shipped_back"
+            ? "approved"
+            : rma.status === "resolved"
+            ? "completed"
+            : rma.status === "rejected"
+            ? "rejected"
+            : rma.status;
+
+        const order = (rma as any).orders;
+        const custName =
+          (rma as any).profiles?.full_name ||
+          order?.customer_snapshot?.full_name ||
+          order?.customer_snapshot?.name ||
+          "Cliente";
+        const forensics = parseRmaForensics(rma.notes);
+        items.push({
+          id: rma.id,
+          status: mappedStatus,
+          reason: forensics.cleanNotes || rma.notes || `Devolução (${rma.type})`,
+          claimPhotoUrl: forensics.claimPhotoUrl,
+          forensicStatus: forensics.forensicStatus,
+          forensicRisk: forensics.forensicRisk,
+          isAiFlagged: forensics.isAiFlagged,
+          requestedAt: rma.created_at,
+          orderToken: order?.public_token || "N/A",
+          orderTotal: order?.total_cents || 0,
+          customerName: custName,
+          resolutionType: rma.status === "resolved" ? "refund" : undefined,
+          source: "rma_request",
+        });
+      }
+    }
+
+    // Ordenação unificada por data decrescente
+    items.sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime());
+
+    return items;
   } catch (e: any) {
     console.error("[exchanges.functions] listExchanges:", e);
     return [];
@@ -126,11 +178,32 @@ export const updateExchangeStatus = createServerFn({ method: "POST" })
 
     // Se estiver concluindo com resolução, usa a RPC atômica idempotente
     if (status === "completed" && resolutionType) {
-      const { data: exchange } = await supabase
+      let { data: exchange } = await supabase
         .from("exchanges")
         .select("original_order_id, reason, total_value_cents")
         .eq("id", exchangeId)
-        .single();
+        .maybeSingle();
+
+      if (!exchange) {
+        // Fallback para rma_requests caso tenha sido aberto via portal B2C
+        const { data: rma } = await supabase
+          .from("rma_requests")
+          .select("order_id, notes")
+          .eq("id", exchangeId)
+          .maybeSingle();
+
+        if (rma) {
+          exchange = {
+            original_order_id: rma.order_id,
+            reason: rma.notes || "Conclusão de Troca / Devolução",
+            total_value_cents: 0,
+          };
+          await supabase
+            .from("rma_requests")
+            .update({ status: "resolved", updated_at: new Date().toISOString() })
+            .eq("id", exchangeId);
+        }
+      }
 
       if (!exchange) throw new Error("Troca não encontrada");
 
@@ -171,15 +244,25 @@ export const updateExchangeStatus = createServerFn({ method: "POST" })
       .eq("store_id", identity.store_id);
 
     if (error) {
-      await logSystemError({
-        route: "updateExchangeStatus",
-        page_url: "/workspace/pedidos/trocas",
-        schema_name: "public",
-        table_name: "exchanges",
-        contract_name: "updateExchangeStatus",
-        error_message: error.message,
-      });
-      throw new Error("Erro ao atualizar status: " + error.message);
+      // Tenta atualizar rma_requests caso seja solicitação aberta via portal B2C
+      const rmaStatus = status === "approved" ? "authorized" : status === "rejected" ? "rejected" : status;
+      const { error: rmaErr } = await supabase
+        .from("rma_requests")
+        .update({ status: rmaStatus, updated_at: new Date().toISOString() })
+        .eq("id", exchangeId)
+        .eq("store_id", identity.store_id);
+
+      if (rmaErr) {
+        await logSystemError({
+          route: "updateExchangeStatus",
+          page_url: "/workspace/pedidos/trocas",
+          schema_name: "public",
+          table_name: "exchanges",
+          contract_name: "updateExchangeStatus",
+          error_message: error.message,
+        });
+        throw new Error("Erro ao atualizar status: " + error.message);
+      }
     }
 
     return { status: "success" };

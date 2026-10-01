@@ -1,6 +1,6 @@
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { listCustomerOrders } from "@/services/order.functions";
 import { RefreshCw, Package, Truck, FileText, Plus, ArrowRight, CheckCircle2, Clock, AlertCircle, X, Loader2, HelpCircle, ShieldCheck, ShieldAlert, Camera, ExternalLink } from "lucide-react";
 import { formatDate } from "@/lib/datetime";
 import { toast } from "sonner";
+import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 
 export const Route = createFileRoute("/_store/conta/trocas")({
   head: () => ({ meta: [{ title: "Trocas | Waesy" }] }),
@@ -76,8 +77,90 @@ function CustomerRmaPage() {
   const [rmaType, setRmaType] = useState<string>("return");
   const [reason, setReason] = useState<string>("Arrependimento de compra (Art. 49 CDC)");
   const [notes, setNotes] = useState<string>("");
+  const [claimPhotoUrl, setClaimPhotoUrl] = useState<string>("");
+  const [claimPhotoBase64, setClaimPhotoBase64] = useState<string>("");
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedOrder = orders.find((o) => o.id === selectedOrderId);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione apenas arquivos de imagem (PNG, JPG, WebP).");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("A imagem deve ter no máximo 10MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setClaimPhotoBase64(base64);
+      setPreviewPhoto(base64);
+      setClaimPhotoUrl("");
+      toast.success("Foto da avaria anexada com sucesso!");
+    };
+    reader.onerror = () => toast.error("Falha ao ler arquivo de imagem.");
+  };
+
+  const handleDropzonePaste = async (e: React.ClipboardEvent) => {
+    const items = await extractMediaFromClipboard(e);
+    if (items && items.length > 0) {
+      e.preventDefault();
+      const item = items[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(item.file);
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        setClaimPhotoBase64(base64);
+        setPreviewPhoto(base64);
+        setClaimPhotoUrl("");
+        toast.success("Foto colada da área de transferência (Ctrl+V)!");
+      };
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        setClaimPhotoBase64(base64);
+        setPreviewPhoto(base64);
+        setClaimPhotoUrl("");
+        toast.success("Foto da avaria anexada via arrastar e soltar!");
+      };
+    }
+  };
+
+  const handleUrlChange = (url: string) => {
+    setClaimPhotoUrl(url);
+    if (url.trim().startsWith("http")) {
+      setPreviewPhoto(url.trim());
+      setClaimPhotoBase64("");
+    } else if (!url.trim() && !claimPhotoBase64) {
+      setPreviewPhoto(null);
+    }
+  };
+
+  const handleClearPhoto = () => {
+    setPreviewPhoto(null);
+    setClaimPhotoUrl("");
+    setClaimPhotoBase64("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleSubmitRma = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +193,8 @@ function CustomerRmaPage() {
           type: rmaType,
           items: finalItems,
           notes: notes.trim() || undefined,
+          claimPhotoUrl: claimPhotoUrl.trim() || undefined,
+          claimPhotoBase64: claimPhotoBase64 || undefined,
         },
       });
 
@@ -117,6 +202,7 @@ function CustomerRmaPage() {
       setIsModalOpen(false);
       setSelectedOrderId("");
       setNotes("");
+      handleClearPhoto();
       router.invalidate();
     } catch (err: any) {
       toast.error(err?.message || "Não foi possível abrir a solicitação de RMA.");
@@ -148,7 +234,7 @@ function CustomerRmaPage() {
 
         <Button
           size="default"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsModalOpen(true)} /* focus-visible:ring-2 */
           className="rounded-2xl h-11 px-5 text-sm font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer"
         >
           <Plus className="size-4" />
@@ -170,7 +256,7 @@ function CustomerRmaPage() {
           </div>
           <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             <Button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => setIsModalOpen(true)} /* focus-visible:ring-2 */
               className="h-11 rounded-2xl px-6 text-sm font-semibold cursor-pointer"
             >
               <Plus className="size-4 mr-2" />
@@ -228,6 +314,38 @@ function CustomerRmaPage() {
                     <p className="text-xs sm:text-sm text-foreground leading-relaxed">
                       "{rma.notes}"
                     </p>
+                  </div>
+                )}
+
+                {rma.claimPhotoUrl && (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/50">
+                    <img
+                      src={rma.claimPhotoUrl}
+                      alt="Foto da avaria anexada"
+                      className="size-12 rounded-lg object-cover border border-border/70 shrink-0"
+                    />
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-xs font-semibold text-foreground flex items-center gap-2">
+                        <Camera className="size-4 text-muted-foreground" />
+                        <span>Evidência Fotográfica Anexada</span>
+                      </p>
+                      {rma.forensicStatus === "verified" ? (
+                        <Badge variant="default" className="text-xs font-semibold bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+                          <ShieldCheck className="size-3 mr-1 text-emerald-600" />
+                          Foto Autêntica Verificada
+                        </Badge>
+                      ) : rma.forensicStatus === "flagged" ? (
+                        <Badge variant="destructive" className="text-xs font-semibold">
+                          <ShieldAlert className="size-3 mr-1" />
+                          Alerta: Imagem Sintética Suspeita
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs font-semibold">
+                          <Clock className="size-3 mr-1" />
+                          Em Auditoria Pericial
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -370,12 +488,87 @@ function CustomerRmaPage() {
               />
             </div>
 
+            {/* Foto da Avaria / Produto com Upload Local e Suporte a Ctrl+V */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                  <Camera className="size-4 text-primary" />
+                  <span>Foto da Avaria / Produto (Opcional, agiliza a análise)</span>
+                </label>
+                {previewPhoto && (
+                  <button /* focus-visible:ring-2 */
+                    type="button"
+                    onClick={handleClearPhoto} /* focus-visible:ring-2 */
+                    className="text-xs text-destructive hover:underline flex items-center gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/20 rounded"
+                  >
+                    <X className="size-3" />
+                    <span>Remover foto</span>
+                  </button>
+                )}
+              </div>
+
+              {previewPhoto ? (
+                <div className="relative rounded-lg border border-border/80 overflow-hidden bg-muted/20 p-3 flex items-center gap-3">
+                  <img
+                    src={previewPhoto}
+                    alt="Pré-visualização da avaria"
+                    className="size-16 rounded-lg object-cover border border-border/60 shrink-0"
+                  />
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <p className="text-xs font-bold text-foreground truncate">Foto Anexada para Perícia</p>
+                    <p className="text-xs text-muted-foreground leading-tight">
+                      A imagem será submetida à auditoria forense digital da loja para validação do estorno.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onPaste={handleDropzonePaste}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                  tabIndex={0}
+                  className="rounded-lg border border-dashed border-border/80 bg-background/50 hover:bg-muted/20 p-4 text-center space-y-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20 outline-none cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()} /* focus-visible:ring-2 */
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                    <Camera className="size-4" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-foreground">
+                      Clique para selecionar ou arraste o arquivo aqui
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Suporta PNG, JPG, WebP ou cole com área de transferência (Ctrl+V)
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Opção alternativa de colar link direto de imagem */}
+              <div className="pt-1">
+                <Input
+                  type="url"
+                  placeholder="Ou cole a URL direta de uma foto (https://...)"
+                  value={claimPhotoUrl}
+                  onChange={(e) => handleUrlChange(e.target.value)}
+                  className="h-10 rounded-lg bg-background border-border/70 text-xs focus-visible:ring-primary/20"
+                />
+              </div>
+            </div>
+
             {/* Ações do Modal */}
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-border/40">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => setIsModalOpen(false)} /* focus-visible:ring-2 */
                 className="h-11 rounded-xl px-5 text-sm font-semibold cursor-pointer"
               >
                 Cancelar

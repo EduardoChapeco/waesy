@@ -1,0 +1,15 @@
+name = "usewaesy"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-06-18"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+VITE_SITE_URL = "https://usewaesy.pages.dev"
+VITE_SUPABASE_URL = "https://jfuebqmltksyznovhlwa.supabase.co"
+SUPABASE_URL = "https://jfuebqmltksyznovhlwa.supabase.co"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmdWVicW1sdGtzeXpub3ZobHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzOTQxOTcsImV4cCI6MjEwMTk3MDE5N30.14RG8TsXNmyauTp1L-VA2UJNC6jrU9tYj8Vk4RXH0Hc"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmdWVicW1sdGtzeXpub3ZobHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzOTQxOTcsImV4cCI6MjEwMTk3MDE5N30.14RG8TsXNmyauTp1L-VA2UJNC6jrU9tYj8Vk4RXH0Hc"
+SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmdWVicW1sdGtzeXpub3ZobHdhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjM5NDE5NywiZXhwIjoyMTAxOTcwMTk3fQ.fQA4JVYOoEAuTltYvqNBeYArVKK6N9Zfz7fZiNXMoQs"
+VITE_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8zwC-hJ2AwyMpXH00aaPdA_ZCFnR6gF"
+SUPABASE_PROJECT_REF = "jfuebqmltksyznovhlwa"
+

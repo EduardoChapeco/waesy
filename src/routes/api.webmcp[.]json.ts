@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MCP_TOOLS_MANIFEST } from "@/services/mcp-server.functions";
+import {
+  MCP_TOOLS_MANIFEST,
+  MCP_RESOURCES_MANIFEST,
+  MCP_PROMPTS_MANIFEST,
+} from "@/services/mcp-server.functions";
 
 export const Route = createFileRoute("/api/webmcp.json")({
   server: {
@@ -9,9 +13,9 @@ export const Route = createFileRoute("/api/webmcp.json")({
 
         const manifest = {
           name: "Waesy Universal Commerce MCP Protocol",
-          version: "2.1.0",
+          version: "2.2.0",
           description:
-            "Especificação WebMCP oficial para descoberta, catálogo, simulação econométrica e automação operacional com AI-Guards e isolamento multi-tenant estrito.",
+            "Especificação WebMCP oficial para descoberta, catálogo, simulação econométrica, propostas, turismo, contratos, logística e automação operacional com AI-Guards e isolamento multi-tenant estrito.",
           protocol: "model-context-protocol/v1",
           executionEndpoint: `${url.origin}/api/mcp/v1/tools/call`,
           securityModel: {
@@ -19,22 +23,37 @@ export const Route = createFileRoute("/api/webmcp.json")({
             tiers: {
               public: "Leitura pública sanitizada de produtos, empresas e frete sem exposição de margens",
               store_staff: "Operações restritas à loja autorizada com validação de sessão e assertStoreAccess",
-              admin_only: "Operações restritas a administradores da plataforma"
+              admin_only: "Operações restritas a administradores da plataforma",
             },
-            isolationRule: "Tentativas de acesso cruzado entre empresas (cross-tenant) resultam em 403 Forbidden imediato e alerta de sentinela."
+            isolationRule:
+              "Tentativas de acesso cruzado entre empresas (cross-tenant) resultam em 403 Forbidden imediato e registro em log de auditoria.",
           },
           capabilities: {
             tools: true,
             resources: true,
-            prompts: false,
+            prompts: true,
           },
+          toolsCount: MCP_TOOLS_MANIFEST.length,
           tools: MCP_TOOLS_MANIFEST.map((tool) => ({
             name: tool.name,
+            module: tool.module,
             description: tool.description,
             tier: tool.tier,
             requiredScope: tool.requiredScope,
+            idempotent: tool.idempotent ?? true,
             parameters: tool.inputSchema,
             endpoint: `${url.origin}/api/mcp/v1/tools/call`,
+          })),
+          resources: MCP_RESOURCES_MANIFEST.map((res) => ({
+            uri: res.uri,
+            name: res.name,
+            description: res.description,
+            mimeType: res.mimeType,
+          })),
+          prompts: MCP_PROMPTS_MANIFEST.map((prompt) => ({
+            name: prompt.name,
+            description: prompt.description,
+            arguments: prompt.arguments,
           })),
         };
 

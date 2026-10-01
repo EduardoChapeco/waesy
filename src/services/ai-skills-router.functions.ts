@@ -222,7 +222,7 @@ export const listSkillsCatalog = createServerFn({ method: "GET" })
 
     const { data: skills, error } = await query.order("name", { ascending: true });
 
-    if (error || !skills) {
+    if (error || skills === null || skills === undefined) {
       console.error("[ai-skills] Erro ao listar skills:", error);
       return [];
     }
@@ -291,6 +291,103 @@ export const toggleSkillActivation = createServerFn({ method: "POST" })
 // Roteador de Intenção e Resolução de Skills (Fase C)
 // ============================================================
 
+export function resolveSkillIntentLogic(
+  userPrompt: string,
+  catalog: SkillItemDTO[],
+  contextNiche?: string,
+): SkillResolutionResult {
+  const promptLower = userPrompt.toLowerCase();
+
+  // Mapeamento de intenções por palavras-chave determinísticas
+  const scoredCandidates: Array<{ skill: SkillItemDTO; score: number; reason: string }> = [];
+
+  for (const skill of catalog) {
+    if (skill.is_enabled === false) continue; // Skill desativada não pode ser selecionada
+
+    let score = 0;
+    const matchedTerms: string[] = [];
+
+    // Checa nicho
+    if (contextNiche && skill.niche === contextNiche) {
+      score += 25;
+    }
+
+    // Checa gatilho explícito
+    const triggerWords = (skill.trigger_explicit || "").toLowerCase().split(/\s+/);
+    for (const w of triggerWords) {
+      if (w.length > 3 && promptLower.includes(w)) {
+        score += 15;
+        matchedTerms.push(w);
+      }
+    }
+
+    // Casos específicos conhecidos
+    if (skill.slug === "commercial_proposal" && (promptLower.includes("proposta") || promptLower.includes("orçamento") || promptLower.includes("investimento"))) {
+      score += 50;
+      matchedTerms.push("proposta");
+    } else if (skill.slug === "receipt_organizer" && (promptLower.includes("comprovante") || promptLower.includes("recibo") || promptLower.includes("nota fiscal") || promptLower.includes("cupom fiscal") || promptLower.includes("fiscais"))) {
+      score += 50;
+      matchedTerms.push("comprovante");
+    } else if (skill.slug === "lead_qualifier_sdr" && (promptLower.includes("lead") || promptLower.includes("bant") || promptLower.includes("prospect"))) {
+      score += 50;
+      matchedTerms.push("lead");
+    } else if (skill.slug === "contract_reviewer" && (promptLower.includes("contrato") || promptLower.includes("cláusula") || promptLower.includes("risco") || promptLower.includes("rescisória") || promptLower.includes("rescisão") || promptLower.includes("minuta"))) {
+      score += 50;
+      matchedTerms.push("contrato");
+    } else if (skill.slug === "tourism_itinerary_builder" && (promptLower.includes("roteiro") || promptLower.includes("viagem") || promptLower.includes("hotel") || promptLower.includes("passeio") || promptLower.includes("turismo") || promptLower.includes("cachoeiras"))) {
+      score += 50;
+      matchedTerms.push("turismo");
+    } else if (skill.slug === "real_estate_appraiser" && (promptLower.includes("imóvel") || promptLower.includes("apartamento") || promptLower.includes("aluguel") || promptLower.includes("terreno") || promptLower.includes("condomínio") || promptLower.includes("suítes"))) {
+      score += 50;
+      matchedTerms.push("imóvel");
+    } else if (skill.slug === "ad_copywriter" && (promptLower.includes("anúncio") || promptLower.includes("copy") || promptLower.includes("campanha") || promptLower.includes("tráfego") || promptLower.includes("cta"))) {
+      score += 50;
+      matchedTerms.push("anúncio");
+    } else if (skill.slug === "support_auto_responder" && (promptLower.includes("dúvida") || promptLower.includes("suporte") || promptLower.includes("ajuda") || promptLower.includes("atrasou") || promptLower.includes("troca") || promptLower.includes("devolução"))) {
+      score += 50;
+      matchedTerms.push("suporte");
+    } else if (skill.slug === "accessibility_checker" && (promptLower.includes("acessibilidade") || promptLower.includes("wcag") || promptLower.includes("contraste") || promptLower.includes("aria-label"))) {
+      score += 50;
+      matchedTerms.push("acessibilidade");
+    } else if (skill.slug === "inventory_forecaster" && (promptLower.includes("estoque") || promptLower.includes("reposição") || promptLower.includes("giro") || promptLower.includes("cobertura"))) {
+      score += 50;
+      matchedTerms.push("estoque");
+    }
+
+    if (score > 20) {
+      scoredCandidates.push({
+        skill,
+        score,
+        reason: `Gatilhos identificados no pedido: [${matchedTerms.slice(0, 3).join(", ")}]`,
+      });
+    }
+  }
+
+  scoredCandidates.sort((a, b) => b.score - a.score);
+
+  if (scoredCandidates.length === 0 || scoredCandidates[0].score < 30) {
+    return {
+      primarySkill: null,
+      pipelineChain: [],
+      confidenceScore: 0.1,
+      selectionReason: "Nenhuma skill declarada atingiu limiar mínimo de confiança.",
+      requiresClarification: true,
+      clarificationPrompt: "Poderia esclarecer se você precisa de uma proposta comercial, revisão de contrato, análise de estoque ou criação de roteiro?",
+    };
+  }
+
+  const winner = scoredCandidates[0];
+  const chain: SkillItemDTO[] = [winner.skill];
+
+  return {
+    primarySkill: winner.skill,
+    pipelineChain: chain,
+    confidenceScore: Math.min(1.0, Number((winner.score / 100).toFixed(2))),
+    selectionReason: winner.reason,
+    requiresClarification: false,
+  };
+}
+
 export const resolveSkillIntent = createServerFn({ method: "POST" })
   .validator(
     z.object({
@@ -300,86 +397,7 @@ export const resolveSkillIntent = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: input }): Promise<SkillResolutionResult> => {
     const catalog = await listSkillsCatalog({ data: {} });
-    const promptLower = input.userPrompt.toLowerCase();
-
-    // Mapeamento de intenções por palavras-chave determinísticas
-    const scoredCandidates: Array<{ skill: SkillItemDTO; score: number; reason: string }> = [];
-
-    for (const skill of catalog) {
-      if (!skill.is_enabled) continue; // Skill desativada não pode ser selecionada
-
-      let score = 0;
-      let matchedTerms: string[] = [];
-
-      // Checa nicho
-      if (input.contextNiche && skill.niche === input.contextNiche) {
-        score += 25;
-      }
-
-      // Checa gatilho explícito
-      const triggerWords = skill.trigger_explicit.toLowerCase().split(/\s+/);
-      for (const w of triggerWords) {
-        if (w.length > 3 && promptLower.includes(w)) {
-          score += 15;
-          matchedTerms.push(w);
-        }
-      }
-
-      // Casos específicos conhecidos
-      if (skill.slug === "commercial_proposal" && (promptLower.includes("proposta") || promptLower.includes("orçamento"))) {
-        score += 50;
-      } else if (skill.slug === "receipt_organizer" && (promptLower.includes("comprovante") || promptLower.includes("recibo") || promptLower.includes("nota fiscal"))) {
-        score += 50;
-      } else if (skill.slug === "lead_qualifier_sdr" && (promptLower.includes("lead") || promptLower.includes("cliente") || promptLower.includes("bant"))) {
-        score += 50;
-      } else if (skill.slug === "contract_reviewer" && (promptLower.includes("contrato") || promptLower.includes("cláusula") || promptLower.includes("risco"))) {
-        score += 50;
-      } else if (skill.slug === "tourism_itinerary_builder" && (promptLower.includes("roteiro") || promptLower.includes("viagem") || promptLower.includes("hotel"))) {
-        score += 50;
-      } else if (skill.slug === "real_estate_appraiser" && (promptLower.includes("imóvel") || promptLower.includes("apartamento") || promptLower.includes("aluguel"))) {
-        score += 50;
-      } else if (skill.slug === "ad_copywriter" && (promptLower.includes("anúncio") || promptLower.includes("copy") || promptLower.includes("campanha"))) {
-        score += 50;
-      } else if (skill.slug === "support_auto_responder" && (promptLower.includes("dúvida") || promptLower.includes("suporte") || promptLower.includes("ajuda"))) {
-        score += 40;
-      } else if (skill.slug === "accessibility_checker" && (promptLower.includes("acessibilidade") || promptLower.includes("wcag") || promptLower.includes("contraste"))) {
-        score += 50;
-      } else if (skill.slug === "inventory_forecaster" && (promptLower.includes("estoque") || promptLower.includes("reposição") || promptLower.includes("giro"))) {
-        score += 50;
-      }
-
-      if (score > 20) {
-        scoredCandidates.push({
-          skill,
-          score,
-          reason: `Gatilhos identificados no pedido: [${matchedTerms.slice(0, 3).join(", ")}]`,
-        });
-      }
-    }
-
-    scoredCandidates.sort((a, b) => b.score - a.score);
-
-    if (scoredCandidates.length === 0 || scoredCandidates[0].score < 30) {
-      return {
-        primarySkill: null,
-        pipelineChain: [],
-        confidenceScore: 0.1,
-        selectionReason: "Nenhuma skill declarada atingiu limiar mínimo de confiança.",
-        requiresClarification: true,
-        clarificationPrompt: "Poderia esclarecer se você precisa de uma proposta comercial, revisão de contrato, análise de estoque ou criação de roteiro?",
-      };
-    }
-
-    const winner = scoredCandidates[0];
-    const chain: SkillItemDTO[] = [winner.skill];
-
-    return {
-      primarySkill: winner.skill,
-      pipelineChain: chain,
-      confidenceScore: Math.min(1.0, Number((winner.score / 100).toFixed(2))),
-      selectionReason: winner.reason,
-      requiresClarification: false,
-    };
+    return resolveSkillIntentLogic(input.userPrompt, catalog, input.contextNiche);
   });
 
 // ============================================================
@@ -399,7 +417,7 @@ export const executeSkill = createServerFn({ method: "POST" })
     const identity = await getServerIdentity().catch(() => null);
 
     const definition = CANONICAL_SKILLS_DEFINITIONS[input.skillSlug];
-    if (!definition) {
+    if (definition === null || definition === undefined) {
       throw new Error(`Definição da skill '${input.skillSlug}' não encontrada no catálogo canônico.`);
     }
 
@@ -409,7 +427,7 @@ export const executeSkill = createServerFn({ method: "POST" })
       .eq("slug", input.skillSlug)
       .maybeSingle();
 
-    if (!skillRow || !skillRow.is_active) {
+    if (skillRow === null || skillRow === undefined || skillRow.is_active === false) {
       throw new Error("A skill solicitada não existe ou está globalmente inativa.");
     }
 
@@ -422,7 +440,7 @@ export const executeSkill = createServerFn({ method: "POST" })
         .eq("skill_id", skillRow.id)
         .maybeSingle();
 
-      if (storeSetting && !storeSetting.is_enabled) {
+      if (storeSetting && storeSetting.is_enabled === false) {
         throw new Error("Esta skill está desativada nas configurações do seu workspace. Ative-a antes de executar.");
       }
     }
@@ -455,7 +473,7 @@ ${input.inputs ? `\nDados complementares:\n${JSON.stringify(input.inputs, null, 
       },
     });
 
-    if (!gatewayRes.success) {
+    if (gatewayRes.success === false) {
       throw new Error(gatewayRes.error?.message || "Erro durante a execução da skill no gateway de IA.");
     }
 

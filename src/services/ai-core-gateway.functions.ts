@@ -104,7 +104,7 @@ const MODEL_PRICING: Record<string, { inPer1M: number; outPer1M: number }> = {
   "default": { inPer1M: 0.50, outPer1M: 1.00 },
 };
 
-function calculateCost(provider: string, model: string, inTokens: number, outTokens: number): number {
+export function calculateCost(provider: string, model: string, inTokens: number, outTokens: number): number {
   const key = `${provider}:${model}`;
   const pricing = MODEL_PRICING[key] || MODEL_PRICING["default"];
   const cost = (inTokens / 1_000_000) * pricing.inPer1M + (outTokens / 1_000_000) * pricing.outPer1M;
@@ -115,14 +115,14 @@ function calculateCost(provider: string, model: string, inTokens: number, outTok
 const inFlightRequests = new Map<string, Promise<AIGatewayResponse>>();
 
 // Circuit Breakers em Memória (com fallback e persistência assíncrona)
-interface ProviderCircuit {
+export interface ProviderCircuit {
   state: CircuitState;
   consecutiveFailures: number;
   openUntil: number;
 }
-const circuitBreakers = new Map<string, ProviderCircuit>();
+export const circuitBreakers = new Map<string, ProviderCircuit>();
 
-function getCircuit(provider: string): ProviderCircuit {
+export function getCircuit(provider: string): ProviderCircuit {
   let cb = circuitBreakers.get(provider);
   if (!cb) {
     cb = { state: "closed", consecutiveFailures: 0, openUntil: 0 };
@@ -135,7 +135,7 @@ function getCircuit(provider: string): ProviderCircuit {
   return cb;
 }
 
-function recordCircuitFailure(provider: string) {
+export function recordCircuitFailure(provider: string) {
   const cb = getCircuit(provider);
   cb.consecutiveFailures += 1;
   if (cb.consecutiveFailures >= 3 || cb.state === "half_open") {
@@ -145,7 +145,7 @@ function recordCircuitFailure(provider: string) {
   }
 }
 
-function recordCircuitSuccess(provider: string) {
+export function recordCircuitSuccess(provider: string) {
   const cb = getCircuit(provider);
   cb.consecutiveFailures = 0;
   cb.state = "closed";
@@ -156,12 +156,12 @@ function recordCircuitSuccess(provider: string) {
 // Matriz Canônica de Roteamento por Tarefa
 // ============================================================
 
-interface RouteCandidate {
+export interface RouteCandidate {
   provider: string;
   model: string;
 }
 
-const CANONICAL_TASK_ROUTES: Record<AITaskType, RouteCandidate[]> = {
+export const CANONICAL_TASK_ROUTES: Record<AITaskType, RouteCandidate[]> = {
   chat: [
     { provider: "groq", model: "llama-3.3-70b-versatile" },
     { provider: "gemini", model: "gemini-1.5-flash" },

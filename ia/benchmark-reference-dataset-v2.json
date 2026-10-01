@@ -1,0 +1,443 @@
+{
+  "version": "2.0.0",
+  "generated_at": "2026-10-01T08:30:00Z",
+  "description": "Dataset Canônico de Referência e Regressão de Qualidade de IA 2.0 (Waesy Platform)",
+  "total_benchmarks": 20,
+  "benchmarks": [
+    {
+      "id": "BENCH-2.0-CHAT-01",
+      "task": "chat",
+      "title": "Atendimento e Horário de Funcionamento",
+      "prompt": "Qual o horário de funcionamento do restaurante hoje?",
+      "context": {
+        "store_name": "Cantina Bella Italia",
+        "niche": "gastronomia",
+        "day_of_week": "terca",
+        "business_hours": "11:30 às 23:00",
+        "delivery_available": true
+      },
+      "expected_output": {
+        "must_contain": ["11:30 às 23:00", "Cantina Bella Italia"],
+        "prohibited_terms": ["Certamente", "Com certeza", "Olá querido"]
+      },
+      "acceptance_criteria": [
+        "Fidelidade estrita aos horários da terça-feira",
+        "Zero invenção de horários de feriados não informados",
+        "Tom conciso sem floreios"
+      ],
+      "min_pass_score": 4.5
+    },
+    {
+      "id": "BENCH-2.0-CHAT-02",
+      "task": "chat",
+      "title": "Verificação de Estoque e Preço",
+      "prompt": "Vocês ainda têm o Tênis Air Runner tamanho 41 disponível e qual o preço?",
+      "context": {
+        "store_name": "SportMax",
+        "product_name": "Tênis Air Runner",
+        "sku": "AR-41-BLK",
+        "stock_qty": 3,
+        "price_cents": 34990
+      },
+      "expected_output": {
+        "must_contain": ["R$ 349,90", "3 unidades", "tamanho 41"],
+        "prohibited_terms": ["super promoção", "garanto que vai gostar"]
+      },
+      "acceptance_criteria": [
+        "Preço formatado corretamente em BRL",
+        "Confirmação exata de 3 pares restantes",
+        "Link ou ação para adicionar ao carrinho"
+      ],
+      "min_pass_score": 4.6
+    },
+    {
+      "id": "BENCH-2.0-CHAT-03",
+      "task": "chat",
+      "title": "Triagem e Registro de Devolução (RMA)",
+      "prompt": "Recebi a camisa com tamanho menor do que o anunciado, quero trocar.",
+      "context": {
+        "store_name": "Moda Urbana",
+        "order_number": "ORD-9821",
+        "days_since_delivery": 4,
+        "return_window_days": 7
+      },
+      "expected_output": {
+        "must_contain": ["ORD-9821", "prazo de 7 dias", "código de postagem"],
+        "prohibited_terms": ["infelizmente você perdeu o prazo", "desculpe pelo transtorno terrível"]
+      },
+      "acceptance_criteria": [
+        "Identificação de que está dentro da janela legal de 7 dias",
+        "Instruções objetivas para postagem",
+        "Geração de protocolo de atendimento"
+      ],
+      "min_pass_score": 4.6
+    },
+    {
+      "id": "BENCH-2.0-DOC-01",
+      "task": "document",
+      "title": "Minuta de Acordo de Confidencialidade (NDA)",
+      "prompt": "Gere a cláusula de penalidade e vigência para um NDA bilateral de tecnologia.",
+      "context": {
+        "party_a": "Waesy Tech Ltda",
+        "party_b": "Inova Labs SA",
+        "validity_years": 2,
+        "penalty_cents": 5000000,
+        "jurisdiction": "Comarca de Chapecó - SC"
+      },
+      "expected_output": {
+        "must_contain": ["2 (dois) anos", "R$ 50.000,00", "Chapecó"],
+        "prohibited_terms": ["independente de dolo ou culpa", "indenização infinita"]
+      },
+      "acceptance_criteria": [
+        "Vocabulário jurídico formal e preciso",
+        "Delimitação da comarca de Chapecó",
+        "Multa cominatória de 50 mil reais expressa por extenso"
+      ],
+      "min_pass_score": 4.7
+    },
+    {
+      "id": "BENCH-2.0-DOC-02",
+      "task": "document",
+      "title": "Proposta Comercial de Consultoria de Engenharia",
+      "prompt": "Elabore o resumo executivo e escopo de fases da proposta técnica.",
+      "context": {
+        "client_name": "Hospital Regional Oeste",
+        "scope_summary": "Auditoria de eficiência energética e migração para mercado livre de energia",
+        "phases_count": 3,
+        "total_investment_cents": 4800000
+      },
+      "expected_output": {
+        "must_contain": ["R$ 48.000,00", "3 fases", "mercado livre de energia"],
+        "prohibited_terms": ["garantimos economia de 99%", "o melhor serviço do Brasil"]
+      },
+      "acceptance_criteria": [
+        "Divisão em 3 fases delimitadas",
+        "Investimento total de R$ 48.000,00 sem promessas de retorno irrealistas",
+        "Estrutura documental limpa"
+      ],
+      "min_pass_score": 4.6
+    },
+    {
+      "id": "BENCH-2.0-PRES-01",
+      "task": "presentation",
+      "title": "Slide de Apresentação de Resultados Trimestrais",
+      "prompt": "Estruture o slide 3 de crescimento de GMV e churn do trimestre Q3.",
+      "context": {
+        "company": "Rede Local",
+        "gmv_growth_pct": 24.5,
+        "churn_rate_pct": 1.2,
+        "cac_cents": 4500,
+        "ltv_cents": 280000
+      },
+      "expected_output": {
+        "must_contain": ["+24,5%", "1,2%", "CAC: R$ 45,00", "LTV: R$ 2.800,00"],
+        "prohibited_terms": ["números astronômicos", "dominamos o mundo"]
+      },
+      "acceptance_criteria": [
+        "Hierarquia de cartões e métricas 16:9",
+        "Separação clara entre crescimento e retenção",
+        "Densidade máxima de dados sem ruído textual"
+      ],
+      "min_pass_score": 4.5
+    },
+    {
+      "id": "BENCH-2.0-PRES-02",
+      "task": "presentation",
+      "title": "Slide de Onboarding do Lojista Parceiro",
+      "prompt": "Elabore o slide com os 4 passos de ativação da loja no marketplace.",
+      "context": {
+        "steps": ["Cadastro do Cardápio", "Configuração de Raio de Entrega", "Teste de Impressora", "Go-Live"],
+        "sla_hours": 24
+      },
+      "expected_output": {
+        "must_contain": ["Cardápio", "Raio de Entrega", "Impressora", "Go-Live", "24h"],
+        "prohibited_terms": ["fácil demais", "qualquer um faz"]
+      },
+      "acceptance_criteria": [
+        "Sequência numérica de 1 a 4",
+        "SLA expresso de 24 horas",
+        "Instruções acionáveis para o operador"
+      ],
+      "min_pass_score": 4.5
+    },
+    {
+      "id": "BENCH-2.0-PAGE-01",
+      "task": "page",
+      "title": "Hero e Seções de Biolink Gastronômico",
+      "prompt": "Gere os blocos de introdução e botões rápidos para hamburgueria artesanal.",
+      "context": {
+        "store_name": "Rústico Burger",
+        "specialty": "Hambúrguer na brasa com pão de fermentação natural",
+        "delivery_link": "/cardapio",
+        "reservation_link": "/reservas"
+      },
+      "expected_output": {
+        "must_contain": ["Rústico Burger", "/cardapio", "/reservas"],
+        "prohibited_terms": ["o mais gostoso do universo", "delícia sem igual"]
+      },
+      "acceptance_criteria": [
+        "Utilização dos blocos canônicos de builder",
+        "Botões de ação com rotas válidas",
+        "Título curto e direto (menos de 6 palavras)"
+      ],
+      "min_pass_score": 4.6
+    },
+    {
+      "id": "BENCH-2.0-PAGE-02",
+      "task": "page",
+      "title": "Vitrine de Serviços de Escritório de Advocacia",
+      "prompt": "Estruture a grade de áreas de atuação do escritório.",
+      "context": {
+        "firm_name": "Ramos & Associados",
+        "practices": ["Direito Tributário", "Direito Societário", "Planejamento Sucessório"],
+        "oab_state": "SC"
+      },
+      "expected_output": {
+        "must_contain": ["Ramos & Associados", "Direito Tributário", "Societário", "Sucessório"],
+        "prohibited_terms": ["ganhamos todas", "garantia de causa ganha"]
+      },
+      "acceptance_criteria": [
+        "Conformidade com o código de ética da OAB",
+        "Zero promessa de resultado garantido",
+        "Hierarquia sóbria de serviços"
+      ],
+      "min_pass_score": 4.7
+    },
+    {
+      "id": "BENCH-2.0-AD-01",
+      "task": "ad",
+      "title": "Campanha de Tráfego Local para Pizzaria",
+      "prompt": "Crie o copy de anúncio para promoção de terça a quinta com borda grátis.",
+      "context": {
+        "business": "Pizzaria Bella Napoli",
+        "offer": "Borda recheada grátis nas pizzas grandes",
+        "validity": "Terça a quinta-feira",
+        "cta": "Pedir pelo Delivery"
+      },
+      "expected_output": {
+        "must_contain": ["Borda recheada grátis", "terça a quinta", "Pedir pelo Delivery"],
+        "prohibited_terms": ["imperdível", "compre antes que acabe o mundo"]
+      },
+      "acceptance_criteria": [
+        "Texto objetivo e apetitoso sem emojis",
+        "Condições de validade claras",
+        "CTA direto para a ação"
+      ],
+      "min_pass_score": 4.6
+    },
+    {
+      "id": "BENCH-2.0-AD-02",
+      "task": "ad",
+      "title": "Campanha de Retargeting para Carrinho Abandonado",
+      "prompt": "Gere copy curto e não invasivo lembrando do item reservado no carrinho.",
+      "context": {
+        "user_name": "Renata",
+        "item_name": "Cafeteira Prensa Francesa",
+        "discount_coupon": "VOLTA5",
+        "discount_pct": 5
+      },
+      "expected_output": {
+        "must_contain": ["Renata", "Cafeteira Prensa Francesa", "VOLTA5", "5%"],
+        "prohibited_terms": ["última chance da sua vida", "não perca por nada"]
+      },
+      "acceptance_criteria": [
+        "Tom respeitoso sem pressão apelativa",
+        "Código de cupom VOLTA5 explicitado",
+        "Nome do item correto"
+      ],
+      "min_pass_score": 4.6
+    },
+    {
+      "id": "BENCH-2.0-CLASS-01",
+      "task": "classification",
+      "title": "Classificação Categórica de Transação Financeira",
+      "prompt": "Classifique a transação bancária em categoria e centro de custo.",
+      "context": {
+        "description": "POSTO IPIRANGA CHIMARRAO COMBUSTIVEL DIESEL",
+        "amount_cents": 32000,
+        "operation_type": "debit"
+      },
+      "expected_output": {
+        "category": "combustivel_transporte",
+        "tax_deductible": true,
+        "department": "logistica"
+      },
+      "acceptance_criteria": [
+        "Categoria exata 'combustivel_transporte'",
+        "Departamento alocado como 'logistica'",
+        "JSON estrito sem texto adicional"
+      ],
+      "min_pass_score": 4.8
+    },
+    {
+      "id": "BENCH-2.0-CLASS-02",
+      "task": "classification",
+      "title": "Triagem e Risco de Notificação Extrajudicial",
+      "prompt": "Classifique a demanda jurídica por urgência e área do direito.",
+      "context": {
+        "document_text": "Notificação de rescisão de locação comercial com pedido de despejo em 15 dias por falta de fiador.",
+        "tenant_id": "store-chapeco-01"
+      },
+      "expected_output": {
+        "area": "imobiliario_locacao",
+        "urgency": "alta",
+        "risk_level": "critico"
+      },
+      "acceptance_criteria": [
+        "Urgência 'alta' devido ao prazo de 15 dias",
+        "Área 'imobiliario_locacao'",
+        "Risco classificado como 'critico'"
+      ],
+      "min_pass_score": 4.8
+    },
+    {
+      "id": "BENCH-2.0-EXTR-01",
+      "task": "extraction",
+      "title": "Extração de Cardápio a partir de Texto Bruto",
+      "prompt": "Extraia produtos, categorias e valores em centavos.",
+      "context": {
+        "raw_text": "BURGERS: Clássico Burger (Pão brioche, blend 180g, queijo cheddar) - R$ 34,90. Bacon Supreme - R$ 42,00. BEBIDAS: Coca-Cola 350ml - R$ 6,50."
+      },
+      "expected_output": {
+        "products_count": 3,
+        "items": [
+          { "title": "Clássico Burger", "price_cents": 3490 },
+          { "title": "Bacon Supreme", "price_cents": 4200 },
+          { "title": "Coca-Cola 350ml", "price_cents": 650 }
+        ]
+      },
+      "acceptance_criteria": [
+        "Conversão exata de R$ 34,90 para 3490 centavos",
+        "Extração das 2 categorias (BURGERS e BEBIDAS)",
+        "Zero omissão de itens informados"
+      ],
+      "min_pass_score": 4.9
+    },
+    {
+      "id": "BENCH-2.0-EXTR-02",
+      "task": "extraction",
+      "title": "Extração de Dados Fiscais de DANFE / Cupom",
+      "prompt": "Extraia chave de acesso, CNPJ emissor e valor total do documento.",
+      "context": {
+        "raw_text": "EMITENTE: PADARIA CENTRAL LTDA CNPJ: 12.345.678/0001-90 CHAVE: 42261012345678000190550010000012341000012345 VALOR TOTAL: R$ 158,40"
+      },
+      "expected_output": {
+        "cnpj": "12.345.678/0001-90",
+        "access_key": "42261012345678000190550010000012341000012345",
+        "total_cents": 15840
+      },
+      "acceptance_criteria": [
+        "Chave de 44 dígitos extraída com fidelidade",
+        "CNPJ extraído sem caracteres corrompidos",
+        "Valor total 15840 centavos"
+      ],
+      "min_pass_score": 4.9
+    },
+    {
+      "id": "BENCH-2.0-EXTR-03",
+      "task": "extraction",
+      "title": "Extração de Atributos e Variantes de Vestuário",
+      "prompt": "Extraia tabela de tamanhos, cores disponíveis e composição de tecido.",
+      "context": {
+        "raw_text": "Camisa Polo Algodão Pima 100%. Disponível nas cores: Preto, Branco e Azul Marinho. Tamanhos do P ao GG."
+      },
+      "expected_output": {
+        "material": "100% Algodão Pima",
+        "colors": ["Preto", "Branco", "Azul Marinho"],
+        "sizes": ["P", "M", "G", "GG"]
+      },
+      "acceptance_criteria": [
+        "Identificação das 3 cores",
+        "Desdobramento da grade de tamanhos P, M, G, GG",
+        "Material preservado fielmente"
+      ],
+      "min_pass_score": 4.8
+    },
+    {
+      "id": "BENCH-2.0-SUMM-01",
+      "task": "summary",
+      "title": "Fechamento Diário de Caixa e Turno de Vendas",
+      "prompt": "Sintetize os totais de vendas em dinheiro, pix e cartão com sobras/faltas.",
+      "context": {
+        "cash_declared_cents": 125000,
+        "cash_system_cents": 125000,
+        "pix_cents": 348000,
+        "card_credit_cents": 420000,
+        "card_debit_cents": 210000,
+        "discrepancy_cents": 0
+      },
+      "expected_output": {
+        "total_revenue_cents": 1103000,
+        "discrepancy_status": "exato_sem_diferencas"
+      },
+      "acceptance_criteria": [
+        "Soma exata das receitas: R$ 11.030,00",
+        "Constatação de divergência zero (R$ 0,00)",
+        "Resumo conciso em bullet points"
+      ],
+      "min_pass_score": 4.8
+    },
+    {
+      "id": "BENCH-2.0-SUMM-02",
+      "task": "summary",
+      "title": "Relatório Executivo Semanal de Operações",
+      "prompt": "Resuma as ocorrências de suporte e tempo médio de resposta.",
+      "context": {
+        "total_tickets": 84,
+        "resolved_tickets": 81,
+        "avg_resolution_hours": 3.4,
+        "top_category": "duvida_rastreamento"
+      },
+      "expected_output": {
+        "must_contain": ["84 chamados", "81 resolvidos (96,4%)", "3,4 horas", "rastreamento"]
+      },
+      "acceptance_criteria": [
+        "Taxa de resolução calculada corretamente",
+        "Principal categoria identificada",
+        "Menos de 10 linhas de texto"
+      ],
+      "min_pass_score": 4.7
+    },
+    {
+      "id": "BENCH-2.0-CODE-01",
+      "task": "code",
+      "title": "Função Pura de Cálculo de Comissão Escalonada",
+      "prompt": "Escreva função TypeScript pura para calcular comissão de vendedor.",
+      "context": {
+        "tiers": "Até R$ 10.000: 3%. De R$ 10.001 a R$ 30.000: 5%. Acima de R$ 30.000: 7%.",
+        "inputs": "salesCents: number",
+        "returns": "commissionCents: number"
+      },
+      "expected_output": {
+        "must_contain": ["function calculateCommission", "salesCents", "Math.round"],
+        "prohibited_terms": ["any", "eval", "console.log"]
+      },
+      "acceptance_criteria": [
+        "Tipagem estrita TypeScript",
+        "Zero uso de 'any' ou 'eval'",
+        "Lógica matemática sem números mágicos flutuantes imprecisos"
+      ],
+      "min_pass_score": 4.9
+    },
+    {
+      "id": "BENCH-2.0-CODE-02",
+      "task": "code",
+      "title": "Schema Zod para Validação de Chave PIX",
+      "prompt": "Gere o schema Zod para validar chave PIX (CPF, CNPJ, Email, Telefone, EVP).",
+      "context": {
+        "library": "zod",
+        "types_supported": ["cpf", "cnpj", "email", "phone", "evp"]
+      },
+      "expected_output": {
+        "must_contain": ["z.object", "pixKey", "z.string()"],
+        "prohibited_terms": ["import * as zod", "any"]
+      },
+      "acceptance_criteria": [
+        "Sintaxe correta Zod",
+        "Regras regex válidas para os 5 tipos",
+        "Mensagens de erro em português"
+      ],
+      "min_pass_score": 4.9
+    }
+  ]
+}
