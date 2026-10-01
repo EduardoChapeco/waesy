@@ -81,7 +81,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
             <Sparkles className="size-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-foreground">Onboarding por IA</h3>
+            <h3 className="text-sm font-semibold text-foreground line-clamp-1">Onboarding por IA</h3>
             <p className="text-xs text-muted-foreground">
               Mapeamento de marca, DNA, SWOT e catálogo via URL.
             </p>

@@ -9,8 +9,16 @@ import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { FilterBottomSheet, FilterTriggerButton } from "@/components/workspace/filter-bottom-sheet";
 import { StorePersonasMatrix } from "@/components/workspace/crm/store-personas-matrix";
-import { listCustomers } from "@/services/crm.functions";
+import { WhatsAppLeadsInbox } from "@/components/workspace/crm/whatsapp-leads-inbox";
+import { listCustomers, listLeads, updateLeadStatus, promoteLeadToCustomer } from "@/services/crm.functions";
+import { toast } from "sonner";
 import { getDashboardData } from "@/services/dashboard.functions";
+import { getEntityUnifiedTimeline } from "@/services/domain-events.functions";
+import { NicheKanbanBoard, NicheKanbanCardData } from "@/components/workspace/kanban/niche-kanban-board";
+import { UnifiedEntityTimeline } from "@/components/workspace/timeline/unified-entity-timeline";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { useNicheTaxonomy } from "@/hooks/use-niche-taxonomy";
+import { NicheId } from "@/lib/niche-manifest";
 import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { EmptyState } from "@/components/state/states";
@@ -49,13 +57,51 @@ export default function WorkspaceCrmPage() {
   const [channelFilter, setChannelFilter] = useState<string>("all");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [showMetricsMobile, setShowMetricsMobile] = useState(false);
-  const [activeTab, setActiveTab] = useState<"clientes" | "personas">("clientes");
+  const [activeTab, setActiveTab] = useState<"clientes" | "funil" | "personas" | "whatsapp">("clientes");
+  const { nicheId } = useNicheTaxonomy();
+  const [selectedEntity, setSelectedEntity] = useState<{ id: string; name: string; type: "lead" | "customer" } | null>(null);
 
   const { data: customers = initialCustomers } = useQuery({
     queryKey: ["workspace-crm-customers", statusFilter, channelFilter],
     queryFn: () => listCustomers({ data: { status: statusFilter, channel: channelFilter } }),
     initialData: initialCustomers,
   });
+
+  const { data: leads = [], refetch: refetchLeads } = useQuery({
+    queryKey: ["workspace-crm-leads"],
+    queryFn: () => listLeads(),
+    enabled: activeTab === "funil",
+  });
+
+  const { data: timelineEvents = [], isLoading: isLoadingTimeline } = useQuery({
+    queryKey: ["workspace-entity-timeline", selectedEntity?.type, selectedEntity?.id],
+    queryFn: () =>
+      selectedEntity
+        ? getEntityUnifiedTimeline({ data: { entityType: selectedEntity.type, entityId: selectedEntity.id } })
+        : Promise.resolve([]),
+    enabled: !!selectedEntity,
+  });
+
+  const kanbanItems: NicheKanbanCardData[] = useMemo(() => {
+    return (leads as any[]).map((l: any) => ({
+      id: l.id,
+      title: l.title || l.full_name || "Oportunidade",
+      status: l.status || "new",
+      value: (l.estimated_value_cents || 0) / 100,
+      contactName: l.full_name,
+      contactPhone: l.phone,
+      tags: l.tags || [],
+    }));
+  }, [leads]);
+
+  const selectedLead = useMemo(() => {
+    return selectedEntity?.type === "lead" ? (leads as any[]).find((l: any) => l.id === selectedEntity.id) : null;
+  }, [selectedEntity, leads]);
+
+  const handleTransitionLead = async (leadId: string, nextStatus: string) => {
+    await updateLeadStatus({ data: { leadId, status: nextStatus as any } });
+    await refetchLeads();
+  };
 
   const filteredCustomers = useMemo(() => {
     let list = customers;
@@ -166,12 +212,12 @@ export default function WorkspaceCrmPage() {
         </div>
       </div>
 
-      {/* ── Sub-Navegação Silenciosa: Clientes vs Personas Preditivas (50-Prompt Golden Codex) ── */}
-      <div className="flex items-center gap-1 border-b border-border/40 pb-2">
+      {/* ── Sub-Navegação Silenciosa: Clientes vs Funil vs Personas vs WhatsApp ── */}
+      <div className="flex items-center gap-1 border-b border-border/40 pb-2 overflow-x-auto no-scrollbar">
         <button
           type="button"
           onClick={() => setActiveTab("clientes")}
-          className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+          className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
             activeTab === "clientes"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -183,8 +229,21 @@ export default function WorkspaceCrmPage() {
 
         <button
           type="button"
+          onClick={() => setActiveTab("funil")}
+          className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+            activeTab === "funil"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          <Kanban className="size-3.5" />
+          <span>Funil de Vendas</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab("personas")}
-          className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+          className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
             activeTab === "personas"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -193,10 +252,37 @@ export default function WorkspaceCrmPage() {
           <Brain className="size-3.5" />
           <span>Personas</span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("whatsapp")}
+          className={`min-h-9 px-3 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden ${
+            activeTab === "whatsapp"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          <MessageCircle className="size-3.5" />
+          <span>Leads WhatsApp</span>
+        </button>
       </div>
 
-      {activeTab === "personas" ? (
+      {activeTab === "funil" ? (
+        <div className="pt-2">
+          <NicheKanbanBoard
+            nicheId={(nicheId as NicheId) || "generic"}
+            entity="lead"
+            items={kanbanItems}
+            onTransitionStatus={handleTransitionLead}
+            onCardClick={(item) =>
+              setSelectedEntity({ id: item.id, name: item.title, type: "lead" })
+            }
+          />
+        </div>
+      ) : activeTab === "personas" ? (
         <StorePersonasMatrix />
+      ) : activeTab === "whatsapp" ? (
+        <WhatsAppLeadsInbox />
       ) : (
         <>
           {/* ── 2. Grid de Métricas (Visível sempre no Desktop; Alternável no Mobile) ── */}
@@ -539,6 +625,105 @@ export default function WorkspaceCrmPage() {
       )}
         </>
       )}
+
+      {/* ── Sheet Lateral de Inspeção e Timeline 360 (P36 / P47) ── */}
+      <Sheet open={!!selectedEntity} onOpenChange={(open) => !open && setSelectedEntity(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col">
+          <SheetHeader className="p-6 border-b border-border/40">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="text-base font-bold text-foreground">
+                {selectedEntity?.name}
+              </SheetTitle>
+              <Badge variant="outline" className="text-[11px] font-semibold">
+                {selectedEntity?.type === "lead" ? "Oportunidade" : "Cliente"}
+              </Badge>
+            </div>
+            <SheetDescription className="text-xs text-muted-foreground">
+              {selectedEntity?.type === "lead"
+                ? "Ciclo comercial e conversão de oportunidade"
+                : "Histórico consolidado 360° e timeline"}
+            </SheetDescription>
+          </SheetHeader>
+
+          {/* Quick Actions & Details para Leads */}
+          {selectedLead && (
+            <div className="p-4 border-b border-border/30 bg-muted/20 space-y-3">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {selectedLead.phone && (
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Phone className="size-3.5 text-primary" />
+                    <span>{selectedLead.phone}</span>
+                  </div>
+                )}
+                {selectedLead.destination && (
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Globe className="size-3.5 text-primary" />
+                    <span>{selectedLead.destination}</span>
+                  </div>
+                )}
+                {selectedLead.estimated_value_cents ? (
+                  <div className="flex items-center gap-1.5 text-muted-foreground col-span-2">
+                    <DollarSign className="size-3.5 text-primary" />
+                    <span>Valor Estimado: {formatMoney((selectedLead.estimated_value_cents || 0) / 100)}</span>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="flex-1 text-xs h-9 gap-1.5"
+                  asChild
+                >
+                  <Link
+                    to="/workspace/turismo/propostas/novo"
+                    search={{
+                      leadId: selectedLead.id,
+                      clientName: selectedLead.full_name || selectedLead.title || "",
+                      phone: selectedLead.phone || "",
+                      destination: selectedLead.destination || "",
+                    } as any}
+                  >
+                    <ArrowUpRight className="size-3.5" />
+                    Gerar Proposta
+                  </Link>
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs h-9 gap-1.5"
+                  onClick={async () => {
+                    try {
+                      await promoteLeadToCustomer({ data: { leadId: selectedLead.id } });
+                      toast.success("Lead promovido a cliente com sucesso!");
+                      refetchLeads();
+                      setSelectedEntity(null);
+                    } catch (e: any) {
+                      toast.error("Erro ao promover lead: " + (e?.message || "falha desconhecida"));
+                    }
+                  }}
+                >
+                  <UserCheck className="size-3.5" />
+                  Virar Cliente
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Timeline Unificada de Eventos
+            </h4>
+            <UnifiedEntityTimeline
+              entries={timelineEvents}
+              isLoading={isLoadingTimeline}
+              emptyMessage="Nenhuma atividade ou evento registrado para este registro até o momento."
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

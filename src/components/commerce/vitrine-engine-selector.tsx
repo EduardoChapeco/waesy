@@ -7,16 +7,14 @@ export interface VitrineEngineSelectorProps {
   activeMode: VitrineEngineMode;
   onModeChange: (mode: VitrineEngineMode) => void;
   className?: string;
-  verifiedCount?: number;
-  classifiedCount?: number;
 }
 
 /**
- * Seletor Tri-Engine da Vitrine Canônica (Apple HIG / Silent Design)
- * Alterna diretamente entre:
- * 1. Empresas (Places / Guia Comercial / Diretório Local)
- * 2. Marketplace (Lojas Oficiais com Workspace / Planos Pro/Max / Produtos Verificados)
- * 3. Classificados (Anúncios P2P / Comunidade / Desapega)
+ * Seletor Tri-Engine da Vitrine Principal (Design Silencioso / Apple HIG)
+ * Botões em cards amplos e limpos para filtragem direta por tipo de vitrine:
+ * 1. Lugares (Guia local, serviços e endereços)
+ * 2. Lojas (Marketplace e estabelecimentos)
+ * 3. Classificados (Anúncios da comunidade)
  */
 export function VitrineEngineSelector({
   activeMode,
@@ -27,9 +25,9 @@ export function VitrineEngineSelector({
     <div
       role="tablist"
       aria-label="Tipo de visualização da vitrine"
-      className={cn("w-full grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5", className)}
+      className={cn("w-full grid grid-cols-1 sm:grid-cols-3 gap-3", className)}
     >
-      {/* ── Card 1: Empresas ── */}
+      {/* ── Card 1: Lugares ── */}
       <button
         type="button"
         role="tab"
@@ -37,15 +35,15 @@ export function VitrineEngineSelector({
         tabIndex={activeMode === "empresas" ? 0 : -1}
         onClick={() => onModeChange("empresas")}
         className={cn(
-          "group relative flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 cursor-pointer select-none min-h-14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+          "group relative flex items-center justify-center sm:justify-start gap-3.5 px-4 py-3 sm:px-5 sm:py-4 rounded-lg border transition-all duration-150 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           activeMode === "empresas"
-            ? "bg-card border-foreground/30 text-foreground shadow-xs ring-1 ring-foreground/15"
-            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/50"
+            ? "bg-card border-foreground/40 text-foreground ring-1 ring-foreground/20 font-bold"
+            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/60"
         )}
       >
         <div
           className={cn(
-            "size-10 sm:size-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+            "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
             activeMode === "empresas"
               ? "bg-primary/10 text-primary"
               : "bg-muted text-muted-foreground group-hover:text-foreground"
@@ -57,17 +55,12 @@ export function VitrineEngineSelector({
             className="shrink-0"
           />
         </div>
-        <div className="text-left min-w-0">
-          <span className="block text-sm sm:text-base font-bold tracking-tight truncate leading-tight">
-            Empresas
-          </span>
-          <span className="block text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
-            Guia e lugares locais
-          </span>
-        </div>
+        <span className="text-sm sm:text-base font-bold tracking-tight truncate leading-none">
+          Lugares
+        </span>
       </button>
 
-      {/* ── Card 2: Marketplace ── */}
+      {/* ── Card 2: Lojas ── */}
       <button
         type="button"
         role="tab"
@@ -75,15 +68,15 @@ export function VitrineEngineSelector({
         tabIndex={activeMode === "marketplace" ? 0 : -1}
         onClick={() => onModeChange("marketplace")}
         className={cn(
-          "group relative flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 cursor-pointer select-none min-h-14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+          "group relative flex items-center justify-center sm:justify-start gap-3.5 px-4 py-3 sm:px-5 sm:py-4 rounded-lg border transition-all duration-150 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           activeMode === "marketplace"
-            ? "bg-card border-foreground/30 text-foreground shadow-xs ring-1 ring-foreground/15"
-            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/50"
+            ? "bg-card border-foreground/40 text-foreground ring-1 ring-foreground/20 font-bold"
+            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/60"
         )}
       >
         <div
           className={cn(
-            "size-10 sm:size-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+            "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
             activeMode === "marketplace"
               ? "bg-primary/10 text-primary"
               : "bg-muted text-muted-foreground group-hover:text-foreground"
@@ -95,14 +88,9 @@ export function VitrineEngineSelector({
             className="shrink-0"
           />
         </div>
-        <div className="text-left min-w-0">
-          <span className="block text-sm sm:text-base font-bold tracking-tight truncate leading-tight">
-            Marketplace
-          </span>
-          <span className="block text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
-            Lojas Pro verificadas
-          </span>
-        </div>
+        <span className="text-sm sm:text-base font-bold tracking-tight truncate leading-none">
+          Lojas
+        </span>
       </button>
 
       {/* ── Card 3: Classificados ── */}
@@ -113,15 +101,15 @@ export function VitrineEngineSelector({
         tabIndex={activeMode === "classifieds" ? 0 : -1}
         onClick={() => onModeChange("classifieds")}
         className={cn(
-          "group relative flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 cursor-pointer select-none min-h-14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+          "group relative flex items-center justify-center sm:justify-start gap-3.5 px-4 py-3 sm:px-5 sm:py-4 rounded-lg border transition-all duration-150 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           activeMode === "classifieds"
-            ? "bg-card border-foreground/30 text-foreground shadow-xs ring-1 ring-foreground/15"
-            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/50"
+            ? "bg-card border-foreground/40 text-foreground ring-1 ring-foreground/20 font-bold"
+            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/60"
         )}
       >
         <div
           className={cn(
-            "size-10 sm:size-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+            "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
             activeMode === "classifieds"
               ? "bg-primary/10 text-primary"
               : "bg-muted text-muted-foreground group-hover:text-foreground"
@@ -133,14 +121,9 @@ export function VitrineEngineSelector({
             className="shrink-0"
           />
         </div>
-        <div className="text-left min-w-0">
-          <span className="block text-sm sm:text-base font-bold tracking-tight truncate leading-tight">
-            Classificados
-          </span>
-          <span className="block text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
-            Produtos e desapegos
-          </span>
-        </div>
+        <span className="text-sm sm:text-base font-bold tracking-tight truncate leading-none">
+          Classificados
+        </span>
       </button>
     </div>
   );

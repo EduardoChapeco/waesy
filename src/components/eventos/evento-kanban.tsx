@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Plus, Calendar, CheckSquare, Trash2, Clock, Layers, CheckCircle2, AlertCircle, MoveRight, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { getEventKanbanBoard, listEventTasks, createEventTask, updateEventTask, deleteEventTask, moveEventTask } from "@/services/events.functions";
+import { FullViewportKanban } from "@/components/workspace/kanban/full-viewport-kanban";
 
 interface EventoKanbanProps {
   eventId: string;
@@ -286,114 +287,86 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
         </Sheet>
       </div>
 
-      {/* Grid de Colunas do Kanban */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {columns.map((col) => {
-          const colTasks = tasks.filter((t) => t.coluna_id === col.id);
-
-          return (
-            <div
-              key={col.id}
-              className="flex flex-col rounded-2xl bg-muted/30 border border-border/60 p-3.5 space-y-3 min-h-[450px]"
+      {/* Quadro Kanban Canônico */}
+      <FullViewportKanban
+        columns={columns.map((col) => ({
+          id: col.id,
+          title: col.nome,
+          color: col.cor_hex || "#6366f1",
+          items: tasks.filter((t) => t.coluna_id === col.id),
+          renderItem: (task: any) => (
+            <Card
+              key={task.id}
+              className="rounded-xl border border-border/80 bg-card p-3.5 shadow-2xs hover:border-primary/40 transition-all group"
             >
-              {/* Header da Coluna */}
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="size-2.5 rounded-full"
-                    style={{ backgroundColor: col.cor_hex || "#6366f1" }}
-                  />
-                  <span className="font-bold text-xs text-foreground uppercase tracking-wider">
-                    {col.nome}
-                  </span>
-                </div>
-                <Badge variant="secondary" className="text-[10px] font-mono py-0 px-2 rounded-lg">
-                  {colTasks.length}
-                </Badge>
-              </div>
-
-              {/* Lista de Cards da Coluna */}
-              <div className="flex-1 space-y-2.5 overflow-y-auto no-scrollbar pr-0.5">
-                {colTasks.length === 0 ? (
-                  <div className="h-32 flex flex-col items-center justify-center border border-dashed border-border/70 rounded-xl text-muted-foreground text-xs p-4 text-center">
-                    <p className="text-[11px]">Nenhuma tarefa nesta etapa</p>
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-1 flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {getPriorityBadge(task.prioridade)}
+                    {task.responsavel_nome && (
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <UserCheck className="size-3" />
+                        {task.responsavel_nome}
+                      </span>
+                    )}
                   </div>
-                ) : (
-                  colTasks.map((task) => (
-                    <Card
-                      key={task.id}
-                      className="rounded-xl border border-border/80 bg-card p-3.5 shadow-2xs hover:border-primary/40 transition-all group"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="space-y-1 flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            {getPriorityBadge(task.prioridade)}
-                            {task.responsavel_nome && (
-                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                <UserCheck className="size-3" />
-                                {task.responsavel_nome}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs font-bold text-foreground leading-snug break-words">
-                            {task.titulo}
-                          </p>
-                          {task.descricao && (
-                            <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
-                              {task.descricao}
-                            </p>
-                          )}
-                        </div>
+                  <p className="text-xs font-bold text-foreground leading-snug break-words">
+                    {task.titulo}
+                  </p>
+                  {task.descricao && (
+                    <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                      {task.descricao}
+                    </p>
+                  )}
+                </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteTask(task.id)}
-                          className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                          title="Excluir tarefa"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </div>
-
-                      {/* Rodapé do Card com Ações Rápidas de Transição de Coluna */}
-                      <div className="mt-3 pt-2.5 border-t border-border/50 flex items-center justify-between text-[10px] text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          {task.data_fim ? (
-                            <span className="flex items-center gap-1 text-muted-foreground">
-                              <Calendar className="size-3" />
-                              {new Date(task.data_fim).toLocaleDateString("pt-BR")}
-                            </span>
-                          ) : (
-                            <span>Sem prazo</span>
-                          )}
-                        </div>
-
-                        {/* Botões para avançar ou recuar de coluna */}
-                        <div className="flex items-center gap-1">
-                          {columns
-                            .filter((c) => c.id !== col.id)
-                            .map((targetCol) => (
-                              <button
-                                key={targetCol.id}
-                                type="button"
-                                onClick={() => handleMoveTask(task.id, targetCol.id)}
-                                className="px-1.5 py-0.5 rounded border border-border/80 text-[9px] hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-1"
-                                title={`Mover para ${targetCol.nome}`}
-                              >
-                                <span>{targetCol.nome.substring(0, 4)}</span>
-                                <MoveRight className="size-2.5" />
-                              </button>
-                            ))}
-                        </div>
-                      </div>
-                    </Card>
-                  ))
-                )}
+                <button
+                  type="button"
+                  onClick={() => handleDeleteTask(task.id)}
+                  className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1 cursor-pointer"
+                  title="Excluir tarefa"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
               </div>
-            </div>
-          );
-        })}
-      </div>
+
+              {/* Rodapé do Card com Ações Rápidas de Transição de Coluna */}
+              <div className="mt-3 pt-2.5 border-t border-border/50 flex items-center justify-between text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  {task.data_fim ? (
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <Calendar className="size-3" />
+                      {new Date(task.data_fim).toLocaleDateString("pt-BR")}
+                    </span>
+                  ) : (
+                    <span>Sem prazo</span>
+                  )}
+                </div>
+
+                {/* Botões para avançar ou recuar de coluna */}
+                <div className="flex items-center gap-1">
+                  {columns
+                    .filter((c) => c.id !== col.id)
+                    .map((targetCol) => (
+                      <button
+                        key={targetCol.id}
+                        type="button"
+                        onClick={() => handleMoveTask(task.id, targetCol.id)}
+                        className="px-1.5 py-0.5 rounded border border-border/80 text-[9px] hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                        title={`Mover para ${targetCol.nome}`}
+                      >
+                        <span>{targetCol.nome.substring(0, 4)}</span>
+                        <MoveRight className="size-2.5" />
+                      </button>
+                    ))}
+                </div>
+              </div>
+            </Card>
+          ),
+          emptyState: <span className="text-[11px]">Nenhuma tarefa nesta etapa</span>,
+        }))}
+        className="h-[calc(100dvh-13rem)] sm:h-[calc(100dvh-12rem)] pb-2"
+      />
     </div>
   );
 }

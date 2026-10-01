@@ -141,7 +141,7 @@ export function NewsSponsorBanner({
             onClick={handleClick}
             className="size-16 rounded-2xl bg-card p-2 flex items-center justify-center cursor-pointer shrink-0"
           >
-            <img src={sponsor.logo_url} alt={sponsor.name} className="max-h-full object-contain" />
+            <img src={sponsor.logo_url} alt={sponsor.name} className="max-h-full max-w-full object-contain aspect-square" width={48} height={48} loading="lazy" />
           </div>
         ) : null}
 

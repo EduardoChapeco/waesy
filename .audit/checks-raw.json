@@ -1,0 +1,238 @@
+{
+  "C01": {
+    "count": 1680,
+    "violations": [
+      "src/components/admin/builder/builder-add-panel-3col.tsx:217",
+      "src/components/admin/builder/builder-global-theme-panel.tsx:28",
+      "src/components/admin/builder/builder-global-theme-panel.tsx:29",
+      "src/components/admin/builder/builder-global-theme-panel.tsx:30",
+      "src/components/admin/builder/builder-global-theme-panel.tsx:31"
+    ]
+  },
+  "C02": {
+    "count": 1,
+    "violations": [
+      "src/services/builder.functions.test.ts:37"
+    ]
+  },
+  "C03": {
+    "count": 0,
+    "violations": []
+  },
+  "C04": {
+    "count": 0,
+    "violations": []
+  },
+  "C05": {
+    "count": 0,
+    "violations": []
+  },
+  "C06": {
+    "count": 756,
+    "violations": [
+      "src/components/admin/builder/animation-inspector-phase7.test.ts:11",
+      "src/components/admin/builder/animation-inspector-phase7.test.ts:15",
+      "src/components/admin/builder/animation-inspector-phase7.test.ts:40",
+      "src/components/admin/builder/builder-add-panel-3col.tsx:264",
+      "src/components/admin/builder/builder-cms-panel.tsx:79"
+    ]
+  },
+  "C07": {
+    "count": 393,
+    "violations": [
+      "src/components/admin/builder/builder-floating-action-bar.tsx:35",
+      "src/components/admin/builder/builder-layout-switcher-modal.tsx:73",
+      "src/components/admin/builder/guided-section-picker.tsx:48",
+      "src/components/admin/builder/MediaUploader.tsx:187",
+      "src/components/admin/product-editor/product-editor-layout.tsx:91"
+    ]
+  },
+  "C08": {
+    "count": 355,
+    "violations": [
+      "src/components/classifieds/travel-booking-dossier-modal.tsx:123",
+      "src/components/classifieds/travel-booking-dossier-modal.tsx:126",
+      "src/components/classifieds/travel-booking-dossier-modal.tsx:128",
+      "src/components/classifieds/travel-booking-dossier-modal.tsx:133",
+      "src/components/classifieds/travel-booking-dossier-modal.tsx:141"
+    ]
+  },
+  "C09": {
+    "count": 237,
+    "violations": [
+      "src/components/admin/builder/animation-inspector-phase7.test.ts:21",
+      "src/components/admin/builder/animation-inspector-phase7.test.ts:23",
+      "src/components/admin/builder/animation-inspector-phase7.test.ts:54",
+      "src/components/admin/builder/builder-add-panel-3col.tsx:264",
+      "src/components/admin/builder/builder-add-panel-3col.tsx:266"
+    ]
+  },
+  "C10": {
+    "count": 0,
+    "violations": []
+  },
+  "C11": {
+    "count": 0,
+    "violations": []
+  },
+  "C12": {
+    "count": 0,
+    "violations": []
+  },
+  "C13": {
+    "count": 0,
+    "violations": []
+  },
+  "C14": {
+    "count": 0,
+    "violations": []
+  },
+  "C15": {
+    "count": 0,
+    "violations": []
+  },
+  "C16": {
+    "count": 0,
+    "violations": []
+  },
+  "C17": {
+    "count": 0,
+    "violations": []
+  },
+  "C18": {
+    "count": 22,
+    "violations": [
+      "src/components/builder/LiveTemplatePreviewModal.tsx:35",
+      "src/components/builder/OmniEditor.tsx:575",
+      "src/components/builder/OmniPageRenderer.tsx:33",
+      "src/components/chat/ai-chat-shell.tsx:192",
+      "src/components/landing/founder-signup-sheet.tsx:122"
+    ]
+  },
+  "C19": {
+    "count": 0,
+    "violations": []
+  },
+  "C20": {
+    "count": 0,
+    "violations": []
+  },
+  "C21": {
+    "count": 0,
+    "violations": []
+  },
+  "C22": {
+    "count": 19,
+    "violations": [
+      "src/components/commerce/dynamic-sections/product-carousel.tsx:32",
+      "src/components/commerce/dynamic-sections/social-grid.tsx:22",
+      "src/components/notifications/lead-push-notification-prompt.tsx:37",
+      "src/components/notifications/lead-push-notification-prompt.tsx:38",
+      "src/lib/bigtech-lifecycle.ts:300"
+    ]
+  },
+  "C23": {
+    "count": 5679,
+    "violations": [
+      "src/components/admin/admin-shell.tsx:235",
+      "src/components/admin/admin-shell.tsx:291",
+      "src/components/admin/builder/ArrayBuilder.tsx:17",
+      "src/components/admin/builder/ArrayBuilder.tsx:18",
+      "src/components/admin/builder/ArrayBuilder.tsx:29"
+    ]
+  },
+  "C24": {
+    "count": 0,
+    "violations": []
+  },
+  "C25": {
+    "count": 0,
+    "violations": []
+  },
+  "C26": {
+    "count": 8,
+    "violations": [
+      "kanban: src/components/workspace/full-viewport-kanban.tsx vs src/components/tasks/task-kanban.tsx",
+      "crm: src/services/crm.functions.ts vs src/services/crm.ts",
+      "quote_proposal: src/services/quotes.functions.ts vs src/services/travel-proposal.functions.ts",
+      "reservation: src/routes/workspace.reservas.tsx vs src/services/reservations.functions.ts"
+    ]
+  },
+  "C27": {
+    "count": 0,
+    "violations": []
+  },
+  "C28": {
+    "count": 2,
+    "violations": [
+      "src/routes/api.auth.confirm.ts:5",
+      "src/services/personal-finance.functions.ts:583"
+    ]
+  },
+  "C29": {
+    "count": 0,
+    "violations": []
+  },
+  "C30": {
+    "count": 0,
+    "violations": []
+  },
+  "C31": {
+    "count": 0,
+    "violations": []
+  },
+  "C32": {
+    "count": 0,
+    "violations": []
+  },
+  "C33": {
+    "count": 0,
+    "violations": []
+  },
+  "C34": {
+    "count": 0,
+    "violations": []
+  },
+  "C35": {
+    "count": 0,
+    "violations": []
+  },
+  "C36": {
+    "count": 0,
+    "violations": []
+  },
+  "C37": {
+    "count": 82,
+    "violations": [
+      "src/components/admin/admin-shell.tsx:248",
+      "src/components/admin/builder/builder-inspector.tsx:86",
+      "src/components/admin/catalog/master-catalog-search-dialog.tsx:49",
+      "src/components/admin/professions/profession-search-dialog.tsx:45",
+      "src/components/admin/services/service-search-dialog.tsx:43"
+    ]
+  },
+  "C38": {
+    "count": 0,
+    "violations": []
+  },
+  "C39": {
+    "count": 0,
+    "violations": []
+  },
+  "C40": {
+    "count": 0,
+    "violations": []
+  },
+  "C41": {
+    "count": 12,
+    "violations": []
+  },
+  "C42": {
+    "count": 0,
+    "violations": []
+  },
+  "C43": {
+    "count": 0,
+    "violations": []
+  }
+}

@@ -1,10 +1,11 @@
 import { useState, useRef, ChangeEvent, DragEvent } from "react";
-import { UploadCloud, FileText, Paperclip, Trash2, ExternalLink, Loader2, CheckCircle2, ImageIcon, Link as LinkIcon, X } from "lucide-react";
+import { UploadCloud, FileText, Paperclip, Trash2, ExternalLink, Loader2, CheckCircle2, ImageIcon, Link as LinkIcon, X, ClipboardPaste } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { uploadStoreMedia } from "@/services/storage.functions";
+import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 
 export interface FileAttachmentUploadProps {
  value?: string | null;
@@ -47,7 +48,7 @@ export function FileAttachmentUpload({
  onChange,
  onRemove,
  label,
- helperText = "Envie uma foto, print de tela ou documento (PDF/DOCX/TXT até 20MB)",
+ helperText = "Envie uma foto, print (Ctrl+V) ou documento (PDF/DOCX/TXT até 20MB)",
  accept = "image/*,application/pdf,.doc,.docx,.txt,.log,.csv",
  bucket = "cms-media",
  maxSizeMB = 20,
@@ -139,6 +140,29 @@ export function FileAttachmentUpload({
  handleFileUpload(file);
  }
  };
+
+
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    try {
+      const items = await extractMediaFromClipboard(e);
+      if (items && items.length > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleFileUpload(items[0].file);
+        toast.success("Arquivo colado da área de transferência!");
+        return;
+      }
+      const text = e.clipboardData?.getData("text/plain")?.trim();
+      if (text && /^https?:\/\//i.test(text)) {
+        e.preventDefault();
+        e.stopPropagation();
+        onChange(text);
+        toast.success("Link colado e configurado!");
+      }
+    } catch (err) {
+      console.warn("[FileAttachmentUpload] Erro ao colar mídia:", err);
+    }
+  };
 
  const handleClear = () => {
  if (onRemove) {
@@ -299,11 +323,22 @@ export function FileAttachmentUpload({
  ) : (
  /* State 3: Dropzone & Upload Button */
  <div
- onDragOver={handleDragOver}
- onDragLeave={handleDragLeave}
- onDrop={handleDrop}
- onClick={() => !isUploading && inputRef.current?.click()}
- className={cn(
+        tabIndex={0}
+        role="button"
+        aria-label="Área de anexo de arquivos, fotos ou prints"
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onPaste={handlePaste}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            if (!isUploading) inputRef.current?.click();
+          }
+        }}
+        onClick={() => !isUploading && inputRef.current?.click()}
+        className={cn(
+          "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  "rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center select-none",
  compact ? "p-4 gap-2" : "p-5 gap-2.5",
  isDragging
@@ -326,7 +361,7 @@ export function FileAttachmentUpload({
 
  <div className="space-y-0.5">
  <p className="text-xs font-bold text-foreground">
- Clique para selecionar <span className="font-normal text-muted-foreground">ou arraste para cá</span>
+ Clique, arraste <span className="font-normal text-muted-foreground">ou cole com </span><kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-muted border border-border rounded">Ctrl+V</kbd>
  </p>
  {helperText && (
  <p className="text-[11px] text-muted-foreground">{helperText}</p>

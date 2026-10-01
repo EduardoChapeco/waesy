@@ -361,7 +361,7 @@ export function AdminShell({
  onMouseEnter={() => setCollapsed(false)}
  onMouseLeave={() => setCollapsed(true)}
  className={cn(
- "fixed left-0 top-0 bottom-0 z-40 hidden flex-col bg-card shadow-op-md transition-all duration-300 md:flex",
+ "fixed left-0 top-0 bottom-0 z-40 hidden flex-col bg-card shadow-op-md transition-all duration-300 md:flex pb-safe",
  collapsed ? "w-[68px]" : "w-64",
  )}
  >
@@ -540,11 +540,11 @@ export function AdminShell({
  <div
  className={cn(
  "flex min-h-[100dvh] flex-col transition-all duration-300",
- collapsed ? "md:pl-[84px]" : "md:pl-[280px]",
+ collapsed ? "md:pl-20" : "md:pl-72",
  )}
  >
  {/* Topbar */}
- <header className="sticky top-0 z-20 flex h-16 items-center gap-3 bg-background/95 px-4 backdrop-blur pt-safe md:px-6 ">
+ <header className="sticky top-0 z-20 flex h-16 items-center gap-3 bg-background border-b border-border px-4 pt-safe md:px-6">
  {/* Mobile menu */}
  <Sheet>
  <SheetTrigger asChild>
@@ -652,7 +652,7 @@ export function AdminShell({
  {/* Mobile bottom nav — driven by ADMIN_BOTTOM_NAV from routes.ts */}
  <nav
  aria-label="Navegação do painel"
- className="fixed inset-x-0 bottom-0 z-30 bg-background/95 backdrop-blur pb-safe md:hidden"
+ className="fixed inset-x-0 bottom-0 z-30 bg-background border-t border-border pb-safe md:hidden"
  >
  <ul className="flex items-stretch justify-around">
  {ADMIN_BOTTOM_NAV.filter((item) => {

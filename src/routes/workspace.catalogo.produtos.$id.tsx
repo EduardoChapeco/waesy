@@ -385,7 +385,7 @@ function EditProductPage() {
  <ProductEditorLayout
  preview={
  isTravelPackageMode ? (
- <div className="w-full max-w-[380px] rounded-2xl border border-border/80 bg-background overflow-hidden shadow-xs max-h-[750px] overflow-y-auto no-scrollbar">
+ <div className="w-full max-w-full max-w-[380px] rounded-2xl border border-border/80 bg-background overflow-hidden shadow-xs max-h-[750px] overflow-y-auto no-scrollbar">
  <TravelPackageDetailView
  packageData={travelData}
  productTitle={liveTitle || travelData.destination?.name || "Pacote de Viagem"}
@@ -399,7 +399,7 @@ function EditProductPage() {
  />
  </div>
  ) : isGroceryMode ? (
- <div className="w-full max-w-[380px] rounded-2xl border border-border/80 bg-background overflow-hidden shadow-xs max-h-[750px] overflow-y-auto no-scrollbar">
+ <div className="w-full max-w-full max-w-[380px] rounded-2xl border border-border/80 bg-background overflow-hidden shadow-xs max-h-[750px] overflow-y-auto no-scrollbar">
  <ConvenienceShowcaseView
  previewData={{
  title: liveTitle || "Produto de Mercado",
@@ -447,7 +447,7 @@ function EditProductPage() {
  ) : (
  <div className="space-y-4">
  {/* Mockup Fiel de Celular (The Truthful Preview) */}
- <div className="w-full max-w-[340px] rounded-[2.5rem] border-[4px] border-border bg-background overflow-hidden relative h-[680px] flex flex-col">
+ <div className="w-full max-w-full max-w-[340px] rounded-3xl border-[4px] border-border bg-background overflow-hidden relative h-[680px] flex flex-col">
  {/* Notch */}
  <div className="absolute top-0 inset-x-0 h-5 bg-border rounded-b-xl w-32 z-10 mx-auto" />
 
@@ -1332,7 +1332,7 @@ function GeneralForm({
  </div>
 
  {/* Sticky Bottom Bar (Mobile Only) */}
- <div className="fixed bottom-[60px] sm:bottom-0 inset-x-0 p-3 bg-background/90 backdrop-blur border-t z-50 md:hidden flex shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+ <div className="fixed bottom-0 inset-x-0 p-3 pb-safe bg-background border-t z-50 md:hidden flex">
  <Button
  type="submit"
  disabled={isSubmitting}

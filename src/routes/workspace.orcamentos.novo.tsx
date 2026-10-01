@@ -23,6 +23,7 @@ import { listCustomers } from "@/services/crm.functions";
 import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { formatMoney } from "@/lib/money";
+import { formatPhone } from "@/lib/document-validator";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
@@ -496,11 +497,13 @@ function NovoOrcamentoTravelosPage() {
  <div className="space-y-1.5">
  <Label className="text-xs font-bold">WhatsApp / Celular *</Label>
  <Input
- value={proposalData.clientWhatsapp}
- onChange={(e) => setProposalData({ ...proposalData, clientWhatsapp: e.target.value })}
- placeholder="Ex: (11) 99999-8888"
- className="h-10 rounded-xl text-xs font-mono"
- required
+ type="tel"
+                      inputMode="tel"
+                      value={proposalData.clientWhatsapp}
+                      onChange={(e) => setProposalData({ ...proposalData, clientWhatsapp: formatPhone(e.target.value) })}
+                      placeholder="Ex: (11) 99999-8888"
+                      className="h-10 rounded-xl text-xs font-mono"
+                      required
  />
  </div>
  <div className="space-y-1.5">

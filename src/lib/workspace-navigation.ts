@@ -1172,6 +1172,7 @@ export function resolveWorkspaceNavigation(
 
 
 import { getNicheTranslation } from "./niche-dictionary";
+import { getNicheManifest } from "./niche-manifest";
 
 /**
  * The Semantic Sidebar Engine (Waesy Omni-Niche)
@@ -1188,6 +1189,7 @@ export function getSidebarConfig(
     ? { segment: nicheIdOrStoreData, settings: { segment: nicheIdOrStoreData } }
     : nicheIdOrStoreData;
 
+  const manifest = getNicheManifest(storeContext?.segment || storeContext?.niche_id);
   const groups = resolveWorkspaceNavigation(storeContext, options);
   const { t } = getNicheTranslation(storeContext);
 

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { maskCpfProgressive, formatPhone } from "@/lib/document-validator";
 import { getPublicLeadByToken, submitPublicLeadForm } from "@/services/crm.functions";
 
 export const Route = createFileRoute("/m/lead/$leadId")({
@@ -540,9 +541,11 @@ function PublicLeadPassageirosPage() {
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">CPF ou Passaporte</Label>
                 <Input
+                  type="text"
+                  inputMode="numeric"
                   value={paxForm.document}
                   onChange={(e) =>
-                    setPaxForm((prev) => ({ ...prev, document: e.target.value }))
+                    setPaxForm((prev) => ({ ...prev, document: maskCpfProgressive(e.target.value) }))
                   }
                   placeholder="000.000.000-00"
                   className="h-11 sm:h-9 text-base sm:text-xs rounded-xl font-mono"
@@ -552,9 +555,11 @@ function PublicLeadPassageirosPage() {
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Telefone / WhatsApp</Label>
                 <Input
+                  type="tel"
+                  inputMode="tel"
                   value={paxForm.phone}
                   onChange={(e) =>
-                    setPaxForm((prev) => ({ ...prev, phone: e.target.value }))
+                    setPaxForm((prev) => ({ ...prev, phone: formatPhone(e.target.value) }))
                   }
                   placeholder="(00) 00000-0000"
                   className="h-11 sm:h-9 text-base sm:text-xs rounded-xl font-mono"

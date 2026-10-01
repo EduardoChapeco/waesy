@@ -14,6 +14,7 @@ import { getStoreSettings } from "@/services/store.functions";
 import { listVehicleLayouts } from "@/services/vehicle-layouts.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { NewGroupTourWizard } from "@/components/tourism/group-tours/NewGroupTourWizard";
+import { NewGroupTourSheet } from "@/components/tourism/groups/new-group-tour-sheet";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/turismo/grupos/")({

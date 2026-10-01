@@ -119,7 +119,9 @@ export default function TemplateVoucherEmbarqueA4({
             <img
               src={logoUrl}
               alt={agency.name}
-              className="h-10 object-contain"
+              className="h-10 w-auto max-w-[160px] aspect-[4/1] object-contain"
+              width={160}
+              height={40}
               crossOrigin="anonymous"
             />
           ) : (

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { maskCpfProgressive, formatPhone } from '@/lib/document-validator';
 import { getTravelerFormContext, submitTravelerRegistrationForm, type TravelerFormContextDTO } from '@/services/travel-lifecycle.functions';
 
 export const Route = createFileRoute('/viajante/$token')({
@@ -170,7 +171,7 @@ function PublicTravelerFormPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">CPF *</label>
-                    <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
+                    <Input type="text" inputMode="numeric" value={cpf} onChange={(e) => setCpf(maskCpfProgressive(e.target.value))} placeholder="000.000.000-00" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">RG / Órgão Emissor</label>
@@ -226,7 +227,7 @@ function PublicTravelerFormPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">WhatsApp *</label>
-                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(49) 99999-9999" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
+                    <Input type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="(49) 99999-9999" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">E-mail</label>
@@ -240,7 +241,7 @@ function PublicTravelerFormPage() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Telefone de Emergência</label>
-                    <Input value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} placeholder="(00) 00000-0000" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
+                    <Input type="tel" inputMode="tel" value={emergencyPhone} onChange={(e) => setEmergencyPhone(formatPhone(e.target.value))} placeholder="(00) 00000-0000" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
                   </div>
                 </div>
                 <div className="space-y-1">

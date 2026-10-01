@@ -75,7 +75,7 @@ export function CookieBanner() {
  return (
  <aside
  aria-label="Aviso de Privacidade e Cookies"
- className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-5 pb-20 sm:pb-6 pointer-events-none animate-in fade-in slide-in-from-bottom-4 duration-300"
+ className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-5 pb-safe pb-24 sm:pb-6 pointer-events-none animate-in fade-in slide-in-from-bottom-4 duration-300"
  >
  <div className="mx-auto max-w-4xl bg-card/95 backdrop-blur-md rounded-2xl sm:rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pointer-events-auto ">
  <div className="flex items-start gap-3 flex-1 min-w-0">

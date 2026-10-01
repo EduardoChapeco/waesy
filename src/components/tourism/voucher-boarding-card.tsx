@@ -172,7 +172,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  {voucher.flights.map((flight: any, idx: number) => (
  <div
  key={idx}
- className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 shadow-2xs"
+ className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 "
  >
  <div className="space-y-1.5">
  <div className="flex items-center gap-2 flex-wrap">
@@ -239,7 +239,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   >
   <div className="flex items-start justify-between gap-2">
   <div>
-  <h4 className="font-bold text-neutral-900 text-sm sm:text-base">{hotel.name}</h4>
+  <h4 className="font-bold text-neutral-900 text-sm sm:text-base line-clamp-1 truncate">{hotel.name}</h4>
   {hotel.city && (
   <span className="text-xs text-neutral-500 flex items-center gap-1 mt-0.5">
   <MapPin className="size-3.5" /> {hotel.city}

@@ -247,7 +247,7 @@ function CuradoriaAdminPage() {
  </TableCell>
  <TableCell className="py-2.5">
  {s.boost_active ? (
- <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+ <Badge variant="outline" className="text-[10px] text-success border-success/30">
  +{s.boost_multiplier}x Ativo
  </Badge>
  ) : (

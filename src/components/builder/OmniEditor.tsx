@@ -59,11 +59,8 @@ import { toast } from "sonner";
 
 import { MediaUploader } from "@/components/admin/builder/MediaUploader";
 
-export {
-  type WixBlockCategory,
-  WIX_CATEGORY_CONFIG,
-  BLOCK_TO_WIX_CATEGORY,
-} from "./registry";
+export type { WixBlockCategory } from "./registry";
+
 
 const BLOCK_ICONS: Record<string, any> = {
   hero_minimal_split: LayoutTemplate,

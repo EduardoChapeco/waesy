@@ -69,7 +69,7 @@ export function ProductModifiersCard({
  };
 
  return (
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/60 shadow-xs">
+ <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/60 ">
  {/* CABEÇALHO */}
  <div className="flex items-center justify-between gap-3">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">

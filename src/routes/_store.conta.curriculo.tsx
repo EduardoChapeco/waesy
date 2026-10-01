@@ -4,6 +4,7 @@ import { getProfile, updateProfile, getUserSession } from "@/services/auth.funct
 import { PoweredByWaesyBadge } from "@/components/common/powered-by-waesy-badge";
 import { MonthYearSelect } from "@/components/profile/month-year-select";
 import { LinkedInProfileImportModal } from "@/components/profile/linkedin-profile-import-modal";
+import { CurriculoGeneratorModal } from "@/components/profile/curriculo-generator-modal";
 import { OccupationAutocomplete } from "@/components/profile/occupation-autocomplete";
 import { updateMemberResumeData } from "@/services/social.functions";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,7 @@ export default function MeuCurriculoPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [isLinkedInImportOpen, setIsLinkedInImportOpen] = useState(false);
   const [isToolsSheetOpen, setIsToolsSheetOpen] = useState(false);
+  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   const [format, setFormat] = useState<"a4" | "story">("a4");
   const [template, setTemplate] = useState<"minimal" | "modern" | "editorial">("minimal");
 
@@ -993,6 +995,22 @@ export default function MeuCurriculoPage() {
       </div>
     
       {/* Modal de Importação do LinkedIn */}
+      <CurriculoGeneratorModal
+        open={isGeneratorOpen}
+        onOpenChange={setIsGeneratorOpen}
+        profile={profile}
+        resumeData={{
+          summary,
+          experiences,
+          educations,
+          certifications,
+          licenses,
+          skills,
+          custom_format: format,
+          custom_template: template,
+        }}
+      />
+
       <LinkedInProfileImportModal
         open={isLinkedInImportOpen}
         onOpenChange={setIsLinkedInImportOpen}

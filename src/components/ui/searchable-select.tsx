@@ -116,7 +116,7 @@ export function SearchableSelect({
           type="button"
           disabled={disabled}
           className={cn(
-            "flex w-full h-9 items-center justify-between gap-2 rounded-[var(--radius-input)] border border-input bg-transparent px-3 text-sm outline-none transition-colors",
+            "flex w-full h-9 items-center justify-between gap-2 rounded-input border border-input bg-transparent px-3 text-sm outline-none transition-colors",
             "hover:border-border focus:border-border-strong focus:ring-1 focus:ring-white/20",
             "disabled:cursor-not-allowed disabled:opacity-60",
             open && "border-border-strong ring-2 ring-ring/20",

@@ -67,7 +67,9 @@
     "esforco": 2,
     "score": 18,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-234",
@@ -83,7 +85,9 @@
     "esforco": 2,
     "score": 17,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-235",
@@ -99,7 +103,9 @@
     "esforco": 2,
     "score": 16,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-236",
@@ -115,7 +121,9 @@
     "esforco": 2,
     "score": 16,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-005",
@@ -167,7 +175,9 @@
     "esforco": 2,
     "score": 14,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-238",
@@ -183,7 +193,9 @@
     "esforco": 2,
     "score": 14,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-006",
@@ -199,7 +211,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-007",
@@ -215,7 +229,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.524Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-008",
@@ -231,7 +247,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.525Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-009",
@@ -283,7 +301,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-012",
@@ -299,7 +319,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-013",
@@ -315,7 +337,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-014",
@@ -331,7 +355,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-015",
@@ -347,7 +373,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-016",
@@ -363,7 +391,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-017",
@@ -379,7 +409,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-018",
@@ -395,7 +427,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-019",
@@ -411,7 +445,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-020",
@@ -445,7 +481,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-022",
@@ -461,7 +499,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-023",
@@ -477,7 +517,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-024",
@@ -493,7 +535,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-025",
@@ -509,7 +553,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-026",
@@ -525,7 +571,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-027",
@@ -541,7 +589,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-028",
@@ -557,7 +607,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-029",
@@ -573,7 +625,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-030",
@@ -589,7 +643,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-031",
@@ -605,7 +661,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-032",
@@ -621,7 +679,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-033",
@@ -637,7 +697,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-034",
@@ -653,7 +715,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-035",
@@ -669,7 +733,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-036",
@@ -685,7 +751,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-037",
@@ -701,7 +769,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-038",
@@ -717,7 +787,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-039",
@@ -733,7 +805,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-040",
@@ -749,7 +823,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-041",
@@ -765,7 +841,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-042",
@@ -781,7 +859,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-043",
@@ -797,7 +877,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-044",
@@ -813,7 +895,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-045",
@@ -829,7 +913,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-046",
@@ -845,7 +931,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-047",
@@ -861,7 +949,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-048",
@@ -877,7 +967,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-049",
@@ -893,7 +985,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-050",
@@ -909,7 +1003,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-051",
@@ -925,7 +1021,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-052",
@@ -941,7 +1039,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-053",
@@ -957,7 +1057,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-054",
@@ -973,7 +1075,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-055",
@@ -989,7 +1093,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-056",
@@ -1005,7 +1111,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-057",
@@ -1021,7 +1129,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-058",
@@ -1037,7 +1147,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-059",
@@ -1053,7 +1165,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-060",
@@ -1069,7 +1183,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-061",
@@ -1085,7 +1201,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-062",
@@ -1101,7 +1219,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-063",
@@ -1117,7 +1237,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-064",
@@ -1133,7 +1255,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-065",
@@ -1149,7 +1273,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-066",
@@ -1165,7 +1291,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-067",
@@ -1181,7 +1309,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-068",
@@ -1197,7 +1327,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-069",
@@ -1213,7 +1345,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-070",
@@ -1229,7 +1363,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-071",
@@ -1245,7 +1381,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolucao": "SPEC-006: Homologado como componente canônico unificado ou primitiva do Design System.",
+    "resolvido_em": "2026-10-01"
   },
   {
     "id": "GAP-072",
@@ -1261,7 +1399,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-073",
@@ -1277,7 +1417,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-074",
@@ -1293,7 +1435,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T14:51:55.693Z",
+    "spec": "SPEC-007"
   },
   {
     "id": "GAP-239",
@@ -1309,7 +1453,9 @@
     "esforco": 2,
     "score": 13,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-240",
@@ -1325,7 +1471,9 @@
     "esforco": 2,
     "score": 12,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-241",
@@ -1341,7 +1489,9 @@
     "esforco": 2,
     "score": 12,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-242",
@@ -1357,7 +1507,9 @@
     "esforco": 2,
     "score": 11,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-243",
@@ -1373,7 +1525,9 @@
     "esforco": 2,
     "score": 11,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   },
   {
     "id": "GAP-075",
@@ -1389,7 +1543,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-076",
@@ -1405,7 +1561,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-077",
@@ -1421,7 +1579,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-078",
@@ -1437,7 +1597,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-079",
@@ -1453,7 +1615,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-080",
@@ -1469,7 +1633,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-081",
@@ -1485,7 +1651,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-082",
@@ -1501,7 +1669,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-083",
@@ -1517,7 +1687,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-084",
@@ -1533,7 +1705,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-085",
@@ -1549,7 +1723,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-086",
@@ -1565,7 +1741,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-087",
@@ -1581,7 +1759,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-088",
@@ -1597,7 +1777,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-089",
@@ -1613,7 +1795,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-090",
@@ -1629,7 +1813,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-091",
@@ -1645,7 +1831,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-092",
@@ -1661,7 +1849,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-093",
@@ -1677,7 +1867,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-094",
@@ -1693,7 +1885,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-095",
@@ -1709,7 +1903,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-096",
@@ -1725,7 +1921,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-097",
@@ -1741,7 +1939,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-098",
@@ -1757,7 +1957,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-099",
@@ -1773,7 +1975,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-100",
@@ -1789,7 +1993,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-101",
@@ -1805,7 +2011,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-102",
@@ -1821,7 +2029,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-103",
@@ -1837,7 +2047,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-104",
@@ -1853,7 +2065,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-105",
@@ -1869,7 +2083,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-106",
@@ -1885,7 +2101,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-107",
@@ -1901,7 +2119,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-108",
@@ -1917,7 +2137,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-109",
@@ -1933,7 +2155,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-110",
@@ -1949,7 +2173,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-111",
@@ -1965,7 +2191,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-112",
@@ -1981,7 +2209,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-113",
@@ -1997,7 +2227,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-114",
@@ -2013,7 +2245,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-115",
@@ -2029,7 +2263,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-116",
@@ -2045,7 +2281,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-117",
@@ -2061,7 +2299,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-118",
@@ -2077,7 +2317,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-119",
@@ -2093,7 +2335,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-120",
@@ -2109,7 +2353,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-121",
@@ -2125,7 +2371,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-122",
@@ -2141,7 +2389,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-123",
@@ -2157,7 +2407,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-124",
@@ -2173,7 +2425,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-125",
@@ -2189,7 +2443,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-126",
@@ -2205,7 +2461,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-127",
@@ -2221,7 +2479,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-128",
@@ -2237,7 +2497,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-129",
@@ -2253,7 +2515,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-130",
@@ -2269,7 +2533,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-131",
@@ -2285,7 +2551,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-132",
@@ -2301,7 +2569,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-133",
@@ -2317,7 +2587,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-134",
@@ -2333,7 +2605,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-135",
@@ -2349,7 +2623,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-136",
@@ -2365,7 +2641,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-137",
@@ -2381,7 +2659,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-138",
@@ -2397,7 +2677,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-139",
@@ -2413,7 +2695,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-140",
@@ -2429,7 +2713,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-141",
@@ -2445,7 +2731,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-142",
@@ -2461,7 +2749,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-143",
@@ -2477,7 +2767,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-144",
@@ -2493,7 +2785,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-145",
@@ -2509,7 +2803,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-146",
@@ -2525,7 +2821,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-147",
@@ -2541,7 +2839,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-148",
@@ -2557,7 +2857,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-149",
@@ -2573,7 +2875,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-150",
@@ -2589,7 +2893,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-151",
@@ -2605,7 +2911,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-152",
@@ -2621,7 +2929,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-153",
@@ -2637,7 +2947,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-154",
@@ -2653,7 +2965,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-155",
@@ -2669,7 +2983,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-156",
@@ -2685,7 +3001,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-157",
@@ -2701,7 +3019,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-158",
@@ -2717,7 +3037,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-159",
@@ -2733,7 +3055,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-160",
@@ -2749,7 +3073,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-161",
@@ -2765,7 +3091,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-162",
@@ -2781,7 +3109,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-163",
@@ -2797,7 +3127,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-164",
@@ -2813,7 +3145,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-165",
@@ -2829,7 +3163,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-166",
@@ -2845,7 +3181,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-167",
@@ -2861,7 +3199,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-168",
@@ -2877,7 +3217,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-169",
@@ -2893,7 +3235,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-170",
@@ -2909,7 +3253,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-171",
@@ -2925,7 +3271,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-172",
@@ -2941,7 +3289,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-173",
@@ -2957,7 +3307,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-174",
@@ -2973,7 +3325,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-175",
@@ -2989,7 +3343,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-176",
@@ -3005,7 +3361,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-177",
@@ -3021,7 +3379,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-178",
@@ -3037,7 +3397,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-179",
@@ -3053,7 +3415,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-180",
@@ -3069,7 +3433,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-181",
@@ -3085,7 +3451,9 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-2",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-182",
@@ -3100,7 +3468,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-183",
@@ -3115,7 +3485,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-184",
@@ -3130,7 +3502,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-185",
@@ -3145,7 +3519,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-186",
@@ -3160,7 +3536,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-187",
@@ -3175,7 +3553,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-188",
@@ -3190,7 +3570,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-189",
@@ -3205,7 +3587,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-190",
@@ -3220,7 +3604,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-191",
@@ -3235,7 +3621,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-192",
@@ -3250,7 +3638,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-193",
@@ -3265,7 +3655,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-194",
@@ -3280,7 +3672,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-195",
@@ -3295,7 +3689,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-196",
@@ -3310,7 +3706,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-197",
@@ -3325,7 +3723,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-198",
@@ -3340,7 +3740,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-199",
@@ -3355,7 +3757,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-200",
@@ -3370,7 +3774,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-201",
@@ -3385,7 +3791,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-202",
@@ -3400,7 +3808,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-203",
@@ -3415,7 +3825,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-204",
@@ -3430,7 +3842,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-205",
@@ -3445,7 +3859,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-206",
@@ -3460,7 +3876,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-207",
@@ -3475,7 +3893,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-208",
@@ -3490,7 +3910,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-209",
@@ -3505,7 +3927,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-210",
@@ -3520,7 +3944,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-211",
@@ -3535,7 +3961,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-212",
@@ -3550,7 +3978,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-213",
@@ -3565,7 +3995,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-214",
@@ -3580,7 +4012,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-215",
@@ -3595,7 +4029,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-216",
@@ -3610,7 +4046,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-217",
@@ -3625,7 +4063,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-218",
@@ -3640,7 +4080,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-219",
@@ -3655,7 +4097,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-220",
@@ -3670,7 +4114,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-221",
@@ -3685,7 +4131,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-222",
@@ -3700,7 +4148,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-223",
@@ -3715,7 +4165,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-224",
@@ -3730,7 +4182,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-225",
@@ -3745,7 +4199,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-226",
@@ -3760,7 +4216,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-227",
@@ -3775,7 +4233,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-228",
@@ -3790,7 +4250,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-229",
@@ -3805,7 +4267,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-230",
@@ -3820,7 +4284,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-231",
@@ -3835,7 +4301,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-232",
@@ -3850,7 +4318,9 @@
     "esforco": 1,
     "score": 10,
     "onda": "ONDA-3",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:50:16.526Z",
+    "spec": "SPEC-005"
   },
   {
     "id": "GAP-244",
@@ -3866,6 +4336,8 @@
     "esforco": 2,
     "score": 10,
     "onda": "ONDA-4",
-    "status": "ABERTO"
+    "status": "RESOLVIDO",
+    "resolvido_em": "2026-10-01T13:01:52.041Z",
+    "spec": "SPEC-004"
   }
 ]

@@ -288,7 +288,7 @@ export function PostCard(props: PostCardProps) {
  </div>
 
  {/* Manchete Editorial com suporte a Marca-Texto Threads Style */}
- <h3 className="font-editorial text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight">
+ <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-white leading-tight tracking-tight line-clamp-2">
  <RichPostContent
  content={item.metadata?.title || item.content_text?.slice(0, 90) || "All Faith Needs Feet Business"}
  isExpanded={true}
@@ -344,7 +344,7 @@ export function PostCard(props: PostCardProps) {
  <div className="mb-3 space-y-4 rounded-2xl bg-gradient-to-b from-blue-50/80 via-indigo-50/40 to-background dark:from-slate-900 dark:via-slate-950 dark:to-card p-5 sm:p-6 border border-info/50 dark:border-info/30 select-none">
  {/* Header de Impacto */}
  <div className="text-center space-y-1">
- <h3 className="font-editorial text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+ <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-foreground tracking-tight line-clamp-1">
  {item.metadata?.badge_group_title || "Family: In Sync"}
  </h3>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">

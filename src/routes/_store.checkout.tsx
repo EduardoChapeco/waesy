@@ -526,8 +526,8 @@ export function CheckoutPage() {
  try {
  const codeUpper = promoCode.toUpperCase().trim();
  const res = await applyCouponToCart({ data: { code: codeUpper } });
- if (res) {
- toast.success(res.message || "Cupom aplicado!");
+ if (res && (!("status" in res) || (res as any).status !== "error")) {
+ toast.success((res as any).message || "Cupom aplicado!");
  setPromoCode("");
  setAppliedGiftCard(null);
  router.invalidate();
@@ -545,7 +545,11 @@ export function CheckoutPage() {
  return;
  }
 
- toast.error("Cupom ou Vale-presente inválido.");
+ const errorMessage =
+ res && "status" in res && (res as any).status === "error"
+ ? (res as any).message
+ : "Cupom ou Vale-presente inválido.";
+ toast.error(errorMessage);
  } catch (err: unknown) {
  toast.error(humanizeErrorMessage(err, "Código promocional ou vale-presente inválido."));
  } finally {

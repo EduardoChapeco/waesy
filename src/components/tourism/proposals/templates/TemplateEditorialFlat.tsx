@@ -210,7 +210,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                     </div>
                     <div className="p-6">
                       <h3 className="text-2xl font-bold text-slate-900 mb-6">{h.name}</h3>
-                      <div className="grid grid-cols-3 gap-px bg-slate-200 border border-slate-200 rounded-[var(--radius-card)] overflow-hidden">
+                      <div className="grid grid-cols-3 gap-px bg-slate-200 border border-slate-200 rounded-card overflow-hidden">
                         <div className="bg-slate-50 p-4">
                           <div className="ds-meta uppercase text-slate-500 font-bold mb-1">
                             Check-in
@@ -407,7 +407,10 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
               <img
                 src={vm.agency.logo_url}
                 crossOrigin="anonymous"
-                className="h-10 object-contain"
+                alt="Logo Agência"
+                className="h-10 w-auto max-w-[160px] aspect-[4/1] object-contain"
+                width={160}
+                height={40}
               />
             ) : (
               <div className="font-bold text-slate-900">{vm.agency.name}</div>

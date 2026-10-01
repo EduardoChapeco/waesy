@@ -88,7 +88,7 @@ export function ProductEditorLayout({ sections, children, preview }: ProductEdit
  {/* Mobile Navigation Pills */}
  <div
  ref={mobileNavRef}
- className="flex lg:hidden overflow-x-auto no-scrollbar pb-4 gap-2 sticky top-[72px] bg-background/95 backdrop-blur z-40 border-b col-span-1 "
+ className="flex lg:hidden overflow-x-auto no-scrollbar pb-4 gap-2 sticky top-18 bg-background/95 backdrop-blur z-40 border-b col-span-1 "
  >
  {sections.map((section) => {
  const isActive = activeSection === section.id;
@@ -118,7 +118,7 @@ export function ProductEditorLayout({ sections, children, preview }: ProductEdit
  </div>
 
  {/* Sidebar Anchor Navigation & Truthful Preview (Right Column - 40%) */}
- <div className="lg:col-span-5 lg:sticky lg:top-[90px] flex flex-col gap-6 order-1 lg:order-2">
+ <div className="lg:col-span-5 lg:sticky lg:top-20 flex flex-col gap-6 order-1 lg:order-2">
  <nav className="flex flex-col space-y-1 bg-card rounded-2xl p-3 ">
  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground px-3 py-1">
  Seções do Produto

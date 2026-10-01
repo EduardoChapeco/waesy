@@ -233,7 +233,7 @@ function WorkspacePatrocinadoresPage() {
                         <img
                           src={sp.logo_url}
                           alt={sp.name}
-                          className="max-h-full object-contain"
+                          className="max-h-full max-w-full object-contain aspect-square" width={48} height={48} loading="lazy"
                         />
                       ) : (
                         <Building2 className="size-5 text-muted-foreground/50" />

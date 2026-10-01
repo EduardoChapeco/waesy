@@ -917,7 +917,7 @@ export function EditorialShowcaseView({
                 onClick={() => setActiveStoryModal(hl)}
                 className="flex flex-col items-center gap-2 shrink-0 group active:scale-95 transition-colors"
               >
-                <div className="size-15 sm:size-16 rounded-full p-[2px] bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-colors">
+                <div className="size-15 sm:size-16 rounded-full p-0.5 bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-colors">
                   <img
                     src={hl.image || images[0]}
                     alt={hl.title}

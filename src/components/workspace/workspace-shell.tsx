@@ -671,7 +671,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
         </header>
 
         <main id="workspace-main-content" className="main-container-query flex-1 w-full overflow-y-auto no-scrollbar">
-          <div className="w-full max-w-7xl mx-auto px-1 sm:px-6 lg:px-8 py-2 sm:py-6 pb-24">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24">
             {isAuthorized ? (
               children
             ) : (
@@ -697,7 +697,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           return (
             <nav
               aria-label="Navegação operacional móvel"
-              className="lg:hidden fixed inset-x-2.5 z-30 max-w-lg mx-auto grid grid-cols-5 items-center p-1.5 bg-background/95 backdrop-blur-md border border-border/80 rounded-2xl select-none"
+              className="lg:hidden fixed inset-x-2.5 z-30 max-w-lg mx-auto grid grid-cols-5 items-center p-1.5 bg-background border border-border rounded-2xl select-none"
               style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 6px), 8px)" }}
             >
               <Link

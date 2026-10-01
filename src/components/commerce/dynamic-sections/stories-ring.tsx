@@ -40,8 +40,8 @@ export function StoriesRing({ content }: StoriesRingProps) {
  onClick={() => setActiveStory(story)}
  className="flex flex-col items-center gap-2 group snap-start shrink-0"
  >
- <div className="relative p-[3px] rounded-full from-primary transition-transform group-hover:scale-105 group-active:scale-95">
- <div className="w-20 h-20 bg-background rounded-full p-[2px]">
+ <div className="relative p-0.5 rounded-full from-primary transition-transform group-hover:scale-105 group-active:scale-95">
+ <div className="w-20 h-20 bg-background rounded-full p-0.5">
  <div className="w-full h-full rounded-full overflow-hidden relative bg-muted">
  {thumbImg ? (
  <img

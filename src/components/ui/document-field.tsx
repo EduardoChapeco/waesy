@@ -88,7 +88,7 @@ export const DocumentField = forwardRef<HTMLInputElement, DocumentFieldProps>(
             "font-mono tracking-tight text-foreground transition-colors",
             showStatusIndicator && isComplete && "pr-9",
             isTouched && isComplete && !isValid && "border-destructive/60 focus-visible:ring-destructive/30",
-            isTouched && isComplete && isValid && "border-emerald-500/50 focus-visible:ring-emerald-500/30",
+            isTouched && isComplete && isValid && "border-success/50 focus-visible:ring-success/30",
             className
           )}
           {...props}
@@ -97,7 +97,7 @@ export const DocumentField = forwardRef<HTMLInputElement, DocumentFieldProps>(
         {showStatusIndicator && isComplete && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none transition-all">
             {isValid ? (
-              <span className="text-emerald-600 dark:text-emerald-400 flex items-center" title="Documento válido na Receita Federal">
+              <span className="text-success flex items-center" title="Documento válido na Receita Federal">
                 <Check className="size-4 stroke-[2.5]" />
               </span>
             ) : (

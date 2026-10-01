@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OccupationAutocomplete } from "@/components/profile/occupation-autocomplete";
+import { formatPhone } from "@/lib/document-validator";
 import { createStoreJob } from "@/services/jobs.functions";
 import { getWorkspaceLinkedInStatus, syndicateJobToLinkedIn } from "@/services/linkedin-integrations.functions";
 import { ProUpgradePaywallModal } from "@/components/monetization/pro-upgrade-paywall-modal";
@@ -397,10 +398,12 @@ function WorkspaceNewJobPage() {
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-foreground">WhatsApp do RH (Opcional)</Label>
               <Input
+                type="tel"
+                inputMode="tel"
                 value={contactWhatsapp}
-                onChange={(e) => setContactWhatsapp(e.target.value)}
+                onChange={(e) => setContactWhatsapp(formatPhone(e.target.value))}
                 placeholder="Ex: (49) 99999-9999"
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-xl font-mono"
               />
             </div>
             <div className="space-y-1.5">
@@ -417,10 +420,10 @@ function WorkspaceNewJobPage() {
         </div>
 
         {/* ── Bloco 4: THE LINKEDIN OMNI-BRIDGE (FASE 3 & FASE 4) ── */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#0A66C2]/10 via-[#0A66C2]/5 to-card border border-[#0A66C2]/30 space-y-4 shadow-xs">
+        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/70 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="size-11 rounded-2xl bg-[#0A66C2] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <div className="size-11 rounded-2xl bg-muted text-foreground flex items-center justify-center shrink-0 border border-border/60">
                 <Linkedin className="size-6 fill-current" />
               </div>
               <div>

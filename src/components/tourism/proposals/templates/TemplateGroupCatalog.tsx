@@ -37,7 +37,9 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
               alt="Logo"
-              className="h-10 object-contain brightness-0 invert"
+              className="h-10 w-auto max-w-[160px] aspect-[4/1] object-contain brightness-0 invert"
+              width={160}
+              height={40}
             />
           ) : (
             <div className="text-xl font-black tracking-tighter text-white uppercase">
@@ -150,7 +152,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
 
             {/* BOTÃO FALSO PARA MOSTRAR QUE É UM CATALOGO */}
             <div
-              className="w-full py-4 rounded-[var(--radius-card)] text-center text-white font-black uppercase tracking-widest text-lg border-b-4 opacity-90"
+              className="w-full py-4 rounded-card text-center text-white font-black uppercase tracking-widest text-lg border-b-4 opacity-90"
               style={{ backgroundColor: brand, borderBottomColor: "rgba(0,0,0,0.2)" }}
             >
               Garantir Vaga

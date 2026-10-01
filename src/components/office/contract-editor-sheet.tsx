@@ -225,7 +225,7 @@ export function ContractEditorSheet({
  <img
  src={sig.signatureBase64}
  alt="Assinatura"
- className="h-12 object-contain filter invert dark:invert-0"
+ className="h-12 w-auto max-w-[200px] aspect-[4/1] object-contain filter invert dark:invert-0" width={192} height={48} loading="lazy"
  />
  <div className="text-[11px] font-medium text-foreground">
  {sig.signerName} ({sig.signerCpf})

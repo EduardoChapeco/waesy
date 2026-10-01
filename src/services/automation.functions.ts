@@ -25,8 +25,8 @@ export const listWorkflows = createServerFn({ method: "GET" })
   });
 
 export const triggerWorkflowExecution = createServerFn({ method: "POST" })
-  .validator(z.object({ id: z.string().uuid(), samplePayload: z.record(z.any()).optional() }))
-  .handler(async ({ data: { id, samplePayload } }) => {
+  .validator(z.object({ id: z.string().uuid(), testPayload: z.record(z.any()).optional() }))
+  .handler(async ({ data: { id, testPayload } }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
@@ -42,7 +42,7 @@ export const triggerWorkflowExecution = createServerFn({ method: "POST" })
       throw new Error("Workflow não encontrado para execução.");
     }
 
-    const triggerData = samplePayload || {
+    const triggerData = testPayload || {
       manual_trigger_by: identity.id,
       timestamp: new Date().toISOString(),
       source: "workspace_manual_test",

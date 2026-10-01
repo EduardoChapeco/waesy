@@ -33,7 +33,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
         
         {/* Cabeçalho */}
         <div className="max-w-2xl mx-auto text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground mb-4 [text-wrap:balance]">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-4 [text-wrap:balance]">
             {data.title}
           </h2>
           {data.subtitle && (
@@ -48,7 +48,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
               type="button"
               onClick={() => setIsAnnual(false)}
               className={`px-4 py-1.5 rounded-full transition-all ${
-                !isAnnual ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
+                !isAnnual ? "bg-background text-foreground font-medium" : "text-muted-foreground"
               }`}
             >
               Faturamento Mensal
@@ -57,7 +57,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
               type="button"
               onClick={() => setIsAnnual(true)}
               className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${
-                isAnnual ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
+                isAnnual ? "bg-background text-foreground font-medium" : "text-muted-foreground"
               }`}
             >
               <span>Faturamento Anual</span>
@@ -79,13 +79,13 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
                 key={tier.id}
                 className={`relative rounded-3xl p-8 sm:p-10 flex flex-col justify-between transition-all ${
                   tier.isPopular
-                    ? "bg-foreground text-background shadow-xl ring-2 ring-foreground"
-                    : "bg-card text-foreground border border-border/80 shadow-xs hover:border-border"
+                    ? "bg-foreground text-background ring-1 ring-foreground"
+                    : "bg-card text-foreground border border-border/80 hover:border-border"
                 }`}
               >
                 {/* Badge Popular */}
                 {tier.isPopular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-black uppercase tracking-wider px-4 py-1 rounded-full shadow-md flex items-center gap-1.5">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-medium uppercase tracking-wider px-3 py-1 rounded-full flex items-center gap-1.5">
                     <Star className="size-3.5 fill-current" />
                     <span>Mais Escolhido</span>
                   </div>
@@ -110,7 +110,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
                   </p>
 
                   <div className="flex items-baseline gap-1.5 mb-8">
-                    <span className="text-4xl sm:text-5xl font-black tracking-tight font-mono">
+                    <span className="text-4xl sm:text-5xl font-bold tracking-tight font-mono tabular-nums">
                       {priceFormatted}
                     </span>
                     <span className={`text-xs font-semibold uppercase tracking-wider ${

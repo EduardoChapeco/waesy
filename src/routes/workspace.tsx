@@ -39,7 +39,7 @@ export const Route = createFileRoute("/workspace")({
  }
 
     const isPlatformAdmin = isPlatformAdminUser(session);
-      const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
+    const hasStore = (session?.memberships && session.memberships.length > 0) || Boolean(session?.store_id) || session?.role === "store_owner" || session?.role === "owner" || isPlatformAdmin;
 
  // REGRA INVIOLÁVEL: O Workspace exige um negócio cadastrado.
  // Quem não possui loja/empresa não pode ver o workspace nem ferramentas operacionais.
@@ -67,7 +67,7 @@ export const Route = createFileRoute("/workspace")({
      }
 
     const isPlatformAdmin = isPlatformAdminUser(session);
-  const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
+    const hasStore = (session?.memberships && session.memberships.length > 0) || Boolean(session?.store_id) || session?.role === "store_owner" || session?.role === "owner" || isPlatformAdmin;
 
      if (!hasStore) {
        throw redirect({ to: "/criar-negocio" });

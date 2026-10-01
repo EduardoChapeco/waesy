@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { recordTimeClock, listEmployeeTimeEntries, listEmployeePayslips, acknowledgePayslip, createEmployeeRequest, getMyEmployeeRecord } from "@/services/hr.functions";
 import { formatDateTime, formatTimeOnly } from "@/lib/datetime";
+import { EmployeeDocumentsPanel } from "@/components/employee/employee-documents-panel";
 
 export const Route = createFileRoute("/_store/conta/colaborador")({
   head: () => ({ meta: [{ title: "Espaço do Colaborador | Waesy Hub" }] }),
@@ -139,7 +140,7 @@ function ColaboradorPortalPage() {
           <div className="flex gap-1 bg-muted/60 p-1 rounded-2xl border border-border w-full sm:w-auto overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab("ponto")}
-              className={`min-h-[44px] px-3.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              className={`min-h-11 px-3.5 rounded-xl text-xs font-semibold transition-all shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === "ponto" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -147,7 +148,7 @@ function ColaboradorPortalPage() {
             </button>
             <button
               onClick={() => setActiveTab("holerites")}
-              className={`min-h-[44px] px-3.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              className={`min-h-11 px-3.5 rounded-xl text-xs font-semibold transition-all shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === "holerites" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -155,11 +156,14 @@ function ColaboradorPortalPage() {
             </button>
             <button
               onClick={() => setActiveTab("solicitacoes")}
-              className={`min-h-[44px] px-3.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              className={`min-h-11 px-3.5 rounded-xl text-xs font-semibold transition-all shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === "solicitacoes" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Vales e Férias
+            </button>
+            <button onClick={() => setActiveTab("documentos")} className={`min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${activeTab === "documentos" ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              Documentos & Políticas
             </button>
           </div>
         </div>
@@ -370,7 +374,16 @@ function ColaboradorPortalPage() {
  <Send className="h-4 w-4 mr-2" /> Enviar Solicitação ao RH
  </Button>
  </div>
- )}
+        )}
+
+        {activeTab === "documentos" && (
+          <div className="bg-card rounded-lg border border-border p-4">
+            <EmployeeDocumentsPanel
+              employeeId={employeeId}
+              storeId={employee?.store_id}
+            />
+          </div>
+        )}
  </div>
  </div>
  );

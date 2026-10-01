@@ -182,7 +182,7 @@ export function VoucherStudio({
         {passengers.map((p: any, i: number) => (
           <div
             key={i}
-            className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border p-3"
+            className="flex flex-col gap-2 rounded-card border border-border p-3"
           >
             <Lbl label="Nome">
               <Input
@@ -672,7 +672,7 @@ export function VoucherStudio({
         {emergency.map((c: any, i: number) => (
           <div
             key={i}
-            className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border p-3"
+            className="flex flex-col gap-2 rounded-card border border-border p-3"
           >
             <Lbl label="Nome">
               <Input
@@ -1066,7 +1066,7 @@ export function VoucherStudio({
         {/* Right: Canvas preview / WhatsApp Chat */}
         <div className="flex-1 min-w-0 overflow-auto bg-surface-alt/30 flex items-start justify-center py-8">
           {mode === "whatsapp" ? (
-            <div className="w-full max-w-sm bg-[#efeae2] rounded-[var(--radius-card)] border border-border/80 overflow-hidden flex flex-col h-[36rem] font-sans">
+            <div className="w-full max-w-sm bg-[#efeae2] rounded-card border border-border/80 overflow-hidden flex flex-col h-[36rem] font-sans">
               {/* WhatsApp Header */}
               <div className="bg-[#00a884] text-white px-4 py-2.5 flex items-center gap-3 shrink-0">
                 <div className="w-9 h-9 rounded-full glass-dark overflow-hidden flex items-center justify-center shrink-0">

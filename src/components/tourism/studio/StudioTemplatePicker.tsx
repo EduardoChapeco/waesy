@@ -30,7 +30,7 @@ export function StudioTemplatePicker({ format, value, onChange }: StudioTemplate
 
   if (relevant.length === 0) {
     return (
-      <div className="ds-meta text-muted-foreground p-3 text-center border border-dashed border-border rounded-[var(--radius-card)]">
+      <div className="ds-meta text-muted-foreground p-3 text-center border border-dashed border-border rounded-card">
         Nenhum template para este formato.
       </div>
     );
@@ -47,7 +47,7 @@ export function StudioTemplatePicker({ format, value, onChange }: StudioTemplate
             key={tpl.id}
             type="button"
             onClick={() => onChange(tpl.id)}
-            className={`w-full flex items-center gap-3 p-2.5 rounded-[var(--radius-card)] border text-left transition-all ${
+            className={`w-full flex items-center gap-3 p-2.5 rounded-card border text-left transition-all ${
               active
                 ? "border-brand bg-brand/5 dark:bg-brand/10"
                 : "border-border/60 bg-surface hover:border-border-hover"

@@ -1,0 +1,24 @@
+<USER_REQUEST>
+eu anexei um prompt eu quero que execute ele completamente, seguindo os padrões de design que temos confiugurados, regras, quero que o conselho revise tudo e continue incrementando completamente tudo, end to end, em completude maxima, sseguindo regras e executar completamente com agends/skills para garantir o melhor conteudo. nome do prompt PLANO DE IMPLEMENTAÇÃO — MOTOR DE ANÚNCIOS E VITRINE (CLASSIFICADOS + WORKSPACE)
+Cole este plano junto do PROMPT ZERO e do MÉTODO 8A. Ele é o plano de domínio; os dois anteriores são as leis e o processo.
+
+===========================================
+0. O QUE ESTE PLANO RESOLVE
+===========================================
+Você vai auditar, corrigir, refatorar e levar ao estado da arte o motor de anúncios do Waesy, que hoje tem duas origens (Classificados e Workspace/Marketplace) servindo a mesma vitrine, com campos duplicados, telas quebradas, preview falso, templates incoerentes com o nicho e fluxos desvinculados.
+
+Regra de escopo: este plano não cria um sistema paralelo. Ele unifica o que existe, dando dono único a cada informação e fazendo toda a cadeia (editor → banco → render → compra → gestão) funcionar de ponta a ponta por nicho.
+
+=========================================== (esta neste workspace)
+
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-01T16:45:55-03:00.
+
+The user's current state is as follows:
+Active Document: /Untitled-6 (LANGUAGE_UNSPECIFIED)
+Cursor is on line: 193
+Other open documents:
+- c:\Users\Excelência Tour SMO\Documents\waesy\docs\audit\PLANO_MESTRE.md (LANGUAGE_MARKDOWN)
+- c:\Users\Excelência Tour SMO\Documents\waesy\ia\untitled-2-planos.txt (LANGUAGE_PLAINTEXT)
+</ADDITIONAL_METADATA>

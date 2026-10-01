@@ -1,0 +1,292 @@
+[
+  {
+    "file": "src\\components\\classifieds\\editorial-showcase-view.tsx",
+    "line": 301,
+    "content": "// ── Estatísticas do Topo (Polimórficas por Nicho — Zero Fake Fallback) ──"
+  },
+  {
+    "file": "src\\components\\landing\\enterprise-landing-view.tsx",
+    "line": 361,
+    "content": "<p className=\"text-xs font-semibold text-muted-foreground\">Server-Authoritative (Zero Fake)</p>"
+  },
+  {
+    "file": "src\\components\\landing\\founder-smartphone-mockup.tsx",
+    "line": 36,
+    "content": "const sampleProducts = React.useMemo(() => {"
+  },
+  {
+    "file": "src\\components\\landing\\founder-smartphone-mockup.tsx",
+    "line": 217,
+    "content": "{sampleProducts.map((p, idx) => ("
+  },
+  {
+    "file": "src\\components\\profile\\linkedin-profile-import-modal.tsx",
+    "line": 137,
+    "content": "const sample = {"
+  },
+  {
+    "file": "src\\components\\profile\\linkedin-profile-import-modal.tsx",
+    "line": 175,
+    "content": "setJsonText(JSON.stringify(sample, null, 2));"
+  },
+  {
+    "file": "src\\components\\profile\\professional-resume-editor.tsx",
+    "line": 273,
+    "content": "const sample = {"
+  },
+  {
+    "file": "src\\components\\profile\\professional-resume-editor.tsx",
+    "line": 322,
+    "content": "setLinkedInJsonText(JSON.stringify(sample, null, 2));"
+  },
+  {
+    "file": "src\\components\\profile\\professional-resume-editor.tsx",
+    "line": 2237,
+    "content": "placeholder=\"Ex: 58.123 ou 123456\""
+  },
+  {
+    "file": "src\\lib\\classifieds\\canonical-taxonomy.ts",
+    "line": 597,
+    "content": "councilPlaceholder: \"Ex: 123456/SP\","
+  },
+  {
+    "file": "src\\lib\\classifieds\\canonical-taxonomy.ts",
+    "line": 632,
+    "content": "councilPlaceholder: \"Ex: CRM 123456 ou CRBM 7890\","
+  },
+  {
+    "file": "src\\lib\\contracts\\contract-semantic-dictionary.ts",
+    "line": 96,
+    "content": "{ key: \"guia_responsavel\", token: \"{{guia_responsavel}}\", label: \"Guia Responsável\", category: \"turismo\", example: \"Marcos Vinicius (Cadastur 123456)\", description: \"Nome e credencial do guia acompanhante\" },"
+  },
+  {
+    "file": "src\\lib\\contracts\\contract-semantic-dictionary.ts",
+    "line": 111,
+    "content": "{ key: \"veiculo_renavam\", token: \"{{veiculo_renavam}}\", label: \"Código RENAVAM\", category: \"automotivo\", example: \"12345678901\", description: \"Registro Nacional de Veículos Automotores\" },"
+  },
+  {
+    "file": "src\\lib\\data\\advanced-contract-templates.ts",
+    "line": 139,
+    "content": "content: \"O(A) CRIADOR(A) compromete-se a não emitir declarações públicas ou se envolver em polêmicas, ilícitos ou manifestações de ódio, racismo, preconceito ou fake news que possam direta ou indiretamente depreciar a reputação da MARCA. A infração a este dever autoriza a rescisão imediata do contrato, com restituição proporcional do cachê e multa de 30%.\","
+  },
+  {
+    "file": "src\\lib\\document-validator.ts",
+    "line": 227,
+    "content": "* Máscara progressiva para CPF conforme o usuário digita (ex: 123 -> 123, 1234 -> 123.4, 12345678901 -> 123.456.789-01)."
+  },
+  {
+    "file": "src\\lib\\document-validator.ts",
+    "line": 239,
+    "content": "* Máscara progressiva para CNPJ conforme o usuário digita (ex: 12345678000190 -> 12.345.678/0001-90)."
+  },
+  {
+    "file": "src\\lib\\tokens.ts",
+    "line": 14,
+    "content": "const SAFE_CHARS = \"123456789ABCDEFGHJKLMNPQRSTUVWXYZ\";"
+  },
+  {
+    "file": "src\\routes\\admin-master.ads-network.tsx",
+    "line": 771,
+    "content": "placeholder=\"1234567890\""
+  },
+  {
+    "file": "src\\routes\\admin-master.seguranca.telemetria.tsx",
+    "line": 165,
+    "content": "{ type: \"token_wallet_tamper_attempt\", sev: \"critical\", route: \"/services/tokens.functions\", payload: { fake_balance_injection: 999999, signature: \"invalid_hmac\" } },"
+  },
+  {
+    "file": "src\\routes\\api.webhooks.marketplaces.ts",
+    "line": 17,
+    "content": "// 1. Mercado Livre Header x-signature: ts=12345678,v1=abcdef..."
+  },
+  {
+    "file": "src\\routes\\viajante.$token.tsx",
+    "line": 178,
+    "content": "<Input value={rg} onChange={(e) => setRg(e.target.value)} placeholder=\"1234567 SSP/SC\" className=\"bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono\" />"
+  },
+  {
+    "file": "src\\routes\\workspace.clientes.$id.tsx",
+    "line": 1302,
+    "content": "placeholder=\"Ex: LATAM Pass: 12345678, Smiles: 987654321, TAP Miles: 554433\""
+  },
+  {
+    "file": "src\\routes\\workspace.configuracoes.integracoes.tsx",
+    "line": 1426,
+    "content": "{ key: \"pixel_id\", label: \"ID do Pixel da Meta\", placeholder: \"Ex: 123456789012345\" },"
+  },
+  {
+    "file": "src\\routes\\workspace.configuracoes.integracoes.tsx",
+    "line": 1465,
+    "content": "placeholder: \"Ex: 123456789\","
+  },
+  {
+    "file": "src\\routes\\workspace.integracoes.marketplaces.tsx",
+    "line": 83,
+    "content": "{ key: \"client_id\", label: \"App ID (Client ID)\", placeholder: \"1234567890\", required: true },"
+  },
+  {
+    "file": "src\\routes\\workspace.integracoes.marketplaces.tsx",
+    "line": 112,
+    "content": "{ key: \"partner_id\", label: \"Partner ID\", placeholder: \"1234567\", required: true },"
+  },
+  {
+    "file": "src\\routes\\workspace.integracoes.marketplaces.tsx",
+    "line": 114,
+    "content": "{ key: \"shop_id\", label: \"Shop ID\", placeholder: \"123456789\", hint: \"Encontrado em: Shopee Seller Centre → Minha Loja\" },"
+  },
+  {
+    "file": "src\\routes\\workspace.integracoes.marketplaces.tsx",
+    "line": 239,
+    "content": "{ key: \"location_id\", label: \"Location ID (Google Business)\", placeholder: \"locations/12345678\", hint: \"Encontrado no painel Google Business Profile\" },"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.anuncios.tsx",
+    "line": 755,
+    "content": "placeholder={activationSheetPlatform === \"google_ads\" ? \"AW-123456789\" : \"123456789012345\"}"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.pixels.tsx",
+    "line": 209,
+    "content": "placeholder=\"Ex: 123456789012345\""
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.pixels.tsx",
+    "line": 255,
+    "content": "placeholder=\"Ex: AW-1234567890\""
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 61,
+    "content": "const sampleProduct = {"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 77,
+    "content": ".replace(/{item_title}/g, sampleProduct.title)"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 87,
+    "content": ".replace(/{item_title}/g, sampleProduct.title)"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 88,
+    "content": ".replace(/{item_description}/g, sampleProduct.description)"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 94,
+    "content": ".replace(/{item_title}/g, sampleProduct.title)"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 95,
+    "content": ".replace(/{item_price}/g, sampleProduct.price)"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 96,
+    "content": ".replace(/{item_url}/g, sampleProduct.url)"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 125,
+    "content": "navigator.clipboard.writeText(sampleProduct.url);"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 448,
+    "content": "src={sampleProduct.image}"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 485,
+    "content": "src={sampleProduct.image}"
+  },
+  {
+    "file": "src\\routes\\workspace.marketing.social.tsx",
+    "line": 514,
+    "content": "src={sampleProduct.image}"
+  },
+  {
+    "file": "src\\routes\\workspace.turismo.destinos.tsx",
+    "line": 286,
+    "content": "const sampleReviews: DestinationReview[] = ["
+  },
+  {
+    "file": "src\\routes\\workspace.turismo.destinos.tsx",
+    "line": 306,
+    "content": "setReviews(sampleReviews);"
+  },
+  {
+    "file": "src\\services\\automation.functions.ts",
+    "line": 28,
+    "content": ".validator(z.object({ id: z.string().uuid(), samplePayload: z.record(z.any()).optional() }))"
+  },
+  {
+    "file": "src\\services\\automation.functions.ts",
+    "line": 29,
+    "content": ".handler(async ({ data: { id, samplePayload } }) => {"
+  },
+  {
+    "file": "src\\services\\automation.functions.ts",
+    "line": 45,
+    "content": "const triggerData = samplePayload || {"
+  },
+  {
+    "file": "src\\services\\gmb.functions.ts",
+    "line": 194,
+    "content": "const sampleReviews = ["
+  },
+  {
+    "file": "src\\services\\gmb.functions.ts",
+    "line": 219,
+    "content": "google_reviews: sampleReviews,"
+  },
+  {
+    "file": "src\\services\\gmb.functions.ts",
+    "line": 272,
+    "content": "reviews: sampleReviews,"
+  },
+  {
+    "file": "src\\services\\marketplace-hub.functions.ts",
+    "line": 268,
+    "content": "* Desconecta um conector de marketplace com 1 clique (zero fake toasts)."
+  },
+  {
+    "file": "src\\services\\onboarding-pipeline.server.ts",
+    "line": 826,
+    "content": "1. Se o site contiver produtos/serviços reais com preços, extraia até 5 itens legítimos. Se não contiver produtos explícitos com preços, deixe suggested_products como array vazio []. PROIBIDO criar itens fake."
+  },
+  {
+    "file": "src\\services\\rma.functions.ts",
+    "line": 56,
+    "content": "lower.includes(\"loremflickr\") ||"
+  },
+  {
+    "file": "src\\services\\simlab.functions.ts",
+    "line": 105,
+    "content": "sample_size: data.sampleSize || 12,"
+  },
+  {
+    "file": "src\\services\\travel-lifecycle.functions.ts",
+    "line": 1180,
+    "content": "\"policy_number\": \"AC-123456\","
+  },
+  {
+    "file": "src\\services\\trust-and-safety.functions.ts",
+    "line": 198,
+    "content": "lowerUrl.includes(\"loremflickr\") ||"
+  },
+  {
+    "file": "src\\types\\domain.ts",
+    "line": 32,
+    "content": "* (admin only) — never a fake screen."
+  },
+  {
+    "file": "src\\types\\simlab.ts",
+    "line": 131,
+    "content": "sample_size: number;"
+  }
+]

@@ -348,7 +348,7 @@ export function MotionStudioViewport({
             className="absolute top-0 bottom-0 w-0.5 z-30 pointer-events-none bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"
             style={{ left: `${playheadPercent}%` }}
           >
-            <div className="size-2 -ml-[3px] -mt-1 rounded-full bg-red-500" />
+            <div className="size-2 -ml-1 -mt-1 rounded-full bg-red-500" />
           </div>
 
           {tracks.map((track) => (

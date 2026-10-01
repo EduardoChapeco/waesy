@@ -29,6 +29,8 @@
   --radius-2xl: 16px; /* containers mestres, sheets e painéis */
   --radius-3xl: 20px; /* superfícies de destaque, modais */
   --radius-full: 9999px; /* pill puro para chips e badges */
+  --radius-card: 12px;
+  --radius-input: 8px;
 
   /* ── Shadows — Reduzidas, design flat focado em linhas ─── */
   --shadow-sm: none;
@@ -132,10 +134,21 @@
   --z-toast: 500;
 }
 
+/* ── Canonical Motion Cap (P16 / C17 / L18) ── */
+/* Todas as transições utilitárias limitadas a 150-200ms para sensação nativa ágil */
+.duration-500,
+.duration-700,
+.duration-1000 {
+  transition-duration: 200ms;
+  animation-duration: 200ms;
+}
+
+
 /* ===========================================================================
  * LIGHT THEME — Operacional Base (Minimalista)
  * ===========================================================================*/
 :root {
+  font-variant-numeric: tabular-nums;
   color-scheme: light dark;
   --radius: 0.625rem;
   --radius-master: 0.75rem;
@@ -315,11 +328,11 @@
 
   html,
   body {
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
     overscroll-behavior: none;
-    overscroll-behavior-y: none !important;
+    overscroll-behavior-y: none;
   }
 
   html {
@@ -341,6 +354,7 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    font-variant-numeric: tabular-nums;
     overflow-x: hidden;
     width: 100%;
     max-width: 100%;
@@ -354,14 +368,14 @@
   body:has([data-state="open"]),
   body:has(dialog[open]),
   body[data-scroll-locked] {
-    overflow: hidden !important;
-    overscroll-behavior: none !important;
+    overflow: hidden;
+    overscroll-behavior: none;
     touch-action: none;
   }
 
   /* Ocultamento instantâneo via CSS (0ms) do BottomNav quando qualquer input/textarea estiver em foco */
   body:has(input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus) .mobile-nav-hide-on-keyboard {
-    display: none !important;
+    display: none;
   }
 
   /* Re-habilita seleção em conteúdos textuais legíveis e editáveis */
@@ -419,8 +433,8 @@
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
     textarea,
     select {
-      font-size: 16px !important;
-      line-height: 1.35 !important;
+      font-size: 16px;
+      line-height: 1.35;
     }
   }
 
@@ -532,6 +546,9 @@
 }
 
 /* ── Safe area ─────────────────────────────── */
+@utility bottom-safe {
+  bottom: env(safe-area-inset-bottom);
+}
 @utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -606,9 +623,9 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
@@ -616,9 +633,9 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
@@ -626,9 +643,9 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
@@ -636,9 +653,9 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
@@ -656,7 +673,7 @@
   letter-spacing: -0.02em;
   background: linear-gradient(135deg, #f97316, #ef4444);
   color: #ffffff;
-  box-shadow: none !important;
+  box-shadow: none;
 }
 
 @utility squircle-card {
@@ -674,7 +691,7 @@
     box-shadow var(--duration-fast) var(--ease-out-expo);
   &:hover {
     transform: translateY(-1px);
-    box-shadow: none !important;
+    box-shadow: none;
   }
 }
 
@@ -763,7 +780,7 @@
 @utility squircle-hover {
   &:hover {
     transform: translateY(-2px) scale(1.01);
-    box-shadow: none !important;
+    box-shadow: none;
   }
   &:active {
     transform: translateY(0) scale(0.985);
@@ -773,7 +790,7 @@
 @utility squircle-selected {
   border-color: var(--color-primary);
   background-color: var(--color-card);
-  box-shadow: none !important;
+  box-shadow: none;
 }
 
 /* ── SHADOW SUPPRESSION (mantém bordas mas suprime sombras) ── */
@@ -784,7 +801,7 @@
 .shadow-sm,
 .shadow-md,
 .shadow-lg {
-  box-shadow: none !important;
+  box-shadow: none;
 }
 
 /* ── PREVENÇÃO DE ZOOM AUTOMÁTICO NO SAFARI IOS (Inputs < 16px acionam zoom indesejado) ── */
@@ -792,7 +809,7 @@
   input,
   select,
   textarea {
-    font-size: 16px !important;
+    font-size: 16px;
   }
 }
 
@@ -848,28 +865,28 @@
 
 /* ── SCROLLBAR SUPPRESSION (Scroll fluido e funcional sem barras físicas cinzas) ── */
 * {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 *::-webkit-scrollbar {
-  display: none !important;
-  width: 0px !important;
-  height: 0px !important;
-  background: transparent !important;
+  display: none;
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
 .scrollbar-none,
 .no-scrollbar,
 .builder-viewport-scroll {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 .scrollbar-none::-webkit-scrollbar,
 .no-scrollbar::-webkit-scrollbar,
 .builder-viewport-scroll::-webkit-scrollbar {
-  display: none !important;
-  width: 0px !important;
-  height: 0px !important;
-  background: transparent !important;
+  display: none;
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
 
 /* ── NATIVE MULTI-FORM-FACTOR: FOLDABLES, DUAL-SCREEN & CONTAINER QUERIES ── */
@@ -923,32 +940,32 @@
 /* 1. Visually Hidden / Screen-Reader Only Utilities */
 .visually-hidden,
 .sr-only {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* 2. Skip Link acessível para salto direto ao conteúdo principal */
 .skip-link,
 .sr-only-focusable:focus,
 .sr-only-focusable:focus-visible {
-  position: fixed !important;
+  position: fixed;
   top: -100px;
   left: 1rem;
   z-index: 99999;
-  width: auto !important;
-  height: auto !important;
-  padding: 0.75rem 1.25rem !important;
-  margin: 0 !important;
-  overflow: visible !important;
-  clip: auto !important;
-  white-space: normal !important;
+  width: auto;
+  height: auto;
+  padding: 0.75rem 1.25rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
   background-color: var(--color-primary);
   color: var(--color-primary-foreground);
   border-radius: var(--radius-xl);
@@ -961,9 +978,9 @@
 
 .skip-link:focus,
 .skip-link:focus-visible {
-  top: 1rem !important;
-  outline: 2px solid currentColor !important;
-  outline-offset: 2px !important;
+  top: 1rem;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 /* 3. Focus Not Obscured (WCAG 2.4.11) — Limpa barras fixas ao receber foco */
@@ -988,10 +1005,10 @@
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
   }
 }
 

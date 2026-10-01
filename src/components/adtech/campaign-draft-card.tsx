@@ -96,7 +96,7 @@ export function CampaignDraftCard({
         <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
           <CheckCircle2 className="size-6" />
         </div>
-        <h4 className="text-sm font-bold text-foreground">Campanha Aprovada e Em Veiculação</h4>
+        <h4 className="text-sm font-bold text-foreground line-clamp-1">Campanha Aprovada e Em Veiculação</h4>
         <p className="text-xs text-muted-foreground max-w-md mx-auto">
           Os criativos e orçamentos foram autenticados e enviados aos canais de tráfego pago da loja.
         </p>
@@ -107,7 +107,7 @@ export function CampaignDraftCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden text-foreground space-y-0",
+        "rounded-2xl border border-border/80 bg-card overflow-hidden text-foreground space-y-0",
         className
       )}
     >
@@ -145,11 +145,11 @@ export function CampaignDraftCard({
             Mockup em Tempo Real (Feed do Instagram)
           </span>
 
-          <div className="w-full max-w-[340px] rounded-2xl border border-border/90 bg-background shadow-md overflow-hidden text-xs">
+          <div className="w-full max-w-[340px] rounded-2xl border border-border/90 bg-background overflow-hidden text-xs">
             {/* Top Bar do Anúncio Instagram */}
             <div className="p-3 flex items-center justify-between border-b border-border/40">
               <div className="flex items-center gap-2.5">
-                <div className="size-8 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 p-[1.5px]">
+                <div className="size-8 rounded-full border border-primary/40 p-[1.5px]">
                   <div className="size-full rounded-full bg-background flex items-center justify-center overflow-hidden">
                     <span className="text-[11px] font-bold text-foreground">
                       {(payload.creative.sponsorHandle || "W")[0].toUpperCase()}
@@ -201,7 +201,7 @@ export function CampaignDraftCard({
               </p>
               {payload.creative.displayUrlText && (
                 <p className="text-[10px] font-mono text-muted-foreground pt-0.5">
-                  🔗 {payload.creative.displayUrlText}
+                  <span className="inline-flex items-center gap-1"><ExternalLink className="size-3" /> {payload.creative.displayUrlText}</span>
                 </p>
               )}
             </div>
@@ -212,7 +212,7 @@ export function CampaignDraftCard({
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between pb-1 border-b border-border/60">
             <div>
-              <h3 className="text-sm font-bold text-foreground">{campaignTitle}</h3>
+              <h3 className="text-sm font-bold text-foreground line-clamp-1 truncate">{campaignTitle}</h3>
               <p className="text-xs text-muted-foreground">
                 Configurado com base na inteligência de mercado do seu ecossistema.
               </p>

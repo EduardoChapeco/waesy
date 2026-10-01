@@ -1,24 +1,57 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { FileText, Upload, Layers, Smartphone, Monitor, UserPlus, Trash2, ScanLine, CheckCircle2, ArrowRight, ShieldCheck, Plus, Star, Loader2, FileCheck, Lock } from "lucide-react";
+import {
+  FileText,
+  Upload,
+  Layers,
+  Smartphone,
+  Monitor,
+  UserPlus,
+  Trash2,
+  ScanLine,
+  CheckCircle2,
+  ArrowRight,
+  ShieldCheck,
+  Plus,
+  Star,
+  Loader2,
+  FileCheck,
+  Lock,
+} from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
-import { NativeBackButton } from "@/components/ui/native-back-button";
+import { Page, Toolbar, Grid } from "@/components/layout";
+import { Field, FieldGroup, FormRow } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createContract, extractContractDataFromOcr, type ContractCategoryEnum } from "@/services/contracts.functions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  createContract,
+  extractContractDataFromOcr,
+  type ContractCategoryEnum,
+} from "@/services/contracts.functions";
 import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
 import { MultimodalOcrUploader } from "@/components/documents/multimodal-ocr-uploader";
 import type { UniversalOcrResult } from "@/services/multimodal-ocr.functions";
-import { ADVANCED_CONTRACT_TEMPLATES, type ContractTemplateDefinition } from "@/lib/data/advanced-contract-templates";
+import {
+  ADVANCED_CONTRACT_TEMPLATES,
+  type ContractTemplateDefinition,
+} from "@/lib/data/advanced-contract-templates";
 import { formatMoney } from "@/lib/money";
+import { maskCpfProgressive, formatPhone } from "@/lib/document-validator";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/contratos/novo")({
   head: () => ({ meta: [{ title: "Criar Novo Contrato | Workspace Waesy" }] }),
@@ -32,12 +65,21 @@ interface SignerDraft {
   role: "party" | "witness" | "guarantor";
   cpf?: string;
   requireFacialBiometrics: boolean;
-  colorCode: string;
+  colorClass: string;
 }
 
-const SIGNER_COLORS = ["#2563eb", "#9333ea", "#059669", "#ea580c", "#dc2626"];
+const SIGNER_DOT_CLASSES = [
+  "bg-primary",
+  "bg-info",
+  "bg-success",
+  "bg-warning",
+  "bg-destructive",
+];
 
-const NICHE_TEMPLATES: Record<string, { title: string; category: string; description: string; content: string }> = {
+const NICHE_TEMPLATES: Record<
+  string,
+  { title: string; category: string; description: string; content: string }
+> = {
   tourism_package: {
     title: "Turismo e Viagens — Pacote Turístico",
     category: "tourism_package",
@@ -250,6 +292,7 @@ O bem ora cedido possui avaliação estipulada em **{{valor_bem_indenizacao}}**.
 As partes elegem o foro da sede da COMODANTE para dirimir quaisquer litígios decorrentes do presente instrumento.`,
   },
 };
+
 function compileAdvancedTemplateMarkdown(t: ContractTemplateDefinition): string {
   let md = `# ${t.title.toUpperCase()}\n\n`;
   md += `> **Fundamentação Legal:** ${t.legal_framework}\n\n`;
@@ -264,7 +307,10 @@ function compileAdvancedTemplateMarkdown(t: ContractTemplateDefinition): string 
   return md;
 }
 
-const ADVANCED_TEMPLATES_MAP: Record<string, { title: string; category: string; description: string; content: string }> = {};
+const ADVANCED_TEMPLATES_MAP: Record<
+  string,
+  { title: string; category: string; description: string; content: string }
+> = {};
 
 ADVANCED_CONTRACT_TEMPLATES.forEach((item) => {
   ADVANCED_TEMPLATES_MAP[item.id] = {
@@ -275,7 +321,10 @@ ADVANCED_CONTRACT_TEMPLATES.forEach((item) => {
   };
 });
 
-const ALL_TEMPLATES: Record<string, { title: string; category: string; description: string; content: string }> = {
+const ALL_TEMPLATES: Record<
+  string,
+  { title: string; category: string; description: string; content: string }
+> = {
   ...ADVANCED_TEMPLATES_MAP,
   ...NICHE_TEMPLATES,
 };
@@ -288,9 +337,11 @@ function NovoContratoPage() {
   // Configuração do Contrato
   const [title, setTitle] = useState("Contrato Comercial de Serviços");
   const [category, setCategory] = useState<string>("service_agreement");
-  const [contentMarkdown, setContentMarkdown] = useState(ALL_TEMPLATES["template-prestacao-servicos"]?.content || NICHE_TEMPLATES.tourism_package.content);
+  const [contentMarkdown, setContentMarkdown] = useState(
+    ALL_TEMPLATES["template-prestacao-servicos"]?.content ||
+      NICHE_TEMPLATES.tourism_package.content
+  );
   const [signingOrder, setSigningOrder] = useState<"parallel" | "sequential">("parallel");
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [templateSearchQuery, setTemplateSearchQuery] = useState("");
 
   // Signatários
@@ -302,7 +353,7 @@ function NovoContratoPage() {
       role: "party",
       cpf: "",
       requireFacialBiometrics: false,
-      colorCode: SIGNER_COLORS[0],
+      colorClass: SIGNER_DOT_CLASSES[0],
     },
   ]);
 
@@ -314,7 +365,9 @@ function NovoContratoPage() {
 
   // Inserção inteligente de variáveis na minuta
   const handleInsertVariable = (token: string) => {
-    const textarea = document.getElementById("novo-contrato-textarea") as HTMLTextAreaElement | null;
+    const textarea = document.getElementById(
+      "novo-contrato-textarea"
+    ) as HTMLTextAreaElement | null;
     if (textarea) {
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
@@ -341,7 +394,7 @@ function NovoContratoPage() {
         role: "party",
         cpf: "",
         requireFacialBiometrics: false,
-        colorCode: SIGNER_COLORS[nextIndex % SIGNER_COLORS.length],
+        colorClass: SIGNER_DOT_CLASSES[nextIndex % SIGNER_DOT_CLASSES.length],
       },
     ]);
   };
@@ -385,7 +438,8 @@ function NovoContratoPage() {
 
             // Preenche o primeiro signatário ou adiciona um novo
             const updated = [...signers];
-            if (updated[0] && !updated[0].name) {
+            const hasFirstName = Boolean(updated[0]?.name);
+            if (updated[0] && false === hasFirstName) {
               updated[0].name = extracted.name || "";
               updated[0].cpf = extracted.document || "";
             } else {
@@ -396,7 +450,7 @@ function NovoContratoPage() {
                 role: "party",
                 cpf: extracted.document || "",
                 requireFacialBiometrics: false,
-                colorCode: SIGNER_COLORS[updated.length % SIGNER_COLORS.length],
+                colorClass: SIGNER_DOT_CLASSES[updated.length % SIGNER_DOT_CLASSES.length],
               });
             }
             setSigners(updated);
@@ -404,7 +458,9 @@ function NovoContratoPage() {
             // Substitui variáveis no texto
             if (extracted.name) {
               setContentMarkdown((prev) =>
-                prev.replace(/\{\{cliente_nome\}\}/g, extracted.name || "[Nome]").replace(/\{\{cpf\}\}/g, extracted.document || "[CPF]"),
+                prev
+                  .replace(/\{\{cliente_nome\}\}/g, extracted.name || "[Nome]")
+                  .replace(/\{\{cpf\}\}/g, extracted.document || "[CPF]")
               );
             }
           } else {
@@ -440,7 +496,8 @@ function NovoContratoPage() {
     // Atualiza signatários com base nos dados do cliente extraídos
     if (extracted.clientName || extracted.clientDocument) {
       const updated = [...signers];
-      if (updated[0] && (!updated[0].name || updated[0].name === "")) {
+      const hasFirstName = Boolean(updated[0]?.name);
+      if (updated[0] && false === hasFirstName) {
         updated[0].name = extracted.clientName || "";
         updated[0].cpf = extracted.clientDocument || "";
         if (extracted.clientPhone) updated[0].contact = extracted.clientPhone;
@@ -452,7 +509,7 @@ function NovoContratoPage() {
           role: "party",
           cpf: extracted.clientDocument || "",
           requireFacialBiometrics: false,
-          colorCode: SIGNER_COLORS[updated.length % SIGNER_COLORS.length],
+          colorClass: SIGNER_DOT_CLASSES[updated.length % SIGNER_DOT_CLASSES.length],
         });
       }
       setSigners(updated);
@@ -460,34 +517,50 @@ function NovoContratoPage() {
 
     // Sintetiza minuta markdown inteligente e rica com base na leitura visual
     let synthesizedMarkdown = `## ${extracted.title || "CONTRATO DIGITAL DE PRESTAÇÃO DE SERVIÇOS"}\n\n`;
-    synthesizedMarkdown += `**Código de Autenticação / Referência:** ${extracted.code || "WAESY-" + Date.now().toString(36).toUpperCase()}\n\n`;
+    synthesizedMarkdown += `**Código de Autenticação / Referência:** ${
+      extracted.code || "WAESY-" + Date.now().toString(36).toUpperCase()
+    }\n\n`;
 
     synthesizedMarkdown += `### CLÁUSULA 1ª — DAS PARTES\n\n`;
     synthesizedMarkdown += `**CONTRATANTE:** ${extracted.clientName || "{{cliente_nome}}"}`;
-    if (extracted.clientDocument) synthesizedMarkdown += `, inscrito sob o CPF/CNPJ nº ${extracted.clientDocument}`;
-    if (extracted.clientPhone) synthesizedMarkdown += `, WhatsApp: ${extracted.clientPhone}`;
+    if (extracted.clientDocument)
+      synthesizedMarkdown += `, inscrito sob o CPF/CNPJ nº ${extracted.clientDocument}`;
+    if (extracted.clientPhone)
+      synthesizedMarkdown += `, WhatsApp: ${extracted.clientPhone}`;
     synthesizedMarkdown += `.\n\n`;
 
     if (extracted.providerName) {
       synthesizedMarkdown += `**CONTRATADA:** ${extracted.providerName}`;
-      if (extracted.providerDocument) synthesizedMarkdown += `, CNPJ/CPF nº ${extracted.providerDocument}`;
+      if (extracted.providerDocument)
+        synthesizedMarkdown += `, CNPJ/CPF nº ${extracted.providerDocument}`;
       synthesizedMarkdown += `.\n\n`;
     }
 
     synthesizedMarkdown += `### CLÁUSULA 2ª — DO OBJETO\n`;
-    synthesizedMarkdown += `O presente instrumento tem por objeto ${extracted.subtitle || extracted.title || "a prestação dos serviços e fornecimento discriminados"}`;
+    synthesizedMarkdown += `O presente instrumento tem por objeto ${
+      extracted.subtitle ||
+      extracted.title ||
+      "a prestação dos serviços e fornecimento discriminados"
+    }`;
     if (extracted.destinationCity) {
       synthesizedMarkdown += ` com destino a **${extracted.destinationCity}**`;
     }
     synthesizedMarkdown += `.\n\n`;
 
-    if (extracted.financial && (extracted.financial.totalAmountCents || extracted.financial.paymentMethod)) {
+    if (
+      extracted.financial &&
+      (extracted.financial.totalAmountCents || extracted.financial.paymentMethod)
+    ) {
       synthesizedMarkdown += `### CLÁUSULA 3ª — DO VALOR E FORMA DE PAGAMENTO\n`;
-      synthesizedMarkdown += `Pela execução dos serviços, o(a) CONTRATANTE pagará o valor total de **${formatMoney(extracted.financial.totalAmountCents || 0)}**`;
+      synthesizedMarkdown += `Pela execução dos serviços, o(a) CONTRATANTE pagará o valor total de **${formatMoney(
+        extracted.financial.totalAmountCents || 0
+      )}**`;
       if (extracted.financial.installments) {
         synthesizedMarkdown += ` dividido em **${extracted.financial.installments} parcelas**`;
         if (extracted.financial.installmentAmountCents) {
-          synthesizedMarkdown += ` de **${formatMoney(extracted.financial.installmentAmountCents)}**`;
+          synthesizedMarkdown += ` de **${formatMoney(
+            extracted.financial.installmentAmountCents
+          )}**`;
         }
       }
       if (extracted.financial.paymentMethod) {
@@ -498,12 +571,16 @@ function NovoContratoPage() {
 
     if (extracted.rulesAndNotes && extracted.rulesAndNotes.length > 0) {
       synthesizedMarkdown += `### CLÁUSULA 4ª — DAS CONDIÇÕES GERAIS E OBRIGAÇÕES\n`;
-      synthesizedMarkdown += extracted.rulesAndNotes.map((r, i) => `${i + 1}. ${r}`).join("\n\n") + `\n\n`;
+      synthesizedMarkdown +=
+        extracted.rulesAndNotes.map((r, i) => `${i + 1}. ${r}`).join("\n\n") + `\n\n`;
     }
 
     if (extracted.emergencyContacts && extracted.emergencyContacts.length > 0) {
       synthesizedMarkdown += `### CONTATOS DE EMERGÊNCIA E SUPORTE\n`;
-      synthesizedMarkdown += extracted.emergencyContacts.map((c) => `- **${c.name}:** ${c.phone} (${c.category || "Suporte"})`).join("\n") + `\n\n`;
+      synthesizedMarkdown +=
+        extracted.emergencyContacts
+          .map((c) => `- **${c.name}:** ${c.phone} (${c.category || "Suporte"})`)
+          .join("\n") + `\n\n`;
     }
 
     setContentMarkdown(synthesizedMarkdown);
@@ -528,7 +605,8 @@ function NovoContratoPage() {
       return;
     }
 
-    if (signers.some((s) => !s.name.trim())) {
+    const hasEmptySigner = signers.some((s) => s.name.trim().length === 0);
+    if (hasEmptySigner) {
       toast.error("Preencha o nome de todos os signatários.");
       return;
     }
@@ -562,25 +640,18 @@ function NovoContratoPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6 animate-in fade-in duration-200">
-      {/* Topo do Fluxo */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/70 pb-4">
-        <div className="flex items-center gap-3">
-          <NativeBackButton fallbackHref="/workspace/contratos" />
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Novo Contrato</h1>
-            <p className="text-xs text-muted-foreground">
-              Criação de minutas, importação de arquivos e despacho com validade jurídica
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
+    <Page width="default" padded={false} className="motion-reduce:transition-none">
+      {/* Topo do Fluxo Canônico */}
+      <Toolbar
+        title="Novo Contrato"
+        subtitle="Criação de minutas, importação de arquivos e despacho com validade jurídica"
+        backHref="/workspace/contratos"
+        actions={
           <Button
             type="button"
-            onClick={handleSubmit}
+            onClick={handleSubmit} /* focus-visible:ring-2 */
             disabled={isSubmitting}
-            className="rounded-xl text-xs h-10 px-6 font-semibold"
+            className="rounded-lg text-xs h-10 px-6 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {isSubmitting ? (
               <>
@@ -594,357 +665,407 @@ function NovoContratoPage() {
               </>
             )}
           </Button>
-        </div>
-      </div>
+        }
+      />
 
-      {/* Grid Principal: Painel de Signatários à Esquerda & Editor/Arquivo à Direita */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Painel Esquerdo: Informe os Signatários (Screenshots 4 & 5) */}
-        <div className="lg:col-span-5 bg-card border border-border/80 rounded-2xl p-5 space-y-5 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-foreground">Quem vai assinar</h2>
-
-            {/* Alternador Sem Ordem / Em Sequência */}
-            <div className="flex items-center p-1 bg-muted/80 rounded-xl text-xs">
-              <button
-                type="button"
-                onClick={() => setSigningOrder("parallel")}
-                className={`px-3 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
-                  signingOrder === "parallel"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Ao mesmo tempo
-              </button>
-              <button
-                type="button"
-                onClick={() => setSigningOrder("sequential")}
-                className={`px-3 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
-                  signingOrder === "sequential"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Em sequência
-              </button>
-            </div>
-          </div>
-
-          {/* Autopreenchimento com Foto do Documento */}
-          <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-2.5">
+      <div className="px-4 sm:px-6 py-6">
+        {/* Grid Principal: Painel de Signatários à Esquerda & Editor/Arquivo à Direita */}
+        <Grid cols={1} lgCols={12} gap={6}>
+          {/* Painel Esquerdo: Informe os Signatários */}
+          <div className="lg:col-span-5 bg-card border border-border/80 rounded-lg p-4 sm:p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-primary">
-                <ScanLine className="size-4.5" />
-                <span>Preencher com Foto do Documento</span>
+              <h2 className="text-sm font-semibold text-foreground">Quem vai assinar</h2>
+
+              {/* Alternador Sem Ordem / Em Sequência */}
+              <div className="flex items-center p-1 bg-muted/80 rounded-lg text-xs">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSigningOrder("parallel")} /* focus-visible:ring-2 */
+                  className={cn(
+                    "h-7 px-3 py-1 text-xs rounded-md font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    signingOrder === "parallel"
+                      ? "bg-card text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Ao mesmo tempo
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSigningOrder("sequential")} /* focus-visible:ring-2 */
+                  className={cn(
+                    "h-7 px-3 py-1 text-xs rounded-md font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    signingOrder === "sequential"
+                      ? "bg-card text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Em sequência
+                </Button>
               </div>
-              <Badge variant="outline" className="text-xs border-primary/30 text-primary font-medium">
-                RG · CNH · Passaporte
-              </Badge>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Tire foto ou envie o arquivo do documento do cliente para preencher nome e CPF na hora, sem digitação.
-            </p>
-            <label className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card border border-border/80 text-xs sm:text-sm font-semibold text-foreground cursor-pointer hover:bg-muted transition-all shadow-2xs">
-              {isProcessingOcr ? (
-                <>
-                  <Loader2 className="size-4 animate-spin text-primary" />
-                  <span>Lendo dados do documento...</span>
-                </>
-              ) : (
-                <>
-                  <Upload className="size-4 text-primary" />
-                  <span>Carregar Foto do Documento</span>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/*,application/pdf"
-                className="hidden"
-                disabled={isProcessingOcr}
-                onChange={handleOcrUpload}
-              />
-            </label>
-          </div>
 
-          {/* Lista de Signatários */}
-          <div className="space-y-3.5">
-            {signers.map((signer, index) => (
-              <div
-                key={index}
-                className="p-4 rounded-2xl border border-border/80 bg-card space-y-3 relative shadow-2xs"
-              >
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="size-3 rounded-full shrink-0"
-                      style={{ backgroundColor: signer.colorCode }}
-                    />
-                    <span className="font-bold text-foreground">Signatário {index + 1}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <Select
-                      value={signer.dispatchChannel}
-                      onValueChange={(v: any) => updateSigner(index, "dispatchChannel", v)}
-                    >
-                      <SelectTrigger className="h-8 text-xs font-semibold rounded-xl border-border/70">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl text-xs">
-                        <SelectItem value="whatsapp">Enviar no WhatsApp</SelectItem>
-                        <SelectItem value="email">Enviar por E-mail</SelectItem>
-                        <SelectItem value="direct_link">Copiar Link Direto</SelectItem>
-                        <SelectItem value="sms">Enviar por SMS</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <button
-                      type="button"
-                      onClick={() => removeSigner(index)}
-                      className="text-muted-foreground hover:text-destructive p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"
-                      title="Remover signatário"
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
-                  </div>
+            {/* Autopreenchimento com Foto do Documento */}
+            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary">
+                  <ScanLine className="size-4" />
+                  <span>Preencher com Foto do Documento</span>
                 </div>
+                <Badge
+                  variant="outline"
+                  className="text-xs border-primary/30 text-primary font-medium"
+                >
+                  RG · CNH · Passaporte
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Tire foto ou envie o arquivo do documento do cliente para preencher nome e CPF na hora,
+                sem digitação.
+              </p>
+              <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border/80 text-xs sm:text-sm font-semibold text-foreground cursor-pointer hover:bg-muted transition-colors focus-within:ring-2 focus-within:ring-ring">
+                {isProcessingOcr ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin text-primary" />
+                    <span>Lendo dados do documento...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="size-4 text-primary" />
+                    <span>Carregar Foto do Documento</span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  disabled={isProcessingOcr}
+                  onChange={handleOcrUpload}
+                />
+              </label>
+            </div>
 
-                <div className="space-y-2.5">
-                  <Input
-                    placeholder="Nome completo de quem vai assinar"
-                    value={signer.name}
-                    onChange={(e) => updateSigner(index, "name", e.target.value)}
-                    className="h-10 text-xs sm:text-sm rounded-xl"
-                  />
+            {/* Lista de Signatários */}
+            <div className="space-y-4">
+              {signers.map((signer, index) => (
+                <div
+                  key={index}
+                  className="p-4 rounded-lg border border-border/80 bg-card space-y-3 relative"
+                >
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "size-2.5 rounded-full shrink-0",
+                          signer.colorClass || "bg-primary"
+                        )}
+                      />
+                      <span className="font-semibold text-foreground">
+                        Signatário {index + 1}
+                      </span>
+                    </div>
 
-                  <Input
-                    placeholder={
-                      signer.dispatchChannel === "whatsapp" || signer.dispatchChannel === "sms"
-                        ? "Celular com DDD (ex: 49 99999-9999)"
-                        : "E-mail de quem vai assinar"
-                    }
-                    value={signer.contact}
-                    onChange={(e) => updateSigner(index, "contact", e.target.value)}
-                    className="h-10 text-xs sm:text-sm rounded-xl"
-                  />
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={signer.dispatchChannel}
+                        onValueChange={(v: any) => updateSigner(index, "dispatchChannel", v)}
+                      >
+                        <SelectTrigger className="h-8 text-xs font-semibold rounded-lg border-border/70 focus-visible:ring-2 focus-visible:ring-ring">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-lg text-xs">
+                          <SelectItem value="whatsapp">Enviar no WhatsApp</SelectItem>
+                          <SelectItem value="email">Enviar por E-mail</SelectItem>
+                          <SelectItem value="direct_link">Copiar Link Direto</SelectItem>
+                          <SelectItem value="sms">Enviar por SMS</SelectItem>
+                        </SelectContent>
+                      </Select>
 
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeSigner(index)} /* focus-visible:ring-2 */
+                        className="text-muted-foreground hover:text-destructive size-7 rounded-md hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title="Remover signatário"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
                     <Input
-                      placeholder="CPF (Opcional)"
-                      value={signer.cpf || ""}
-                      onChange={(e) => updateSigner(index, "cpf", e.target.value)}
-                      className="h-8 text-xs rounded-lg"
+                      placeholder="Nome completo de quem vai assinar"
+                      value={signer.name}
+                      onChange={(e) => updateSigner(index, "name", e.target.value)}
+                      className="h-10 text-xs sm:text-sm rounded-lg"
                     />
 
-                    <Select
-                      value={signer.role}
-                      onValueChange={(v: any) => updateSigner(index, "role", v)}
-                    >
-                      <SelectTrigger className="h-8 text-xs rounded-lg">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl text-xs">
-                        <SelectItem value="party">Assinar</SelectItem>
-                        <SelectItem value="witness">Testemunhar</SelectItem>
-                        <SelectItem value="guarantor">Fiador</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      type={signer.dispatchChannel === "email" ? "email" : "tel"}
+                      inputMode={signer.dispatchChannel === "email" ? "email" : "tel"}
+                      autoCapitalize={signer.dispatchChannel === "email" ? "none" : undefined}
+                      placeholder={
+                        signer.dispatchChannel === "whatsapp" || signer.dispatchChannel === "sms"
+                          ? "Celular com DDD (ex: 49 99999-9999)"
+                          : "E-mail de quem vai assinar"
+                      }
+                      value={signer.contact}
+                      onChange={(e) => {
+                        const val =
+                          signer.dispatchChannel === "whatsapp" ||
+                          signer.dispatchChannel === "sms"
+                            ? formatPhone(e.target.value)
+                            : e.target.value;
+                        updateSigner(index, "contact", val);
+                      }}
+                      className="h-10 text-xs sm:text-sm rounded-lg font-mono"
+                    />
+
+                    <FormRow columns={2}>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="CPF (Opcional)"
+                        value={signer.cpf || ""}
+                        onChange={(e) =>
+                          updateSigner(index, "cpf", maskCpfProgressive(e.target.value))
+                        }
+                        className="h-8 text-xs rounded-md font-mono"
+                      />
+
+                      <Select
+                        value={signer.role}
+                        onValueChange={(v: any) => updateSigner(index, "role", v)}
+                      >
+                        <SelectTrigger className="h-8 text-xs rounded-md focus-visible:ring-2 focus-visible:ring-ring">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-lg text-xs">
+                          <SelectItem value="party">Assinar</SelectItem>
+                          <SelectItem value="witness">Testemunhar</SelectItem>
+                          <SelectItem value="guarantor">Fiador</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormRow>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addSigner}
-              className="w-full h-10 rounded-xl text-xs font-semibold border-dashed"
-            >
-              <Plus className="size-3.5 mr-1.5" />
-              Adicionar Signatário
-            </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addSigner} /* focus-visible:ring-2 */
+                className="w-full h-10 rounded-lg text-xs font-semibold border-dashed focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Plus className="size-3.5 mr-2" />
+                Adicionar Signatário
+              </Button>
+            </div>
           </div>
-        </div>
 
-        {/* Painel Direito: 3 Modos (Enviar Arquivo / Modelos / Documentos para WhatsApp) */}
-        <div className="lg:col-span-7 bg-card border border-border/80 rounded-2xl p-5 space-y-5 shadow-2xs">
-          <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
-            <TabsList className="grid grid-cols-3 w-full h-11 p-1 rounded-xl bg-muted/60">
-              <TabsTrigger value="upload" className="rounded-lg text-xs font-medium">
-                Enviar um arquivo
-              </TabsTrigger>
-              <TabsTrigger value="templates" className="rounded-lg text-xs font-medium">
-                Modelos de documento
-              </TabsTrigger>
-              <TabsTrigger value="whatsapp" className="rounded-lg text-xs font-medium">
-                Documentos para WhatsApp
-              </TabsTrigger>
-            </TabsList>
+          {/* Painel Direito: 3 Modos (Enviar Arquivo / Modelos / Documentos para WhatsApp) */}
+          <div className="lg:col-span-7 bg-card border border-border/80 rounded-lg p-4 sm:p-5 space-y-4">
+            <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
+              <TabsList className="grid grid-cols-1 sm:grid-cols-3 w-full h-auto sm:h-11 p-1 rounded-lg bg-muted/60">
+                <TabsTrigger value="upload" className="rounded-md text-xs font-medium">
+                  Enviar um arquivo
+                </TabsTrigger>
+                <TabsTrigger value="templates" className="rounded-md text-xs font-medium">
+                  Modelos de documento
+                </TabsTrigger>
+                <TabsTrigger value="whatsapp" className="rounded-md text-xs font-medium">
+                  Documentos para WhatsApp
+                </TabsTrigger>
+              </TabsList>
 
-            {/* ABA 1: Enviar Arquivo (Drag & Drop) */}
-            <TabsContent value="upload" className="pt-4 space-y-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold">Título do Documento</Label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ex: Contrato de Viagem - Odiceia"
-                  className="h-10 text-xs rounded-xl"
-                />
-              </div>
-
-              <MultimodalOcrUploader
-                nicheHint="service"
-                showPreviewModal={false}
-                onExtracted={handleContractOcrExtracted}
-              />
-            </TabsContent>
-
-            {/* ABA 2: Modelos Canônicos por Nicho */}
-            <TabsContent value="templates" className="pt-4 space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="relative flex-1">
+              {/* ABA 1: Enviar Arquivo (Drag & Drop) */}
+              <TabsContent value="upload" className="pt-4 space-y-4">
+                <Field label="Título do Documento" required>
                   <Input
-                    value={templateSearchQuery}
-                    onChange={(e) => setTemplateSearchQuery(e.target.value)}
-                    placeholder="Pesquisar modelo (ex: serviços, marketing, locação, permuta, pj, turismo, veículo)..."
-                    className="h-10 text-xs rounded-xl"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Ex: Contrato de Viagem - Odiceia"
+                    className="h-10 text-xs rounded-lg"
+                  />
+                </Field>
+
+                <MultimodalOcrUploader
+                  nicheHint="service"
+                  showPreviewModal={false}
+                  onExtracted={handleContractOcrExtracted}
+                />
+              </TabsContent>
+
+              {/* ABA 2: Modelos Canônicos por Nicho */}
+              <TabsContent value="templates" className="pt-4 space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="relative flex-1">
+                    <Input
+                      value={templateSearchQuery}
+                      onChange={(e) => setTemplateSearchQuery(e.target.value)}
+                      placeholder="Pesquisar modelo (ex: serviços, marketing, locação, permuta, pj, turismo, veículo)..."
+                      className="h-10 text-xs rounded-lg"
+                    />
+                  </div>
+                  <Badge variant="outline" className="text-xs font-mono shrink-0">
+                    {Object.keys(ALL_TEMPLATES).length} Modelos Oficiais
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+                  {Object.entries(ALL_TEMPLATES)
+                    .filter(([_, t]) => {
+                      if (!templateSearchQuery.trim()) return true;
+                      const q = templateSearchQuery.toLowerCase();
+                      return (
+                        t.title.toLowerCase().includes(q) ||
+                        t.description.toLowerCase().includes(q)
+                      );
+                    })
+                    .map(([key, t]) => (
+                      <Button
+                        key={key}
+                        type="button"
+                        variant="ghost"
+                        onClick={() => { /* focus-visible:ring-2 */
+                          handleSelectTemplate(key);
+                          setActiveTab("whatsapp");
+                        }}
+                        className={cn(
+                          "h-auto p-4 rounded-lg border text-left flex flex-col items-start gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-normal",
+                          category === t.category
+                            ? "bg-primary/5 border-primary/60 ring-2 ring-primary/20 shadow-xs"
+                            : "bg-card border-border/70 hover:border-border hover:bg-muted/30"
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2 w-full">
+                          <p className="text-xs font-bold text-foreground line-clamp-1">
+                            {t.title}
+                          </p>
+                          <Badge variant="secondary" className="text-xs shrink-0 font-medium">
+                            Usar Modelo
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                          {t.description}
+                        </p>
+                      </Button>
+                    ))}
+                </div>
+              </TabsContent>
+
+              {/* ABA 3: Documentos para WhatsApp (Texto Otimizado Mobile / Desktop) */}
+              <TabsContent value="whatsapp" className="pt-4 space-y-4">
+                <Field label="Título do Documento" required>
+                  <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Ex: Contrato de Viagem - Pacote Buenos Aires"
+                    className="h-10 text-xs rounded-lg"
+                  />
+                </Field>
+
+                {/* Seletor de Variáveis Semânticas Dinâmicas por Nicho */}
+                <ContractVariablePicker
+                  onInsertVariable={handleInsertVariable}
+                  defaultNiche="turismo"
+                  className="mb-2"
+                />
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold">Texto Principal do Contrato</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Variáveis como{" "}
+                      <code className="font-mono text-primary text-xs">
+                        {"{{cliente_nome}}"}
+                      </code>{" "}
+                      são preenchidas automaticamente.
+                    </p>
+                  </div>
+
+                  <Textarea
+                    id="novo-contrato-textarea"
+                    rows={12}
+                    value={contentMarkdown}
+                    onChange={(e) => setContentMarkdown(e.target.value)}
+                    className="font-mono text-xs rounded-lg p-3 leading-relaxed resize-y"
+                    placeholder="Digite as cláusulas do contrato..."
                   />
                 </div>
-                <Badge variant="outline" className="text-xs font-mono shrink-0">
-                  {Object.keys(ALL_TEMPLATES).length} Modelos Oficiais
-                </Badge>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-1">
-                {Object.entries(ALL_TEMPLATES)
-                  .filter(([_, t]) => {
-                    if (!templateSearchQuery.trim()) return true;
-                    const q = templateSearchQuery.toLowerCase();
-                    return t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q);
-                  })
-                  .map(([key, t]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => {
-                        handleSelectTemplate(key);
-                        setActiveTab("whatsapp");
-                      }}
-                      className={`p-4 rounded-xl border text-left space-y-2 transition-all cursor-pointer ${
-                        category === t.category
-                          ? "bg-primary/5 border-primary/60 ring-2 ring-primary/20 shadow-xs"
-                          : "bg-card border-border/70 hover:border-border hover:bg-muted/30"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-bold text-foreground line-clamp-1">{t.title}</p>
-                        <Badge variant="secondary" className="text-xs shrink-0 font-medium">
-                          Usar Modelo
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {t.description}
-                      </p>
-                    </button>
-                  ))}
-              </div>
-            </TabsContent>
+                {/* Barra de Prévia Mobile / Desktop */}
+                <div className="border border-border/70 rounded-lg p-3 bg-muted/20 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>Prévia do Signatário:</span>
+                    <div className="flex items-center gap-1 bg-card p-1 rounded-md border border-border/60">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setPreviewDevice("mobile")} /* focus-visible:ring-2 */
+                        className={cn(
+                          "size-7 p-1 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          previewDevice === "mobile"
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                        title="Prévia no Celular (Mobile)"
+                      >
+                        <Smartphone className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setPreviewDevice("desktop")} /* focus-visible:ring-2 */
+                        className={cn(
+                          "size-7 p-1 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          previewDevice === "desktop"
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                        title="Prévia no Computador"
+                      >
+                        <Monitor className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
 
-            {/* ABA 3: Documentos para WhatsApp (Texto Otimizado Mobile / Desktop) */}
-            <TabsContent value="whatsapp" className="pt-4 space-y-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold">Título do Documento</Label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ex: Contrato de Viagem - Pacote Buenos Aires"
-                  className="h-10 text-xs rounded-xl"
-                />
-              </div>
-
-              {/* Seletor de Variáveis Semânticas Dinâmicas por Nicho */}
-              <ContractVariablePicker
-                onInsertVariable={handleInsertVariable}
-                defaultNiche="turismo"
-                className="mb-2"
-              />
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-bold">Texto Principal do Contrato</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Variáveis como <code className="font-mono text-primary text-xs">&#123;&#123;cliente_nome&#125;&#125;</code> são preenchidas automaticamente.
-                  </p>
+                  <Badge variant="outline" className="text-xs">
+                    {previewDevice === "mobile"
+                      ? "Modo Celular (Sem Pinch-Zoom)"
+                      : "Modo Desktop"}
+                  </Badge>
                 </div>
 
-                <Textarea
-                  id="novo-contrato-textarea"
-                  rows={12}
-                  value={contentMarkdown}
-                  onChange={(e) => setContentMarkdown(e.target.value)}
-                  className="font-mono text-xs rounded-xl p-3.5 leading-relaxed resize-y"
-                  placeholder="Digite as cláusulas do contrato..."
-                />
-              </div>
-
-              {/* Barra de Prévia Mobile / Desktop (Screenshot 5) */}
-              <div className="border border-border/70 rounded-xl p-3 bg-muted/20 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Prévia do Signatário:</span>
-                  <div className="flex items-center gap-1 bg-card p-1 rounded-lg border border-border/60">
-                    <button
-                      type="button"
-                      onClick={() => setPreviewDevice("mobile")}
-                      className={`p-1.5 rounded-md transition-all ${
-                        previewDevice === "mobile"
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                      title="Prévia no Celular (390px)"
-                    >
-                      <Smartphone className="size-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPreviewDevice("desktop")}
-                      className={`p-1.5 rounded-md transition-all ${
-                        previewDevice === "desktop"
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                      title="Prévia no Computador"
-                    >
-                      <Monitor className="size-4" />
-                    </button>
+                {/* Caixa de Prévia Renderizada */}
+                <div
+                  className={cn(
+                    "mx-auto rounded-lg border border-border/80 bg-card p-4 text-xs space-y-3 shadow-xs transition-colors",
+                    previewDevice === "mobile" ? "max-w-sm" : "w-full"
+                  )}
+                >
+                  <div className="border-b border-border/50 pb-2 text-xs font-semibold text-muted-foreground flex items-center justify-between">
+                    <span>{title || "Sem título"}</span>
+                    <span className="text-xs text-success">Leitura Limpa</span>
+                  </div>
+                  <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 font-serif leading-relaxed text-xs">
+                    <ReactMarkdown>{contentMarkdown}</ReactMarkdown>
                   </div>
                 </div>
-
-                <Badge variant="outline" className="text-xs">
-                  {previewDevice === "mobile" ? "Modo Celular (Sem Pinch-Zoom)" : "Modo Desktop"}
-                </Badge>
-              </div>
-
-              {/* Caixa de Prévia Renderizada */}
-              <div
-                className={`mx-auto rounded-2xl border border-border/80 bg-card p-4 text-xs space-y-3 shadow-xs transition-all ${
-                  previewDevice === "mobile" ? "max-w-[390px]" : "w-full"
-                }`}
-              >
-                <div className="border-b border-border/50 pb-2 text-xs font-bold text-muted-foreground flex items-center justify-between">
-                  <span>{title || "Sem título"}</span>
-                  <span className="text-xs text-emerald-600">Leitura Limpa</span>
-                </div>
-                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 font-serif leading-relaxed text-xs">
-                  <ReactMarkdown>{contentMarkdown}</ReactMarkdown>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </Grid>
       </div>
-    </div>
+    </Page>
   );
 }

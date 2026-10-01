@@ -34,18 +34,21 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
 
     // 0. Resolver identidade da sessão
     let userId: string | null = null;
+    let userEmail: string | null = null;
     try {
       const identity = await getServerIdentity();
       userId = identity?.id || null;
+      userEmail = identity?.email || null;
     } catch {
       userId = null;
     }
 
-    if (!userId) {
+    if (!userId || Boolean(userEmail) === false) {
       try {
         const ssr = getSSRClient();
         const { data: authData } = await ssr.auth.getUser();
-        userId = authData?.user?.id || null;
+        userId = userId || authData?.user?.id || null;
+        userEmail = userEmail || authData?.user?.email || null;
       } catch {
         userId = null;
       }
@@ -75,10 +78,10 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
     if (!existingProfile) {
       await db.from("profiles").insert({
         id: userId,
-        role: "owner",
+        role: "store_owner",
       });
     } else {
-      await db.from("profiles").update({ role: "owner" }).eq("id", userId);
+      await db.from("profiles").update({ role: "store_owner" }).eq("id", userId);
     }
 
     // 1. Criar Organização
@@ -99,6 +102,8 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       category: data.category,
       segment: data.category,
       niche: data.category,
+      user_id: userId,
+      created_by: userId,
       bio: data.bio || (enrichedData?.cnae_principal?.descricao ? `Atividade: ${enrichedData.cnae_principal.descricao}` : ""),
       logoUrl: data.logoUrl || null,
       bannerUrl: data.bannerUrl || null,
@@ -118,6 +123,7 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       organization_id: org.id,
       name: resolvedName,
       slug: orgSlug,
+      email: userEmail || undefined,
       city: enrichedData?.endereco?.municipio || data.city,
       state: enrichedData?.endereco?.uf || data.state || "SC",
       address: data.address || (enrichedData?.endereco?.logradouro ? `${enrichedData.endereco.logradouro}, ${enrichedData.endereco.numero || 'S/N'}` : data.city),
@@ -170,11 +176,12 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       console.warn("[fastRegisterCompany] Aviso directory_listings:", e?.message);
     }
 
-    // 6. Atualizar store_id no profile
+    // 6. Elevar role do profile para store_owner
     try {
-      await db.from("profiles").update({ store_id: store.id }).eq("id", userId);
+      await db.from("profiles").update({ role: "store_owner" }).eq("id", userId);
+      await db.rpc("elevate_to_store_owner", { p_user_id: userId });
     } catch (e: any) {
-      console.warn("[fastRegisterCompany] Aviso profile update store_id:", e?.message);
+      console.warn("[fastRegisterCompany] Aviso profile elevate store_owner:", e?.message);
     }
 
     // 7. Definir Cookies de Tenant e Contexto Canônico (Zero Desconexão)

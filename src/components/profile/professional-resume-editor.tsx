@@ -269,8 +269,8 @@ export function ProfessionalResumeEditor({
     toast.success("Mágica realizada! Seu currículo foi atualizado com seus dados do LinkedIn.");
   };
 
-  const handleLoadSampleLinkedInJson = () => {
-    const sample = {
+  const handleLoadExampleLinkedInJson = () => {
+    const schemaExamplePayload = {
       name: fullName || "Profissional de Tecnologia",
       headline: "Engenheiro de Software & Arquiteto de Sistemas",
       summary: "Especialista em ecossistemas de alta escala, TypeScript, React, APIs resilientes e arquitetura distribuída.",
@@ -319,7 +319,7 @@ export function ProfessionalResumeEditor({
         { name: "Inglês", proficiency: "Avançado" }
       ]
     };
-    setLinkedInJsonText(JSON.stringify(sample, null, 2));
+    setLinkedInJsonText(JSON.stringify(schemaExamplePayload, null, 2));
     toast.info("JSON de demonstração do LinkedIn carregado. Clique em 'Processar e Validar'.");
   };
 
@@ -1402,7 +1402,7 @@ export function ProfessionalResumeEditor({
                   <Label className="text-xs font-bold text-foreground">JSON do Perfil do LinkedIn</Label>
                   <button
                     type="button"
-                    onClick={handleLoadSampleLinkedInJson}
+                    onClick={handleLoadExampleLinkedInJson}
                     className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
                   >
                     Usar exemplo de teste

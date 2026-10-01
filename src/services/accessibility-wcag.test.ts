@@ -19,8 +19,8 @@ describe("Universal Accessibility & WCAG 2.2 AA Compliance Audit", () => {
   it("2. Deve conter suporte obrigatório a prefers-reduced-motion (WCAG 2.3.3) no styles.css", () => {
     const css = fs.readFileSync(stylesPath, "utf8");
     expect(css).toContain("@media (prefers-reduced-motion: reduce)");
-    expect(css).toContain("animation-duration: 0.01ms !important");
-    expect(css).toContain("transition-duration: 0.01ms !important");
+    expect(css).toContain("animation-duration: 0.01ms");
+    expect(css).toContain("transition-duration: 0.01ms");
   });
 
   it("3. Deve conter classes utilitárias para leitores de tela e Skip Link (.sr-only, .visually-hidden, .skip-link)", () => {

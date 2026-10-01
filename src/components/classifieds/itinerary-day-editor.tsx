@@ -28,9 +28,9 @@ interface ItineraryDayEditorProps {
 }
 
 const MEAL_LABELS: Record<"breakfast" | "lunch" | "dinner", string> = {
-  breakfast: "☕ Café",
-  lunch: "🍽️ Almoço",
-  dinner: "🌙 Jantar",
+  breakfast: "Café da Manhã",
+  lunch: "Almoço",
+  dinner: "Jantar",
 };
 
 function createEmptyDay(dayNumber: number): ItineraryDay {

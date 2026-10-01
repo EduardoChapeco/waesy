@@ -49,7 +49,7 @@ export function BookingDetailMobile({
         {/* Botão Circular Flutuante "Voltar" (44px Apple HIG) */}
         <Link
           to="/agendar"
-          className="absolute top-3 left-3 size-11 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 active:scale-95 transition-transform z-20 shadow-md"
+          className="absolute top-3 left-3 size-11 rounded-full bg-black/50  text-white flex items-center justify-center border border-white/20 active:scale-95 transition-transform z-20 "
           aria-label="Voltar para Serviços"
         >
           <ArrowLeft size={20} weight="bold" />
@@ -57,7 +57,7 @@ export function BookingDetailMobile({
 
         {/* Ações Flutuantes Superior Direito (44px Apple HIG) */}
         <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
-          <div className="size-11 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-md">
+          <div className="size-11 rounded-full bg-black/50  text-white flex items-center justify-center border border-white/20 ">
             <ContentActionsMenu
               entityType="product"
               entityId={service.id}
@@ -72,11 +72,11 @@ export function BookingDetailMobile({
 
         {/* Badges Flutuantes sobre a foto */}
         <div className="absolute bottom-3 left-3 flex flex-wrap items-center gap-1.5 z-20">
-          <Badge className="bg-background/90 text-foreground text-[10px] font-bold border border-border/50 backdrop-blur-md">
+          <Badge className="bg-background text-foreground text-[10px] font-bold border border-border/50 ">
             {categoryLabel}
           </Badge>
           {service.duration_minutes && (
-            <Badge variant="secondary" className="backdrop-blur-md text-[10px] font-mono font-bold px-2 py-0.5 flex items-center gap-1 bg-black/60 text-white border border-white/20">
+            <Badge variant="secondary" className=" text-[10px] font-mono font-bold px-2 py-0.5 flex items-center gap-1 bg-card text-foreground border border-border">
               <Clock size={11} weight="bold" />
               <span>{service.duration_minutes} min</span>
             </Badge>
@@ -210,7 +210,7 @@ export function BookingDetailMobile({
       </div>
 
       {/* ── 7. Sticky Bottom Action Bar (Thumb Zone & Safe-Area) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background  border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-lg">
         <div className="min-w-0 flex-1">
           <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
             Valor da Sessão

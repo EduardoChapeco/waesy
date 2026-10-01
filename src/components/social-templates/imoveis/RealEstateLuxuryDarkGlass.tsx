@@ -50,7 +50,7 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
       </div>
 
       {/* ── 2. Fotografia Central em Moldura Squircle Iluminada (62% da área) ── */}
-      <div className="relative w-full h-[58%] my-3 rounded-[36px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-amber-400/20 bg-neutral-900 shrink-0">
+      <div className="relative w-full h-[58%] my-3 rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-amber-400/20 bg-neutral-900 shrink-0">
         <img
           src={backgroundImageUrl}
           alt={title}

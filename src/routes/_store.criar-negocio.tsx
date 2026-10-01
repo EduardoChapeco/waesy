@@ -383,7 +383,7 @@ function CriarNegocioPage() {
  window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
  window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
   }
-  window.location.href = "/conta/empresa";
+  window.location.href = "/workspace";
   }}
   />
   ) : (

@@ -252,7 +252,7 @@ export function DigitalCompanionCard({
             onClick={() => setActiveTab("visual")}
             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-[40px] ${
               activeTab === "visual"
-                ? "bg-card text-foreground shadow-xs"
+                ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -265,7 +265,7 @@ export function DigitalCompanionCard({
             onClick={() => setActiveTab("rules")}
             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-[40px] ${
               activeTab === "rules"
-                ? "bg-card text-foreground shadow-xs"
+                ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -278,7 +278,7 @@ export function DigitalCompanionCard({
             onClick={() => setActiveTab("emergency")}
             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-[40px] ${
               activeTab === "emergency"
-                ? "bg-card text-foreground shadow-xs"
+                ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -470,7 +470,7 @@ export function DigitalCompanionCard({
                   {chunk.map((item, itemIdx) => (
                     <div
                       key={itemIdx}
-                      className="p-5 rounded-2xl bg-card border border-border/80 shadow-xs space-y-3 shrink-0"
+                      className="p-5 rounded-2xl bg-card border border-border/80  space-y-3 shrink-0"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
@@ -533,7 +533,7 @@ export function DigitalCompanionCard({
                   <Info className="size-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">Orientações Importantes</h3>
+                  <h3 className="text-sm font-bold text-foreground line-clamp-1">Orientações Importantes</h3>
                   <p className="text-[11px] text-muted-foreground">Guia essencial de atendimento</p>
                 </div>
               </div>
@@ -597,7 +597,7 @@ export function DigitalCompanionCard({
                     <Siren className="size-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-foreground">Contatos de Emergência</h3>
+                    <h3 className="text-sm font-bold text-foreground line-clamp-1">Contatos de Emergência</h3>
                     <p className="text-[11px] text-muted-foreground">Socorro e apoio imediato</p>
                   </div>
                 </div>
@@ -606,7 +606,7 @@ export function DigitalCompanionCard({
                   {chunk.map((contact, cIdx) => (
                     <div
                       key={cIdx}
-                      className="p-4 rounded-2xl bg-card border border-border/80 shadow-xs space-y-3"
+                      className="p-4 rounded-2xl bg-card border border-border/80  space-y-3"
                     >
                       <div>
                         <p className="text-[9px] uppercase tracking-wider font-bold text-blue-600 dark:text-blue-400">
@@ -646,11 +646,11 @@ export function DigitalCompanionCard({
 
         {/* ABA 4: TEXTO PRONTO PARA WHATSAPP */}
         {activeTab === "whatsapp" && (
-          <div className="w-full max-w-2xl bg-card rounded-2xl p-6 sm:p-8 border border-border/80 shadow-xs space-y-4">
+          <div className="w-full max-w-2xl bg-card rounded-2xl p-6 sm:p-8 border border-border/80  space-y-4">
             <div className="flex items-center justify-between border-b border-border/60 pb-4">
               <div className="flex items-center gap-2">
                 <WhatsappLogo className="size-5 text-emerald-600" weight="fill" />
-                <h3 className="text-sm font-bold text-foreground">Mensagem Pronta para WhatsApp</h3>
+                <h3 className="text-sm font-bold text-foreground line-clamp-1">Mensagem Pronta para WhatsApp</h3>
               </div>
 
               <Button

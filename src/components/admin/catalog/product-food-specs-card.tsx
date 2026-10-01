@@ -114,13 +114,13 @@ export function ProductFoodSpecsCard({
   };
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-6 shadow-xs">
+    <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-6 ">
       {/* Top Header */}
       <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <Layers className="size-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">Especificações de Varejo, Alimentação</h3>
+            <h3 className="text-sm font-bold text-foreground line-clamp-1 truncate">Especificações de Varejo, Alimentação</h3>
             <Badge variant="outline" className="text-[10px] font-bold bg-primary/10 text-primary border-none">
               Padrão iFood / Osuper
             </Badge>

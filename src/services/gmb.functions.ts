@@ -170,15 +170,30 @@ export const syncGmbStoreProfile = createServerFn({ method: "POST" }).handler(
     try {
       const token = await getValidOAuthAccessToken(identity.store_id, "google_my_business");
 
-      // Mockup e fallback com dados calibrados da API oficial do Google Business
-      // Se houver token real com endpoint configurado, faria fetch no Google API.
-      // Caso contrário, consolida os dados reais e cria os horários e reviews de padrão alto padrão:
-      const city = store.city || "Chapecó";
-      const state = store.state || "SC";
-      const cleanAddress = store.address || `Av. Getúlio Vargas, 1000 - Centro, ${city} - ${state}`;
-      const cleanPhone = store.phone || "(49) 3322-1000";
+      const cleanAddress = store.address || "";
+      const cleanPhone = store.phone || "";
 
-      const gmbHours: Record<string, { open: string; close: string; closed?: boolean }> = {
+      // Busca avaliações reais associadas à loja no banco
+      const { data: realReviews } = await supabase
+        .from("reviews")
+        .select("author_name, rating, comment, created_at")
+        .eq("store_id", identity.store_id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      const reviewsList = (realReviews || []).map((r: any) => ({
+        authorName: r.author_name || "Cliente Verificado",
+        rating: Number(r.rating) || 5,
+        comment: r.comment || "",
+        relativeTime: r.created_at ? new Date(r.created_at).toLocaleDateString("pt-BR") : "",
+      }));
+
+      const importedRating = reviewsList.length > 0
+        ? Number((reviewsList.reduce((acc: number, r: any) => acc + r.rating, 0) / reviewsList.length).toFixed(1))
+        : (Number((store as any).google_rating) || 0);
+      const importedReviewCount = reviewsList.length > 0 ? reviewsList.length : (Number((store as any).google_review_count) || 0);
+
+      const canonicalBusinessHours: Record<string, { open: string; close: string; closed?: boolean }> = {
         segunda: { open: "08:30", close: "18:30" },
         terca: { open: "08:30", close: "18:30" },
         quarta: { open: "08:30", close: "18:30" },
@@ -188,35 +203,11 @@ export const syncGmbStoreProfile = createServerFn({ method: "POST" }).handler(
         domingo: { open: "00:00", close: "00:00", closed: true },
       };
 
-      const importedRating = 4.9;
-      const importedReviewCount = 47;
-
-      const sampleReviews = [
-        {
-          authorName: "Carlos Eduardo Silva",
-          rating: 5,
-          comment: "Excelente atendimento e pontualidade na entrega. Loja referência na cidade!",
-          relativeTime: "há 2 semanas",
-        },
-        {
-          authorName: "Mariana Alcantara",
-          rating: 5,
-          comment: "Ambiente impecável e produtos de extrema qualidade. Recomendo muito.",
-          relativeTime: "há 1 mês",
-        },
-        {
-          authorName: "Roberto Zanin",
-          rating: 5,
-          comment: "Fiz o pedido pelo WhatsApp da loja e chegou em menos de 40 minutos. Fantástico!",
-          relativeTime: "há 2 meses",
-        },
-      ];
-
       const currentSettings = (store.settings as Record<string, any>) || {};
       const updatedSettings = {
         ...currentSettings,
-        business_hours: gmbHours,
-        google_reviews: sampleReviews,
+        business_hours: currentSettings.business_hours || canonicalBusinessHours,
+        google_reviews: reviewsList,
         gmb_synced_at: new Date().toISOString(),
       };
 
@@ -224,10 +215,10 @@ export const syncGmbStoreProfile = createServerFn({ method: "POST" }).handler(
       const { error: updErr } = await supabase
         .from("stores")
         .update({
-          address: cleanAddress,
-          city,
-          state,
-          phone: cleanPhone,
+          address: cleanAddress || store.address,
+          city: store.city,
+          state: store.state,
+          phone: cleanPhone || store.phone,
           google_rating: importedRating,
           google_review_count: importedReviewCount,
           settings: updatedSettings,
@@ -268,8 +259,8 @@ export const syncGmbStoreProfile = createServerFn({ method: "POST" }).handler(
           address: cleanAddress,
           rating: importedRating,
           reviewCount: importedReviewCount,
-          openingHours: gmbHours,
-          reviews: sampleReviews,
+          openingHours: currentSettings.business_hours || canonicalBusinessHours,
+          reviews: reviewsList,
         },
       };
     } catch (err: any) {

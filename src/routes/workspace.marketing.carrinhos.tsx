@@ -52,11 +52,13 @@ function AbandonedCartsPage() {
  toast.success("Tentativa registrada");
 
  if (phone) {
- // Formatar para link do whatsapp
  const cleanPhone = phone.replace(/\D/g, "");
  if (cleanPhone.length >= 10) {
+ const recoveryMsg = encodeURIComponent(
+ "Olá! Vimos que você deixou itens no carrinho. Use o cupom especial VOLTA10 para concluir sua compra com desconto!"
+ );
  window.open(
- `https://wa.me/55${cleanPhone}?text=Olá! Vimos que você deixou alguns itens no carrinho. Precisa de ajuda?`,
+ `https://wa.me/55${cleanPhone}?text=${recoveryMsg}`,
  "_blank",
  );
  }

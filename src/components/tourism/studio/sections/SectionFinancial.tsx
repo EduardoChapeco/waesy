@@ -16,7 +16,7 @@ export function SectionFinancial({ draft, save }: Props) {
     <Accordion title="Financeiro" defaultOpen>
       <div className="space-y-4">
         {/* Totals display */}
-        <div className="rounded-[var(--radius-card)] border border-border/50 bg-surface p-4">
+        <div className="rounded-card border border-border/50 bg-surface p-4">
           <div className="flex items-center gap-2 mb-3">
             <DollarSign className="h-3.5 w-3.5 text-brand" />
             <span className="ds-label-caps tracking-wider text-muted-foreground">Resumo</span>

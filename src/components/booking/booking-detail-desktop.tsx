@@ -51,7 +51,7 @@ export function BookingDetailDesktop({
         {/* Coluna Esquerda (7 cols): Imagem, Título, Detalhes, Especificações */}
         <div className="col-span-7 space-y-6">
           {/* Banner Principal */}
-          <div className="aspect-[16/9] w-full rounded-2xl overflow-hidden bg-muted relative border border-border/60 shadow-xs">
+          <div className="aspect-[16/9] w-full rounded-2xl overflow-hidden bg-muted relative border border-border/60 ">
             {service.image_url ? (
               <img
                 src={service.image_url}
@@ -64,18 +64,18 @@ export function BookingDetailDesktop({
               </div>
             )}
             <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
-              <Badge className="bg-background/95 text-foreground backdrop-blur-md text-xs font-bold px-3 py-1 rounded-xl shadow-xs border border-border/60">
+              <Badge className="bg-background text-foreground  text-xs font-bold px-3 py-1 rounded-xl  border border-border/60">
                 {categoryLabel}
               </Badge>
               {service.duration_minutes && (
-                <Badge variant="secondary" className="backdrop-blur-md text-xs font-mono font-bold px-2.5 py-1 rounded-xl flex items-center gap-1.5 shadow-xs">
+                <Badge variant="secondary" className=" text-xs font-mono font-bold px-2.5 py-1 rounded-xl flex items-center gap-1.5 ">
                   <Clock size={13} weight="bold" />
                   <span>{service.duration_minutes} min</span>
                 </Badge>
               )}
             </div>
             <div className="absolute top-4 right-4">
-              <Badge className="bg-emerald-500/90 text-white backdrop-blur-md text-[11px] font-bold px-3 py-1 rounded-xl shadow-xs flex items-center gap-1">
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20  text-[11px] font-bold px-3 py-1 rounded-xl  flex items-center gap-1">
                 <Star size={12} weight="fill" />
                 <span>Vagas Hoje</span>
               </Badge>
@@ -104,7 +104,7 @@ export function BookingDetailDesktop({
           </h1>
 
           {/* Ficha Técnica / Especificações */}
-          <div className="p-6 rounded-2xl border border-border/70 bg-card space-y-4 shadow-xs">
+          <div className="p-6 rounded-2xl border border-border/70 bg-card space-y-4 ">
             <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Especificações do Serviço</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               <div className="p-3 rounded-xl bg-muted/30 border border-border/40">
@@ -124,7 +124,7 @@ export function BookingDetailDesktop({
 
           {/* Descrição */}
           {service.description && (
-            <div className="p-6 rounded-2xl border border-border/70 bg-card space-y-3 shadow-xs">
+            <div className="p-6 rounded-2xl border border-border/70 bg-card space-y-3 ">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sobre o Procedimento</h2>
               <p className="text-sm md:text-base text-foreground/85 leading-relaxed whitespace-pre-line">
                 {service.description}
@@ -134,7 +134,7 @@ export function BookingDetailDesktop({
 
           {/* Inclusões e Orientações */}
           {service.included_items && service.included_items.length > 0 && (
-            <div className="p-6 rounded-2xl border border-border/70 bg-card space-y-3 shadow-xs">
+            <div className="p-6 rounded-2xl border border-border/70 bg-card space-y-3 ">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">O Que Está Incluso</h2>
               <ul className="space-y-2 text-sm text-foreground/85">
                 {service.included_items.map((item: string, i: number) => (
@@ -148,7 +148,7 @@ export function BookingDetailDesktop({
           )}
 
           {service.requirements && service.requirements.length > 0 && (
-            <div className="p-6 rounded-2xl border border-border/70 bg-card space-y-3 shadow-xs">
+            <div className="p-6 rounded-2xl border border-border/70 bg-card space-y-3 ">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Orientações e Cuidados</h2>
               <ul className="space-y-2 text-sm text-foreground/85">
                 {service.requirements.map((req: string, i: number) => (
@@ -163,7 +163,7 @@ export function BookingDetailDesktop({
 
           {/* Estabelecimento Parceiro */}
           {store && (
-            <div className="p-6 rounded-2xl border border-border/70 bg-card space-y-4 shadow-xs">
+            <div className="p-6 rounded-2xl border border-border/70 bg-card space-y-4 ">
               <div className="flex items-center gap-4">
                 <div className="size-14 rounded-2xl bg-muted overflow-hidden flex items-center justify-center shrink-0 border border-border/50">
                   {store.logo_url ? (

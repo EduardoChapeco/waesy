@@ -16,6 +16,7 @@
     "format": "prettier --write .",
     "typecheck": "node --max-old-space-size=6144 ./node_modules/typescript/bin/tsc --noEmit",
     "test": "vitest run",
+    "audit:all": "node scripts/audit/audit-all.mjs",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name usewaesy --commit-dirty=true --no-bundle",
     "check:canonical": "npm run typecheck && npm run lint:design && npm run lint"
   },

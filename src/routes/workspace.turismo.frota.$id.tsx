@@ -519,7 +519,7 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* Carroceria do Ônibus */}
- <div className="relative w-fit rounded-[40px] border-4 border-foreground/30 bg-card p-6 sm:p-8 shadow-sm flex flex-col items-center space-y-4 min-w-[300px]">
+ <div className="relative w-fit rounded-3xl border-4 border-foreground/30 bg-card p-6 sm:p-8 shadow-sm flex flex-col items-center space-y-4 min-w-[300px]">
  {/* Para-brisa Dianteiro */}
  <div className="w-full h-9 rounded-t-3xl bg-sky-500/10 border-2 border-sky-500/30 flex items-center justify-center text-xs font-mono font-bold text-sky-600 uppercase tracking-widest">
  Frente / Para-brisa {isDoubleDecker ? `(Piso ${activeDeck})` : ""}

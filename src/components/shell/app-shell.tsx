@@ -304,12 +304,12 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
           ref={mainRef}
           className={`main-container-query flex-1 flex flex-col min-w-0 h-full w-full max-w-full overflow-y-auto no-scrollbar overflow-x-hidden ${
             isFeedPage || isCleanMobileAppPage
-              ? "px-[1px] md:px-4 pt-0 md:pt-2.5 pb-24 md:pb-8"
+              ? "px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
               : isFormPage
-              ? "px-[1px] md:px-6 pt-0 md:pt-3 pb-20 md:pb-8"
+              ? "px-4 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"
               : isDetailPage
-              ? "px-[1px] md:px-6 py-0 md:py-2 pb-20 md:pb-8"
-              : "px-[1px] md:px-6 pt-0 md:pt-2.5 pb-24 md:pb-8"
+              ? "px-4 sm:px-6 md:px-8 py-0 md:py-3 pb-20 md:pb-8"
+              : "px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
           }`}
         >
           <div className={`w-full mx-auto flex flex-col items-stretch min-w-0 flex-1 ${

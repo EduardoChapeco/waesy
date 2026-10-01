@@ -874,11 +874,11 @@ function ProfileCivilPage() {
         </div>
 
         {/* ── Barra de Ação Flutuante Mobile (<640px) para Salvar sem Rolar a Página Toda ── */}
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 bg-background/95 backdrop-blur-md border-t border-border/40 z-30">
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 pb-safe bg-background border-t border-border/40 z-30">
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-xl h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-md"
+            className="w-full rounded-xl h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-95"
           >
             {isSubmitting ? (
               <>

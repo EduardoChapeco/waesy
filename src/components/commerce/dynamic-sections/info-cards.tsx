@@ -42,7 +42,7 @@ export function InfoCards({ content }: InfoCardsProps) {
  {IconComponent && <IconComponent className="size-5" />}
  </div>
  <div className="space-y-1">
- <h3 className="text-sm font-bold text-foreground leading-none">{card.title}</h3>
+ <h3 className="text-sm font-bold text-foreground leading-none line-clamp-1">{card.title}</h3>
  {card.description && (
  <p className="text-xs text-muted-foreground leading-relaxed">
  {card.description}

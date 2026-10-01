@@ -58,7 +58,7 @@ export default function WorkspaceMarketingSocialPage() {
 
   const storeName = settings?.store_name || "Sua Loja";
   const storeSlug = settings?.store_slug || "loja";
-  const sampleProduct = {
+  const previewProduct = {
     title: "Pacote Exclusivo Fim de Semana",
     price: "R$ 499,00",
     description: "Hospedagem completa com café da manhã e passeios inclusos na serra.",
@@ -74,7 +74,7 @@ export default function WorkspaceMarketingSocialPage() {
   const computedTitle = useMemo(() => {
     const raw = previewScenario === "product" ? ogTitleTemplate : "{store_name} | Loja Oficial";
     return raw
-      .replace(/{item_title}/g, sampleProduct.title)
+      .replace(/{item_title}/g, previewProduct.title)
       .replace(/{store_name}/g, storeName);
   }, [ogTitleTemplate, previewScenario, storeName]);
 
@@ -84,16 +84,16 @@ export default function WorkspaceMarketingSocialPage() {
         ? ogDescriptionTemplate
         : "Descubra ofertas exclusivas, catálogo completo e compre direto com facilidade.";
     return raw
-      .replace(/{item_title}/g, sampleProduct.title)
-      .replace(/{item_description}/g, sampleProduct.description)
+      .replace(/{item_title}/g, previewProduct.title)
+      .replace(/{item_description}/g, previewProduct.description)
       .replace(/{store_name}/g, storeName);
   }, [ogDescriptionTemplate, previewScenario, storeName]);
 
   const computedWhatsappMessage = useMemo(() => {
     return whatsappShareTemplate
-      .replace(/{item_title}/g, sampleProduct.title)
-      .replace(/{item_price}/g, sampleProduct.price)
-      .replace(/{item_url}/g, sampleProduct.url)
+      .replace(/{item_title}/g, previewProduct.title)
+      .replace(/{item_price}/g, previewProduct.price)
+      .replace(/{item_url}/g, previewProduct.url)
       .replace(/{store_name}/g, storeName);
   }, [whatsappShareTemplate, storeName]);
 
@@ -122,7 +122,7 @@ export default function WorkspaceMarketingSocialPage() {
   };
 
   const handleCopyTestLink = () => {
-    navigator.clipboard.writeText(sampleProduct.url);
+    navigator.clipboard.writeText(previewProduct.url);
     setCopiedLink(true);
     toast.success("Link de teste copiado!");
     setTimeout(() => setCopiedLink(false), 2000);
@@ -445,7 +445,7 @@ export default function WorkspaceMarketingSocialPage() {
                     <div className="bg-black/5 dark:bg-black/20 rounded-lg overflow-hidden border border-black/10 dark:border-white/10">
                       <div className="aspect-[1.91/1] w-full bg-muted overflow-hidden relative">
                         <img
-                          src={sampleProduct.image}
+                          src={previewProduct.image}
                           alt={computedTitle}
                           className="w-full h-full object-cover"
                         />
@@ -482,7 +482,7 @@ export default function WorkspaceMarketingSocialPage() {
               <div className="bg-background border border-border rounded-2xl overflow-hidden shadow-xs">
                 <div className="aspect-[1.91/1] w-full bg-muted overflow-hidden relative">
                   <img
-                    src={sampleProduct.image}
+                    src={previewProduct.image}
                     alt={computedTitle}
                     className="w-full h-full object-cover"
                   />
@@ -511,7 +511,7 @@ export default function WorkspaceMarketingSocialPage() {
               <div className="bg-card border border-border rounded-xl overflow-hidden shadow-xs">
                 <div className="aspect-[1.91/1] w-full bg-muted overflow-hidden">
                   <img
-                    src={sampleProduct.image}
+                    src={previewProduct.image}
                     alt={computedTitle}
                     className="w-full h-full object-cover"
                   />

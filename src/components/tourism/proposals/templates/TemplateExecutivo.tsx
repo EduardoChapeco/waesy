@@ -25,7 +25,9 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
             src={vm.agency.logo_url}
             crossOrigin="anonymous"
             alt="Logo"
-            className="h-12 object-contain"
+            className="h-12 w-auto max-w-[180px] aspect-[4/1] object-contain"
+            width={180}
+            height={48}
           />
         ) : (
           <div className="text-2xl font-bold tracking-tight text-slate-900">{vm.agency.name}</div>
@@ -54,7 +56,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
       </div>
 
       {/* DADOS DO CLIENTE */}
-      <div className="border border-slate-200 rounded-[var(--radius-card)] p-8 mb-16 break-inside-avoid">
+      <div className="border border-slate-200 rounded-card p-8 mb-16 break-inside-avoid">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
             <div className="ds-label-caps text-slate-400 mb-1">Aos cuidados de</div>
@@ -93,7 +95,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
               {p.flights!.map((f, i) => (
                 <div
                   key={i}
-                  className="border border-slate-200 rounded-[var(--radius-card)] p-5 break-inside-avoid"
+                  className="border border-slate-200 rounded-card p-5 break-inside-avoid"
                 >
                   <div className="flex justify-between items-center mb-4">
                     <span className="ds-label-caps text-slate-500">{f.airline || "Cia Aérea"}</span>
@@ -136,7 +138,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
               {p.hotels!.map((h, i) => (
                 <div
                   key={i}
-                  className="border border-slate-200 rounded-[var(--radius-card)] p-5 break-inside-avoid flex gap-6"
+                  className="border border-slate-200 rounded-card p-5 break-inside-avoid flex gap-6"
                 >
                   {h.images?.[0] && (
                     <div className="w-32 h-32 shrink-0 rounded-2xl overflow-hidden">
@@ -257,7 +259,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
               </div>
 
               <div className="w-full md:w-[45%] space-y-4">
-                <div className="glass-dark border border-border rounded-[var(--radius-card)] p-5">
+                <div className="glass-dark border border-border rounded-card p-5">
                   <div className="ds-meta uppercase font-bold tracking-widest text-slate-400 mb-2">
                     Cartão de Crédito
                   </div>
@@ -268,7 +270,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                 </div>
 
                 <div
-                  className="bg-white rounded-[var(--radius-card)] p-5 text-slate-900 border-2"
+                  className="bg-white rounded-card p-5 text-slate-900 border-2"
                   style={{ borderColor: brand === "#0f172a" ? "#38bdf8" : brand }}
                 >
                   <div className="flex justify-between items-start mb-2">
@@ -323,7 +325,10 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
           <img
             src={vm.agency.logo_url}
             crossOrigin="anonymous"
-            className="h-8 object-contain grayscale opacity-60"
+            alt="Logo Agência"
+            className="h-8 w-auto max-w-[120px] aspect-[4/1] object-contain grayscale opacity-60"
+            width={120}
+            height={32}
           />
         )}
       </div>

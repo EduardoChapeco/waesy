@@ -199,7 +199,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
       >
         <nav
           aria-label="Navegação principal móvel"
-          className="grid grid-cols-5 items-center p-1.5 bg-background/95 backdrop-blur-md border border-border/80 rounded-[24px] shadow-sm transition-all duration-200"
+          className="grid grid-cols-5 items-center p-1.5 bg-background border border-border rounded-3xl transition-all duration-200"
         >
           {/* TAB 1: INÍCIO */}
           <Link

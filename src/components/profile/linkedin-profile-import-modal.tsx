@@ -133,8 +133,8 @@ export function LinkedInProfileImportModal({
     resetState();
   };
 
-  const handleLoadSample = () => {
-    const sample = {
+  const handleLoadExampleTemplate = () => {
+    const schemaExamplePayload = {
       name: "Candidato Waesy",
       headline: "Especialista em Gestão e Operações Comerciais",
       summary: "Profissional com mais de 8 anos de experiência em gestão de equipes, otimização de processos de varejo e expansão comercial multicanal.",
@@ -172,7 +172,7 @@ export function LinkedInProfileImportModal({
       ],
       skills: ["Gestão de Equipes", "Planejamento Estratégico", "Vendas B2B", "Negociação", "ERP", "CRM"],
     };
-    setJsonText(JSON.stringify(sample, null, 2));
+    setJsonText(JSON.stringify(schemaExamplePayload, null, 2));
     toast.info("Exemplo carregado. Clique em 'Validar e Processar'.");
   };
 
@@ -261,7 +261,7 @@ export function LinkedInProfileImportModal({
                 <Label className="text-xs font-bold text-foreground">JSON do Perfil</Label>
                 <button
                   type="button"
-                  onClick={handleLoadSample}
+                  onClick={handleLoadExampleTemplate}
                   className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
                 >
                   Carregar exemplo para teste

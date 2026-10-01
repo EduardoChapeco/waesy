@@ -759,3 +759,41 @@ export const getEmployeeFinancialStatement = createServerFn({ method: "GET" })
     };
   });
 
+// ---------------------------------------------------------------------------
+// 8. AUDITORIA DE PIN GERENCIAL E AUTORIZAÇÕES (GAP-239)
+// ---------------------------------------------------------------------------
+export const listEmployeePinAuditLogs = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        limit: z.number().int().min(1).max(100).default(50),
+      })
+      .default({ limit: 50 })
+  )
+  .handler(async ({ data: { limit } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const { data: logs, error } = await supabase
+      .from("employee_pin_audit_logs")
+      .select("id, employee_id, attempt_type, terminal_device_id, details, created_at, profiles:employee_id(full_name, email)")
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.warn("[hr.functions] listEmployeePinAuditLogs notice:", error.message);
+      return [];
+    }
+
+    return (logs || []).map((l: any) => ({
+      id: l.id,
+      employeeId: l.employee_id,
+      employeeName: l.profiles?.full_name || "Colaborador",
+      attemptType: l.attempt_type,
+      terminalDeviceId: l.terminal_device_id,
+      details: l.details,
+      createdAt: l.created_at,
+    }));
+  });

@@ -529,7 +529,7 @@ export function TravelPromoFlyerModal({
           {/* ── Coluna Direita: Painel de Controlo Silencioso (Desktop Sidebar / Mobile Drawer) ── */}
           <aside
             className={`w-full lg:w-[380px] xl:w-[420px] shrink-0 border-t lg:border-t-0 lg:border-l border-border/80 bg-card flex flex-col z-10 transition-all duration-200 ${
-              isMobileControlsOpen ? "h-[65dvh] max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 shadow-2xl" : "max-lg:hidden h-full"
+              isMobileControlsOpen ? "h-[65dvh] max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:pb-safe shadow-2xl" : "max-lg:hidden h-full"
             }`}
           >
             <div className="p-3.5 border-b border-border/60 flex items-center justify-between shrink-0">

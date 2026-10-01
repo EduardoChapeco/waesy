@@ -1,5 +1,8 @@
 import { z } from "zod";
 import type { PermissionAction, PermissionResource } from "./permission-registry";
+import { getNicheManifest, NicheId } from "@/lib/niche-manifest";
+import { canTransition, getAllowedTransitions, getStatusMeta, StateMachineEntity } from "@/lib/state-machines";
+import { publishDomainEvent, DomainEventName } from "@/services/domain-events.functions";
 
 export type McpToolAccessTier = "public" | "store_staff" | "admin_only";
 
@@ -18,7 +21,9 @@ export type McpModuleType =
   | "fiscal"
   | "integrations"
   | "support"
-  | "simulation";
+  | "simulation"
+  | "governance"
+  | "crm";
 
 export interface McpExecutionContext {
   supabase: any;
@@ -866,6 +871,106 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     },
   },
 
+  tourism_convert_proposal_to_trip: {
+    name: "tourism_convert_proposal_to_trip",
+    module: "tourism",
+    description: "Converte uma proposta aprovada em viagem confirmada, gerando vouchers, contrato digital e cartão no Kanban de Embarques.",
+    tier: "store_staff",
+    requiredScope: "store:tourism:write",
+    permission: { action: "create", resource: "orders" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      proposalId: z.string().min(1, "ID ou token da proposta obrigatório"),
+      leadPassengerName: z.string().optional(),
+      leadPassengerDocument: z.string().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da agência" },
+        proposalId: { type: "string", description: "UUID ou public_token da proposta a ser convertida" },
+        leadPassengerName: { type: "string", description: "Nome completo do passageiro principal (opcional)" },
+        leadPassengerDocument: { type: "string", description: "CPF ou passaporte do passageiro principal (opcional)" },
+      },
+      required: ["storeId", "proposalId"],
+    },
+    handler: async (_ctx, args) => {
+      const { convertProposalToTrip } = await import("@/services/travel-lifecycle.functions");
+      const res = await convertProposalToTrip({
+        data: {
+          proposalId: args.proposalId,
+          storeId: args.storeId,
+          leadPassenger: args.leadPassengerName ? {
+            name: args.leadPassengerName,
+            document: args.leadPassengerDocument,
+          } : undefined,
+        },
+      });
+      return res;
+    },
+  },
+
+  tourism_list_departures_kanban: {
+    name: "tourism_list_departures_kanban",
+    module: "tourism",
+    description: "Lista cartões do Kanban de Embarques operacionais da agência, organizados por estágio e data de saída.",
+    tier: "store_staff",
+    requiredScope: "store:tourism:read",
+    permission: { action: "read", resource: "reports" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      stage: z.string().optional(),
+      limit: z.number().int().min(1).max(50).default(20),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da agência" },
+        stage: { type: "string", description: "Filtro opcional por estágio (booked, docs_pending, vouchers_ready, checkin_open, in_transit, completed)" },
+        limit: { type: "integer", description: "Limite de cartões a retornar (máx 50)" },
+      },
+      required: ["storeId"],
+    },
+    handler: async (ctx, args) => {
+      const limit = Math.min(Math.max(Number(args.limit) || 20, 1), 50);
+      let query = ctx.supabase
+        .from("travel_departures_kanban")
+        .select("id, client_name, client_phone, destination, departure_date, return_date, stage, passengers_count, flight_number, hotel_name, destination_type")
+        .eq("store_id", args.storeId)
+        .order("departure_date", { ascending: true })
+        .limit(limit);
+
+      if (args.stage) {
+        query = query.eq("stage", args.stage);
+      }
+
+      const { data, error } = await query;
+      if (error) throw new Error(error.message);
+
+      return {
+        storeId: args.storeId,
+        count: data?.length || 0,
+        departures: (data || []).map((d: any) => ({
+          departureId: d.id,
+          clientName: d.client_name,
+          clientPhone: d.client_phone,
+          destination: d.destination,
+          departureDate: d.departure_date,
+          returnDate: d.return_date,
+          stage: d.stage,
+          passengersCount: d.passengers_count,
+          flightNumber: d.flight_number,
+          hotelName: d.hotel_name,
+          destinationType: d.destination_type,
+        })),
+      };
+    },
+  },
+
   // ─── 7. PROPOSTAS COMERCIAIS & ORÇAMENTOS ─────────────────────────────────
   proposals_list_store_proposals: {
     name: "proposals_list_store_proposals",
@@ -1448,6 +1553,334 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         forensics: data.forensics_metadata || null,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
+      };
+    },
+  },
+
+  // ─── 16. GOVERNANÇA, EVENTOS DE DOMÍNIO & MÁQUINAS DE ESTADO (P62-P65) ─────
+  publish_domain_event: {
+    name: "publish_domain_event",
+    module: "governance",
+    description: "Publica um evento de domínio canônico (lead, cotação, proposta, reserva, contrato, embarque, financeiro, ticket) no barramento do Waesy.",
+    tier: "store_staff",
+    requiredScope: "events:write",
+    permission: { action: "create", resource: "settings" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      eventName: z.string().min(3),
+      entityType: z.string().min(2),
+      entityId: z.string().min(1),
+      title: z.string().min(2),
+      description: z.string().optional(),
+      customerId: z.string().optional().nullable(),
+      metadata: z.record(z.any()).optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        eventName: { type: "string", description: "Nome do evento (ex: lead.stage_changed, proposal.sent, contract.signed)" },
+        entityType: { type: "string", description: "Tipo da entidade (lead, proposal, order, contract, etc)" },
+        entityId: { type: "string", description: "Identificador único da entidade" },
+        title: { type: "string", description: "Título legível do evento para exibição na timeline" },
+        description: { type: "string", description: "Descrição detalhada opcional" },
+        customerId: { type: "string", description: "UUID do cliente associado, se houver" },
+        metadata: { type: "object", description: "Metadados adicionais do evento" },
+      },
+      required: ["eventName", "entityType", "entityId", "title"],
+    },
+    handler: async (ctx, args) => {
+      const storeId = ctx.storeId || ctx.identity?.store_id;
+      if (!storeId) throw new Error("Contexto de organização/loja obrigatório para emissão de eventos de domínio.");
+
+      const event = await publishDomainEvent({
+        eventName: args.eventName as DomainEventName,
+        entityType: args.entityType,
+        entityId: args.entityId,
+        storeId,
+        customerId: args.customerId,
+        title: args.title,
+        description: args.description,
+        metadata: args.metadata,
+      });
+
+      return {
+        success: true,
+        eventId: event?.id || "recorded",
+        eventName: args.eventName,
+        entityId: args.entityId,
+        timestamp: new Date().toISOString(),
+      };
+    },
+  },
+
+  get_entity_unified_timeline: {
+    name: "get_entity_unified_timeline",
+    module: "governance",
+    description: "Recupera a linha do tempo unificada com todos os eventos de ciclo de vida de uma entidade (Lead, Cliente, Reserva, Viagem, Ordem).",
+    tier: "store_staff",
+    requiredScope: "events:read",
+    permission: { action: "read", resource: "customers" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      entityType: z.string().min(2),
+      entityId: z.string().min(1),
+      limit: z.number().int().min(1).max(100).default(50),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        entityType: { type: "string", description: "Tipo da entidade (lead, customer, order, proposal, etc)" },
+        entityId: { type: "string", description: "ID único da entidade" },
+        limit: { type: "number", description: "Limite de eventos (padrão 50)" },
+      },
+      required: ["entityType", "entityId"],
+    },
+    handler: async (ctx, args) => {
+      const storeId = ctx.storeId || ctx.identity?.store_id;
+      let query = ctx.supabase
+        .from("audit_logs")
+        .select("id, action, entity_type, entity_id, payload_snapshot, created_at, profiles:user_id(full_name)")
+        .eq("entity_type", args.entityType)
+        .eq("entity_id", args.entityId)
+        .order("created_at", { ascending: false })
+        .limit(args.limit || 50);
+
+      if (storeId) {
+        query = query.eq("store_id", storeId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return {
+        entityType: args.entityType,
+        entityId: args.entityId,
+        totalEvents: (data || []).length,
+        events: (data || []).map((e: any) => ({
+          id: e.id,
+          action: e.action,
+          title: e.payload_snapshot?.title || e.action,
+          description: e.payload_snapshot?.description || "",
+          actor: e.profiles?.full_name || "Sistema",
+          timestamp: e.created_at,
+          metadata: e.payload_snapshot?.metadata || {},
+        })),
+      };
+    },
+  },
+
+  get_niche_manifest: {
+    name: "get_niche_manifest",
+    module: "governance",
+    description: "Obtém as configurações, módulos ativos, estágios de CRM/pedidos e nomenclaturas de qualquer nicho comercial.",
+    tier: "public",
+    requiredScope: "public:read",
+    permission: { action: "read", resource: "settings" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_public",
+    inputZodSchema: z.object({
+      nicheId: z.string().min(2),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        nicheId: { type: "string", description: "ID do nicho (tourism, gastronomy, retail, services, real_estate, healthcare, automotive, events, creator, generic)" },
+      },
+      required: ["nicheId"],
+    },
+    handler: async (_ctx, args) => {
+      const manifest = getNicheManifest(args.nicheId as NicheId);
+      return {
+        id: manifest.id,
+        label: manifest.label,
+        description: manifest.description,
+        activeModules: manifest.activeModules,
+        nomenclature: manifest.nomenclature,
+        crmStages: manifest.defaultStages.crm,
+        orderStages: manifest.defaultStages.orders,
+        reservationStages: manifest.defaultStages.reservations || [],
+        flags: manifest.flags,
+      };
+    },
+  },
+
+  validate_state_transition: {
+    name: "validate_state_transition",
+    module: "governance",
+    description: "Valida se uma transição de status é permitida para uma entidade e lista as próximas transições válidas.",
+    tier: "public",
+    requiredScope: "public:read",
+    permission: { action: "read", resource: "settings" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_public",
+    inputZodSchema: z.object({
+      entity: z.enum(["lead", "proposal", "trip", "departure", "contract", "order", "financial", "ticket"]),
+      currentStatus: z.string(),
+      targetStatus: z.string().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        entity: { type: "string", enum: ["lead", "proposal", "trip", "departure", "contract", "order", "financial", "ticket"] },
+        currentStatus: { type: "string", description: "Status atual da entidade" },
+        targetStatus: { type: "string", description: "Status desejado (opcional para testar transição específica)" },
+      },
+      required: ["entity", "currentStatus"],
+    },
+    handler: async (_ctx, args) => {
+      const allowed = getAllowedTransitions(args.entity as StateMachineEntity, args.currentStatus);
+      const isAllowed = args.targetStatus ? canTransition(args.entity as StateMachineEntity, args.currentStatus, args.targetStatus) : undefined;
+      const currentMeta = getStatusMeta(args.entity as StateMachineEntity, args.currentStatus);
+
+      return {
+        entity: args.entity,
+        currentStatus: args.currentStatus,
+        currentStatusLabel: currentMeta.label,
+        allowedTransitions: allowed.map((status) => ({
+          status,
+          ...getStatusMeta(args.entity as StateMachineEntity, status),
+        })),
+        isTargetAllowed: isAllowed,
+      };
+    },
+  },
+
+  // ─── CRM & CLIENTES ───────────────────────────────────────────────────────
+  crm_create_lead: {
+    name: "crm_create_lead",
+    module: "crm",
+    description: "Cria um novo lead comercial no funil de vendas (CRM) com contato, interesse, tags e valor estimado.",
+    tier: "store_staff",
+    requiredScope: "store:crm:write",
+    permission: { action: "create", resource: "orders" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      name: z.string().min(2, "Nome é obrigatório"),
+      phone: z.string().optional(),
+      email: z.string().email().optional(),
+      destination: z.string().optional(),
+      estimatedBudget: z.number().optional(),
+      notes: z.string().optional(),
+      tags: z.array(z.string()).optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja/agência" },
+        name: { type: "string", description: "Nome do lead/cliente potencial" },
+        phone: { type: "string", description: "WhatsApp ou telefone com DDD" },
+        email: { type: "string", description: "E-mail de contato" },
+        destination: { type: "string", description: "Destino ou interesse de compra" },
+        estimatedBudget: { type: "number", description: "Valor estimado em reais" },
+        notes: { type: "string", description: "Observações ou histórico da interação" },
+        tags: { type: "array", items: { type: "string" }, description: "Tags semânticas" },
+      },
+      required: ["storeId", "name"],
+    },
+    handler: async (ctx, args) => {
+      const { data, error } = await ctx.supabase
+        .from("leads_crm")
+        .insert({
+          store_id: args.storeId,
+          name: args.name,
+          phone: args.phone || null,
+          email: args.email || null,
+          destination: args.destination || null,
+          estimated_budget: args.estimatedBudget || null,
+          notes: args.notes || null,
+          tags: args.tags || [],
+          status: "new",
+        })
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+
+      await publishDomainEvent({
+        eventName: "lead.created",
+        entityType: "lead",
+        entityId: data.id,
+        storeId: args.storeId,
+        title: `Lead capturado: ${args.name}`,
+        description: args.destination ? `Interesse em ${args.destination}` : undefined,
+        metadata: { source: "mcp_tool", budget: args.estimatedBudget },
+      });
+
+      return {
+        success: true,
+        leadId: data.id,
+        name: data.name,
+        status: data.status,
+      };
+    },
+  },
+
+  crm_get_customer_360: {
+    name: "crm_get_customer_360",
+    module: "crm",
+    description: "Retorna a ficha 360° consolidada do cliente: cadastro, LTV histórico, viagens realizadas, propostas e timeline.",
+    tier: "store_staff",
+    requiredScope: "store:crm:read",
+    permission: { action: "read", resource: "reports" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      customerId: z.string().uuid(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja/agência" },
+        customerId: { type: "string", description: "UUID do cliente" },
+      },
+      required: ["storeId", "customerId"],
+    },
+    handler: async (ctx, args) => {
+      const { data: customer, error: custErr } = await ctx.supabase
+        .from("customers_crm")
+        .select("*")
+        .eq("id", args.customerId)
+        .eq("store_id", args.storeId)
+        .maybeSingle();
+
+      if (custErr) throw new Error(custErr.message);
+      if (!customer) throw new Error(`Cliente ${args.customerId} não encontrado.`);
+
+      const { data: trips } = await ctx.supabase
+        .from("tourism_trips")
+        .select("id, trip_number, title, destination_city, travel_start_date, status, total_cents")
+        .eq("store_id", args.storeId)
+        .or(`customer_id.eq.${args.customerId},client_whatsapp.eq.${customer.phone || 'none'},client_email.eq.${customer.email || 'none'}`)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      return {
+        customer: {
+          id: customer.id,
+          fullName: customer.full_name,
+          email: customer.email,
+          phone: customer.phone,
+          document: customer.document,
+          status: customer.status,
+          tags: customer.tags || [],
+          channel: customer.channel,
+          createdAt: customer.created_at,
+        },
+        tripsCount: trips?.length || 0,
+        trips: (trips || []).map((t: any) => ({
+          tripId: t.id,
+          tripNumber: t.trip_number,
+          title: t.title,
+          destination: t.destination_city,
+          startDate: t.travel_start_date,
+          status: t.status,
+          totalBrl: (t.total_cents || 0) / 100,
+        })),
       };
     },
   },

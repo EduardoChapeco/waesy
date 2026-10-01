@@ -33,7 +33,7 @@ export function FounderSmartphoneMockup({
     companyDetails?.mainCnae?.description ||
     "Comércio, Turismo & Experiências Regionais";
 
-  const sampleProducts = React.useMemo(() => {
+  const cnaeCategoryCatalog = React.useMemo(() => {
     const desc = (segment || "").toLowerCase();
     if (desc.includes("restaurante") || desc.includes("alimento") || desc.includes("lanche") || desc.includes("pizz") || desc.includes("padaria") || desc.includes("bar")) {
       return [
@@ -95,7 +95,7 @@ export function FounderSmartphoneMockup({
   return (
     <div className="w-full max-w-lg sm:max-w-sm mx-auto animate-in zoom-in-95 duration-500">
       {/* Moldura do Smartphone Adaptativa: Card fluido no Mobile, Bezel Apple no Desktop */}
-      <div className="relative rounded-2xl sm:rounded-[2.5rem] border border-border/80 sm:border-[6px] sm:border-neutral-900 bg-card shadow-md sm:shadow-2xl overflow-hidden ring-0 sm:ring-1 sm:ring-border/80">
+      <div className="relative rounded-2xl sm:rounded-3xl border border-border/80 sm:border-4 sm:border-neutral-900 bg-card  overflow-hidden ring-0 sm:ring-1 sm:ring-border/80">
         {/* Dynamic Island / Notch — Apenas Desktop/Tablet */}
         <div className="hidden sm:flex absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-neutral-900 rounded-full z-30 items-center justify-between px-2.5">
           <div className="size-2 rounded-full bg-neutral-800" />
@@ -103,7 +103,7 @@ export function FounderSmartphoneMockup({
         </div>
 
         {/* Barra de Status — Apenas Desktop/Tablet */}
-        <div className="hidden sm:flex pt-2 px-6 pb-2 items-center justify-between text-[11px] font-bold text-muted-foreground z-20 relative bg-background/80 backdrop-blur-xs">
+        <div className="hidden sm:flex pt-2 px-6 pb-2 items-center justify-between text-[11px] font-bold text-muted-foreground z-20 relative bg-background/80 ">
           <span>09:41</span>
           <div className="flex items-center gap-1.5 text-[10px]">
             <span>5G</span>
@@ -214,7 +214,7 @@ export function FounderSmartphoneMockup({
             </div>
 
             <div className="grid grid-cols-3 gap-2">
-              {sampleProducts.map((p, idx) => (
+              {cnaeCategoryCatalog.map((p, idx) => (
                 <div
                   key={idx}
                   onClick={() => toast.info(`Demonstração: ${p.name}`, { description: `Valor anunciado: ${p.price}. No app Waesy, seus clientes compram em até 3 toques com Pix instantâneo.` })}

@@ -282,28 +282,8 @@ export default function WorkspaceDestinationsPage() {
  ];
  setSections(defaultSections);
 
- // Avaliações demonstrativas de alta conversão
- const sampleReviews: DestinationReview[] = [
- {
- id: crypto.randomUUID(),
- author_name: "Mariana & Carlos Silveira",
- author_city: "Chapecó - SC",
- rating: 5,
- travel_month_year: "Janeiro / 2026",
- comment: `Viagem espetacular para ${canonical.name}! Os atrativos superaram todas as expectativas. Organização impecável e roteiro perfeito.`,
- verified: true,
- },
- {
- id: crypto.randomUUID(),
- author_name: "Roberto Albuquerque",
- author_city: "São Paulo - SP",
- rating: 5,
- travel_month_year: "Fevereiro / 2026",
- comment: `O guia e as dicas de restaurantes foram decisivos. Destino maravilhoso, voltaremos com certeza!`,
- verified: true,
- },
- ];
- setReviews(sampleReviews);
+ // Avaliações reais iniciam vazias
+    setReviews([]);
 
  toast.success(`Destino "${canonical.name}" preenchido com dados oficiais e seções ricas!`);
  };

@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/state/states";
 import { listShippingZones, calculateShipping } from "@/services/shipping.functions";
 import { listOrdersAwaitingShippingQuote, updateOrderShippingQuote } from "@/services/order.functions";
 import { formatMoney } from "@/lib/money";
+import { formatCep } from "@/lib/document-validator";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/datetime";
 
@@ -178,9 +179,8 @@ function FretesCotacoesPage() {
  </TableCell>
  <TableCell>
  <Input
- type="number"
- step="0.01"
- min="0"
+ type="text"
+                            inputMode="decimal"
  placeholder="R$ 0,00"
  value={quoteValues[order.id] || ""}
  onChange={(e) =>
@@ -224,9 +224,11 @@ function FretesCotacoesPage() {
  <h3 className="font-semibold mb-4 text-lg">Simular Frete por CEP</h3>
  <form onSubmit={handleSimulate} className="flex gap-3 max-w-sm">
  <Input
- placeholder="00000-000"
- value={zipcode}
- onChange={(e) => setZipcode(e.target.value)}
+              type="text"
+              inputMode="numeric"
+              placeholder="00000-000"
+              value={zipcode}
+              onChange={(e) => setZipcode(formatCep(e.target.value))}
  maxLength={9}
  className="h-11 text-xs"
  />

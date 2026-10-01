@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFo
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { WorkspaceCanonicalToolbar } from '@/components/workspace/workspace-canonical-toolbar';
 import { WorkspaceDashboardSheet, type MetricCardItem } from '@/components/workspace/workspace-dashboard-sheet';
+import { RadarMapWidget } from '@/components/tourism/radar/radar-map-widget';
 import { toast } from 'sonner';
 import { getStoreSettings } from '@/services/store.functions';
 import { listDestinationIntelligence, upsertDestinationIntelligence, listTravelAlerts, createTravelAlert } from '@/services/destination-intelligence.functions';
@@ -311,11 +312,13 @@ export default function TurismoRadarPage() {
         items={dashboardMetrics}
       />
 
+      <RadarMapWidget />
+
       {/* ── Alertas Operacionais Ativos ── */}
       {topAlerts.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Alertas Operacionais e Câmbio em Tempo Real
             </h2>
             <Button
@@ -335,7 +338,7 @@ export default function TurismoRadarPage() {
                   <div className={`size-2 rounded-full mt-1.5 shrink-0 ${cfg.dot} animate-pulse`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-xs font-black uppercase tracking-wide ${cfg.text}`}>
+                      <span className={`text-xs font-semibold uppercase tracking-wide ${cfg.text}`}>
                         {alert.destination}
                       </span>
                       <Badge variant="outline" className="text-xs uppercase px-1.5 py-0.5 font-bold">
@@ -375,7 +378,7 @@ export default function TurismoRadarPage() {
             <Button
               size="default"
               onClick={() => setIsAddDestOpen(true)}
-              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer "
             >
               <Plus className="size-3.5" />
               <span>Novo Destino</span>
@@ -395,9 +398,9 @@ export default function TurismoRadarPage() {
               <div
                 key={dest.id}
                 onClick={() => setSelectedDest(isSelected ? null : dest)}
-                className={`relative p-5 rounded-2xl border cursor-pointer transition-all duration-300 shadow-2xs ${
+                className={`relative p-5 rounded-2xl border cursor-pointer transition-all duration-300  ${
                   isSelected
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20 shadow-xs'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20 '
                     : 'border-border/70 bg-card hover:border-primary/40'
                 }`}
               >
@@ -438,19 +441,19 @@ export default function TurismoRadarPage() {
                 <div className="grid grid-cols-3 gap-2 mt-4">
                   <div className="text-center p-2 rounded-xl bg-muted/20 border border-border/40">
                     <p className="text-xs text-muted-foreground">Pacote Médio</p>
-                    <p className="text-xs font-black text-foreground mt-0.5">
+                    <p className="text-xs font-semibold tabular-nums text-foreground mt-0.5">
                       {dest.avg_package_brl ? `R$ ${(dest.avg_package_brl / 1000).toFixed(1)}k` : '—'}
                     </p>
                   </div>
                   <div className="text-center p-2 rounded-xl bg-muted/20 border border-border/40">
                     <p className="text-xs text-muted-foreground">Diária Média</p>
-                    <p className="text-xs font-black text-foreground mt-0.5">
+                    <p className="text-xs font-semibold tabular-nums text-foreground mt-0.5">
                       {dest.avg_daily_rate_brl ? `R$ ${dest.avg_daily_rate_brl}` : '—'}
                     </p>
                   </div>
                   <div className="text-center p-2 rounded-xl bg-muted/20 border border-border/40">
                     <p className="text-xs text-muted-foreground">Moeda / Câmbio</p>
-                    <p className="text-xs font-black text-foreground mt-0.5 font-mono">
+                    <p className="text-xs font-semibold tabular-nums text-foreground mt-0.5 font-mono">
                       {dest.currency_code || 'BRL'}
                     </p>
                   </div>
@@ -523,7 +526,7 @@ export default function TurismoRadarPage() {
                             to: '/workspace/turismo/cotacoes',
                           });
                         }}
-                        className="flex-1 rounded-xl text-xs font-bold h-11 sm:h-9 bg-primary text-primary-foreground cursor-pointer shadow-2xs"
+                        className="flex-1 rounded-xl text-xs font-bold h-11 sm:h-9 bg-primary text-primary-foreground cursor-pointer "
                       >
                         <Plane className="size-3.5 mr-1" />
                         Criar Cotação
@@ -724,7 +727,7 @@ export default function TurismoRadarPage() {
             <Button
               onClick={() => createDestMutation.mutate()}
               disabled={createDestMutation.isPending || !formDestination.trim()}
-              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer shadow-xs"
+              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer "
             >
               {createDestMutation.isPending ? 'Salvando...' : 'Salvar no Radar'}
             </Button>
@@ -821,7 +824,7 @@ export default function TurismoRadarPage() {
             <Button
               onClick={() => createAlertMutation.mutate()}
               disabled={createAlertMutation.isPending || !alertDestName.trim() || !alertTitle.trim()}
-              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer shadow-xs"
+              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer "
             >
               {createAlertMutation.isPending ? 'Salvando...' : 'Publicar Alerta'}
             </Button>

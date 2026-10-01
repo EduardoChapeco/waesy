@@ -1380,10 +1380,10 @@ export function ConvenienceShowcaseView({
           FLOATING BOTTOM BAR NO MOBILE (THUMB ZONE ERGONOMICS)
          ═══════════════════════════════════════════════════════════════════════ */}
       <div className={cn(
-        "z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3  flex items-center gap-3",
+        "z-40 bg-background border-t border-border/60 p-3 pb-safe flex items-center gap-3",
         isForcedMobile || isPreview
-          ? "sticky bottom-0 inset-x-0 block rounded-none sm:rounded-b-2xl"
-          : "md:hidden fixed bottom-0 inset-x-0"
+          ? "sticky bottom-0 inset-x-0 block rounded-none sm:rounded-b-2xl pb-safe"
+          : "md:hidden fixed bottom-0 inset-x-0 pb-safe"
       )}>
         <div className="flex items-center border border-border/70 rounded-xl bg-card p-0.5 shrink-0">
           <Button

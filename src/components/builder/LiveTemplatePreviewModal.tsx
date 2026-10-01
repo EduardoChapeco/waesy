@@ -32,9 +32,9 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="fixed inset-0 z-50 max-w-none w-screen h-screen m-0 p-0 rounded-none bg-background/95 backdrop-blur-md flex flex-col border-none shadow-none overflow-hidden duration-200">
+      <DialogContent className="fixed inset-0 z-50 max-w-none w-screen h-[100dvh] m-0 p-0 rounded-none bg-background flex flex-col border-none shadow-none overflow-hidden duration-200">
         {/* ── 1. TopBar de Controle do Live Preview (Padrão Wix / Webflow) ── */}
-        <header className="h-14 border-b border-border/70 bg-card/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 z-20">
+        <header className="h-14 border-b border-border/70 bg-card px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 z-20">
           <div className="flex items-center gap-3 min-w-0">
             <span className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <Eye className="size-4" />

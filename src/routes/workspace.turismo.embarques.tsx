@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Calendar, Plus, Plane, Hotel, CheckCircle2, Circle, ChevronLeft, ChevronRight, Send, FileText, ShieldAlert, ExternalLink, Loader2, AlertTriangle, Users, MapPin, Clock, Upload, X, Star, Download, Smartphone } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CardDetailPanel } from '@/components/tourism/boarding/CardDetailPanel';
 import { DigitalCompanionCard } from '@/components/documents/digital-companion-card';
 import { MultimodalOcrUploader } from '@/components/documents/multimodal-ocr-uploader';
 import type { UniversalOcrResult } from '@/services/multimodal-ocr.functions';
@@ -74,7 +75,7 @@ const CATEGORY_COLORS: Record<ChecklistCategory, string> = {
   financial: 'text-amber-600 bg-amber-500/10',
   logistics: 'text-orange-600 bg-orange-500/10',
   communication: 'text-sky-600 bg-sky-500/10',
-  airline: 'text-indigo-600 bg-indigo-500/10',
+  airline: 'text-primary bg-indigo-500/10',
   hotel: 'text-pink-600 bg-pink-500/10',
   custom: 'text-muted-foreground bg-muted',
 };
@@ -515,7 +516,7 @@ function WorkspaceBoardingPage() {
     : null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col min-h-screen pb-12 overflow-x-hidden">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col min-h-[100dvh] pb-12 overflow-x-hidden">
       {/* ── Canonical Toolbar ── */}
       <WorkspaceCanonicalToolbar
         viewModes={[
@@ -550,9 +551,9 @@ function WorkspaceBoardingPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`min-h-11 sm:min-h-11 sm:min-h-9 h-11 sm:h-7 px-4 sm:px-2.5 rounded-xl text-xs sm:text-xs text-muted-foreground/75 font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
+                className={`h-11 sm:h-9 px-4 sm:px-3 rounded-xl text-xs sm:text-xs text-muted-foreground/75 font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
                   activeTab === tab.id
-                    ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
+                    ? 'bg-primary text-primary-foreground font-bold '
                     : 'bg-muted text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -747,454 +748,23 @@ function WorkspaceBoardingPage() {
         )}
       </div>
 
-      {/* ── Detail Sheet ── */}
-      <Sheet open={Boolean(selectedDepartureId)} onOpenChange={(o) => !o && setSelectedDepartureId(null)}>
-        <SheetContent
-          side="right"
-          size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl max-sm:!h-dvh max-sm:!inset-0 max-sm:!rounded-none border-l p-0 flex flex-col h-full bg-card overflow-hidden"
-        >
-          {detailLoading ? (
-            <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
-            </div>
-          ) : detail ? (
-            <>
-              {/* Header */}
-              <SheetHeader className="px-5 py-4 border-b border-border/60 bg-muted/20 shrink-0">
-                <SheetTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <Plane className="size-4 text-primary" />
-                  <span className="truncate">{detail.client_name}</span>
-                  {daysUntilDeparture !== null && (
-                    <Badge variant="outline" className={`ml-auto text-xs shrink-0 ${
-                      daysUntilDeparture <= 0 ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30' :
-                      daysUntilDeparture <= 2 ? 'bg-red-500/10 text-red-700 border-red-500/30' :
-                      daysUntilDeparture <= 7 ? 'bg-amber-500/10 text-amber-700 border-amber-500/30' :
-                      'bg-blue-500/10 text-blue-700 border-blue-500/30'
-                    }`}>
-                      {daysUntilDeparture <= 0 ? 'Em Viagem' : `em ${daysUntilDeparture}d`}
-                    </Badge>
-                  )}
-                </SheetTitle>
-
-                {/* Meta info */}
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground/75 text-muted-foreground font-mono pt-1">
-                  <span className="flex items-center gap-1"><MapPin className="size-3" />{detail.destination}</span>
-                  <span className="flex items-center gap-1"><Calendar className="size-3" />
-                    {new Date(detail.departure_date).toLocaleDateString('pt-BR')}
-                    {detail.return_date && ` → ${new Date(detail.return_date).toLocaleDateString('pt-BR')}`}
-                  </span>
-                  <span className="flex items-center gap-1"><Users className="size-3" />{detail.passengers_count} pax</span>
-                </div>
-
-                {/* Flight & Hotel info */}
-                {(detail.airline_code || detail.hotel_name) && (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {detail.airline_code && (
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/75 bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2 py-1 rounded-lg">
-                        <Plane className="size-3" />
-                        <span className="font-semibold">{detail.airline_code}</span>
-                        {detail.flight_number && <span>{detail.flight_number}</span>}
-                        {detail.airline_locator && <span className="font-mono">({detail.airline_locator})</span>}
-                        {detail.checkin_link && (
-                          <a href={detail.checkin_link} target="_blank" rel="noreferrer" className="ml-1 underline-offset-2 hover:underline flex items-center gap-0.5">
-                            Check-in <ExternalLink className="size-2.5" />
-                          </a>
-                        )}
-                      </div>
-                    )}
-                    {detail.hotel_name && (
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/75 bg-pink-500/10 text-pink-700 dark:text-pink-400 px-2 py-1 rounded-lg">
-                        <Hotel className="size-3" />
-                        <span className="font-semibold">{detail.hotel_name}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Checklist progress bar */}
-                {totalRequired > 0 && (
-                  <div className="pt-2">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                      <span>Checklist: {completedRequired}/{totalRequired} itens obrigatórios</span>
-                      <span className="font-semibold text-foreground">{detail.checklist_completed_pct || 0}%</span>
-                    </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all ${
-                          (detail.checklist_completed_pct || 0) === 100 ? 'bg-emerald-500' :
-                          (detail.checklist_completed_pct || 0) >= 70 ? 'bg-amber-500' : 'bg-red-500'
-                        }`}
-                        style={{ width: `${detail.checklist_completed_pct || 0}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Stage selector */}
-                <div className="flex items-center gap-2 pt-1.5">
-                  <span className="text-xs sm:text-xs text-muted-foreground/75 text-muted-foreground font-medium">Etapa:</span>
-                  <select
-                    value={detail.stage}
-                    onChange={e => stageMutation.mutate({ id: detail.id, stage: e.target.value })}
-                    className="h-10 sm:h-7 px-3 sm:px-2 rounded-xl border border-input bg-background text-xs sm:text-xs text-muted-foreground/75 font-semibold focus:outline-none flex-1 cursor-pointer"
-                  >
-                    {DEPARTURE_STAGES.map(s => (
-                      <option key={s.id} value={s.id}>{s.label}</option>
-                    ))}
-                  </select>
-
-                  {/* WhatsApp */}
-                  {detail.client_phone && (
-                    <a
-                      href={`https://wa.me/55${detail.client_phone.replace(/\D/g, '')}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="size-10 sm:size-7 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center hover:bg-emerald-500/20 shrink-0 cursor-pointer"
-                      title="Conversar no WhatsApp"
-                    >
-                      <Send className="size-4 sm:size-3.5" />
-                    </a>
-                  )}
-
-                  {/* Exportar Guia de Embarque PDF */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => exportGuiaPdf(detail)}
-                    className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 font-bold gap-1.5 rounded-xl border-border cursor-pointer shrink-0"
-                    title="Exportar Guia de Embarque PDF"
-                  >
-                    <Download className="size-3.5 sm:size-3" />
-                    <span>Guia PDF</span>
-                  </Button>
-
-                  {/* Cartão Digital de Embarque 9:16 */}
-                  <Button
-                    type="button"
-                    variant="default"
-                    size="sm"
-                    onClick={() => handleOpenCompanionForDeparture(detail)}
-                    className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 font-bold gap-1.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shrink-0 shadow-xs"
-                    title="Cartão de Embarque"
-                  >
-                    <Smartphone className="size-3.5 sm:size-3" />
-                    <span>Cartão 9:16</span>
-                  </Button>
-                </div>
-
-                {/* Tab navigation inside sheet */}
-                <div className="flex border-b border-border/60 gap-0 -mx-5 px-5 mt-2">
-                  {[
-                    { id: 'checklist', label: `Checklist (${checklist.length})` },
-                    { id: 'documents', label: `Docs (${documents.length})` },
-                    { id: 'flight', label: 'Voo & Hotel' },
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setDetailTab(tab.id as any)}
-                      className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 sm:py-2 text-xs sm:text-xs text-muted-foreground/75 font-semibold border-b-2 transition-colors cursor-pointer flex items-center justify-center ${
-                        detailTab === tab.id
-                          ? 'border-primary text-primary font-bold'
-                          : 'border-transparent text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </SheetHeader>
-
-              {/* ── Tab Content ── */}
-              <div className="flex-1 overflow-y-auto no-scrollbar">
-                {/* CHECKLIST TAB */}
-                {detailTab === 'checklist' && (
-                  <div className="p-5 space-y-4">
-                    {Object.entries(checklistByCategory).map(([category, items]) => (
-                      <div key={category}>
-                        <div className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md mb-2 ${CATEGORY_COLORS[category as ChecklistCategory]}`}>
-                          {CATEGORY_LABELS[category as ChecklistCategory]}
-                        </div>
-                        <div className="space-y-1.5">
-                          {items.map(item => (
-                            <div
-                              key={item.id}
-                              className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                                item.is_completed
-                                  ? 'bg-emerald-500/5 border-emerald-500/20'
-                                  : 'bg-card border-border hover:bg-muted/30'
-                              }`}
-                              onClick={() => toggleMutation.mutate({ item_id: item.id, is_completed: !item.is_completed })}
-                            >
-                              {item.is_completed ? (
-                                <CheckCircle2 className="size-4 text-emerald-500 shrink-0 mt-0.5" />
-                              ) : (
-                                <Circle className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className={`text-xs font-medium leading-snug ${item.is_completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                                  {item.label}
-                                  {item.is_required && !item.is_completed && (
-                                    <span className="ml-1.5 text-xs text-red-500 font-bold">OBRIG.</span>
-                                  )}
-                                </p>
-                                {item.due_days_before && daysUntilDeparture !== null && !item.is_completed && (
-                                  <p className={`text-xs mt-0.5 ${
-                                    daysUntilDeparture <= item.due_days_before
-                                      ? 'text-amber-600 font-semibold'
-                                      : 'text-muted-foreground'
-                                  }`}>
-                                    <Clock className="size-2.5 inline mr-0.5" />
-                                    {daysUntilDeparture <= item.due_days_before ? 'AÇÃO NECESSÁRIA' : `Fazer até ${item.due_days_before}d antes`}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-
-                    {checklist.length === 0 && (
-                      <p className="text-xs text-muted-foreground italic text-center py-4">Nenhum item de checklist. Adicione abaixo.</p>
-                    )}
-
-                    {/* Add item */}
-                    <div className="pt-3 border-t border-border/60">
-                      <p className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider mb-2">Adicionar Item</p>
-                      <div className="flex gap-2">
-                        <select
-                          value={newItemCategory}
-                          onChange={e => setNewItemCategory(e.target.value as ChecklistCategory)}
-                          className="h-9 px-2 rounded-xl border border-input bg-background text-xs text-muted-foreground/75 focus:outline-none shrink-0"
-                        >
-                          {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
-                            <option key={k} value={k}>{v}</option>
-                          ))}
-                        </select>
-                        <Input
-                          value={newItemLabel}
-                          onChange={e => setNewItemLabel(e.target.value)}
-                          placeholder="Descrição do item..."
-                          className="h-9 text-xs flex-1 rounded-xl"
-                          onKeyDown={e => { if (e.key === 'Enter' && newItemLabel.trim()) addItemMutation.mutate(); }}
-                        />
-                        <Button
-                          size="sm"
-                          disabled={!newItemLabel.trim() || addItemMutation.isPending}
-                          onClick={() => addItemMutation.mutate()}
-                          className="h-9 px-3 rounded-xl cursor-pointer shrink-0"
-                        >
-                          <Plus className="size-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* DOCUMENTS TAB */}
-                {detailTab === 'documents' && (
-                  <div className="p-5 space-y-3">
-                    {documents.map(doc => (
-                      <div key={doc.id} className="p-3 rounded-xl border border-border bg-card flex items-center gap-3">
-                        <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                          <FileText className="size-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-foreground truncate">{DOC_TYPE_LABELS[doc.document_type]}</p>
-                          <p className="text-xs text-muted-foreground truncate">{doc.file_name || 'Documento'}</p>
-                          {doc.ocr_status === 'completed' && doc.passenger_name && (
-                            <p className="text-xs text-emerald-600">OCR: {doc.passenger_name}</p>
-                          )}
-                          {doc.valid_until && (
-                            <p className="text-xs text-amber-600">
-                              Válido até: {new Date(doc.valid_until).toLocaleDateString('pt-BR')}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <Badge variant="outline" className={`text-xs ${
-                            doc.ocr_status === 'completed' ? 'text-emerald-600 border-emerald-500/30' :
-                            doc.ocr_status === 'pending' ? 'text-amber-600 border-amber-500/30' :
-                            'text-muted-foreground'
-                          }`}>
-                            {doc.ocr_status === 'completed' ? 'OCR ' : doc.ocr_status === 'pending' ? 'Aguardando OCR' : 'Sem OCR'}
-                          </Badge>
-                          <a href={doc.file_url} target="_blank" rel="noreferrer" className="h-7 w-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground">
-                            <ExternalLink className="size-3" />
-                          </a>
-                        </div>
-                      </div>
-                    ))}
-
-                    {documents.length === 0 && (
-                      <p className="text-xs text-muted-foreground italic text-center py-4">Nenhum documento anexado ainda.</p>
-                    )}
-
-                    {/* Upload */}
-                    <div className="pt-3 border-t border-border/60 space-y-2">
-                      <p className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider">Anexar Documento</p>
-                      <div className="flex gap-2">
-                        <select
-                          value={docType}
-                          onChange={e => setDocType(e.target.value as DocumentType)}
-                          className="h-9 px-2 rounded-xl border border-input bg-background text-xs text-muted-foreground/75 focus:outline-none"
-                        >
-                          {Object.entries(DOC_TYPE_LABELS).map(([k, v]) => (
-                            <option key={k} value={k}>{v}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <FileAttachmentUpload
-                        value={docUrl}
-                        onChange={setDocUrl}
-                        onRemove={() => setDocUrl('')}
-                        label=""
-                        helperText="PDF, imagem ou bilhete. OCR automático para passaportes e contratos."
-                        bucket="cms-media"
-                        accept="image/*,application/pdf"
-                      />
-                      {docUrl && (
-                        <Button
-                          onClick={() => uploadDocMutation.mutate()}
-                          disabled={uploadDocMutation.isPending}
-                          className="w-full h-9 text-xs rounded-xl cursor-pointer"
-                        >
-                          {uploadDocMutation.isPending ? <Loader2 className="size-3 animate-spin mr-1.5" /> : <Upload className="size-3.5 mr-1.5" />}
-                          Registrar Documento
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* FLIGHT & HOTEL TAB */}
-                {detailTab === 'flight' && (
-                  <div className="p-5 space-y-4">
-                    <div className="space-y-3">
-                      <p className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider">Informações do Voo</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-xs">CIA Aérea</Label>
-                          <Input defaultValue={detail.airline_code || ''} placeholder="LA, G3, AD..." className="h-9 text-xs uppercase font-mono" id="airline_code_input" />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Nº do Voo</Label>
-                          <Input defaultValue={detail.flight_number || ''} placeholder="LA3214" className="h-9 text-xs font-mono" id="flight_number_input" />
-                        </div>
-                        <div className="space-y-1 col-span-2">
-                          <Label className="text-xs">Localizador / PNR</Label>
-                          <Input defaultValue={detail.airline_locator || ''} placeholder="XYZABC" className="h-9 text-xs font-mono uppercase" id="locator_input" />
-                        </div>
-                      </div>
-
-                      {detail.checkin_link ? (
-                        <a
-                          href={detail.checkin_link}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center justify-center gap-2 w-full h-10 rounded-xl border border-indigo-500/30 bg-indigo-500/5 text-indigo-700 dark:text-indigo-400 text-xs font-semibold hover:bg-indigo-500/10 transition-colors"
-                        >
-                          <Plane className="size-3.5" />
-                          Fazer Check-in Online ({detail.airline_code})
-                          <ExternalLink className="size-3" />
-                        </a>
-                      ) : (
-                        <p className="text-xs text-muted-foreground/75 text-muted-foreground text-center">
-                          Informe a CIA aérea para obter o link de check-in automático.
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-3 border-t border-border/60 pt-4">
-                      <p className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider">Hotel e Hospedagem</p>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Nome do Hotel / Pousada</Label>
-                        <Input defaultValue={detail.hotel_name || ''} placeholder="Ex: Hotel Serrano" className="h-9 text-xs" id="hotel_name_input" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Check-in Hotel</Label>
-                          <Input type="datetime-local" defaultValue={detail.hotel_checkin_at?.slice(0,16) || ''} className="h-9 text-xs" id="hotel_checkin_input" />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Check-out Hotel</Label>
-                          <Input type="datetime-local" defaultValue={detail.hotel_checkout_at?.slice(0,16) || ''} className="h-9 text-xs" id="hotel_checkout_input" />
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Regras do Hotel (cancelamento, pets, etc.)</Label>
-                        <textarea
-                          id="hotel_rules_input"
-                          defaultValue={detail.hotel_rules || ''}
-                          placeholder="Ex: Cancelamento gratuito até 48h. Check-in a partir das 14h. Pets não permitidos."
-                          className="w-full h-20 p-3 rounded-xl border border-input bg-background text-xs text-foreground focus:outline-none resize-none leading-relaxed"
-                        />
-                      </div>
-                      <Button
-                        className="w-full h-10 text-xs rounded-xl cursor-pointer"
-                        onClick={async () => {
-                          const ac = (document.getElementById('airline_code_input') as HTMLInputElement)?.value || null;
-                          const fn = (document.getElementById('flight_number_input') as HTMLInputElement)?.value || null;
-                          const loc = (document.getElementById('locator_input') as HTMLInputElement)?.value || null;
-                          const hn = (document.getElementById('hotel_name_input') as HTMLInputElement)?.value || null;
-                          const hci = (document.getElementById('hotel_checkin_input') as HTMLInputElement)?.value || null;
-                          const hco = (document.getElementById('hotel_checkout_input') as HTMLInputElement)?.value || null;
-                          const hr = (document.getElementById('hotel_rules_input') as HTMLTextAreaElement)?.value || null;
-                          try {
-                            await updateDepartureDetails({ data: {
-                              id: detail.id,
-                              airline_code: ac,
-                              flight_number: fn,
-                              airline_locator: loc,
-                              hotel_name: hn,
-                              hotel_checkin_at: hci ? new Date(hci).toISOString() : null,
-                              hotel_checkout_at: hco ? new Date(hco).toISOString() : null,
-                              hotel_rules: hr,
-                            }});
-                            toast.success('Informações de voo e hotel salvas!');
-                            qc.invalidateQueries({ queryKey: ['departure-detail', selectedDepartureId] });
-                            qc.invalidateQueries({ queryKey: ['travel-departures', storeId] });
-                          } catch(err: any) {
-                            toast.error(humanizeErrorMessage(err, 'Não foi possível salvar os dados de voo e hotel'));
-                          }
-                        }}
-                      >
-                        Salvar Voo e Hotel
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="px-5 py-3 border-t border-border/60 bg-muted/10 flex items-center justify-between shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-3 text-xs text-muted-foreground/75 text-destructive hover:text-destructive cursor-pointer"
-                  onClick={() => {
-                    if (window.confirm('Remover este embarque?')) deleteMutation.mutate(detail.id);
-                  }}
-                >
-                  <X className="size-3 mr-1" /> Remover
-                </Button>
-                <p className="text-xs text-muted-foreground font-mono">
-                  Criado em {detail.created_at ? new Date(detail.created_at).toLocaleDateString('pt-BR') : '—'}
-                </p>
-              </div>
-            </>
-          ) : null}
-        </SheetContent>
-      </Sheet>
+      {/* ── Detail Sheet (CardDetailPanel Modular) ── */}
+      <CardDetailPanel
+        open={Boolean(selectedDepartureId)}
+        departureId={selectedDepartureId}
+        onClose={() => setSelectedDepartureId(null)}
+        storeId={storeId}
+        onUpdated={() => {
+          qc.invalidateQueries({ queryKey: ['travel-departures', storeId] });
+        }}
+      />
 
       {/* ── New Departure Sheet ── */}
       <Sheet open={newOpen} onOpenChange={setNewOpen}>
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl max-sm:!h-dvh max-sm:!inset-0 max-sm:!rounded-none border-l p-0 flex flex-col h-full bg-card overflow-hidden"
+          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl max-sm:h-dvh max-sm:inset-0 max-sm:rounded-none border-l p-0 flex flex-col h-full bg-card overflow-hidden"
         >
           <SheetHeader className="px-5 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <SheetTitle className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -1321,7 +891,7 @@ function WorkspaceBoardingPage() {
               <Button type="button" variant="outline" onClick={() => setNewOpen(false)} className="h-11 sm:h-10 px-4 rounded-xl text-xs font-semibold cursor-pointer">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={createMutation.isPending || !clientName.trim() || !destination.trim() || !departureDate} className="h-11 sm:h-10 px-5 rounded-xl text-xs font-bold cursor-pointer shadow-xs">
+              <Button type="submit" disabled={createMutation.isPending || !clientName.trim() || !destination.trim() || !departureDate} className="h-11 sm:h-10 px-5 rounded-xl text-xs font-bold cursor-pointer ">
                 {createMutation.isPending ? <><Loader2 className="size-3.5 animate-spin mr-1.5" />Criando...</> : 'Criar Embarque'}
               </Button>
             </div>
@@ -1338,7 +908,7 @@ function WorkspaceBoardingPage() {
               Cartão Digital de Embarque 9:16 (WhatsApp)
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 max-h-screen overflow-y-auto no-scrollbar flex justify-center">
+          <div className="p-4 max-h-[90dvh] overflow-y-auto no-scrollbar flex justify-center">
             {companionCardData && (
               <DigitalCompanionCard {...companionCardData} />
             )}
@@ -1355,7 +925,7 @@ function WorkspaceBoardingPage() {
               Scanner Inteligente de Embarque e Bilhetes
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 max-h-screen overflow-y-auto no-scrollbar">
+          <div className="p-4 max-h-[90dvh] overflow-y-auto no-scrollbar">
             <MultimodalOcrUploader
               nicheHint="tourism"
               showPreviewModal={false}
@@ -1390,7 +960,7 @@ function DepartureCard({
   return (
     <div
       onClick={onOpen}
-      className={`p-4 sm:p-3.5 rounded-2xl border cursor-pointer hover:shadow-sm transition-all ${urgencyClass}`}
+      className={`p-4 sm:p-3.5 rounded-2xl border cursor-pointer hover:border-primary/40 transition-all ${urgencyClass}`}
     >
       <div className="flex items-start justify-between gap-1 mb-2">
         <div>

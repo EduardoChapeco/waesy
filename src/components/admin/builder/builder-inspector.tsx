@@ -157,9 +157,7 @@ function RichTextInspectorField({
           onClick={() => insertFormatting("[link](", ")")}
           title="Inserir Link ([texto](url))"
           className="px-1 h-6 flex items-center justify-center rounded hover:bg-muted text-[10px] font-mono cursor-pointer text-primary"
-        >
-          🔗
-        </button>
+        ><Link className="size-3" /></button>
       </div>
 
       <Textarea

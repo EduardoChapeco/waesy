@@ -301,7 +301,7 @@ function PublicTravelProposalPage() {
       </div>
 
       {/* ── 4. BARRA FIXA MOBILE (Thumb Zone Ergonomics - Regra 12) ── */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 p-2.5 bg-background/95 backdrop-blur-md border-t border-border/70 z-30 flex items-center gap-2">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 p-2.5 pb-safe bg-background border-t border-border/70 z-30 flex items-center gap-2">
         <Button
           type="button"
           variant="outline"

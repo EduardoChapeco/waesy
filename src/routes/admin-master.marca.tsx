@@ -975,7 +975,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* ── Barra de Ação Flutuante Sticky (Salvar Alterações) ── */}
- <div className="fixed bottom-0 left-0 md:left-64 right-0 z-40 bg-background/80 backdrop-blur-xl border-t border-border/60 p-4">
+ <div className="fixed bottom-0 left-0 md:left-64 right-0 z-40 bg-background border-t border-border/60 p-4 pb-safe">
  <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
  <div className="flex items-center gap-2">
  <span className="text-xs sm:text-sm font-semibold text-foreground">

@@ -257,7 +257,7 @@ function ConcursoDetailPage() {
       </div>
 
       {/* ── BARRA FIXA DE AÇÃO NO TERÇO INFERIOR (APPLE HIG & THUMB ZONE) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-4">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/60 p-4 pb-safe">
         <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
           <div className="hidden sm:block text-xs text-muted-foreground">
             {hasReachedLimit ? (

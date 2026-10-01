@@ -188,70 +188,96 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
  });
  }
 
- // Se o retry com service_role já resolveu, não precisa buscar por email
- if (memberships.length > 0) {
- ownedStores = [];
+  // Se o retry com service_role já resolveu, não precisa buscar por email
+  if (memberships.length > 0) {
+    ownedStores = [];
+  } else {
+    // 2. Fallback: busca por email cadastrado na loja ou ID do usuário no settings
+    const userEmail = user?.email?.toLowerCase() || "";
+    let storesQuery = serverClient
+      .from("stores")
+      .select("id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url");
+
+    if (userEmail) {
+      storesQuery = storesQuery.or(`email.ilike.${userEmail},settings->>user_id.eq.${user.id},settings->>created_by.eq.${user.id}`);
+    } else {
+      storesQuery = storesQuery.or(`settings->>user_id.eq.${user.id},settings->>created_by.eq.${user.id}`);
+    }
+
+    const { data: byQuery } = await storesQuery;
+    ownedStores = byQuery || [];
+  }
  } else {
- // 2. Fallback: busca por email cadastrado na loja
- const userEmail = user?.email?.toLowerCase() || "";
- const { data: byEmail } = userEmail
- ? await serverClient
- .from("stores")
- .select("id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url")
- .ilike("email", userEmail)
- : { data: [] };
- ownedStores = byEmail || [];
- }
- } else {
- // workspace_members vazio para este usuário — busca por email da loja
- const userEmail = user?.email?.toLowerCase() || "";
- const { data: byEmail } = userEmail
- ? await serverClient
- .from("stores")
- .select("id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url")
- .ilike("email", userEmail)
- : { data: [] };
- ownedStores = byEmail || [];
+  // workspace_members vazio para este usuário — busca por email da loja ou ID nos settings
+  const userEmail = user?.email?.toLowerCase() || "";
+  let storesQuery = serverClient
+    .from("stores")
+    .select("id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url");
+
+  if (userEmail) {
+    storesQuery = storesQuery.or(`email.ilike.${userEmail},settings->>user_id.eq.${user.id},settings->>created_by.eq.${user.id}`);
+  } else {
+    storesQuery = storesQuery.or(`settings->>user_id.eq.${user.id},settings->>created_by.eq.${user.id}`);
+  }
+
+  const { data: byQuery } = await storesQuery;
+  ownedStores = byQuery || [];
  }
  } catch (retryErr) {
- console.warn("[identity.server] Erro no retry de workspace_members:", retryErr);
- // Último recurso: busca por email
- const userEmail = user?.email?.toLowerCase() || "";
- const { data: byEmail } = userEmail
- ? await serverClient
- .from("stores")
- .select("id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url")
- .ilike("email", userEmail)
- : { data: [] };
- ownedStores = byEmail || [];
+  console.warn("[identity.server] Erro no retry de workspace_members:", retryErr);
+  // Último recurso: busca por email
+  const userEmail = user?.email?.toLowerCase() || "";
+  const { data: byEmail } = userEmail
+  ? await serverClient
+  .from("stores")
+  .select("id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url")
+  .ilike("email", userEmail)
+  : { data: [] };
+  ownedStores = byEmail || [];
  }
  }
 
  if (ownedStores && ownedStores.length > 0) {
- const existingIds = new Set(memberships.map((m) => m.store_id));
- const additional = ownedStores
- .filter((s: any) => !existingIds.has(s.id))
- .map((s: any) => {
- const settings = (s.settings as Record<string, any>) || {};
- return {
- store_id: s.id,
- role: "owner",
- name: s.name || "Minha Empresa",
- slug: s.slug || "loja",
- logo_url: s.logo_url || settings.logoUrl || settings.logo_url || null,
- segment: settings.segment || settings.type || settings.niche || null,
- type: settings.type || settings.segment || null,
- category: settings.category || settings.segment || null,
- city: s.city || null,
- state: s.state || null,
- settings: settings,
- };
- });
+  const existingIds = new Set(memberships.map((m) => m.store_id));
+  const additional = ownedStores
+  .filter((s: any) => !existingIds.has(s.id))
+  .map((s: any) => {
+  const settings = (s.settings as Record<string, any>) || {};
+  return {
+  store_id: s.id,
+  role: "owner",
+  name: s.name || "Minha Empresa",
+  slug: s.slug || "loja",
+  logo_url: s.logo_url || settings.logoUrl || settings.logo_url || null,
+  segment: settings.segment || settings.type || settings.niche || null,
+  type: settings.type || settings.segment || null,
+  category: settings.category || settings.segment || null,
+  city: s.city || null,
+  state: s.state || null,
+  settings: settings,
+  };
+  });
 
- memberships = [...memberships, ...additional];
+  memberships = [...memberships, ...additional];
+
+  // Auto-heal persistente: salva em workspace_members para que requisições subsequentes sejam instantâneas
+  if (isPlatformAdmin === false && additional.length > 0) {
+    for (const m of additional) {
+      try {
+        await serverClient
+          .from("workspace_members")
+          .upsert(
+            { profile_id: user.id, store_id: m.store_id, role: "owner" },
+            { onConflict: "profile_id,store_id" }
+          );
+      } catch {
+        // Auto-heal não bloqueante
+      }
+    }
+  }
  }
  } catch (e) {
- console.warn("[identity.server] Erro no auto-heal de lojas:", e);
+  console.warn("[identity.server] Erro no auto-heal de lojas:", e);
  }
  }
 

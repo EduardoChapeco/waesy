@@ -314,7 +314,7 @@ export function TravelPackageDetailView({
  {(packageData?.story_highlights || resort.highlights || []).map((hl: any) => (
  <div key={hl.id} className="flex flex-col items-center gap-2 shrink-0 cursor-pointer group">
  <div className="size-16 sm:size-18 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-sky-500 group-hover:scale-105 transition-transform shadow-2xs">
- <div className="size-full rounded-full bg-background p-[2px] overflow-hidden">
+ <div className="size-full rounded-full bg-background p-0.5 overflow-hidden">
  <img src={hl.imageUrl || hl.image} alt={hl.label || hl.title || "Destaque"} className="size-full object-cover rounded-full" />
  </div>
  </div>
@@ -519,7 +519,7 @@ export function TravelPackageDetailView({
  {/* Foto com anel gradiente de viagem */}
  <div className="relative shrink-0">
  <div className="size-20 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-sky-500">
- <div className="size-full bg-background rounded-full p-[2px] overflow-hidden">
+ <div className="size-full bg-background rounded-full p-0.5 overflow-hidden">
  <img
  src={resort.cover_image_url || heroImage}
  alt={resort.name || "Resort"}

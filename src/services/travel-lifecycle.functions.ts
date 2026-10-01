@@ -9,6 +9,7 @@ import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { getNextActiveKey, executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
+import { publishDomainEvent } from "./domain-events.functions";
 
 // ─── DTOs do Ciclo de Vida ───────────────────────────────────────────────────
 
@@ -558,16 +559,99 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
     console.warn("[travel-lifecycle] Erro ao injetar cartão no Kanban de Embarques:", depErr);
   }
 
-  return {
-    success: true,
-    tripId,
-    tripNumber,
-    contractId: contractRow?.id,
-    voucherId: voucherRow?.id,
-    voucherToken,
-    departureId,
-  };
- });
+    // 6. Inserir Título/Receita Financeira no DRE Canônico (P58)
+    if (totalCents > 0) {
+      try {
+        await supabase.from("financial_transactions").insert({
+          store_id: effectiveStoreId,
+          type: "revenue_sale",
+          amount_cents: totalCents,
+          description: `Reserva Viagem ${tripNumber}: ${meta.destination_city || "Pacote"} (${leadName})`,
+          category: "Turismo",
+          reference_date: new Date().toISOString().split("T")[0],
+          created_by: identity?.id || null,
+        });
+      } catch (finErr) {
+        console.warn("[travel-lifecycle] Erro ao registrar receita financeira:", finErr);
+      }
+    }
+
+    // 7. Publicar Eventos no Barramento Canônico de Domínio (P36 / P45 / P50)
+    try {
+      await publishDomainEvent({
+        eventName: "proposal.accepted",
+        entityType: "proposal",
+        entityId: data.proposalId,
+        storeId: effectiveStoreId || undefined,
+        customerId: quote.crm_customer_id || null,
+        title: `Proposta aceita: ${quote.quote_number || data.proposalId}`,
+        description: `Conversão para viagem ${tripNumber} (${meta.destination_city || "Destino"})`,
+        metadata: { tripId, tripNumber, totalCents },
+      });
+
+      await publishDomainEvent({
+        eventName: "reservation.confirmed",
+        entityType: "trip",
+        entityId: tripId,
+        storeId: effectiveStoreId || undefined,
+        customerId: quote.crm_customer_id || null,
+        title: `Viagem confirmada: ${tripNumber}`,
+        description: `Cliente: ${leadName} · Destino: ${meta.destination_city || "Destino"}`,
+        metadata: { totalCents, departureId, voucherToken, contractId: contractRow?.id },
+      });
+
+      if (leadId) {
+        await publishDomainEvent({
+          eventName: "lead.won",
+          entityType: "lead",
+          entityId: leadId,
+          storeId: effectiveStoreId || undefined,
+          customerId: quote.crm_customer_id || null,
+          title: `Lead ganho: ${leadName}`,
+          description: `Convertido na viagem ${tripNumber}`,
+          metadata: { tripId, totalCents },
+        });
+      }
+
+      if (contractRow?.id) {
+        await publishDomainEvent({
+          eventName: "contract.created",
+          entityType: "contract",
+          entityId: contractRow.id,
+          storeId: effectiveStoreId || undefined,
+          customerId: quote.crm_customer_id || null,
+          title: `Contrato de viagem gerado`,
+          description: `Token: ${contractToken} · Passageiros: ${allManifestPassengers.length}`,
+          metadata: { tripId, contractToken },
+        });
+      }
+
+      if (voucherRow?.id) {
+        await publishDomainEvent({
+          eventName: "voucher.generated",
+          entityType: "voucher",
+          entityId: voucherRow.id,
+          storeId: effectiveStoreId || undefined,
+          customerId: quote.crm_customer_id || null,
+          title: `Voucher oficial emitido: ${voucherCode}`,
+          description: `Voucher de embarque gerado para ${leadName}`,
+          metadata: { tripId, voucherCode, voucherToken },
+        });
+      }
+    } catch (eventErr) {
+      console.warn("[travel-lifecycle] Erro ao publicar eventos de domínio:", eventErr);
+    }
+
+    return {
+      success: true,
+      tripId,
+      tripNumber,
+      contractId: contractRow?.id,
+      voucherId: voucherRow?.id,
+      voucherToken,
+      departureId,
+    };
+  });
 
 // ─── 2. Buscar Agregado Completo da Viagem ───────────────────────────────────
 

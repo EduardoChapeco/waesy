@@ -2,12 +2,13 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Star, ArrowLeft, Plus, Globe, PenSquare, SlidersHorizontal, ExternalLink, Eye, TrendingUp, ShoppingBag, Coins, ShieldCheck, CheckCircle2, Share2, Copy, Edit3 } from "lucide-react";
+import { Star, ArrowLeft, Plus, Globe, PenSquare, SlidersHorizontal, ExternalLink, Eye, TrendingUp, ShoppingBag, Coins, ShieldCheck, CheckCircle2, Share2, Copy, Edit3, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { getCreatorNicheLabel } from "@/lib/constants/creator-niches";
 import { CreatorProfileSheetEditor, CreatorProfileSheetData } from "@/components/profile/creator-profile-sheet-editor";
+import { ProfileBiolinkAnalytics } from "@/components/profile/profile-biolink-analytics";
 import { getMyCreatorProfilesList } from "@/services/affiliates.functions";
 import { getProfile, getUserSession } from "@/services/auth.functions";
 
@@ -54,6 +55,7 @@ function CreatorProfilesManagementPage() {
   const [editorInitialData, setEditorInitialData] = useState<Partial<CreatorProfileSheetData> | null>(null);
   const [isEditorNew, setIsEditorNew] = useState(false);
   const [copiedHandle, setCopiedHandle] = useState<string | null>(null);
+  const [expandedAnalyticsId, setExpandedAnalyticsId] = useState<string | null>(null);
 
   const [activeCreator, setActiveCreator] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
@@ -320,7 +322,21 @@ function CreatorProfilesManagementPage() {
                         <span>Gerenciar Vitrine e Cupons</span>
                       </Link>
                     </Button>
+
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setExpandedAnalyticsId(expandedAnalyticsId === (cp.id || handle) ? null : (cp.id || handle))} className="min-h-11 h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary">
+                      <BarChart3 className="size-4 text-primary" />
+                      <span>{expandedAnalyticsId === (cp.id || handle) ? "Ocultar Telemetria" : "Telemetria Detalhada"}</span>
+                    </Button>
                   </div>
+
+                  {expandedAnalyticsId === (cp.id || handle) && (
+                    <div className="pt-4 border-t border-border/40">
+                      <ProfileBiolinkAnalytics
+                        links={Array.isArray(cp.bio_links) ? cp.bio_links : []}
+                        viewsCount={cp.total_clicks ? cp.total_clicks * 3 : 180}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}

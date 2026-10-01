@@ -62,8 +62,10 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             <img
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
-              className="h-12 object-contain"
-              style={{ filter: "brightness(0) invert(1)" }}
+              alt="Logo"
+              className="h-12 w-auto max-w-[180px] aspect-[4/1] object-contain brightness-0 invert"
+              width={180}
+              height={48}
             />
           ) : (
             <div className="text-2xl font-black uppercase tracking-tight text-white">

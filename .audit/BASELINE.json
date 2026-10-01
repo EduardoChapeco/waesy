@@ -1,0 +1,159 @@
+{
+  "timestamp": "2026-10-01T15:14:02.600Z",
+  "metrics": {
+    "totalSourceFiles": 1560,
+    "componentsCount": 613,
+    "hooksCount": 16,
+    "routesCount": 385,
+    "servicesCount": 351,
+    "totalLinesOfCode": 579341,
+    "totalSizeBytes": 22175165
+  },
+  "top20LargestFiles": [
+    {
+      "path": "src/routes/_store.conta.classificados.novo.tsx",
+      "sizeBytes": 472913,
+      "lineCount": 9273
+    },
+    {
+      "path": "src/routeTree.gen.ts",
+      "sizeBytes": 354179,
+      "lineCount": 8357
+    },
+    {
+      "path": "src/components/classifieds/editorial-showcase-view.tsx",
+      "sizeBytes": 179824,
+      "lineCount": 3152
+    },
+    {
+      "path": "src/services/mining.functions.ts",
+      "sizeBytes": 152334,
+      "lineCount": 4146
+    },
+    {
+      "path": "src/components/commerce/canonical-store-profile-view.tsx",
+      "sizeBytes": 145494,
+      "lineCount": 2976
+    },
+    {
+      "path": "src/routes/_store.membro.$id.tsx",
+      "sizeBytes": 131874,
+      "lineCount": 3790
+    },
+    {
+      "path": "src/components/profile/professional-resume-editor.tsx",
+      "sizeBytes": 112668,
+      "lineCount": 3136
+    },
+    {
+      "path": "src/components/mining/mining-dashboard.tsx",
+      "sizeBytes": 104012,
+      "lineCount": 2267
+    },
+    {
+      "path": "src/routes/workspace.turismo.viagens.$id.tsx",
+      "sizeBytes": 103496,
+      "lineCount": 2077
+    },
+    {
+      "path": "src/services/classifieds.functions.ts",
+      "sizeBytes": 99548,
+      "lineCount": 2679
+    },
+    {
+      "path": "src/routes/workspace.comercial.tsx",
+      "sizeBytes": 98406,
+      "lineCount": 2013
+    },
+    {
+      "path": "src/routes/admin-master.mining.tsx",
+      "sizeBytes": 96544,
+      "lineCount": 2049
+    },
+    {
+      "path": "src/lib/routes.ts",
+      "sizeBytes": 94505,
+      "lineCount": 3466
+    },
+    {
+      "path": "src/routes/_store.afiliados.tsx",
+      "sizeBytes": 93318,
+      "lineCount": 1835
+    },
+    {
+      "path": "src/components/classifieds/convenience-showcase-view.tsx",
+      "sizeBytes": 91497,
+      "lineCount": 1930
+    },
+    {
+      "path": "src/routes/workspace.financeiro.recebiveis.tsx",
+      "sizeBytes": 91114,
+      "lineCount": 1970
+    },
+    {
+      "path": "src/services/travel-lifecycle.functions.ts",
+      "sizeBytes": 85161,
+      "lineCount": 2243
+    },
+    {
+      "path": "src/routes/_store.classificados.$id.tsx",
+      "sizeBytes": 84584,
+      "lineCount": 1830
+    },
+    {
+      "path": "src/services/social.functions.ts",
+      "sizeBytes": 83906,
+      "lineCount": 2558
+    },
+    {
+      "path": "src/services/builder.functions.ts",
+      "sizeBytes": 83481,
+      "lineCount": 3103
+    }
+  ],
+  "checksSummary": {
+    "C01": 1682,
+    "C02": 43,
+    "C03": 18,
+    "C04": 0,
+    "C05": 0,
+    "C06": 758,
+    "C07": 405,
+    "C08": 360,
+    "C09": 243,
+    "C10": 0,
+    "C11": 0,
+    "C12": 0,
+    "C13": 0,
+    "C14": 0,
+    "C15": 0,
+    "C16": 0,
+    "C17": 0,
+    "C18": 25,
+    "C19": 0,
+    "C20": 0,
+    "C21": 0,
+    "C22": 19,
+    "C23": 5679,
+    "C24": 0,
+    "C25": 0,
+    "C26": 8,
+    "C27": 0,
+    "C28": 2,
+    "C29": 0,
+    "C30": 0,
+    "C31": 0,
+    "C32": 0,
+    "C33": 0,
+    "C34": 0,
+    "C35": 0,
+    "C36": 0,
+    "C37": 82,
+    "C38": 0,
+    "C39": 0,
+    "C40": 0,
+    "C41": 12,
+    "C42": 0,
+    "C43": 0
+  }
+}

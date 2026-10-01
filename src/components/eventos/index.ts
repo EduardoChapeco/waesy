@@ -1,0 +1,13 @@
+export { EventoLoja } from './evento-loja';
+export { TicketPreview } from './ticket-preview';
+export { EventoKanban } from './evento-kanban';
+export { EventoOrcamentos } from './evento-orcamentos';
+export { EventoCustos } from './evento-custos';
+export { EventoSubpaineis } from './evento-subpaineis';
+export { EventoSetores } from './evento-setores';
+export { EventoLineup } from './evento-lineup';
+export { EventoParceiros } from './evento-parceiros';
+export { EventoDocumentos } from './evento-documentos';
+export { EventoAuditoria } from './evento-auditoria';
+export { EventoCredenciais } from './evento-credenciais';
+export { AlocarEquipeSheet } from './alocar-equipe-sheet';

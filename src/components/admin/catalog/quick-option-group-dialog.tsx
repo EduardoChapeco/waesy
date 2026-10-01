@@ -601,7 +601,7 @@ export function QuickOptionGroupDialog({
  </div>
 
  {/* Descrição curta dos ingredientes / detalhes */}
- <div className="pl-[54px]">
+ <div className="pl-14">
  <Input
  placeholder="Descrição curta (ex: 2 fatias de bacon defumado crocante)"
  className="h-7 text-[11px] rounded-lg bg-muted/20 border-border/50 text-muted-foreground"

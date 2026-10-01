@@ -300,7 +300,7 @@ function StoreCartPage() {
 
       {/* ── Sticky Mobile Bottom Bar (Thumb Zone para Mobile) ── */}
       {selectedCart && selectedCart.items.length > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3.5 bg-background border-t border-border/60 z-40">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3.5 pb-safe bg-background border-t border-border/60 z-40">
           <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
             <div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-semibold">

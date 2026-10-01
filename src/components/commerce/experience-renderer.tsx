@@ -98,6 +98,9 @@ import { ReputationScoreHeader } from "./dynamic-sections/reputation-score-heade
 import { ReputationBadgesStrip } from "./dynamic-sections/reputation-badges-strip";
 import { ReputationTimelineFeed } from "./dynamic-sections/reputation-timeline-feed";
 import { OfficeContractViewer } from "./dynamic-sections/office-contract-viewer";
+import { TravelHotelSlider } from "./dynamic-sections/travel-hotel-slider";
+import { TravelItineraryTimeline } from "./dynamic-sections/travel-itinerary-timeline";
+import { TravelPackageHero } from "./dynamic-sections/travel-package-hero";
 import { TrackView } from "./analytics-provider";
 
 // ---------------------------------------------------------------------------
@@ -111,7 +114,7 @@ const BLOCK_TYPE_ALIASES: Record<string, string> = {
  hero_banner: "hero_carousel",
  featured_collection_banner: "split_banner",
  category_cards_grid: "gallery_grid",
- tourism_itinerary_timeline: "timeline_history",
+ tourism_itinerary_timeline: "travel_itinerary_timeline",
  service_catalog_list: "service_pricing_table",
  property_schedule_visit: "contact_form",
  property_virtual_tour: "video_section",
@@ -121,6 +124,9 @@ const BLOCK_TYPE_ALIASES: Record<string, string> = {
 const componentMap: Record<string, React.FC<any>> = {
  hero_carousel: HeroCarousel,
  hero_banner: HeroCarousel,
+ travel_hotel_slider: TravelHotelSlider,
+ travel_itinerary_timeline: TravelItineraryTimeline,
+ travel_package_hero: TravelPackageHero,
  rich_text: RichText,
  bento_grid: BentoGrid,
  countdown_timer: CountdownTimer,

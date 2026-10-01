@@ -13,6 +13,7 @@ import { getStoreSettings } from '@/services/store.functions';
 import { listTravelSuppliers, deleteTravelSupplier } from '@/services/travel-suppliers.functions';
 import { SUPPLIER_KIND_LABELS, type SupplierKind } from '@/types/travel-suppliers';
 import { NewSupplierWizard } from '@/components/tourism/suppliers/new-supplier-wizard';
+import { SupplierAutocomplete } from '@/components/tourism/suppliers/supplier-autocomplete';
 
 export const Route = createFileRoute('/workspace/turismo/fornecedores')({
  head: () => ({ meta: [{ title: 'Fornecedores & Tarifários de DMCs | Workspace' }] }),

@@ -76,7 +76,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
 
       {/* Safe Zone Inferior: Cartão Flutuante de Vidro Fosco Profundo */}
       <div className="relative z-10 px-10 pb-16">
-        <div className="bg-black/55 backdrop-blur-2xl border border-white/20 rounded-[36px] p-10 shadow-2xl">
+        <div className="bg-black/55 backdrop-blur-2xl border border-white/20 rounded-3xl p-10 shadow-2xl">
           {/* Badge de Oferta & Local */}
           <div className="flex items-center justify-between mb-4">
             {data.destinationOrLocation && (

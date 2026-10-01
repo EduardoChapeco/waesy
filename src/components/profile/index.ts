@@ -5,3 +5,4 @@ export * from "./biolink-themes-selector";
 export * from "./professional-resume-editor";
 export * from "./profile-biolink-analytics";
 export * from "./profile-events-manager";
+export * from "./curriculo-generator-modal";

@@ -152,7 +152,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         if (onSuccess && resolvedStoreId) {
           onSuccess(resolvedStoreId);
         } else {
-          navigate({ to: "/conta/empresa" });
+          navigate({ to: "/workspace" });
         }
       }
     } catch (err: any) {

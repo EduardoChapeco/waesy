@@ -326,3 +326,79 @@ export const toggleAmbassadorStatus = createServerFn({ method: "POST" })
 
  return updated;
  });
+
+// ─── 5. ANALYTICS DE ENGAJAMENTO E RETENÇÃO DE STORIES (GAP-240) ─────────────
+export const getStoreStoriesAnalytics = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+
+    const { data: storeStories, error: storiesError } = await supabase
+      .from("store_stories")
+      .select("id, title, media_url, product_id, created_at, expires_at")
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    if (storiesError || storeStories === null || storeStories === undefined || storeStories.length === 0) {
+      return {
+        totalViews: 0,
+        totalWatchTimeSeconds: 0,
+        totalProductClicks: 0,
+        stories: [],
+      };
+    }
+
+    const storyIds = storeStories.map((s) => s.id);
+    const { data: events } = await supabase
+      .from("story_analytics_events")
+      .select("story_id, event_type, watch_time_seconds")
+      .in("story_id", storyIds);
+
+    let totalViews = 0;
+    let totalWatchTimeSeconds = 0;
+    let totalProductClicks = 0;
+    const storyMetricsMap = new Map<string, { views: number; watchTime: number; clicks: number }>();
+
+    storyIds.forEach((id) => {
+      storyMetricsMap.set(id, { views: 0, watchTime: 0, clicks: 0 });
+    });
+
+    (events || []).forEach((e) => {
+      const metrics = storyMetricsMap.get(e.story_id);
+      if (e.event_type === "view") {
+        totalViews++;
+        if (metrics) metrics.views++;
+      } else if (e.event_type === "watch_time") {
+        const sec = e.watch_time_seconds || 0;
+        totalWatchTimeSeconds += sec;
+        if (metrics) metrics.watchTime += sec;
+      } else if (e.event_type === "click_product" || e.event_type === "click_cta") {
+        totalProductClicks++;
+        if (metrics) metrics.clicks++;
+      }
+    });
+
+    const enrichedStories = storeStories.map((s) => {
+      const m = storyMetricsMap.get(s.id) || { views: 0, watchTime: 0, clicks: 0 };
+      return {
+        id: s.id,
+        title: s.title,
+        mediaUrl: s.media_url,
+        productId: s.product_id,
+        createdAt: s.created_at,
+        expiresAt: s.expires_at,
+        views: m.views,
+        watchTimeSeconds: m.watchTime,
+        clicks: m.clicks,
+      };
+    });
+
+    return {
+      totalViews,
+      totalWatchTimeSeconds,
+      totalProductClicks,
+      stories: enrichedStories,
+    };
+  });

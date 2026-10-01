@@ -39,18 +39,22 @@ export interface ServerIdentity {
 }
 
 export const STAFF_ROLES = [
- "owner",
- "admin",
- "manager",
- "seller",
- "finance",
- "content",
- "support",
- "stock",
+  "owner",
+  "store_owner",
+  "proprietario",
+  "admin",
+  "manager",
+  "gerente",
+  "seller",
+  "finance",
+  "content",
+  "support",
+  "stock",
 ] as const;
 
 export const OWNER_ROLES = [
   "owner",
+  "store_owner",
   "admin",
   "proprietario",
   "platform_admin",
@@ -59,6 +63,7 @@ export const OWNER_ROLES = [
 
 export const MANAGER_ROLES = [
   "owner",
+  "store_owner",
   "admin",
   "proprietario",
   "manager",

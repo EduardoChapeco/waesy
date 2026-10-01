@@ -372,7 +372,7 @@ function AdminMasterLogisticaPage() {
  className={cn(
  "rounded-2xl border border-border/80 overflow-hidden bg-background p-4 space-y-3 transition-all",
  previewMode === "mobile" && "max-w-[320px] mx-auto",
- previewMode === "tablet" && "max-w-[420px] mx-auto"
+ previewMode === "tablet" && "max-w-full max-w-[420px] mx-auto"
  )}
  >
  {/* Imagem Adaptativa da Prévia */}

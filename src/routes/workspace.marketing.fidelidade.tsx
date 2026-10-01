@@ -366,7 +366,7 @@ export default function LoyaltyDashboardPage() {
 
  {/* Simulador de Cartão Wallet em Tempo Real */}
  <div className="lg:col-span-5 flex flex-col items-center">
- <div className="w-full max-w-[340px] bg-card rounded-2xl border-4 border-foreground/10 p-4 shadow-xs space-y-4">
+ <div className="w-full max-w-full max-w-[340px] bg-card rounded-2xl border-4 border-foreground/10 p-4 shadow-xs space-y-4">
  {/* Cartão de Fidelidade Digital (Wallet Pass) */}
  <div
  style={{ backgroundColor: cardBgColor, color: cardTextColor }}

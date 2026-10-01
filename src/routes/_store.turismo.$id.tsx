@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { getPublicTourismById, bookTourismExperience, type TourismItemDTO, type TourismPassenger } from "@/services/tourism.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { formatMoney } from "@/lib/money";
+import { maskCpfProgressive, formatPhone } from "@/lib/document-validator";
 import { toast } from "sonner";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { ProtectedContactButton } from "@/components/common/protected-contact-button";
@@ -281,12 +282,12 @@ function TourismDetailPage() {
                   <span>Nº Passageiros *</span>
                 </label>
                 <Input
-                  type="number"
-                  min={1}
-                  max={50}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={guestsCount}
-                  onChange={(e) => handleGuestsCountChange(parseInt(e.target.value) || 1)}
-                  className="rounded-xl h-10 text-xs bg-background"
+                  onChange={(e) => handleGuestsCountChange(parseInt(e.target.value.replace(/\D/g, "")) || 1)}
+                  className="rounded-xl h-10 text-xs bg-background font-mono"
                 />
               </div>
             </div>
@@ -308,9 +309,10 @@ function TourismDetailPage() {
                     />
                     <Input
                       placeholder="CPF / Doc (opcional)"
+                      inputMode="numeric"
                       value={p.document || ""}
-                      onChange={(e) => handlePassengerChange(idx, "document", e.target.value)}
-                      className="rounded-lg h-8 text-xs bg-background"
+                      onChange={(e) => handlePassengerChange(idx, "document", maskCpfProgressive(e.target.value))}
+                      className="rounded-lg h-8 text-xs bg-background font-mono"
                     />
                   </div>
                 ))}
@@ -325,10 +327,12 @@ function TourismDetailPage() {
                 </label>
                 <Input
                   required
+                  type="tel"
+                  inputMode="tel"
                   placeholder="(49) 99999-9999"
                   value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="rounded-xl h-10 text-xs bg-background"
+                  onChange={(e) => setCustomerPhone(formatPhone(e.target.value))}
+                  className="rounded-xl h-10 text-xs bg-background font-mono"
                 />
               </div>
               <div className="space-y-1.5">

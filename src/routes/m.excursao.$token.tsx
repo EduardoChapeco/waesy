@@ -6,6 +6,7 @@ import { Bus, Calendar, MapPin, CheckCircle2, ShieldCheck, Phone, User, HeartPul
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { maskCpfProgressive, formatPhone } from "@/lib/document-validator";
 import { getPublicPassengerForm, submitPassengerForm } from "@/services/group-tour-tokens.functions";
 
 export const Route = createFileRoute("/m/excursao/$token")({
@@ -197,9 +198,11 @@ function PublicPassengerRegistrationPage() {
  <div className="space-y-1.5">
  <label className="text-xs font-semibold text-foreground">CPF ou RG *</label>
  <Input
- value={doc}
- onChange={(e) => setDoc(e.target.value)}
- placeholder="000.000.000-00"
+                  type="text"
+                  inputMode="numeric"
+                  value={doc}
+                  onChange={(e) => setDoc(maskCpfProgressive(e.target.value))}
+                  placeholder="000.000.000-00"
  className="h-11 rounded-xl text-base sm:text-xs font-mono"
  required
  />
@@ -220,10 +223,11 @@ function PublicPassengerRegistrationPage() {
  <div className="space-y-1.5">
  <label className="text-xs font-semibold text-foreground">WhatsApp / Celular *</label>
  <Input
- type="tel"
- value={phone}
- onChange={(e) => setPhone(e.target.value)}
- placeholder="(00) 00000-0000"
+                  type="tel"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  placeholder="(00) 00000-0000"
  className="h-11 rounded-xl text-base sm:text-xs font-mono"
  required
  />
@@ -252,10 +256,11 @@ function PublicPassengerRegistrationPage() {
  <div className="space-y-1.5">
  <label className="text-xs font-semibold text-foreground">Telefone de Emergência *</label>
  <Input
- type="tel"
- value={emergencyPhone}
- onChange={(e) => setEmergencyPhone(e.target.value)}
- placeholder="(00) 00000-0000"
+                  type="tel"
+                  inputMode="tel"
+                  value={emergencyPhone}
+                  onChange={(e) => setEmergencyPhone(formatPhone(e.target.value))}
+                  placeholder="(00) 00000-0000"
  className="h-11 rounded-xl text-base sm:text-xs font-mono"
  required
  />

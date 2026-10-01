@@ -158,7 +158,7 @@ export function AiSdrChat({ classifiedId, storeName, sellerName }: AiSdrChatProp
       {/* Janela do Chat */}
       {isOpen && (
         <div className={cn(
-          "fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50",
+          "fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 pb-safe sm:pb-0",
           "w-full sm:w-[375px] h-[80vh] sm:h-[560px]",
           "bg-background border border-border sm:rounded-2xl shadow-2xl",
           "flex flex-col overflow-hidden",

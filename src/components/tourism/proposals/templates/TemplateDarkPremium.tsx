@@ -42,7 +42,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
               alt="Logo"
-              className="h-10 object-contain brightness-0 invert"
+              className="h-10 w-auto max-w-[160px] aspect-[4/1] object-contain brightness-0 invert" width={160} height={40}
             />
           ) : (
             <div className="text-2xl font-bold tracking-widest text-white uppercase">
@@ -97,7 +97,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
         className="pb-24 pt-4 px-12 relative z-10 break-inside-avoid"
       >
         {/* Resumo Executivo Flutuante */}
-        <div className="bg-white rounded-[32px] p-8 border border-slate-200 -mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-slate-100">
+        <div className="bg-white rounded-3xl p-8 border border-slate-200 -mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-slate-100">
           <div>
             <div className="ds-label-caps text-slate-400 mb-2">Cliente</div>
             <div className="font-semibold text-slate-900 text-sm">
@@ -202,7 +202,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                     <h3 className="text-2xl font-bold text-slate-900 mb-1">{h.name}</h3>
                     <div className="text-sm text-slate-500 mb-6">{h.city}</div>
 
-                    <div className="flex gap-8 mb-6 bg-slate-50 p-4 rounded-[var(--radius-card)] border border-slate-100">
+                    <div className="flex gap-8 mb-6 bg-slate-50 p-4 rounded-card border border-slate-100">
                       <div>
                         <div className="ds-meta uppercase font-bold text-slate-400">Check-in</div>
                         <div className="font-semibold text-slate-800">{formatDate(h.checkin)}</div>
@@ -248,7 +248,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
 
         {/* FINANCEIRO */}
         <div className="mt-20 break-inside-avoid">
-          <div className="bg-[#1E293B] rounded-[40px] p-12 text-white text-center border border-slate-700 relative overflow-hidden">
+          <div className="bg-[#1E293B] rounded-3xl p-12 text-white text-center border border-slate-700 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
 
             <h2
@@ -327,7 +327,10 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
           <img
             src={vm.agency.logo_url}
             crossOrigin="anonymous"
-            className="h-10 object-contain grayscale"
+            alt="Logo Agência"
+            className="h-10 w-auto max-w-[160px] aspect-[4/1] object-contain grayscale"
+            width={160}
+            height={40}
           />
         )}
       </div>

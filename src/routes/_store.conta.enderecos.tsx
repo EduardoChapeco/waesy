@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { EmptyState } from "@/components/state/states";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { formatCep } from "@/lib/document-validator";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/conta/enderecos")({
@@ -46,8 +47,9 @@ function AddressesPage() {
   });
 
   const handleCepLookup = async (cepValue: string) => {
+    const masked = formatCep(cepValue);
     const cleanCep = cepValue.replace(/\D/g, "");
-    setFormData((prev) => ({ ...prev, zipcode: cepValue }));
+    setFormData((prev) => ({ ...prev, zipcode: masked }));
 
     if (cleanCep.length === 8) {
       setIsCepLoading(true);
@@ -228,6 +230,8 @@ function AddressesPage() {
                 <div className="relative">
                   <Input
                     required
+                    type="text"
+                    inputMode="numeric"
                     placeholder="00000-000"
                     maxLength={9}
                     value={formData.zipcode}

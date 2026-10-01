@@ -31,7 +31,7 @@ export function CreatorAnalyticsCard({
  : 0;
 
  return (
- <div className="rounded-2xl bg-card border border-border/60 p-5 sm:p-6 space-y-5 shadow-xs select-none">
+ <div className="rounded-2xl bg-card border border-border/60 p-5 sm:p-6 space-y-5  select-none">
  {/* Header do Card Privado */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-3">
  <div className="flex items-center gap-2.5">
@@ -39,7 +39,7 @@ export function CreatorAnalyticsCard({
  <Activity className="size-4" />
  </div>
  <div>
- <h3 className="text-sm font-black text-foreground tracking-tight flex items-center gap-1.5">
+ <h3 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-1.5 line-clamp-1 truncate">
  <span>Desempenho e Métricas do Criador</span>
  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-semibold">
  Privado

@@ -709,6 +709,7 @@ export function UnifiedNewProductPage() {
  >
  Padrão
  </Button>
+ {isGroceryStore && (
  <Button
  type="button"
  size="sm"
@@ -721,6 +722,7 @@ export function UnifiedNewProductPage() {
  >
  Mercado
  </Button>
+ )}
  {(isTourismStore || showcaseMode === "travel") && (
  <Button
  type="button"
@@ -1311,7 +1313,7 @@ export function UnifiedNewProductPage() {
  <div className={cn(
  "overflow-y-auto no-scrollbar transition-all duration-300",
  previewDevice === "mobile"
- ? "max-w-[390px] mx-auto my-3 border border-border/80 rounded-3xl p-1 bg-background shadow-xs max-h-[750px]"
+ ? "max-w-full max-w-[390px] mx-auto my-3 border border-border/80 rounded-3xl p-1 bg-background shadow-xs max-h-[750px]"
  : "max-h-[85vh] p-3"
  )}>
  <TravelPackageDetailView
@@ -1426,15 +1428,14 @@ export function UnifiedNewProductPage() {
  )}
  </div>
 
- {/* Botões de Ação da Vitrine */}
- <div className="space-y-2 pt-2">
- <Button className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground gap-2">
- <ShoppingBag className="size-4" />
- <span>Adicionar ao Carrinho</span>
- </Button>
- <Button variant="outline" className="w-full h-11 rounded-xl font-bold">
- Comprar Agora
- </Button>
+ {/* Visualização Administrativa (Regra R07 / Caso O03: Zero CTA de Consumidor no Admin) */}
+ <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/40 text-center space-y-1">
+ <Badge variant="outline" className="text-2xs font-semibold">
+ Simulação de Visualização
+ </Badge>
+ <p className="text-2xs text-muted-foreground">
+ Botões de compra e checkout são exibidos exclusivamente aos clientes na vitrine pública.
+ </p>
  </div>
 
  {/* Benefícios & Frete */}

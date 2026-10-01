@@ -1,0 +1,3858 @@
+{
+  "totalRoutes": 384,
+  "shellDistribution": {
+    "Storefront Shell (Responsive B2C)": 145,
+    "Workspace Shell (Desktop/Mobile Split)": 176,
+    "Admin Master Shell": 37,
+    "Headless API / MCP": 17,
+    "Mobile Native Shell": 9
+  },
+  "nicheDistribution": {
+    "Núcleo Genérico (Cross-Niche)": 347,
+    "Turismo & Viagens": 28,
+    "Eventos & Festas": 5,
+    "Gastronomia & Restaurantes": 4
+  },
+  "routes": [
+    {
+      "file": "-apple-hig-design.test.ts",
+      "routePath": "/-apple-hig-design/test",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "-workspace.marketing.anuncios.test.ts",
+      "routePath": "/-workspace/marketing/anuncios/test",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.ads-network.tsx",
+      "routePath": "/admin-master/ads-network",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.algoritmo.tsx",
+      "routePath": "/admin-master/algoritmo",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.auditoria-forense.tsx",
+      "routePath": "/admin-master/auditoria-forense",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.banners.tsx",
+      "routePath": "/admin-master/banners",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.boost-payments.tsx",
+      "routePath": "/admin-master/boost-payments",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.botoes.tsx",
+      "routePath": "/admin-master/botoes",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.carnes.tsx",
+      "routePath": "/admin-master/carnes",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.convite.tsx",
+      "routePath": "/admin-master/convite",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.crescimento.tsx",
+      "routePath": "/admin-master/crescimento",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.curadoria.tsx",
+      "routePath": "/admin-master/curadoria",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.denuncias.tsx",
+      "routePath": "/admin-master/denuncias",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.entregadores.auditoria.tsx",
+      "routePath": "/admin-master/entregadores/auditoria",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.faturas.tsx",
+      "routePath": "/admin-master/faturas",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.hubs.tsx",
+      "routePath": "/admin-master/hubs",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.imprensa.tsx",
+      "routePath": "/admin-master/imprensa",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.index.tsx",
+      "routePath": "/admin-master",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.integracoes.tsx",
+      "routePath": "/admin-master/integracoes",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.kyc.tsx",
+      "routePath": "/admin-master/kyc",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.logistica.tsx",
+      "routePath": "/admin-master/logistica",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.logs.tsx",
+      "routePath": "/admin-master/logs",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.lojas.tsx",
+      "routePath": "/admin-master/lojas",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.marca.tsx",
+      "routePath": "/admin-master/marca",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.mining.tsx",
+      "routePath": "/admin-master/mining",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.modulos.tsx",
+      "routePath": "/admin-master/modulos",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.onboarding.tsx",
+      "routePath": "/admin-master/onboarding",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.portal-completo.tsx",
+      "routePath": "/admin-master/portal-completo",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.pre-cadastro.tsx",
+      "routePath": "/admin-master/pre-cadastro",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.seguranca.certificados.$id.tsx",
+      "routePath": "/admin-master/seguranca/certificados/$id",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.seguranca.certificados.tsx",
+      "routePath": "/admin-master/seguranca/certificados",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.seguranca.index.tsx",
+      "routePath": "/admin-master/seguranca",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.seguranca.telemetria.tsx",
+      "routePath": "/admin-master/seguranca/telemetria",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.simlabs.tsx",
+      "routePath": "/admin-master/simlabs",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.termos.tsx",
+      "routePath": "/admin-master/termos",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.tokens.tsx",
+      "routePath": "/admin-master/tokens",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.tsx",
+      "routePath": "/admin-master",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.usuarios.tsx",
+      "routePath": "/admin-master/usuarios",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.vitrines.tsx",
+      "routePath": "/admin-master/vitrines",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.auth.callback.ts",
+      "routePath": "/api/auth/callback",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.auth.confirm.ts",
+      "routePath": "/api/auth/confirm",
+      "shell": "Mobile Native Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.auth.govbr.callback.ts",
+      "routePath": "/api/auth/govbr/callback",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.auth.linkedin.callback.ts",
+      "routePath": "/api/auth/linkedin/callback",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.auth.marketplace.callback.ts",
+      "routePath": "/api/auth/marketplace/callback",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.feed.meta[.]csv.ts",
+      "routePath": "/api/feed/meta[/]csv",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.feed.xml.ts",
+      "routePath": "/api/feed/xml",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.mcp.v1.tools.call.ts",
+      "routePath": "/api/mcp/v1/tools/call",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.mining.worker.ts",
+      "routePath": "/api/mining/worker",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.openapi[.]json.ts",
+      "routePath": "/api/openapi[/]json",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.pwa.manifest[.]json.ts",
+      "routePath": "/api/pwa/manifest[/]json",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.security-telemetry.ts",
+      "routePath": "/api/security-telemetry",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.webhooks.marketplaces.ts",
+      "routePath": "/api/webhooks/marketplaces",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.webhooks.meta-ads.ts",
+      "routePath": "/api/webhooks/meta-ads",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.webhooks.pix.ts",
+      "routePath": "/api/webhooks/pix",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.webhooks.shipment.ts",
+      "routePath": "/api/webhooks/shipment",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.webhooks.whatsapp.ts",
+      "routePath": "/api/webhooks/whatsapp",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.webmcp[.]json.ts",
+      "routePath": "/api/webmcp[/]json",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "assinar.$token.tsx",
+      "routePath": "/assinar/$token",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "assinatura.$token.tsx",
+      "routePath": "/assinatura/$token",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "c.$storeSlug.tsx",
+      "routePath": "/c/$storeSlug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "claim.reivindicar.$entityId.tsx",
+      "routePath": "/claim/reivindicar/$entityId",
+      "shell": "Mobile Native Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "claim.reputacao.$entityId.tsx",
+      "routePath": "/claim/reputacao/$entityId",
+      "shell": "Mobile Native Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "home.tsx",
+      "routePath": "/home",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "m.excursao.$token.tsx",
+      "routePath": "/m/excursao/$token",
+      "shell": "Mobile Native Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "m.lead.$leadId.tsx",
+      "routePath": "/m/lead/$leadId",
+      "shell": "Mobile Native Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "portal.subpainel.$token.tsx",
+      "routePath": "/portal/subpainel/$token",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "reclamar.novo.tsx",
+      "routePath": "/reclamar/novo",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "sitemap-news[.]xml.ts",
+      "routePath": "/sitemap-news[/]xml",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "sitemap-products[.]xml.ts",
+      "routePath": "/sitemap-products[/]xml",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "sitemap[.]xml.ts",
+      "routePath": "/sitemap[/]xml",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "verificar.$serial.tsx",
+      "routePath": "/verificar/$serial",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "verify.document.$code.tsx",
+      "routePath": "/verify/document/$code",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "viajante.$token.tsx",
+      "routePath": "/viajante/$token",
+      "shell": "Mobile Native Shell",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "viajante.carteira.tsx",
+      "routePath": "/viajante/carteira",
+      "shell": "Mobile Native Shell",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "viajante.viagem.$id.tsx",
+      "routePath": "/viajante/viagem/$id",
+      "shell": "Mobile Native Shell",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.advocacia.index.tsx",
+      "routePath": "/workspace/advocacia",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.agenda.index.tsx",
+      "routePath": "/workspace/agenda",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.agenda.recursos.tsx",
+      "routePath": "/workspace/agenda/recursos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.agenda.servicos.index.tsx",
+      "routePath": "/workspace/agenda/servicos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.atendimento.index.tsx",
+      "routePath": "/workspace/atendimento",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.automacoes.tsx",
+      "routePath": "/workspace/automacoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.avaliacoes.tsx",
+      "routePath": "/workspace/avaliacoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.builder.$documentId.editor.tsx",
+      "routePath": "/workspace/builder/$documentId/editor",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.captacao.index.tsx",
+      "routePath": "/workspace/captacao",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.captacao.ndas.tsx",
+      "routePath": "/workspace/captacao/ndas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.atributos.tsx",
+      "routePath": "/workspace/catalogo/atributos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.categorias.$id.tsx",
+      "routePath": "/workspace/catalogo/categorias/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.categorias.index.tsx",
+      "routePath": "/workspace/catalogo/categorias",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.categorias.novo.tsx",
+      "routePath": "/workspace/catalogo/categorias/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.colecoes.$id.tsx",
+      "routePath": "/workspace/catalogo/colecoes/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.colecoes.index.tsx",
+      "routePath": "/workspace/catalogo/colecoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.colecoes.novo.tsx",
+      "routePath": "/workspace/catalogo/colecoes/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.colecoes.tsx",
+      "routePath": "/workspace/catalogo/colecoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.index.tsx",
+      "routePath": "/workspace/catalogo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.produtos.$id.tsx",
+      "routePath": "/workspace/catalogo/produtos/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.produtos.index.tsx",
+      "routePath": "/workspace/catalogo/produtos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.produtos.novo.tsx",
+      "routePath": "/workspace/catalogo/produtos/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.tabelas.tsx",
+      "routePath": "/workspace/catalogo/tabelas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.catalogo.tipos.tsx",
+      "routePath": "/workspace/catalogo/tipos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.clientes.$id.tsx",
+      "routePath": "/workspace/clientes/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.clientes.index.tsx",
+      "routePath": "/workspace/clientes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.cms.avaliacoes.tsx",
+      "routePath": "/workspace/cms/avaliacoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.cms.bio.tsx",
+      "routePath": "/workspace/cms/bio",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.cms.calendario.tsx",
+      "routePath": "/workspace/cms/calendario",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.cms.navegacao.tsx",
+      "routePath": "/workspace/cms/navegacao",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.cms.paginas.index.tsx",
+      "routePath": "/workspace/cms/paginas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.cms.stories.tsx",
+      "routePath": "/workspace/cms/stories",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.comercial.tsx",
+      "routePath": "/workspace/comercial",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.ai.tsx",
+      "routePath": "/workspace/configuracoes/ai",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.conformidade.tsx",
+      "routePath": "/workspace/configuracoes/conformidade",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.equipe.tsx",
+      "routePath": "/workspace/configuracoes/equipe",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.fretes.cotacoes.tsx",
+      "routePath": "/workspace/configuracoes/fretes/cotacoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.index.tsx",
+      "routePath": "/workspace/configuracoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.integracoes.tsx",
+      "routePath": "/workspace/configuracoes/integracoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.inteligencia-artificial.tsx",
+      "routePath": "/workspace/configuracoes/inteligencia-artificial",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.loja.tsx",
+      "routePath": "/workspace/configuracoes/loja",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.parceiros.tsx",
+      "routePath": "/workspace/configuracoes/parceiros",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.privacidade-loja.tsx",
+      "routePath": "/workspace/configuracoes/privacidade-loja",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.pwa.tsx",
+      "routePath": "/workspace/configuracoes/pwa",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.sessoes.tsx",
+      "routePath": "/workspace/configuracoes/sessoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.contador.index.tsx",
+      "routePath": "/workspace/contador",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.conteudo.receitas.tsx",
+      "routePath": "/workspace/conteudo/receitas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.contratos.$id.editor.tsx",
+      "routePath": "/workspace/contratos/$id/editor",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.contratos.index.tsx",
+      "routePath": "/workspace/contratos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.contratos.novo.tsx",
+      "routePath": "/workspace/contratos/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.crm.tsx",
+      "routePath": "/workspace/crm",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.curriculo.editor.tsx",
+      "routePath": "/workspace/curriculo/editor",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.doacoes.index.tsx",
+      "routePath": "/workspace/doacoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.empregos.candidatos.tsx",
+      "routePath": "/workspace/empregos/candidatos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.empregos.index.tsx",
+      "routePath": "/workspace/empregos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.empregos.novo.tsx",
+      "routePath": "/workspace/empregos/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.estoque.alertas.tsx",
+      "routePath": "/workspace/estoque/alertas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.estoque.index.tsx",
+      "routePath": "/workspace/estoque",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.estoque.movimentos.tsx",
+      "routePath": "/workspace/estoque/movimentos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.estudio.index.tsx",
+      "routePath": "/workspace/estudio",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.eventos.$id.checkin.tsx",
+      "routePath": "/workspace/eventos/$id/checkin",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Eventos & Festas",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.eventos.$id.subpaineis.tsx",
+      "routePath": "/workspace/eventos/$id/subpaineis",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Eventos & Festas",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.eventos.$id.tsx",
+      "routePath": "/workspace/eventos/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Eventos & Festas",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.eventos.index.tsx",
+      "routePath": "/workspace/eventos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Eventos & Festas",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.afiliados.tsx",
+      "routePath": "/workspace/financeiro/afiliados",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.caixa.index.tsx",
+      "routePath": "/workspace/financeiro/caixa",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.caixa.lancamentos.tsx",
+      "routePath": "/workspace/financeiro/caixa/lancamentos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.caixa.turnos.tsx",
+      "routePath": "/workspace/financeiro/caixa/turnos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.comissoes.tsx",
+      "routePath": "/workspace/financeiro/comissoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.comprovantes.tsx",
+      "routePath": "/workspace/financeiro/comprovantes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.contas-pagar.tsx",
+      "routePath": "/workspace/financeiro/contas-pagar",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.faturas.tsx",
+      "routePath": "/workspace/financeiro/faturas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.funcionarios.tsx",
+      "routePath": "/workspace/financeiro/funcionarios",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.pagamentos.tsx",
+      "routePath": "/workspace/financeiro/pagamentos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.recebiveis.tsx",
+      "routePath": "/workspace/financeiro/recebiveis",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.relatorios-canal.tsx",
+      "routePath": "/workspace/financeiro/relatorios-canal",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.fiscal.nfe.tsx",
+      "routePath": "/workspace/fiscal/nfe",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.imoveis.manutencoes.tsx",
+      "routePath": "/workspace/imoveis/manutencoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.index.tsx",
+      "routePath": "/workspace",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.integracoes.marketplaces.tsx",
+      "routePath": "/workspace/integracoes/marketplaces",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.inteligencia.radar.tsx",
+      "routePath": "/workspace/inteligencia/radar",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.licitacoes.tsx",
+      "routePath": "/workspace/licitacoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.logistica.faturas.tsx",
+      "routePath": "/workspace/logistica/faturas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.logistica.pudo.tsx",
+      "routePath": "/workspace/logistica/pudo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.logistica.tabelas.tsx",
+      "routePath": "/workspace/logistica/tabelas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.lojas.index.tsx",
+      "routePath": "/workspace/lojas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.afiliados.tsx",
+      "routePath": "/workspace/marketing/afiliados",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.anuncios.novo.tsx",
+      "routePath": "/workspace/marketing/anuncios/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.anuncios.tsx",
+      "routePath": "/workspace/marketing/anuncios",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.banners.tsx",
+      "routePath": "/workspace/marketing/banners",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.brand-kit.tsx",
+      "routePath": "/workspace/marketing/brand-kit",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.briefing.tsx",
+      "routePath": "/workspace/marketing/briefing",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.canvas-bmc.tsx",
+      "routePath": "/workspace/marketing/canvas-bmc",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.canvas-pecados.tsx",
+      "routePath": "/workspace/marketing/canvas-pecados",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.carrinhos.tsx",
+      "routePath": "/workspace/marketing/carrinhos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.concursos.tsx",
+      "routePath": "/workspace/marketing/concursos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.encartes.tsx",
+      "routePath": "/workspace/marketing/encartes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.fidelidade.tsx",
+      "routePath": "/workspace/marketing/fidelidade",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.formularios.tsx",
+      "routePath": "/workspace/marketing/formularios",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.gift-cards.tsx",
+      "routePath": "/workspace/marketing/gift-cards",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.hotpages.tsx",
+      "routePath": "/workspace/marketing/hotpages",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.patrocinadores.tsx",
+      "routePath": "/workspace/marketing/patrocinadores",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.pixels.tsx",
+      "routePath": "/workspace/marketing/pixels",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.promocoes.tsx",
+      "routePath": "/workspace/marketing/promocoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.publicacoes.tsx",
+      "routePath": "/workspace/marketing/publicacoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.social.tsx",
+      "routePath": "/workspace/marketing/social",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.stories.tsx",
+      "routePath": "/workspace/marketing/stories",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.studio.tsx",
+      "routePath": "/workspace/marketing/studio",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.swot.tsx",
+      "routePath": "/workspace/marketing/swot",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.telemetria.tsx",
+      "routePath": "/workspace/marketing/telemetria",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.marketing.vitrine.tsx",
+      "routePath": "/workspace/marketing/vitrine",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.master.influencers.tsx",
+      "routePath": "/workspace/master/influencers",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.mining.tsx",
+      "routePath": "/workspace/mining",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.moderacao.index.tsx",
+      "routePath": "/workspace/moderacao",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.moderacao.kyc.tsx",
+      "routePath": "/workspace/moderacao/kyc",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.mural.novo.tsx",
+      "routePath": "/workspace/mural/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.noticias.index.tsx",
+      "routePath": "/workspace/noticias",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.noticias.novo.tsx",
+      "routePath": "/workspace/noticias/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.notificacoes.tsx",
+      "routePath": "/workspace/notificacoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.onboarding.index.tsx",
+      "routePath": "/workspace/onboarding",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.onboarding.revisao.tsx",
+      "routePath": "/workspace/onboarding/revisao",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.orcamentos.$id.tsx",
+      "routePath": "/workspace/orcamentos/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.orcamentos.index.tsx",
+      "routePath": "/workspace/orcamentos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.orcamentos.novo.tsx",
+      "routePath": "/workspace/orcamentos/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pacotes.index.tsx",
+      "routePath": "/workspace/pacotes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pdv.comandas.tsx",
+      "routePath": "/workspace/pdv/comandas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Gastronomia & Restaurantes",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pdv.cozinha.tsx",
+      "routePath": "/workspace/pdv/cozinha",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pdv.index.tsx",
+      "routePath": "/workspace/pdv",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pedidos.$id.tsx",
+      "routePath": "/workspace/pedidos/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pedidos.entregadores.$id.tsx",
+      "routePath": "/workspace/pedidos/entregadores/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pedidos.entregadores.index.tsx",
+      "routePath": "/workspace/pedidos/entregadores",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pedidos.entregadores.novo.tsx",
+      "routePath": "/workspace/pedidos/entregadores/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pedidos.expedicao.tsx",
+      "routePath": "/workspace/pedidos/expedicao",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pedidos.frota.tsx",
+      "routePath": "/workspace/pedidos/frota",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pedidos.gestor.tsx",
+      "routePath": "/workspace/pedidos/gestor",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pedidos.index.tsx",
+      "routePath": "/workspace/pedidos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pedidos.trocas.tsx",
+      "routePath": "/workspace/pedidos/trocas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.qualidade.tsx",
+      "routePath": "/workspace/qualidade",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.relatorios.gastronomia.tsx",
+      "routePath": "/workspace/relatorios/gastronomia",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Gastronomia & Restaurantes",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.relatorios.metas.tsx",
+      "routePath": "/workspace/relatorios/metas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.relatorios.tsx",
+      "routePath": "/workspace/relatorios",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.reservas.tsx",
+      "routePath": "/workspace/reservas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Gastronomia & Restaurantes",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.rh.ponto.tsx",
+      "routePath": "/workspace/rh/ponto",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.simlab.focus-group.tsx",
+      "routePath": "/workspace/simlab/focus-group",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.simulacao.tsx",
+      "routePath": "/workspace/simulacao",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.skills.tsx",
+      "routePath": "/workspace/skills",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.squads.index.tsx",
+      "routePath": "/workspace/squads",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.squads.tsx",
+      "routePath": "/workspace/squads",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.suporte.tsx",
+      "routePath": "/workspace/suporte",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.tarefas.tsx",
+      "routePath": "/workspace/tarefas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.tokens.tsx",
+      "routePath": "/workspace/tokens",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.tsx",
+      "routePath": "/workspace",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.aereos.tsx",
+      "routePath": "/workspace/turismo/aereos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.contratos.index.tsx",
+      "routePath": "/workspace/turismo/contratos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.cotacoes.tsx",
+      "routePath": "/workspace/turismo/cotacoes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.destinos.tsx",
+      "routePath": "/workspace/turismo/destinos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.embarques.tsx",
+      "routePath": "/workspace/turismo/embarques",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.fornecedores.tsx",
+      "routePath": "/workspace/turismo/fornecedores",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.frota.$id.tsx",
+      "routePath": "/workspace/turismo/frota/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.frota.index.tsx",
+      "routePath": "/workspace/turismo/frota",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.grupos.$id.embarque.tsx",
+      "routePath": "/workspace/turismo/grupos/$id/embarque",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.grupos.$id.tsx",
+      "routePath": "/workspace/turismo/grupos/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.grupos.index.tsx",
+      "routePath": "/workspace/turismo/grupos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.hoteis.tsx",
+      "routePath": "/workspace/turismo/hoteis",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.incidentes.tsx",
+      "routePath": "/workspace/turismo/incidentes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.propostas.$id.tsx",
+      "routePath": "/workspace/turismo/propostas/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.propostas.index.tsx",
+      "routePath": "/workspace/turismo/propostas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.propostas.novo.tsx",
+      "routePath": "/workspace/turismo/propostas/novo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.radar.tsx",
+      "routePath": "/workspace/turismo/radar",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.reacomodacao.tsx",
+      "routePath": "/workspace/turismo/reacomodacao",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.viagens.$id.tsx",
+      "routePath": "/workspace/turismo/viagens/$id",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.viagens.index.tsx",
+      "routePath": "/workspace/turismo/viagens",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.vistos.tsx",
+      "routePath": "/workspace/turismo/vistos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.turismo.vouchers.index.tsx",
+      "routePath": "/workspace/turismo/vouchers",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace_.pedidos.$id.recibo.tsx",
+      "routePath": "/workspace_/pedidos/$id/recibo",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.acougue.tsx",
+      "routePath": "/acougue",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.afiliados.tsx",
+      "routePath": "/afiliados",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.agenda.tsx",
+      "routePath": "/agenda",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.agendar.$id.tsx",
+      "routePath": "/agendar/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.agendar.index.tsx",
+      "routePath": "/agendar",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.agendar.tsx",
+      "routePath": "/agendar",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.bebidas.tsx",
+      "routePath": "/bebidas",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.beleza.tsx",
+      "routePath": "/beleza",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.bio.$slug.tsx",
+      "routePath": "/bio/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.buscar.tsx",
+      "routePath": "/buscar",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.cadastro.tsx",
+      "routePath": "/cadastro",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.cadastroantecipado.tsx",
+      "routePath": "/cadastroantecipado",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.carrinho.tsx",
+      "routePath": "/carrinho",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.casa.tsx",
+      "routePath": "/casa",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.categoria.$slug.tsx",
+      "routePath": "/categoria/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.checkout.tsx",
+      "routePath": "/checkout",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.classificados.$id.tsx",
+      "routePath": "/classificados/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.classificados.index.tsx",
+      "routePath": "/classificados",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.colecao.$slug.tsx",
+      "routePath": "/colecao/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.concurso.$id.tsx",
+      "routePath": "/concurso/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.concursos.tsx",
+      "routePath": "/concursos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.construcao.tsx",
+      "routePath": "/construcao",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.agendamentos.tsx",
+      "routePath": "/conta/agendamentos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.avaliacoes.tsx",
+      "routePath": "/conta/avaliacoes",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.candidaturas.tsx",
+      "routePath": "/conta/candidaturas",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.carnes.tsx",
+      "routePath": "/conta/carnes",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.classificados.index.tsx",
+      "routePath": "/conta/classificados",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.classificados.novo.tsx",
+      "routePath": "/conta/classificados/novo",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.colaborador.tsx",
+      "routePath": "/conta/colaborador",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.comissoes.tsx",
+      "routePath": "/conta/comissoes",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.concursos.tsx",
+      "routePath": "/conta/concursos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.contratos.tsx",
+      "routePath": "/conta/contratos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.conversas.$id.tsx",
+      "routePath": "/conta/conversas/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.conversas.index.tsx",
+      "routePath": "/conta/conversas",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.creditos.tsx",
+      "routePath": "/conta/creditos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.criadores.tsx",
+      "routePath": "/conta/criadores",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.curriculo.tsx",
+      "routePath": "/conta/curriculo",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.empresa.tsx",
+      "routePath": "/conta/empresa",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.enderecos.tsx",
+      "routePath": "/conta/enderecos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.financas.tsx",
+      "routePath": "/conta/financas",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.gift-cards.tsx",
+      "routePath": "/conta/gift-cards",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.index.tsx",
+      "routePath": "/conta",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.ingressos.tsx",
+      "routePath": "/conta/ingressos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.lojas.tsx",
+      "routePath": "/conta/lojas",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.metricas.tsx",
+      "routePath": "/conta/metricas",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.mobilidade.tsx",
+      "routePath": "/conta/mobilidade",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.negociacoes.tsx",
+      "routePath": "/conta/negociacoes",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.notificacoes.tsx",
+      "routePath": "/conta/notificacoes",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.pacotes.tsx",
+      "routePath": "/conta/pacotes",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.pagamentos.tsx",
+      "routePath": "/conta/pagamentos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.pedidos.$id.tsx",
+      "routePath": "/conta/pedidos/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.pedidos.index.tsx",
+      "routePath": "/conta/pedidos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.perfil.tsx",
+      "routePath": "/conta/perfil",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.processos.tsx",
+      "routePath": "/conta/processos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.salvos.tsx",
+      "routePath": "/conta/salvos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.seguranca.tsx",
+      "routePath": "/conta/seguranca",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.suporte.tsx",
+      "routePath": "/conta/suporte",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.tokens.tsx",
+      "routePath": "/conta/tokens",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.trocas.tsx",
+      "routePath": "/conta/trocas",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.tsx",
+      "routePath": "/conta",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.verificacao.tsx",
+      "routePath": "/conta/verificacao",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.conta.viagens.tsx",
+      "routePath": "/conta/viagens",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.contato.tsx",
+      "routePath": "/contato",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.contrato.$token.tsx",
+      "routePath": "/contrato/$token",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.convite.tsx",
+      "routePath": "/convite",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.criar-negocio.avancado.tsx",
+      "routePath": "/criar-negocio/avancado",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.criar-negocio.tsx",
+      "routePath": "/criar-negocio",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.destaques.$slug.tsx",
+      "routePath": "/destaques/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.diretorio.$id.tsx",
+      "routePath": "/diretorio/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.diretorio.index.tsx",
+      "routePath": "/diretorio",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.diretorio.tsx",
+      "routePath": "/diretorio",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.doacoes.tsx",
+      "routePath": "/doacoes",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.eletronicos.tsx",
+      "routePath": "/eletronicos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.empregos.$id.tsx",
+      "routePath": "/empregos/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.empregos.index.tsx",
+      "routePath": "/empregos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.empregos.tsx",
+      "routePath": "/empregos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.entrar.tsx",
+      "routePath": "/entrar",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.entrega.$token.tsx",
+      "routePath": "/entrega/$token",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.entregador.cadastro.tsx",
+      "routePath": "/entregador/cadastro",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.evento.$id.tsx",
+      "routePath": "/evento/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.eventos.tsx",
+      "routePath": "/eventos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Eventos & Festas",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.explorar.tsx",
+      "routePath": "/explorar",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.f.$slug.tsx",
+      "routePath": "/f/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.faq.tsx",
+      "routePath": "/faq",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.farmacia.tsx",
+      "routePath": "/farmacia",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.feed.tsx",
+      "routePath": "/feed",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.garcom.tsx",
+      "routePath": "/garcom",
+      "shell": "Mobile Native Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.gastronomia.tsx",
+      "routePath": "/gastronomia",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Gastronomia & Restaurantes",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.gift-card.$claimToken.tsx",
+      "routePath": "/gift-card/$claimToken",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.imoveis.tsx",
+      "routePath": "/imoveis",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.index.tsx",
+      "routePath": "/",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.limpeza.tsx",
+      "routePath": "/limpeza",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.livros.tsx",
+      "routePath": "/livros",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.loja.$slug.senha.tsx",
+      "routePath": "/loja/$slug/senha",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.loja.$slug.tsx",
+      "routePath": "/loja/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.mapa.tsx",
+      "routePath": "/mapa",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.match-time.tsx",
+      "routePath": "/match-time",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.membro.$id.tsx",
+      "routePath": "/membro/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.mercado.tsx",
+      "routePath": "/mercado",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.meus-perfis.tsx",
+      "routePath": "/meus-perfis",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.mobilidade.tsx",
+      "routePath": "/mobilidade",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.moda.tsx",
+      "routePath": "/moda",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.motorista.$slug.tsx",
+      "routePath": "/motorista/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.mural.tsx",
+      "routePath": "/mural",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.noticias.$slug.tsx",
+      "routePath": "/noticias/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.noticias.index.tsx",
+      "routePath": "/noticias",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.ofertas.tsx",
+      "routePath": "/ofertas",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.paginas.$slug.tsx",
+      "routePath": "/paginas/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.patrocinador.$token.tsx",
+      "routePath": "/patrocinador/$token",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.pedido.$publicToken.confirmacao.tsx",
+      "routePath": "/pedido/$publicToken/confirmacao",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.perfil-da-loja.tsx",
+      "routePath": "/perfil-da-loja",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.personas.tsx",
+      "routePath": "/personas",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.pet.tsx",
+      "routePath": "/pet",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.politicas.$slug.tsx",
+      "routePath": "/politicas/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.portal-completo.tsx",
+      "routePath": "/portal-completo",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.privacidade.tsx",
+      "routePath": "/privacidade",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.produto.$slug.tsx",
+      "routePath": "/produto/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.proposta.$token.tsx",
+      "routePath": "/proposta/$token",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.publicacao.$id.tsx",
+      "routePath": "/publicacao/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.receitas.$id.tsx",
+      "routePath": "/receitas/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.receitas.index.tsx",
+      "routePath": "/receitas",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.recuperar-senha.tsx",
+      "routePath": "/recuperar-senha",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.redefinir-senha.tsx",
+      "routePath": "/redefinir-senha",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.servicos.tsx",
+      "routePath": "/servicos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.stories.tsx",
+      "routePath": "/stories",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.termos.tsx",
+      "routePath": "/termos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.trocas-e-devolucoes.tsx",
+      "routePath": "/trocas-e-devolucoes",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.tsx",
+      "routePath": "/",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.turismo.$id.tsx",
+      "routePath": "/turismo/$id",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.turismo.index.tsx",
+      "routePath": "/turismo",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.turismo.tsx",
+      "routePath": "/turismo",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.u.$username.tsx",
+      "routePath": "/u/$username",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.vendedora.$slug.tsx",
+      "routePath": "/vendedora/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.voucher.$token.tsx",
+      "routePath": "/voucher/$token",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    }
+  ]
+}

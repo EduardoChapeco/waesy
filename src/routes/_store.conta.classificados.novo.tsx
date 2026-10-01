@@ -14,6 +14,7 @@ import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANO
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { PhoneField } from "@/components/ui/phone-field";
@@ -406,11 +407,20 @@ function NovoClassificadoPage() {
 
   if (isLoadingEdit) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-72 gap-3">
-        <Loader2 className="size-8 animate-spin text-primary" />
-        <p className="text-xs font-semibold text-muted-foreground">
-          Carregando dados do anúncio para edição...
-        </p>
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64 rounded-xl" />
+          <Skeleton className="h-4 w-96 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Skeleton className="h-12 rounded-xl" />
+          <Skeleton className="h-12 rounded-xl" />
+        </div>
+        <Skeleton className="h-48 w-full rounded-2xl" />
+        <div className="flex justify-end gap-3">
+          <Skeleton className="h-11 w-32 rounded-xl" />
+          <Skeleton className="h-11 w-40 rounded-xl" />
+        </div>
       </div>
     );
   }
@@ -8717,22 +8727,25 @@ function SpecializedClassifiedEditor({
                         <p className="text-xs text-muted-foreground mt-1">Roteiro e abas</p>
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => setTemplateStyle("conveniencia")}
-                        className={cn(
-                          "p-2 rounded-lg border text-left transition-colors cursor-pointer",
-                          templateStyle === "conveniencia"
-                            ? "border-primary bg-primary/5 ring-1 ring-primary"
-                            : "border-border/60 hover:bg-muted/40"
-                        )}
-                      >
-                        <p className="text-xs font-bold text-foreground flex items-center gap-1">
-                          <span>Mercado</span>
-                          <span className="size-1.5 rounded-full bg-emerald-500" />
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">Gôndola</p>
-                      </button>
+                      {/* Caso O02 / Regra R06: Restrição estrita de nicho (Turismo não vê Mercado) */}
+                      {niche.id !== "viagem" && niche.id !== "hospedagem" && (
+                        <button
+                          type="button"
+                          onClick={() => setTemplateStyle("conveniencia")}
+                          className={cn(
+                            "p-2 rounded-lg border text-left transition-colors cursor-pointer",
+                            templateStyle === "conveniencia"
+                              ? "border-primary bg-primary/5 ring-1 ring-primary"
+                              : "border-border/60 hover:bg-muted/40"
+                          )}
+                        >
+                          <p className="text-xs font-bold text-foreground flex items-center gap-1">
+                            <span>Mercado</span>
+                            <span className="size-1.5 rounded-full bg-emerald-500" />
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">Gôndola</p>
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}

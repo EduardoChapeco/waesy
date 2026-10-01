@@ -920,3 +920,49 @@ export const saveStoreShippingSettings = createServerFn({ method: "POST" })
     if (error) throw new Error("Erro ao salvar configurações de frete: " + error.message);
     return { success: true };
   });
+
+// ---------------------------------------------------------------------------
+// 9. ANALYTICS DE COTAÇÕES DE FRETE E DEMANDA GEOGRÁFICA (GAP-244)
+// ---------------------------------------------------------------------------
+export const getShippingQuotesAnalytics = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const { data: quotes, error } = await supabase
+      .from("shipping_quotes")
+      .select("id, zipcode, provider, service_name, price_cents, created_at")
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (error || quotes === null || quotes === undefined) return [];
+
+    const cepMap = new Map<string, { zipcodePrefix: string; totalQuotes: number; avgPriceCents: number; sumPriceCents: number; providers: Set<string> }>();
+
+    quotes.forEach((q) => {
+      const clean = (q.zipcode || "").replace(/\D/g, "");
+      const prefix = clean.length >= 5 ? clean.substring(0, 5) : clean || "Outros";
+      if (!cepMap.has(prefix)) {
+        cepMap.set(prefix, {
+          zipcodePrefix: prefix,
+          totalQuotes: 0,
+          avgPriceCents: 0,
+          sumPriceCents: 0,
+          providers: new Set<string>(),
+        });
+      }
+      const entry = cepMap.get(prefix)!;
+      entry.totalQuotes++;
+      entry.sumPriceCents += q.price_cents || 0;
+      if (q.provider) entry.providers.add(q.provider);
+    });
+
+    return Array.from(cepMap.values()).map((e) => ({
+      zipcodePrefix: e.zipcodePrefix,
+      totalQuotes: e.totalQuotes,
+      avgPriceCents: Math.round(e.sumPriceCents / e.totalQuotes),
+      providers: Array.from(e.providers),
+    })).sort((a, b) => b.totalQuotes - a.totalQuotes);
+  });

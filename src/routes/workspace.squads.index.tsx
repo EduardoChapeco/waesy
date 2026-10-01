@@ -4,6 +4,8 @@ import { Users, Bot, Briefcase, Play, CheckCircle2, Clock, ShieldCheck, ChevronR
 import { listStoreSquadsFn, triggerSquadRunFn, approveSquadRunFn, SquadWithDetails } from "@/services/squads-runtime.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
+import { SquadArchitectSheet } from "@/components/squads/squad-architect-sheet";
+import { Plus } from "lucide-react";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,7 @@ export function SquadsWorkspacePage() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isMetricsOpen, setIsMetricsOpen] = useState(false);
+  const [isArchitectOpen, setIsArchitectOpen] = useState(false);
 
   // ── ATUALIZAR SQUADS VIA BFF ─────────────────────────────────────────────
   async function loadData() {
@@ -192,6 +195,13 @@ export function SquadsWorkspacePage() {
           icon: RefreshCw,
           onClick: () => loadData(),
         }}
+      />
+
+      <SquadArchitectSheet
+        open={isArchitectOpen}
+        onOpenChange={setIsArchitectOpen}
+        storeId={storeId}
+        onSquadCreated={() => loadData()}
       />
 
       <WorkspaceDashboardSheet

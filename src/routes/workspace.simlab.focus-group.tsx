@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { toast } from 'sonner';
+import { SimLabResearchPanel } from '@/components/simlab/simlab-research-panel';
+import { SimlabReviewPanel } from '@/components/simlab/simlab-review-panel';
 import type { SyntheticArchetype, FocusGroupMessage, FocusGroupSession } from '@/types/simlab';
 import { listSyntheticArchetypes, getOrCreateActiveFocusSession, listFocusGroupMessages, sendFocusGroupMessage } from '@/services/simlab.functions';
 import { getSimLabKeyStatus, saveSimLabApiKey } from '@/services/api-orchestrator.functions';

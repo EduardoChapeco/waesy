@@ -7,6 +7,8 @@ import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { listCustomerMobilityRequests } from "@/services/mobility.functions";
 import { getMyCourierApplicationStatus } from "@/services/courier-verification.functions";
+import { CourierEarningsPanel } from "@/components/courier/courier-earnings-panel";
+import { MobilityQuickButton } from "@/components/mobility/mobility-quick-button";
 
 export const Route = createFileRoute("/_store/conta/mobilidade")({
  head: () => ({
@@ -66,6 +68,7 @@ function CustomerMobilityHistoryPage() {
  <div className="w-full max-w-4xl mx-auto space-y-6 pb-6">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
+  <MobilityQuickButton />
  <Badge variant="outline" className="font-mono text-[10px] uppercase font-bold px-2.5 py-0.5">
  Mobilidade
  </Badge>

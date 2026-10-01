@@ -2277,3 +2277,94 @@ export const calculateStoreLtvAndAdSpend = createServerFn({ method: "GET" }).han
     };
   }
 );
+
+// ─── GESTÃO DE LEADS WHATSAPP & ATRIBUIÇÃO RÁPIDA (GAP-236, GAP-241) ──────────
+
+export const listWhatsAppLeads = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        status: z.enum(["all", "new", "claimed", "closed"]).default("all"),
+        search: z.string().optional(),
+      })
+      .default({ status: "all" })
+  )
+  .handler(async ({ data: { status, search } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
+
+    let query = supabase
+      .from("whatsapp_leads")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false });
+
+    if (status !== "all") {
+      query = query.eq("status", status);
+    }
+    if (search && search.trim()) {
+      query = query.or(`name.ilike.%${search.trim()}%,phone.ilike.%${search.trim()}%`);
+    }
+
+    const { data, error } = await query.limit(50);
+    if (error) {
+      console.warn("[crm.functions] listWhatsAppLeads notice:", error.message);
+      return [];
+    }
+    return data || [];
+  });
+
+export const claimWhatsAppLead = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      leadId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data: { leadId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
+
+    const { data, error } = await supabase
+      .from("whatsapp_leads")
+      .update({
+        status: "claimed",
+        assigned_to: identity.id,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", leadId)
+      .eq("store_id", identity.store_id)
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.warn("[crm.functions] claimWhatsAppLead error:", error.message);
+      throw new Error("Erro ao assumir lead.");
+    }
+    return data;
+  });
+
+export const listLeadActivitiesByLead = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      leadId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data: { leadId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
+
+    const { data, error } = await supabase
+      .from("lead_activities")
+      .select("*")
+      .eq("lead_id", leadId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[crm.functions] listLeadActivitiesByLead error:", error.message);
+      return [];
+    }
+    return data || [];
+  });

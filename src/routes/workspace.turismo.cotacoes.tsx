@@ -18,6 +18,7 @@ import { listDestinations } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { QuotationBuilderSheet } from "@/components/tourism/quotation-builder-sheet";
+import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";
 import { processOperatorQuoteOcr } from "@/services/travel-operator-ocr.functions";
 import { formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";

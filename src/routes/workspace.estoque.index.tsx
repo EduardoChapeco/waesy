@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Boxes, PackageCheck, Clock, AlertTriangle, Plus, Minus, Search, History, ArrowRightLeft, Truck, ShieldAlert, SlidersHorizontal, Box } from "lucide-react";
+import { Boxes, PackageCheck, Clock, AlertTriangle, Plus, Minus, Search, History, ArrowRightLeft, Truck, ShieldAlert, SlidersHorizontal, Box, ScanBarcode } from "lucide-react";
+import { BarcodeScannerModal } from "@/components/scanner/barcode-scanner-modal";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
@@ -57,6 +58,7 @@ function AdminStockPage() {
   const [statusTab, setStatusTab] = useState<string>("all");
   const [destLocationId, setDestLocationId] = useState<string>("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
  // Modal Movement State
  const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
@@ -291,6 +293,11 @@ function AdminStockPage() {
         searchValue={search}
         onSearchChange={setSearch}
         secondaryActions={[
+          {
+            label: "Scanner",
+            icon: ScanBarcode,
+            onClick: () => setScannerOpen(true), // focus-visible:
+          },
           {
             label: `Alertas (${metrics.criticalCount})`,
             icon: AlertTriangle,
@@ -629,6 +636,17 @@ function AdminStockPage() {
  </div>
  </form>
  </SheetPage>
+
+      <BarcodeScannerModal
+        open={scannerOpen}
+        onOpenChange={setScannerOpen}
+        onScan={(result) => {
+          setSearch(result.raw);
+          setScannerOpen(false);
+          toast.info(`Código capturado: ${result.raw}`);
+        }}
+        title="Scanner de Código de Barras"
+      />
  </div>
  );
 }

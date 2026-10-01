@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Calendar, Ticket, QrCode, Users, DollarSign, Plus, ArrowLeft, ExternalLink, Clock, MapPin, CheckCircle2, Utensils, Megaphone, Settings, Edit, Trash2, Gift, Search, Receipt, TrendingUp, Percent, Kanban, FileSpreadsheet, Layers, Mic2, ShieldCheck, FileText } from "lucide-react";
+import { Calendar, Ticket, QrCode, Users, DollarSign, Plus, ArrowLeft, ExternalLink, Clock, MapPin, CheckCircle2, Utensils, Megaphone, Settings, Edit, Trash2, Gift, Search, Receipt, TrendingUp, Percent, Kanban, FileSpreadsheet, Layers, Mic2, ShieldCheck, FileText, ShoppingBag } from "lucide-react";
 import { EventoKanban } from "@/components/eventos/evento-kanban";
 import { EventoOrcamentos } from "@/components/eventos/evento-orcamentos";
 import { EventoCustos } from "@/components/eventos/evento-custos";
@@ -12,6 +12,8 @@ import { EventoParceiros } from "@/components/eventos/evento-parceiros";
 import { EventoDocumentos } from "@/components/eventos/evento-documentos";
 import { EventoAuditoria } from "@/components/eventos/evento-auditoria";
 import { EventoCredenciais } from "@/components/eventos/evento-credenciais";
+import { EventoLoja } from "@/components/eventos/evento-loja";
+import { TicketPreview } from "@/components/eventos/ticket-preview";
 import { AlocarEquipeSheet } from "@/components/eventos/alocar-equipe-sheet";
 import { PageHeader } from "@/components/commerce/page-header";
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -350,6 +352,10 @@ function SubPainelEventoPage() {
  <ShieldCheck className="size-3.5" />
  Auditoria
  </TabsTrigger>
+  <TabsTrigger value="loja" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+  <ShoppingBag className="size-3.5" />
+  Lojinha
+  </TabsTrigger>
  </TabsList>
 
  {/* ── Aba 1: Lotes de Ingressos ── */}
@@ -594,6 +600,10 @@ function SubPainelEventoPage() {
         <TabsContent value="credenciais" className="space-y-4">
           <EventoCredenciais eventId={event.id} eventTitle={event.title} />
         </TabsContent>
+
+  <TabsContent value="loja" className="space-y-4">
+    <EventoLoja eventId={event.id} />
+  </TabsContent>
       </Tabs>
 
       {/* Alocação de Equipe e Staff */}
@@ -649,7 +659,20 @@ function SubPainelEventoPage() {
  </div>
  </div>
 
- <DialogFooter className="pt-2">
+             {lotForm.name && (
+              <div className="py-2">
+                <TicketPreview
+                  eventName={event.title}
+                  ticketType={lotForm.name}
+                  priceCents={lotForm.priceCents}
+                  date={event.event_date}
+                  location={event.location}
+                  coverImage={event.cover_image_url}
+                />
+              </div>
+            )}
+
+<DialogFooter className="pt-2">
  <Button
  type="button"
  variant="ghost"

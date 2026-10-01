@@ -10,6 +10,7 @@ import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-cano
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { VoucherCreationSheet } from "@/components/tourism/vouchers/voucher-creation-sheet";
 import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operator-voucher-import-sheet";
+import { VoucherStudio } from "@/components/tourism/vouchers/VoucherStudio";
 import { toast } from "sonner";
 import { getStoreSettings } from "@/services/store.functions";
 import { listTravelVouchers, createTravelVoucher, deleteTravelVoucher } from "@/services/travel-vouchers.functions";

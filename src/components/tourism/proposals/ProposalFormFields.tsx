@@ -21,7 +21,7 @@ export function Accordion({
 }) {
   const [open, setOpen] = useState(!!defaultOpen);
   return (
-    <div className="mb-4 overflow-hidden rounded-[var(--radius-card)] bg-surface  ring-1 ring-border/50 transition-all">
+    <div className="mb-4 overflow-hidden rounded-card bg-surface  ring-1 ring-border/50 transition-all">
       <Button
         variant="ghost"
         onClick={() => setOpen(!open)}
@@ -153,7 +153,7 @@ export function L({ label, children }: { label: string; children: React.ReactNod
 
 export function Card({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
   return (
-    <div className="relative mb-3 rounded-[var(--radius-card)] border border-border/60 bg-surface-alt/20 p-4">
+    <div className="relative mb-3 rounded-card border border-border/60 bg-surface-alt/20 p-4">
       <Button
         variant="ghost"
         type="button"
