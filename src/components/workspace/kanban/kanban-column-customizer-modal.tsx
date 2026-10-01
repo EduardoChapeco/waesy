@@ -201,7 +201,7 @@ export function KanbanColumnCustomizerModal({
                   value={stage.purpose}
                   onChange={(e) => handlePurposeChange(idx, e.target.value as KanbanPurpose)}
                   className="h-8 px-2 rounded-lg text-[11px] font-semibold bg-muted/50 border border-border/60 text-foreground focus:outline-none cursor-pointer"
-                  title="Propósito da etapa no fluxo de negócio"
+                  title="Propósito da Etapa"
                 >
                   {PURPOSE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>

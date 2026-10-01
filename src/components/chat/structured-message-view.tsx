@@ -92,14 +92,14 @@ function OrderTrackerBlock({ data }: { data: Record<string, any> }) {
               Pedido #{data.order_id ? String(data.order_id).slice(0, 8) : "—"}
             </p>
             {data.total_cents && (
-              <p className="text-[11px] font-mono font-semibold text-primary">
+              <p className="text-xs font-mono font-semibold text-primary">
                 {formatMoney(data.total_cents / 100)}
               </p>
             )}
           </div>
         </div>
 
-        <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider">
+        <Badge variant="outline" className="text-xs font-bold uppercase tracking-wider">
           {ORDER_STAGES[stageIndex]?.label || currentStage}
         </Badge>
       </div>
@@ -121,7 +121,7 @@ function OrderTrackerBlock({ data }: { data: Record<string, any> }) {
               />
               <span
                 className={cn(
-                  "text-[9px] font-medium truncate w-full",
+                  "text-xs font-medium truncate w-full",
                   isCurrent ? "font-bold text-foreground" : "text-muted-foreground",
                 )}
               >
@@ -133,7 +133,7 @@ function OrderTrackerBlock({ data }: { data: Record<string, any> }) {
       </div>
 
       {data.delivery_address && (
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground bg-muted/30 p-2 rounded-xl border border-border/50">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/30 p-2 rounded-xl border border-border/50">
           <Truck className="size-3.5 text-muted-foreground shrink-0" />
           <span className="truncate">{data.delivery_address}</span>
         </div>
@@ -170,7 +170,7 @@ function ProductCardBlock({
           </h4>
 
           {data.category && (
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">
               {data.category}
             </p>
           )}
@@ -185,7 +185,7 @@ function ProductCardBlock({
             </span>
 
             {data.in_stock === false && (
-              <Badge variant="secondary" className="text-[9px]">
+              <Badge variant="secondary" className="text-xs">
                 Esgotado
               </Badge>
             )}
@@ -198,7 +198,7 @@ function ProductCardBlock({
           type="button"
           variant="default"
           size="sm"
-          className="flex-1 h-11 rounded-xl text-xs font-bold cursor-pointer"
+          className="flex-1 h-11 rounded-xl text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           onClick={() =>
             onAction?.({
               id: `add-cart-${data.id || data.product_id}`,
@@ -217,9 +217,9 @@ function ProductCardBlock({
             asChild
             variant="outline"
             size="sm"
-            className="h-11 px-3 rounded-xl text-xs font-semibold cursor-pointer"
+            className="h-11 px-3 rounded-xl text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
-            <Link to="/_store/produto/$slug" params={{ slug: data.slug }} target="_blank">
+            <Link to="/produto/$slug" params={{ slug: data.slug }} target="_blank">
               <ExternalLink className="size-3.5" />
             </Link>
           </Button>
@@ -247,13 +247,13 @@ function ProposalCardBlock({
             <h4 className="text-xs font-bold text-foreground truncate">
               {data.title || "Proposta Comercial"}
             </h4>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Proposta #{data.proposal_id ? String(data.proposal_id).slice(0, 8) : "—"}
             </p>
           </div>
         </div>
 
-        <Badge variant="outline" className="text-[10px] font-bold">
+        <Badge variant="outline" className="text-xs font-bold">
           {data.status || "Ativa"}
         </Badge>
       </div>
@@ -269,14 +269,14 @@ function ProposalCardBlock({
         </div>
 
         {data.installments && (
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Condição:</span>
             <span>{data.installments}</span>
           </div>
         )}
 
         {data.valid_until && (
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-0.5">
             <span>Validade:</span>
             <span>{data.valid_until}</span>
           </div>
@@ -286,7 +286,7 @@ function ProposalCardBlock({
       <Button
         type="button"
         variant="default"
-        className="w-full h-11 rounded-xl text-xs font-bold cursor-pointer"
+        className="w-full h-11 rounded-xl text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
         onClick={() =>
           onAction?.({
             id: `accept-prop-${data.proposal_id}`,
@@ -316,7 +316,7 @@ function TableBlock({ data }: { data: Record<string, any> }) {
       <div className="overflow-x-auto no-scrollbar">
         <table className="w-full text-left text-xs">
           {headers.length > 0 && (
-            <thead className="bg-muted/30 border-b border-border/60 text-muted-foreground font-semibold text-[11px]">
+            <thead className="bg-muted/30 border-b border-border/60 text-muted-foreground font-semibold text-xs">
               <tr>
                 {headers.map((h, i) => (
                   <th key={i} className="px-3 py-2 whitespace-nowrap">
@@ -330,7 +330,7 @@ function TableBlock({ data }: { data: Record<string, any> }) {
             {rows.map((row, rowIdx) => (
               <tr key={rowIdx} className="hover:bg-muted/20">
                 {row.map((cell, cellIdx) => (
-                  <td key={cellIdx} className="px-3 py-2 text-foreground font-mono text-[11px]">
+                  <td key={cellIdx} className="px-3 py-2 text-foreground font-mono text-xs">
                     {cell}
                   </td>
                 ))}
@@ -411,7 +411,7 @@ export function StructuredMessageView({
               type="button"
               variant="outline"
               size="sm"
-              className="h-11 px-4 rounded-xl text-xs font-semibold border-border/80 hover:bg-muted cursor-pointer"
+              className="h-11 px-4 rounded-xl text-xs font-semibold border-border/80 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               onClick={() => onActionClick?.(act)}
             >
               {act.label}

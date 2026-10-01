@@ -232,7 +232,7 @@ export function ImageUpload({
  onClick={() => inputRef.current?.click()}
  disabled={isUploading}
  className="size-full rounded-2xl border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-2 text-muted-foreground group cursor-pointer"
- title="Clique para enviar imagem 1:1 ou cole com Ctrl+V"
+ title="Enviar imagem 1:1"
  >
  {isUploading ? (
  <Loader2 className="size-5 animate-spin" />

@@ -12,6 +12,8 @@ import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
 import { AdTelemetryBeacon } from "@/components/commerce/ad-telemetry-beacon";
+import { VitrineEngineSelector } from "@/components/commerce/vitrine-engine-selector";
+import type { VitrineEngineMode } from "@/types/marketplace-compliance";
 
 // BFF Functions — 100% Real no Supabase | Zero Mocks
 import { listActiveBanners, type BannerDTO } from "@/services/banner.functions";
@@ -190,6 +192,7 @@ function CommunityHomePage() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("todos");
   const [viewMode, setViewMode] = useState<ViewModeType>("feed");
+  const [engineMode, setEngineMode] = useState<VitrineEngineMode>("empresas");
 
   // Resolução dinâmica dos cards do topo onde o gestor/admin faz upload de imagens
   const displayHeroCards = useMemo(() => {
@@ -558,6 +561,21 @@ function CommunityHomePage() {
           <BannerHeroCarousel banners={banners} />
         </section>
       )}
+
+      {/* ── 2.8. SELETOR TRI-ENGINE: EMPRESAS VS MARKETPLACE PRO VS CLASSIFICADOS LOCAIS ── */}
+      <VitrineEngineSelector
+        activeMode={engineMode}
+        onModeChange={(mode) => {
+          setEngineMode(mode);
+          if (mode === "empresas") {
+            setActiveCategory("places");
+          } else if (mode === "marketplace") {
+            setActiveCategory("todos");
+          } else {
+            setActiveCategory("classificados");
+          }
+        }}
+      />
 
       {/* ── 3. BARRA DE CONTROLE CANÔNICA (DiscoveryControlBar: Busca + Categorias + Feed/Grid/List) ── */}
       <DiscoveryControlBar

@@ -209,7 +209,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("todos");
   const [viewMode, setViewMode] = useState<ViewModeType>("feed");
-  const [engineMode, setEngineMode] = useState<VitrineEngineMode>("marketplace");
+  const [engineMode, setEngineMode] = useState<VitrineEngineMode>("empresas");
 
   // Resolução dinâmica dos cards do topo onde o gestor/admin faz upload de imagens
   const displayHeroCards = useMemo(() => {
@@ -579,13 +579,15 @@ function CommunityMarketplaceView({ data }: { data: any }) {
         </section>
       )}
 
-      {/* ── 2.8. SELETOR DUAL-ENGINE: MARKETPLACE VERIFICADO VS CLASSIFICADOS LOCAIS ── */}
+      {/* ── 2.8. SELETOR TRI-ENGINE: EMPRESAS VS MARKETPLACE PRO VS CLASSIFICADOS LOCAIS ── */}
       <VitrineEngineSelector
         activeMode={engineMode}
         onModeChange={(mode) => {
           setEngineMode(mode);
-          if (mode === "marketplace") {
+          if (mode === "empresas") {
             setActiveCategory("places");
+          } else if (mode === "marketplace") {
+            setActiveCategory("todos");
           } else {
             setActiveCategory("classificados");
           }

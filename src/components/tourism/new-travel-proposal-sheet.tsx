@@ -725,12 +725,9 @@ export function NewTravelProposalSheet({
  </div>
  <div className="max-h-52 overflow-y-auto no-scrollbar p-1 divide-y divide-border/40">
  {crmCustomers.length === 0 ? (
- <div className="p-4 text-center text-xs text-muted-foreground space-y-1">
- <p>Nenhum cliente cadastrado com "{customerSearch}".</p>
- <p className="text-[11px]">
- Preencha os campos abaixo para digitar manualmente ou clique em "+ Criar Cliente Rápido".
- </p>
- </div>
+ <div className="p-4 text-center text-xs text-muted-foreground">
+							<p>Nenhum cliente com "{customerSearch}".</p>
+						</div>
  ) : (
  crmCustomers.map((c: any) => (
  <button

@@ -238,7 +238,7 @@ function AdminSimLabsPage() {
         {/* Tab 3: Nova Simulação */}
         {activeTab === "new_sim" && (
           <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6">
-            <h2 className="text-base font-bold text-foreground">Executar Nova Simulação de Mercado com IA</h2>
+            <h2 className="text-base font-bold text-foreground">Nova Simulação de Mercado</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               O esquadrão de personas sintéticas avaliará o apelo da oferta, barreiras de fricção e intenção de compra.
             </p>

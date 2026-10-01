@@ -10,11 +10,14 @@
     "start": "vite start",
     "preview": "vite preview",
     "lint": "eslint .",
+    "lint:design": "node scripts/design-lint.mjs --ratchet",
+    "lint:design:test": "node scripts/design-lint.test.mjs",
+    "lint:design:update-baseline": "node scripts/design-lint.mjs --update-baseline",
     "format": "prettier --write .",
     "typecheck": "node --max-old-space-size=6144 ./node_modules/typescript/bin/tsc --noEmit",
     "test": "vitest run",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name usewaesy --commit-dirty=true --no-bundle",
-    "check:canonical": "npm run typecheck && npm run lint"
+    "check:canonical": "npm run typecheck && npm run lint:design && npm run lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

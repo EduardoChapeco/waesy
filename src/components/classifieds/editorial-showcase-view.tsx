@@ -567,9 +567,9 @@ export function EditorialShowcaseView({
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground pb-28 font-sans select-none">
+    <div className="min-h-dvh bg-background text-foreground pb-28 font-sans select-none">
       {/* ── Top Bar Fixo de Navegação (Apenas Mobile) ── */}
-      <div className="md:hidden sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40 px-3 py-2.5 flex items-center justify-between">
+      <div className="md:hidden sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40 px-3 py-2 flex items-center justify-between">
         <button
           type="button"
           onClick={() => navigate({ to: "/classificados", search: {} as any })}
@@ -647,8 +647,8 @@ export function EditorialShowcaseView({
 
         {/* ── Banner Canônico de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
         {isOwner && (
-          <div className="mx-2 sm:mx-0 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200">
-            <div className="flex items-center gap-2.5 text-xs font-medium">
+          <div className="mx-2 sm:mx-0 flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200">
+            <div className="flex items-center gap-2 text-xs font-medium">
               <span className="flex size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
               <span>
                 <strong>Modo Proprietário:</strong> Você é o autor deste anúncio. Edições feitas no formulário são sincronizadas em tempo real.
@@ -658,7 +658,7 @@ export function EditorialShowcaseView({
               type="button"
               size="sm"
               onClick={handleEditClick}
-              className="h-7 text-xs px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold cursor-pointer shrink-0"
+              className="h-7 text-xs px-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold cursor-pointer shrink-0"
             >
               <Edit3 className="size-3.5 mr-1" /> Editar Anúncio
             </Button>
@@ -683,7 +683,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={handleEditClick}
-                className="h-8 gap-1.5 rounded-xl border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
+                className="h-8 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
               >
                 <Edit3 className="size-3.5" />
                 <span>Editar Anúncio</span>
@@ -695,7 +695,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={onOpenCompanionCard}
-                className="h-8 gap-1.5 rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer"
+                className="h-8 gap-2 rounded-lg border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer"
                 title="Guia Digital WhatsApp"
               >
                 <Smartphone className="size-3.5" />
@@ -708,7 +708,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsPromoFlyerOpen(true)}
-                className="h-8 gap-1.5 rounded-xl border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
+                className="h-8 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
                 title="Gerar Flyer 9:16"
               >
                 <Star className="size-3.5" />
@@ -720,7 +720,7 @@ export function EditorialShowcaseView({
               variant="ghost"
               size="sm"
               onClick={handleShare}
-              className="h-8 gap-1.5 rounded-xl text-muted-foreground hover:text-foreground font-semibold text-xs cursor-pointer"
+              className="h-8 gap-2 rounded-lg text-muted-foreground hover:text-foreground font-semibold text-xs cursor-pointer"
             >
               <Share2 className="size-3.5" />
               <span>Compartilhar</span>
@@ -743,7 +743,7 @@ export function EditorialShowcaseView({
             {/* ── Galeria Editorial Proporcional (Hero Natural 16:10 + Miniaturas) ── */}
             {images.length > 0 && (
               <div className="w-full space-y-2">
-                <div className="relative w-full aspect-[16/10] rounded-xl sm:rounded-2xl overflow-hidden bg-muted/30 border border-border/40 group">
+                <div className="relative w-full aspect-[16/10] rounded-lg sm:rounded-lg overflow-hidden bg-muted/30 border border-border/40 group">
                   <img
                     src={images[activeImageIndex] || images[0]}
                     alt={classified.title}
@@ -751,14 +751,14 @@ export function EditorialShowcaseView({
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
                   />
                   <div className="absolute top-3 right-3 flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-[11px] font-mono font-medium">
+                    <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-mono font-medium">
                       {images.length} {images.length === 1 ? "foto" : "fotos"}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
-                    className="absolute bottom-3.5 right-3.5 px-3 py-1.5 rounded-xl bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 flex items-center gap-1.5 transition-all"
+                    className="absolute bottom-3.5 right-3.5 px-3 py-2 rounded-lg bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 flex items-center gap-2 transition-colors"
                   >
                     <Maximize2 className="size-3.5" />
                     <span>Expandir</span>
@@ -767,7 +767,7 @@ export function EditorialShowcaseView({
 
                 {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal (Até 10 fotos no Topo sem espaço vazio) */}
                 {images.length > 1 && (
-                  <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full">
+                  <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full">
                     {images.slice(0, images.length > 10 ? 9 : 10).map((img, idx) => {
                       const isActive = activeImageIndex === idx;
                       return (
@@ -776,7 +776,7 @@ export function EditorialShowcaseView({
                           type="button"
                           onClick={() => setActiveImageIndex(idx)}
                           className={cn(
-                            "relative aspect-square h-14 sm:h-16 rounded-xl overflow-hidden border bg-muted shrink-0 flex-1 min-w-[52px] max-w-[76px] group cursor-pointer transition-all",
+                            "relative aspect-square h-14 sm:h-16 rounded-lg overflow-hidden border bg-muted shrink-0 flex-1 min-w-[52px] max-w-[76px] group cursor-pointer transition-colors",
                             isActive
                               ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
                               : "border-border/50 hover:border-primary/50 opacity-80 hover:opacity-100"
@@ -791,10 +791,10 @@ export function EditorialShowcaseView({
                       <button
                         type="button"
                         onClick={() => setActiveTab("grid")}
-                        className="aspect-square h-14 sm:h-16 rounded-xl border border-dashed border-border/70 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary text-xs font-bold shrink-0 flex-1 min-w-[52px] max-w-[76px] transition-colors"
+                        className="aspect-square h-14 sm:h-16 rounded-lg border border-dashed border-border/70 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary text-xs font-bold shrink-0 flex-1 min-w-[52px] max-w-[76px] transition-colors"
                       >
                         <span>+{images.length - 9}</span>
-                        <span className="text-[10px] font-normal">fotos</span>
+                        <span className="text-xs font-normal">fotos</span>
                       </button>
                     )}
                   </div>
@@ -811,7 +811,7 @@ export function EditorialShowcaseView({
           <div className="lg:hidden space-y-1">
             {isTravel ? (
               departureCity ? (
-                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex-wrap">
+                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-wrap">
                   <span className="inline-flex items-center gap-1 text-primary">
                     <Navigation className="size-3 shrink-0" />
                     <span>Saída:</span>
@@ -830,7 +830,7 @@ export function EditorialShowcaseView({
               ) : null
             ) : (
               !hideLocation && classified.location_name && (
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
                   <MapPin className="size-3 text-primary shrink-0" />
                   <span>{classified.location_name}</span>
                 </p>
@@ -843,11 +843,11 @@ export function EditorialShowcaseView({
 
           {/* Bullets de Diferenciais Contextuais — Visíveis em Mobile e Desktop */}
           {bioBullets.length > 0 ? (
-            <div className="space-y-1.5 pt-0.5">
-              <p className="hidden lg:block text-[11px] uppercase tracking-wider text-muted-foreground font-bold pb-0.5">
+            <div className="space-y-2 pt-0.5">
+              <p className="hidden lg:block text-xs uppercase tracking-wider text-muted-foreground font-bold pb-0.5">
                 Destaques Inclusos
               </p>
-              <ul className="space-y-1.5">
+              <ul className="space-y-2">
                 {bioBullets.map((bullet, idx) => (
                   <li key={idx} className="text-xs text-foreground/90 flex items-start gap-2 font-medium">
                     <span className="leading-relaxed">{bullet}</span>
@@ -865,7 +865,7 @@ export function EditorialShowcaseView({
         </div>
 
         {/* ── Card do Anunciante / Loja Parceira (Visível no Mobile) ── */}
-        <div className="lg:hidden p-3.5 rounded-2xl bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40">
+        <div className="lg:hidden p-4 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40">
           <div className="flex items-center gap-3 min-w-0">
             <div className="size-11 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
               {advertiserAvatar ? (
@@ -877,7 +877,7 @@ export function EditorialShowcaseView({
               )}
             </div>
             <div className="min-w-0 flex flex-col">
-              <div className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
                 <span className="font-extrabold text-xs sm:text-sm text-foreground truncate">
                   {advertiserName}
                 </span>
@@ -885,22 +885,22 @@ export function EditorialShowcaseView({
                   <CheckCircle2 className="size-3.5 text-blue-500" />
                 </span>
               </div>
-              <span className="text-[11px] text-muted-foreground truncate">
+              <span className="text-xs text-muted-foreground truncate">
                 {isTravel ? (isCompany ? "Agência / Operadora Oficial" : "Organizador da Excursão") : (advertiserCity ? `${advertiserCity} • ` : "") + (isCompany ? "Loja Oficial" : "Anunciante Verificado")}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {storeProfileUrl ? (
-              <Button asChild size="sm" variant="outline" className="h-8 px-3 rounded-xl text-xs font-bold border-border/80 hover:bg-background">
+              <Button asChild size="sm" variant="outline" className="h-8 px-3 rounded-lg text-xs font-bold border-border/80 hover:bg-background">
                 <Link to={storeProfileUrl}>
                   <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
                   <ChevronRight className="size-3 ml-0.5" />
                 </Link>
               </Button>
             ) : (
-              <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
+              <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
                 Verificado
               </Badge>
             )}
@@ -909,22 +909,22 @@ export function EditorialShowcaseView({
 
         {/* ── Destaques Visuais ── */}
         {storyHighlights.length > 0 && (
-          <div className="flex items-center gap-3.5 overflow-x-auto no-scrollbar py-2">
+          <div className="flex items-center gap-4 overflow-x-auto no-scrollbar py-2">
             {storyHighlights.map((hl: any, index: number) => (
               <button
                 key={hl.id || index}
                 type="button"
                 onClick={() => setActiveStoryModal(hl)}
-                className="flex flex-col items-center gap-1.5 shrink-0 group active:scale-95 transition-all"
+                className="flex flex-col items-center gap-2 shrink-0 group active:scale-95 transition-colors"
               >
-                <div className="size-15 sm:size-16 rounded-full p-[2px] bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-all">
+                <div className="size-15 sm:size-16 rounded-full p-[2px] bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-colors">
                   <img
                     src={hl.image || images[0]}
                     alt={hl.title}
                     className="size-full rounded-full object-cover border border-background"
                   />
                 </div>
-                <span className="text-[11px] font-medium text-foreground tracking-tight max-w-[64px] truncate">
+                <span className="text-xs font-medium text-foreground tracking-tight max-w-[64px] truncate">
                   {hl.title}
                 </span>
               </button>
@@ -939,7 +939,7 @@ export function EditorialShowcaseView({
               type="button"
               onClick={() => setActiveTab("grid")}
               className={cn(
-                "py-2.5 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
+                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
                 activeTab === "grid"
                   ? "border-foreground text-foreground font-bold"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -954,7 +954,7 @@ export function EditorialShowcaseView({
               type="button"
               onClick={() => setActiveTab("resort")}
               className={cn(
-                "py-2.5 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
+                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
                 activeTab === "resort"
                   ? "border-foreground text-foreground font-bold"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -971,7 +971,7 @@ export function EditorialShowcaseView({
               type="button"
               onClick={() => setActiveTab("itinerary")}
               className={cn(
-                "py-2.5 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
+                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
                 activeTab === "itinerary"
                   ? "border-foreground text-foreground font-bold"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -988,7 +988,7 @@ export function EditorialShowcaseView({
               type="button"
               onClick={() => setActiveTab("explore")}
               className={cn(
-                "py-2.5 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
+                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
                 activeTab === "explore"
                   ? "border-foreground text-foreground font-bold"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -1006,7 +1006,7 @@ export function EditorialShowcaseView({
           {activeTab === "grid" && (
             <div className="pt-3">
               {feedImages.length > 0 ? (
-                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 rounded-2xl overflow-hidden">
+                <div className="grid grid-cols-3 gap-2 sm:gap-2 rounded-lg overflow-hidden">
                   {feedImages.slice(0, 12).map((item, i) => {
                     const rawUrl = typeof item === "string" ? item : (item?.url || item?.src || "");
                     const isVideo = /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(rawUrl) || item?.type === "video";
@@ -1015,7 +1015,7 @@ export function EditorialShowcaseView({
                     return (
                       <div
                         key={i}
-                        className="relative aspect-square bg-muted/60 rounded-xl overflow-hidden group cursor-pointer border border-border/30"
+                        className="relative aspect-square bg-muted/60 rounded-lg overflow-hidden group cursor-pointer border border-border/30"
                         onClick={() => {
                           if (isVideo) {
                             setSelectedVideoUrl(rawUrl);
@@ -1028,7 +1028,7 @@ export function EditorialShowcaseView({
                           <div className="size-full relative flex items-center justify-center bg-black/90">
                             <video
                               src={rawUrl}
-                              className="size-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 pointer-events-none"
+                              className="size-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-colors duration-300 pointer-events-none"
                               muted
                               playsInline
                               preload="metadata"
@@ -1038,7 +1038,7 @@ export function EditorialShowcaseView({
                                 <Play className="size-4 fill-white text-white ml-0.5" />
                               </div>
                             </div>
-                            <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/70 text-[9px] font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
+                            <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-black/70 text-[9px] font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
                               Vídeo
                             </span>
                           </div>
@@ -1051,7 +1051,7 @@ export function EditorialShowcaseView({
                               loading="lazy"
                             />
                             {isGif && (
-                              <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-foreground/80 text-background text-[9px] font-bold uppercase tracking-wider backdrop-blur-xs font-mono">
+                              <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-foreground/80 text-background text-[9px] font-bold uppercase tracking-wider backdrop-blur-xs font-mono">
                                 GIF
                               </span>
                             )}
@@ -1065,12 +1065,12 @@ export function EditorialShowcaseView({
                   })}
                 </div>
               ) : (
-                <div className="py-10 px-4 rounded-2xl bg-muted/20 border border-border/40 text-center space-y-2">
-                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                <div className="py-10 px-4 rounded-lg bg-muted/20 border border-border/40 text-center space-y-2">
+                  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
                     <Sparkles className="size-5" />
                   </div>
                   <h4 className="text-xs font-bold text-foreground">Carrossel de Destaques</h4>
-                  <p className="text-[11px] text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
                     Todas as fotos e detalhes visuais principais deste anúncio estão disponíveis no carrossel de topo.
                   </p>
                 </div>
@@ -1082,12 +1082,12 @@ export function EditorialShowcaseView({
           {activeTab === "resort" && (
             <div className="pt-4 space-y-4">
               {/* Card de Preço & Condição Principal */}
-              <div className="p-4 rounded-2xl bg-muted/40 border border-border/40 space-y-2">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
+                  <span className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
                     Condição Comercial
                   </span>
-                  <Badge className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold">
+                  <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold">
                     {pricingType === "starting_at" ? "A partir de" : pricingType === "on_quote" ? "Sob Cotação" : "Tarifa Direta"}
                   </Badge>
                 </div>
@@ -1128,8 +1128,8 @@ export function EditorialShowcaseView({
 
                 {/* Disclaimer legal em destaque */}
                 {disclaimerText && (
-                  <p className="text-[11px] text-muted-foreground flex items-start gap-1 pt-0.5">
-                    <Info className="size-3 text-primary shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground flex items-start gap-1 pt-0.5">
+                    <Info className="size-3 text-primary shrink-0 mt-1" />
                     <span>{disclaimerText}</span>
                   </p>
                 )}
@@ -1139,20 +1139,20 @@ export function EditorialShowcaseView({
 
               {/* Pacote de Viagem & Turismo (Paridade CMS ↔ Vitrine - Regra 19) */}
               {isTravel && (
-                <div className="p-4 sm:p-5 rounded-2xl bg-muted/20 border border-border/30 space-y-3.5 text-xs">
+                <div className="p-4 sm:p-5 rounded-lg bg-muted/20 border border-border/30 space-y-3.5 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
                       <Compass className="size-3.5 text-primary" />
                       <span>Diferenciais e Inclusões do Pacote</span>
                     </h4>
                     {attrs.duration_text && (
-                      <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
+                      <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30">
                         {attrs.duration_text}
                       </Badge>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5 text-muted-foreground">
+                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
                     <div>Regime: <strong className="text-foreground">{attrs.meal_plan || "Consulte"}</strong></div>
                     <div>Transporte: <strong className="text-foreground">{transportType === "bus" ? "Ônibus Leito / Terrestre" : transportType === "cruise" ? "Cruzeiro Marítimo" : "Aéreo"}</strong></div>
                     <div>Saída: <strong className="text-foreground">{attrs.departure_date ? formatDate(attrs.departure_date) : attrs.dates_text || "A combinar"}</strong></div>
@@ -1169,8 +1169,8 @@ export function EditorialShowcaseView({
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {(bioBullets.length > 0 ? bioBullets : attrs.inclusions).map((item: string, i: number) => (
-                          <div key={i} className="flex items-start gap-2 p-2 rounded-xl bg-background/60 border border-border/30">
-                            <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                          <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-background/60 border border-border/30">
+                            <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
                             <span className="text-xs text-foreground/90 font-medium leading-tight">{item}</span>
                           </div>
                         ))}
@@ -1180,13 +1180,13 @@ export function EditorialShowcaseView({
 
                   {/* Exclusões (se cadastradas) */}
                   {Array.isArray(attrs.exclusions) && attrs.exclusions.length > 0 && (
-                    <div className="pt-2 border-t border-border/30 space-y-1.5">
-                      <span className="font-bold text-muted-foreground block text-[11px] uppercase tracking-wider">
+                    <div className="pt-2 border-t border-border/30 space-y-2">
+                      <span className="font-bold text-muted-foreground block text-xs uppercase tracking-wider">
                         Não incluso:
                       </span>
                       <ul className="space-y-1">
                         {attrs.exclusions.map((item: string, i: number) => (
-                          <li key={i} className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <li key={i} className="text-xs text-muted-foreground flex items-center gap-2">
                             <X className="size-3 text-destructive shrink-0" />
                             <span>{item}</span>
                           </li>
@@ -1198,11 +1198,11 @@ export function EditorialShowcaseView({
               )}
 
               {nicheId.includes("hosped") && (
-                <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px]">Hospedagem e Estadia</h4>
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs">Hospedagem e Estadia</h4>
                     {attrs.property_type && (
-                      <Badge variant="outline" className="text-[10px] font-semibold">{attrs.property_type}</Badge>
+                      <Badge variant="outline" className="text-xs font-semibold">{attrs.property_type}</Badge>
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-muted-foreground">
@@ -1215,7 +1215,7 @@ export function EditorialShowcaseView({
                     ) : null}
                   </div>
                   {attrs.house_rules && (
-                    <div className="pt-2 border-t border-border/30 text-[11px]">
+                    <div className="pt-2 border-t border-border/30 text-xs">
                       <span className="font-bold text-foreground block mb-0.5">Regras da Hospedagem:</span>
                       <p className="text-muted-foreground whitespace-pre-line leading-relaxed">{attrs.house_rules}</p>
                     </div>
@@ -1224,11 +1224,11 @@ export function EditorialShowcaseView({
               )}
 
               {nicheId.includes("imov") && (
-                <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px]">Imóvel</h4>
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs">Imóvel</h4>
                     {attrs.property_type && (
-                      <Badge variant="outline" className="text-[10px] font-semibold">{attrs.property_type}</Badge>
+                      <Badge variant="outline" className="text-xs font-semibold">{attrs.property_type}</Badge>
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-muted-foreground">
@@ -1243,11 +1243,11 @@ export function EditorialShowcaseView({
               )}
 
               {nicheId.includes("veic") && (
-                <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px]">Veículo</h4>
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs">Veículo</h4>
                     {attrs.version && (
-                      <Badge variant="outline" className="text-[10px] font-semibold">{attrs.version}</Badge>
+                      <Badge variant="outline" className="text-xs font-semibold">{attrs.version}</Badge>
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-muted-foreground">
@@ -1265,14 +1265,14 @@ export function EditorialShowcaseView({
 
               {/* Equipamentos & Locação */}
               {(nicheId.includes("equip") || classified.category === "equipment") && (
-                <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
                       <Wrench className="size-3.5 text-primary" />
                       <span>Equipamento e Locação</span>
                     </h4>
                     {attrs.condition && (
-                      <Badge variant="outline" className="text-[10px] font-semibold capitalize">
+                      <Badge variant="outline" className="text-xs font-semibold capitalize">
                         {attrs.condition.replace(/_/g, " ")}
                       </Badge>
                     )}
@@ -1285,10 +1285,10 @@ export function EditorialShowcaseView({
                   </div>
                   {Array.isArray(attrs.accessories) && attrs.accessories.length > 0 && (
                     <div className="pt-2 border-t border-border/30">
-                      <span className="font-bold text-foreground block mb-1 text-[11px]">Itens & Acessórios Inclusos:</span>
+                      <span className="font-bold text-foreground block mb-1 text-xs">Itens & Acessórios Inclusos:</span>
                       <div className="flex flex-wrap gap-1">
                         {attrs.accessories.map((acc: string, i: number) => (
-                          <Badge key={i} variant="secondary" className="text-[10px] font-medium px-2 py-0.5 gap-1 flex items-center">
+                          <Badge key={i} variant="secondary" className="text-xs font-medium px-2 py-1 gap-1 flex items-center">
                             <Check className="size-2.5 text-primary shrink-0" />
                             <span>{acc}</span>
                           </Badge>
@@ -1301,13 +1301,13 @@ export function EditorialShowcaseView({
 
               {/* Produto Digital & Downloads */}
               {(nicheId.includes("digit") || attrs.is_digital || attrs.digital_file_url) && (
-                <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-3 text-xs">
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-3 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
                       <FileArchive className="size-3.5 text-primary" />
                       <span>Produto Digital e Download</span>
                     </h4>
-                    <Badge variant="outline" className="text-[10px] font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+                    <Badge variant="outline" className="text-xs font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
                       Acesso Instantâneo
                     </Badge>
                   </div>
@@ -1323,7 +1323,7 @@ export function EditorialShowcaseView({
                         href={attrs.digital_preview_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline"
+                        className="inline-flex items-center gap-2 text-xs text-primary font-bold hover:underline"
                       >
                         <ExternalLink className="size-3.5" />
                         <span>Ver Demonstração / Amostra Gratuita</span>
@@ -1331,12 +1331,12 @@ export function EditorialShowcaseView({
                     </div>
                   )}
                   <div className="pt-2 border-t border-border/30 flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-muted-foreground">Arquivo criptografado e verificado</span>
+                    <span className="text-xs text-muted-foreground">Arquivo criptografado e verificado</span>
                     <Button
                       onClick={handleDownloadDigitalFile}
                       disabled={isDownloadingDigital}
                       size="sm"
-                      className="h-8 px-3 rounded-lg font-bold text-xs gap-1.5 bg-primary text-primary-foreground cursor-pointer"
+                      className="h-8 px-3 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer"
                     >
                       {isDownloadingDigital ? (
                         <>
@@ -1356,13 +1356,13 @@ export function EditorialShowcaseView({
 
               {/* Serviço Profissional */}
               {(nicheId.includes("serv") || classified.category === "service") && (
-                <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
                       <Wrench className="size-3.5 text-primary" />
                       <span>Serviço Profissional e Atendimento</span>
                     </h4>
-                    <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
+                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30">
                       Agendamento Disponível
                     </Badge>
                   </div>
@@ -1383,13 +1383,13 @@ export function EditorialShowcaseView({
 
               {/* Vaga de Emprego & Oportunidade */}
               {(nicheId.includes("vaga") || classified.category === "job") && (
-                <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
                       <Briefcase className="size-3.5 text-primary" />
                       <span>Requisitos e Detalhes da Vaga</span>
                     </h4>
-                    <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
+                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30">
                       {attrs.role || classified.title}
                     </Badge>
                   </div>
@@ -1410,14 +1410,14 @@ export function EditorialShowcaseView({
 
               {/* Desapego & Bens Físicos */}
               {isGoods && (
-                <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
                       <Tag className="size-3.5 text-primary" />
                       <span>Ficha do Produto Físico</span>
                     </h4>
                     {attrs.condition && (
-                      <Badge variant="outline" className="text-[10px] font-semibold capitalize">
+                      <Badge variant="outline" className="text-xs font-semibold capitalize">
                         {attrs.condition.replace(/_/g, " ")}
                       </Badge>
                     )}
@@ -1443,17 +1443,17 @@ export function EditorialShowcaseView({
 
               {/* Doação Solidária */}
               {(nicheId.includes("doacao") || attrs.is_donation) && (
-                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-2 text-xs">
+                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <h4 className="font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider text-xs flex items-center gap-2">
                       <Star className="size-3.5 text-emerald-600" />
                       <span>Doação Solidária Comunitária</span>
                     </h4>
-                    <Badge className="bg-emerald-600 text-white font-bold text-[10px]">
+                    <Badge className="bg-emerald-600 text-white font-bold text-xs">
                       Gratuito R$ 0,00
                     </Badge>
                   </div>
-                  <p className="text-emerald-700/90 dark:text-emerald-300/80 leading-relaxed text-[11px]">
+                  <p className="text-emerald-700/90 dark:text-emerald-300/80 leading-relaxed text-xs">
                     Este item está sendo doado gratuitamente para a comunidade. Combine o local e horário de retirada diretamente com o doador via chat ou WhatsApp.
                   </p>
                   {attrs.condition && (
@@ -1466,13 +1466,13 @@ export function EditorialShowcaseView({
 
               {/* Assinatura & Recorrência */}
               {(nicheId.includes("assinatura") || classified.pricing_model === "recurring") && (
-                <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
                       <Award className="size-3.5 text-primary" />
                       <span>Plano e Assinatura Recorrente</span>
                     </h4>
-                    <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30 capitalize">
+                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 capitalize">
                       {classified.billing_cycle === "yearly" ? "Cobrança Anual" : classified.billing_cycle === "quarterly" ? "Cobrança Trimestral" : classified.billing_cycle === "semiannual" ? "Cobrança Semestral" : "Cobrança Mensal"}
                     </Badge>
                   </div>
@@ -1487,7 +1487,7 @@ export function EditorialShowcaseView({
 
               {/* Descrição Completa */}
               {classified.content && (
-                <div className="space-y-1.5 text-xs text-foreground/80 leading-relaxed bg-muted/20 p-4 rounded-2xl border border-border/30">
+                <div className="space-y-2 text-xs text-foreground/80 leading-relaxed bg-muted/20 p-4 rounded-lg border border-border/30">
                   <h3 className="font-bold text-foreground text-sm">Sobre</h3>
                   <p className="whitespace-pre-line">{classified.content}</p>
                 </div>
@@ -1505,13 +1505,13 @@ export function EditorialShowcaseView({
                       <div className="absolute -left-7 top-0.5 size-7 rounded-full bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground">
                         {item.day_number || idx + 1}
                       </div>
-                      <div className="space-y-2.5">
+                      <div className="space-y-2">
                         <div className="flex items-center justify-between gap-2">
                           <h4 className="font-bold text-sm sm:text-base text-foreground tracking-tight">
                             {item.title || `Dia ${item.day_number || idx + 1}`}
                           </h4>
                           {item.date && (
-                            <span className="text-xs font-mono font-medium text-muted-foreground shrink-0 bg-muted/60 px-2 py-0.5 rounded-md">
+                            <span className="text-xs font-mono font-medium text-muted-foreground shrink-0 bg-muted/60 px-2 py-1 rounded-md">
                               {item.date}
                             </span>
                           )}
@@ -1525,7 +1525,7 @@ export function EditorialShowcaseView({
                           return (
                             <div className={cn("gap-2 pt-0.5", imgs.length === 1 ? "block" : "grid grid-cols-2")}>
                               {imgs.map((src: string, imgIdx: number) => (
-                                <img key={imgIdx} src={src} alt={`${item.title} - foto ${imgIdx + 1}`} className="w-full h-32 sm:h-36 object-cover rounded-xl border border-border/40" loading="lazy" />
+                                <img key={imgIdx} src={src} alt={`${item.title} - foto ${imgIdx + 1}`} className="w-full h-32 sm:h-36 object-cover rounded-lg border border-border/40" loading="lazy" />
                               ))}
                             </div>
                           );
@@ -1535,7 +1535,7 @@ export function EditorialShowcaseView({
                         )}
                         {/* Refeições Incluídas */}
                         {Array.isArray(item.meals_included) && item.meals_included.length > 0 && (
-                          <div className="flex gap-1.5 flex-wrap pt-0.5">
+                          <div className="flex gap-2 flex-wrap pt-0.5">
                             {item.meals_included.map((m: string) => (
                               <span key={m} className="text-xs px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
                                 {m === "breakfast" ? "Café da Manhã" : m === "lunch" ? "Almoço" : "Jantar"}
@@ -1545,23 +1545,23 @@ export function EditorialShowcaseView({
                         )}
                         {/* Hotel/Pousada */}
                         {item.hotel_name && (
-                          <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-1.5">
+                          <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-2">
                             <Bed className="size-3.5 text-muted-foreground shrink-0" />
                             <span className="font-semibold text-foreground">{item.hotel_name}</span>
                           </p>
                         )}
                         {/* Transporte do Dia */}
                         {item.transport && (
-                          <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-1.5">
+                          <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-2">
                             <Bus className="size-3.5 text-muted-foreground shrink-0" />
                             <span className="font-medium">{item.transport}</span>
                           </p>
                         )}
                         {/* Atividades / Tags */}
                         {Array.isArray(item.activities) && item.activities.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 pt-0.5">
+                          <div className="flex flex-wrap gap-2 pt-0.5">
                             {item.activities.map((act: string, ai: number) => (
-                              <span key={ai} className="text-xs px-2.5 py-0.5 rounded-lg bg-muted border border-border/50 text-foreground/80 font-medium">
+                              <span key={ai} className="text-xs px-2.5 py-1 rounded-lg bg-muted border border-border/50 text-foreground/80 font-medium">
                                 {act}
                               </span>
                             ))}
@@ -1576,14 +1576,14 @@ export function EditorialShowcaseView({
                 <div className="space-y-3">
                   {/* Benefícios (Vagas) */}
                   {Array.isArray(attrs.benefits) && attrs.benefits.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
-                      <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
+                      <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-2">
                         <Award className="size-3.5 text-primary" />
                         <span>Benefícios e Vantagens</span>
                       </h4>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {attrs.benefits.map((b: string, i: number) => (
-                          <Badge key={i} variant="secondary" className="text-xs font-semibold px-2.5 py-1 rounded-lg gap-1.5 bg-primary/10 text-primary border-primary/20 flex items-center">
+                          <Badge key={i} variant="secondary" className="text-xs font-semibold px-2.5 py-1 rounded-lg gap-2 bg-primary/10 text-primary border-primary/20 flex items-center">
                             <Check className="size-3 text-primary shrink-0" />
                             <span>{b}</span>
                           </Badge>
@@ -1594,12 +1594,12 @@ export function EditorialShowcaseView({
 
                   {/* Habilidades & Competências (Vagas) */}
                   {Array.isArray(attrs.skills) && attrs.skills.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
-                      <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
+                      <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-2">
                         <GraduationCap className="size-3.5 text-primary" />
                         <span>Competências e Habilidades Desejadas</span>
                       </h4>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {attrs.skills.map((s: string, i: number) => (
                           <Badge key={i} variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg">
                             {s}
@@ -1611,12 +1611,12 @@ export function EditorialShowcaseView({
 
                   {/* Dias de Atendimento (Serviço) */}
                   {Array.isArray(attrs.available_weekdays) && attrs.available_weekdays.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
-                      <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
+                      <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-2">
                         <Calendar className="size-3.5 text-primary" />
                         <span>Dias da Semana com Atendimento</span>
                       </h4>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {[
                           { id: "seg", label: "Segunda" },
                           { id: "ter", label: "Terça" },
@@ -1646,12 +1646,12 @@ export function EditorialShowcaseView({
                   {/* Recursos Inclusos na Assinatura */}
                   {Array.isArray(classified.recurring_features || attrs.recurring_features) &&
                     (classified.recurring_features || attrs.recurring_features).length > 0 && (
-                      <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
-                        <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
+                        <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-2">
                           <Award className="size-3.5 text-primary" />
                           <span>Vantagens do Plano</span>
                         </h4>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           {(classified.recurring_features || attrs.recurring_features).map((feat: string, i: number) => (
                             <p key={i} className="text-xs text-foreground font-medium flex items-center gap-2">
                               <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
@@ -1664,9 +1664,9 @@ export function EditorialShowcaseView({
 
                   {/* Opcionais & Diferenciais (Veículo ou Desapego) */}
                   {Array.isArray(attrs.features) && attrs.features.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
+                    <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Opcionais e Diferenciais</h4>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {attrs.features.map((f: string, i: number) => (
                           <Badge key={i} variant="secondary" className="text-xs font-medium bg-muted">
                             {f}
@@ -1678,9 +1678,9 @@ export function EditorialShowcaseView({
 
                   {/* Procedência (Veículo) */}
                   {Array.isArray(attrs.provenance) && attrs.provenance.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
+                    <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Procedência e Documentação</h4>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {attrs.provenance.map((p: string, i: number) => (
                           <Badge key={i} variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20 gap-1 flex items-center">
                             <Check className="size-3 text-primary shrink-0" />
@@ -1693,9 +1693,9 @@ export function EditorialShowcaseView({
 
                   {/* Comodidades (Hospedagem / Imóvel) */}
                   {Array.isArray(attrs.amenities) && attrs.amenities.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
+                    <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Comodidades</h4>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {attrs.amenities.map((a: string, i: number) => (
                           <Badge key={i} variant="outline" className="text-xs font-medium bg-background gap-1 flex items-center">
                             <Check className="size-3 text-primary shrink-0" />
@@ -1708,11 +1708,11 @@ export function EditorialShowcaseView({
 
                   {/* Destaques Livres (Bio Bullets) */}
                   {bioBullets.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
+                    <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Destaques</h4>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {bioBullets.map((b, i) => (
-                          <p key={i} className="text-xs text-foreground font-medium flex items-center gap-1.5">
+                          <p key={i} className="text-xs text-foreground font-medium flex items-center gap-2">
                             <span className="size-1.5 rounded-full bg-primary shrink-0" />
                             <span>{b}</span>
                           </p>
@@ -1742,68 +1742,68 @@ export function EditorialShowcaseView({
             <div className="pt-4 space-y-4">
               {/* Card Específico de Retirada Solidária (Doação) */}
               {(nicheId.includes("doacao") || attrs.is_donation) ? (
-                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-3">
+                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/25 space-y-3">
                   <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-xs uppercase tracking-wider">
                     <HeartHandshake className="size-4 text-emerald-600" />
                     <span>Condições de Retirada Solidária</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    <div className="p-3 rounded-xl bg-background border border-border/50 space-y-1">
+                    <div className="p-3 rounded-lg bg-background border border-border/50 space-y-1">
                       <p className="font-bold text-foreground">Valor: R$ 0,00 (Gratuito)</p>
-                      <p className="text-[11px] text-muted-foreground">Proibida a cobrança de qualquer valor pelo item anunciado nesta modalidade.</p>
+                      <p className="text-xs text-muted-foreground">Proibida a cobrança de qualquer valor pelo item anunciado nesta modalidade.</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-background border border-border/50 space-y-1">
+                    <div className="p-3 rounded-lg bg-background border border-border/50 space-y-1">
                       <p className="font-bold text-foreground">Retirada e Ponto de Encontro</p>
-                      <p className="text-[11px] text-muted-foreground">O endereço ou local público seguro é combinado diretamente com o doador via chat ou WhatsApp.</p>
+                      <p className="text-xs text-muted-foreground">O endereço ou local público seguro é combinado diretamente com o doador via chat ou WhatsApp.</p>
                     </div>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed pt-1">
+                  <p className="text-xs text-muted-foreground leading-relaxed pt-1">
                     Iniciativa solidária para incentivar a sustentabilidade, doação comunitária e economia circular.
                   </p>
                 </div>
               ) : (nicheId.includes("vaga") || classified.category === "job") ? (
-                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-3">
                   <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                     <Briefcase className="size-4 text-primary" />
                     <span>Processo Seletivo e Candidatura</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-center">
-                    <div className="p-3 rounded-xl bg-background border border-border/50 space-y-1">
-                      <span className="text-[10px] text-muted-foreground block">Inscrições</span>
+                    <div className="p-3 rounded-lg bg-background border border-border/50 space-y-1">
+                      <span className="text-xs text-muted-foreground block">Inscrições</span>
                       <strong className="text-xs font-bold text-emerald-600 block">Abertas</strong>
                     </div>
-                    <div className="p-3 rounded-xl bg-background border border-border/50 space-y-1">
-                      <span className="text-[10px] text-muted-foreground block">Triagem Média</span>
+                    <div className="p-3 rounded-lg bg-background border border-border/50 space-y-1">
+                      <span className="text-xs text-muted-foreground block">Triagem Média</span>
                       <strong className="text-xs font-bold text-foreground block">Em até 48h</strong>
                     </div>
-                    <div className="p-3 rounded-xl bg-background border border-border/50 space-y-1">
-                      <span className="text-[10px] text-muted-foreground block">Canal Oficial</span>
+                    <div className="p-3 rounded-lg bg-background border border-border/50 space-y-1">
+                      <span className="text-xs text-muted-foreground block">Canal Oficial</span>
                       <strong className="text-xs font-bold text-primary block">Waesy / WhatsApp</strong>
                     </div>
                   </div>
                   {attrs.work_schedule && (
-                    <div className="p-3 rounded-xl bg-background border border-border/50 text-xs flex items-center justify-between">
+                    <div className="p-3 rounded-lg bg-background border border-border/50 text-xs flex items-center justify-between">
                       <span className="text-muted-foreground">Escala / Turno:</span>
                       <strong className="text-foreground">{attrs.work_schedule}</strong>
                     </div>
                   )}
                 </div>
               ) : (nicheId.includes("assinatura") || classified.pricing_model === "recurring") ? (
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 space-y-3">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-3">
                   <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                     <CreditCard className="size-4 text-primary" />
                     <span>Condições do Plano &amp; Assinatura</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    <div className="p-3 rounded-xl bg-background border border-border/50 space-y-1">
+                    <div className="p-3 rounded-lg bg-background border border-border/50 space-y-1">
                       <p className="font-bold text-foreground">Cobrança Periódica</p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {classified.billing_cycle === "yearly" ? "Renovação Anual" : classified.billing_cycle === "quarterly" ? "Renovação Trimestral" : classified.billing_cycle === "semiannual" ? "Renovação Semestral" : "Renovação Mensal"}
                       </p>
                     </div>
-                    <div className="p-3 rounded-xl bg-background border border-border/50 space-y-1">
+                    <div className="p-3 rounded-lg bg-background border border-border/50 space-y-1">
                       <p className="font-bold text-foreground">Cancelamento Descomplicado</p>
-                      <p className="text-[11px] text-muted-foreground">Sem fidelidade obrigatória ou multas abusivas.</p>
+                      <p className="text-xs text-muted-foreground">Sem fidelidade obrigatória ou multas abusivas.</p>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground">
@@ -1813,7 +1813,7 @@ export function EditorialShowcaseView({
                 </div>
               ) : (
                 /* Card Completo de Regras de Pagamento Comercial */
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 space-y-3">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-3">
                   <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                     <CreditCard className="size-4 text-primary" />
                     <span>Formas de Pagamento e Condições</span>
@@ -1821,13 +1821,13 @@ export function EditorialShowcaseView({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
                     {acceptsPix && (
-                      <div className="p-2.5 rounded-xl bg-background border border-border/50 flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-background border border-border/50 flex items-center gap-2">
                         <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
                           <QrCode className="size-4.5" />
                         </div>
                         <div>
                           <p className="font-bold text-foreground">PIX à Vista</p>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {pixDiscountPercent > 0 ? `${pixDiscountPercent}% de desconto imediato` : "Aprovação instantânea"}
                           </p>
                         </div>
@@ -1835,13 +1835,13 @@ export function EditorialShowcaseView({
                     )}
 
                     {acceptsCard && (
-                      <div className="p-2.5 rounded-xl bg-background border border-border/50 flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-background border border-border/50 flex items-center gap-2">
                         <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                           <CreditCard className="size-4.5" />
                         </div>
                         <div>
                           <p className="font-bold text-foreground">Cartão de Crédito</p>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Em até <strong>{maxInstallments}x</strong> {installmentCents > 0 ? `de ${formatMoney(installmentCents)}` : ""} {cardInterestFree ? "(sem juros)" : ""}
                           </p>
                         </div>
@@ -1849,13 +1849,13 @@ export function EditorialShowcaseView({
                     )}
 
                     {acceptsBoleto && (
-                      <div className="p-2.5 rounded-xl bg-background border border-border/50 flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-background border border-border/50 flex items-center gap-2">
                         <div className="size-8 rounded-lg bg-muted text-foreground flex items-center justify-center shrink-0">
                           <Receipt className="size-4.5 text-muted-foreground" />
                         </div>
                         <div>
                           <p className="font-bold text-foreground">Boleto à Vista</p>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Vencimento em {boletoDueDays} dias úteis
                           </p>
                         </div>
@@ -1863,13 +1863,13 @@ export function EditorialShowcaseView({
                     )}
 
                     {acceptsBoletoInstallments && (
-                      <div className="p-2.5 rounded-xl bg-background border border-border/50 flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-background border border-border/50 flex items-center gap-2">
                         <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
                           <FileSpreadsheet className="size-4.5" />
                         </div>
                         <div>
                           <p className="font-bold text-foreground">Boleto Parcelado Direto</p>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {maxBoletoInstallments > 1 ? <>Em até <strong>{maxBoletoInstallments}x</strong></> : "À vista no boleto"} {boletoMinDownPaymentCents ? `(Entrada ${formatMoney(boletoMinDownPaymentCents)})` : "direto com anunciante"}
                           </p>
                         </div>
@@ -1877,13 +1877,13 @@ export function EditorialShowcaseView({
                     )}
 
                     {acceptsCarne && (
-                      <div className="p-2.5 rounded-xl bg-background border border-primary/40 flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-background border border-primary/40 flex items-center gap-2">
                         <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                           <BookOpenCheck className="size-4.5" />
                         </div>
                         <div>
                           <p className="font-bold text-foreground">Carnê Digital da Loja</p>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {maxCarneInstallments > 1 ? <>Em até <strong>{maxCarneInstallments}x</strong></> : "À vista no carnê"} {carneGraceDays ? `(1ª parcela em ${carneGraceDays}d)` : ""} direto na Waesy
                           </p>
                         </div>
@@ -1891,25 +1891,25 @@ export function EditorialShowcaseView({
                     )}
 
                     {acceptsCash && (
-                      <div className="p-2.5 rounded-xl bg-background border border-border/50 flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-background border border-border/50 flex items-center gap-2">
                         <div className="size-8 rounded-lg bg-slate-500/10 text-slate-600 flex items-center justify-center shrink-0">
                           <Coins className="size-4.5" />
                         </div>
                         <div>
                           <p className="font-bold text-foreground">Dinheiro em Espécie</p>
-                          <p className="text-[11px] text-muted-foreground">Pagamento presencial na entrega / retirada</p>
+                          <p className="text-xs text-muted-foreground">Pagamento presencial na entrega / retirada</p>
                         </div>
                       </div>
                     )}
 
                     {acceptsTrade && (
-                      <div className="p-2.5 rounded-xl bg-background border border-border/50 flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-background border border-border/50 flex items-center gap-2">
                         <div className="size-8 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
                           <Handshake className="size-4.5" />
                         </div>
                         <div>
                           <p className="font-bold text-foreground">Aceita Permuta / Troca</p>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {tradeNotes || "Aceita propostas de troca sob avaliação"}
                           </p>
                         </div>
@@ -1917,20 +1917,20 @@ export function EditorialShowcaseView({
                     )}
 
                     {acceptsFinancing && (
-                      <div className="p-2.5 rounded-xl bg-background border border-border/50 flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-background border border-border/50 flex items-center gap-2">
                         <div className="size-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
                           <Landmark className="size-4.5" />
                         </div>
                         <div>
                           <p className="font-bold text-foreground">Financiamento / Consórcio</p>
-                          <p className="text-[11px] text-muted-foreground">{financingNotes || "Suporte bancário e aprovação de crédito"}</p>
+                          <p className="text-xs text-muted-foreground">{financingNotes || "Suporte bancário e aprovação de crédito"}</p>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {/* Política de Cancelamento */}
-                  <div className="pt-2 border-t border-border/30 flex items-center justify-between text-[11px] text-muted-foreground">
+                  <div className="pt-2 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground">
                     <span>Política de Cancelamento:</span>
                     <span className="font-bold text-foreground capitalize">{cancellationPolicy}</span>
                   </div>
@@ -1939,20 +1939,20 @@ export function EditorialShowcaseView({
 
               {/* Card de Transporte Polimórfico (Apenas Turismo/Viagens) */}
               {isTravel && flightDetails && (
-                <div className="p-4 rounded-2xl bg-muted/40 border border-border/40 space-y-3">
+                <div className="p-4 rounded-lg bg-muted/40 border border-border/40 space-y-3">
 
                   {/* ── AÉREO ── */}
                   {(transportType === "airplane") && (
                     <>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="size-8 rounded-xl bg-foreground text-background flex items-center justify-center">
+                          <div className="size-8 rounded-lg bg-foreground text-background flex items-center justify-center">
                             <Plane className="size-4" />
                           </div>
                           <div>
                             <h4 className="font-bold text-xs text-foreground">Voo Incluso</h4>
                             {flightDetails.duration_text && (
-                              <p className="text-[11px] text-muted-foreground">{flightDetails.duration_text}</p>
+                              <p className="text-xs text-muted-foreground">{flightDetails.duration_text}</p>
                             )}
                           </div>
                         </div>
@@ -1967,13 +1967,13 @@ export function EditorialShowcaseView({
                           <span className="font-mono font-bold text-foreground">{flightDetails.departure_iata}</span>
                           <ChevronRight className="size-3.5 shrink-0" />
                           <span className="font-mono font-bold text-foreground">{flightDetails.arrival_iata}</span>
-                          {flightDetails.airline && <span className="text-[11px]">• {flightDetails.airline}</span>}
-                          {flightDetails.connections === 0 && <span className="text-[11px] text-emerald-600">• Direto</span>}
-                          {(flightDetails.connections ?? 0) > 0 && <span className="text-[11px] text-amber-600">• {flightDetails.connections} escala(s)</span>}
+                          {flightDetails.airline && <span className="text-xs">• {flightDetails.airline}</span>}
+                          {flightDetails.connections === 0 && <span className="text-xs text-emerald-600">• Direto</span>}
+                          {(flightDetails.connections ?? 0) > 0 && <span className="text-xs text-amber-600">• {flightDetails.connections} escala(s)</span>}
                         </div>
                       )}
                       {(flightDetails.departure_time || flightDetails.arrival_time) && (
-                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           {flightDetails.departure_time && <span>Embarque: <span className="font-mono font-bold text-foreground">{flightDetails.departure_time}</span></span>}
                           {flightDetails.arrival_time && <span>Chegada: <span className="font-mono font-bold text-foreground">{flightDetails.arrival_time}</span></span>}
                         </div>
@@ -1985,7 +1985,7 @@ export function EditorialShowcaseView({
                   {transportType === "bus" && (
                     <>
                       <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-xl bg-foreground text-background flex items-center justify-center shrink-0">
+                        <div className="size-9 rounded-lg bg-foreground text-background flex items-center justify-center shrink-0">
                           <Bus className="size-4.5" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -1997,19 +1997,19 @@ export function EditorialShowcaseView({
                         {(() => {
                           const cat = CANONICAL_BUS_CATEGORIES.find(b => b.id === flightDetails.bus_category);
                           return cat ? (
-                            <Badge variant="outline" className="ml-auto text-xs font-semibold px-2.5 py-0.5">{cat.label}</Badge>
+                            <Badge variant="outline" className="ml-auto text-xs font-semibold px-2.5 py-1">{cat.label}</Badge>
                           ) : null;
                         })()}
                       </div>
                       {flightDetails.bus_company && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                        <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
                           <span>Operador / Frota:</span>
                           <span className="text-foreground font-semibold">{flightDetails.bus_company}</span>
                         </p>
                       )}
                       {flightDetails.meeting_point && (
-                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-background border border-border/70">
-                          <MapPin className="size-4 text-primary mt-0.5 shrink-0" />
+                        <div className="flex items-start gap-2 p-3 rounded-lg bg-background border border-border/70">
+                          <MapPin className="size-4 text-primary mt-1 shrink-0" />
                           <div className="space-y-0.5">
                             <p className="text-xs font-bold text-foreground uppercase tracking-wide">Ponto de Encontro</p>
                             <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed font-medium">{flightDetails.meeting_point}</p>
@@ -2017,19 +2017,19 @@ export function EditorialShowcaseView({
                         </div>
                       )}
                       {flightDetails.departure_city && !flightDetails.meeting_point && (
-                        <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-1.5">
+                        <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-2">
                           <MapPin className="size-3.5 shrink-0 text-primary" /> Saída de: <span className="font-bold text-foreground">{flightDetails.departure_city}</span>
                           {flightDetails.departure_time && <span className="font-mono font-bold text-primary">• {flightDetails.departure_time}</span>}
                         </p>
                       )}
                       {Array.isArray(flightDetails.boarding_gateways) && flightDetails.boarding_gateways.length > 0 && (
-                        <div className="space-y-1.5 pt-1">
+                        <div className="space-y-2 pt-1">
                           <p className="text-xs font-bold text-foreground uppercase tracking-wider">
                             Embarques na Rota
                           </p>
-                          <div className="flex flex-wrap gap-1.5">
+                          <div className="flex flex-wrap gap-2">
                             {flightDetails.boarding_gateways.map((gw: string, i: number) => (
-                              <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/25 text-xs font-semibold text-primary">
+                              <span key={i} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/25 text-xs font-semibold text-primary">
                                 <Navigation className="size-3 shrink-0" />{gw}
                               </span>
                             ))}
@@ -2062,8 +2062,8 @@ export function EditorialShowcaseView({
                           <Plane className="size-3.5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-bold text-foreground">Voo</p>
-                          <p className="text-[11px] text-muted-foreground truncate">
+                          <p className="text-xs font-bold text-foreground">Voo</p>
+                          <p className="text-xs text-muted-foreground truncate">
                             {flightDetails.combo_flight_from_iata}
                             {flightDetails.combo_flight_from_iata && flightDetails.combo_flight_to_iata && " → "}
                             {flightDetails.combo_flight_to_iata}
@@ -2090,10 +2090,10 @@ export function EditorialShowcaseView({
                           })()}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-bold text-foreground">
+                          <p className="text-xs font-bold text-foreground">
                             Transfer {flightDetails.transfer_duration ? `(${flightDetails.transfer_duration})` : ""}
                           </p>
-                          <p className="text-[11px] text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground truncate">
                             {flightDetails.transfer_from}
                             {flightDetails.transfer_from && flightDetails.transfer_to && " → "}
                             {flightDetails.transfer_to}
@@ -2107,11 +2107,11 @@ export function EditorialShowcaseView({
                       {flightDetails.guide_service && (() => {
                         const guide = CANONICAL_GUIDE_SERVICES.find(g => g.id === flightDetails.guide_service);
                         return guide ? (
-                          <p className="text-[11px] text-muted-foreground">{guide.label}</p>
+                          <p className="text-xs text-muted-foreground">{guide.label}</p>
                         ) : null;
                       })()}
                       {flightDetails.combo_notes && (
-                        <p className="text-[11px] text-muted-foreground italic">{flightDetails.combo_notes}</p>
+                        <p className="text-xs text-muted-foreground italic">{flightDetails.combo_notes}</p>
                       )}
                     </div>
                   )}
@@ -2120,19 +2120,19 @@ export function EditorialShowcaseView({
                   {transportType === "cruise" && (
                     <>
                       <div className="flex items-center gap-2">
-                        <div className="size-8 rounded-xl bg-foreground text-background flex items-center justify-center">
+                        <div className="size-8 rounded-lg bg-foreground text-background flex items-center justify-center">
                           <Ship className="size-4" />
                         </div>
                         <div>
                           <h4 className="font-bold text-xs text-foreground">{flightDetails.ship_name || "Cruzeiro"}</h4>
-                          {flightDetails.cruise_line && <p className="text-[11px] text-muted-foreground">{flightDetails.cruise_line}</p>}
+                          {flightDetails.cruise_line && <p className="text-xs text-muted-foreground">{flightDetails.cruise_line}</p>}
                         </div>
                         {flightDetails.cabin_category && (
-                          <Badge variant="outline" className="ml-auto text-[10px]">{flightDetails.cabin_category}</Badge>
+                          <Badge variant="outline" className="ml-auto text-xs">{flightDetails.cabin_category}</Badge>
                         )}
                       </div>
                       {flightDetails.embarkation_port && (
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
                           <MapPin className="size-3" /> {flightDetails.embarkation_port}
                         </p>
                       )}
@@ -2146,8 +2146,8 @@ export function EditorialShowcaseView({
                         {transportType === "car" ? <Car className="size-3.5" /> : <MapPin className="size-3.5" />}
                       </div>
                       <div>
-                        <p className="text-[11px] font-bold text-foreground">Check-in / Encontro</p>
-                        <p className="text-[11px] text-muted-foreground">{flightDetails.meeting_point}</p>
+                        <p className="text-xs font-bold text-foreground">Check-in / Encontro</p>
+                        <p className="text-xs text-muted-foreground">{flightDetails.meeting_point}</p>
                       </div>
                     </div>
                   )}
@@ -2156,8 +2156,8 @@ export function EditorialShowcaseView({
 
               {/* Saídas Confirmadas (Múltiplas Datas - Apenas Turismo/Excursões) */}
               {isTravel && departureOptions.length > 0 && (
-                <div className="space-y-2.5">
-                  <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-2">
                     <Calendar className="size-3.5 text-primary" />
                     Saídas Disponíveis
                   </h4>
@@ -2173,7 +2173,7 @@ export function EditorialShowcaseView({
                           key={opt.id || i}
                           onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
                           className={cn(
-                            "flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer text-left",
+                            "flex items-center justify-between p-2 rounded-lg border transition-colors cursor-pointer text-left",
                             isSelected
                               ? "border-primary ring-2 ring-primary/25 bg-primary/5"
                               : "bg-background border-border/50 hover:border-primary/40 hover:bg-muted/30"
@@ -2182,15 +2182,15 @@ export function EditorialShowcaseView({
                           <div className="flex items-center gap-2">
                             <Calendar className="size-3.5 text-primary shrink-0" />
                             <div>
-                              <div className="flex items-center gap-1.5">
-                                {opt.label && <p className="text-[11px] font-bold text-foreground">{opt.label}</p>}
+                              <div className="flex items-center gap-2">
+                                {opt.label && <p className="text-xs font-bold text-foreground">{opt.label}</p>}
                                 {isSelected && (
-                                  <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.2 rounded-full">
+                                  <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.2 rounded-full">
                                     Selecionada
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[11px] text-muted-foreground">
+                              <p className="text-xs text-muted-foreground">
                                 {depDate}{depDate && retDate && " — "}{retDate}
                                 {opt.departure_time && <span className="font-mono ml-1">{opt.departure_time}</span>}
                               </p>
@@ -2198,9 +2198,9 @@ export function EditorialShowcaseView({
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             {opt.available_seats !== undefined && opt.available_seats > 0 && (
-                              <span className="text-[10px] text-muted-foreground">{opt.available_seats} vagas</span>
+                              <span className="text-xs text-muted-foreground">{opt.available_seats} vagas</span>
                             )}
-                            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", cfg.color)}>
+                            <span className={cn("text-xs font-bold px-2 py-1 rounded-full border", cfg.color)}>
                               {cfg.icon} {cfg.label}
                             </span>
                           </div>
@@ -2218,12 +2218,12 @@ export function EditorialShowcaseView({
 
               {/* Mapa Interativo */}
               {!hideLocation && classified.location_lat && classified.location_lng ? (
-                <div className="space-y-1.5">
-                  <h4 className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <h4 className="font-bold text-xs text-foreground flex items-center gap-2">
                     <MapPin className="size-4 text-primary" />
                     <span>Localização</span>
                   </h4>
-                  <div className="h-56 w-full rounded-2xl overflow-hidden border border-border/40 relative">
+                  <div className="h-56 w-full rounded-lg overflow-hidden border border-border/40 relative">
                     <MapLibreCanvas
                       center={{
                         lat: classified.location_lat,
@@ -2241,13 +2241,13 @@ export function EditorialShowcaseView({
 
       {/* Coluna Direita: Painel Sticky de Preço, Datas, Stats e CTAs (5 colunas no Desktop) */}
       <div className="hidden lg:block lg:col-span-5 lg:sticky lg:top-24 space-y-4">
-        <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-5">
+        <div className="bg-card rounded-lg border border-border/70 p-6 sm:p-7 space-y-5">
 
           {/* ── 1. Localização / Rota + Título ── */}
           <div className="space-y-2">
             {isTravel ? (
               departureCity ? (
-                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex-wrap">
+                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-wrap">
                   <span className="inline-flex items-center gap-1 text-primary">
                     <Navigation className="size-3 shrink-0" />
                     <span>Saída:</span>
@@ -2266,7 +2266,7 @@ export function EditorialShowcaseView({
               ) : null
             ) : (
               !hideLocation && classified.location_name && (
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                   <MapPin className="size-3 shrink-0 text-primary" />
                   <span>{classified.location_name}</span>
                 </p>
@@ -2289,29 +2289,29 @@ export function EditorialShowcaseView({
             return (
               <div className={`grid ${gridCols} gap-3 sm:gap-4 py-3.5 border-t border-b border-border/40`}>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
                     {heroHighlight.primaryLabel}
                   </p>
-                  <p className="text-base sm:text-lg font-black text-foreground mt-0.5 leading-tight truncate">
+                  <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
                     {heroHighlight.primaryValue}
                   </p>
                 </div>
                 {heroHighlight.secondaryLabel && heroHighlight.secondaryValue && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
                       {heroHighlight.secondaryLabel}
                     </p>
-                    <p className="text-base sm:text-lg font-black text-foreground mt-0.5 leading-tight truncate">
+                    <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
                       {heroHighlight.secondaryValue}
                     </p>
                   </div>
                 )}
                 {heroHighlight.tertiaryLabel && heroHighlight.tertiaryValue && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
                       {heroHighlight.tertiaryLabel}
                     </p>
-                    <p className="text-base sm:text-lg font-black text-foreground mt-0.5 leading-tight truncate">
+                    <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
                       {heroHighlight.tertiaryValue}
                     </p>
                   </div>
@@ -2321,9 +2321,9 @@ export function EditorialShowcaseView({
           })()}
 
           {/* ── 3. Precificação ── */}
-          <div className="p-4 rounded-2xl bg-muted/25 dark:bg-muted/15 border border-border/60 space-y-2">
+          <div className="p-4 rounded-lg bg-muted/25 dark:bg-muted/15 border border-border/60 space-y-2">
             {pricingType === "starting_at" && (
-              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">A partir de</p>
+              <p className="text-xs uppercase font-bold text-muted-foreground tracking-wider">A partir de</p>
             )}
             <div className="flex flex-col">
               {pricingType === "on_quote" ? (
@@ -2354,7 +2354,7 @@ export function EditorialShowcaseView({
                       <button
                         type="button"
                         onClick={() => setShowDesktopInstallments(!showDesktopInstallments)}
-                        className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer pt-1"
+                        className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer pt-1"
                       >
                         <span>{showDesktopInstallments ? "Ocultar tabela" : `Ver parcelas em até ${maxInstallments}x`}</span>
                         <ChevronDown className={cn("size-3 transition-transform", showDesktopInstallments && "rotate-180")} />
@@ -2366,7 +2366,7 @@ export function EditorialShowcaseView({
                             const num = idx + 1;
                             const part = Math.round(priceCents / num);
                             return (
-                              <div key={num} className="py-1.5 flex items-center justify-between text-[11px]">
+                              <div key={num} className="py-2 flex items-center justify-between text-xs">
                                 <span className="text-foreground font-medium">{num}x de {formatMoney(part)}</span>
                                 <span className={installmentsInterestFree ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "text-muted-foreground"}>
                                   {installmentsInterestFree ? "Sem juros" : "No cartão"}
@@ -2387,11 +2387,11 @@ export function EditorialShowcaseView({
                     const pixSavings = priceCents - pixPrice;
                     return (
                       <div className="pt-2 border-t border-border/40 mt-1 flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">À vista no PIX:</span>
                           <span className="text-xs font-black text-foreground font-display">{formatMoney(pixPrice)}</span>
                         </div>
-                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
                           Economize {formatMoney(pixSavings)} (-{pixDiscountPercent}%)
                         </span>
                       </div>
@@ -2415,10 +2415,10 @@ export function EditorialShowcaseView({
               <div className="border-t border-border/40 pt-4 grid grid-cols-2 gap-x-6 gap-y-3.5">
                 {combinedSpecs.map((spec, i) => (
                   <div key={i}>
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
                       {spec.label}
                     </p>
-                    <p className="text-sm font-bold text-foreground mt-0.5 leading-snug">
+                    <p className="text-sm font-bold text-foreground mt-1 leading-snug">
                       {spec.value}
                     </p>
                   </div>
@@ -2447,10 +2447,10 @@ export function EditorialShowcaseView({
           })()}
 
           {/* ── 6. Botões de Conversão Primária Desktop ── */}
-          <div className="space-y-2.5 pt-1 border-t border-border/40">
+          <div className="space-y-2 pt-1 border-t border-border/40">
             <Button
               onClick={handleOpenAction}
-              className="w-full h-12 sm:h-13 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-black text-sm tracking-tight active:scale-98 transition-all cursor-pointer"
+              className="w-full h-12 sm:h-13 rounded-lg bg-foreground text-background hover:bg-foreground/90 font-black text-sm tracking-tight active:scale-98 transition-colors cursor-pointer"
             >
               {getPrimaryCtaLabel()}
             </Button>
@@ -2461,7 +2461,7 @@ export function EditorialShowcaseView({
                   type="button"
                   variant="outline"
                   onClick={handleWhatsAppDirect}
-                  className="h-11 rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs gap-1.5 cursor-pointer"
+                  className="h-11 rounded-lg border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs gap-2 cursor-pointer"
                 >
                   <MessageCircle className="size-4" />
                   <span>WhatsApp</span>
@@ -2472,7 +2472,7 @@ export function EditorialShowcaseView({
                 type="button"
                 variant="outline"
                 onClick={() => setIsContactModalOpen(true)}
-                className="h-11 rounded-xl border-border/80 text-foreground hover:bg-muted font-bold text-xs gap-1.5 cursor-pointer"
+                className="h-11 rounded-lg border-border/80 text-foreground hover:bg-muted font-bold text-xs gap-2 cursor-pointer"
               >
                 <MessageSquare className="size-4" />
                 <span>Mais Opções</span>
@@ -2483,7 +2483,7 @@ export function EditorialShowcaseView({
           {/* ── 7. Card do Anunciante Desktop (Integrado na Base) ── */}
           <div className="pt-3 border-t border-border/40 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="size-11 rounded-xl bg-background border border-border/70 overflow-hidden shrink-0 flex items-center justify-center">
+              <div className="size-11 rounded-lg bg-background border border-border/70 overflow-hidden shrink-0 flex items-center justify-center">
                 {advertiserAvatar ? (
                   <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
                 ) : isCompany ? (
@@ -2493,7 +2493,7 @@ export function EditorialShowcaseView({
                 )}
               </div>
               <div className="min-w-0 flex flex-col">
-                <div className="flex items-center gap-1.5 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
                   <span className="font-bold text-sm text-foreground truncate">
                     {advertiserName}
                   </span>
@@ -2525,7 +2525,7 @@ export function EditorialShowcaseView({
 
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
       <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+        <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2 sm:py-3 flex items-center justify-between gap-3">
           {/* Lado Esquerdo: Valor Parcelado / Total Limpo (Sem cortes, clicável para abrir opções) */}
           <button
             type="button"
@@ -2550,9 +2550,9 @@ export function EditorialShowcaseView({
               </div>
             ) : priceCents > 0 ? (
               <>
-                <div className="flex items-baseline gap-1.5 min-w-0">
+                <div className="flex items-baseline gap-2 min-w-0">
                   {pricingType === "starting_at" && (
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase shrink-0">A partir</span>
+                    <span className="text-xs font-bold text-muted-foreground uppercase shrink-0">A partir</span>
                   )}
                   {maxInstallments > 1 ? (
                     <>
@@ -2570,7 +2570,7 @@ export function EditorialShowcaseView({
                   )}
                   <ChevronUp className="size-3.5 text-muted-foreground shrink-0 group-hover:translate-y-[-1px] transition-transform" />
                 </div>
-                <div className="flex items-center gap-1.5 text-xs sm:text-[11px] text-muted-foreground truncate">
+                <div className="flex items-center gap-2 text-xs sm:text-xs text-muted-foreground truncate">
                   {maxInstallments > 1 ? (
                     <>
                       <span>Total: {formatMoney(priceCents)}</span>
@@ -2583,7 +2583,7 @@ export function EditorialShowcaseView({
                     <span>À vista</span>
                   )}
                   {pixDiscountPercent > 0 && (
-                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded text-[10px]">
+                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded text-xs">
                       -{pixDiscountPercent}% PIX
                     </span>
                   )}
@@ -2601,7 +2601,7 @@ export function EditorialShowcaseView({
           <Button
             type="button"
             onClick={handlePrimaryCtaClick}
-            className="h-11 px-5 sm:px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight active:scale-95 transition-all shrink-0 cursor-pointer"
+            className="h-11 px-5 sm:px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight active:scale-95 transition-colors shrink-0 cursor-pointer"
           >
             {getPrimaryCtaLabel()}
           </Button>
@@ -2611,7 +2611,7 @@ export function EditorialShowcaseView({
       {/* ── Modal de Story Individual ── */}
       {activeStoryModal && (
         <Dialog open={!!activeStoryModal} onOpenChange={() => setActiveStoryModal(null)}>
-          <DialogContent className="max-w-sm p-4 rounded-2xl bg-background/95 backdrop-blur-xl">
+          <DialogContent className="max-w-sm p-4 rounded-lg bg-background/95 backdrop-blur-xl">
             <DialogHeader>
               <DialogTitle className="text-sm font-bold text-foreground">
                 {activeStoryModal.title}
@@ -2621,7 +2621,7 @@ export function EditorialShowcaseView({
               <img
                 src={activeStoryModal.image || images[0]}
                 alt={activeStoryModal.title}
-                className="w-full h-80 object-cover rounded-xl"
+                className="w-full h-80 object-cover rounded-lg"
               />
             </div>
           </DialogContent>
@@ -2631,10 +2631,10 @@ export function EditorialShowcaseView({
       {/* ── Modal de Imagem em Tela Cheia (Padrão Apple & Airbnb com Navegação Completa) ── */}
       {fullscreenImage && (
         <Dialog open={!!fullscreenImage} onOpenChange={() => setFullscreenImage(null)}>
-          <DialogContent className="max-w-4xl p-0 bg-black/95 border-none overflow-hidden sm:rounded-2xl text-white select-none">
+          <DialogContent className="max-w-4xl p-0 bg-black/95 border-none overflow-hidden sm:rounded-lg text-white select-none">
             {/* Topbar do Modal: Contador e Botão Fechar */}
             <div className="absolute top-3 left-3 right-3 z-50 flex items-center justify-between pointer-events-none">
-              <span className="px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-mono font-medium border border-white/10 pointer-events-auto">
+              <span className="px-3 py-2 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-mono font-medium border border-white/10 pointer-events-auto">
                 Foto {activeImageIndex + 1} de {images.length}
               </span>
               <button
@@ -2667,7 +2667,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(prevIdx);
                       setFullscreenImage(images[prevIdx]);
                     }}
-                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
                     title="Foto anterior (Seta esquerda)"
                     aria-label="Foto anterior"
                   >
@@ -2682,7 +2682,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(nextIdx);
                       setFullscreenImage(images[nextIdx]);
                     }}
-                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
                     title="Próxima foto (Seta direita)"
                     aria-label="Próxima foto"
                   >
@@ -2704,7 +2704,7 @@ export function EditorialShowcaseView({
                       setFullscreenImage(img);
                     }}
                     className={cn(
-                      "size-12 rounded-lg overflow-hidden border shrink-0 transition-all cursor-pointer",
+                      "size-12 rounded-lg overflow-hidden border shrink-0 transition-colors cursor-pointer",
                       activeImageIndex === idx
                         ? "border-primary ring-2 ring-primary scale-105 opacity-100"
                         : "border-white/20 opacity-60 hover:opacity-90"
@@ -2721,7 +2721,7 @@ export function EditorialShowcaseView({
 
       {/* ── Modal de Opções de Pagamento, Atendimento & Negociação (Apple HIG List Format) ── */}
       <Dialog open={isContactModalOpen} onOpenChange={setIsContactModalOpen}>
-        <DialogContent className="max-w-md p-5 rounded-3xl bg-background/98 backdrop-blur-xl border border-border/60 max-h-[90vh] overflow-y-auto no-scrollbar">
+        <DialogContent className="max-w-md p-5 rounded-lg bg-background/98 backdrop-blur-xl border border-border/60 max-h-[90vh] overflow-y-auto no-scrollbar">
           <DialogHeader className="pb-1">
             <DialogTitle className="text-base font-bold text-foreground">
               {classified.title || "Opções & Atendimento"}
@@ -2733,13 +2733,13 @@ export function EditorialShowcaseView({
 
           <div className="space-y-4 pt-2">
             {/* ── 1. Valores & Condições de Pagamento (Formato Lista Apple HIG) ── */}
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
+            <div className="space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1 block">
                 Valores e Condições de Pagamento
               </span>
-              <div className="rounded-2xl border border-border/60 bg-muted/20 divide-y divide-border/40 overflow-hidden text-xs">
+              <div className="rounded-lg border border-border/60 bg-muted/20 divide-y divide-border/40 overflow-hidden text-xs">
                 {/* 1.1 Valor Total */}
-                <div className="p-3.5 flex items-center justify-between">
+                <div className="p-4 flex items-center justify-between">
                   <span className="text-muted-foreground font-medium">Valor Total</span>
                   <span className="font-black text-base text-foreground font-display">
                     {priceCents > 0 ? formatMoney(priceCents) : "Sob Consulta"}
@@ -2748,11 +2748,11 @@ export function EditorialShowcaseView({
 
                 {/* 1.2 Valor com Desconto no PIX */}
                 {priceCents > 0 && (
-                  <div className="p-3.5 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
+                  <div className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                       <span className="text-muted-foreground font-medium">À Vista no PIX</span>
                       {pixDiscountPercent > 0 && (
-                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full">
                           -{pixDiscountPercent}% OFF
                         </span>
                       )}
@@ -2765,7 +2765,7 @@ export function EditorialShowcaseView({
 
                 {/* 1.3 Valor Parcelado (com/sem juros) */}
                 {priceCents > 0 && maxInstallments > 1 && (
-                  <div className="p-3.5 space-y-2">
+                  <div className="p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground font-medium">Parcelamento no Cartão</span>
                       <span className="font-bold text-foreground">
@@ -2780,7 +2780,7 @@ export function EditorialShowcaseView({
                     <button
                       type="button"
                       onClick={() => setShowAllInstallments(!showAllInstallments)}
-                      className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer pt-0.5"
+                      className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer pt-0.5"
                     >
                       <span>{showAllInstallments ? "Ocultar tabela" : `Ver todas as parcelas (1x a ${maxInstallments}x)`}</span>
                       <ChevronDown className={cn("size-3 transition-transform", showAllInstallments && "rotate-180")} />
@@ -2792,7 +2792,7 @@ export function EditorialShowcaseView({
                           const num = idx + 1;
                           const part = Math.round(priceCents / num);
                           return (
-                            <div key={num} className="py-1.5 flex items-center justify-between text-[11px]">
+                            <div key={num} className="py-2 flex items-center justify-between text-xs">
                               <span className="text-foreground">{num}x de {formatMoney(part)}</span>
                               <span className={installmentsInterestFree ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-muted-foreground"}>
                                 {installmentsInterestFree ? "Sem juros" : "No cartão"}
@@ -2806,9 +2806,9 @@ export function EditorialShowcaseView({
                 )}
 
                 {/* 1.4 Formas de Pagamento Aceitas */}
-                <div className="p-3.5 flex items-center justify-between text-muted-foreground">
+                <div className="p-4 flex items-center justify-between text-muted-foreground">
                   <span className="font-medium">Formas de Pagamento</span>
-                  <span className="font-semibold text-foreground text-[11px]">
+                  <span className="font-semibold text-foreground text-xs">
                     PIX • Cartão de Crédito{acceptsBoleto ? " • Boleto" : ""}{acceptsCash ? " • Dinheiro" : ""}
                   </span>
                 </div>
@@ -2817,7 +2817,7 @@ export function EditorialShowcaseView({
 
             {/* ── 2. Opções de Atendimento & Negociação (Botões em Lista Apple HIG) ── */}
             <div className="space-y-2 pt-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1 block">
                 Canais de Atendimento e Negociação
               </span>
 
@@ -2829,15 +2829,15 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     handleWhatsAppDirect();
                   }}
-                  className="w-full min-h-[48px] p-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-[48px] p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                    <div className="size-9 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
                       <MessageCircle className="size-5" />
                     </div>
                     <div>
                       <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">WhatsApp Oficial</p>
-                      <p className="text-[11px] text-muted-foreground">Atendimento direto com resposta rápida</p>
+                      <p className="text-xs text-muted-foreground">Atendimento direto com resposta rápida</p>
                     </div>
                   </div>
                   <ChevronRight className="size-4 text-emerald-600" />
@@ -2848,22 +2848,22 @@ export function EditorialShowcaseView({
               <button
                 type="button"
                 onClick={() => setShowChatInput(!showChatInput)}
-                className="w-full min-h-[48px] p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 border border-border/50 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+                className="w-full min-h-[48px] p-3 rounded-lg bg-muted/30 hover:bg-muted/50 border border-border/50 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <MessageSquare className="size-5" />
                   </div>
                   <div>
                     <p className="text-xs font-bold text-foreground">Inbox / Chat pelo App</p>
-                    <p className="text-[11px] text-muted-foreground">Envie uma mensagem direta ao anunciante</p>
+                    <p className="text-xs text-muted-foreground">Envie uma mensagem direta ao anunciante</p>
                   </div>
                 </div>
                 <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", showChatInput && "rotate-180")} />
               </button>
 
               {showChatInput && (
-                <div className="p-3 rounded-2xl bg-muted/20 border border-border/40 space-y-2">
+                <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-2">
                   <Textarea
                     placeholder="Olá! Tenho interesse neste anúncio e gostaria de tirar dúvidas ou fazer uma proposta..."
                     value={contactMessage}
@@ -2875,7 +2875,7 @@ export function EditorialShowcaseView({
                     type="button"
                     onClick={handleSendAppMessage}
                     disabled={isSendingMessage || !contactMessage.trim()}
-                    className="w-full h-10 rounded-xl text-xs font-bold gap-2"
+                    className="w-full h-10 rounded-lg text-xs font-bold gap-2"
                   >
                     {isSendingMessage ? "Enviando..." : "Enviar Mensagem pelo Chat"}
                   </Button>
@@ -2891,15 +2891,15 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     setIsPixPaymentModalOpen(true);
                   }}
-                  className="w-full min-h-[48px] p-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-[48px] p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                    <div className="size-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
                       <QrCode className="size-5" />
                     </div>
                     <div>
                       <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">Pagar com PIX Instantâneo</p>
-                      <p className="text-[11px] text-muted-foreground">Copiar chave PIX e transferir com confirmação</p>
+                      <p className="text-xs text-muted-foreground">Copiar chave PIX e transferir com confirmação</p>
                     </div>
                   </div>
                   <ChevronRight className="size-4 text-emerald-600" />
@@ -2913,15 +2913,15 @@ export function EditorialShowcaseView({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsContactModalOpen(false)}
-                  className="w-full min-h-[48px] p-3 rounded-2xl bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/25 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-[48px] p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/25 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                    <div className="size-9 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
                       <CreditCard className="size-5" />
                     </div>
                     <div>
                       <p className="text-xs font-bold text-blue-800 dark:text-blue-300">Pagar com Cartão Online</p>
-                      <p className="text-[11px] text-muted-foreground">Checkout seguro externo do anunciante</p>
+                      <p className="text-xs text-muted-foreground">Checkout seguro externo do anunciante</p>
                     </div>
                   </div>
                   <ExternalLink className="size-4 text-blue-600" />
@@ -2936,15 +2936,15 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     setIsBookingDossierOpen(true);
                   }}
-                  className="w-full min-h-[48px] p-3 rounded-2xl bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-[48px] p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-background/20 text-background flex items-center justify-center shrink-0">
+                    <div className="size-9 rounded-lg bg-background/20 text-background flex items-center justify-center shrink-0">
                       <Calendar className="size-5" />
                     </div>
                     <div>
                       <p className="text-xs font-bold text-background">Reservar Pacote Terrestre</p>
-                      <p className="text-[11px] text-background/80">Preencher dados dos passageiros e itinerário</p>
+                      <p className="text-xs text-background/80">Preencher dados dos passageiros e itinerário</p>
                     </div>
                   </div>
                   <ChevronRight className="size-4 text-background/80" />
@@ -2956,15 +2956,15 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     onOpenProposalModal();
                   }}
-                  className="w-full min-h-[48px] p-3 rounded-2xl bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-[48px] p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-background/20 text-background flex items-center justify-center shrink-0">
+                    <div className="size-9 rounded-lg bg-background/20 text-background flex items-center justify-center shrink-0">
                       <Send className="size-5" />
                     </div>
                     <div>
                       <p className="text-xs font-bold text-background">Enviar Proposta Formal</p>
-                      <p className="text-[11px] text-background/80">Negocie valores e condições personalizadas</p>
+                      <p className="text-xs text-background/80">Negocie valores e condições personalizadas</p>
                     </div>
                   </div>
                   <ChevronRight className="size-4 text-background/80" />
@@ -2978,8 +2978,8 @@ export function EditorialShowcaseView({
       
       {/* ── Modal Player de Vídeo do Feed ── */}
       <Dialog open={!!selectedVideoUrl} onOpenChange={(open) => !open && setSelectedVideoUrl(null)}>
-        <DialogContent className="max-w-2xl p-2 sm:p-4 rounded-3xl bg-black/95 border border-white/10 text-white">
-          <div className="relative aspect-video rounded-2xl overflow-hidden bg-black flex items-center justify-center">
+        <DialogContent className="max-w-2xl p-2 sm:p-4 rounded-lg bg-black/95 border border-white/10 text-white">
+          <div className="relative aspect-video rounded-lg overflow-hidden bg-black flex items-center justify-center">
             {selectedVideoUrl && (
               <video
                 src={selectedVideoUrl}
@@ -2995,7 +2995,7 @@ export function EditorialShowcaseView({
 
       {/* ── Modal de Pagamento Rápido via PIX ── */}
       <Dialog open={isPixPaymentModalOpen} onOpenChange={setIsPixPaymentModalOpen}>
-        <DialogContent className="max-w-sm p-5 rounded-3xl bg-background/98 backdrop-blur-xl border border-border/60">
+        <DialogContent className="max-w-sm p-5 rounded-lg bg-background/98 backdrop-blur-xl border border-border/60">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <QrCode className="size-5 text-emerald-600" />
@@ -3005,13 +3005,13 @@ export function EditorialShowcaseView({
 
           <div className="space-y-4 pt-2">
             {priceCents > 0 && (
-              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
-                <span className="text-[11px] text-muted-foreground font-medium">Valor Total</span>
+              <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center">
+                <span className="text-xs text-muted-foreground font-medium">Valor Total</span>
                 <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-display">
                   {formatMoney(priceCents)}
                 </p>
                 {effectivePixReceiver && (
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Beneficiário: <strong className="text-foreground">{effectivePixReceiver}</strong>
                   </p>
                 )}
@@ -3020,7 +3020,7 @@ export function EditorialShowcaseView({
 
             <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Chave PIX do Anunciante</Label>
-              <div className="p-3 rounded-xl bg-muted/40 border border-border/60 font-mono text-xs text-foreground break-all select-all flex items-center justify-between gap-2">
+              <div className="p-3 rounded-lg bg-muted/40 border border-border/60 font-mono text-xs text-foreground break-all select-all flex items-center justify-between gap-2">
                 <span>{effectivePixKey || "Chave PIX sob consulta"}</span>
               </div>
               <Button
@@ -3031,14 +3031,14 @@ export function EditorialShowcaseView({
                     toast.success("Chave PIX copiada para a área de transferência!");
                   }
                 }}
-                className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2"
+                className="w-full h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2"
               >
                 <Check className="size-4" />
                 <span>Copiar Chave PIX</span>
               </Button>
             </div>
 
-            <div className="p-3 rounded-xl bg-muted/20 border border-border/40 text-[11px] text-muted-foreground space-y-1">
+            <div className="p-3 rounded-lg bg-muted/20 border border-border/40 text-xs text-muted-foreground space-y-1">
               <p className="font-semibold text-foreground">Instruções:</p>
               <p>1. Abra o app do seu banco e selecione a opção PIX Copia e Cola / Chave.</p>
               <p>2. Confirme o valor e o nome do beneficiário.</p>
@@ -3053,7 +3053,7 @@ export function EditorialShowcaseView({
                   setIsPixPaymentModalOpen(false);
                   handleWhatsAppDirect();
                 }}
-                className="w-full h-10 rounded-xl border-emerald-500/30 text-emerald-600 font-semibold text-xs gap-1.5"
+                className="w-full h-10 rounded-lg border-emerald-500/30 text-emerald-600 font-semibold text-xs gap-2"
               >
                 <MessageCircle className="size-4" />
                 <span>Enviar Comprovante pelo WhatsApp</span>
@@ -3066,7 +3066,7 @@ export function EditorialShowcaseView({
 
       {/* ── Modal de Detalhamento de Parcelas ── */}
       <Dialog open={isInstallmentsModalOpen} onOpenChange={setIsInstallmentsModalOpen}>
-        <DialogContent className="max-w-sm p-5 rounded-3xl bg-background/98 backdrop-blur-xl border border-border/60">
+        <DialogContent className="max-w-sm p-5 rounded-lg bg-background/98 backdrop-blur-xl border border-border/60">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <CreditCard className="size-5 text-primary" />
@@ -3075,8 +3075,8 @@ export function EditorialShowcaseView({
           </DialogHeader>
 
           <div className="space-y-3 pt-2">
-            <div className="p-3 rounded-2xl bg-muted/40 border border-border/50 text-center">
-              <span className="text-[11px] text-muted-foreground font-medium">Valor Total</span>
+            <div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-center">
+              <span className="text-xs text-muted-foreground font-medium">Valor Total</span>
               <p className="text-xl font-black text-foreground font-display">{formatMoney(priceCents)}</p>
               {pixDiscountPercent > 0 && (
                 <p className="text-xs font-bold text-emerald-600 mt-1">
@@ -3085,7 +3085,7 @@ export function EditorialShowcaseView({
               )}
             </div>
 
-            <div className="space-y-1.5 max-h-60 overflow-y-auto no-scrollbar pr-1 divide-y divide-border/30">
+            <div className="space-y-2 max-h-60 overflow-y-auto no-scrollbar pr-1 divide-y divide-border/30">
               {Array.from({ length: maxInstallments }, (_, idx) => {
                 const num = idx + 1;
                 const partCents = Math.round(priceCents / num);

@@ -947,10 +947,10 @@ function AdminOrdersPage() {
  </div>
  <div>
  <h2 className="text-sm font-bold text-foreground">
- Separação de Gôndola e Conferência de Itens
+ Separação e Conferência
  </h2>
  <p className="text-xs text-muted-foreground">
- Confira cada produto na prateleira antes de fechar a embalagem de entrega
+ Conferência de itens para entrega
  </p>
  </div>
  </div>

@@ -216,7 +216,7 @@ export function SevenSinsCanvasPage() {
       {/* ── SELETOR DE PECADOS (GRADE DOS 7 GATILHOS) ── */}
       <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          1. Escolha a Alavanca Subconsciente (O Pecado Capital)
+          Alavanca Subconsciente
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
@@ -332,7 +332,7 @@ export function SevenSinsCanvasPage() {
           <div className="lg:col-span-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                2. Copy Estruturada pelo Head Copywriter V4
+                Copy Estruturada
               </h2>
               {generatedHook && (
                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 capitalize">
@@ -442,7 +442,7 @@ export function SevenSinsCanvasPage() {
           <div className="lg:col-span-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                3. Relatório Forense SimLab V2 (Personas Sintéticas)
+                Relatório SimLab
               </h2>
               {personaResults.length > 0 && (
                 <span className="text-xs text-muted-foreground font-mono">

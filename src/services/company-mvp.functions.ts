@@ -6,18 +6,7 @@ import { getSSRClient } from "@/lib/supabase-ssr.server";
 import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
 import { getIdentity } from "./identity.functions";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
-
-function generateSlug(name: string): string {
-  const base = name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-  return base || "empresa";
-}
+import { generateSlug, resolveUniqueStoreSlug } from "@/lib/slug-utils";
 
 // ---------------------------------------------------------------------------
 // 1. FAST 1-PAGE COMPANY ONBOARDING
@@ -94,7 +83,7 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
 
     // 1. Criar Organização
     const resolvedName = enrichedData?.nome_fantasia || enrichedData?.razao_social || data.name;
-    const orgSlug = generateSlug(resolvedName) + "-" + Math.floor(1000 + Math.random() * 9000);
+    const orgSlug = await resolveUniqueStoreSlug(db, resolvedName);
     const { data: org, error: orgError } = await db
       .from("organizations")
       .insert({ name: resolvedName, slug: orgSlug })
@@ -113,6 +102,7 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       bio: data.bio || (enrichedData?.cnae_principal?.descricao ? `Atividade: ${enrichedData.cnae_principal.descricao}` : ""),
       logoUrl: data.logoUrl || null,
       bannerUrl: data.bannerUrl || null,
+      cover_url: data.bannerUrl || null,
       website: data.website || null,
       instagram: data.instagram || null,
       is_address_public: true,
@@ -134,13 +124,14 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       phone: enrichedData?.telefones?.[0] || data.phone,
       cnpj: enrichedData?.cnpj || data.cnpj || null,
       logo_url: data.logoUrl || null,
+      banner_url: data.bannerUrl || null,
       settings,
     };
 
     const { data: store, error: storeError } = await db
       .from("stores")
       .insert(storePayload)
-      .select("id, name, slug, logo_url, city, phone")
+      .select("id, name, slug, logo_url, city, phone, banner_url")
       .single();
 
     if (storeError) {

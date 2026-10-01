@@ -31,7 +31,10 @@ import { addToCart } from "@/services/cart.functions";
 import { requestDirectoryQuote, updateDirectoryListingFn } from "@/services/directory.functions";
 import { importMinedProductToStoreFn } from "@/services/mining.functions";
 import { participateInRaffle } from "@/services/invite.functions";
-import { upsertStorePageSection, saveStorePageSectionsOrder } from "@/services/store.functions";
+import { upsertStorePageSection, saveStorePageSectionsOrder, updateStoreProfileFn } from "@/services/store.functions";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { generateSlug } from "@/lib/slug-utils";
+import { Trash2 } from "lucide-react";
 import { useCartContext } from "@/lib/cart-context";
 import { SocialCardGeneratorModal } from "@/components/studio/SocialCardGeneratorModal";
 import { PromotionalFlyersRail } from "@/components/commerce/flyers/promotional-flyers-rail";
@@ -151,6 +154,20 @@ export function CanonicalStoreProfileView({
     }
   }, [store?.id, flyers]);
 
+  const settings = store?.settings || {};
+  const coverUrl =
+    store?.banner_url ||
+    settings.cover_url ||
+    settings.bannerUrl ||
+    settings.banner_url ||
+    null;
+  const logoUrl =
+    store?.avatar_url ||
+    store?.logo_url ||
+    settings.logoUrl ||
+    settings.logo_url ||
+    null;
+
   // Modal de Orçamento
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [quoteName, setQuoteName] = useState("");
@@ -172,7 +189,17 @@ export function CanonicalStoreProfileView({
   const [editCompanyWhatsapp, setEditCompanyWhatsapp] = useState(store?.contact_whatsapp || store?.whatsapp || store?.phone || "");
   const [editCompanyEmail, setEditCompanyEmail] = useState(store?.email || store?.contact_email || "");
   const [editCompanyWebsite, setEditCompanyWebsite] = useState(store?.website_url || store?.website || "");
-  const [editCompanyHours, setEditCompanyHours] = useState("Seg a Sex: 08:00 - 18:00");
+  const [editCompanyHours, setEditCompanyHours] = useState(store?.settings?.working_hours || store?.settings?.businessHours || "Seg a Sex: 08:00 - 18:00");
+  const [editCompanySlug, setEditCompanySlug] = useState(store?.slug || "");
+  const [editCompanyState, setEditCompanyState] = useState(store?.state || "SC");
+  const [editCompanyInstagram, setEditCompanyInstagram] = useState(store?.settings?.instagram || store?.settings?.instagramHandle || "");
+  const [editCompanyLogoUrl, setEditCompanyLogoUrl] = useState(logoUrl || "");
+  const [editCompanyBannerUrl, setEditCompanyBannerUrl] = useState(coverUrl || "");
+  const [editCompanyBiolinks, setEditCompanyBiolinks] = useState<Array<{ id?: string; title: string; url: string }>>(
+    Array.isArray(settings?.biolinks) ? settings.biolinks : []
+  );
+  const [newLinkTitle, setNewLinkTitle] = useState("");
+  const [newLinkUrl, setNewLinkUrl] = useState("");
   const [editCompanySpecialties, setEditCompanySpecialties] = useState(
     Array.isArray(store?.specialties || store?.settings?.specialties)
       ? (store?.specialties || store?.settings?.specialties).join(", ")
@@ -180,29 +207,57 @@ export function CanonicalStoreProfileView({
   );
   const [isSavingCompany, setIsSavingCompany] = useState(false);
 
+  const handleAddBiolink = () => {
+    if (!newLinkTitle.trim() || !newLinkUrl.trim()) {
+      toast.error("Informe o título e o link.");
+      return;
+    }
+    setEditCompanyBiolinks((prev) => [
+      ...prev,
+      { id: Date.now().toString(), title: newLinkTitle.trim(), url: newLinkUrl.trim() },
+    ]);
+    setNewLinkTitle("");
+    setNewLinkUrl("");
+  };
+
+  const handleRemoveBiolink = (idx: number) => {
+    setEditCompanyBiolinks((prev) => prev.filter((_, i) => i !== idx));
+  };
+
   const handleSaveCompanyQuickEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavingCompany(true);
     try {
-      const res = await updateDirectoryListingFn({
+      const res = await updateStoreProfileFn({
         data: {
-          id: store.id,
-          businessName: editCompanyName,
+          storeId: store.id,
+          name: editCompanyName.trim(),
+          slug: editCompanySlug.trim() ? editCompanySlug.trim() : undefined,
           category: editCompanyCategory,
-          description: editCompanyDescription,
-          address: editCompanyAddress,
-          city: editCompanyCity,
-          contactPhone: editCompanyPhone,
-          contactWhatsapp: editCompanyWhatsapp,
-          contactEmail: editCompanyEmail,
-          websiteUrl: editCompanyWebsite,
-          workingHours: editCompanyHours,
+          description: editCompanyDescription.trim() || undefined,
+          address: editCompanyAddress.trim() || undefined,
+          city: editCompanyCity.trim() || undefined,
+          state: editCompanyState.trim() || "SC",
+          phone: editCompanyPhone.trim() || undefined,
+          whatsapp: editCompanyWhatsapp.trim() || undefined,
+          email: editCompanyEmail.trim() || undefined,
+          website: editCompanyWebsite.trim() || undefined,
+          instagram: editCompanyInstagram.trim() || undefined,
+          working_hours: editCompanyHours.trim() || undefined,
+          logo_url: editCompanyLogoUrl || undefined,
+          banner_url: editCompanyBannerUrl || undefined,
+          cover_url: editCompanyBannerUrl || undefined,
+          biolinks: editCompanyBiolinks,
         },
       });
       toast.success(res.message);
       setIsEditCompanyModalOpen(false);
       if (typeof window !== "undefined") {
-        window.location.reload();
+        if (res.slug && res.slug !== store.slug) {
+          window.location.href = `/perfil-da-loja?slug=${res.slug}`;
+        } else {
+          window.location.reload();
+        }
       }
     } catch (err: any) {
       toast.error(err?.message || "Erro ao salvar alterações na empresa.");
@@ -257,19 +312,6 @@ export function CanonicalStoreProfileView({
     }
   };
 
-  const settings = store?.settings || {};
-  const coverUrl =
-    store?.banner_url ||
-    settings.cover_url ||
-    settings.bannerUrl ||
-    settings.banner_url ||
-    null;
-  const logoUrl =
-    store?.avatar_url ||
-    store?.logo_url ||
-    settings.logoUrl ||
-    settings.logo_url ||
-    null;
 
   const rawHours =
     settings.working_hours ||
@@ -653,13 +695,73 @@ function cleanAddressSegment(text: string): string {
         }}
       />
 
-      {/* ── 2. CABEÇALHO DO PERFIL: FOTO 1:1 + CAPA 21:9 NA MESMA ALTURA SEM BORDAS PESADAS ── */}
-      <div className="rounded-2xl bg-card border border-border/40 p-3.5 sm:p-5 space-y-2.5">
-        {/* Faixa Superior: Foto 1:1 + Capa 21:9 com Mesma Altura */}
-        <div className="flex items-center gap-3 sm:gap-4 w-full">
+      {/* ── 2. CABEÇALHO DO PERFIL: CAPA PANORÂMICA 21:9 HERO + LOGO 1:1 + AÇÕES INTEGRADAS ── */}
+      <div className="rounded-3xl bg-card border border-border/40 p-4 sm:p-6 space-y-4">
+        {/* Capa Panorâmica Canônica 21:9 com Scroll Interno de Banners Promocionais */}
+        <div className="w-full aspect-[21/9] rounded-2xl sm:rounded-3xl bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
+          <div 
+            tabIndex={0}
+            aria-label="Galeria de banners da empresa"
+            className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center snap-x snap-mandatory"
+          >
+            {storeBannersList.length > 0 ? (
+              storeBannersList.map((banner, idx) => (
+                <div
+                  key={idx}
+                  className="size-full min-w-full rounded-2xl sm:rounded-3xl overflow-hidden relative shrink-0 snap-center bg-muted/30"
+                >
+                  <img
+                    src={banner.imageUrl}
+                    alt={banner.title || "Capa da empresa"}
+                    className="size-full object-cover select-none"
+                  />
+                  {banner.link && (
+                    <a
+                      href={banner.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute inset-0 z-10"
+                      aria-label="Abrir link do banner"
+                    />
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="size-full bg-gradient-to-r from-primary/10 via-muted/30 to-primary/10 flex items-center justify-center">
+                <Store className="size-10 sm:size-16 text-primary/30" />
+              </div>
+            )}
+          </div>
+
+          {isOwner && (
+            <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-1.5 z-20">
+              <button
+                type="button"
+                onClick={() => setIsEditCompanyModalOpen(true)}
+                className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                title="Alterar Capa (21:9)"
+              >
+                <Camera className="size-3.5" />
+                <span className="hidden sm:inline">Alterar Capa</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSectionsEditorOpen(true)}
+                className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                title="Personalizar Vitrine"
+              >
+                <SlidersHorizontal className="size-3.5" />
+                <span className="hidden sm:inline">Personalizar</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Faixa do Avatar 1:1 e Contadores (Com sobreposição elegante da capa) */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 px-1 -mt-8 sm:-mt-12 relative z-10">
           {/* Foto da Empresa em Squircle 1:1 */}
-          <div className="flex-shrink-0 relative group">
-            <div className="size-20 sm:size-28 rounded-2xl bg-muted flex-shrink-0 overflow-hidden flex items-center justify-center">
+          <div className="relative group shrink-0">
+            <div className="size-20 sm:size-28 rounded-2xl bg-card border-4 border-card ring-1 ring-border/50 overflow-hidden flex items-center justify-center shadow-md">
               {logoUrl ? (
                 <img
                   src={logoUrl}
@@ -673,86 +775,20 @@ function cleanAddressSegment(text: string): string {
               )}
             </div>
             {isOwner && (
-              <Link
-                to="/workspace/marketing/brand-kit"
-                search={{ storeId: store.id }}
+              <button
+                type="button"
+                onClick={() => setIsEditCompanyModalOpen(true)}
                 className="absolute inset-0 bg-black/40 text-white rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
                 title="Alterar Logo da Marca"
               >
                 <Camera className="size-4 sm:size-5" />
                 <span className="text-[9px] sm:text-[10px]">Alterar</span>
-              </Link>
+              </button>
             )}
           </div>
 
-          {/* Container da Capa Panorâmica com Escala Proporcional Verdadeira */}
-          <div className="flex-1 aspect-[2.6/1] sm:aspect-[3/1] max-h-28 rounded-2xl bg-muted/20 relative overflow-hidden flex items-center">
-            <div 
-              tabIndex={0}
-              aria-label="Galeria de banners da empresa"
-              className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center gap-2 snap-x snap-mandatory"
-            >
-              {storeBannersList.length > 0 ? (
-                storeBannersList.map((banner, idx) => (
-                  <div
-                    key={idx}
-                    className="h-full min-w-full sm:min-w-[340px] md:min-w-[460px] rounded-xl overflow-hidden relative shrink-0 snap-center bg-muted/30"
-                  >
-                    <img
-                      src={banner.imageUrl}
-                      alt=""
-                      aria-hidden="true"
-                      className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
-                    />
-                    <img
-                      src={banner.imageUrl}
-                      alt={banner.title || "Capa da empresa"}
-                      className="relative size-full object-contain sm:object-cover select-none rounded-xl"
-                    />
-                    {banner.link && (
-                      <a
-                        href={banner.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="absolute inset-0 z-10"
-                        aria-label="Abrir link do banner"
-                      />
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="size-full bg-gradient-to-r from-primary/10 via-muted/30 to-primary/10 flex items-center justify-center rounded-xl">
-                  <Store className="size-6 sm:size-8 text-primary/30" />
-                </div>
-              )}
-            </div>
-            {isOwner && (
-              <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 flex items-center gap-1.5 z-20">
-                <Link
-                  to="/workspace/marketing/brand-kit"
-                  search={{ storeId: store.id }}
-                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
-                  title="Editar Capa e Marca"
-                >
-                  <Camera className="size-3 sm:size-3.5" />
-                  <span className="hidden sm:inline">Capa</span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setIsSectionsEditorOpen(true)}
-                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
-                  title="Personalizar Vitrine"
-                >
-                  <SlidersHorizontal className="size-3 sm:size-3.5" />
-                  <span className="hidden sm:inline">Personalizar</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Contadores Superiores Exclusivos para Seguidores / Seguindo / Curtidas (Padrão Instagram) */}
-        <div className="flex items-center gap-6 sm:gap-8 py-0.5">
+          {/* Contadores Superiores Exclusivos para Seguidores / Seguindo / Curtidas */}
+          <div className="flex items-center gap-6 sm:gap-8 pb-1">
           <div className="text-left">
             <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
               {store.followers_count || store.followersCount || 0}
@@ -772,6 +808,7 @@ function cleanAddressSegment(text: string): string {
             <span className="text-[11px] text-muted-foreground">Curtidas</span>
           </div>
         </div>
+      </div>
 
         {/* Linha de Identidade Compacta, Tipografia Fluida & Avaliação Real reposicionada abaixo do Nome */}
         <div className="pt-2 border-t border-border/30 flex flex-col gap-2">
@@ -2688,90 +2725,114 @@ function cleanAddressSegment(text: string): string {
         />
       )}
 
-      {/* ── MODAL DE EDIÇÃO RÁPIDA DA EMPRESA (MODO PROPRIETÁRIO) ── */}
+      {/* ── MODAL DE EDIÇÃO COMPLETA DA EMPRESA (CANONICAL IN-PAGE EDITOR) ── */}
       <Dialog open={isEditCompanyModalOpen} onOpenChange={setIsEditCompanyModalOpen}>
-        <DialogContent className="sm:max-w-lg rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-xl rounded-3xl max-h-[90vh] overflow-y-auto">
           <form onSubmit={handleSaveCompanyQuickEdit} className="space-y-4">
             <DialogHeader>
-              <DialogTitle className="text-base font-semibold">Editar Informações da Empresa</DialogTitle>
+              <DialogTitle className="text-base font-bold">Editar Perfil da Empresa</DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Atualize dados de atendimento, horários, endereço e canais de contato.
+                Atualize a identidade visual, dados de contato, redes e links oficiais da sua empresa.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-3 py-1">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Nome Comercial</label>
-                <Input
-                  value={editCompanyName}
-                  onChange={(e) => setEditCompanyName(e.target.value)}
-                  placeholder="Nome da sua empresa..."
-                  required
-                  className="h-9 rounded-xl text-xs"
-                />
+            <div className="space-y-4 py-1">
+              {/* Uploads de Capa (21:9) e Logo (1:1) */}
+              <div className="space-y-3 p-3.5 rounded-2xl bg-muted/20 border border-border/50">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  Identidade Visual Canônica
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-foreground">Logo da Marca (1:1)</label>
+                    <ImageUpload
+                      value={editCompanyLogoUrl}
+                      onChange={setEditCompanyLogoUrl}
+                      bucket="avatars"
+                      aspectPreset="square"
+                      helperText="Logo quadrada para avatar oficial"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-foreground">Capa do Perfil (21:9)</label>
+                    <ImageUpload
+                      value={editCompanyBannerUrl}
+                      onChange={setEditCompanyBannerUrl}
+                      bucket="store-assets"
+                      aspectPreset="banner"
+                      helperText="Capa panorâmica oficial (21:9)"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* Nome & Slug/@arroba */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground">WhatsApp de Atendimento</label>
+                  <label className="text-xs font-medium text-foreground">Nome Comercial *</label>
+                  <Input
+                    value={editCompanyName}
+                    onChange={(e) => setEditCompanyName(e.target.value)}
+                    placeholder="Nome da sua empresa..."
+                    required
+                    className="h-10 rounded-xl text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">Identificador (@arroba)</label>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-xs text-muted-foreground font-mono">@</span>
+                    <Input
+                      value={editCompanySlug}
+                      onChange={(e) => setEditCompanySlug(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ""))}
+                      placeholder="sua-empresa"
+                      className="h-10 pl-7 rounded-xl text-xs font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contatos */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">WhatsApp *</label>
                   <Input
                     value={editCompanyWhatsapp}
                     onChange={(e) => setEditCompanyWhatsapp(e.target.value)}
                     placeholder="(49) 99999-9999"
-                    className="h-9 rounded-xl text-xs font-mono"
+                    className="h-10 rounded-xl text-xs font-mono"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground">Telefone Fixo / Comercial</label>
+                  <label className="text-xs font-medium text-foreground">Telefone Fixo</label>
                   <Input
                     value={editCompanyPhone}
                     onChange={(e) => setEditCompanyPhone(e.target.value)}
                     placeholder="(49) 3622-0000"
-                    className="h-9 rounded-xl text-xs font-mono"
+                    className="h-10 rounded-xl text-xs font-mono"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground">E-mail Comercial</label>
+                  <label className="text-xs font-medium text-foreground">E-mail</label>
                   <Input
                     type="email"
                     value={editCompanyEmail}
                     onChange={(e) => setEditCompanyEmail(e.target.value)}
                     placeholder="contato@empresa.com.br"
-                    className="h-9 rounded-xl text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground">Website Oficial</label>
-                  <Input
-                    value={editCompanyWebsite}
-                    onChange={(e) => setEditCompanyWebsite(e.target.value)}
-                    placeholder="https://suaempresa.com.br"
-                    className="h-9 rounded-xl text-xs"
+                    className="h-10 rounded-xl text-xs"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Horários de Atendimento</label>
-                <Input
-                  value={editCompanyHours}
-                  onChange={(e) => setEditCompanyHours(e.target.value)}
-                  placeholder="Ex: Seg a Sex: 08:00 - 18:00 | Sáb: 08:00 - 12:00"
-                  className="h-9 rounded-xl text-xs"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div className="col-span-2 space-y-1">
+              {/* Endereço */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="sm:col-span-2 space-y-1">
                   <label className="text-xs font-medium text-foreground">Endereço Completo</label>
                   <Input
                     value={editCompanyAddress}
                     onChange={(e) => setEditCompanyAddress(e.target.value)}
                     placeholder="Rua, número, bairro..."
-                    className="h-9 rounded-xl text-xs"
+                    className="h-10 rounded-xl text-xs"
                   />
                 </div>
                 <div className="space-y-1">
@@ -2780,24 +2841,117 @@ function cleanAddressSegment(text: string): string {
                     value={editCompanyCity}
                     onChange={(e) => setEditCompanyCity(e.target.value)}
                     placeholder="Cidade"
-                    className="h-9 rounded-xl text-xs"
+                    className="h-10 rounded-xl text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">UF</label>
+                  <Input
+                    value={editCompanyState}
+                    onChange={(e) => setEditCompanyState(e.target.value.toUpperCase())}
+                    placeholder="SC"
+                    maxLength={2}
+                    className="h-10 rounded-xl text-xs uppercase"
                   />
                 </div>
               </div>
 
+              {/* Redes e Horários */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">Site Oficial</label>
+                  <Input
+                    value={editCompanyWebsite}
+                    onChange={(e) => setEditCompanyWebsite(e.target.value)}
+                    placeholder="https://suaempresa.com.br"
+                    className="h-10 rounded-xl text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">Instagram</label>
+                  <Input
+                    value={editCompanyInstagram}
+                    onChange={(e) => setEditCompanyInstagram(e.target.value)}
+                    placeholder="@suaempresa"
+                    className="h-10 rounded-xl text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">Horários</label>
+                  <Input
+                    value={editCompanyHours}
+                    onChange={(e) => setEditCompanyHours(e.target.value)}
+                    placeholder="08:00 - 18:00"
+                    className="h-10 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Bio */}
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Sobre a Empresa (Biografia / Descrição)</label>
+                <label className="text-xs font-medium text-foreground">Apresentação da Empresa (Bio)</label>
                 <textarea
                   value={editCompanyDescription}
                   onChange={(e) => setEditCompanyDescription(e.target.value)}
                   rows={3}
                   placeholder="Apresente sua empresa aos clientes locais..."
-                  className="w-full rounded-xl text-xs bg-background border border-border/60 p-2.5 focus:outline-none"
+                  className="w-full rounded-xl text-xs bg-background border border-border/60 p-2.5 focus:outline-none resize-none"
                 />
+              </div>
+
+              {/* Biolinks / Links Externos Customizados */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-muted/20 border border-border/50">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  Biolinks & Links Oficiais
+                </span>
+                {editCompanyBiolinks.length > 0 && (
+                  <div className="space-y-1.5 mb-2">
+                    {editCompanyBiolinks.map((link, idx) => (
+                      <div key={link.id || idx} className="flex items-center justify-between p-2 rounded-xl bg-background border border-border/40 text-xs">
+                        <div className="min-w-0 flex-1 pr-2">
+                          <p className="font-semibold text-foreground truncate">{link.title}</p>
+                          <p className="text-[10px] text-muted-foreground font-mono truncate">{link.url}</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveBiolink(idx)}
+                          className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Input
+                    value={newLinkTitle}
+                    onChange={(e) => setNewLinkTitle(e.target.value)}
+                    placeholder="Título (ex: Cardápio Digital)"
+                    className="h-9 rounded-xl text-xs flex-1"
+                  />
+                  <Input
+                    value={newLinkUrl}
+                    onChange={(e) => setNewLinkUrl(e.target.value)}
+                    placeholder="https://link..."
+                    className="h-9 rounded-xl text-xs flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddBiolink}
+                    className="h-9 rounded-xl text-xs font-semibold px-3"
+                  >
+                    Adicionar
+                  </Button>
+                </div>
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button
                 type="button"
                 variant="ghost"
@@ -2809,7 +2963,7 @@ function cleanAddressSegment(text: string): string {
               <Button
                 type="submit"
                 disabled={isSavingCompany}
-                className="rounded-xl text-xs font-medium"
+                className="rounded-xl text-xs font-bold px-5"
               >
                 {isSavingCompany ? "Salvando..." : "Salvar Alterações"}
               </Button>

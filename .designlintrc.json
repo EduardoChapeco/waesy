@@ -59,6 +59,7 @@
       "file": "src/styles.css",
       "reason": "Declaração base de paletas cromáticas e tokens de temas canônicos em styles.css",
       "date": "2026-09-29",
+      "expiry": "2027-12-31",
       "approvedBy": "design-system-architect"
     },
     {
@@ -66,6 +67,7 @@
       "file": "src/lib/theme-factory.ts",
       "reason": "Definição de códigos hexadecimais dos 10 temas canônicos e motor de luminância",
       "date": "2026-09-29",
+      "expiry": "2027-12-31",
       "approvedBy": "design-system-architect"
     }
   ]

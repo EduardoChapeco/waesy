@@ -1683,7 +1683,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <div className="max-h-56 overflow-y-auto no-scrollbar p-1 divide-y divide-border/40">
  {crmCustomers.length === 0 ? (
  <div className="p-4 text-center text-xs text-muted-foreground">
- Nenhum cliente cadastrado encontrado com "{clientSearch}". Preencha os campos abaixo manualmente para novo cliente.
+ Nenhum cliente com "{clientSearch}".
  </div>
  ) : (
  crmCustomers.map((c: any) => (

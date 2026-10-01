@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from "react";
-import Cropper from "react-easy-crop";
+import React, { useState, useCallback, Suspense, lazy } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import getCroppedImg from "@/lib/crop-image";
-import { Crop, ZoomIn, ZoomOut, RotateCw, Check, Maximize, Minimize } from "lucide-react";
+import { Crop, ZoomIn, ZoomOut, RotateCw, Check, Maximize, Minimize, Info } from "lucide-react";
+
+const Cropper = lazy(() => import("react-easy-crop"));
 
 export interface ImageCropperDialogProps {
   open: boolean;
@@ -181,10 +182,10 @@ export function ImageCropperDialog({
             {/* Indicador de Máscara Canônica Fiel ao Frame de Renderização */}
             {lockAspect && (
               <div className="flex items-center justify-between px-1">
-                <span className="text-[11px] font-semibold text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Máscara Canônica do Frame:
                 </span>
-                <span className="text-[11px] font-bold text-foreground bg-muted/70 px-2 py-0.5 rounded-md border border-border/50 font-mono">
+                <span className="text-xs font-bold text-foreground bg-muted/70 px-2 py-0.5 rounded-md border border-border/50 font-mono">
                   {getAspectLabel(selectedAspect, isRound)}
                 </span>
               </div>
@@ -193,7 +194,7 @@ export function ImageCropperDialog({
             {/* Seletor de Proporções Rápidas (apenas quando o aspecto for livre) */}
             {!isRound && !lockAspect && (
               <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-                <span className="text-[11px] font-mono uppercase text-muted-foreground mr-1 shrink-0">
+                <span className="text-xs font-mono uppercase text-muted-foreground mr-1 shrink-0">
                   Proporção:
                 </span>
                 {ASPECT_PRESETS.map((preset, idx) => {
@@ -203,7 +204,7 @@ export function ImageCropperDialog({
                       key={idx}
                       type="button"
                       onClick={() => setSelectedAspect(preset.value)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-all shrink-0 cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-colors shrink-0 cursor-pointer ${
                         isActive
                           ? "bg-foreground text-background font-bold shadow-xs"
                           : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40"
@@ -218,32 +219,40 @@ export function ImageCropperDialog({
 
             {/* Viewport Amplo do Cropper com Máscara e Puxa/Arrasta Livre */}
             <div className="relative w-full h-[320px] sm:h-[400px] overflow-hidden rounded-2xl bg-[#09090b] select-none border border-border/40">
-              <Cropper
-                image={imageSrc}
-                crop={crop}
-                zoom={zoom}
-                rotation={rotation}
-                aspect={isRound ? 1 : selectedAspect}
-                cropShape={cropShape}
-                showGrid={true}
-                objectFit={objectFit}
-                minZoom={0.8}
-                maxZoom={5}
-                zoomWithScroll={true}
-                zoomSpeed={0.1}
-                onCropChange={setCrop}
-                onCropComplete={onCropComplete}
-                onZoomChange={setZoom}
-                onRotationChange={setRotation}
-                style={{
-                  containerStyle: { background: "#09090b" },
-                  cropAreaStyle: {
-                    border: "2px solid #ffffff",
-                    borderRadius: isRound ? "50%" : "12px",
-                    boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.75)",
-                  },
-                }}
-              />
+              <Suspense
+                fallback={
+                  <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground font-mono">
+                    Carregando editor...
+                  </div>
+                }
+              >
+                <Cropper
+                  image={imageSrc}
+                  crop={crop}
+                  zoom={zoom}
+                  rotation={rotation}
+                  aspect={isRound ? 1 : selectedAspect}
+                  cropShape={cropShape}
+                  showGrid={true}
+                  objectFit={objectFit}
+                  minZoom={0.8}
+                  maxZoom={5}
+                  zoomWithScroll={true}
+                  zoomSpeed={0.1}
+                  onCropChange={setCrop}
+                  onCropComplete={onCropComplete}
+                  onZoomChange={setZoom}
+                  onRotationChange={setRotation}
+                  style={{
+                    containerStyle: { background: "#09090b" },
+                    cropAreaStyle: {
+                      border: "2px solid #ffffff",
+                      borderRadius: isRound ? "50%" : "12px",
+                      boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.75)",
+                    },
+                  }}
+                />
+              </Suspense>
             </div>
 
             {/* Controles de Zoom: Slider com Botões de Passo + e - */}
@@ -286,8 +295,9 @@ export function ImageCropperDialog({
             </div>
 
             {/* Dica de Ergonomia de Enquadramento */}
-            <p className="text-[11px] text-muted-foreground text-center pt-0.5">
-              💡 Arraste para posicionar e use o slider ou a roda do mouse para ajustar o zoom.
+            <p className="text-xs text-muted-foreground text-center pt-0.5 flex items-center justify-center gap-1">
+              <Info className="size-3.5 shrink-0" />
+              <span>Arraste para posicionar e use o slider ou a roda do mouse para ajustar o zoom.</span>
             </p>
           </div>
         ) : (

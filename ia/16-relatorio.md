@@ -104,6 +104,7 @@ Substituído cirurgicamente por:
 | [`src/components/commerce/product-grid.tsx`](file:///c:/Users/Excel%C3%AAncia%20Tour%20SMO/Documents/waesy/src/components/commerce/product-grid.tsx) | Modificado | Aplicação de `transition-colors` e `content-auto-card` nos itens de lista. |
 | [`src/components/state/loading.tsx`](file:///c:/Users/Excel%C3%AAncia%20Tour%20SMO/Documents/waesy/src/components/state/loading.tsx) | Modificado | Ajuste de `aspect-[4/5]` para `aspect-square rounded-2xl` no skeleton de produto (CLS = 0). |
 | [`src/components/ui/sheet.tsx`](file:///c:/Users/Excel%C3%AAncia%20Tour%20SMO/Documents/waesy/src/components/ui/sheet.tsx) | Modificado | Redução de duração para 300ms/200ms; eliminação de classes `[70vw]` e `[65vw]`. |
+| [`src/components/ui/image-cropper-dialog.tsx`](file:///c:/Users/Excel%C3%AAncia%20Tour%20SMO/Documents/waesy/src/components/ui/image-cropper-dialog.tsx) | Modificado | Carregamento sob demanda via `React.lazy` de `react-easy-crop`; purga de emoji; normalização de transição e tipografia. |
 | [`src/hooks/anti-jank.test.ts`](file:///c:/Users/Excel%C3%AAncia%20Tour%20SMO/Documents/waesy/src/hooks/anti-jank.test.ts) | Criado | 12 testes automatizados de verificação anti-jank, virtualização e carregamento sob demanda. |
 
 ---
@@ -111,11 +112,12 @@ Substituído cirurgicamente por:
 ## 7. Resultados dos Testes Automatizados
 
 ```
- ✓ src/hooks/anti-jank.test.ts (12 tests) 25ms
- ✓ src/components/widgets/micro-widgets.test.ts (29 tests) 34ms
- ✓ src/hooks/use-mobile.test.ts (20 tests) 685ms
+ ✓ src/hooks/anti-jank.test.ts (12 tests)
+ ✓ src/components/widgets/micro-widgets.test.ts (29 tests)
+ ✓ src/hooks/use-mobile.test.ts (20 tests)
+ ... 121 arquivos adicionais da suíte completa
 
- Test Files  3 passed (3)
-      Tests  61 passed (61)
-   Duration  1.79s
+ Test Files  124 passed (124)
+      Tests  827 passed (827)
+   Duration  90.75s (zero erros, zero warnings bloqueantes)
 ```

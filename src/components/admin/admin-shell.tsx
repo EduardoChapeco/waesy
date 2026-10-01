@@ -70,41 +70,41 @@ function resolveIcon(name: string): LucideIcon {
 function getContextualAction(pathname: string) {
  // Subpages / Detail pages -> Return to parent list
  if (
- pathname === "/admin/catalogo/produtos/novo" ||
+ pathname === "/workspace/catalogo/produtos/novo" ||
  pathname.match(/\/admin\/catalogo\/produtos\/[^/]+$/)
  ) {
- if (pathname !== "/admin/catalogo/produtos") {
- return { label: "Voltar para Lista", path: "/admin/catalogo/produtos", icon: "ChevronLeft" };
+ if (pathname !== "/workspace/catalogo/produtos") {
+ return { label: "Voltar para Lista", path: "/workspace/catalogo/produtos", icon: "ChevronLeft" };
  }
  }
  if (pathname.startsWith("/admin/caixa/")) {
- return { label: "Voltar para Caixa", path: "/admin/caixa", icon: "ChevronLeft" };
+ return { label: "Voltar para Caixa", path: "/workspace/financeiro/caixa", icon: "ChevronLeft" };
  }
- if (pathname.match(/\/admin\/pedidos\/[^/]+$/) && pathname !== "/admin/pedidos") {
- return { label: "Voltar para Pedidos", path: "/admin/pedidos", icon: "ChevronLeft" };
+ if (pathname.match(/\/admin\/pedidos\/[^/]+$/) && pathname !== "/workspace/pedidos") {
+ return { label: "Voltar para Pedidos", path: "/workspace/pedidos", icon: "ChevronLeft" };
  }
- if (pathname.match(/\/admin\/clientes\/[^/]+$/) && pathname !== "/admin/clientes") {
- return { label: "Voltar para Clientes", path: "/admin/clientes", icon: "ChevronLeft" };
+ if (pathname.match(/\/admin\/clientes\/[^/]+$/) && pathname !== "/workspace/clientes") {
+ return { label: "Voltar para Clientes", path: "/workspace/clientes", icon: "ChevronLeft" };
  }
 
  // Base list pages -> Create actions
- if (pathname.startsWith("/admin/catalogo/produtos")) {
- return { label: "Novo Produto", path: "/admin/catalogo/produtos/novo", icon: "Plus" };
+ if (pathname.startsWith("/workspace/catalogo/produtos")) {
+ return { label: "Novo Produto", path: "/workspace/catalogo/produtos/novo", icon: "Plus" };
  }
- if (pathname.startsWith("/admin/clientes")) {
- return { label: "Cadastrar Cliente", path: "/admin/clientes", icon: "UserPlus" };
+ if (pathname.startsWith("/workspace/clientes")) {
+ return { label: "Cadastrar Cliente", path: "/workspace/clientes", icon: "UserPlus" };
  }
- if (pathname.startsWith("/admin/caixa")) {
- return { label: "Novo Lançamento", path: "/admin/caixa/lancamentos", icon: "Plus" };
+ if (pathname.startsWith("/workspace/financeiro/caixa")) {
+ return { label: "Novo Lançamento", path: "/workspace/financeiro/caixa/lancamentos", icon: "Plus" };
  }
  if (pathname.startsWith("/admin/cms/paginas")) {
- return { label: "Nova Página", path: "/admin/cms/paginas/novo", icon: "Plus" };
+ return { label: "Nova Página", path: "/workspace/cms/paginas", icon: "Plus" };
  }
- if (pathname.startsWith("/admin/marketing/cupons")) {
- return { label: "Novo Cupom", path: "/admin/marketing/cupons", icon: "Plus" };
+ if (pathname.startsWith("/workspace/marketing/promocoes")) {
+ return { label: "Novo Cupom", path: "/workspace/marketing/promocoes", icon: "Plus" };
  }
- if (pathname.startsWith("/admin/pedidos")) {
- return { label: "Venda PDV / Caixa", path: "/admin/caixa", icon: "ShoppingCart" };
+ if (pathname.startsWith("/workspace/pedidos")) {
+ return { label: "Venda PDV / Caixa", path: "/workspace/financeiro/caixa", icon: "ShoppingCart" };
  }
  return null;
 }
@@ -121,108 +121,108 @@ function getActiveGroup(pathname: string): string {
  }
  // 2. Prefix match (excluding root /admin)
  for (const group of ADMIN_SIDEBAR_NAV) {
- if (group.items.some((item) => item.path !== "/admin" && pathname.startsWith(item.path))) {
+ if (group.items.some((item) => item.path !== "/workspace" && pathname.startsWith(item.path))) {
  return group.title;
  }
  }
  // 3. Prefix fallbacks for deep screens not directly listed
- if (pathname.startsWith("/admin/events")) {
+ if (pathname.startsWith("/workspace/eventos")) {
  return "Eventos & Cultura";
  }
  if (
- pathname.startsWith("/admin/catalogo") ||
- pathname.startsWith("/admin/estoque") ||
- pathname.startsWith("/admin/midias")
+ pathname.startsWith("/workspace/catalogo") ||
+ pathname.startsWith("/workspace/estoque") ||
+ pathname.startsWith("/workspace/midias")
  ) {
  return "Produtos & Estoque";
  }
  if (
- pathname.startsWith("/admin/pedidos") ||
- pathname.startsWith("/admin/pagamentos") ||
- pathname.startsWith("/admin/comprovantes") ||
- pathname.startsWith("/admin/comissoes") ||
- pathname.startsWith("/admin/match-time")
+ pathname.startsWith("/workspace/pedidos") ||
+ pathname.startsWith("/workspace/financeiro/pagamentos") ||
+ pathname.startsWith("/workspace/financeiro/comprovantes") ||
+ pathname.startsWith("/workspace/financeiro/comissoes") ||
+ pathname.startsWith("/workspace/match-time")
  ) {
  return "Pedidos & Vendas";
  }
  if (
- pathname.startsWith("/admin/clientes") ||
- pathname.startsWith("/admin/conversas") ||
- pathname.startsWith("/admin/suporte") ||
- pathname.startsWith("/admin/avaliacoes")
+ pathname.startsWith("/workspace/clientes") ||
+ pathname.startsWith("/workspace/atendimento") ||
+ pathname.startsWith("/workspace/suporte") ||
+ pathname.startsWith("/workspace/avaliacoes")
  ) {
  return "Clientes & Atendimento";
  }
  if (
- pathname.startsWith("/admin/vitrine") ||
- pathname.startsWith("/admin/cms") ||
- pathname.startsWith("/admin/builder") ||
- pathname.startsWith("/admin/link-da-bio") ||
- pathname.startsWith("/admin/destaques")
+ pathname.startsWith("/workspace/marketing/vitrine") ||
+ pathname.startsWith("/workspace/cms/paginas") ||
+ pathname.startsWith("/workspace/marketing/vitrine") ||
+ pathname.startsWith("/workspace/marketing/hotpages") ||
+ pathname.startsWith("/workspace/marketing/banners")
  ) {
  return "Vitrine & Design";
  }
  if (
- pathname.startsWith("/admin/marketing") ||
- pathname.startsWith("/admin/stories") ||
- pathname.startsWith("/admin/criador")
+ pathname.startsWith("/workspace/marketing/anuncios") ||
+ pathname.startsWith("/workspace/marketing/stories") ||
+ pathname.startsWith("/workspace/criador")
  ) {
  return "Marketing & Crescimento";
  }
  if (
- pathname.startsWith("/admin/configuracoes") ||
- pathname.startsWith("/admin/fretes") ||
- pathname.startsWith("/admin/integracoes")
+ pathname.startsWith("/workspace/configuracoes") ||
+ pathname.startsWith("/workspace/logistica") ||
+ pathname.startsWith("/workspace/configuracoes/integracoes")
  ) {
  return "Ajustes da Loja";
  }
- if (pathname.startsWith("/admin/caixa")) {
+ if (pathname.startsWith("/workspace/financeiro/caixa")) {
  return "Início";
  }
  return "Início";
 }
 
 const MODULES = [
- { label: "Visão Geral", path: "/admin", icon: "LayoutDashboard", group: "Meu Estúdio" },
+ { label: "Visão Geral", path: "/workspace", icon: "LayoutDashboard", group: "Meu Estúdio" },
  {
  label: "Eventos e Cultura",
- path: "/admin/events",
+ path: "/workspace/eventos",
  icon: "Calendar",
  group: "Eventos & Cultura",
  },
  {
  label: "Mercado e Estoque",
- path: "/admin/catalogo/produtos",
+ path: "/workspace/catalogo/produtos",
  icon: "Package",
  group: "Mercado & Estoque",
  },
  {
  label: "Vendas e Caixa",
- path: "/admin/pedidos",
+ path: "/workspace/pedidos",
  icon: "ShoppingBag",
  group: "Vendas & Caixa",
  },
  {
  label: "Comunidade",
- path: "/admin/clientes",
+ path: "/workspace/clientes",
  icon: "Users",
  group: "Comunidade",
  },
  {
  label: "Design",
- path: "/admin/builder",
+ path: "/workspace/marketing/vitrine",
  icon: "Store",
  group: "Design & Presença",
  },
  {
  label: "Crescimento",
- path: "/admin/marketing/cupons",
+ path: "/workspace/marketing/promocoes",
  icon: "Megaphone",
  group: "Crescimento",
  },
  {
  label: "Ajustes",
- path: "/admin/configuracoes/loja",
+ path: "/workspace/configuracoes",
  icon: "Settings",
  group: "Ajustes do Coletivo",
  },
@@ -321,13 +321,13 @@ export function AdminShell({
 
  // Switch viewMode based on route
  const [viewMode, setViewMode] = useState<"modules" | "subpages">(() => {
- return pathname === "/admin" || pathname === "/admin/" || pathname === "/admin/onboarding"
+ return pathname === "/workspace" || pathname === "/workspace" || pathname === "/workspace/onboarding"
  ? "modules"
  : "subpages";
  });
 
  useEffect(() => {
- if (pathname === "/admin" || pathname === "/admin/" || pathname === "/admin/onboarding") {
+ if (pathname === "/workspace" || pathname === "/workspace" || pathname === "/workspace/onboarding") {
  setViewMode("modules");
  } else {
  setViewMode("subpages");
@@ -664,7 +664,7 @@ export function AdminShell({
  <li key={path} className="flex-1">
  <Link
  to={path}
- activeOptions={{ exact: path === "/admin" }}
+ activeOptions={{ exact: path === "/workspace" }}
  className="flex min-h-[56px] flex-col items-center justify-center gap-1 px-2 py-2 text-nav font-medium text-muted-foreground"
  activeProps={{ className: "text-primary" }}
  >

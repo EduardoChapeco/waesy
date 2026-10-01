@@ -62,7 +62,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
         onClick={() => setIsMinimized(false)}
         aria-label="Expandir Barra de Governança"
         className="fixed bottom-20 right-3.5 lg:bottom-6 lg:right-6 z-50 size-9 sm:size-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center border border-border/40 hover:scale-105 transition-all cursor-pointer shadow-lg"
-        title="Admin Master Ativo - Clique para expandir"
+        title="Admin Master"
       >
         <Shield className="size-4" />
       </button>

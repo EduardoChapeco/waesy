@@ -67,30 +67,30 @@ export const Route = createFileRoute("/_store/conta/classificados/novo")({
 function ContaClassificadoNovoErrorComponent({ error }: { error: any }) {
   return (
     <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-5">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-1">
         <Tag className="size-8" />
       </div>
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <h1 className="text-xl font-bold text-foreground">Falha ao Carregar Formulário de Anúncio</h1>
         <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
           Não foi possível preparar o assistente de publicação no momento.
         </p>
       </div>
       {error?.message && (
-        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
           {error.message}
         </pre>
       )}
       <div className="pt-2 flex items-center justify-center gap-3">
-        <Button asChild variant="outline" className="rounded-xl text-xs h-11 px-5 font-semibold">
+        <Button asChild variant="outline" className="rounded-lg text-xs h-11 px-5 font-semibold">
           <Link to="/conta/classificados">Voltar aos Anúncios</Link>
         </Button>
         <Button
           variant="default"
-          className="rounded-xl text-xs h-11 px-5 font-bold cursor-pointer"
+          className="rounded-lg text-xs h-11 px-5 font-bold cursor-pointer"
           onClick={() => window.location.reload()}
         >
-          <RefreshCw className="size-3.5 mr-1.5" />
+          <RefreshCw className="size-3.5 mr-2" />
           <span>Tentar Novamente</span>
         </Button>
       </div>
@@ -600,7 +600,7 @@ function CreateTypePicker({
     <div className="w-full max-w-6xl mx-auto space-y-6 pb-20 px-1 sm:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Criar Anúncio
           </h1>
@@ -608,18 +608,18 @@ function CreateTypePicker({
             {NICHE_CARDS.length} Formatos
           </Badge>
         </div>
-        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer border-border/70">
+        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer border-border/70">
           <Link to="/conta/classificados">Meus Anúncios</Link>
         </Button>
       </div>
 
       {/* ── Tabs Limpas no Topo (Apple HIG Segmented Control) ── */}
-      <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-xl border border-border/50 max-w-md">
+      <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border/50 max-w-md">
         <button
           type="button"
           onClick={() => setScopeTab("all")}
           className={cn(
-            "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
             scopeTab === "all"
               ? "bg-background text-foreground  border border-border/70"
               : "text-muted-foreground hover:text-foreground border border-transparent"
@@ -631,7 +631,7 @@ function CreateTypePicker({
           type="button"
           onClick={() => setScopeTab("personal")}
           className={cn(
-            "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
             scopeTab === "personal"
               ? "bg-background text-foreground  border border-border/70"
               : "text-muted-foreground hover:text-foreground border border-transparent"
@@ -643,7 +643,7 @@ function CreateTypePicker({
           type="button"
           onClick={() => setScopeTab("business")}
           className={cn(
-            "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
             scopeTab === "business"
               ? "bg-background text-foreground  border border-border/70"
               : "text-muted-foreground hover:text-foreground border border-transparent"
@@ -670,7 +670,7 @@ function CreateTypePicker({
               }
             }}
             placeholder="Busque categorias ou descreva seu anúncio (ex: iPhone 13 Pro 128GB)..."
-            className="pl-10 pr-16 h-11 rounded-xl text-xs sm:text-sm bg-card border-border/70 focus-visible:ring-1 focus-visible:ring-foreground/20"
+            className="pl-10 pr-16 h-11 rounded-lg text-xs sm:text-sm bg-card border-border/70 focus-visible:ring-1 focus-visible:ring-foreground/20"
             id="ai-intent-input"
           />
           {(searchFilter || aiPrompt) && (
@@ -680,7 +680,7 @@ function CreateTypePicker({
                 setSearchFilter("");
                 setAiPrompt("");
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer px-1.5 py-0.5"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer px-2 py-1"
             >
               Limpar
             </button>
@@ -691,7 +691,7 @@ function CreateTypePicker({
           disabled={isAiGenerating}
           onClick={handleGenerateWithAi}
           variant="outline"
-          className="h-11 px-4 rounded-xl font-semibold text-xs border border-border/80 text-foreground hover:bg-muted/40 transition-all cursor-pointer shrink-0"
+          className="h-11 px-4 rounded-lg font-semibold text-xs border border-border/80 text-foreground hover:bg-muted/40 transition-colors cursor-pointer shrink-0"
         >
           {isAiGenerating ? (
             <Loader2 className="size-4 mr-2 animate-spin" />
@@ -711,16 +711,16 @@ function CreateTypePicker({
             ? "Formatos para Negócios"
             : "Todos os Formatos"}
         </span>
-        <div className="divide-y divide-border/20 rounded-2xl border border-border/50 bg-card overflow-hidden">
+        <div className="divide-y divide-border/20 rounded-lg border border-border/50 bg-card overflow-hidden">
           {visibleNiches.map((niche) => {
             const Icon = niche.icon;
             return (
               <button
                 key={niche.id}
                 onClick={() => onSelect(niche.id)}
-                className="w-full flex items-center justify-between p-3.5 hover:bg-muted/30 active:bg-muted/50 transition-colors text-left cursor-pointer min-h-14"
+                className="w-full flex items-center justify-between p-4 hover:bg-muted/30 active:bg-muted/50 transition-colors text-left cursor-pointer min-h-14"
               >
-                <div className="flex items-center gap-3.5 min-w-0">
+                <div className="flex items-center gap-4 min-w-0">
                   <div className="size-11 rounded-full border border-border/60 flex items-center justify-center shrink-0 text-foreground bg-background">
                     <Icon className="size-5" />
                   </div>
@@ -729,11 +729,11 @@ function CreateTypePicker({
                       <h3 className="text-sm font-semibold text-foreground truncate">
                         {niche.title}
                       </h3>
-                      <span className="text-xs font-medium text-muted-foreground border border-border/60 px-1.5 py-0.2 rounded-sm shrink-0">
+                      <span className="text-xs font-medium text-muted-foreground border border-border/60 px-2 py-0.2 rounded-sm shrink-0">
                         {niche.badge}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    <p className="text-xs text-muted-foreground truncate mt-1">
                       {niche.subtitle}
                     </p>
                   </div>
@@ -754,11 +754,11 @@ function CreateTypePicker({
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                 Para Você (Comunidade)
               </span>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => handleScroll("left")}
-                  className="size-8 rounded-xl border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
+                  className="size-8 rounded-lg border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
                   title="Rolar para a esquerda"
                   aria-label="Rolar para esquerda"
                 >
@@ -767,7 +767,7 @@ function CreateTypePicker({
                 <button
                   type="button"
                   onClick={() => handleScroll("right")}
-                  className="size-8 rounded-xl border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
+                  className="size-8 rounded-lg border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
                   title="Rolar para a direita"
                   aria-label="Rolar para direita"
                 >
@@ -779,7 +779,7 @@ function CreateTypePicker({
             <div className="relative group/rail">
               <div
                 ref={scrollContainerRef}
-                className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-1 px-0.5 scroll-smooth"
+                className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-1 px-1 scroll-smooth"
               >
                 {personalNiches.map((niche) => {
                   const Icon = niche.icon;
@@ -787,18 +787,18 @@ function CreateTypePicker({
                     <button
                       key={niche.id}
                       onClick={() => onSelect(niche.id)}
-                      className="w-68 min-w-68 h-96 shrink-0 snap-start text-left relative rounded-2xl border border-border/60 bg-card hover:border-foreground/40 hover: transition-all duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
+                      className="w-68 min-w-68 h-96 shrink-0 snap-start text-left relative rounded-lg border border-border/60 bg-card hover:border-foreground/40 hover: transition-colors duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="size-12 rounded-xl bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-all">
+                        <div className="size-12 rounded-lg bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-colors">
                           <Icon className="size-6" />
                         </div>
-                        <span className="text-xs font-semibold text-muted-foreground border border-border/60 px-2 py-0.5 rounded-md">
+                        <span className="text-xs font-semibold text-muted-foreground border border-border/60 px-2 py-1 rounded-md">
                           {niche.badge}
                         </span>
                       </div>
 
-                      <div className="space-y-1.5 flex-1 flex flex-col justify-center mt-3">
+                      <div className="space-y-2 flex-1 flex flex-col justify-center mt-3">
                         <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
                           {niche.title}
                         </h3>
@@ -829,25 +829,25 @@ function CreateTypePicker({
               Para o Seu Negócio (Varejo e Serviços)
             </span>
 
-            <div className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-1 px-0.5 scroll-smooth">
+            <div className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-1 px-1 scroll-smooth">
               {businessNiches.map((niche) => {
                 const Icon = niche.icon;
                 return (
                   <button
                     key={niche.id}
                     onClick={() => onSelect(niche.id)}
-                    className="w-68 min-w-68 h-96 shrink-0 snap-start text-left relative rounded-2xl border border-border/60 bg-card hover:border-foreground/40 hover: transition-all duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
+                    className="w-68 min-w-68 h-96 shrink-0 snap-start text-left relative rounded-lg border border-border/60 bg-card hover:border-foreground/40 hover: transition-colors duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="size-12 rounded-xl bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-all">
+                      <div className="size-12 rounded-lg bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-colors">
                         <Icon className="size-6" />
                       </div>
-                      <span className="text-xs font-semibold text-muted-foreground border border-border/60 px-2 py-0.5 rounded-md">
+                      <span className="text-xs font-semibold text-muted-foreground border border-border/60 px-2 py-1 rounded-md">
                         {niche.badge}
                       </span>
                     </div>
 
-                    <div className="space-y-1.5 flex-1 flex flex-col justify-center mt-3">
+                    <div className="space-y-2 flex-1 flex flex-col justify-center mt-3">
                       <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
                         {niche.title}
                       </h3>
@@ -876,13 +876,13 @@ function CreateTypePicker({
         <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground block">
           Categorias Populares para Desapego Rápido
         </span>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {DESAPEGO_TAXONOMY.slice(0, 8).map((cat) => (
             <Badge
               key={cat.id}
               variant="outline"
               onClick={() => onSelect("desapego", cat.id)}
-              className="text-xs py-1.5 px-3 rounded-xl gap-1.5 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
+              className="text-xs py-2 px-3 rounded-lg gap-2 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
             >
               <span>{cat.label}</span>
             </Badge>
@@ -900,7 +900,7 @@ function CreateTypePicker({
               <button
                 key={item.id}
                 onClick={() => onSelect("desapego", item.id)}
-                className="flex items-center gap-3 p-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 text-left transition-all cursor-pointer"
+                className="flex items-center gap-3 p-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 text-left transition-colors cursor-pointer"
               >
                 <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <Tag className="size-4" />
@@ -3227,14 +3227,14 @@ function SpecializedClassifiedEditor({
  return (
  <div className="space-y-4">
  {/* ── Topbar Operacional Compacta & Sticky no Mobile ────────── */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/60 -mx-3.5 px-3.5 py-2.5 sm:mx-0 sm:px-0 sm:py-0 sm:static sm:border-0 sm:bg-transparent flex items-center justify-between gap-2 pb-3">
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/60 -mx-3.5 px-4 py-2 sm:mx-0 sm:px-0 sm:py-0 sm:static sm:border-0 sm:bg-transparent flex items-center justify-between gap-2 pb-3">
         <div className="flex items-center gap-2">
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-xl size-11 sm:size-9 font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+            className="rounded-lg size-11 sm:size-9 font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
             aria-label="Voltar"
           >
             <ArrowLeft className="size-5 sm:size-4" />
@@ -3242,7 +3242,7 @@ function SpecializedClassifiedEditor({
 
           <div className="hidden sm:flex items-center gap-2">
             <span className="text-muted-foreground text-xs">/</span>
-            <Badge variant="outline" className="text-xs font-semibold gap-1.5">
+            <Badge variant="outline" className="text-xs font-semibold gap-2">
               <niche.icon className="size-3.5 text-primary" />
               <span>{niche.title}</span>
             </Badge>
@@ -3251,11 +3251,11 @@ function SpecializedClassifiedEditor({
 
         {/* Mobile Switcher & Publicar / Salvar Action */}
         <div className="flex items-center gap-2">
-          <div className="flex md:hidden bg-muted p-0.5 rounded-xl text-xs font-semibold">
+          <div className="flex md:hidden bg-muted p-0.5 rounded-lg text-xs font-semibold">
             <button
               type="button"
               onClick={() => setMobileTab("edit")}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
+              className={`px-3 py-2 rounded-lg transition-colors ${
                 mobileTab === "edit"
                   ? "bg-card text-foreground font-bold "
                   : "text-muted-foreground"
@@ -3266,7 +3266,7 @@ function SpecializedClassifiedEditor({
             <button
               type="button"
               onClick={() => setMobileTab("preview")}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
+              className={`px-3 py-2 rounded-lg transition-colors ${
                 mobileTab === "preview"
                   ? "bg-card text-foreground font-bold "
                   : "text-muted-foreground"
@@ -3280,7 +3280,7 @@ function SpecializedClassifiedEditor({
             onClick={handlePublish}
             disabled={isSubmitting || isUploadingMedia}
             size="sm"
-            className="rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground h-9 px-4"
+            className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground h-9 px-4"
           >
             {isSubmitting ? (
               <>
@@ -3298,7 +3298,7 @@ function SpecializedClassifiedEditor({
       </div>
 
       {/* ── 5-Step Adaptive Stepper Tracker (Media-First & Snap-X V121) ── */}
-      <div className="w-full bg-card rounded-2xl border border-border/60 p-2 sm:p-2.5">
+      <div className="w-full bg-card rounded-lg border border-border/60 p-2 sm:p-2">
         <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-1 sm:grid sm:grid-cols-5 sm:gap-2">
           {[
             { step: 1, label: "Nicho", short: "Nicho" },
@@ -3318,7 +3318,7 @@ function SpecializedClassifiedEditor({
                   else setCurrentStep(s.step as any);
                 }}
                 className={cn(
-                  "flex items-center justify-center gap-1.5 py-2 px-2.5 sm:px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer text-center shrink-0 snap-center min-w-20 sm:min-w-0",
+                  "flex items-center justify-center gap-2 py-2 px-2.5 sm:px-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-center shrink-0 snap-center min-w-20 sm:min-w-0",
                   isCurrent
                     ? "bg-primary text-primary-foreground font-bold"
                     : isPast
@@ -3348,7 +3348,7 @@ function SpecializedClassifiedEditor({
 
       {/* ── Alerta Discreto de Rascunho Disponível ── */}
       {draftInfo && (
-        <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs">
+        <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs">
           <span className="text-muted-foreground">
             Rascunho não finalizado encontrado (Etapa {draftInfo.step} de 5).
           </span>
@@ -3373,7 +3373,7 @@ function SpecializedClassifiedEditor({
       )}
 
       {/* ── Barra de Score de Qualidade (Silenciosa & Informativa) ── */}
-      <div className="flex items-center justify-between gap-3 px-3.5 py-2 rounded-xl bg-card border border-border/60 text-xs">
+      <div className="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-card border border-border/60 text-xs">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider shrink-0">
             Qualidade
@@ -3381,7 +3381,7 @@ function SpecializedClassifiedEditor({
           <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden max-w-xs">
             <div
               className={cn(
-                "h-full rounded-full transition-all duration-500",
+                "h-full rounded-full transition-colors duration-500",
                 qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-amber-500" : "bg-primary"
               )}
               style={{ width: `${qualityScore}%` }}
@@ -3397,7 +3397,7 @@ function SpecializedClassifiedEditor({
       {currentStep === 5 ? (
         <div className="space-y-4 max-w-5xl mx-auto">
           {/* Header do Preview com Alternador de Dispositivo sem Emojis */}
-          <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-card border border-border/60">
+          <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/60">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Visualização do Comprador
@@ -3405,12 +3405,12 @@ function SpecializedClassifiedEditor({
             </div>
 
             {/* Alternador Limpo: Mobile vs Desktop (Sem Emojis) */}
-            <div className="flex items-center bg-muted p-0.5 rounded-xl text-xs font-semibold">
+            <div className="flex items-center bg-muted p-0.5 rounded-lg text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setPreviewDevice("mobile")}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg transition-colors cursor-pointer",
+                  "px-3 py-2 rounded-lg transition-colors cursor-pointer",
                   previewDevice === "mobile"
                     ? "bg-card text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -3422,7 +3422,7 @@ function SpecializedClassifiedEditor({
                 type="button"
                 onClick={() => setPreviewDevice("desktop")}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg transition-colors cursor-pointer",
+                  "px-3 py-2 rounded-lg transition-colors cursor-pointer",
                   previewDevice === "desktop"
                     ? "bg-card text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -3437,9 +3437,9 @@ function SpecializedClassifiedEditor({
           <div className="flex justify-center">
             <div
               className={cn(
-                "w-full transition-all duration-300",
+                "w-full transition-colors duration-300",
                 previewDevice === "mobile"
-                  ? "max-w-sm border border-border/80 rounded-3xl p-1 bg-background  overflow-hidden"
+                  ? "max-w-sm border border-border/80 rounded-lg p-1 bg-background  overflow-hidden"
                   : "max-w-5xl"
               )}
             >
@@ -3529,12 +3529,12 @@ function SpecializedClassifiedEditor({
           </div>
 
           {/* Sticky Thumb Zone Action Bar no Step 5 */}
-          <div className="sticky bottom-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 p-3 sm:p-4 -mx-3.5 sm:mx-0 sm:rounded-2xl sm:border flex items-center justify-between gap-3">
+          <div className="sticky bottom-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 p-3 sm:p-4 -mx-3.5 sm:mx-0 sm:rounded-lg sm:border flex items-center justify-between gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => setCurrentStep(4)}
-              className="rounded-xl h-11 px-4 text-xs font-semibold gap-1.5 cursor-pointer"
+              className="rounded-lg h-11 px-4 text-xs font-semibold gap-2 cursor-pointer"
             >
               <ArrowLeft className="size-4" />
               <span>Ajustar Condições</span>
@@ -3546,7 +3546,7 @@ function SpecializedClassifiedEditor({
                 variant="ghost"
                 onClick={handleSaveDraft}
                 disabled={isSubmitting}
-                className="rounded-xl h-11 px-3 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+                className="rounded-lg h-11 px-3 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 Salvar Rascunho
               </Button>
@@ -3555,7 +3555,7 @@ function SpecializedClassifiedEditor({
                 type="button"
                 onClick={handlePublish}
                 disabled={isSubmitting || isUploadingMedia}
-                className="rounded-xl h-11 px-6 text-sm font-bold bg-primary text-primary-foreground active:scale-98 transition-all gap-2 cursor-pointer"
+                className="rounded-lg h-11 px-6 text-sm font-bold bg-primary text-primary-foreground active:scale-98 transition-colors gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -3581,7 +3581,7 @@ function SpecializedClassifiedEditor({
  >
           <div className="space-y-6">
             {/* Section 1: Fotos do Topo & Galeria Exclusiva do Feed */}
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-5 border border-border/60">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
               <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                   <ImagePlus className="size-4 text-primary shrink-0" />
@@ -3592,9 +3592,9 @@ function SpecializedClassifiedEditor({
               {/* 1.1 Fotos de Destaque / Carrossel Superior */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                     <span>Fotos do Topo (Carrossel Hero)</span>
-                    <Badge variant="outline" className="text-xs py-0 px-1.5 font-mono">Até 10 fotos</Badge>
+                    <Badge variant="outline" className="text-xs py-0 px-2 font-mono">Até 10 fotos</Badge>
                   </Label>
                   <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
                     {images.length}/10 adicionada(s)
@@ -3619,9 +3619,9 @@ function SpecializedClassifiedEditor({
               {/* 1.2 Galeria Exclusiva do Feed */}
               <div className="pt-3 border-t border-border/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                     <span>Galeria Exclusiva do Feed</span>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-0 px-1.5 font-bold">Até 12 mídias</Badge>
+                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-0 px-2 font-bold">Até 12 mídias</Badge>
                   </Label>
                   <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
                     {feedMedia.length}/12 adicionada(s)
@@ -3645,13 +3645,13 @@ function SpecializedClassifiedEditor({
             </div>
 
             {/* Section 2: Informações Básicas (Design Silencioso V121) */}
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                 <FileText className="size-4 text-primary shrink-0" />
                 <span>2. Informações</span>
               </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
               <Input
                 value={title}
@@ -3669,11 +3669,11 @@ function SpecializedClassifiedEditor({
                     ? "Ex: Analista Financeiro Sênior (Híbrido)"
                     : "Ex: iPhone 15 Pro Max 256GB Impecável na Caixa"
                 }
-                className="h-11 rounded-xl text-xs bg-background font-medium"
+                className="h-11 rounded-lg text-xs bg-background font-medium"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-xs text-foreground font-medium">Descrição Completa *</Label>
                 <Button
@@ -3697,18 +3697,18 @@ function SpecializedClassifiedEditor({
                     ? "Descreva a atmosfera do espaço, comodidades, localização, distâncias de pontos turísticos e regras de convivência..."
                     : "Descreva todos os detalhes, histórico, diferenciais e informações importantes..."
                 }
-                className="rounded-xl text-xs bg-background resize-none leading-relaxed"
+                className="rounded-lg text-xs bg-background resize-none leading-relaxed"
               />
             </div>
 
             {/* Motor de Precificação Dinâmica & Avisos */}
             <div className="space-y-3 pt-1 border-t border-border/40">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs text-foreground font-semibold">
                   Modalidade de Preço
                 </Label>
                 <Select value={pricingType} onValueChange={(v: any) => setPricingType(v)}>
-                  <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -3724,7 +3724,7 @@ function SpecializedClassifiedEditor({
 
               {pricingType === "fixed" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-foreground font-medium">
                       {niche.id === "servico"
                         ? "Valor Base (R$) *"
@@ -3736,12 +3736,12 @@ function SpecializedClassifiedEditor({
                       value={priceCents}
                       onChange={setPriceCents}
                       placeholder="0,00"
-                      className="h-11 rounded-xl text-xs bg-background"
+                      className="h-11 rounded-lg text-xs bg-background"
                     />
                   </div>
-                  <div className="space-y-1.5 flex items-end">
+                  <div className="space-y-2 flex items-end">
                     <div
-                      className="flex items-center gap-2.5 h-11 px-3 rounded-xl bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer w-full"
+                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer w-full"
                       onClick={() => setNegotiable(!negotiable)}
                     >
                       <Checkbox
@@ -3761,13 +3761,13 @@ function SpecializedClassifiedEditor({
               )}
 
               {/* FASE 1: Lifecycle & Regras de Validade e Estoque */}
-              <div className="p-4 rounded-xl border border-border/60 bg-muted/20 space-y-3 mt-4">
+              <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3 mt-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Clock className="size-4 text-primary shrink-0" />
                     <span className="text-xs font-bold text-foreground">Validade do Anúncio (Obrigatório)</span>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-background p-1 rounded-lg border border-border/50">
+                  <div className="flex items-center gap-2 bg-background p-1 rounded-lg border border-border/50">
                     {([30, 60, 90] as const).map((days) => (
                       <button
                         key={days}
@@ -3786,7 +3786,7 @@ function SpecializedClassifiedEditor({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">
                       Limite de Pedidos / Oferta (Opcional)
                     </Label>
@@ -3796,10 +3796,10 @@ function SpecializedClassifiedEditor({
                       placeholder="Ex: 5 pedidos"
                       value={offerLimit}
                       onChange={(e) => setOfferLimit(e.target.value)}
-                      className="h-9 rounded-xl text-xs bg-background"
+                      className="h-9 rounded-lg text-xs bg-background"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">
                       Estoque Físico Disponível (Opcional)
                     </Label>
@@ -3809,7 +3809,7 @@ function SpecializedClassifiedEditor({
                       placeholder="Ex: 10 unidades"
                       value={stockLimit}
                       onChange={(e) => setStockLimit(e.target.value)}
-                      className="h-9 rounded-xl text-xs bg-background"
+                      className="h-9 rounded-lg text-xs bg-background"
                     />
                   </div>
                 </div>
@@ -3817,7 +3817,7 @@ function SpecializedClassifiedEditor({
 
               {pricingType === "starting_at" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-foreground font-medium">A partir de (R$) *</Label>
                     <CurrencyField
                       value={priceMinCents}
@@ -3826,12 +3826,12 @@ function SpecializedClassifiedEditor({
                         if (v && !priceCents) setPriceCents(v);
                       }}
                       placeholder="0,00"
-                      className="h-11 rounded-xl text-xs bg-background"
+                      className="h-11 rounded-lg text-xs bg-background"
                     />
                   </div>
-                  <div className="space-y-1.5 flex items-end">
+                  <div className="space-y-2 flex items-end">
                     <div
-                      className="flex items-center gap-2.5 h-11 px-3 rounded-xl bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer w-full"
+                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer w-full"
                       onClick={() => setNegotiable(!negotiable)}
                     >
                       <Checkbox
@@ -3852,7 +3852,7 @@ function SpecializedClassifiedEditor({
 
               {pricingType === "price_range" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-foreground font-medium">Preço Mínimo (R$) *</Label>
                     <CurrencyField
                       value={priceMinCents}
@@ -3861,24 +3861,24 @@ function SpecializedClassifiedEditor({
                         if (v && !priceCents) setPriceCents(v);
                       }}
                       placeholder="0,00"
-                      className="h-11 rounded-xl text-xs bg-background"
+                      className="h-11 rounded-lg text-xs bg-background"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-foreground font-medium">Preço Máximo (R$) *</Label>
                     <CurrencyField
                       value={priceMaxCents}
                       onChange={setPriceMaxCents}
                       placeholder="0,00"
-                      className="h-11 rounded-xl text-xs bg-background"
+                      className="h-11 rounded-lg text-xs bg-background"
                     />
                   </div>
                 </div>
               )}
 
               {pricingType === "on_quote" && (
-                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
-                  <p className="font-semibold flex items-center gap-1.5">
+                <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
+                  <p className="font-semibold flex items-center gap-2">
                     <Coins className="size-4 shrink-0" />
                     <span>Preço sob Orçamento / Cotação</span>
                   </p>
@@ -3889,8 +3889,8 @@ function SpecializedClassifiedEditor({
               )}
 
               {pricingType === "exchange_only" && (
-                <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-xs">
-                  <p className="font-semibold flex items-center gap-1.5">
+                <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-xs">
+                  <p className="font-semibold flex items-center gap-2">
                     <RefreshCw className="size-4 shrink-0" />
                     <span>Permuta / Troca Direta</span>
                   </p>
@@ -3901,8 +3901,8 @@ function SpecializedClassifiedEditor({
               )}
 
               {pricingType === "free" && (
-                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs">
-                  <p className="font-semibold flex items-center gap-1.5">
+                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs">
+                  <p className="font-semibold flex items-center gap-2">
                     <Tag className="size-4 shrink-0" />
                     <span>Gratuito / Doação Solidária (R$ 0)</span>
                   </p>
@@ -3913,12 +3913,12 @@ function SpecializedClassifiedEditor({
               )}
 
               {/* Aviso Legal / Disclaimer sobre o Valor */}
-              <div className="space-y-1.5 pt-1">
+              <div className="space-y-2 pt-1">
                 <Label className="text-xs text-foreground font-medium">
                   Aviso sobre Valores / Flutuação
                 </Label>
                 <Select value={priceDisclaimer} onValueChange={setPriceDisclaimer}>
-                  <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -3935,7 +3935,7 @@ function SpecializedClassifiedEditor({
                     value={customDisclaimer}
                     onChange={(e) => setCustomDisclaimer(e.target.value)}
                     placeholder="Escreva o aviso que aparecerá na vitrine pública..."
-                    className="h-10 rounded-xl text-xs bg-background mt-1.5"
+                    className="h-10 rounded-lg text-xs bg-background mt-2"
                   />
                 )}
               </div>
@@ -3945,7 +3945,7 @@ function SpecializedClassifiedEditor({
  {/* Seção 2: Especificações Técnicas do Anúncio */}
             {/* Viagens, Turismo & Resorts */}
             {niche.id === "viagem" && (
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-6 border border-border/60">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-6 border border-border/60">
                 {/* Header */}
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
@@ -3961,19 +3961,19 @@ function SpecializedClassifiedEditor({
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground">Resumo do Pacote</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Duração (Ex: 5D / 4N)</Label>
                       <Input
                         value={travelDuration}
                         onChange={(e) => setTravelDuration(e.target.value)}
                         placeholder="5D / 4N"
-                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                        className="h-11 rounded-lg text-xs bg-background font-medium"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Regime</Label>
                       <Select value={travelMealPlan} onValueChange={setTravelMealPlan}>
-                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -3985,13 +3985,13 @@ function SpecializedClassifiedEditor({
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Hóspedes Indicados</Label>
                       <Input
                         value={travelGuests}
                         onChange={(e) => setTravelGuests(e.target.value)}
                         placeholder="Ex: 2 Adultos"
-                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                        className="h-11 rounded-lg text-xs bg-background font-medium"
                       />
                     </div>
                   </div>
@@ -4001,40 +4001,40 @@ function SpecializedClassifiedEditor({
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground">Datas e Destino</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Datas (texto livre)</Label>
                       <Input
                         value={travelDates}
                         onChange={(e) => setTravelDates(e.target.value)}
                         placeholder="Ex: 23/10 a 27/10/2026"
-                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                        className="h-11 rounded-lg text-xs bg-background font-medium"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Cidade Destino (para clima real)</Label>
                       <Input
                         value={travelDestinationCity}
                         onChange={(e) => setTravelDestinationCity(e.target.value)}
                         placeholder="Ex: Jericoacoara, CE"
-                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                        className="h-11 rounded-lg text-xs bg-background font-medium"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Data de Saída</Label>
                       <Input
                         type="date"
                         value={travelDepartureDate}
                         onChange={(e) => setTravelDepartureDate(e.target.value)}
-                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                        className="h-11 rounded-lg text-xs bg-background font-medium"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Data de Retorno</Label>
                       <Input
                         type="date"
                         value={travelReturnDate}
                         onChange={(e) => setTravelReturnDate(e.target.value)}
-                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                        className="h-11 rounded-lg text-xs bg-background font-medium"
                       />
                     </div>
                   </div>
@@ -4049,7 +4049,7 @@ function SpecializedClassifiedEditor({
                 <div className="space-y-3">
                   {/* Seletor de Modo */}
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <RouteIcon className="size-3.5 text-primary" />
                       Logística de Transporte
                     </p>
@@ -4066,7 +4066,7 @@ function SpecializedClassifiedEditor({
                         type="button"
                         onClick={() => setTravelTransportType(t.id)}
                         className={cn(
-                          "px-3 py-1.5 rounded-xl border text-xs text-muted-foreground/75 font-semibold transition-all cursor-pointer select-none",
+                          "px-3 py-2 rounded-lg border text-xs text-muted-foreground/75 font-semibold transition-colors cursor-pointer select-none",
                           travelTransportType === t.id
                             ? "bg-primary text-primary-foreground border-primary "
                             : "bg-background border-border/50 text-muted-foreground hover:border-primary/50 hover:text-primary"
@@ -4079,15 +4079,15 @@ function SpecializedClassifiedEditor({
 
                   {/* ── AÉREO ── */}
                   {travelTransportType === "airplane" && (
-                    <div className="rounded-2xl border border-border/50 bg-muted/20 p-4 space-y-3">
+                    <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
                       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                         <Plane className="size-3.5" /> Detalhes do Voo
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Aeroporto de Saída (IATA)</Label>
                           <Select value={travelDepartureIATA} onValueChange={setTravelDepartureIATA}>
-                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                               <SelectValue placeholder="XAP — Chapecó, SC" />
                             </SelectTrigger>
                             <SelectContent className="max-h-72">
@@ -4097,10 +4097,10 @@ function SpecializedClassifiedEditor({
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Aeroporto de Chegada (IATA)</Label>
                           <Select value={travelArrivalIATA} onValueChange={setTravelArrivalIATA}>
-                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                               <SelectValue placeholder="FOR — Fortaleza, CE" />
                             </SelectTrigger>
                             <SelectContent className="max-h-72">
@@ -4110,10 +4110,10 @@ function SpecializedClassifiedEditor({
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Companhia Aérea</Label>
                           <Select value={travelAirline} onValueChange={setTravelAirline}>
-                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                               <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -4123,10 +4123,10 @@ function SpecializedClassifiedEditor({
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Conexões / Escalas</Label>
                           <Select value={String(travelConnections)} onValueChange={(v) => setTravelConnections(Number(v))}>
-                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -4137,21 +4137,21 @@ function SpecializedClassifiedEditor({
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Horário Embarque</Label>
-                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-lg text-xs bg-background font-mono" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Horário Chegada (Destino)</Label>
-                          <Input type="time" value={travelArrivalTime} onChange={(e) => setTravelArrivalTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                          <Input type="time" value={travelArrivalTime} onChange={(e) => setTravelArrivalTime(e.target.value)} className="h-11 rounded-lg text-xs bg-background font-mono" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Estimativa de Preço do Aéreo</Label>
-                          <Input value={travelFlightPrice} onChange={(e) => setTravelFlightPrice(e.target.value)} placeholder="Ex: R$ 1.139+" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelFlightPrice} onChange={(e) => setTravelFlightPrice(e.target.value)} placeholder="Ex: R$ 1.139+" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Duração do Voo</Label>
-                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 2h 15min" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 2h 15min" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
                       </div>
                     </div>
@@ -4159,15 +4159,15 @@ function SpecializedClassifiedEditor({
 
                   {/* ── TERRESTRE / EXCURSÃO ── */}
                   {travelTransportType === "bus" && (
-                    <div className="rounded-2xl border border-border/50 bg-muted/20 p-4 space-y-3">
+                    <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
                       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                         <Bus className="size-3.5" /> Excursão Rodoviária
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Categoria do Veículo</Label>
                           <Select value={travelBusCategory} onValueChange={setTravelBusCategory}>
-                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                               <SelectValue placeholder="Selecione o tipo..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -4177,38 +4177,38 @@ function SpecializedClassifiedEditor({
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Empresa / Fretadora</Label>
-                          <Input value={travelBusCompany} onChange={(e) => setTravelBusCompany(e.target.value)} placeholder="Ex: Expresso Itapemirim, Fretur SC..." className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelBusCompany} onChange={(e) => setTravelBusCompany(e.target.value)} placeholder="Ex: Expresso Itapemirim, Fretur SC..." className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Cidade de Saída / Embarque (Origem)</Label>
-                          <Input value={travelDepartureCity} onChange={(e) => setTravelDepartureCity(e.target.value)} placeholder="Ex: Chapecó, SC" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelDepartureCity} onChange={(e) => setTravelDepartureCity(e.target.value)} placeholder="Ex: Chapecó, SC" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Cidade de Destino da Viagem</Label>
-                          <Input value={travelDestinationCity} onChange={(e) => setTravelDestinationCity(e.target.value)} placeholder="Ex: Beto Carrero / Penha, SC" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelDestinationCity} onChange={(e) => setTravelDestinationCity(e.target.value)} placeholder="Ex: Beto Carrero / Penha, SC" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Horário de Embarque (Saída)</Label>
-                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-lg text-xs bg-background font-mono" />
                         </div>
-                        <div className="sm:col-span-2 space-y-1.5">
+                        <div className="sm:col-span-2 space-y-2">
                           <Label className="text-xs font-medium">Ponto de Encontro / Embarque</Label>
-                          <Input value={travelMeetingPoint} onChange={(e) => setTravelMeetingPoint(e.target.value)} placeholder="Ex: Posto Bertaso (Rod. SC-480), Chapecó — 22:00h" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelMeetingPoint} onChange={(e) => setTravelMeetingPoint(e.target.value)} placeholder="Ex: Posto Bertaso (Rod. SC-480), Chapecó — 22:00h" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Horário Previsto de Retorno</Label>
-                          <Input type="time" value={travelReturnDepartureTime} onChange={(e) => setTravelReturnDepartureTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                          <Input type="time" value={travelReturnDepartureTime} onChange={(e) => setTravelReturnDepartureTime(e.target.value)} className="h-11 rounded-lg text-xs bg-background font-mono" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Tempo Total de Percurso</Label>
-                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 12h (ida), 14h (volta)" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 12h (ida), 14h (volta)" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
                       </div>
 
                       {/* Badges de Meios de Pagamento Aceitos na Prévia */}
-                      <div className="flex flex-wrap gap-1.5 pt-1">
+                      <div className="flex flex-wrap gap-2 pt-1">
                         {acceptsPix && (
                           <Badge variant="secondary" className="text-xs font-medium gap-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                             <QrCode className="size-3 text-emerald-600" />
@@ -4261,7 +4261,7 @@ function SpecializedClassifiedEditor({
 
                       {/* Embarques na Rota (Gateways) */}
                       <div className="space-y-2">
-                        <Label className="text-xs font-medium flex items-center gap-1.5">
+                        <Label className="text-xs font-medium flex items-center gap-2">
                           <Navigation className="size-3.5 text-primary" />
                           Pontos de Embarque na Rota
                         </Label>
@@ -4272,14 +4272,14 @@ function SpecializedClassifiedEditor({
                             onChange={(e) => setTravelBoardingGatewayInput(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddGateway(); } }}
                             placeholder="Ex: Xaxim, Xanxerê, Joaçaba..."
-                            className="h-9 rounded-xl text-xs bg-background flex-1"
+                            className="h-9 rounded-lg text-xs bg-background flex-1"
                           />
-                          <Button type="button" variant="outline" size="sm" onClick={handleAddGateway} className="h-9 px-3 rounded-xl text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer">
+                          <Button type="button" variant="outline" size="sm" onClick={handleAddGateway} className="h-9 px-3 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer">
                             + Adicionar
                           </Button>
                         </div>
                         {travelBoardingGateways.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 pt-1">
+                          <div className="flex flex-wrap gap-2 pt-1">
                             {travelBoardingGateways.map((gw) => (
                               <span key={gw} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-muted-foreground/75 font-medium text-primary">
                                 <Navigation className="size-2.5" />
@@ -4293,10 +4293,10 @@ function SpecializedClassifiedEditor({
                         )}
                       </div>
                       {/* Serviço de Guia */}
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs font-medium">Serviço de Guia Turístico</Label>
                         <Select value={travelGuideService} onValueChange={setTravelGuideService}>
-                          <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                          <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                             <SelectValue placeholder="Selecione o serviço de guia..." />
                           </SelectTrigger>
                           <SelectContent>
@@ -4313,15 +4313,15 @@ function SpecializedClassifiedEditor({
                   {travelTransportType === "combo" && (
                     <div className="space-y-3">
                       {/* Leg 1: Voo */}
-                      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
                         <p className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1">
                           <Plane className="size-3.5" /> Trecho 1 — Voo
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs font-medium">Aeroporto de Origem</Label>
                             <Select value={travelComboFromIATA} onValueChange={setTravelComboFromIATA}>
-                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                                 <SelectValue placeholder="XAP — Chapecó" />
                               </SelectTrigger>
                               <SelectContent className="max-h-72">
@@ -4331,10 +4331,10 @@ function SpecializedClassifiedEditor({
                               </SelectContent>
                             </Select>
                           </div>
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs font-medium">Aeroporto de Desembarque (Gateway)</Label>
                             <Select value={travelComboToIATA} onValueChange={setTravelComboToIATA}>
-                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                                 <SelectValue placeholder="FOR — Fortaleza" />
                               </SelectTrigger>
                               <SelectContent className="max-h-72">
@@ -4344,10 +4344,10 @@ function SpecializedClassifiedEditor({
                               </SelectContent>
                             </Select>
                           </div>
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs font-medium">Companhia Aérea</Label>
                             <Select value={travelComboAirline} onValueChange={setTravelComboAirline}>
-                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                                 <SelectValue placeholder="Selecione..." />
                               </SelectTrigger>
                               <SelectContent>
@@ -4357,22 +4357,22 @@ function SpecializedClassifiedEditor({
                               </SelectContent>
                             </Select>
                           </div>
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs font-medium">Estimativa do Aéreo</Label>
-                            <Input value={travelComboFlightPrice} onChange={(e) => setTravelComboFlightPrice(e.target.value)} placeholder="Ex: R$ 1.139+" className="h-11 rounded-xl text-xs bg-background" />
+                            <Input value={travelComboFlightPrice} onChange={(e) => setTravelComboFlightPrice(e.target.value)} placeholder="Ex: R$ 1.139+" className="h-11 rounded-lg text-xs bg-background" />
                           </div>
                         </div>
                       </div>
                       {/* Leg 2: Transfer */}
-                      <div className="rounded-2xl border border-amber-200/60 bg-amber-50/30 dark:bg-amber-950/10 p-4 space-y-3">
+                      <div className="rounded-lg border border-amber-200/60 bg-amber-50/30 dark:bg-amber-950/10 p-4 space-y-3">
                         <p className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1">
                           <RouteIcon className="size-3.5" /> Trecho 2 — Transfer Terrestre / Marítimo
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs font-medium">Veículo do Transfer</Label>
                             <Select value={travelTransferVehicle} onValueChange={setTravelTransferVehicle}>
-                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                                 <SelectValue placeholder="Ex: 4x4 Hilux, Van..." />
                               </SelectTrigger>
                               <SelectContent>
@@ -4382,26 +4382,26 @@ function SpecializedClassifiedEditor({
                               </SelectContent>
                             </Select>
                           </div>
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs font-medium">Duração do Transfer</Label>
-                            <Input value={travelTransferDuration} onChange={(e) => setTravelTransferDuration(e.target.value)} placeholder="Ex: 4h, 2h30min" className="h-11 rounded-xl text-xs bg-background" />
+                            <Input value={travelTransferDuration} onChange={(e) => setTravelTransferDuration(e.target.value)} placeholder="Ex: 4h, 2h30min" className="h-11 rounded-lg text-xs bg-background" />
                           </div>
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs font-medium">De (Ponto de Partida do Transfer)</Label>
-                            <Input value={travelTransferFrom} onChange={(e) => setTravelTransferFrom(e.target.value)} placeholder="Ex: Fortaleza (Aeroporto FOR)" className="h-11 rounded-xl text-xs bg-background" />
+                            <Input value={travelTransferFrom} onChange={(e) => setTravelTransferFrom(e.target.value)} placeholder="Ex: Fortaleza (Aeroporto FOR)" className="h-11 rounded-lg text-xs bg-background" />
                           </div>
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs font-medium">Até (Destino Final)</Label>
-                            <Input value={travelTransferTo} onChange={(e) => setTravelTransferTo(e.target.value)} placeholder="Ex: Jericoacoara, CE" className="h-11 rounded-xl text-xs bg-background" />
+                            <Input value={travelTransferTo} onChange={(e) => setTravelTransferTo(e.target.value)} placeholder="Ex: Jericoacoara, CE" className="h-11 rounded-lg text-xs bg-background" />
                           </div>
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs font-medium">Horário Saída do Transfer</Label>
-                            <Input type="time" value={travelTransferTime} onChange={(e) => setTravelTransferTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                            <Input type="time" value={travelTransferTime} onChange={(e) => setTravelTransferTime(e.target.value)} className="h-11 rounded-lg text-xs bg-background font-mono" />
                           </div>
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs font-medium">Serviço de Guia no Destino</Label>
                             <Select value={travelGuideService} onValueChange={setTravelGuideService}>
-                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                                 <SelectValue placeholder="Serviço de guia..." />
                               </SelectTrigger>
                               <SelectContent>
@@ -4411,9 +4411,9 @@ function SpecializedClassifiedEditor({
                               </SelectContent>
                             </Select>
                           </div>
-                          <div className="sm:col-span-2 space-y-1.5">
+                          <div className="sm:col-span-2 space-y-2">
                             <Label className="text-xs font-medium">Observações do Roteiro Multimodal</Label>
-                            <Input value={travelComboNotes} onChange={(e) => setTravelComboNotes(e.target.value)} placeholder="Ex: Transfer privativo, recomendamos cabine com mochila 30L..." className="h-11 rounded-xl text-xs bg-background" />
+                            <Input value={travelComboNotes} onChange={(e) => setTravelComboNotes(e.target.value)} placeholder="Ex: Transfer privativo, recomendamos cabine com mochila 30L..." className="h-11 rounded-lg text-xs bg-background" />
                           </div>
                         </div>
                       </div>
@@ -4422,34 +4422,34 @@ function SpecializedClassifiedEditor({
 
                   {/* ── CRUZEIRO ── */}
                   {travelTransportType === "cruise" && (
-                    <div className="rounded-2xl border border-border/50 bg-muted/20 p-4 space-y-3">
+                    <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
                       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                         <Ship className="size-3.5" /> Detalhes do Cruzeiro
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Nome do Navio</Label>
-                          <Input value={travelShipName} onChange={(e) => setTravelShipName(e.target.value)} placeholder="Ex: MSC Grandiosa" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelShipName} onChange={(e) => setTravelShipName(e.target.value)} placeholder="Ex: MSC Grandiosa" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Armadora / Linha de Cruzeiros</Label>
-                          <Input value={travelCruiseLine} onChange={(e) => setTravelCruiseLine(e.target.value)} placeholder="Ex: MSC Cruzeiros, Costa Cruceros..." className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelCruiseLine} onChange={(e) => setTravelCruiseLine(e.target.value)} placeholder="Ex: MSC Cruzeiros, Costa Cruceros..." className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Categoria da Cabine</Label>
-                          <Input value={travelCabinCategory} onChange={(e) => setTravelCabinCategory(e.target.value)} placeholder="Ex: Cabine Interior, Balcão, Suite" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelCabinCategory} onChange={(e) => setTravelCabinCategory(e.target.value)} placeholder="Ex: Cabine Interior, Balcão, Suite" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Porto de Embarque</Label>
-                          <Input value={travelEmbarkationPort} onChange={(e) => setTravelEmbarkationPort(e.target.value)} placeholder="Ex: Terminal de Passageiros Santos, SP" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelEmbarkationPort} onChange={(e) => setTravelEmbarkationPort(e.target.value)} placeholder="Ex: Terminal de Passageiros Santos, SP" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Horário Embarque</Label>
-                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-lg text-xs bg-background font-mono" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Duração da Cruzeiro</Label>
-                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 7 noites, 8 dias" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 7 noites, 8 dias" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
                       </div>
                     </div>
@@ -4457,26 +4457,26 @@ function SpecializedClassifiedEditor({
 
                   {/* ── TREM ── */}
                   {travelTransportType === "train" && (
-                    <div className="rounded-2xl border border-border/50 bg-muted/20 p-4 space-y-3">
+                    <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
                       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                         <Train className="size-3.5" /> Detalhes do Trem
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Estação de Partida</Label>
-                          <Input value={travelMeetingPoint} onChange={(e) => setTravelMeetingPoint(e.target.value)} placeholder="Ex: Estação da Luz — São Paulo, SP" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelMeetingPoint} onChange={(e) => setTravelMeetingPoint(e.target.value)} placeholder="Ex: Estação da Luz — São Paulo, SP" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Horário de Partida</Label>
-                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-lg text-xs bg-background font-mono" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Classe / Categoria</Label>
-                          <Input value={travelBusCategory} onChange={(e) => setTravelBusCategory(e.target.value)} placeholder="Ex: Classe Econômica, Primeira Classe..." className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelBusCategory} onChange={(e) => setTravelBusCategory(e.target.value)} placeholder="Ex: Classe Econômica, Primeira Classe..." className="h-11 rounded-lg text-xs bg-background" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-medium">Duração do Percurso</Label>
-                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 3h 40min" className="h-11 rounded-xl text-xs bg-background" />
+                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 3h 40min" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
                       </div>
                     </div>
@@ -4484,15 +4484,15 @@ function SpecializedClassifiedEditor({
 
                   {/* ── CARRO PRÓPRIO / HOTEL ONLY ── (sem logística de transporte) */}
                   {(travelTransportType === "car" || travelTransportType === "hotel_only") && (
-                    <div className="rounded-2xl border border-border/50 bg-muted/10 p-4">
+                    <div className="rounded-lg border border-border/50 bg-muted/10 p-4">
                       <p className="text-xs text-muted-foreground">
                         {travelTransportType === "car"
                           ? " O passageiro viajará de carro próprio ou alugado até o destino. Preencha o roteiro e hospedagem abaixo."
                           : " Pacote local / hospedagem + passeios. Transporte até o destino por conta do passageiro."}
                       </p>
-                      <div className="mt-3 space-y-1.5">
+                      <div className="mt-3 space-y-2">
                         <Label className="text-xs font-medium">Ponto de Check-in / Encontro no Destino</Label>
-                        <Input value={travelMeetingPoint} onChange={(e) => setTravelMeetingPoint(e.target.value)} placeholder="Ex: Hotel Costa Brava — Recepção — 14:00h" className="h-11 rounded-xl text-xs bg-background" />
+                        <Input value={travelMeetingPoint} onChange={(e) => setTravelMeetingPoint(e.target.value)} placeholder="Ex: Hotel Costa Brava — Recepção — 14:00h" className="h-11 rounded-lg text-xs bg-background" />
                       </div>
                     </div>
                   )}
@@ -4500,7 +4500,7 @@ function SpecializedClassifiedEditor({
                   {/* ── MÚLTIPLAS SAÍDAS / DATAS ── */}
                   <div className="space-y-2 pt-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                         <Calendar className="size-3.5 text-primary" />
                         Saídas Confirmadas
                       </p>
@@ -4517,14 +4517,14 @@ function SpecializedClassifiedEditor({
                     <p className="text-xs text-muted-foreground">Cadastre múltiplas datas de saída. O cliente verá todas as opções disponíveis no anúncio.</p>
 
                     {travelDepartureOptions.length === 0 && (
-                      <p className="text-xs text-muted-foreground/75 text-muted-foreground py-2 text-center border border-dashed border-border/50 rounded-xl">
+                      <p className="text-xs text-muted-foreground/75 text-muted-foreground py-2 text-center border border-dashed border-border/50 rounded-lg">
                         Nenhuma saída cadastrada — as datas acima serão usadas como saída única.
                       </p>
                     )}
 
                     <div className="space-y-2">
                       {travelDepartureOptions.map((opt, idx) => (
-                        <div key={opt.id} className="rounded-xl border border-border/50 bg-card p-3 space-y-2">
+                        <div key={opt.id} className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-muted-foreground/75 font-bold text-foreground">Saída {idx + 1}</span>
                             <button type="button" onClick={() => handleRemoveDeparture(opt.id)} className="size-6 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center">
@@ -4575,7 +4575,7 @@ function SpecializedClassifiedEditor({
 
                 {/* 2.4 — Diferenciais (Bio Bullets) */}
                 {/* 2.4 — Diferenciais do Pacote (Campos Livres Dinâmicos) */}
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground">
@@ -4600,7 +4600,7 @@ function SpecializedClassifiedEditor({
                   {/* Lista Dinâmica de Campos Livres */}
                   <div className="space-y-2">
                     {travelBioBullets.map((bullet, idx) => (
-                      <div key={idx} className="flex items-center gap-1.5">
+                      <div key={idx} className="flex items-center gap-2">
                         <span className="text-xs font-mono text-muted-foreground w-4 text-center shrink-0">
                           {idx + 1}.
                         </span>
@@ -4608,9 +4608,9 @@ function SpecializedClassifiedEditor({
                           value={bullet}
                           onChange={(e) => handleUpdateTravelBullet(idx, e.target.value)}
                           placeholder={`Diferencial ${idx + 1} (ex: All Inclusive, Voo Incluso, Pé na Areia, Vista Panorâmica...)`}
-                          className="h-9 rounded-xl text-xs bg-background flex-1"
+                          className="h-9 rounded-lg text-xs bg-background flex-1"
                         />
-                        <div className="flex items-center gap-0.5 shrink-0">
+                        <div className="flex items-center gap-1 shrink-0">
                           {travelBioBullets.length > 1 && (
                             <>
                               <Button
@@ -4659,7 +4659,7 @@ function SpecializedClassifiedEditor({
                       variant="outline"
                       size="sm"
                       onClick={handleAddTravelBullet}
-                      className="w-full h-8 text-xs font-medium border-dashed border-border/70 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary rounded-xl gap-1.5 cursor-pointer mt-1"
+                      className="w-full h-8 text-xs font-medium border-dashed border-border/70 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary rounded-lg gap-2 cursor-pointer mt-1"
                     >
                       <Plus className="size-3.5" />
                       <span>Adicionar outro diferencial</span>
@@ -4667,7 +4667,7 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   {/* Sugestões Rápidas de Emojis / Tags */}
-                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                  <div className="flex items-center gap-2 flex-wrap pt-1">
                     <span className="text-xs text-muted-foreground font-medium">Sugestões rápidas:</span>
                     {[
                       " All Inclusive",
@@ -4694,7 +4694,7 @@ function SpecializedClassifiedEditor({
                             return [...prev, sug];
                           });
                         }}
-                        className="text-xs px-2 py-0.5 rounded-lg border border-border/60 bg-muted/40 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer text-muted-foreground"
+                        className="text-xs px-2 py-1 rounded-lg border border-border/60 bg-muted/40 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer text-muted-foreground"
                       >
                         + {sug}
                       </button>
@@ -4705,7 +4705,7 @@ function SpecializedClassifiedEditor({
                 {/* 2.5 — Parcelamento */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs text-foreground font-medium flex items-center gap-1.5">
+                    <Label className="text-xs text-foreground font-medium flex items-center gap-2">
                       <CreditCard className="size-3.5 text-primary" />
                       <span>Máximo de Parcelas</span>
                     </Label>
@@ -4732,7 +4732,7 @@ function SpecializedClassifiedEditor({
 
                 {/* 2.6 — Story Highlights */}
                 <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <ImagePlus className="size-3.5 text-primary" />
                     <span>Destaques Visuais</span>
                   </p>
@@ -4758,7 +4758,7 @@ function SpecializedClassifiedEditor({
 
             {/* Destaques Visuais em Vitrine Imersiva */}
             {niche.id !== "viagem" && (templateStyle === "editorial" || (templateStyle as string) === "instagram") && (
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <ImagePlus className="size-4 text-primary shrink-0" />
@@ -4779,7 +4779,7 @@ function SpecializedClassifiedEditor({
 
             {/* Aluguel de Equipamentos */}
             {niche.id === "equipamento" && (
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Wrench className="size-4 text-primary shrink-0" />
@@ -4791,10 +4791,10 @@ function SpecializedClassifiedEditor({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-foreground font-medium">Período Base</Label>
                     <Select value={equipmentPeriod} onValueChange={(v: any) => setEquipmentPeriod(v)}>
-                      <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -4805,13 +4805,13 @@ function SpecializedClassifiedEditor({
                     </Select>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-foreground font-medium">Valor do Caução / Garantia (R$)</Label>
                     <CurrencyField
                       value={equipmentDepositCents}
                       onChange={setEquipmentDepositCents}
                       placeholder="0,00"
-                      className="h-11 rounded-xl text-xs bg-background"
+                      className="h-11 rounded-lg text-xs bg-background"
                     />
                   </div>
                 </div>
@@ -4820,7 +4820,7 @@ function SpecializedClassifiedEditor({
 
             {/* Hospedagem & Temporada */}
             {niche.id === "hospedagem" && (
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Key className="size-4 text-primary shrink-0" />
@@ -4832,10 +4832,10 @@ function SpecializedClassifiedEditor({
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Tipo de Estadia</Label>
  <Select value={hospPropertyType} onValueChange={setHospPropertyType}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -4850,10 +4850,10 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Modalidade de Check-in</Label>
  <Select value={hospCheckinType} onValueChange={(v: any) => setHospCheckinType(v)}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -4865,14 +4865,14 @@ function SpecializedClassifiedEditor({
  </div>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
  <div className="space-y-1">
  <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Hóspedes Máx.</Label>
  <Input
  value={hospGuests}
  onChange={(e) => setHospGuests(e.target.value)}
  placeholder="4"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -4881,7 +4881,7 @@ function SpecializedClassifiedEditor({
  value={hospBedrooms}
  onChange={(e) => setHospBedrooms(e.target.value)}
  placeholder="1"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -4890,7 +4890,7 @@ function SpecializedClassifiedEditor({
  value={hospBathrooms}
  onChange={(e) => setHospBathrooms(e.target.value)}
  placeholder="1"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
@@ -4902,7 +4902,7 @@ function SpecializedClassifiedEditor({
  value={hospCleaningFeeCents}
  onChange={setHospCleaningFeeCents}
  placeholder="0,00"
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -4911,7 +4911,7 @@ function SpecializedClassifiedEditor({
  value={hospCheckinTime}
  onChange={(e) => setHospCheckinTime(e.target.value)}
  placeholder="14:00"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -4920,13 +4920,13 @@ function SpecializedClassifiedEditor({
  value={hospCheckoutTime}
  onChange={(e) => setHospCheckoutTime(e.target.value)}
  placeholder="11:00"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
 
               {/* Comodidades Selecionáveis em Sub-Card com Borda Mínima */}
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold text-foreground tracking-tight">Comodidades Disponíveis</Label>
                   <span className="text-xs text-muted-foreground font-mono">{hospAmenities.length} selecionada(s)</span>
@@ -4954,7 +4954,7 @@ function SpecializedClassifiedEditor({
                       <div
                         key={amenity}
                         onClick={() => toggleItem(hospAmenities, setHospAmenities, amenity)}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-11 ${
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
                           active
                             ? "border-primary bg-primary/10 text-primary font-medium"
                             : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -4980,7 +4980,7 @@ function SpecializedClassifiedEditor({
                       }
                     }}
                     placeholder="Adicionar outra comodidade ou diferencial..."
-                    className="h-9 rounded-xl text-xs bg-background flex-1"
+                    className="h-9 rounded-lg text-xs bg-background flex-1"
                   />
                   <Button
                     type="button"
@@ -4992,7 +4992,7 @@ function SpecializedClassifiedEditor({
                         setCustomHospAmenity("");
                       }
                     }}
-                    className="h-9 rounded-xl text-xs font-semibold cursor-pointer"
+                    className="h-9 rounded-lg text-xs font-semibold cursor-pointer"
                   >
                     + Adicionar
                   </Button>
@@ -5000,7 +5000,7 @@ function SpecializedClassifiedEditor({
               </div>
 
               {/* Regras da Casa em Sub-Card com Borda Mínima */}
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold text-foreground tracking-tight">Regras da Hospedagem</Label>
                   <span className="text-xs text-muted-foreground font-mono">{hospRules.length} ativa(s)</span>
@@ -5017,7 +5017,7 @@ function SpecializedClassifiedEditor({
                       <div
                         key={rule}
                         onClick={() => toggleItem(hospRules, setHospRules, rule)}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-11 ${
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
                           active
                             ? "border-primary bg-primary/10 text-primary font-medium"
                             : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5035,17 +5035,17 @@ function SpecializedClassifiedEditor({
 
  {/* Imóvel */}
  {niche.id === "imovel" && (
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                   <HomeIcon className="size-4 text-primary shrink-0" />
  <span>2. Imóvel</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Operação</Label>
  <Select value={reDealType} onValueChange={(v: any) => setReDealType(v)}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -5056,25 +5056,25 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Tipo de Imóvel</Label>
  <Input
  value={rePropertyType}
  onChange={(e) => setRePropertyType(e.target.value)}
  placeholder="Apartamento, Casa, etc."
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
  <div className="space-y-1">
  <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Área Útil (m²)</Label>
  <Input
  value={reAreaSqm}
  onChange={(e) => setReAreaSqm(e.target.value)}
  placeholder="75"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -5083,7 +5083,7 @@ function SpecializedClassifiedEditor({
  value={reBedrooms}
  onChange={(e) => setReBedrooms(e.target.value)}
  placeholder="2"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -5092,7 +5092,7 @@ function SpecializedClassifiedEditor({
  value={reParking}
  onChange={(e) => setReParking(e.target.value)}
  placeholder="1"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
@@ -5104,7 +5104,7 @@ function SpecializedClassifiedEditor({
  value={reCondoCents}
  onChange={setReCondoCents}
  placeholder="0,00"
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -5113,13 +5113,13 @@ function SpecializedClassifiedEditor({
  value={reIptuCents}
  onChange={setReIptuCents}
  placeholder="0,00"
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
 
  {/* Comodidades & Diferenciais do Imóvel */}
- <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3 pt-2">
+ <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3 pt-2">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-semibold text-foreground tracking-tight">Comodidades e Infraestrutura do Imóvel</Label>
  <span className="text-xs text-muted-foreground font-mono">{reAmenities.length} selecionada(s)</span>
@@ -5147,7 +5147,7 @@ function SpecializedClassifiedEditor({
  <div
  key={amenity}
  onClick={() => toggleItem(reAmenities, setReAmenities, amenity)}
- className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-11 ${
+ className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
  active
  ? "border-primary bg-primary/10 text-primary font-medium"
  : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5173,7 +5173,7 @@ function SpecializedClassifiedEditor({
  }
  }}
  placeholder="Adicionar diferencial do imóvel..."
- className="h-9 rounded-xl text-xs bg-background flex-1"
+ className="h-9 rounded-lg text-xs bg-background flex-1"
  />
  <Button
  type="button"
@@ -5185,7 +5185,7 @@ function SpecializedClassifiedEditor({
  setCustomReAmenity("");
  }
  }}
- className="h-9 rounded-xl text-xs font-semibold cursor-pointer"
+ className="h-9 rounded-lg text-xs font-semibold cursor-pointer"
  >
  + Adicionar
  </Button>
@@ -5196,41 +5196,41 @@ function SpecializedClassifiedEditor({
 
  {/* Veículo */}
               {niche.id === "veiculo" && (
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Car className="size-4 text-primary" />
  <span>2. Veículo</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Marca *</Label>
  <Input
  value={vehicleBrand}
  onChange={(e) => setVehicleBrand(e.target.value)}
  placeholder="Ex: Honda, Toyota, VW"
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Modelo *</Label>
  <Input
  value={vehicleModel}
  onChange={(e) => setVehicleModel(e.target.value)}
  placeholder="Ex: Civic, Corolla, Golf"
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
  <div className="space-y-1">
  <Label className="text-xs text-muted-foreground/75 text-muted-foreground">Ano Fab.</Label>
  <Input
  value={vehicleYearFab}
  onChange={(e) => setVehicleYearFab(e.target.value)}
  placeholder="2021"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -5239,7 +5239,7 @@ function SpecializedClassifiedEditor({
  value={vehicleYearModel}
  onChange={(e) => setVehicleYearModel(e.target.value)}
  placeholder="2022"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -5248,16 +5248,16 @@ function SpecializedClassifiedEditor({
  value={vehicleKm}
  onChange={(e) => setVehicleKm(e.target.value)}
  placeholder="45.000"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Câmbio</Label>
  <Select value={vehicleTransmission} onValueChange={setVehicleTransmission}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -5267,10 +5267,10 @@ function SpecializedClassifiedEditor({
  </SelectContent>
  </Select>
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Combustível</Label>
  <Select value={vehicleFuel} onValueChange={setVehicleFuel}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -5285,7 +5285,7 @@ function SpecializedClassifiedEditor({
  </div>
 
  {/* Opcionais & Diferenciais do Veículo */}
- <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3 pt-2">
+ <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3 pt-2">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-semibold text-foreground tracking-tight">Opcionais e Diferenciais do Veículo</Label>
  <span className="text-xs text-muted-foreground font-mono">{vehicleFeatures.length} selecionado(s)</span>
@@ -5302,7 +5302,7 @@ function SpecializedClassifiedEditor({
  <div
  key={opt}
  onClick={() => toggleItem(vehicleFeatures, setVehicleFeatures, opt)}
- className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-11 ${
+ className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
  active
  ? "border-primary bg-primary/10 text-primary font-medium"
  : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5328,7 +5328,7 @@ function SpecializedClassifiedEditor({
  }
  }}
  placeholder="Adicionar outro opcional do veículo (ex: Engate, Vitrificação)..."
-                        className="h-9 rounded-xl text-xs bg-background flex-1"
+                        className="h-9 rounded-lg text-xs bg-background flex-1"
                       />
                       <Button
                         type="button"
@@ -5340,7 +5340,7 @@ function SpecializedClassifiedEditor({
                             setCustomVehicleOption("");
                           }
                         }}
-                        className="h-9 rounded-xl text-xs font-semibold cursor-pointer"
+                        className="h-9 rounded-lg text-xs font-semibold cursor-pointer"
                       >
                         + Adicionar
                       </Button>
@@ -5348,7 +5348,7 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   {/* Procedência & Histórico do Veículo */}
-                  <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold text-foreground tracking-tight">Procedência e Histórico</Label>
                       <span className="text-xs text-muted-foreground font-mono">{vehicleProvenance.length} selecionado(s)</span>
@@ -5360,7 +5360,7 @@ function SpecializedClassifiedEditor({
                           <div
                             key={prov}
                             onClick={() => toggleItem(vehicleProvenance, setVehicleProvenance, prov)}
-                            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-11 ${
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
                               active
                                 ? "border-primary bg-primary/10 text-primary font-medium"
                                 : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5378,7 +5378,7 @@ function SpecializedClassifiedEditor({
 
               {/* Serviço Profissional */}
               {niche.id === "servico" && (
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                     <Wrench className="size-4 text-primary" />
                     <span>Parâmetros do Serviço</span>
@@ -5387,7 +5387,7 @@ function SpecializedClassifiedEditor({
                   {/* Sub-nicho Canônico Especializado com Smart Cascade Pills */}
                   <div className="space-y-2">
                     <Label className="text-xs text-foreground font-medium">Segmento / Sub-nicho Profissional *</Label>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {CANONICAL_SERVICE_SUBNICHES.map((sub) => {
                         const isSelected = serviceSubNiche === sub.id;
                         return (
@@ -5401,7 +5401,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                             className={cn(
-                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all active:scale-95 border flex items-center gap-1.5",
+                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -5420,9 +5420,9 @@ function SpecializedClassifiedEditor({
                     const matchedSub = CANONICAL_SERVICE_SUBNICHES.find((s) => s.id === serviceSubNiche);
                     if (!matchedSub) return null;
                     return (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-muted/20 border border-border/60">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-foreground font-medium flex items-center gap-1.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-muted/20 border border-border/60">
+                        <div className="space-y-2">
+                          <Label className="text-xs text-foreground font-medium flex items-center gap-2">
                             <ShieldCheck className="size-3.5 text-primary" />
                             <span>{matchedSub.councilFieldLabel}</span>
                           </Label>
@@ -5430,13 +5430,13 @@ function SpecializedClassifiedEditor({
                             value={serviceProfessionalCouncil}
                             onChange={(e) => setServiceProfessionalCouncil(e.target.value)}
                             placeholder={matchedSub.councilPlaceholder}
-                            className="h-11 rounded-xl text-xs bg-background font-mono"
+                            className="h-11 rounded-lg text-xs bg-background font-mono"
                           />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs text-foreground font-medium">Especialidade Principal</Label>
                           <Select value={serviceSpecialty} onValueChange={setServiceSpecialty}>
-                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                               <SelectValue placeholder="Selecione sua especialidade" />
                             </SelectTrigger>
                             <SelectContent>
@@ -5453,10 +5453,10 @@ function SpecializedClassifiedEditor({
                   })()}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Modalidade de Atendimento</Label>
                       <Select value={serviceModality} onValueChange={(v: any) => setServiceModality(v)}>
-                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -5467,10 +5467,10 @@ function SpecializedClassifiedEditor({
                       </Select>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Tipo de Cobrança</Label>
                       <Select value={servicePricingType} onValueChange={(v: any) => setServicePricingType(v)}>
-                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -5483,27 +5483,27 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Área de Cobertura / Região</Label>
                       <Input
                         value={serviceArea}
                         onChange={(e) => setServiceArea(e.target.value)}
                         placeholder="Ex: Chapecó e raio de até 50km"
-                        className="h-11 rounded-xl text-xs bg-background"
+                        className="h-11 rounded-lg text-xs bg-background"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Tempo Médio / Estimativa</Label>
                       <Input
                         value={serviceDuration}
                         onChange={(e) => setServiceDuration(e.target.value)}
                         placeholder="Ex: 2 a 4 horas / 1 dia útil"
-                        className="h-11 rounded-xl text-xs bg-background"
+                        className="h-11 rounded-lg text-xs bg-background"
                       />
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold text-foreground tracking-tight">Diferenciais do Profissional</Label>
                       <span className="text-xs text-muted-foreground font-mono">{reAmenities.length} selecionado(s)</span>
@@ -5527,7 +5527,7 @@ function SpecializedClassifiedEditor({
                           <div
                             key={diff}
                             onClick={() => toggleItem(reAmenities, setReAmenities, diff)}
-                            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-11 ${
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
                               active
                                 ? "border-primary bg-primary/10 text-primary font-medium"
                                 : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5553,7 +5553,7 @@ function SpecializedClassifiedEditor({
                           }
                         }}
                         placeholder="Adicionar outro diferencial profissional..."
-                        className="h-9 rounded-xl text-xs bg-background flex-1"
+                        className="h-9 rounded-lg text-xs bg-background flex-1"
                       />
                       <Button
                         type="button"
@@ -5565,7 +5565,7 @@ function SpecializedClassifiedEditor({
                             setCustomReAmenity("");
                           }
                         }}
-                        className="h-9 rounded-xl text-xs font-semibold cursor-pointer"
+                        className="h-9 rounded-lg text-xs font-semibold cursor-pointer"
                       >
                         + Adicionar
                       </Button>
@@ -5576,7 +5576,7 @@ function SpecializedClassifiedEditor({
 
               {/* Gastronomia & Delivery Especializado */}
               {niche.id === "gastronomia" && (
-                <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <Utensils className="size-4 text-primary" />
@@ -5590,7 +5590,7 @@ function SpecializedClassifiedEditor({
                   {/* Smart Cascade Pills para Gastronomia */}
                   <div className="space-y-2">
                     <Label className="text-xs text-foreground font-medium">Sub-nicho Gastronômico *</Label>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {CANONICAL_FOOD_SUBNICHES.map((food) => {
                         const isSelected = foodSubNiche === food.id;
                         return (
@@ -5604,7 +5604,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                             className={cn(
-                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all active:scale-95 border flex items-center gap-1.5",
+                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -5618,24 +5618,24 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Tempo Médio de Preparo</Label>
                       <Input
                         value={foodPrepTime}
                         onChange={(e) => setFoodPrepTime(e.target.value)}
                         placeholder="Ex: 20-35 min"
-                        className="h-11 rounded-xl text-xs bg-background"
+                        className="h-11 rounded-lg text-xs bg-background"
                       />
                     </div>
                   </div>
 
                   {/* Canais de Atendimento & Entrega */}
-                  <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold text-foreground tracking-tight">Canais de Atendimento e Entrega</Label>
                       <span className="text-xs text-muted-foreground font-mono">{foodDeliveryModes.length} ativo(s)</span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {[
                         { id: "delivery_proprio", label: "Delivery Próprio" },
                         { id: "motolink", label: "MotoLink / Entrega Flash" },
@@ -5654,7 +5654,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                             className={cn(
-                              "flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-11",
+                              "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11",
                               active
                                 ? "border-primary bg-primary/10 text-primary font-medium"
                                 : "border-border/50 bg-background text-foreground/80 hover:bg-muted/30"
@@ -5673,11 +5673,11 @@ function SpecializedClassifiedEditor({
                     const matched = CANONICAL_FOOD_SUBNICHES.find((f) => f.id === foodSubNiche);
                     if (!matched) return null;
                     return (
-                      <div className="p-3 bg-muted/30 border border-border/40 rounded-xl space-y-1.5">
+                      <div className="p-3 bg-muted/30 border border-border/40 rounded-lg space-y-2">
                         <span className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground block">Exemplos populares em {matched.label}:</span>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-2">
                           {matched.suggestedItems.map((item) => (
-                            <span key={item} className="text-xs bg-background border border-border/60 px-2 py-0.5 rounded-md text-foreground">
+                            <span key={item} className="text-xs bg-background border border-border/60 px-2 py-1 rounded-md text-foreground">
                               {item}
                             </span>
                           ))}
@@ -5690,7 +5690,7 @@ function SpecializedClassifiedEditor({
 
               {/* Conveniência, Bebidas & Mercado Especializado */}
               {((niche.id as string) === "mercado" || templateStyle === "conveniencia") && (
-                <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <Zap className="size-4 text-emerald-600" />
@@ -5707,14 +5707,14 @@ function SpecializedClassifiedEditor({
                       <Label className="text-xs text-foreground font-medium">Volume / Embalagem *</Label>
                       <span className="text-xs text-muted-foreground font-mono">Ex: 1L, 350ml, 500g</span>
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {["350ml", "473ml", "600ml", "1L", "1.5L", "2L", "500g", "1kg", "Pack 6 un", "Unidade"].map((v) => (
                         <button
                           key={v}
                           type="button"
                           onClick={() => setConvenienceVolume(v)}
                           className={cn(
-                            "h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all border",
+                            "h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-colors border",
                             convenienceVolume === v
                               ? "bg-primary text-primary-foreground border-primary"
                               : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/60"
@@ -5728,7 +5728,7 @@ function SpecializedClassifiedEditor({
                       value={convenienceVolume}
                       onChange={(e) => setConvenienceVolume(e.target.value)}
                       placeholder="Ou digite o volume/tamanho (ex: Garrafa 1 Litro)"
-                      className="h-10 rounded-xl text-xs bg-background"
+                      className="h-10 rounded-lg text-xs bg-background"
                     />
                   </div>
 
@@ -5747,7 +5747,7 @@ function SpecializedClassifiedEditor({
                           type="button"
                           onClick={() => setConvenienceTemp(t.id as any)}
                           className={cn(
-                            "p-2.5 rounded-xl border text-left cursor-pointer transition-all",
+                            "p-2 rounded-lg border text-left cursor-pointer transition-colors",
                             convenienceTemp === t.id
                               ? "bg-primary/10 border-primary text-foreground ring-1 ring-primary/30"
                               : "bg-background border-border/60 text-muted-foreground hover:bg-muted/30"
@@ -5761,9 +5761,9 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   {/* Restrição Alcoólica / 18+ */}
-                  <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between">
+                  <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="conv-alcoholic" className="text-xs font-semibold text-foreground cursor-pointer flex items-center gap-1.5">
+                      <Label htmlFor="conv-alcoholic" className="text-xs font-semibold text-foreground cursor-pointer flex items-center gap-2">
                         <span>Contém Álcool (Bebida Alcoólica +18)</span>
                       </Label>
                       <p className="text-xs text-muted-foreground/75 text-muted-foreground">
@@ -5785,7 +5785,7 @@ function SpecializedClassifiedEditor({
                         value={convenienceBrand}
                         onChange={(e) => setConvenienceBrand(e.target.value)}
                         placeholder="Ex: Mansão Maromba, Ambev, Coca-Cola..."
-                        className="h-10 rounded-xl text-xs bg-background"
+                        className="h-10 rounded-lg text-xs bg-background"
                       />
                     </div>
                     <div className="space-y-1">
@@ -5794,7 +5794,7 @@ function SpecializedClassifiedEditor({
                         value={deliveryEstimateText}
                         onChange={(e) => setDeliveryEstimateText(e.target.value)}
                         placeholder="Ex: 35-50 min (MotoLink Express)"
-                        className="h-10 rounded-xl text-xs bg-background font-mono"
+                        className="h-10 rounded-lg text-xs bg-background font-mono"
                       />
                     </div>
                   </div>
@@ -5803,7 +5803,7 @@ function SpecializedClassifiedEditor({
 
               {/* Mercado, Perecíveis, Açougue & Conveniência */}
               {niche.id === "mercado" && (
-                <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-5 border border-border/60">
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <StoreIcon className="size-4 text-primary" />
@@ -5820,7 +5820,7 @@ function SpecializedClassifiedEditor({
                       <span>Departamento do Produto *</span>
                       <span className="text-xs text-muted-foreground font-normal">Selecione para ajustar atributos</span>
                     </Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {CANONICAL_GROCERY_DEPARTMENTS.map((dept) => {
                         const isSelected = groceryDepartment === dept.id;
                         return (
@@ -5837,7 +5837,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                             className={cn(
-                              "p-2 rounded-xl text-xs font-medium text-left border cursor-pointer transition-all flex flex-col gap-0.5",
+                              "p-2 rounded-lg text-xs font-medium text-left border cursor-pointer transition-colors flex flex-col gap-1",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-foreground/80 border-border/70 hover:bg-muted/30"
@@ -5858,11 +5858,11 @@ function SpecializedClassifiedEditor({
                     const currentDept = CANONICAL_GROCERY_DEPARTMENTS.find((d) => d.id === groceryDepartment);
                     if (!currentDept || currentDept.subCategories.length === 0) return null;
                     return (
-                      <div className="space-y-1.5 p-3 rounded-xl bg-muted/20 border border-border/40">
+                      <div className="space-y-2 p-3 rounded-lg bg-muted/20 border border-border/40">
                         <Label className="text-xs font-semibold text-foreground">
                           Sub-categoria em {currentDept.label}:
                         </Label>
-                        <div className="flex flex-wrap gap-1.5 pt-1">
+                        <div className="flex flex-wrap gap-2 pt-1">
                           {currentDept.subCategories.map((sub) => {
                             const isSelected = grocerySubCategory === sub;
                             return (
@@ -5871,7 +5871,7 @@ function SpecializedClassifiedEditor({
                                 type="button"
                                 onClick={() => setGrocerySubCategory(sub)}
                                 className={cn(
-                                  "px-2.5 py-1 rounded-lg text-xs font-medium border cursor-pointer transition-all",
+                                  "px-2.5 py-1 rounded-lg text-xs font-medium border cursor-pointer transition-colors",
                                   isSelected
                                     ? "bg-primary/15 border-primary text-primary font-bold"
                                     : "bg-background border-border/60 text-foreground/80 hover:bg-muted/40"
@@ -5888,7 +5888,7 @@ function SpecializedClassifiedEditor({
 
                   {/* Unidade de Medida & Fracionamento */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-semibold">Unidade de Medida / Precificação *</Label>
                       <div className="flex flex-wrap gap-1">
                         {CANONICAL_UNIT_TYPES.map((u) => {
@@ -5899,7 +5899,7 @@ function SpecializedClassifiedEditor({
                               type="button"
                               onClick={() => setGroceryUnitType(u.id)}
                               className={cn(
-                                "px-2 py-1 rounded-lg text-xs font-medium border cursor-pointer transition-all",
+                                "px-2 py-1 rounded-lg text-xs font-medium border cursor-pointer transition-colors",
                                 isSelected
                                   ? "bg-primary text-primary-foreground border-primary font-bold"
                                   : "bg-background text-foreground/80 border-border/60 hover:bg-muted/40"
@@ -5913,7 +5913,7 @@ function SpecializedClassifiedEditor({
                     </div>
 
                     {(groceryUnitType === "kg" || groceryUnitType === "g" || groceryDepartment === "acougue_carnes" || groceryDepartment === "hortifruti") && (
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-semibold">
                           Peso Médio Estimado por Peça (Opcional)
                         </Label>
@@ -5921,7 +5921,7 @@ function SpecializedClassifiedEditor({
                           value={groceryEstimatedWeightPerUnit}
                           onChange={(e) => setGroceryEstimatedWeightPerUnit(e.target.value)}
                           placeholder="Ex: ~1.2kg por peça ou ~500g a bandeja"
-                          className="h-11 rounded-xl text-xs bg-background"
+                          className="h-11 rounded-lg text-xs bg-background"
                         />
                       </div>
                     )}
@@ -5929,7 +5929,7 @@ function SpecializedClassifiedEditor({
 
                   {/* Opções de Corte / Manipulação para Açougue ou Padaria */}
                   {(groceryDepartment === "acougue_carnes" || groceryDepartment === "padaria_confeitaria" || groceryDepartment === "frios_laticinios") && (
-                    <div className="space-y-2 p-3.5 rounded-xl border border-border/50 bg-muted/15">
+                    <div className="space-y-2 p-4 rounded-lg border border-border/50 bg-muted/15">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-semibold text-foreground">
                           Opções de Corte / Preparo para o Cliente
@@ -5938,7 +5938,7 @@ function SpecializedClassifiedEditor({
                           {groceryPrepOptions.length} selecionada(s)
                         </span>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {(groceryDepartment === "acougue_carnes" ? CANONICAL_MEAT_CUT_OPTIONS : CANONICAL_BAKERY_PREP_OPTIONS).map((opt) => {
                           const isSelected = groceryPrepOptions.includes(opt);
                           return (
@@ -5953,7 +5953,7 @@ function SpecializedClassifiedEditor({
                                 }
                               }}
                               className={cn(
-                                "px-2.5 py-1.5 rounded-lg text-xs font-medium border cursor-pointer transition-all",
+                                "px-2.5 py-2 rounded-lg text-xs font-medium border cursor-pointer transition-colors",
                                 isSelected
                                   ? "bg-primary text-primary-foreground border-primary font-bold "
                                   : "bg-background text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted/40"
@@ -5969,28 +5969,28 @@ function SpecializedClassifiedEditor({
 
                   {/* Marca / Fabricante & Código EAN */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-semibold">Marca / Fabricante</Label>
                       <Input
                         value={groceryBrand}
                         onChange={(e) => setGroceryBrand(e.target.value)}
                         placeholder="Ex: Ambev, Nestlé, Seara, Friboi, Wickbold..."
-                        className="h-11 rounded-xl text-xs bg-background"
+                        className="h-11 rounded-lg text-xs bg-background"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-semibold">Código de Barras (EAN / GTIN)</Label>
                       <Input
                         value={groceryBarcodeEan}
                         onChange={(e) => setGroceryBarcodeEan(e.target.value)}
                         placeholder="Ex: 7891991010832 (Opcional)"
-                        className="h-11 rounded-xl text-xs bg-background font-mono"
+                        className="h-11 rounded-lg text-xs bg-background font-mono"
                       />
                     </div>
                   </div>
 
                   {/* Temperatura de Armazenamento / Conservação */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-foreground font-semibold">
                       Conservação / Temperatura
                     </Label>
@@ -6003,7 +6003,7 @@ function SpecializedClassifiedEditor({
                             type="button"
                             onClick={() => setGroceryTemperature(temp.id)}
                             className={cn(
-                              "p-2.5 rounded-xl border text-center transition-all cursor-pointer text-xs flex items-center justify-center gap-1.5 min-h-11",
+                              "p-2 rounded-lg border text-center transition-colors cursor-pointer text-xs flex items-center justify-center gap-2 min-h-11",
                               isSelected
                                 ? "border-primary bg-primary/10 text-primary font-bold"
                                 : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -6018,7 +6018,7 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   {/* Selos de Saúde, Alérgenos & Restrições */}
-                  <div className="p-3.5 rounded-xl border border-border/50 bg-muted/20 space-y-3">
+                  <div className="p-4 rounded-lg border border-border/50 bg-muted/20 space-y-3">
                     <Label className="text-xs font-semibold text-foreground block">
                       Selos de Saúde, Alérgenos e Restrições
                     </Label>
@@ -6026,7 +6026,7 @@ function SpecializedClassifiedEditor({
                       <div
                         onClick={() => setGroceryIsAlcoholic(!groceryIsAlcoholic)}
                         className={cn(
-                          "flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer min-h-11",
+                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer min-h-11",
                           groceryIsAlcoholic ? "border-rose-500 bg-rose-500/10 text-rose-700 dark:text-rose-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
                         )}
                       >
@@ -6037,7 +6037,7 @@ function SpecializedClassifiedEditor({
                       <div
                         onClick={() => setGroceryContainsGluten(groceryContainsGluten === false ? true : false)}
                         className={cn(
-                          "flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer min-h-11",
+                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer min-h-11",
                           groceryContainsGluten === false ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
                         )}
                       >
@@ -6048,7 +6048,7 @@ function SpecializedClassifiedEditor({
                       <div
                         onClick={() => setGroceryContainsLactose(groceryContainsLactose === false ? true : false)}
                         className={cn(
-                          "flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer min-h-11",
+                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer min-h-11",
                           groceryContainsLactose === false ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
                         )}
                       >
@@ -6059,7 +6059,7 @@ function SpecializedClassifiedEditor({
                       <div
                         onClick={() => setGroceryIsOrganic(!groceryIsOrganic)}
                         className={cn(
-                          "flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer min-h-11",
+                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer min-h-11",
                           groceryIsOrganic ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
                         )}
                       >
@@ -6070,7 +6070,7 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   {/* Ingredientes / Composição */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-foreground font-semibold">
                       Ingredientes / Informações do Rótulo (Opcional)
                     </Label>
@@ -6078,33 +6078,33 @@ function SpecializedClassifiedEditor({
                       value={groceryIngredients}
                       onChange={(e) => setGroceryIngredients(e.target.value)}
                       placeholder="Ex: Malte, lúpulo, água mineral e levedura. Alérgicos: contém derivados de cevada."
-                      className="text-xs bg-background min-h-16 rounded-xl"
+                      className="text-xs bg-background min-h-16 rounded-lg"
                     />
                   </div>
 
                   {/* Parâmetros de Entrega Local da Loja */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-semibold">Tempo Estimado de Entrega</Label>
                       <Input
                         value={groceryDeliveryEstimate}
                         onChange={(e) => setGroceryDeliveryEstimate(e.target.value)}
                         placeholder="Ex: 30 a 45 min"
-                        className="h-11 rounded-xl text-xs bg-background"
+                        className="h-11 rounded-lg text-xs bg-background"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-semibold">Taxa Inicial de Entrega (R$)</Label>
                       <CurrencyField
                         value={groceryDeliveryFeeCents}
                         onChange={(val) => setGroceryDeliveryFeeCents(val ?? 0)}
-                        className="h-11 rounded-xl text-xs bg-background"
+                        className="h-11 rounded-lg text-xs bg-background"
                       />
                     </div>
                   </div>
 
                   {/* Lógica de Produtos Frescos (Hortifrúti, Peso Variável & Maturação) */}
-                  <div className="p-4 rounded-xl border border-border/50 bg-muted/15 space-y-3">
+                  <div className="p-4 rounded-lg border border-border/50 bg-muted/15 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label className="text-xs font-bold text-foreground">
@@ -6123,13 +6123,13 @@ function SpecializedClassifiedEditor({
                     {grocerySupportsFreshPricing && (
                       <div className="space-y-3 pt-2 border-t border-border/40">
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs text-foreground font-medium">Modo Padrão de Venda</Label>
                             <Select
                               value={groceryDefaultPricingMode}
                               onValueChange={(v: "unit" | "weight") => setGroceryDefaultPricingMode(v)}
                             >
-                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -6139,23 +6139,23 @@ function SpecializedClassifiedEditor({
                             </Select>
                           </div>
 
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs text-foreground font-medium">Peso Médio da Peça (g)</Label>
                             <Input
                               type="number"
                               value={groceryAvgPieceWeightGrams || ""}
                               onChange={(e) => setGroceryAvgPieceWeightGrams(Number(e.target.value) || 0)}
                               placeholder="Ex: 500"
-                              className="h-11 rounded-xl text-xs bg-background font-mono"
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
                             />
                           </div>
 
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs text-foreground font-medium">Preço por Quilo (R$/kg)</Label>
                             <CurrencyField
                               value={groceryPricePerKgCents}
                               onChange={(val) => setGroceryPricePerKgCents(val ?? 0)}
-                              className="h-11 rounded-xl text-xs bg-background font-mono"
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
                             />
                           </div>
                         </div>
@@ -6193,10 +6193,10 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   {/* Motor de Desconto Progressivo (Gamificação - Compre Mais, Pague Menos) */}
-                  <div className="p-4 rounded-xl border border-border/50 bg-muted/15 space-y-3">
+                  <div className="p-4 rounded-lg border border-border/50 bg-muted/15 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                           <BadgePercent className="size-4 text-emerald-600 dark:text-emerald-400" />
                           <span>Desconto Progressivo (Compre Mais, Pague Menos)</span>
                         </Label>
@@ -6211,7 +6211,7 @@ function SpecializedClassifiedEditor({
                     </div>
 
                     {groceryProgressiveDiscountsEnabled && (
-                      <div className="space-y-2.5 pt-2 border-t border-border/40">
+                      <div className="space-y-2 pt-2 border-t border-border/40">
                         {groceryDiscountTiers.map((tier, idx) => (
                           <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-background border border-border/50">
                             <div className="w-24 space-y-0.5">
@@ -6310,7 +6310,7 @@ function SpecializedClassifiedEditor({
                                 { min_quantity: nextMin, discount_type: "percentage", discount_value: 15 },
                               ]);
                             }}
-                            className="w-full h-8 rounded-lg text-xs font-semibold gap-1.5 border-dashed cursor-pointer"
+                            className="w-full h-8 rounded-lg text-xs font-semibold gap-2 border-dashed cursor-pointer"
                           >
                             <Plus className="size-3.5" />
                             <span>Adicionar Nova Faixa de Desconto</span>
@@ -6321,10 +6321,10 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   {/* Oferta Relâmpago / Order Bump no Checkout */}
-                  <div className="p-4 rounded-xl border border-border/50 bg-muted/15 space-y-3">
+                  <div className="p-4 rounded-lg border border-border/50 bg-muted/15 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                           <Zap className="size-4 text-amber-500 fill-amber-500" />
                           <span>Oferta Relâmpago no Checkout (Order Bump / Venda Cruzada)</span>
                         </Label>
@@ -6341,43 +6341,43 @@ function SpecializedClassifiedEditor({
                     {groceryOrderBumpEnabled && (
                       <div className="space-y-3 pt-2 border-t border-border/40">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs text-foreground font-medium">Nome do Produto em Oferta *</Label>
                             <Input
                               value={groceryOrderBumpTitle}
                               onChange={(e) => setGroceryOrderBumpTitle(e.target.value)}
                               placeholder="Ex: Pizza Calabresa Artesanal ou Maçã Gala 1kg"
-                              className="h-11 rounded-xl text-xs bg-background"
+                              className="h-11 rounded-lg text-xs bg-background"
                             />
                           </div>
 
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs text-foreground font-medium">Selo / Chamada</Label>
                             <Input
                               value={groceryOrderBumpBadge}
                               onChange={(e) => setGroceryOrderBumpBadge(e.target.value)}
                               placeholder="Ex: Oferta Relâmpago ou Aproveite Também"
-                              className="h-11 rounded-xl text-xs bg-background"
+                              className="h-11 rounded-lg text-xs bg-background"
                             />
                           </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs text-foreground font-medium">Preço Promocional Especial (R$) *</Label>
                             <CurrencyField
                               value={groceryOrderBumpSpecialPriceCents}
                               onChange={(val) => setGroceryOrderBumpSpecialPriceCents(val ?? 0)}
-                              className="h-11 rounded-xl text-xs bg-background font-mono"
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
                             />
                           </div>
 
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <Label className="text-xs text-foreground font-medium">Preço Original Riscado (R$)</Label>
                             <CurrencyField
                               value={groceryOrderBumpOriginalPriceCents}
                               onChange={(val) => setGroceryOrderBumpOriginalPriceCents(val ?? 0)}
-                              className="h-11 rounded-xl text-xs bg-background font-mono"
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
                             />
                           </div>
                         </div>
@@ -6389,7 +6389,7 @@ function SpecializedClassifiedEditor({
 
               {/* Negócios */}
               {niche.id === "negocio" && (
-                <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-5 border border-border/60">
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <Briefcase className="size-4 text-primary" />
@@ -6401,10 +6401,10 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   {/* Sincronização e Auditoria Cadastral por CNPJ (Receita Federal & IA) */}
-                  <div className="p-3.5 sm:p-4 rounded-xl bg-muted/20 border border-border/60 space-y-3">
+                  <div className="p-4 sm:p-4 rounded-lg bg-muted/20 border border-border/60 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                           <Building className="size-3.5 text-primary" />
                           <span>Buscar Dados Oficiais da Empresa por CNPJ (Opcional)</span>
                         </Label>
@@ -6420,7 +6420,7 @@ function SpecializedClassifiedEditor({
                           value={companyCnpj}
                           onChange={(e) => setCompanyCnpj(e.target.value)}
                           placeholder="00.000.000/0000-00"
-                          className="h-10 sm:h-11 rounded-xl text-xs bg-background font-mono"
+                          className="h-10 sm:h-11 rounded-lg text-xs bg-background font-mono"
                           maxLength={18}
                         />
                       </div>
@@ -6429,7 +6429,7 @@ function SpecializedClassifiedEditor({
                         variant="outline"
                         onClick={handleLookupAndAuditCnpj}
                         disabled={isSearchingCnpj || !companyCnpj.trim()}
-                        className="h-10 sm:h-11 px-3.5 rounded-xl text-xs font-bold shrink-0 gap-1.5 cursor-pointer"
+                        className="h-10 sm:h-11 px-4 rounded-lg text-xs font-bold shrink-0 gap-2 cursor-pointer"
                       >
                         {isSearchingCnpj ? (
                           <>
@@ -6447,7 +6447,7 @@ function SpecializedClassifiedEditor({
 
                     {/* Feedback visual da Auditoria Cadastral */}
                     {cnpjAuditData && (
-                      <div className="p-3 rounded-xl bg-background border border-border/70 space-y-2 animate-in fade-in-50 text-xs">
+                      <div className="p-3 rounded-lg bg-background border border-border/70 space-y-2 animate-in fade-in-50 text-xs">
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <div className="flex items-center gap-2">
                             <ShieldCheck className="size-4 text-emerald-500" />
@@ -6455,7 +6455,7 @@ function SpecializedClassifiedEditor({
                           </div>
                           <Badge
                             className={cn(
-                              "text-xs font-bold px-2 py-0.5",
+                              "text-xs font-bold px-2 py-1",
                               cnpjAuditData.legalRiskScore < 30
                                 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                                 : cnpjAuditData.legalRiskScore < 65
@@ -6478,7 +6478,7 @@ function SpecializedClassifiedEditor({
                   {/* Smart Cascade Pills para Negócios */}
                   <div className="space-y-2">
                     <Label className="text-xs text-foreground font-medium">Modelo da Transação *</Label>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {CANONICAL_BUSINESS_TYPES.map((type) => {
                         const isSelected = businessType === type.id;
                         return (
@@ -6487,7 +6487,7 @@ function SpecializedClassifiedEditor({
                             type="button"
                             onClick={() => setBusinessType(type.id)}
                             className={cn(
-                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all active:scale-95 border flex items-center gap-1.5",
+                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -6502,10 +6502,10 @@ function SpecializedClassifiedEditor({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Segmento de Mercado *</Label>
                       <Select value={businessSegment} onValueChange={setBusinessSegment}>
-                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -6521,7 +6521,7 @@ function SpecializedClassifiedEditor({
 
                   {/* Bloco Dedicado: Captação de Investimento & Busca de Sócios */}
                   {(businessType === "busca_socio" || businessType === "captacao_investimento") && (
-                    <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-4">
+                    <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-4">
                       <div className="flex items-center justify-between pb-1 border-b border-primary/20">
                         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
                           <Coins className="size-4" />
@@ -6533,32 +6533,32 @@ function SpecializedClassifiedEditor({
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs text-foreground font-medium">Valor do Aporte Solicitado *</Label>
                           <CurrencyField
                             value={targetInvestmentCents}
                             onChange={setTargetInvestmentCents}
                             placeholder="R$ 100.000,00"
-                            className="h-11 rounded-xl text-xs bg-background font-mono font-bold"
+                            className="h-11 rounded-lg text-xs bg-background font-mono font-bold"
                           />
                         </div>
 
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs text-foreground font-medium">Participação / Cotas Ofertadas (%)</Label>
                           <Input
                             value={offeredEquityPercent}
                             onChange={(e) => setOfferedEquityPercent(e.target.value)}
                             placeholder="Ex: 15% ou A Combinar"
-                            className="h-11 rounded-xl text-xs bg-background font-mono"
+                            className="h-11 rounded-lg text-xs bg-background font-mono"
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs text-foreground font-medium">Modelo do Investimento / Parceria *</Label>
                           <Select value={investmentModel} onValueChange={setInvestmentModel}>
-                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -6571,10 +6571,10 @@ function SpecializedClassifiedEditor({
                           </Select>
                         </div>
 
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs text-foreground font-medium">Estágio Atual do Negócio *</Label>
                           <Select value={projectStage} onValueChange={setProjectStage}>
-                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -6590,7 +6590,7 @@ function SpecializedClassifiedEditor({
 
                       <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Destino do Capital / Recursos (onde será investido?)</Label>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-2">
                           {CANONICAL_USE_OF_FUNDS.map((fund) => {
                             const isSelected = useOfFunds.includes(fund);
                             return (
@@ -6603,7 +6603,7 @@ function SpecializedClassifiedEditor({
                                   );
                                 }}
                                 className={cn(
-                                  "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all active:scale-95 border",
+                                  "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border",
                                   isSelected
                                     ? "bg-primary text-primary-foreground border-primary font-bold "
                                     : "bg-background text-muted-foreground border-border hover:text-foreground"
@@ -6616,72 +6616,72 @@ function SpecializedClassifiedEditor({
                         </div>
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Link do Pitch Deck ou Apresentação do Negócio (PDF, Drive ou Notion)</Label>
                         <Input
                           value={pitchDeckUrl}
                           onChange={(e) => setPitchDeckUrl(e.target.value)}
                           placeholder="https://drive.google.com/... ou link público da apresentação"
-                          className="h-11 rounded-xl text-xs bg-background"
+                          className="h-11 rounded-lg text-xs bg-background"
                         />
                       </div>
                     </div>
                   )}
 
                   {/* Grid de Métricas Financeiras Estratégicas */}
-                  <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-4">
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-4">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <FileSpreadsheet className="size-4 text-primary" />
                       <span>Demonstrativo Financeiro (DRE Estimado)</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Faturamento Médio Mensal</Label>
                         <CurrencyField
                           value={businessMonthlyRevenueCents}
                           onChange={setBusinessMonthlyRevenueCents}
                           placeholder="R$ 150.000,00"
-                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                          className="h-11 rounded-lg text-xs bg-background font-mono"
                         />
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Lucro Líquido Mensal</Label>
                         <CurrencyField
                           value={businessNetProfitCents}
                           onChange={setBusinessNetProfitCents}
                           placeholder="R$ 35.000,00"
-                          className="h-11 rounded-xl text-xs bg-background font-mono text-emerald-600 dark:text-emerald-400 font-bold"
+                          className="h-11 rounded-lg text-xs bg-background font-mono text-emerald-600 dark:text-emerald-400 font-bold"
                         />
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Capital de Giro Necessário</Label>
                         <CurrencyField
                           value={businessWorkingCapitalCents}
                           onChange={setBusinessWorkingCapitalCents}
                           placeholder="R$ 40.000,00"
-                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                          className="h-11 rounded-lg text-xs bg-background font-mono"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Ano de Fundação da Empresa</Label>
                         <Input
                           value={businessFoundationYear}
                           onChange={(e) => setBusinessFoundationYear(e.target.value)}
                           placeholder="Ex: 2018"
-                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                          className="h-11 rounded-lg text-xs bg-background font-mono"
                         />
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Quadro de Colaboradores</Label>
                         <Select value={businessEmployeesRange} onValueChange={setBusinessEmployeesRange}>
-                          <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                          <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -6694,10 +6694,10 @@ function SpecializedClassifiedEditor({
                         </Select>
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Motivo da Venda</Label>
                         <Select value={businessSaleReason} onValueChange={setBusinessSaleReason}>
-                          <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                          <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -6713,17 +6713,17 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   {/* Instalações Físicas & Ponto Comercial */}
-                  <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-4">
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-4">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <Building className="size-4 text-primary" />
                       <span>Ponto Comercial</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Tipo de Ponto Comercial</Label>
                         <Select value={businessPointType} onValueChange={setBusinessPointType}>
-                          <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                          <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -6736,65 +6736,65 @@ function SpecializedClassifiedEditor({
                         </Select>
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Área Útil do Imóvel (m²)</Label>
                         <Input
                           value={businessAreaSqm}
                           onChange={(e) => setBusinessAreaSqm(e.target.value)}
                           placeholder="Ex: 180"
-                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                          className="h-11 rounded-lg text-xs bg-background font-mono"
                         />
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Tempo Restante de Contrato</Label>
                         <Input
                           value={businessContractRemainingYears}
                           onChange={(e) => setBusinessContractRemainingYears(e.target.value)}
                           placeholder="Ex: 3 anos renováveis"
-                          className="h-11 rounded-xl text-xs bg-background"
+                          className="h-11 rounded-lg text-xs bg-background"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Valor do Aluguel Mensal</Label>
                         <CurrencyField
                           value={businessMonthlyRentCents}
                           onChange={setBusinessMonthlyRentCents}
                           placeholder="R$ 4.500,00"
-                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                          className="h-11 rounded-lg text-xs bg-background font-mono"
                         />
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">IPTU Mensal</Label>
                         <CurrencyField
                           value={businessMonthlyIptuCents}
                           onChange={setBusinessMonthlyIptuCents}
                           placeholder="R$ 380,00"
-                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                          className="h-11 rounded-lg text-xs bg-background font-mono"
                         />
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-foreground font-medium">Condomínio Mensal</Label>
                         <CurrencyField
                           value={businessMonthlyCondoCents}
                           onChange={setBusinessMonthlyCondoCents}
                           placeholder="R$ 0,00"
-                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                          className="h-11 rounded-lg text-xs bg-background font-mono"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Governança de Sigilo & Assessoria M&A */}
-                  <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-3">
+                  <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
                     <div className="flex items-center justify-between gap-3">
                       <div className="space-y-0.5">
-                        <Label htmlFor="nda-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-1.5">
+                        <Label htmlFor="nda-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-2">
                           <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
                           Exigir Assinatura de NDA Digital
                         </Label>
@@ -6811,7 +6811,7 @@ function SpecializedClassifiedEditor({
 
                     <div className="flex items-center justify-between gap-3 pt-2 border-t border-amber-500/15">
                       <div className="space-y-0.5">
-                        <Label htmlFor="advisor-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-1.5">
+                        <Label htmlFor="advisor-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-2">
                           <ShieldCheck className="size-3.5 text-primary" />
                           Operação Assessorada por Consultor M&A
                         </Label>
@@ -6827,10 +6827,10 @@ function SpecializedClassifiedEditor({
                     </div>
 
                     {/* Uploader de Documentos Restritos & DRE (Fase 3 Master Plan) */}
-                    <div className="pt-3 border-t border-amber-500/20 space-y-2.5">
+                    <div className="pt-3 border-t border-amber-500/20 space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                          <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                             <FileSpreadsheet className="size-3.5 text-amber-600 dark:text-amber-400" />
                             Documentos Confidenciais e DRE (Acesso Restrito via NDA)
                           </Label>
@@ -6860,7 +6860,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                           />
-                          <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 border border-amber-500/30 transition-all">
+                          <span className="inline-flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 border border-amber-500/30 transition-colors">
                             {isUploadingRestrictedDoc ? (
                               <>
                                 <Loader2 className="size-3.5 animate-spin" />
@@ -6877,11 +6877,11 @@ function SpecializedClassifiedEditor({
                       </div>
 
                       {businessRestrictedDocuments.length > 0 && (
-                        <div className="space-y-1.5 pt-1">
+                        <div className="space-y-2 pt-1">
                           {businessRestrictedDocuments.map((doc, idx) => (
                             <div
                               key={idx}
-                              className="flex items-center justify-between p-2.5 rounded-lg bg-background border border-border/70 text-xs"
+                              className="flex items-center justify-between p-2 rounded-lg bg-background border border-border/70 text-xs"
                             >
                               <div className="flex items-center gap-2 min-w-0">
                                 <FileText className="size-4 text-amber-600 shrink-0" />
@@ -6911,7 +6911,7 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   {/* Telemetria de Viabilidade & Payback (SimLabs IA) */}
-                  <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-3">
+                  <div className="rounded-lg border border-primary/25 bg-primary/5 p-4 space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                         <Zap className="size-4 text-primary" />
@@ -6923,16 +6923,16 @@ function SpecializedClassifiedEditor({
                         variant="outline"
                         onClick={handleAnalyzeCommercialPoint}
                         disabled={isAnalyzingTelemetry}
-                        className="h-8 px-3 text-xs font-semibold rounded-xl border-primary/30 text-primary hover:bg-primary/10 cursor-pointer shrink-0"
+                        className="h-8 px-3 text-xs font-semibold rounded-lg border-primary/30 text-primary hover:bg-primary/10 cursor-pointer shrink-0"
                       >
                         {isAnalyzingTelemetry ? (
                           <>
-                            <Loader2 className="size-3.5 mr-1.5 animate-spin" />
+                            <Loader2 className="size-3.5 mr-2 animate-spin" />
                             Calculando com SimLabs...
                           </>
                         ) : (
                           <>
-                            <Zap className="size-3.5 mr-1.5" />
+                            <Zap className="size-3.5 mr-2" />
                             Sugerir Telemetria com SimLabs IA
                           </>
                         )}
@@ -6943,7 +6943,7 @@ function SpecializedClassifiedEditor({
                     </p>
 
                     {telemetryResult && (
-                      <div className="mt-3 p-3.5 rounded-xl bg-background border border-border/70 space-y-2.5 animate-in fade-in">
+                      <div className="mt-3 p-4 rounded-lg bg-background border border-border/70 space-y-2 animate-in fade-in">
                         <div className="grid grid-cols-3 gap-2 text-center">
                           <div className="p-2 rounded-lg bg-muted/30">
                             <span className="text-xs text-muted-foreground uppercase font-bold block">Score</span>
@@ -6971,7 +6971,7 @@ function SpecializedClassifiedEditor({
 
               {/* Desapego & Bens Físicos Avançado (Microfase 77B) */}
  {niche.id === "desapego" && (
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Tag className="size-4 text-primary" />
@@ -6981,10 +6981,10 @@ function SpecializedClassifiedEditor({
  </div>
 
  {/* Seletor de Subcategoria de Desapego */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Tipo de Item / Segmento</Label>
  <Select value={desapegoCategory} onValueChange={(v: any) => setDesapegoCategory(v)}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7002,13 +7002,13 @@ function SpecializedClassifiedEditor({
 
  {/* Seção Específica para Smartphones & Celulares com Seletores Canônicos */}
  {desapegoCategory === "smartphones" && (
- <div className="p-4 rounded-xl bg-muted/20 border border-border/60 space-y-4">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-4">
  <div className="text-xs text-muted-foreground/75 font-bold text-primary uppercase tracking-wider">
  Especificações do Aparelho
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Marca do Aparelho</Label>
  <Select value={phoneBrand} onValueChange={(v) => {
  setPhoneBrand(v);
@@ -7017,7 +7017,7 @@ function SpecializedClassifiedEditor({
  else if (v === "Xiaomi") setPhoneModel("Redmi Note 13 Pro 5G");
  else if (v === "Motorola") setPhoneModel("Edge 50 Ultra");
  }}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7030,10 +7030,10 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Modelo da Linha</Label>
  <Select value={phoneModel} onValueChange={setPhoneModel}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7090,10 +7090,10 @@ function SpecializedClassifiedEditor({
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Armazenamento Interno</Label>
  <Select value={phoneStorage} onValueChange={setPhoneStorage}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7106,7 +7106,7 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Saúde da Bateria (%)</Label>
  <Input
  type="number"
@@ -7115,7 +7115,7 @@ function SpecializedClassifiedEditor({
  value={phoneBatteryHealth}
  onChange={(e) => setPhoneBatteryHealth(e.target.value)}
  placeholder="Ex: 95"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
@@ -7160,11 +7160,11 @@ function SpecializedClassifiedEditor({
 
  {/* Móveis & Decoração */}
  {desapegoCategory === "moveis" && (
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-muted/20 border border-border/60">
- <div className="space-y-1.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-muted/20 border border-border/60">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Ambiente do Móvel</Label>
  <Select value={furnitureRoom} onValueChange={setFurnitureRoom}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7176,10 +7176,10 @@ function SpecializedClassifiedEditor({
  </SelectContent>
  </Select>
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Material Principal</Label>
  <Select value={furnitureMaterial} onValueChange={setFurnitureMaterial}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7196,11 +7196,11 @@ function SpecializedClassifiedEditor({
 
  {/* Brechó de Roupas */}
  {desapegoCategory === "moda_brecho" && (
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-muted/20 border border-border/60">
- <div className="space-y-1.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-muted/20 border border-border/60">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Gênero / Faixa</Label>
  <Select value={fashionGender} onValueChange={setFashionGender}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7211,10 +7211,10 @@ function SpecializedClassifiedEditor({
  </SelectContent>
  </Select>
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Tamanho da Peça</Label>
  <Select value={fashionSize} onValueChange={setFashionSize}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7233,10 +7233,10 @@ function SpecializedClassifiedEditor({
 
  {/* Estado de Conservação Geral */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Estado de Conservação</Label>
  <Select value={itemCondition} onValueChange={(v: any) => setItemCondition(v)}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7248,13 +7248,13 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Garantia / Procedência</Label>
  <Input
  value={itemWarranty}
  onChange={(e) => setItemWarranty(e.target.value)}
  placeholder="Ex: 3 meses de garantia, NF em mãos"
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -7263,17 +7263,17 @@ function SpecializedClassifiedEditor({
 
  {/* Serviço Profissional */}
  {niche.id === "servico" && (
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Wrench className="size-4 text-primary" />
  <span>2. Atendimento</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Modalidade de Atendimento</Label>
  <Select value={serviceModality} onValueChange={(v: any) => setServiceModality(v)}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7284,13 +7284,13 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Região de Atendimento</Label>
  <Input
  value={serviceArea}
  onChange={(e) => setServiceArea(e.target.value)}
  placeholder="Ex: Toda a cidade e região"
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -7299,7 +7299,7 @@ function SpecializedClassifiedEditor({
 
  {/* Oportunidade / Vaga Master Padrão Corporativo Waesy */}
  {niche.id === "vaga" && (
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Briefcase className="size-4 text-primary" />
@@ -7309,25 +7309,25 @@ function SpecializedClassifiedEditor({
  </div>
 
  {/* Cargo / Título Profissional */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Cargo / Ocupação Profissional *</Label>
  <Input
  value={jobRole}
  onChange={(e) => setJobRole(e.target.value)}
  placeholder="Ex: Assistente Administrativo, Desenvolvedor Fullstack, Vendedor"
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  </div>
 
  {/* Grid de 2 Colunas: Escolaridade Mínima e Tempo de Experiência Mensuráveis */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
- <div className="flex items-center gap-1.5">
+ <div className="space-y-2">
+ <div className="flex items-center gap-2">
  <GraduationCap className="size-3.5 text-primary" />
  <Label className="text-xs text-foreground font-medium">Escolaridade Mínima Exigida *</Label>
  </div>
  <Select value={jobMinEducation} onValueChange={setJobMinEducation}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7340,13 +7340,13 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="space-y-1.5">
- <div className="flex items-center gap-1.5">
+ <div className="space-y-2">
+ <div className="flex items-center gap-2">
  <Award className="size-3.5 text-primary" />
  <Label className="text-xs text-foreground font-medium">Experiência Profissional Mínima *</Label>
  </div>
  <Select value={jobExperienceLevel} onValueChange={setJobExperienceLevel}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7362,10 +7362,10 @@ function SpecializedClassifiedEditor({
 
  {/* Grid de 3 Colunas: Regime, Modelo e Jornada */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Regime de Contratação</Label>
  <Select value={jobRegime} onValueChange={(v: any) => setJobRegime(v)}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7378,10 +7378,10 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Modelo de Trabalho</Label>
  <Select value={jobModel} onValueChange={(v: any) => setJobModel(v)}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7394,10 +7394,10 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Jornada de Trabalho</Label>
  <Select value={jobWorkSchedule} onValueChange={setJobWorkSchedule}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7412,10 +7412,10 @@ function SpecializedClassifiedEditor({
  </div>
 
  {/* Faixa Salarial Mensurável */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Faixa Salarial / Remuneração Estimada</Label>
  <Select value={jobSalaryRange} onValueChange={setJobSalaryRange}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7434,7 +7434,7 @@ function SpecializedClassifiedEditor({
  <Label className="text-xs text-foreground font-medium">Benefícios Oferecidos pela Empresa</Label>
  <span className="text-xs text-muted-foreground/75 text-muted-foreground font-mono">{jobBenefits.length} selecionado(s)</span>
  </div>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {CANONICAL_JOB_BENEFITS.map((ben) => {
  const active = jobBenefits.includes(ben);
  return (
@@ -7468,12 +7468,12 @@ function SpecializedClassifiedEditor({
  </div>
 
  {/* Tags Ativas */}
- <div className="flex flex-wrap gap-1.5 min-h-7">
+ <div className="flex flex-wrap gap-2 min-h-7">
  {jobSkills.map((sk) => (
  <Badge
  key={sk}
  variant="secondary"
- className="text-xs font-medium pl-2.5 pr-1.5 py-1 rounded-lg gap-1.5 bg-primary/10 text-primary border-primary/20"
+ className="text-xs font-medium pl-2.5 pr-1.5 py-1 rounded-lg gap-2 bg-primary/10 text-primary border-primary/20"
  >
  <span>{sk}</span>
  <button
@@ -7502,7 +7502,7 @@ function SpecializedClassifiedEditor({
  }
  }}
  placeholder="Adicionar habilidade personalizada e pressionar Enter..."
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  <Button
  type="button"
@@ -7514,7 +7514,7 @@ function SpecializedClassifiedEditor({
  setCustomSkillInput("");
  }
  }}
- className="h-9 px-3 rounded-xl text-xs"
+ className="h-9 px-3 rounded-lg text-xs"
  >
  Adicionar
  </Button>
@@ -7529,7 +7529,7 @@ function SpecializedClassifiedEditor({
  key={sug}
  type="button"
  onClick={() => setJobSkills((prev) => [...prev, sug])}
- className="px-2 py-0.5 rounded-md text-xs border border-dashed border-border/80 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+ className="px-2 py-1 rounded-md text-xs border border-dashed border-border/80 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
  >
  + {sug}
  </button>
@@ -7556,7 +7556,7 @@ function SpecializedClassifiedEditor({
  selected ? (prev.length > 1 ? prev.filter((m) => m !== method.id) : prev) : [...prev, method.id]
  );
  }}
- className={`p-2.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+ className={`p-2 rounded-lg border transition-colors cursor-pointer flex flex-col justify-between ${
  selected
  ? "bg-primary/5 border-primary text-foreground"
  : "bg-background border-border text-muted-foreground"
@@ -7577,7 +7577,7 @@ function SpecializedClassifiedEditor({
 
  {/* Produto Digital & Downloads */}
  {niche.id === "digital" && (
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <FileArchive className="size-4 text-primary" />
@@ -7589,10 +7589,10 @@ function SpecializedClassifiedEditor({
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Tipo de Material Digital</Label>
  <Select value={digitalFileType} onValueChange={setDigitalFileType}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7609,10 +7609,10 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Limite de Downloads por Comprador</Label>
  <Select value={digitalDownloadLimit} onValueChange={setDigitalDownloadLimit}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7627,7 +7627,7 @@ function SpecializedClassifiedEditor({
  </div>
 
  {/* Dropzone de Upload de Arquivo Digital */}
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <Label className="text-xs text-foreground font-medium">
  Arquivo para Download do Comprador <span className="text-destructive">*</span>
  </Label>
@@ -7649,7 +7649,7 @@ function SpecializedClassifiedEditor({
  />
  </div>
 
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <Label className="text-xs text-foreground font-medium">
  Link de Amostra / Prévia Online (Opcional)
  </Label>
@@ -7657,7 +7657,7 @@ function SpecializedClassifiedEditor({
  value={digitalPreviewUrl}
  onChange={(e) => setDigitalPreviewUrl(e.target.value)}
  placeholder="https://drive.google.com/..., https://notion.so/..., https://youtube.com/..."
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  <p className="text-xs text-muted-foreground">
  Se você possui uma degustação, trailer ou página demonstrativa, cole o link aqui.
@@ -7670,7 +7670,7 @@ function SpecializedClassifiedEditor({
           {/* Section 3 (Logística de Envio para Bens Físicos) */}
  {niche.id === "desapego" && (
  <div className="space-y-4">
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Truck className="size-4 text-primary" />
@@ -7681,10 +7681,10 @@ function SpecializedClassifiedEditor({
  </Badge>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Modalidade de Envio / Retirada</Label>
  <Select value={deliveryMode} onValueChange={(v: any) => setDeliveryMode(v)}>
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -7696,7 +7696,7 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
 
- <div className="flex items-center gap-2.5 pt-1">
+ <div className="flex items-center gap-2 pt-1">
  <Checkbox
  id="free-shipping"
  checked={freeShippingLocal}
@@ -7712,7 +7712,7 @@ function SpecializedClassifiedEditor({
 
  {/* Assinaturas & Mensalidades (Planos Recorrentes) */}
               {niche.id === "assinatura" && (
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <RefreshCw className="size-4 text-primary" />
@@ -7724,10 +7724,10 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Ciclo de Cobrança *</Label>
                       <Select value={billingCycle} onValueChange={(v: any) => setBillingCycle(v)}>
-                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -7739,21 +7739,21 @@ function SpecializedClassifiedEditor({
                       </Select>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs text-foreground font-medium">Taxa de Matrícula / Adesão (R$)</Label>
                       <CurrencyField
                         value={setupFeeCents}
                         onChange={setSetupFeeCents}
                         placeholder="0,00"
-                        className="h-11 rounded-xl text-xs bg-background"
+                        className="h-11 rounded-lg text-xs bg-background"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs text-foreground font-medium">Período de Teste Grátis (Trial)</Label>
                     <Select value={String(trialDays)} onValueChange={(v) => setTrialDays(Number(v))}>
-                      <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -7772,7 +7772,7 @@ function SpecializedClassifiedEditor({
                         value={newFeatureInput}
                         onChange={(e) => setNewFeatureInput(e.target.value)}
                         placeholder="Ex: Acesso livre às instalações"
-                        className="h-11 rounded-xl text-xs bg-background"
+                        className="h-11 rounded-lg text-xs bg-background"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
@@ -7787,7 +7787,7 @@ function SpecializedClassifiedEditor({
                         type="button"
                         size="sm"
                         variant="outline"
-                        className="rounded-xl text-xs h-10 px-3"
+                        className="rounded-lg text-xs h-10 px-3"
                         onClick={() => {
                           if (newFeatureInput.trim()) {
                             setRecurringFeatures([...recurringFeatures, newFeatureInput.trim()]);
@@ -7799,12 +7799,12 @@ function SpecializedClassifiedEditor({
                       </Button>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5 pt-1">
+                    <div className="flex flex-wrap gap-2 pt-1">
                       {recurringFeatures.map((feat, idx) => (
                         <Badge
                           key={idx}
                           variant="secondary"
-                          className="text-xs px-2.5 py-1 rounded-lg gap-1.5 bg-primary/10 text-primary border border-primary/20"
+                          className="text-xs px-2.5 py-1 rounded-lg gap-2 bg-primary/10 text-primary border border-primary/20"
                         >
                           <span> {feat}</span>
                           <button
@@ -7823,7 +7823,7 @@ function SpecializedClassifiedEditor({
 
               {/* Destaques & Diferenciais Livres (Disponível para todos os outros nichos) */}
               {niche.id !== "viagem" && (
-                <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                   <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                       <Award className="size-4 text-primary shrink-0" />
@@ -7834,7 +7834,7 @@ function SpecializedClassifiedEditor({
                     </Badge>
                   </div>
 
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-muted-foreground">
                         Adicione os pontos fortes e diferenciais deste item para atrair mais interessados.
@@ -7853,7 +7853,7 @@ function SpecializedClassifiedEditor({
 
                     <div className="space-y-2">
                       {travelBioBullets.map((bullet, idx) => (
-                        <div key={idx} className="flex items-center gap-1.5">
+                        <div key={idx} className="flex items-center gap-2">
                           <span className="text-xs font-mono text-muted-foreground w-4 text-center shrink-0">
                             {idx + 1}.
                           </span>
@@ -7869,9 +7869,9 @@ function SpecializedClassifiedEditor({
                                 ? "Equipamento Revisado, Cabos Inclusos..."
                                 : "Original, Nota Fiscal, Impecável..."
                             })`}
-                            className="h-9 rounded-xl text-xs bg-background flex-1"
+                            className="h-9 rounded-lg text-xs bg-background flex-1"
                           />
-                          <div className="flex items-center gap-0.5 shrink-0">
+                          <div className="flex items-center gap-1 shrink-0">
                             {travelBioBullets.length > 1 && (
                               <>
                                 <Button
@@ -7920,7 +7920,7 @@ function SpecializedClassifiedEditor({
               )}
 
               {/* Formas de Pagamento (LISTA ESTRUTURADA ESPAÇOSA - ZERO TRUNCATION - 1x = À VISTA) */}
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <CreditCard className="size-4 text-primary shrink-0" />
@@ -7934,7 +7934,7 @@ function SpecializedClassifiedEditor({
 
                   {/* 1. Pix */}
                   <div className={cn(
-                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    "p-4 sm:p-4 rounded-lg border transition-colors space-y-3",
                     acceptsPix
                       ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
                       : "border-border/60 bg-muted/20 opacity-80"
@@ -7942,7 +7942,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={cn(
-                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                           acceptsPix ? "bg-foreground text-background " : "bg-muted text-muted-foreground"
                         )}>
                           <QrCode className="size-5" />
@@ -7964,13 +7964,13 @@ function SpecializedClassifiedEditor({
                     </div>
 
                     {acceptsPix && (
-                      <div className="pt-2 border-t border-border/40 space-y-2.5">
+                      <div className="pt-2 border-t border-border/40 space-y-2">
                         <div className="flex items-center justify-between">
-                          <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                          <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                             <BadgePercent className="size-3.5 text-emerald-600" />
                             <span>Desconto no Pix à Vista</span>
                           </Label>
-                          <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                          <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-2 py-1 rounded-md">
                             {pixDiscountPercent}% OFF
                           </span>
                         </div>
@@ -8002,7 +8002,7 @@ function SpecializedClassifiedEditor({
 
                   {/* 2. Cartão de Crédito (1x = À Vista, 2x+ = Parcelamento) */}
                   <div className={cn(
-                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    "p-4 sm:p-4 rounded-lg border transition-colors space-y-3",
                     acceptsCard
                       ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
                       : "border-border/60 bg-muted/20 opacity-80"
@@ -8010,7 +8010,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={cn(
-                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                           acceptsCard ? "bg-foreground text-background " : "bg-muted text-muted-foreground"
                         )}>
                           <CreditCard className="size-5" />
@@ -8034,11 +8034,11 @@ function SpecializedClassifiedEditor({
                     {acceptsCard && (
                       <div className="pt-2 border-t border-border/40 space-y-3">
                         <div className="flex items-center justify-between">
-                          <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
+                          <Label className="text-xs text-foreground font-semibold flex items-center gap-2">
                             <CreditCard className="size-3.5 text-primary" />
                             <span>Parcelamento Máximo</span>
                           </Label>
-                          <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
+                          <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-1 rounded-md">
                             {maxInstallments === 1 ? "À vista" : `Até ${maxInstallments}x`}
                           </span>
                         </div>
@@ -8089,7 +8089,7 @@ function SpecializedClassifiedEditor({
 
                   
                     {/* Link de Pagamento Seguro / Checkout Externo */}
-                    <div className="pt-2 border-t border-border/40 space-y-1.5">
+                    <div className="pt-2 border-t border-border/40 space-y-2">
                       <Label className="text-xs text-muted-foreground/75 font-semibold text-foreground flex items-center justify-between">
                         <span>Link de Pagamento Online (Opcional)</span>
                         <span className="text-xs text-muted-foreground font-mono">Mercado Pago, Asaas, InfinitePay, etc.</span>
@@ -8098,7 +8098,7 @@ function SpecializedClassifiedEditor({
                         placeholder="https://mpago.la/... ou link da sua maquininha"
                         value={paymentLink}
                         onChange={(e) => setPaymentLink(e.target.value)}
-                        className="h-9 rounded-xl text-xs bg-background font-mono"
+                        className="h-9 rounded-lg text-xs bg-background font-mono"
                       />
                       <p className="text-xs text-muted-foreground">
                         Se preenchido, os clientes poderão clicar e pagar com cartão diretamente no seu anúncio.
@@ -8107,7 +8107,7 @@ function SpecializedClassifiedEditor({
 
                   {/* 3. Dinheiro em Espécie (Presencial) */}
                   <div className={cn(
-                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-2",
+                    "p-4 sm:p-4 rounded-lg border transition-colors space-y-2",
                     acceptsCash
                       ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
                       : "border-border/60 bg-muted/20 opacity-80"
@@ -8115,7 +8115,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={cn(
-                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                           acceptsCash ? "bg-foreground text-background " : "bg-muted text-muted-foreground"
                         )}>
                           <Banknote className="size-5" />
@@ -8137,7 +8137,7 @@ function SpecializedClassifiedEditor({
 
                   {/* 4. Boleto Bancário à Vista */}
                   <div className={cn(
-                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    "p-4 sm:p-4 rounded-lg border transition-colors space-y-3",
                     acceptsBoleto
                       ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
                       : "border-border/60 bg-muted/20 opacity-80"
@@ -8145,7 +8145,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={cn(
-                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                           acceptsBoleto ? "bg-foreground text-background " : "bg-muted text-muted-foreground"
                         )}>
                           <Receipt className="size-5" />
@@ -8190,7 +8190,7 @@ function SpecializedClassifiedEditor({
 
                   {/* 5. Boleto Parcelado */}
                   <div className={cn(
-                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    "p-4 sm:p-4 rounded-lg border transition-colors space-y-3",
                     acceptsBoletoInstallments
                       ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
                       : "border-border/60 bg-muted/20 opacity-80"
@@ -8198,7 +8198,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={cn(
-                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                           acceptsBoletoInstallments ? "bg-foreground text-background " : "bg-muted text-muted-foreground"
                         )}>
                           <FileSpreadsheet className="size-5" />
@@ -8258,7 +8258,7 @@ function SpecializedClassifiedEditor({
 
                   {/* 6. Carnê Digital Waesy */}
                   <div className={cn(
-                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    "p-4 sm:p-4 rounded-lg border transition-colors space-y-3",
                     acceptsCarne
                       ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
                       : "border-border/60 bg-muted/20 opacity-80"
@@ -8266,7 +8266,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={cn(
-                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                           acceptsCarne ? "bg-foreground text-background " : "bg-muted text-muted-foreground"
                         )}>
                           <BookOpenCheck className="size-5" />
@@ -8334,7 +8334,7 @@ function SpecializedClassifiedEditor({
 
                   {/* 7. Aceita Troca / Permuta */}
                   <div className={cn(
-                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    "p-4 sm:p-4 rounded-lg border transition-colors space-y-3",
                     acceptsTrade
                       ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
                       : "border-border/60 bg-muted/20 opacity-80"
@@ -8342,7 +8342,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={cn(
-                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                           acceptsTrade ? "bg-foreground text-background " : "bg-muted text-muted-foreground"
                         )}>
                           <RefreshCw className="size-5" />
@@ -8376,7 +8376,7 @@ function SpecializedClassifiedEditor({
 
                   {/* 8. Financiamento Bancário */}
                   <div className={cn(
-                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    "p-4 sm:p-4 rounded-lg border transition-colors space-y-3",
                     acceptsFinancing
                       ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
                       : "border-border/60 bg-muted/20 opacity-80"
@@ -8384,7 +8384,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={cn(
-                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                           acceptsFinancing ? "bg-foreground text-background " : "bg-muted text-muted-foreground"
                         )}>
                           <Landmark className="size-5" />
@@ -8419,10 +8419,10 @@ function SpecializedClassifiedEditor({
                 </div>
 
                 {/* Cancelamento */}
-                <div className="space-y-1.5 pt-2 border-t border-border/40">
+                <div className="space-y-2 pt-2 border-t border-border/40">
                   <Label className="text-xs text-foreground font-semibold">Política de Cancelamento</Label>
                   <Select value={cancellationPolicy} onValueChange={(v: any) => setCancellationPolicy(v)}>
-                    <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                    <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -8436,7 +8436,7 @@ function SpecializedClassifiedEditor({
               </div>
 
               {/* Seção: Localização */}
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                   <MapPin className="size-4 text-primary shrink-0" />
                   <span>Localização</span>
@@ -8452,10 +8452,10 @@ function SpecializedClassifiedEditor({
  />
 
             {/* Controle de Privacidade Total de Endereço (LGPD) */}
-            <div className="p-3.5 bg-muted/20 border border-border/70 rounded-xl space-y-2">
+            <div className="p-4 bg-muted/20 border border-border/70 rounded-lg space-y-2">
               <div className="flex items-center justify-between gap-3">
                 <div className="space-y-0.5 min-w-0">
-                  <Label htmlFor="hide-location-toggle" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-1.5">
+                  <Label htmlFor="hide-location-toggle" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-2">
                     <ShieldCheck className="size-3.5 text-primary" />
                     Ocultar endereço completamente
                   </Label>
@@ -8470,14 +8470,14 @@ function SpecializedClassifiedEditor({
                 />
               </div>
               {hideLocation && (
-                <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg font-medium flex items-center gap-1.5">
+                <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-2 rounded-lg font-medium flex items-center gap-2">
                   <Check className="size-3 shrink-0" />
                   Privacidade total ativa: nenhum dado geográfico ou mapa será exposto.
                 </div>
               )}
             </div>
 
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <Label className="text-xs text-foreground font-medium">
  WhatsApp para Contato Direto
  </Label>
@@ -8485,13 +8485,13 @@ function SpecializedClassifiedEditor({
 									value={whatsapp}
 									onChange={(val) => setWhatsapp(val || "")}
 									placeholder="(49) 99999-9999"
-									className="h-10 rounded-xl text-xs bg-background"
+									className="h-10 rounded-lg text-xs bg-background"
 								/>
  </div>
  </div>
 
               {/* ── Formulário de Captura de Leads / Landing Page Vinculada ── */}
-              <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-5 space-y-3">
+              <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <FileText className="size-4 text-primary shrink-0" />
@@ -8511,7 +8511,7 @@ function SpecializedClassifiedEditor({
                       value={selectedFormId || "none"}
                       onValueChange={(val) => setSelectedFormId(val === "none" ? null : val)}
                     >
-                      <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                         <SelectValue placeholder="Selecione um formulário de captura..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -8552,7 +8552,7 @@ function SpecializedClassifiedEditor({
                       value={selectedFormId || ""}
                       onChange={(e) => setSelectedFormId(e.target.value.trim() || null)}
                       placeholder="ID ou Slug do formulário (ex: cotacao-cancun ou UUID)"
-                      className="w-full h-11 px-3 rounded-xl border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="w-full h-11 px-3 rounded-lg border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                     <div className="flex items-center justify-between text-xs text-muted-foreground/75 text-muted-foreground">
                       <span>Cole o slug ou UUID do formulário</span>
@@ -8569,7 +8569,7 @@ function SpecializedClassifiedEditor({
               </div>
 
               {/* ── Seção 6: Agente Vendedor (SDR) — Configuração ── */}
-              <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.03] p-4 sm:p-5 space-y-4">
+              <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.03] p-4 sm:p-5 space-y-4">
                 <div className="flex items-center justify-between pb-2.5 border-b border-blue-500/15">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Bot className="size-4 text-blue-500 shrink-0" />
@@ -8601,7 +8601,7 @@ function SpecializedClassifiedEditor({
                 {aiAgentEnabled && (
                   <div className="space-y-4">
                     {/* Instruções para a IA (confidencial) */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-medium text-foreground">
                           Instruções para o Agente (confidencial)
@@ -8614,7 +8614,7 @@ function SpecializedClassifiedEditor({
                         value={aiInstructions}
                         onChange={(e) => setAiInstructions(e.target.value.slice(0, 1000))}
                         placeholder="Ex: O produto é novo na caixa. Prioridade para quem pagar à vista. Não revelar que há estoque de outros."
-                        className="w-full min-h-20 resize-none rounded-xl border border-border/60 bg-background px-3 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                        className="w-full min-h-20 resize-none rounded-lg border border-border/60 bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                         maxLength={1000}
                         aria-label="Instruções para o agente SDR"
                       />
@@ -8624,9 +8624,9 @@ function SpecializedClassifiedEditor({
                     </div>
 
                     {/* Desconto Máximo */}
-                    <div className="space-y-2 p-3.5 bg-background rounded-xl border border-border/60">
+                    <div className="space-y-2 p-4 bg-background rounded-lg border border-border/60">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                        <Label className="text-xs font-medium text-foreground flex items-center gap-2">
                           <BadgePercent className="size-3.5 text-primary" />
                           Desconto Máximo Permitido
                         </Label>
@@ -8665,7 +8665,7 @@ function SpecializedClassifiedEditor({
               </div>
 
               {/* Seletor Silencioso de Estilo Visual (Auto-Design & Collapsible no Fundo - V121) */}
-              <div className="bg-card rounded-2xl p-4 border border-border/60">
+              <div className="bg-card rounded-lg p-4 border border-border/60">
                 <button
                   type="button"
                   onClick={() => setIsTemplateStyleOpen(!isTemplateStyleOpen)}
@@ -8690,21 +8690,21 @@ function SpecializedClassifiedEditor({
                         type="button"
                         onClick={() => setTemplateStyle("standard")}
                         className={cn(
-                          "p-2.5 rounded-xl border text-left transition-all cursor-pointer",
+                          "p-2 rounded-lg border text-left transition-colors cursor-pointer",
                           templateStyle === "standard"
                             ? "border-primary bg-primary/5 ring-1 ring-primary"
                             : "border-border/60 hover:bg-muted/40"
                         )}
                       >
                         <p className="text-xs font-bold text-foreground">Padrão</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Visual limpo</p>
+                        <p className="text-xs text-muted-foreground mt-1">Visual limpo</p>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => setTemplateStyle("editorial")}
                         className={cn(
-                          "p-2.5 rounded-xl border text-left transition-all cursor-pointer",
+                          "p-2 rounded-lg border text-left transition-colors cursor-pointer",
                           templateStyle === "editorial" || (templateStyle as string) === "instagram"
                             ? "border-primary bg-primary/5 ring-1 ring-primary"
                             : "border-border/60 hover:bg-muted/40"
@@ -8714,14 +8714,14 @@ function SpecializedClassifiedEditor({
                           <span>Imersiva</span>
                           <span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
                         </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Roteiro e abas</p>
+                        <p className="text-xs text-muted-foreground mt-1">Roteiro e abas</p>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => setTemplateStyle("conveniencia")}
                         className={cn(
-                          "p-2.5 rounded-xl border text-left transition-all cursor-pointer",
+                          "p-2 rounded-lg border text-left transition-colors cursor-pointer",
                           templateStyle === "conveniencia"
                             ? "border-primary bg-primary/5 ring-1 ring-primary"
                             : "border-border/60 hover:bg-muted/40"
@@ -8731,7 +8731,7 @@ function SpecializedClassifiedEditor({
                           <span>Mercado</span>
                           <span className="size-1.5 rounded-full bg-emerald-500" />
                         </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Gôndola</p>
+                        <p className="text-xs text-muted-foreground mt-1">Gôndola</p>
                       </button>
                     </div>
                   </div>
@@ -8746,9 +8746,9 @@ function SpecializedClassifiedEditor({
  className={`md:col-span-7 ${mobileTab === "preview" ? "block" : "hidden md:block"} sticky top-0`}
  >
         {templateStyle === "editorial" || (templateStyle as string) === "instagram" ? (
-          <div className="bg-card rounded-2xl overflow-hidden border border-border/60">
+          <div className="bg-card rounded-lg overflow-hidden border border-border/60">
             <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
-              <span className="font-semibold flex items-center gap-1.5 text-muted-foreground">
+              <span className="font-semibold flex items-center gap-2 text-muted-foreground">
                 <Eye className="size-3.5 text-primary" />
                 Prévia ao vivo
               </span>
@@ -8761,9 +8761,9 @@ function SpecializedClassifiedEditor({
             </div>
           </div>
         ) : niche.id === "mercado" || templateStyle === "conveniencia" ? (
-          <div className="bg-card rounded-2xl overflow-hidden border border-border/60">
+          <div className="bg-card rounded-lg overflow-hidden border border-border/60">
             <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
-              <span className="font-semibold flex items-center gap-1.5 text-muted-foreground">
+              <span className="font-semibold flex items-center gap-2 text-muted-foreground">
                 <Eye className="size-3.5 text-primary" />
                 Prévia ao vivo · Mercado & Perecíveis
               </span>
@@ -8829,10 +8829,10 @@ function SpecializedClassifiedEditor({
             </div>
           </div>
         ) : (
-          <div className="bg-card rounded-2xl overflow-hidden border border-border/60">
+          <div className="bg-card rounded-lg overflow-hidden border border-border/60">
             {/* Header da Prévia */}
             <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
-              <span className="font-semibold flex items-center gap-1.5 text-muted-foreground">
+              <span className="font-semibold flex items-center gap-2 text-muted-foreground">
                 <Eye className="size-3.5 text-primary" />
                 Prévia ao vivo
               </span>
@@ -8841,7 +8841,7 @@ function SpecializedClassifiedEditor({
  <div className="p-4 md:p-6 space-y-6">
  {/* Galeria de Fotos da Prévia */}
  <div className="space-y-2">
- <div className="relative aspect-video rounded-xl overflow-hidden bg-muted/60 flex items-center justify-center">
+ <div className="relative aspect-video rounded-lg overflow-hidden bg-muted/60 flex items-center justify-center">
  {images.length > 0 ? (
  <img
  src={images[activePreviewImage] || images[0]}
@@ -8865,7 +8865,7 @@ function SpecializedClassifiedEditor({
  key={idx}
  type="button"
  onClick={() => setActivePreviewImage(idx)}
- className={`size-14 rounded-lg overflow-hidden border shrink-0 transition-all ${
+ className={`size-14 rounded-lg overflow-hidden border shrink-0 transition-colors ${
  activePreviewImage === idx
  ? "border-primary ring-2 ring-primary/20"
  : "border-border opacity-70"
@@ -8900,7 +8900,7 @@ function SpecializedClassifiedEditor({
  {title || "Título do Anúncio aparecerá aqui..."}
  </h1>
 
-              <div className="space-y-1.5 pt-1">
+              <div className="space-y-2 pt-1">
                 <div className="flex items-baseline gap-2 flex-wrap">
                   <span className="text-2xl font-black text-primary font-mono">
                     {pricingType === "free" || niche.id === "doacao"
@@ -8978,7 +8978,7 @@ function SpecializedClassifiedEditor({
 
  {/* Badges Semânticos de Acordo com o Nicho */}
  {niche.id === "hospedagem" && (
- <div className="flex flex-wrap gap-1.5 pt-1">
+ <div className="flex flex-wrap gap-2 pt-1">
  <Badge variant="outline" className="text-xs font-medium gap-1 bg-muted/40">
  <Key className="size-3 text-primary" />
  <span>
@@ -9011,7 +9011,7 @@ function SpecializedClassifiedEditor({
  )}
 
  {niche.id === "desapego" && (
- <div className="flex flex-wrap gap-1.5 pt-1">
+ <div className="flex flex-wrap gap-2 pt-1">
  {deliveryMode === "both" && (
  <Badge variant="outline" className="text-xs font-medium gap-1 bg-muted/40">
  <Truck className="size-3 text-primary" />
@@ -9061,7 +9061,7 @@ function SpecializedClassifiedEditor({
  )}
 
  {(niche.id === "veiculo" || niche.id === "desapego") && (
- <div className="flex flex-wrap gap-1.5 pt-1">
+ <div className="flex flex-wrap gap-2 pt-1">
  {acceptsPix && (
  <Badge variant="secondary" className="text-xs font-medium gap-1">
  <QrCode className="size-3 text-emerald-600" />
@@ -9091,9 +9091,9 @@ function SpecializedClassifiedEditor({
 
  {/* Simulador de Frete & Logística Waesy Express na Prévia (Apenas para Desapego) */}
  {niche.id === "desapego" && (deliveryMode === "both" || deliveryMode === "local_delivery" || deliveryMode === "shipping") && (
- <div className="border border-primary/30 rounded-2xl p-4 bg-primary/5 space-y-2.5">
+ <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 space-y-2">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+ <div className="flex items-center gap-2 text-xs font-bold text-foreground">
  <Truck className="size-4 text-primary" />
  <span>Simulação de Frete</span>
  </div>
@@ -9102,8 +9102,8 @@ function SpecializedClassifiedEditor({
  </Badge>
  </div>
 
- <div className="space-y-1.5 text-xs pt-1">
- <div className="flex items-center justify-between p-2 rounded-xl bg-background">
+ <div className="space-y-2 text-xs pt-1">
+ <div className="flex items-center justify-between p-2 rounded-lg bg-background">
  <div className="flex items-center gap-2">
  <div className="size-6 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
  <Truck className="size-3.5" />
@@ -9118,7 +9118,7 @@ function SpecializedClassifiedEditor({
  </span>
  </div>
 
- <div className="flex items-center justify-between p-2 rounded-xl bg-background">
+ <div className="flex items-center justify-between p-2 rounded-lg bg-background">
  <div className="flex items-center gap-2">
  <div className="size-6 rounded-lg bg-muted flex items-center justify-center text-foreground">
  <Package className="size-3.5" />
@@ -9138,8 +9138,8 @@ function SpecializedClassifiedEditor({
 
  {/* Especificações na Prévia */}
  {niche.id === "hospedagem" && (
- <div className="rounded-xl p-4 bg-muted/20 space-y-3">
- <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+ <div className="rounded-lg p-4 bg-muted/20 space-y-3">
+ <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
  <Key className="size-3.5 text-primary" />
  <span>Regras da Estadia</span>
  </h3>
@@ -9163,7 +9163,7 @@ function SpecializedClassifiedEditor({
  </div>
  {hospAmenities.length > 0 && (
  <div className="pt-2 border-t border-border/40">
- <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block mb-1.5">
+ <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block mb-2">
  Comodidades
  </span>
  <div className="flex flex-wrap gap-1">
@@ -9179,7 +9179,7 @@ function SpecializedClassifiedEditor({
  )}
 
  {niche.id === "imovel" && (
- <div className="rounded-xl p-4 bg-muted/20 space-y-2">
+ <div className="rounded-lg p-4 bg-muted/20 space-y-2">
  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
  Especificações do Imóvel
  </h3>
@@ -9207,7 +9207,7 @@ function SpecializedClassifiedEditor({
  )}
 
  {niche.id === "veiculo" && (
- <div className="rounded-xl p-4 bg-muted/20 space-y-2">
+ <div className="rounded-lg p-4 bg-muted/20 space-y-2">
  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
  Especificações do Veículo
  </h3>
@@ -9243,7 +9243,7 @@ function SpecializedClassifiedEditor({
  <Button
  type="button"
  disabled
- className="w-full rounded-xl bg-foreground text-background font-bold text-xs gap-2 h-11 opacity-90 cursor-not-allowed"
+ className="w-full rounded-lg bg-foreground text-background font-bold text-xs gap-2 h-11 opacity-90 cursor-not-allowed"
  >
  <Phone className="size-4" />
  <span>

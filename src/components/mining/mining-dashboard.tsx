@@ -586,7 +586,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             <Database className="w-5 h-5 text-primary" />
             Central de Dados e Inteligência Comercial
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Gestão unificada de importações, catálogo comercial, processos judiciais e indicadores de mercado.
           </p>
         </div>
@@ -596,12 +596,12 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             <Button
               variant="outline"
               size="sm"
-              className="h-10 px-3.5 rounded-xl border border-border/50 font-normal gap-1.5"
+              className="h-10 px-4 rounded-lg border border-border/50 font-normal gap-2"
             >
               <Star className="w-4 h-4 text-muted-foreground" />
               Curadoria
               {stats?.minedArticles && stats?.minedArticles.pendingReview > 0 ? (
-                <span className="ml-1 text-[11px] px-1.5 py-0.5 rounded-md bg-muted text-foreground font-mono">
+                <span className="ml-1 text-xs px-2 py-1 rounded-md bg-muted text-foreground font-mono">
                   {stats.minedArticles.pendingReview}
                 </span>
               ) : null}
@@ -613,9 +613,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             size="sm"
             onClick={loadStats}
             disabled={isLoadingStats}
-            className="h-10 px-3 rounded-xl font-normal"
+            className="h-10 px-3 rounded-lg font-normal"
           >
-            <RefreshCw className={`w-4 h-4 mr-1.5 ${isLoadingStats ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingStats ? "animate-spin" : ""}`} />
             Atualizar
           </Button>
 
@@ -623,12 +623,12 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             size="sm"
             onClick={() => handleRunScraper("continuous-crawler")}
             disabled={Boolean(isRunningScraper)}
-            className="h-10 px-4 rounded-xl font-medium shadow-none"
+            className="h-10 px-4 rounded-lg font-medium shadow-none"
           >
             {isRunningScraper === "continuous-crawler" ? (
-              <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
-              <Play className="w-4 h-4 mr-1.5 fill-current" />
+              <Play className="w-4 h-4 mr-2 fill-current" />
             )}
             Sincronizar Dados
           </Button>
@@ -641,85 +641,85 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
       {/* KPI Cards — Clean Paradigm */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Card 1: Fila */}
-        <div className="p-4 rounded-xl border border-border/40 bg-card space-y-1.5">
+        <div className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Fila</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Fila</span>
             <Globe className="w-3.5 h-3.5 text-muted-foreground" />
           </div>
           <div className="text-xl font-semibold text-foreground">
             {stats?.crawlQueue.total ?? 0}
           </div>
-          <div className="text-[11px] text-muted-foreground truncate">
+          <div className="text-xs text-muted-foreground truncate">
             {stats?.crawlQueue.pending ?? 0} pendentes
           </div>
         </div>
 
         {/* Card 2: Empresas */}
-        <div className="p-4 rounded-xl border border-border/40 bg-card space-y-1.5">
+        <div className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Empresas</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Empresas</span>
             <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
           </div>
           <div className="text-xl font-semibold text-foreground">
             {stats?.indexedBusinesses.total ?? 0}
           </div>
-          <div className="text-[11px] text-muted-foreground truncate">
+          <div className="text-xs text-muted-foreground truncate">
             {stats?.indexedBusinesses.withCnpj ?? 0} com CNPJ
           </div>
         </div>
 
         {/* Card 3: Produtos Minerados */}
-        <div className="p-4 rounded-xl border border-border/40 bg-card space-y-1.5">
+        <div className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Produtos</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Produtos</span>
             <Package className="w-3.5 h-3.5 text-muted-foreground" />
           </div>
           <div className="text-xl font-semibold text-foreground">
             {minedProductsTotal > 0 ? minedProductsTotal : (stats?.minedArticles?.total ?? 0)}
           </div>
-          <div className="text-[11px] text-muted-foreground truncate">
+          <div className="text-xs text-muted-foreground truncate">
             Radar multiloja ativo
           </div>
         </div>
 
         {/* Card 4: Anti-Ban Cooldowns */}
-        <div className="p-4 rounded-xl border border-border/40 bg-card space-y-1.5">
+        <div className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Anti-Ban</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Anti-Ban</span>
             <ShieldAlert className="w-3.5 h-3.5 text-muted-foreground" />
           </div>
           <div className="text-xl font-semibold text-foreground">
             {domainCooldowns.length}
           </div>
-          <div className="text-[11px] text-muted-foreground truncate">
+          <div className="text-xs text-muted-foreground truncate">
             Domínios em repouso
           </div>
         </div>
 
         {/* Card 5: Feeds RSS */}
-        <div className="p-4 rounded-xl border border-border/40 bg-card space-y-1.5">
+        <div className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Feeds RSS</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Feeds RSS</span>
             <Rss className="w-3.5 h-3.5 text-muted-foreground" />
           </div>
           <div className="text-xl font-semibold text-foreground">
             {stats?.rssFeeds.active ?? 0}
           </div>
-          <div className="text-[11px] text-muted-foreground truncate">
+          <div className="text-xs text-muted-foreground truncate">
             de {stats?.rssFeeds.total ?? 0} portais
           </div>
         </div>
 
         {/* Card 6: Auditoria */}
-        <div className="p-4 rounded-xl border border-border/40 bg-card space-y-1.5">
+        <div className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Taxa Sucesso</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Taxa Sucesso</span>
             <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" />
           </div>
           <div className="text-xl font-semibold text-foreground">
             {stats?.scraperAudit.successRatePercent ?? 100}%
           </div>
-          <div className="text-[11px] text-muted-foreground truncate">
+          <div className="text-xs text-muted-foreground truncate">
             {stats?.scraperAudit.totalRuns ?? 0} execuções
           </div>
         </div>
@@ -727,15 +727,15 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4">
-        <TabsList className="bg-muted/40 p-1 rounded-xl border border-border/40 overflow-x-auto justify-start h-auto">
+        <TabsList className="bg-muted/40 p-1 rounded-lg border border-border/40 overflow-x-auto justify-start h-auto">
           <TabsTrigger value="overview" className="rounded-lg text-xs font-normal py-2 px-3">
             Visão Geral
           </TabsTrigger>
-          <TabsTrigger value="products" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
+          <TabsTrigger value="products" className="rounded-lg text-xs font-normal py-2 px-3 gap-2">
             <Package className="w-3.5 h-3.5" />
             Produtos & Radar ({minedProductsTotal})
           </TabsTrigger>
-          <TabsTrigger value="cooldowns" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
+          <TabsTrigger value="cooldowns" className="rounded-lg text-xs font-normal py-2 px-3 gap-2">
             <ShieldAlert className="w-3.5 h-3.5" />
             Segurança & Conexão ({domainCooldowns.length})
           </TabsTrigger>
@@ -754,15 +754,15 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <TabsTrigger value="audit" className="rounded-lg text-xs font-normal py-2 px-3">
             Histórico de Importações
           </TabsTrigger>
-          <TabsTrigger value="datajud" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
+          <TabsTrigger value="datajud" className="rounded-lg text-xs font-normal py-2 px-3 gap-2">
             <Scale className="w-3.5 h-3.5" />
             Processos Judiciais (CNJ)
           </TabsTrigger>
-          <TabsTrigger value="places" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
+          <TabsTrigger value="places" className="rounded-lg text-xs font-normal py-2 px-3 gap-2">
             <MapPin className="w-3.5 h-3.5" />
             Buscar Empresas Locais
           </TabsTrigger>
-          <TabsTrigger value="specialized" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
+          <TabsTrigger value="specialized" className="rounded-lg text-xs font-normal py-2 px-3 gap-2">
             <Utensils className="w-3.5 h-3.5" />
             Importar por Link
           </TabsTrigger>
@@ -788,58 +788,58 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
         {/* TAB 1: VISÃO GERAL */}
         <TabsContent value="overview" className="space-y-4">
           {/* Quick Engine Triggers */}
-          <div className="p-4 rounded-xl border border-border/40 bg-card space-y-3">
+          <div className="p-4 rounded-lg border border-border/40 bg-card space-y-3">
             <h3 className="text-sm font-semibold text-foreground">Disparo Direto</h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
               <Button
                 variant="outline"
-                className="h-14 justify-start px-3.5 rounded-xl border border-border/50 hover:bg-muted/40 font-normal"
+                className="h-14 justify-start px-4 rounded-lg border border-border/50 hover:bg-muted/40 font-normal"
                 onClick={() => handleRunScraper("continuous-crawler")}
                 disabled={Boolean(isRunningScraper)}
               >
                 <Globe className="w-4 h-4 mr-2.5 text-muted-foreground shrink-0" />
                 <div className="text-left truncate">
                   <div className="font-medium text-xs text-foreground truncate">Continuous Crawler</div>
-                  <div className="text-[11px] text-muted-foreground truncate">Processar próxima URL</div>
+                  <div className="text-xs text-muted-foreground truncate">Processar próxima URL</div>
                 </div>
               </Button>
 
               <Button
                 variant="outline"
-                className="h-14 justify-start px-3.5 rounded-xl border border-border/50 hover:bg-muted/40 font-normal"
+                className="h-14 justify-start px-4 rounded-lg border border-border/50 hover:bg-muted/40 font-normal"
                 onClick={() => handleRunScraper("rss-fetcher")}
                 disabled={Boolean(isRunningScraper)}
               >
                 <Rss className="w-4 h-4 mr-2.5 text-muted-foreground shrink-0" />
                 <div className="text-left truncate">
                   <div className="font-medium text-xs text-foreground truncate">RSS Ingester</div>
-                  <div className="text-[11px] text-muted-foreground truncate">Sincronizar feeds ativos</div>
+                  <div className="text-xs text-muted-foreground truncate">Sincronizar feeds ativos</div>
                 </div>
               </Button>
 
               <Button
                 variant="outline"
-                className="h-14 justify-start px-3.5 rounded-xl border border-border/50 hover:bg-muted/40 font-normal"
+                className="h-14 justify-start px-4 rounded-lg border border-border/50 hover:bg-muted/40 font-normal"
                 onClick={() => handleRunScraper("market-data")}
                 disabled={Boolean(isRunningScraper)}
               >
                 <TrendingUp className="w-4 h-4 mr-2.5 text-muted-foreground shrink-0" />
                 <div className="text-left truncate">
                   <div className="font-medium text-xs text-foreground truncate">Indicadores BCB</div>
-                  <div className="text-[11px] text-muted-foreground truncate">IPCA, SELIC, Câmbio</div>
+                  <div className="text-xs text-muted-foreground truncate">IPCA, SELIC, Câmbio</div>
                 </div>
               </Button>
 
               <Button
                 variant="outline"
-                className="h-14 justify-start px-3.5 rounded-xl border border-border/50 hover:bg-muted/40 font-normal"
+                className="h-14 justify-start px-4 rounded-lg border border-border/50 hover:bg-muted/40 font-normal"
                 onClick={() => setIsSeedModalOpen(true)}
               >
                 <Plus className="w-4 h-4 mr-2.5 text-muted-foreground shrink-0" />
                 <div className="text-left truncate">
                   <div className="font-medium text-xs text-foreground truncate">Nova Semente</div>
-                  <div className="text-[11px] text-muted-foreground truncate">Cadastrar domínio na fila</div>
+                  <div className="text-xs text-muted-foreground truncate">Cadastrar domínio na fila</div>
                 </div>
               </Button>
             </div>
@@ -848,8 +848,8 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           {/* Form de Ações Avulsas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Scraping de URL pontual */}
-            <div className="p-4 rounded-xl border border-border/40 bg-card space-y-2.5">
-              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Rastrear URL Avulsa
               </span>
               <div className="flex gap-2">
@@ -857,13 +857,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   placeholder="https://exemplo.com.br/artigo"
                   value={customUrl}
                   onChange={(e) => setCustomUrl(e.target.value)}
-                  className="rounded-xl border-border/50 text-xs h-10"
+                  className="rounded-lg border-border/50 text-xs h-10"
                 />
                 <Button
                   variant="outline"
                   onClick={() => handleRunScraper("continuous-crawler", { targetUrl: customUrl })}
                   disabled={!customUrl || Boolean(isRunningScraper)}
-                  className="h-10 px-3.5 rounded-xl font-normal shrink-0"
+                  className="h-10 px-4 rounded-lg font-normal shrink-0"
                 >
                   Rastrear
                 </Button>
@@ -871,8 +871,8 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             </div>
 
             {/* Enriquecimento de CNPJ pontual */}
-            <div className="p-4 rounded-xl border border-border/40 bg-card space-y-2.5">
-              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Consultar e Enriquecer CNPJ
               </span>
               <div className="flex gap-2">
@@ -880,13 +880,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   placeholder="00.000.000/0000-00"
                   value={customCnpj}
                   onChange={(e) => setCustomCnpj(e.target.value)}
-                  className="rounded-xl border-border/50 text-xs h-10"
+                  className="rounded-lg border-border/50 text-xs h-10"
                 />
                 <Button
                   variant="outline"
                   onClick={() => handleRunScraper("cnpj-enrichment", { cnpj: customCnpj })}
                   disabled={!customCnpj || Boolean(isRunningScraper)}
-                  className="h-10 px-3.5 rounded-xl font-normal shrink-0"
+                  className="h-10 px-4 rounded-lg font-normal shrink-0"
                 >
                   Enriquecer
                 </Button>
@@ -895,9 +895,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
             {/* Floating Action Bar (Batch Operations Thumb Zone) */}
             {selectedProductIds.length > 0 && (
-              <div className="sticky bottom-4 z-40 p-3 rounded-2xl border border-border/60 bg-background/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
+              <div className="sticky bottom-4 z-40 p-3 rounded-lg border border-border/60 bg-background/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="font-mono text-xs px-2 py-0.5 rounded-full border-primary/40 bg-primary/10 text-primary font-bold">
+                  <Badge variant="outline" className="font-mono text-xs px-2 py-1 rounded-full border-primary/40 bg-primary/10 text-primary font-bold">
                     {selectedProductIds.length} selecionado{selectedProductIds.length > 1 ? "s" : ""}
                   </Badge>
                   <Button
@@ -910,13 +910,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleBatchApproveProducts}
                     disabled={isProcessingBatch}
-                    className="h-8 rounded-xl text-xs gap-1 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+                    className="h-8 rounded-lg text-xs gap-1 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
                   >
                     <CheckCircle2 className="size-3.5" />
                     <span>Aprovar ({selectedProductIds.length})</span>
@@ -927,7 +927,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     onClick={handleBatchRejectProducts}
                     disabled={isProcessingBatch}
-                    className="h-8 rounded-xl text-xs gap-1 border-border/60 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="h-8 rounded-lg text-xs gap-1 border-border/60 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <XCircle className="size-3.5" />
                     <span>Rejeitar</span>
@@ -937,7 +937,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     onClick={() => setIsBatchImportModalOpen(true)}
                     disabled={isProcessingBatch}
-                    className="h-8 rounded-xl text-xs gap-1 font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                    className="h-8 rounded-lg text-xs gap-1 font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                   >
                     <ShoppingBag className="size-3.5" />
                     <span>Importar para Loja...</span>
@@ -948,7 +948,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     onClick={handleBatchDeleteProducts}
                     disabled={isProcessingBatch}
-                    className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                    className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                     title="Excluir selecionados"
                   >
                     <Trash2 className="size-3.5" />
@@ -962,14 +962,14 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
         {/* TAB: PRODUTOS MINERADOS & RADAR DE PREÇOS */}
         <TabsContent value="products" className="space-y-4">
           {/* Radar & Benchmark Box */}
-          <div className="p-4 rounded-xl border border-border/40 bg-card space-y-3">
+          <div className="p-4 rounded-lg border border-border/40 bg-card space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-muted-foreground" />
                   Radar e Inteligência de Preços Multiverticais
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Compare cotações de um mesmo produto em múltiplos e-commerces e marketplaces minerados.
                 </p>
               </div>
@@ -983,32 +983,32 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   value={benchmarkQuery}
                   onChange={(e) => setBenchmarkQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleBenchmark()}
-                  className="pl-8 h-10 rounded-xl text-xs border-border/50"
+                  className="pl-8 h-10 rounded-lg text-xs border-border/50"
                 />
               </div>
               <Button
                 onClick={() => handleBenchmark()}
                 disabled={isLoadingBenchmark}
-                className="h-10 px-4 rounded-xl text-xs font-medium cursor-pointer shrink-0"
+                className="h-10 px-4 rounded-lg text-xs font-medium cursor-pointer shrink-0"
               >
                 {isLoadingBenchmark ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
                 ) : (
-                  <Search className="w-3.5 h-3.5 mr-1.5" />
+                  <Search className="w-3.5 h-3.5 mr-2" />
                 )}
                 Comparar Preços
               </Button>
             </div>
 
             {/* Quick Filter Chips */}
-            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-              <span className="text-[11px] text-muted-foreground">Exemplos:</span>
+            <div className="flex items-center gap-2 flex-wrap pt-0.5">
+              <span className="text-xs text-muted-foreground">Exemplos:</span>
               {["Smartphone", "Cimento", "Pneu", "Café 500g"].map((chip) => (
                 <button
                   key={chip}
                   type="button"
                   onClick={() => handleBenchmark(chip)}
-                  className="text-[11px] px-2 py-0.5 rounded-md border border-border/40 hover:bg-muted/30 text-muted-foreground transition-colors cursor-pointer"
+                  className="text-xs px-2 py-1 rounded-md border border-border/40 hover:bg-muted/30 text-muted-foreground transition-colors cursor-pointer"
                 >
                   {chip}
                 </button>
@@ -1018,9 +1018,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             {/* Benchmark Results */}
             {benchmarkResult && benchmarkResult.matchesCount > 0 && (
               <div className="pt-3 border-t border-border/30 space-y-3">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                  <div className="p-3 rounded-xl border border-border/30 bg-muted/10 space-y-1">
-                    <span className="text-[11px] text-muted-foreground">Menor Preço</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="p-3 rounded-lg border border-border/30 bg-muted/10 space-y-1">
+                    <span className="text-xs text-muted-foreground">Menor Preço</span>
                     <div className="text-base font-semibold text-foreground">
                       {(benchmarkResult.minPriceCents / 100).toLocaleString("pt-BR", {
                         style: "currency",
@@ -1028,8 +1028,8 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                       })}
                     </div>
                   </div>
-                  <div className="p-3 rounded-xl border border-border/30 bg-muted/10 space-y-1">
-                    <span className="text-[11px] text-muted-foreground">Preço Médio</span>
+                  <div className="p-3 rounded-lg border border-border/30 bg-muted/10 space-y-1">
+                    <span className="text-xs text-muted-foreground">Preço Médio</span>
                     <div className="text-base font-semibold text-foreground">
                       {(benchmarkResult.averagePriceCents / 100).toLocaleString("pt-BR", {
                         style: "currency",
@@ -1037,8 +1037,8 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                       })}
                     </div>
                   </div>
-                  <div className="p-3 rounded-xl border border-border/30 bg-muted/10 space-y-1">
-                    <span className="text-[11px] text-muted-foreground">Maior Preço</span>
+                  <div className="p-3 rounded-lg border border-border/30 bg-muted/10 space-y-1">
+                    <span className="text-xs text-muted-foreground">Maior Preço</span>
                     <div className="text-base font-semibold text-foreground">
                       {(benchmarkResult.maxPriceCents / 100).toLocaleString("pt-BR", {
                         style: "currency",
@@ -1046,8 +1046,8 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                       })}
                     </div>
                   </div>
-                  <div className="p-3 rounded-xl border border-border/30 bg-muted/10 space-y-1">
-                    <span className="text-[11px] text-muted-foreground">Variação de Mercado</span>
+                  <div className="p-3 rounded-lg border border-border/30 bg-muted/10 space-y-1">
+                    <span className="text-xs text-muted-foreground">Variação de Mercado</span>
                     <div className="text-base font-semibold text-foreground">
                       +{benchmarkResult.benchmarkSpreadPercent}%
                     </div>
@@ -1055,16 +1055,16 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 </div>
 
                 {/* Benchmark Offers List */}
-                <div className="space-y-1.5 pt-1">
+                <div className="space-y-2 pt-1">
                   <span className="text-xs font-medium text-foreground">
                     {benchmarkResult.matchesCount} ofertas mapeadas para "{benchmarkResult.query}":
                   </span>
-                  <div className="divide-y divide-border/30 rounded-xl border border-border/30 bg-card overflow-hidden">
+                  <div className="divide-y divide-border/30 rounded-lg border border-border/30 bg-card overflow-hidden">
                     {benchmarkResult.offers.map((offer: any) => (
                       <div key={offer.id} className="p-3 flex items-center justify-between gap-3 text-xs">
                         <div className="min-w-0 flex-1">
                           <div className="font-medium text-foreground truncate">{offer.title}</div>
-                          <div className="text-[11px] text-muted-foreground truncate">{offer.source_domain}</div>
+                          <div className="text-xs text-muted-foreground truncate">{offer.source_domain}</div>
                         </div>
                         <div className="text-right shrink-0 flex items-center gap-3">
                           <span className="font-semibold text-foreground">
@@ -1104,13 +1104,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && loadProducts()}
-                    className="pl-8 h-9 rounded-xl text-xs border-border/50"
+                    className="pl-8 h-9 rounded-lg text-xs border-border/50"
                   />
                 </div>
                 <Button
                   variant="outline"
                   onClick={loadProducts}
-                  className="h-9 px-3.5 rounded-xl text-xs font-normal cursor-pointer"
+                  className="h-9 px-4 rounded-lg text-xs font-normal cursor-pointer"
                 >
                   Buscar
                 </Button>
@@ -1123,11 +1123,11 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
             {/* Batch Operations Bar */}
             {selectedProductIds.length > 0 && (
-              <div className="flex items-center justify-between p-2.5 px-3.5 bg-muted/30 border border-border/50 rounded-xl text-xs">
+              <div className="flex items-center justify-between p-2 px-4 bg-muted/30 border border-border/50 rounded-lg text-xs">
                 <span className="font-medium text-foreground">
                   {selectedProductIds.length} {selectedProductIds.length === 1 ? "produto selecionado" : "produtos selecionados"}
                 </span>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -1160,10 +1160,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             )}
 
             {/* Mobile: WhatsApp Minimalist List */}
-            <div className="block sm:hidden divide-y divide-border/40 rounded-xl border border-border/40 bg-card overflow-hidden">
+            <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
               {isLoadingProducts ? (
                 <div className="py-8 text-center text-xs text-muted-foreground">
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" /> Carregando produtos...
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando produtos...
                 </div>
               ) : minedProducts.length === 0 ? (
                 <div className="py-8 text-center text-xs text-muted-foreground">
@@ -1173,7 +1173,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 minedProducts.map((p) => {
                   const isChecked = selectedProductIds.includes(p.id);
                   return (
-                  <div key={p.id} className="p-3 flex items-center justify-between gap-2.5 hover:bg-muted/20 transition-colors">
+                  <div key={p.id} className="p-3 flex items-center justify-between gap-2 hover:bg-muted/20 transition-colors">
                     <div className="shrink-0 flex items-center">
                       <Checkbox
                         checked={isChecked}
@@ -1190,18 +1190,18 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-medium text-foreground truncate">{p.title}</div>
-                      <div className="text-[11px] text-muted-foreground truncate">{p.source_domain}</div>
-                      <div className="text-xs font-semibold text-foreground mt-0.5">
+                      <div className="text-xs text-muted-foreground truncate">{p.source_domain}</div>
+                      <div className="text-xs font-semibold text-foreground mt-1">
                         {p.price_cents > 0
                           ? (p.price_cents / 100).toLocaleString("pt-BR", {
                               style: "currency",
                               currency: "BRL",
                             })
                           : "Sob consulta"}
-                        <span className="ml-2 text-[10px] text-muted-foreground font-mono capitalize">({p.status})</span>
+                        <span className="ml-2 text-xs text-muted-foreground font-mono capitalize">({p.status})</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                       <Button
                         variant="outline"
                         size="sm"
@@ -1249,7 +1249,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             </div>
 
             {/* Desktop Table */}
-            <div className="hidden sm:block rounded-xl border border-border/40 bg-card overflow-hidden">
+            <div className="hidden sm:block rounded-lg border border-border/40 bg-card overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/20 border-b border-border/40">
@@ -1272,7 +1272,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   {isLoadingProducts ? (
                     <TableRow>
                       <TableCell colSpan={6} className="h-28 text-center text-xs text-muted-foreground">
-                        <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" />
+                        <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
                         Carregando catálogo de produtos...
                       </TableCell>
                     </TableRow>
@@ -1318,18 +1318,18 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                             : "—"}
                         </TableCell>
                         <TableCell>
-                          <span className="text-[11px] text-muted-foreground font-mono capitalize">
+                          <span className="text-xs text-muted-foreground font-mono capitalize">
                             {p.status}
                           </span>
                         </TableCell>
                         <TableCell className="text-right text-xs">
-                          <div className="flex items-center justify-end gap-1.5">
+                          <div className="flex items-center justify-end gap-2">
                             {p.source_url && (
                               <a
                                 href={p.source_url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-muted"
+                                className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-muted"
                                 title="Abrir link original"
                               >
                                 <ExternalLink className="w-3.5 h-3.5" />
@@ -1388,8 +1388,8 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
         {/* TAB: ANTI-BAN & COOLDOWNS */}
         <TabsContent value="cooldowns" className="space-y-4">
-          <div className="p-4 rounded-xl border border-border/40 bg-card space-y-2">
-            <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+          <div className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 text-muted-foreground" />
               Proteção de Rede e Resiliência Anti-Ban
             </h3>
@@ -1414,10 +1414,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           </div>
 
           {/* Mobile WhatsApp list */}
-          <div className="block sm:hidden divide-y divide-border/40 rounded-xl border border-border/40 bg-card overflow-hidden">
+          <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
             {isLoadingCooldowns ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" /> Carregando...
+                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando...
               </div>
             ) : domainCooldowns.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
@@ -1428,8 +1428,8 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <div key={cd.domain} className="p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="text-xs font-medium text-foreground truncate">{cd.domain}</div>
-                    <div className="text-[11px] text-muted-foreground truncate">{cd.reason || "Rate limit"}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                    <div className="text-xs text-muted-foreground truncate">{cd.reason || "Rate limit"}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
                       Até {new Date(cd.cooldown_until).toLocaleTimeString("pt-BR")}
                     </div>
                   </div>
@@ -1453,7 +1453,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           </div>
 
           {/* Desktop Table */}
-          <div className="hidden sm:block rounded-xl border border-border/40 bg-card overflow-hidden">
+          <div className="hidden sm:block rounded-lg border border-border/40 bg-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/20 border-b border-border/40">
@@ -1469,7 +1469,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 {isLoadingCooldowns ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" />
+                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
                       Carregando telemetria...
                     </TableCell>
                   </TableRow>
@@ -1523,8 +1523,8 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
         {/* TAB 2: FILA DE CRAWLING */}
         <TabsContent value="queue" className="space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {["all", "pending", "processing", "completed", "failed"].map((st) => (
                 <Button
                   key={st}
@@ -1549,10 +1549,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           </div>
 
           {/* Mobile: Navegação em lista limpa (WhatsApp style) */}
-          <div className="block sm:hidden divide-y divide-border/40 rounded-xl border border-border/40 bg-card overflow-hidden">
+          <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
             {isLoadingQueue ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" /> Carregando...
+                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando...
               </div>
             ) : queueItems.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">Nenhum item na fila.</div>
@@ -1561,11 +1561,11 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <div key={item.id} className="p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="text-xs font-medium text-foreground truncate">{item.domain}</div>
-                    <div className="text-[11px] text-muted-foreground truncate">{item.url}</div>
+                    <div className="text-xs text-muted-foreground truncate">{item.url}</div>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-[10px] text-muted-foreground font-mono">{item.status}</span>
-                    <div className="text-[10px] text-muted-foreground">{new Date(item.created_at).toLocaleDateString("pt-BR")}</div>
+                    <span className="text-xs text-muted-foreground font-mono">{item.status}</span>
+                    <div className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleDateString("pt-BR")}</div>
                   </div>
                 </div>
               ))
@@ -1573,7 +1573,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           </div>
 
           {/* Desktop Table */}
-          <div className="hidden sm:block rounded-xl border border-border/40 bg-card overflow-hidden">
+          <div className="hidden sm:block rounded-lg border border-border/40 bg-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/20 border-b border-border/40">
@@ -1588,7 +1588,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 {isLoadingQueue ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" />
+                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
                       Carregando fila...
                     </TableCell>
                   </TableRow>
@@ -1617,7 +1617,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">P{item.priority}</TableCell>
                       <TableCell>
-                        <span className="text-[11px] text-muted-foreground capitalize">
+                        <span className="text-xs text-muted-foreground capitalize">
                           {item.status}
                         </span>
                       </TableCell>
@@ -1643,13 +1643,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   value={businessSearch}
                   onChange={(e) => setBusinessSearch(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && loadBusinesses()}
-                  className="pl-8 h-9 rounded-xl text-xs border-border/50"
+                  className="pl-8 h-9 rounded-lg text-xs border-border/50"
                 />
               </div>
               <Button
                 variant="outline"
                 onClick={loadBusinesses}
-                className="h-9 px-3.5 rounded-xl text-xs font-normal cursor-pointer"
+                className="h-9 px-4 rounded-lg text-xs font-normal cursor-pointer"
               >
                 Buscar
               </Button>
@@ -1659,7 +1659,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               variant="outline"
               disabled={isGeneratingGhost}
               onClick={handleGenerateGhostStores}
-              className="h-9 px-3.5 rounded-xl text-xs font-medium gap-1.5 cursor-pointer shrink-0"
+              className="h-9 px-4 rounded-lg text-xs font-medium gap-2 cursor-pointer shrink-0"
             >
               {isGeneratingGhost ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1671,10 +1671,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           </div>
 
           {/* Mobile: Lista WhatsApp Style */}
-          <div className="block sm:hidden divide-y divide-border/40 rounded-xl border border-border/40 bg-card overflow-hidden">
+          <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
             {isLoadingBusinesses ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" /> Carregando...
+                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando...
               </div>
             ) : businesses.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">Nenhuma empresa encontrada.</div>
@@ -1683,10 +1683,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <div key={biz.id} className="p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="text-xs font-medium text-foreground truncate">{biz.name}</div>
-                    <div className="text-[11px] text-muted-foreground truncate">{biz.category || biz.cnpj || "Empresa"}</div>
+                    <div className="text-xs text-muted-foreground truncate">{biz.category || biz.cnpj || "Empresa"}</div>
                   </div>
                   <div className="text-right shrink-0 flex flex-col items-end">
-                    <span className="text-[10px] font-mono font-medium text-foreground">{biz.data_quality_score}%</span>
+                    <span className="text-xs font-mono font-medium text-foreground">{biz.data_quality_score}%</span>
                     {biz.data_quality_score >= 80 ? (
                       <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium">Ghost Tenant</span>
                     ) : (
@@ -1699,7 +1699,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           </div>
 
           {/* Desktop Table */}
-          <div className="hidden sm:block rounded-xl border border-border/40 bg-card overflow-hidden">
+          <div className="hidden sm:block rounded-lg border border-border/40 bg-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/20 border-b border-border/40">
@@ -1715,7 +1715,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 {isLoadingBusinesses ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" />
+                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
                       Carregando empresas...
                     </TableCell>
                   </TableRow>
@@ -1730,7 +1730,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     <TableRow key={biz.id} className="border-b border-border/30">
                       <TableCell>
                         <div className="font-medium text-xs text-foreground">{biz.name}</div>
-                        <div className="text-[11px] text-muted-foreground truncate max-w-xs">{biz.category}</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-xs">{biz.category}</div>
                       </TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground">
                         {biz.cnpj || "—"}
@@ -1743,11 +1743,11 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                       </TableCell>
                       <TableCell className="text-xs">
                         {biz.data_quality_score >= 80 ? (
-                          <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5 border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+                          <Badge variant="outline" className="text-xs font-mono py-0 px-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
                             Elegível / Ativa
                           </Badge>
                         ) : (
-                          <span className="text-[10px] text-muted-foreground font-mono">Pendente</span>
+                          <span className="text-xs text-muted-foreground font-mono">Pendente</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right text-xs capitalize text-muted-foreground">
@@ -1766,7 +1766,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Séries Oficiais do Banco Central</h3>
-              <p className="text-[11px] text-muted-foreground">Agendado no pg_cron: 2x ao dia às 08h e 18h BRT</p>
+              <p className="text-xs text-muted-foreground">Agendado no pg_cron: 2x ao dia às 08h e 18h BRT</p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -1778,9 +1778,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 className="h-8 px-2.5 rounded-lg text-xs font-normal cursor-pointer"
               >
                 {isDispatchingCron === "market-data" ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
                 ) : (
-                  <Clock className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                  <Clock className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
                 )}
                 Executar Cron Agora
               </Button>
@@ -1791,16 +1791,16 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 disabled={isLoadingIndicators}
                 className="h-8 px-2.5 rounded-lg text-xs font-normal cursor-pointer"
               >
-                <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isLoadingIndicators ? "animate-spin" : ""}`} />
+                <RefreshCw className={`w-3.5 h-3.5 mr-2 ${isLoadingIndicators ? "animate-spin" : ""}`} />
                 Recarregar
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {isLoadingIndicators ? (
               <div className="col-span-full py-12 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" />
+                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
                 Consultando API SGS do Banco Central...
               </div>
             ) : indicators.length === 0 ? (
@@ -1809,21 +1809,21 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               </div>
             ) : (
               indicators.map((ind) => (
-                <div key={ind.code} className="p-3.5 rounded-xl border border-border/40 bg-card space-y-1.5">
+                <div key={ind.code} className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
                   <div className="flex items-center justify-between text-muted-foreground">
                     <span className="text-xs font-medium text-foreground truncate max-w-[200px]">{ind.name}</span>
-                    <span className="text-[10px] text-muted-foreground uppercase font-mono">{ind.type}</span>
+                    <span className="text-xs text-muted-foreground uppercase font-mono">{ind.type}</span>
                   </div>
-                  <div className="flex items-baseline gap-1.5">
+                  <div className="flex items-baseline gap-2">
                     <span className="text-xl font-semibold text-foreground">
                       {ind.currentValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                     </span>
                     <span className="text-xs text-muted-foreground">{ind.unit}</span>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/30">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/30">
                     <span>Ref: {ind.referenceDate}</span>
                     {ind.variationPercent !== undefined && (
-                      <span className="font-mono text-[11px] text-muted-foreground">
+                      <span className="font-mono text-xs text-muted-foreground">
                         {ind.variationPercent > 0 ? "+" : ""}{ind.variationPercent}%
                       </span>
                     )}
@@ -1839,7 +1839,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Feeds RSS Cadastrados</h3>
-              <p className="text-[11px] text-muted-foreground">Agendado no pg_cron: a cada 30 minutos</p>
+              <p className="text-xs text-muted-foreground">Agendado no pg_cron: a cada 30 minutos</p>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -1850,9 +1850,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 className="h-8 px-2.5 rounded-lg text-xs font-normal cursor-pointer"
               >
                 {isDispatchingCron === "rss-fetcher" ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
                 ) : (
-                  <Clock className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                  <Clock className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
                 )}
                 Executar Cron Agora
               </Button>
@@ -1867,7 +1867,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             </div>
           </div>
 
-          <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
+          <div className="rounded-lg border border-border/40 bg-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/20 border-b border-border/40">
@@ -1881,7 +1881,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 {isLoadingFeeds ? (
                   <TableRow>
                     <TableCell colSpan={4} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" />
+                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
                       Carregando feeds...
                     </TableCell>
                   </TableRow>
@@ -1901,7 +1901,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                         {feed.feed_url}
                       </TableCell>
                       <TableCell>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {feed.is_active ? "Ativo" : "Inativo"}
                         </span>
                       </TableCell>
@@ -1926,7 +1926,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
         {/* TAB 6: AUDITORIA */}
         <TabsContent value="audit" className="space-y-3">
-          <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
+          <div className="rounded-lg border border-border/40 bg-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/20 border-b border-border/40">
@@ -1941,7 +1941,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 {isLoadingAudit ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1.5" />
+                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
                       Carregando logs...
                     </TableCell>
                   </TableRow>
@@ -1960,7 +1960,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                       <TableCell className="text-xs text-muted-foreground">
                         {log.action}
                         {log.error_message && (
-                          <div className="text-destructive text-[11px] truncate max-w-sm mt-0.5">
+                          <div className="text-destructive text-xs truncate max-w-sm mt-1">
                             {log.error_message}
                           </div>
                         )}
@@ -1985,7 +1985,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
       {/* MODAL: Adicionar Semente de Crawl */}
       <Dialog open={isSeedModalOpen} onOpenChange={setIsSeedModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl border-border/40">
+        <DialogContent className="sm:max-w-md rounded-lg border-border/40">
           <form onSubmit={handleAddSeed}>
             <DialogHeader>
               <DialogTitle className="text-base font-semibold">Adicionar Semente</DialogTitle>
@@ -1995,17 +1995,17 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             </DialogHeader>
 
             <div className="space-y-3 py-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs text-foreground">Nome</label>
                 <Input
                   placeholder="Ex: Portal Regional"
                   value={newSeedName}
                   onChange={(e) => setNewSeedName(e.target.value)}
-                  className="rounded-xl h-10 text-xs border-border/50"
+                  className="rounded-lg h-10 text-xs border-border/50"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs text-foreground">URL Inicial</label>
                 <Input
                   placeholder="https://exemplo.com.br"
@@ -2013,7 +2013,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   required
                   value={newSeedUrl}
                   onChange={(e) => setNewSeedUrl(e.target.value)}
-                  className="rounded-xl h-10 text-xs border-border/50"
+                  className="rounded-lg h-10 text-xs border-border/50"
                 />
               </div>
             </div>
@@ -2023,16 +2023,16 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 type="button"
                 variant="ghost"
                 onClick={() => setIsSeedModalOpen(false)}
-                className="rounded-xl text-xs font-normal"
+                className="rounded-lg text-xs font-normal"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmittingSeed}
-                className="rounded-xl text-xs font-medium shadow-none"
+                className="rounded-lg text-xs font-medium shadow-none"
               >
-                {isSubmittingSeed ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+                {isSubmittingSeed ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
                 Salvar
               </Button>
             </DialogFooter>
@@ -2042,7 +2042,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
       {/* MODAL: Adicionar Feed RSS */}
       <Dialog open={isFeedModalOpen} onOpenChange={setIsFeedModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl border-border/40">
+        <DialogContent className="sm:max-w-md rounded-lg border-border/40">
           <form onSubmit={handleAddFeed}>
             <DialogHeader>
               <DialogTitle className="text-base font-semibold">Cadastrar Feed RSS</DialogTitle>
@@ -2052,18 +2052,18 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             </DialogHeader>
 
             <div className="space-y-3 py-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs text-foreground">Nome</label>
                 <Input
                   placeholder="Ex: Canal Tech / G1"
                   required
                   value={newFeedName}
                   onChange={(e) => setNewFeedName(e.target.value)}
-                  className="rounded-xl h-10 text-xs border-border/50"
+                  className="rounded-lg h-10 text-xs border-border/50"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs text-foreground">URL do Feed (XML/RSS)</label>
                 <Input
                   placeholder="https://exemplo.com.br/feed.xml"
@@ -2071,18 +2071,18 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   required
                   value={newFeedUrl}
                   onChange={(e) => setNewFeedUrl(e.target.value)}
-                  className="rounded-xl h-10 text-xs border-border/50"
+                  className="rounded-lg h-10 text-xs border-border/50"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs text-foreground">Website (Opcional)</label>
                 <Input
                   placeholder="https://exemplo.com.br"
                   type="url"
                   value={newFeedSiteUrl}
                   onChange={(e) => setNewFeedSiteUrl(e.target.value)}
-                  className="rounded-xl h-10 text-xs border-border/50"
+                  className="rounded-lg h-10 text-xs border-border/50"
                 />
               </div>
             </div>
@@ -2092,16 +2092,16 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 type="button"
                 variant="ghost"
                 onClick={() => setIsFeedModalOpen(false)}
-                className="rounded-xl text-xs font-normal"
+                className="rounded-lg text-xs font-normal"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmittingFeed}
-                className="rounded-xl text-xs font-medium shadow-none"
+                className="rounded-lg text-xs font-medium shadow-none"
               >
-                {isSubmittingFeed ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+                {isSubmittingFeed ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
                 Salvar Feed
               </Button>
             </DialogFooter>
@@ -2111,7 +2111,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
       {/* MODAL DE EDIÇÃO DE PRODUTO MINERADO */}
       <Dialog open={Boolean(editingProduct)} onOpenChange={(open) => !open && setEditingProduct(null)}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">Editar Produto Minerado</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -2126,7 +2126,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 value={editProductTitle}
                 onChange={(e) => setEditProductTitle(e.target.value)}
                 placeholder="Ex: Tênis Esportivo Pro..."
-                className="h-9 rounded-xl text-xs"
+                className="h-9 rounded-lg text-xs"
               />
             </div>
 
@@ -2139,7 +2139,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   placeholder="0.00"
                   type="number"
                   step="0.01"
-                  className="h-9 rounded-xl text-xs font-mono"
+                  className="h-9 rounded-lg text-xs font-mono"
                 />
               </div>
 
@@ -2148,7 +2148,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <select
                   value={editProductStatus}
                   onChange={(e) => setEditProductStatus(e.target.value)}
-                  className="w-full h-9 rounded-xl text-xs bg-background border border-border/60 px-2.5"
+                  className="w-full h-9 rounded-lg text-xs bg-background border border-border/60 px-2.5"
                 >
                   <option value="pending_review">Pendente</option>
                   <option value="approved">Aprovado</option>
@@ -2164,7 +2164,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 value={editProductImage}
                 onChange={(e) => setEditProductImage(e.target.value)}
                 placeholder="https://..."
-                className="h-9 rounded-xl text-xs font-mono"
+                className="h-9 rounded-lg text-xs font-mono"
               />
             </div>
 
@@ -2175,7 +2175,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 onChange={(e) => setEditProductDescription(e.target.value)}
                 rows={3}
                 placeholder="Detalhes adicionais..."
-                className="w-full rounded-xl text-xs bg-background border border-border/60 p-2.5 focus:outline-none"
+                className="w-full rounded-lg text-xs bg-background border border-border/60 p-2 focus:outline-none"
               />
             </div>
           </div>
@@ -2185,7 +2185,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               type="button"
               variant="ghost"
               onClick={() => setEditingProduct(null)}
-              className="rounded-xl text-xs"
+              className="rounded-lg text-xs"
             >
               Cancelar
             </Button>
@@ -2193,9 +2193,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               type="button"
               onClick={handleSaveProductEdit}
               disabled={isSavingProductEdit}
-              className="rounded-xl text-xs font-medium"
+              className="rounded-lg text-xs font-medium"
             >
-              {isSavingProductEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+              {isSavingProductEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
               Salvar Alterações
             </Button>
           </DialogFooter>
@@ -2204,7 +2204,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
       {/* MODAL DE IMPORTAÇÃO PARA LOJA */}
       <Dialog open={Boolean(importingProduct)} onOpenChange={(open) => !open && setImportingProduct(null)}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">Importar para Loja Oficial</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -2213,7 +2213,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           </DialogHeader>
 
           <div className="space-y-3.5 py-2">
-            <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-1">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
               <div className="text-xs font-bold text-foreground">{importingProduct?.title}</div>
               <div className="text-xs text-muted-foreground">
                 Origem: {importingProduct?.source_domain} • Preço:{" "}
@@ -2232,9 +2232,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 value={importTargetStoreId}
                 onChange={(e) => setImportTargetStoreId(e.target.value)}
                 placeholder="Ex: 8f44d8b2-..."
-                className="h-9 rounded-xl text-xs font-mono"
+                className="h-9 rounded-lg text-xs font-mono"
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 O produto será publicado no catálogo e visível para compra ou reserva.
               </p>
             </div>
@@ -2245,7 +2245,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               type="button"
               variant="ghost"
               onClick={() => setImportingProduct(null)}
-              className="rounded-xl text-xs"
+              className="rounded-lg text-xs"
             >
               Cancelar
             </Button>
@@ -2253,9 +2253,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               type="button"
               onClick={handleConfirmImport}
               disabled={isImportingProduct || !importTargetStoreId.trim()}
-              className="rounded-xl text-xs font-medium"
+              className="rounded-lg text-xs font-medium"
             >
-              {isImportingProduct ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+              {isImportingProduct ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
               Confirmar Importação
             </Button>
           </DialogFooter>

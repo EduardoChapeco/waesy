@@ -407,7 +407,7 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
       action: {
         label: "Publicar Vaga",
         type: "navigate",
-        to: "/workspace/vagas",
+        to: "/workspace/empregos/novo",
         icon: Plus,
       },
       widthMode: "catalog",

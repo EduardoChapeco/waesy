@@ -75,7 +75,7 @@ function WorkspaceNewMuralPostPage() {
       });
 
       toast.success("Publicação enviada para o Mural Comunitário!");
-      router.navigate({ to: "/_store/mural" as any });
+      router.navigate({ to: "/mural" as any });
     } catch (err: any) {
       toast.error(err.message || "Erro ao publicar no Mural.");
     } finally {

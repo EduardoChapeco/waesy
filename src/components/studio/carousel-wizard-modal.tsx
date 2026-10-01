@@ -87,7 +87,7 @@ export function CarouselWizardModal({
  </div>
  <div>
  <h2 className="text-sm font-bold text-foreground">
- Waesy Creative Studio · Gerador de Carrosséis
+ Gerador de Carrosséis
  </h2>
  <p className="text-[11px] text-muted-foreground">
  Motor Escamas Multi-Camadas nativo do Waesy

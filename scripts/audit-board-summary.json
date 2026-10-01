@@ -1,0 +1,589 @@
+{
+  "conversationalHits": [],
+  "compositeTitles": [
+    {
+      "file": "src/components/landing/enterprise-landing-view.tsx",
+      "line": 319,
+      "words": 11,
+      "text": "A plataforma unificada de comércio, ERP e inteligência para sua região."
+    },
+    {
+      "file": "src/components/landing/enterprise-landing-view.tsx",
+      "line": 380,
+      "words": 10,
+      "text": "Tudo o que sua empresa precisa em uma única infraestrutura."
+    },
+    {
+      "file": "src/routes/admin-master.crescimento.tsx",
+      "line": 157,
+      "words": 7,
+      "text": "Metas Projetadas vs. Dados Reais e Valuation"
+    },
+    {
+      "file": "src/routes/admin-master.faturas.tsx",
+      "line": 504,
+      "words": 7,
+      "text": "Reforma Tributária 2026: IBS 1,77% + CBS 8,8%"
+    },
+    {
+      "file": "src/routes/admin-master.marca.tsx",
+      "line": 434,
+      "words": 8,
+      "text": "Background Imersivo da Tela de Login (3 Breakpoints)"
+    },
+    {
+      "file": "src/routes/admin-master.mining.tsx",
+      "line": 1737,
+      "words": 8,
+      "text": "Transformar edital em pauta jornalística com 1 clique"
+    },
+    {
+      "file": "src/routes/admin-master.seguranca.index.tsx",
+      "line": 139,
+      "words": 10,
+      "text": "Alertas de Risco Ativo (VPS / Datacenter / IP Estrangeiro)"
+    },
+    {
+      "file": "src/routes/admin-master.simlabs.tsx",
+      "line": 241,
+      "words": 7,
+      "text": "Executar Nova Simulação de Mercado com IA"
+    },
+    {
+      "file": "src/routes/verify.document.$code.tsx",
+      "line": 133,
+      "words": 8,
+      "text": "Termo de Quitação Plena e Irrevogável (Quitado ✓)"
+    },
+    {
+      "file": "src/routes/workspace.pedidos.index.tsx",
+      "line": 949,
+      "words": 7,
+      "text": "Separação de Gôndola e Conferência de Itens"
+    },
+    {
+      "file": "src/routes/workspace.turismo.radar.tsx",
+      "line": 318,
+      "words": 7,
+      "text": "Alertas Operacionais e Câmbio em Tempo Real"
+    },
+    {
+      "file": "src/routes/_store.beleza.tsx",
+      "line": 203,
+      "words": 9,
+      "text": "Adquira combos de sessões e cortes com desconto garantido."
+    },
+    {
+      "file": "src/routes/_store.classificados.$id.tsx",
+      "line": 1626,
+      "words": 8,
+      "text": "Poxa, chegou tarde! Este item já foi vendido."
+    },
+    {
+      "file": "src/routes/_store.conta.agendamentos.tsx",
+      "line": 258,
+      "words": 7,
+      "text": "Visualizar Cartão Digital de Atendimento 9:16 e WhatsApp"
+    },
+    {
+      "file": "src/routes/_store.conta.candidaturas.tsx",
+      "line": 91,
+      "words": 8,
+      "text": "Você ainda não se candidatou a nenhuma vaga"
+    },
+    {
+      "file": "src/routes/_store.conta.classificados.index.tsx",
+      "line": 89,
+      "words": 7,
+      "text": "Tendência de acessos nos últimos 7 dias"
+    },
+    {
+      "file": "src/routes/_store.conta.concursos.tsx",
+      "line": 101,
+      "words": 7,
+      "text": "ParabÃ©ns! VocÃª foi contemplado em um sorteio!"
+    },
+    {
+      "file": "src/routes/_store.conta.curriculo.tsx",
+      "line": 308,
+      "words": 7,
+      "text": "Faça login para acessar seu currículo digital"
+    },
+    {
+      "file": "src/routes/_store.conta.negociacoes.tsx",
+      "line": 598,
+      "words": 13,
+      "text": "Confirmar que o item foi recebido e liberar o pagamento para o vendedor"
+    },
+    {
+      "file": "src/routes/_store.conta.pacotes.tsx",
+      "line": 103,
+      "words": 9,
+      "text": "Você ainda não possui pacotes de aulas ou serviços"
+    },
+    {
+      "file": "src/routes/_store.diretorio.index.tsx",
+      "line": 217,
+      "words": 7,
+      "text": "Nenhuma empresa ou serviço encontrado nesta categoria."
+    },
+    {
+      "file": "src/routes/_store.empregos.index.tsx",
+      "line": 247,
+      "words": 7,
+      "text": "Nenhuma vaga encontrada com os filtros selecionados."
+    },
+    {
+      "file": "src/routes/_store.empregos.index.tsx",
+      "line": 271,
+      "words": 8,
+      "text": "Nenhuma vaga disponível no momento com estes critérios."
+    },
+    {
+      "file": "src/routes/_store.livros.tsx",
+      "line": 234,
+      "words": 7,
+      "text": "Nenhum livro ou item de papelaria encontrado"
+    },
+    {
+      "file": "src/routes/_store.livros.tsx",
+      "line": 245,
+      "words": 7,
+      "text": "Nenhum livro ou item de papelaria encontrado"
+    },
+    {
+      "file": "src/routes/_store.mercado.tsx",
+      "line": 247,
+      "words": 12,
+      "text": "Folhetos das redes e atacados locais com ofertas válidas por tempo limitado"
+    },
+    {
+      "file": "src/routes/_store.mercado.tsx",
+      "line": 373,
+      "words": 7,
+      "text": "Nenhum produto encontrado neste corredor ou supermercado."
+    }
+  ],
+  "neonHits": [
+    {
+      "file": "src/components/admin/builder/builder-inspector.tsx",
+      "line": 444,
+      "snippet": "<div key={field.name} className=\"space-y-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30\">"
+    },
+    {
+      "file": "src/components/admin/builder/builder-inspector.tsx",
+      "line": 450,
+      "snippet": "<Badge variant=\"outline\" className=\"text-[9px] border-amber-500/40 text-amber-500 font-mono\">"
+    },
+    {
+      "file": "src/components/admin/builder/builder-inspector.tsx",
+      "line": 457,
+      "snippet": "className=\"h-9 rounded-xl text-xs font-mono font-bold uppercase tracking-wider bg-background border-amber-500/30\""
+    },
+    {
+      "file": "src/components/admin/builder/builder-inspector.tsx",
+      "line": 467,
+      "snippet": "className=\"text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-background border border-border/80 hover:border-amber-500 text-muted-foreground hover:text-foreground cursor-pointer transition-colors\""
+    },
+    {
+      "file": "src/components/admin/builder/builder-pages-panel.tsx",
+      "line": 213,
+      "snippet": "? \"bg-amber-500/10 text-amber-600 dark:text-amber-400\""
+    },
+    {
+      "file": "src/components/admin/builder/builder-top-bar.tsx",
+      "line": 84,
+      "snippet": ": \"bg-amber-500/10 text-amber-600 border-amber-500/20\""
+    },
+    {
+      "file": "src/components/admin/catalog/product-food-specs-card.tsx",
+      "line": 504,
+      "snippet": "<div className=\"p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 leading-snug\">"
+    },
+    {
+      "file": "src/components/admin/marketing/seasonal-marketing-calendar-widget.tsx",
+      "line": 74,
+      "snippet": "return <Badge className=\"bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs\">Pico Comercial</Badge>;"
+    },
+    {
+      "file": "src/components/admin/marketing/seasonal-marketing-calendar-widget.tsx",
+      "line": 85,
+      "snippet": "<div className=\"size-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center\">"
+    },
+    {
+      "file": "src/components/admin/marketing/seasonal-marketing-calendar-widget.tsx",
+      "line": 108,
+      "snippet": "<div className=\"p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3\">"
+    },
+    {
+      "file": "src/components/adtech/campaign-draft-card.tsx",
+      "line": 135,
+      "snippet": "<Badge className=\"bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-bold w-fit\">"
+    },
+    {
+      "file": "src/components/classifieds/classified-detail-desktop.tsx",
+      "line": 308,
+      "snippet": "className=\"h-10 px-3 rounded-xl border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-bold flex items-center gap-1.5\""
+    },
+    {
+      "file": "src/components/classifieds/classified-detail-desktop.tsx",
+      "line": 320,
+      "snippet": "<div className=\"flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-100\">"
+    },
+    {
+      "file": "src/components/classifieds/classified-detail-mobile.tsx",
+      "line": 369,
+      "snippet": "<div className=\"px-4 py-2 bg-amber-500/10 border-b border-amber-500/20 flex items-center justify-between gap-3\">"
+    },
+    {
+      "file": "src/components/classifieds/classified-detail-mobile.tsx",
+      "line": 380,
+      "snippet": "className=\"h-7 text-xs px-2.5 rounded-lg border-amber-500/40 text-amber-900 dark:text-amber-100 hover:bg-amber-500/20 font-bold\""
+    },
+    {
+      "file": "src/components/classifieds/convenience-showcase-view.tsx",
+      "line": 1508,
+      "snippet": "<div className=\"p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2\">"
+    },
+    {
+      "file": "src/components/classifieds/convenience-showcase-view.tsx",
+      "line": 1554,
+      "snippet": ": \"border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10\""
+    },
+    {
+      "file": "src/components/classifieds/convenience-showcase-view.tsx",
+      "line": 1727,
+      "snippet": "? \"border-amber-600 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold\""
+    },
+    {
+      "file": "src/components/classifieds/editorial-showcase-view.tsx",
+      "line": 650,
+      "snippet": "<div className=\"mx-2 sm:mx-0 flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200\">"
+    },
+    {
+      "file": "src/components/classifieds/editorial-showcase-view.tsx",
+      "line": 1540,
+      "snippet": "<span key={m} className=\"text-xs px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1\">"
+    },
+    {
+      "file": "src/components/classifieds/editorial-showcase-view.tsx",
+      "line": 1867,
+      "snippet": "<div className=\"size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0\">"
+    },
+    {
+      "file": "src/components/commerce/boost-bottom-sheet.tsx",
+      "line": 101,
+      "snippet": "<div className=\"size-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20\">"
+    },
+    {
+      "file": "src/components/commerce/boost-bottom-sheet.tsx",
+      "line": 179,
+      "snippet": "? \"border-amber-500 bg-amber-500/12 ring-2 ring-amber-500/20 shadow-xs\""
+    },
+    {
+      "file": "src/components/commerce/boost-bottom-sheet.tsx",
+      "line": 196,
+      "snippet": "<div className=\"p-3.5 rounded-2xl bg-amber-500/8 border border-amber-500/20 space-y-1\">"
+    },
+    {
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 662,
+      "snippet": "<Badge variant=\"outline\" className=\"text-[10px] font-mono py-0 px-1.5 border-amber-500/40 text-amber-600 dark:text-amber-400\">"
+    },
+    {
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 1962,
+      "snippet": "<div className=\"flex items-center gap-2 bg-amber-500/10 text-amber-600 px-3 py-1.5 rounded-xl border border-amber-500/20 shrink-0\">"
+    },
+    {
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 2125,
+      "snippet": "<div className=\"size-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-black text-xl font-mono\">"
+    },
+    {
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 2205,
+      "snippet": "<Badge variant=\"outline\" className=\"font-mono text-xs font-bold text-amber-600 bg-amber-500/10 border-amber-500/20\">"
+    },
+    {
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 2268,
+      "snippet": "? \"bg-amber-500/10 text-amber-600 border-amber-500/30\""
+    },
+    {
+      "file": "src/components/commerce/claim-business-modal.tsx",
+      "line": 67,
+      "snippet": "<span className=\"p-2 rounded-xl bg-amber-500/10 text-amber-500\">"
+    },
+    {
+      "file": "src/components/commerce/dynamic-sections/office-contract-viewer.tsx",
+      "line": 58,
+      "snippet": ": 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'"
+    },
+    {
+      "file": "src/components/commerce/dynamic-sections/portal-contracts-widget.tsx",
+      "line": 132,
+      "snippet": "<Badge variant=\"outline\" className=\"bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs flex items-center gap-1\">"
+    },
+    {
+      "file": "src/components/commerce/dynamic-sections/portal-orders-rentals-widget.tsx",
+      "line": 93,
+      "snippet": "<Badge variant=\"outline\" className=\"bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs\">"
+    },
+    {
+      "file": "src/components/commerce/dynamic-sections/reputation-timeline-feed.tsx",
+      "line": 102,
+      "snippet": "<Badge variant=\"outline\" className=\"bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs flex items-center gap-1\">"
+    },
+    {
+      "file": "src/components/commerce/flyers/flyer-interactive-viewer-modal.tsx",
+      "line": 166,
+      "snippet": "? \"bg-amber-400 text-red-950 border-amber-500 font-sans\""
+    },
+    {
+      "file": "src/components/commerce/flyers/promotional-flyers-rail.tsx",
+      "line": 120,
+      "snippet": "? \"bg-amber-400 text-red-950 font-black border border-amber-500\""
+    },
+    {
+      "file": "src/components/commerce/gps-mismatch-modal.tsx",
+      "line": 30,
+      "snippet": "<div className=\"size-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center\">"
+    },
+    {
+      "file": "src/components/commerce/motolink-tracking-widget.tsx",
+      "line": 70,
+      "snippet": "<div className=\"w-9 h-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold\">"
+    },
+    {
+      "file": "src/components/commerce/product-detail-mobile.tsx",
+      "line": 202,
+      "snippet": "<Badge variant=\"outline\" className=\"text-[10px] font-semibold text-amber-600 border-amber-500/30 bg-amber-500/10\">"
+    },
+    {
+      "file": "src/components/commerce/quick-create-modal.tsx",
+      "line": 92,
+      "snippet": "iconBg: \"bg-amber-500/10\","
+    },
+    {
+      "file": "src/components/commerce/quick-create-modal.tsx",
+      "line": 94,
+      "snippet": "borderHover: \"hover:border-amber-500/50\","
+    },
+    {
+      "file": "src/components/commerce/travel/travel-package-detail-view.tsx",
+      "line": 188,
+      "snippet": "className=\"h-7 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 gap-2\""
+    },
+    {
+      "file": "src/components/commerce/travel/travel-package-detail-view.tsx",
+      "line": 199,
+      "snippet": "<div className=\"bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between gap-3 text-xs\">"
+    },
+    {
+      "file": "src/components/commerce/travel/travel-package-detail-view.tsx",
+      "line": 374,
+      "snippet": "<div className=\"size-6 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0\">"
+    },
+    {
+      "file": "src/components/commerce/travel/travel-package-form.tsx",
+      "line": 987,
+      "snippet": "? \"bg-amber-500/10 border-amber-500/40 text-amber-700 dark:text-amber-300 shadow-2xs\""
+    },
+    {
+      "file": "src/components/commercial/deal-delivery-tracking-card.tsx",
+      "line": 15,
+      "snippet": "pending: { label: \"Aguardando Coleta pelo Motoboy\", color: \"text-amber-600 bg-amber-500/10 border-amber-500/20\", step: 1 },"
+    },
+    {
+      "file": "src/components/commercial/deal-delivery-tracking-card.tsx",
+      "line": 16,
+      "snippet": "link_generated: { label: \"Aguardando Coleta pelo Motoboy\", color: \"text-amber-600 bg-amber-500/10 border-amber-500/20\", step: 1 },"
+    },
+    {
+      "file": "src/components/commercial/lead-commission-calculator-sheet.tsx",
+      "line": 217,
+      "snippet": "<div className=\"p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-1\">"
+    },
+    {
+      "file": "src/components/common/share-modal.tsx",
+      "line": 162,
+      "snippet": "<div className=\"size-9 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform\">"
+    },
+    {
+      "file": "src/components/community/moment-detail-drawer.tsx",
+      "line": 126,
+      "snippet": "<div className=\"p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1.5\">"
+    }
+  ],
+  "unmappedWorkspaceRoutes": [
+    {
+      "file": "workspace.advocacia.index.tsx",
+      "url": "/workspace/advocacia/index"
+    },
+    {
+      "file": "workspace.agenda.index.tsx",
+      "url": "/workspace/agenda/index"
+    },
+    {
+      "file": "workspace.agenda.servicos.index.tsx",
+      "url": "/workspace/agenda/servicos/index"
+    },
+    {
+      "file": "workspace.atendimento.index.tsx",
+      "url": "/workspace/atendimento/index"
+    },
+    {
+      "file": "workspace.captacao.index.tsx",
+      "url": "/workspace/captacao/index"
+    },
+    {
+      "file": "workspace.catalogo.categorias.index.tsx",
+      "url": "/workspace/catalogo/categorias/index"
+    },
+    {
+      "file": "workspace.catalogo.colecoes.index.tsx",
+      "url": "/workspace/catalogo/colecoes/index"
+    },
+    {
+      "file": "workspace.catalogo.index.tsx",
+      "url": "/workspace/catalogo/index"
+    },
+    {
+      "file": "workspace.catalogo.produtos.index.tsx",
+      "url": "/workspace/catalogo/produtos/index"
+    },
+    {
+      "file": "workspace.clientes.index.tsx",
+      "url": "/workspace/clientes/index"
+    },
+    {
+      "file": "workspace.cms.paginas.index.tsx",
+      "url": "/workspace/cms/paginas/index"
+    },
+    {
+      "file": "workspace.configuracoes.index.tsx",
+      "url": "/workspace/configuracoes/index"
+    },
+    {
+      "file": "workspace.configuracoes.integracoes.tsx",
+      "url": "/workspace/configuracoes/integracoes"
+    },
+    {
+      "file": "workspace.configuracoes.inteligencia-artificial.tsx",
+      "url": "/workspace/configuracoes/inteligencia-artificial"
+    },
+    {
+      "file": "workspace.configuracoes.parceiros.tsx",
+      "url": "/workspace/configuracoes/parceiros"
+    },
+    {
+      "file": "workspace.configuracoes.sessoes.tsx",
+      "url": "/workspace/configuracoes/sessoes"
+    },
+    {
+      "file": "workspace.contador.index.tsx",
+      "url": "/workspace/contador/index"
+    },
+    {
+      "file": "workspace.contratos.index.tsx",
+      "url": "/workspace/contratos/index"
+    },
+    {
+      "file": "workspace.doacoes.index.tsx",
+      "url": "/workspace/doacoes/index"
+    },
+    {
+      "file": "workspace.empregos.index.tsx",
+      "url": "/workspace/empregos/index"
+    },
+    {
+      "file": "workspace.estoque.index.tsx",
+      "url": "/workspace/estoque/index"
+    },
+    {
+      "file": "workspace.estudio.index.tsx",
+      "url": "/workspace/estudio/index"
+    },
+    {
+      "file": "workspace.eventos.index.tsx",
+      "url": "/workspace/eventos/index"
+    },
+    {
+      "file": "workspace.financeiro.caixa.index.tsx",
+      "url": "/workspace/financeiro/caixa/index"
+    },
+    {
+      "file": "workspace.financeiro.relatorios-canal.tsx",
+      "url": "/workspace/financeiro/relatorios-canal"
+    },
+    {
+      "file": "workspace.index.tsx",
+      "url": "/workspace/index"
+    },
+    {
+      "file": "workspace.lojas.index.tsx",
+      "url": "/workspace/lojas/index"
+    },
+    {
+      "file": "workspace.moderacao.index.tsx",
+      "url": "/workspace/moderacao/index"
+    },
+    {
+      "file": "workspace.noticias.index.tsx",
+      "url": "/workspace/noticias/index"
+    },
+    {
+      "file": "workspace.onboarding.index.tsx",
+      "url": "/workspace/onboarding/index"
+    },
+    {
+      "file": "workspace.orcamentos.index.tsx",
+      "url": "/workspace/orcamentos/index"
+    },
+    {
+      "file": "workspace.pacotes.index.tsx",
+      "url": "/workspace/pacotes/index"
+    },
+    {
+      "file": "workspace.pdv.index.tsx",
+      "url": "/workspace/pdv/index"
+    },
+    {
+      "file": "workspace.pedidos.entregadores.index.tsx",
+      "url": "/workspace/pedidos/entregadores/index"
+    },
+    {
+      "file": "workspace.pedidos.index.tsx",
+      "url": "/workspace/pedidos/index"
+    },
+    {
+      "file": "workspace.squads.index.tsx",
+      "url": "/workspace/squads/index"
+    },
+    {
+      "file": "workspace.turismo.contratos.index.tsx",
+      "url": "/workspace/turismo/contratos/index"
+    },
+    {
+      "file": "workspace.turismo.frota.index.tsx",
+      "url": "/workspace/turismo/frota/index"
+    },
+    {
+      "file": "workspace.turismo.grupos.index.tsx",
+      "url": "/workspace/turismo/grupos/index"
+    },
+    {
+      "file": "workspace.turismo.propostas.index.tsx",
+      "url": "/workspace/turismo/propostas/index"
+    },
+    {
+      "file": "workspace.turismo.viagens.index.tsx",
+      "url": "/workspace/turismo/viagens/index"
+    },
+    {
+      "file": "workspace.turismo.vouchers.index.tsx",
+      "url": "/workspace/turismo/vouchers/index"
+    }
+  ]
+}

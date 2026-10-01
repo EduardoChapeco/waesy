@@ -1,0 +1,75 @@
+{
+  "timestamp": "2026-10-01T01:42:50.771Z",
+  "metrics": {
+    "totalFiles": 384,
+    "registeredInLib": 368,
+    "treeGenerated": 377,
+    "totalLinksAudited": 456,
+    "fileWithoutRegistryCount": 7,
+    "registeredWithoutFileCount": 1,
+    "brokenLinksCount": 0,
+    "orphanRoutesCount": 3
+  },
+  "shellDistribution": {
+    "Vitrine Pública & Loja (_store)": 150,
+    "Workspace (Lojista / Operação)": 176,
+    "Admin Master (Governança)": 37,
+    "API / Integrações (BFF & MCP)": 18,
+    "SEO / Sitemaps": 3
+  },
+  "brokenLinks": [],
+  "orphanSample": [
+    {
+      "file": "-apple-hig-design.test.ts",
+      "path": "/-apple-hig-design/test",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "-workspace.marketing.anuncios.test.ts",
+      "path": "/-workspace/marketing/anuncios/test",
+      "shell": "Workspace (Lojista / Operação)"
+    },
+    {
+      "file": "portal.subpainel.$token.tsx",
+      "path": "/portal/subpainel/$token",
+      "shell": "Vitrine Pública & Loja (_store)"
+    }
+  ],
+  "unregisteredSample": [
+    {
+      "file": "-apple-hig-design.test.ts",
+      "path": "/-apple-hig-design/test",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "-workspace.marketing.anuncios.test.ts",
+      "path": "/-workspace/marketing/anuncios/test",
+      "shell": "Workspace (Lojista / Operação)"
+    },
+    {
+      "file": "portal.subpainel.$token.tsx",
+      "path": "/portal/subpainel/$token",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "workspace.configuracoes.conformidade.tsx",
+      "path": "/workspace/configuracoes/conformidade",
+      "shell": "Workspace (Lojista / Operação)"
+    },
+    {
+      "file": "workspace.marketing.canvas-bmc.tsx",
+      "path": "/workspace/marketing/canvas-bmc",
+      "shell": "Workspace (Lojista / Operação)"
+    },
+    {
+      "file": "workspace.marketing.swot.tsx",
+      "path": "/workspace/marketing/swot",
+      "shell": "Workspace (Lojista / Operação)"
+    },
+    {
+      "file": "workspace.skills.tsx",
+      "path": "/workspace/skills",
+      "shell": "Workspace (Lojista / Operação)"
+    }
+  ]
+}

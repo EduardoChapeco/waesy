@@ -1733,8 +1733,8 @@ function AdminMiningHubPage() {
       <button
         onClick={() => handleCreateNewsFromPncp(item)}
         disabled={convertingPncpId === item.numeroControlePNCP}
-        className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-bold text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-50"
-        title="Transformar edital em pauta jornalística com 1 clique"
+        className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-xs font-semibold text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors disabled:opacity-50"
+        title="Gerar Pauta"
       >
         {convertingPncpId === item.numeroControlePNCP ? (
           <SpinnerGap className="h-3.5 w-3.5 animate-spin" />

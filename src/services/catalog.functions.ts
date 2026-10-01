@@ -891,6 +891,10 @@ export interface PublicStoreProfileDTO {
  city: string | null;
  state: string | null;
  logoUrl: string | null;
+ bannerUrl: string | null;
+ banner_url?: string | null;
+ coverUrl: string | null;
+ cover_url?: string | null;
  instagramHandle: string | null;
  businessHours: string | null;
  settings?: Record<string, any>;
@@ -918,7 +922,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
 
  let query = db
  .from("stores")
- .select("id, name, slug, description, phone, email, address, city, state, logo_url, settings");
+ .select("id, name, slug, description, phone, email, address, city, state, logo_url, banner_url, settings");
 
  if (isUuid) {
  query = query.eq("id", storeIdToUse);
@@ -934,6 +938,17 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
 
  const settings = (store.settings ?? {}) as Record<string, any>;
 
+ const resolvedBannerUrl =
+ (store.banner_url as string | null) ||
+ (typeof settings.bannerUrl === "string" ? settings.bannerUrl : null) ||
+ (typeof settings.banner_url === "string" ? settings.banner_url : null) ||
+ (typeof settings.cover_url === "string" ? settings.cover_url : null) ||
+ null;
+ const resolvedCoverUrl =
+ (typeof settings.cover_url === "string" ? settings.cover_url : null) ||
+ (typeof settings.coverUrl === "string" ? settings.coverUrl : null) ||
+ resolvedBannerUrl;
+
  const profile: PublicStoreProfileDTO = {
  id: store.id as string,
  name: store.name as string,
@@ -945,12 +960,18 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  city: (store.city as string | null) ?? null,
  state: (store.state as string | null) ?? null,
  logoUrl: (store.logo_url as string | null) || (typeof settings.logoUrl === "string" ? settings.logoUrl : null) || (typeof settings.logo_url === "string" ? settings.logo_url : null),
+ bannerUrl: resolvedBannerUrl,
+ banner_url: resolvedBannerUrl,
+ coverUrl: resolvedCoverUrl,
+ cover_url: resolvedCoverUrl,
  instagramHandle:
  typeof settings.instagramHandle === "string" ? settings.instagramHandle : null,
  businessHours: typeof settings.businessHours === "string" ? settings.businessHours : null,
  settings: {
  ...settings,
- cover_url: settings.cover_url || settings.bannerUrl || null,
+ cover_url: resolvedCoverUrl,
+ banner_url: resolvedBannerUrl,
+ bannerUrl: resolvedBannerUrl,
  },
  pixKey: typeof settings.pixKey === "string" ? settings.pixKey : null,
  paymentInstructions:

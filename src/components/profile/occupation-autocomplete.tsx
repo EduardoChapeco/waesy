@@ -104,7 +104,7 @@ export function OccupationAutocomplete({
         {matchedProfession && (
           <div
             className="absolute right-2.5 top-1/2 -translate-y-1/2"
-            title="Cargo verificado no catálogo oficial de carreiras"
+            title="Cargo Verificado"
           >
             <Check className="size-4 text-emerald-500" />
           </div>

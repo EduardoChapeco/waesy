@@ -131,9 +131,9 @@ function DocumentVerificationPage() {
             <div className="space-y-1 flex-1">
               <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
                 <h2 className="text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300">
-                  Termo de Quitação Plena e Irrevogável (Quitado ✓)
+                  Termo de Quitação Plena
                 </h2>
-                <Badge className="bg-emerald-600 text-white font-mono text-[10px]">
+                <Badge className="bg-emerald-600 text-white font-mono text-xs">
                   OBRIGAÇÃO EXTINTA
                 </Badge>
               </div>

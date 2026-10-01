@@ -70,12 +70,12 @@ export function TravelPackageDetailView({
   const isCar = transportType === "car" || transportType === "hotel_only";
 
   const transportLabel: Record<string, string> = {
-    airplane: "✈️ Aéreo",
-    bus: "🚌 Terrestre / Excursão",
-    combo: "🔄 Multimodal",
-    cruise: "🛳️ Cruzeiro",
-    car: "🚗 Carro Próprio",
-    hotel_only: "🏨 Pacote Local",
+    airplane: "Aéreo",
+    bus: "Terrestre / Excursão",
+    combo: "Multimodal",
+    cruise: "Cruzeiro",
+    car: "Carro Próprio",
+    hotel_only: "Pacote Local",
   };
   const departureOptions: DepartureOption[] = Array.isArray((packageData as any)?.departure_options)
     ? (packageData as any).departure_options
@@ -160,12 +160,12 @@ export function TravelPackageDetailView({
  };
 
  return (
- <div className="w-full bg-background text-foreground flex flex-col min-h-[100dvh] relative select-none">
+ <div className="w-full bg-background text-foreground flex flex-col min-h-dvh relative select-none">
  {/* ── 1. Barra Superior de Abas (Estilo App Nativo de Viagem) ── */}
  <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-border/70 shadow-2xs">
  <div className="flex items-center justify-between px-4 h-12 max-w-4xl mx-auto w-full">
  <div className="flex items-center gap-2 truncate">
- <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+ <span className="text-xs font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-full">
  Pacote Oficial
  </span>
  <span className="text-xs text-muted-foreground">•</span>
@@ -176,7 +176,7 @@ export function TravelPackageDetailView({
 
         <div className="flex items-center gap-2">
           {resort.duration_text && (
-            <span className="text-[11px] font-mono text-muted-foreground border border-border/80 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-mono text-muted-foreground border border-border/80 px-2 py-1 rounded-full">
               {resort.duration_text}
             </span>
           )}
@@ -185,7 +185,7 @@ export function TravelPackageDetailView({
               size="sm"
               variant="outline"
               onClick={onEditClick}
-              className="h-7 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 gap-1.5"
+              className="h-7 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 gap-2"
             >
               <Edit3 className="size-3.5" />
               Editar
@@ -219,7 +219,7 @@ export function TravelPackageDetailView({
  type="button"
  onClick={() => setActiveTab("destination")}
  className={cn(
- "relative flex-1 flex items-center justify-center gap-1.5 py-3 transition-colors cursor-pointer",
+ "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
  activeTab === "destination"
  ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
  : "text-muted-foreground hover:text-foreground"
@@ -233,7 +233,7 @@ export function TravelPackageDetailView({
  type="button"
  onClick={() => setActiveTab("resort")}
  className={cn(
- "relative flex-1 flex items-center justify-center gap-1.5 py-3 transition-colors cursor-pointer",
+ "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
  activeTab === "resort"
  ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
  : "text-muted-foreground hover:text-foreground"
@@ -247,7 +247,7 @@ export function TravelPackageDetailView({
  type="button"
  onClick={() => setActiveTab("itinerary")}
  className={cn(
- "relative flex-1 flex items-center justify-center gap-1.5 py-3 transition-colors cursor-pointer",
+ "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
  activeTab === "itinerary"
  ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
  : "text-muted-foreground hover:text-foreground"
@@ -261,7 +261,7 @@ export function TravelPackageDetailView({
  type="button"
  onClick={() => setActiveTab("explore")}
  className={cn(
- "relative flex-1 flex items-center justify-center gap-1.5 py-3 transition-colors cursor-pointer",
+ "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
  activeTab === "explore"
  ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
  : "text-muted-foreground hover:text-foreground"
@@ -284,9 +284,9 @@ export function TravelPackageDetailView({
  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
  <div className="absolute bottom-0 left-0 w-full p-5 sm:p-7 flex flex-col justify-end text-white">
  {(destination.country || destination.region || destination.state) && (
- <div className="flex items-center gap-2 mb-1.5">
+ <div className="flex items-center gap-2 mb-2">
  {destination.country && (
- <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">
+ <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">
  {destination.country}
  </span>
  )}
@@ -312,13 +312,13 @@ export function TravelPackageDetailView({
  <section className="w-full pt-1 pb-2 overflow-x-auto no-scrollbar">
  <div className="flex gap-4 px-4 sm:px-6">
  {(packageData?.story_highlights || resort.highlights || []).map((hl: any) => (
- <div key={hl.id} className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group">
+ <div key={hl.id} className="flex flex-col items-center gap-2 shrink-0 cursor-pointer group">
  <div className="size-16 sm:size-18 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-sky-500 group-hover:scale-105 transition-transform shadow-2xs">
  <div className="size-full rounded-full bg-background p-[2px] overflow-hidden">
  <img src={hl.imageUrl || hl.image} alt={hl.label || hl.title || "Destaque"} className="size-full object-cover rounded-full" />
  </div>
  </div>
- <span className="text-[11px] font-medium text-foreground tracking-tight text-center max-w-[68px] truncate">
+ <span className="text-xs font-medium text-foreground tracking-tight text-center max-w-[68px] truncate">
  {hl.label || hl.title}
  </span>
  </div>
@@ -330,11 +330,11 @@ export function TravelPackageDetailView({
  {/* Checklist de Inclusões ("O que inclui") */}
  <section className="px-4 sm:px-6 space-y-3">
  <div className="flex items-center justify-between">
- <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+ <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <ShieldCheck className="size-4 text-emerald-500" />
  <span>O que está incluso neste pacote</span>
  </h3>
- <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+ <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
  {inclusions.length} inclusões
  </span>
  </div>
@@ -343,7 +343,7 @@ export function TravelPackageDetailView({
  {inclusions.map((item, idx) => (
  <div
  key={idx}
- className="p-3 rounded-xl bg-card border border-border/70 flex items-center gap-2.5 shadow-2xs"
+ className="p-3 rounded-lg bg-card border border-border/70 flex items-center gap-2 shadow-2xs"
  >
  <div className="size-6 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
  <Check className="size-3.5 stroke-[2.5]" />
@@ -358,18 +358,18 @@ export function TravelPackageDetailView({
  {exclusions.length > 0 && (
  <section className="px-4 sm:px-6 space-y-3">
  <div className="flex items-center justify-between">
- <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+ <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <ShieldAlert className="size-4 text-amber-500" />
  <span>Não incluso (serviços opcionais / à parte)</span>
  </h3>
- <span className="text-[11px] font-mono text-muted-foreground">{exclusions.length} itens</span>
+ <span className="text-xs font-mono text-muted-foreground">{exclusions.length} itens</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  {exclusions.map((item, idx) => (
  <div
  key={idx}
- className="p-3 rounded-xl bg-muted/30 border border-border/60 flex items-center gap-2.5"
+ className="p-3 rounded-lg bg-muted/30 border border-border/60 flex items-center gap-2"
  >
  <div className="size-6 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
  <X className="size-3.5 stroke-[2.5]" />
@@ -385,16 +385,16 @@ export function TravelPackageDetailView({
       {departureOptions.length > 0 && (
         <section className="px-4 sm:px-6 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <Calendar className="size-4 text-primary" />
               <span>Datas e Saídas Disponíveis</span>
             </h3>
-            <span className="text-[11px] font-mono text-primary font-semibold">
+            <span className="text-xs font-mono text-primary font-semibold">
               {departureOptions.length} opções de embarque
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {departureOptions.map((opt, i) => {
               const cfg = DEPARTURE_STATUS_CONFIG[opt.status] || DEPARTURE_STATUS_CONFIG.confirmed;
               const depDate = opt.departure_date ? new Date(opt.departure_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "";
@@ -406,7 +406,7 @@ export function TravelPackageDetailView({
                   key={opt.id || i}
                   onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
                   className={cn(
-                    "p-3.5 rounded-xl bg-card border transition-all flex flex-col justify-between gap-2.5 shadow-2xs cursor-pointer text-left",
+                    "p-4 rounded-lg bg-card border transition-colors flex flex-col justify-between gap-2 shadow-2xs cursor-pointer text-left",
                     isSelected
                       ? "border-primary ring-2 ring-primary/25 bg-primary/5"
                       : "border-border/70 hover:border-primary/40 hover:bg-muted/20"
@@ -414,31 +414,31 @@ export function TravelPackageDetailView({
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-0.5">
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-bold text-foreground">
                           {opt.label || `Saída ${i + 1}`}
                         </span>
                         {isSelected && (
-                          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                            ✓ Selecionada
+                          <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
+                            Selecionada
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-muted-foreground font-medium">
+                      <p className="text-xs text-muted-foreground font-medium">
                         {depDate}{depDate && retDate && " — "}{retDate}
                       </p>
                       {opt.departure_time && (
-                        <p className="text-[10px] text-muted-foreground font-mono">
+                        <p className="text-xs text-muted-foreground font-mono">
                           Embarque: <span className="font-bold text-foreground">{opt.departure_time}</span>
                         </p>
                       )}
                     </div>
-                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0", cfg.color)}>
+                    <span className={cn("text-xs font-bold px-2 py-1 rounded-full border shrink-0", cfg.color)}>
                       {cfg.icon} {cfg.label}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1.5 border-t border-border/40 text-[11px]">
+                  <div className="flex items-center justify-between pt-1.5 border-t border-border/40 text-xs">
                     <span className="text-muted-foreground">
                       {opt.available_seats !== undefined && opt.available_seats > 0 ? `${opt.available_seats} vagas disponíveis` : "Vagas limitadas"}
                     </span>
@@ -458,7 +458,7 @@ export function TravelPackageDetailView({
  {/* Informações de Como Chegar & Clima */}
  <section className="px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
  {/* Card de Como Chegar */}
- <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/70 space-y-2.5 shadow-2xs">
+ <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/70 space-y-2 shadow-2xs">
  <div className="flex items-center gap-2 text-foreground">
  <Plane className="size-4 text-primary" />
  <h4 className="text-xs font-bold uppercase tracking-wider">Como Chegar</h4>
@@ -467,7 +467,7 @@ export function TravelPackageDetailView({
  {destination.flight_summary ||
  "Consulte opções de traslados, conexões aéreas e saídas disponíveis com nossa equipe de consultores."}
  </p>
- <div className="flex items-center gap-1.5 text-xs font-semibold text-primary pt-1">
+ <div className="flex items-center gap-2 text-xs font-semibold text-primary pt-1">
  <span>Opções com logística garantida</span>
  <ChevronRight className="size-3.5" />
  </div>
@@ -475,7 +475,7 @@ export function TravelPackageDetailView({
 
  {/* Card de Clima Real via wttr.in (Regra 21) */}
  {(destination.name || destination.city) && (
- <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/70 space-y-2.5 shadow-2xs">
+ <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/70 space-y-2 shadow-2xs">
  <div className="flex items-center gap-2 text-foreground">
  <Sun className="size-4 text-amber-500" />
  <h4 className="text-xs font-bold uppercase tracking-wider">Clima no Destino</h4>
@@ -487,14 +487,14 @@ export function TravelPackageDetailView({
 
  {/* Galeria do Destino (Apenas se houver fotos cadastradas) */}
  {gallery.length > 0 && (
- <section className="px-4 sm:px-6 space-y-2.5">
+ <section className="px-4 sm:px-6 space-y-2">
  <div className="flex items-center justify-between">
  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Galeria do Destino
  </h3>
- <span className="text-[11px] text-muted-foreground font-mono">{gallery.length} fotos</span>
+ <span className="text-xs text-muted-foreground font-mono">{gallery.length} fotos</span>
  </div>
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 rounded-2xl overflow-hidden border border-border/50">
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 rounded-lg overflow-hidden border border-border/50">
  {gallery.slice(0, 6).map((imgUrl: string, i: number) => (
  <div key={i} className="aspect-square bg-muted/40 relative overflow-hidden group">
  <img
@@ -514,7 +514,7 @@ export function TravelPackageDetailView({
  {activeTab === "resort" && (
  <div className="px-4 sm:px-6 py-4 space-y-6 animate-in fade-in duration-200">
  {/* Header Perfil Visual do Resort */}
- <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-2xs">
+ <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs">
  <div className="flex items-center justify-between gap-4">
  {/* Foto com anel gradiente de viagem */}
  <div className="relative shrink-0">
@@ -533,37 +533,37 @@ export function TravelPackageDetailView({
  </div>
 
  {/* 3 Estatísticas do Pacote */}
- <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 text-center divide-y sm:divide-y-0 sm:divide-x divide-border/60 gap-1.5 sm:gap-0">
+ <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 text-center divide-y sm:divide-y-0 sm:divide-x divide-border/60 gap-2 sm:gap-0">
  <div className="flex flex-col">
  <span className="font-bold text-sm sm:text-base text-foreground">
  {resort.duration_text || "—"}
  </span>
- <span className="text-[10px] text-muted-foreground">Duração</span>
+ <span className="text-xs text-muted-foreground">Duração</span>
  </div>
  <div className="flex flex-col">
  <span className="font-bold text-sm sm:text-base text-foreground">
  {resort.meal_plan || "—"}
  </span>
- <span className="text-[10px] text-muted-foreground">Regime</span>
+ <span className="text-xs text-muted-foreground">Regime</span>
  </div>
  <div className="flex flex-col">
  <span className="font-bold text-sm sm:text-base text-foreground">
  {resort.guests_text || "—"}
  </span>
- <span className="text-[10px] text-muted-foreground">Hóspedes</span>
+ <span className="text-xs text-muted-foreground">Hóspedes</span>
  </div>
  </div>
  </div>
 
  {/* Informações de Bio */}
- <div className="space-y-1.5 text-xs">
- <div className="flex items-center gap-1.5 font-bold text-foreground">
+ <div className="space-y-2 text-xs">
+ <div className="flex items-center gap-2 font-bold text-foreground">
  <span>{resort.name || productTitle}</span>
- <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-600 font-semibold">
+ <span className="text-xs px-2 py-1 rounded bg-sky-500/10 text-sky-600 font-semibold">
  Oficial
  </span>
  </div>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {resort.location || destination.name || ""}
  </p>
 
@@ -577,12 +577,12 @@ export function TravelPackageDetailView({
  </div>
 
  {/* Badges / Tags */}
- <div className="flex flex-wrap gap-1.5 pt-2">
+ <div className="flex flex-wrap gap-2 pt-2">
  {resort.badges && resort.badges.length > 0
  ? resort.badges.map((b: string, i: number) => (
  <span
  key={i}
- className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-muted text-muted-foreground border border-border/50"
+ className="px-2.5 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border/50"
  >
  {b}
  </span>
@@ -593,9 +593,9 @@ export function TravelPackageDetailView({
  </div>
 
  {/* Card de Condição Comercial & Preço */}
- <div className="bg-card border border-border/70 rounded-2xl p-4 flex items-center justify-between shadow-2xs">
+ <div className="bg-card border border-border/70 rounded-lg p-4 flex items-center justify-between shadow-2xs">
  <div className="space-y-0.5">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  {totalCents > 0
  ? maxInstallments > 0
  ? feeFreeInstallments >= maxInstallments
@@ -618,7 +618,7 @@ export function TravelPackageDetailView({
  <span className="text-lg font-bold text-foreground">Sob Consulta</span>
  )}
  </div>
- <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground">
  {totalCents > 0 ? (
  <>
  {maxInstallments > 0 && <span>Total: {formattedTotal}</span>}
@@ -651,9 +651,9 @@ export function TravelPackageDetailView({
  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Fotos da Estrutura
  </h4>
- <span className="text-[11px] text-muted-foreground font-mono">{gallery.length} fotos</span>
+ <span className="text-xs text-muted-foreground font-mono">{gallery.length} fotos</span>
  </div>
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 rounded-2xl overflow-hidden border border-border/50">
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 rounded-lg overflow-hidden border border-border/50">
  {gallery.slice(0, 6).map((imgUrl: string, i: number) => (
  <div key={i} className="aspect-square bg-muted/40 overflow-hidden group">
  <img
@@ -677,7 +677,7 @@ export function TravelPackageDetailView({
  <h3 className="text-sm font-bold text-foreground">Roteiro Completo Dia a Dia</h3>
  <p className="text-xs text-muted-foreground">Programação detalhada das suas férias</p>
  </div>
- <span className="text-xs font-mono text-muted-foreground border border-border/60 px-2 py-0.5 rounded-full">
+ <span className="text-xs font-mono text-muted-foreground border border-border/60 px-2 py-1 rounded-full">
  {itineraryDays.length} Dias
  </span>
  </div>
@@ -695,7 +695,7 @@ export function TravelPackageDetailView({
  {/* Marcador Circular Numerado */}
  <div
  className={cn(
- "absolute -left-7 sm:-left-8 top-0.5 size-6 rounded-full border-2 flex items-center justify-center text-[11px] font-bold z-10 transition-colors",
+ "absolute -left-7 sm:-left-8 top-0.5 size-6 rounded-full border-2 flex items-center justify-center text-xs font-bold z-10 transition-colors",
  isExpanded
  ? "bg-primary border-primary text-primary-foreground"
  : "bg-background border-border text-muted-foreground group-hover:border-primary/60"
@@ -705,22 +705,22 @@ export function TravelPackageDetailView({
  </div>
 
  {/* Conteúdo do Card do Dia */}
- <div className="p-3.5 sm:p-4 rounded-2xl bg-card border border-border/70 hover:border-primary/40 transition-all space-y-2 shadow-2xs">
+ <div className="p-4 sm:p-4 rounded-lg bg-card border border-border/70 hover:border-primary/40 transition-colors space-y-2 shadow-2xs">
  <div className="flex items-baseline justify-between gap-2">
  <div className="flex items-center gap-2">
  <h4 className="text-xs sm:text-sm font-bold text-foreground">{day.title}</h4>
  {day.period && (
- <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+ <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
  {day.period}
  </span>
  )}
  </div>
- {day.date && <span className="text-[11px] font-mono text-muted-foreground shrink-0">{day.date}</span>}
+ {day.date && <span className="text-xs font-mono text-muted-foreground shrink-0">{day.date}</span>}
  </div>
 
  <p
  className={cn(
- "text-xs text-muted-foreground leading-relaxed transition-all",
+ "text-xs text-muted-foreground leading-relaxed transition-colors",
  !isExpanded && "line-clamp-2"
  )}
  >
@@ -729,12 +729,12 @@ export function TravelPackageDetailView({
 
  {/* Imagem do dia (se houver e estiver expandido) */}
  {day.imageUrl && isExpanded && (
- <div className="w-full h-36 sm:h-44 rounded-xl overflow-hidden mt-2 border border-border/50">
+ <div className="w-full h-36 sm:h-44 rounded-lg overflow-hidden mt-2 border border-border/50">
  <img src={day.imageUrl} alt={day.title} className="size-full object-cover" />
  </div>
  )}
 
- <div className="flex items-center justify-between pt-1 text-[11px] text-primary font-semibold">
+ <div className="flex items-center justify-between pt-1 text-xs text-primary font-semibold">
  <span>{isExpanded ? "Recolher detalhes" : "Ver programação completa"}</span>
  <ChevronRight className={cn("size-3.5 transition-transform", isExpanded && "rotate-90")} />
  </div>
@@ -751,12 +751,12 @@ export function TravelPackageDetailView({
  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Recomendações Próximas
  </h4>
- <p className="text-[11px] text-muted-foreground">Curadoria gastronômica e pontos de interesse</p>
+ <p className="text-xs text-muted-foreground">Curadoria gastronômica e pontos de interesse</p>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  {recommendations.map((rec, i) => (
- <div key={rec.id || i} className="p-2.5 rounded-xl bg-card border border-border/60 flex items-center gap-3">
+ <div key={rec.id || i} className="p-2 rounded-lg bg-card border border-border/60 flex items-center gap-3">
  <div className="size-14 rounded-lg overflow-hidden shrink-0 bg-muted">
  {rec.imageUrl ? (
  <img src={rec.imageUrl} alt={rec.title} className="size-full object-cover" />
@@ -770,13 +770,13 @@ export function TravelPackageDetailView({
  <div className="flex items-center justify-between">
  <h5 className="text-xs font-bold text-foreground truncate">{rec.title}</h5>
  {rec.rating && (
- <span className="text-[10px] font-bold text-amber-500 flex items-center gap-0.5">
+ <span className="text-xs font-bold text-amber-500 flex items-center gap-0.5">
  <Star className="size-3 fill-amber-500" /> {rec.rating}
  </span>
  )}
  </div>
- <p className="text-[10px] text-muted-foreground truncate">{rec.category}</p>
- <p className="text-[10px] text-primary flex items-center gap-1 mt-0.5">
+ <p className="text-xs text-muted-foreground truncate">{rec.category}</p>
+ <p className="text-xs text-primary flex items-center gap-1 mt-1">
  <MapPin className="size-2.5" /> {rec.distance}
  </p>
  </div>
@@ -797,9 +797,9 @@ export function TravelPackageDetailView({
  </div>
 
  {/* Card de Logística Multimodal & Cronograma Detalhado */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-2xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs">
  <div className="flex items-center justify-between">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  {isBus
  ? "Logística Rodoviária & Horários Garantidos"
  : isCruise
@@ -808,7 +808,7 @@ export function TravelPackageDetailView({
  ? "Logística Multimodal Integrada"
  : "Logística Aérea & Horários Garantidos"}
  </span>
- <span className="text-[11px] font-mono text-muted-foreground border border-border/60 px-2 py-0.5 rounded-full">
+ <span className="text-xs font-mono text-muted-foreground border border-border/60 px-2 py-1 rounded-full">
  {isBus
  ? (flightDetails.bus_company || flightDetails.bus_category || "Transporte Terrestre")
  : isCruise
@@ -823,24 +823,24 @@ export function TravelPackageDetailView({
  {(isAir || isCombo) && (
  <div className="space-y-3">
  {isCombo && (
- <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+ <span className="text-xs font-bold text-primary flex items-center gap-2">
  <Plane className="size-3.5" /> Trecho Aéreo do Pacote
  </span>
  )}
  
  {/* Voo de Ida */}
- <div className="p-3 rounded-xl bg-muted/20 border border-border/50 space-y-2">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Plane className="size-3.5 text-primary" /> Voo de Ida
  {flightDetails.flight_number_out && (
- <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
+ <span className="text-xs font-mono px-2 py-1 rounded bg-primary/10 text-primary font-bold">
  {flightDetails.flight_number_out}
  </span>
  )}
  </span>
  {flightDetails.flight_duration && (
- <span className="text-[10px] text-muted-foreground font-mono inline-flex items-center gap-1">
+ <span className="text-xs text-muted-foreground font-mono inline-flex items-center gap-1">
  <Clock className="size-3" /> {flightDetails.flight_duration}
  </span>
  )}
@@ -848,14 +848,14 @@ export function TravelPackageDetailView({
 
  <div className="flex items-center justify-between text-xs pt-1">
  <div>
- <span className="text-[10px] text-muted-foreground block">Origem / Embarque</span>
+ <span className="text-xs text-muted-foreground block">Origem / Embarque</span>
  <span className="font-bold text-foreground">
  {flightDetails.departure_time_out ? `${flightDetails.departure_time_out} — ` : ""}
  {flightDetails.departure_airport || flightDetails.origin_airport || "Aeroporto de Origem"}
  </span>
  </div>
  <div className="text-right">
- <span className="text-[10px] text-muted-foreground block">Chegada / Pouso</span>
+ <span className="text-xs text-muted-foreground block">Chegada / Pouso</span>
  <span className="font-bold text-foreground">
  {flightDetails.arrival_time_out ? `${flightDetails.arrival_time_out} — ` : ""}
  {flightDetails.destination_airport || flightDetails.destination_iata || "Destino"}
@@ -866,12 +866,12 @@ export function TravelPackageDetailView({
 
  {/* Voo de Volta */}
  {(flightDetails.flight_number_return || flightDetails.departure_time_return) && (
- <div className="p-3 rounded-xl bg-muted/20 border border-border/50 space-y-2">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Plane className="size-3.5 text-primary rotate-180" /> Voo de Retorno
  {flightDetails.flight_number_return && (
- <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
+ <span className="text-xs font-mono px-2 py-1 rounded bg-primary/10 text-primary font-bold">
  {flightDetails.flight_number_return}
  </span>
  )}
@@ -880,14 +880,14 @@ export function TravelPackageDetailView({
 
  <div className="flex items-center justify-between text-xs pt-1">
  <div>
- <span className="text-[10px] text-muted-foreground block">Embarque de Volta</span>
+ <span className="text-xs text-muted-foreground block">Embarque de Volta</span>
  <span className="font-bold text-foreground">
  {flightDetails.departure_time_return ? `${flightDetails.departure_time_return} — ` : ""}
  {flightDetails.destination_airport || flightDetails.destination_iata || "Destino"}
  </span>
  </div>
  <div className="text-right">
- <span className="text-[10px] text-muted-foreground block">Desembarque</span>
+ <span className="text-xs text-muted-foreground block">Desembarque</span>
  <span className="font-bold text-foreground">
  {flightDetails.arrival_time_return ? `${flightDetails.arrival_time_return} — ` : ""}
  {flightDetails.departure_airport || flightDetails.origin_airport || "Origem"}
@@ -903,23 +903,23 @@ export function TravelPackageDetailView({
  {(isBus || isCombo) && (
  <div className="space-y-3">
  {isCombo && (
- <span className="text-xs font-bold text-primary flex items-center gap-1.5 pt-2">
+ <span className="text-xs font-bold text-primary flex items-center gap-2 pt-2">
  <Bus className="size-3.5" /> Trecho Rodoviário do Pacote
  </span>
  )}
 
- <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Bus className="size-3.5 text-primary" /> Viagem Rodoviária / Excursão
  {flightDetails.bus_company && (
- <span className="text-[11px] font-semibold text-foreground">
+ <span className="text-xs font-semibold text-foreground">
  • {flightDetails.bus_company}
  </span>
  )}
  </span>
  {flightDetails.bus_category && (
- <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+ <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full">
  {(() => {
  const cat = CANONICAL_BUS_CATEGORIES.find(b => b.id === flightDetails.bus_category);
  return cat ? cat.label : flightDetails.bus_category;
@@ -930,10 +930,10 @@ export function TravelPackageDetailView({
 
  {/* Ponto de Encontro Oficial da Excursão */}
  {flightDetails.meeting_point && (
- <div className="flex items-start gap-2 p-2.5 rounded-xl bg-background border border-border/60">
- <MapPin className="size-3.5 text-primary mt-0.5 shrink-0" />
+ <div className="flex items-start gap-2 p-2 rounded-lg bg-background border border-border/60">
+ <MapPin className="size-3.5 text-primary mt-1 shrink-0" />
  <div>
- <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Ponto de Encontro / Saída</p>
+ <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Ponto de Encontro / Saída</p>
  <p className="text-xs font-semibold text-foreground leading-relaxed">{flightDetails.meeting_point}</p>
  </div>
  </div>
@@ -942,14 +942,14 @@ export function TravelPackageDetailView({
  {/* Embarque e Chegada Ida */}
  <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
  <div>
- <span className="text-[10px] text-muted-foreground block">Embarque de Ida</span>
+ <span className="text-xs text-muted-foreground block">Embarque de Ida</span>
  <span className="font-bold text-foreground">
  {flightDetails.bus_departure_time_out ? `${flightDetails.bus_departure_time_out} — ` : ""}
  {flightDetails.bus_departure_terminal || flightDetails.origin_airport || flightDetails.departure_city || "Terminal de Embarque"}
  </span>
  </div>
  <div className="text-right">
- <span className="text-[10px] text-muted-foreground block">Chegada no Destino</span>
+ <span className="text-xs text-muted-foreground block">Chegada no Destino</span>
  <span className="font-bold text-foreground">
  {flightDetails.bus_arrival_time_out ? `${flightDetails.bus_arrival_time_out} — ` : ""}
  {flightDetails.bus_arrival_terminal || flightDetails.destination_iata || "Terminal de Chegada"}
@@ -960,12 +960,12 @@ export function TravelPackageDetailView({
  {/* Embarques e Paradas na Rota Rodoviária */}
  {Array.isArray(flightDetails.boarding_gateways) && flightDetails.boarding_gateways.length > 0 && (
  <div className="pt-2 border-t border-border/40">
- <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+ <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
  Pontos de Embarque na Rota
  </p>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {flightDetails.boarding_gateways.map((gw: string, i: number) => (
- <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-medium text-primary">
+ <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
  <Navigation className="size-2.5" />{gw}
  </span>
  ))}
@@ -977,7 +977,7 @@ export function TravelPackageDetailView({
  {flightDetails.guide_service && (() => {
  const guide = CANONICAL_GUIDE_SERVICES.find(g => g.id === flightDetails.guide_service);
  return guide ? (
- <div className="pt-1 text-[11px] text-muted-foreground flex items-center gap-1.5">
+ <div className="pt-1 text-xs text-muted-foreground flex items-center gap-2">
  <ShieldCheck className="size-3.5 text-emerald-500 shrink-0" />
  <span>Acompanhamento: <strong className="text-foreground">{guide.label}</strong></span>
  </div>
@@ -988,14 +988,14 @@ export function TravelPackageDetailView({
  {(flightDetails.bus_departure_time_return || flightDetails.bus_arrival_time_return || flightDetails.return_departure_time) && (
  <div className="flex items-center justify-between text-xs pt-2 border-t border-border/40">
  <div>
- <span className="text-[10px] text-muted-foreground block">Embarque de Retorno</span>
+ <span className="text-xs text-muted-foreground block">Embarque de Retorno</span>
  <span className="font-bold text-foreground">
  {(flightDetails.bus_departure_time_return || flightDetails.return_departure_time) ? `${flightDetails.bus_departure_time_return || flightDetails.return_departure_time} — ` : ""}
  {flightDetails.bus_arrival_terminal || flightDetails.destination_iata || "Terminal do Destino"}
  </span>
  </div>
  <div className="text-right">
- <span className="text-[10px] text-muted-foreground block">Chegada Final</span>
+ <span className="text-xs text-muted-foreground block">Chegada Final</span>
  <span className="font-bold text-foreground">
  {flightDetails.bus_arrival_time_return ? `${flightDetails.bus_arrival_time_return} — ` : ""}
  {flightDetails.bus_departure_terminal || flightDetails.origin_airport || "Origem"}
@@ -1011,23 +1011,23 @@ export function TravelPackageDetailView({
  {(isCruise || isCombo) && (
  <div className="space-y-3">
  {isCombo && (
- <span className="text-xs font-bold text-primary flex items-center gap-1.5 pt-2">
+ <span className="text-xs font-bold text-primary flex items-center gap-2 pt-2">
  <Ship className="size-3.5" /> Trecho de Cruzeiro Marítimo
  </span>
  )}
 
- <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-2.5">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Ship className="size-3.5 text-primary" /> {flightDetails.ship_name || "Navio de Cruzeiro"}
  {flightDetails.cruise_line && (
- <span className="text-[11px] font-normal text-muted-foreground">
+ <span className="text-xs font-normal text-muted-foreground">
  ({flightDetails.cruise_line})
  </span>
  )}
  </span>
  {flightDetails.cabin_category && (
- <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+ <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full">
  {flightDetails.cabin_category}
  </span>
  )}
@@ -1035,18 +1035,18 @@ export function TravelPackageDetailView({
 
  <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
  <div>
- <span className="text-[10px] text-muted-foreground block">Porto de Embarque</span>
+ <span className="text-xs text-muted-foreground block">Porto de Embarque</span>
  <span className="font-bold text-foreground">
  {flightDetails.embarkation_port || "Terminal de Passageiros"}
  </span>
  {flightDetails.boarding_checkin_time && (
- <span className="text-[10px] text-primary block">
+ <span className="text-xs text-primary block">
  Check-in: {flightDetails.boarding_checkin_time}
  </span>
  )}
  </div>
  <div className="text-right">
- <span className="text-[10px] text-muted-foreground block">Partida / Desatracação</span>
+ <span className="text-xs text-muted-foreground block">Partida / Desatracação</span>
  <span className="font-bold text-foreground">
  {flightDetails.ship_departure_time || "A definir pela armadora"}
  </span>
@@ -1056,13 +1056,13 @@ export function TravelPackageDetailView({
  {(flightDetails.disembarkation_port || flightDetails.ship_arrival_time) && (
  <div className="flex items-center justify-between text-xs pt-2 border-t border-border/40">
  <div>
- <span className="text-[10px] text-muted-foreground block">Porto de Desembarque</span>
+ <span className="text-xs text-muted-foreground block">Porto de Desembarque</span>
  <span className="font-bold text-foreground">
  {flightDetails.disembarkation_port || flightDetails.embarkation_port || "Porto de Chegada"}
  </span>
  </div>
  <div className="text-right">
- <span className="text-[10px] text-muted-foreground block">Horário de Desembarque</span>
+ <span className="text-xs text-muted-foreground block">Horário de Desembarque</span>
  <span className="font-bold text-foreground">
  {flightDetails.ship_arrival_time || "Atracação matutina"}
  </span>
@@ -1075,7 +1075,7 @@ export function TravelPackageDetailView({
 
  {/* ─── RESUMO MULTIMODAL MISTO ─── */}
  {transportType === "misto" && flightDetails.mixed_transport_summary && (
- <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-foreground/90 leading-relaxed">
+ <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-foreground/90 leading-relaxed">
  <span className="font-bold text-primary block mb-1">Roteiro Multimodal Combinado:</span>
  {flightDetails.mixed_transport_summary}
  </div>
@@ -1083,12 +1083,12 @@ export function TravelPackageDetailView({
 
  {/* ─── TRANSFER BILATERAL (COMUM A TODOS) ─── */}
  {(flightDetails.transfer_pickup_time || flightDetails.transfer_return_time) && (
- <div className="p-3 rounded-xl bg-muted/10 border border-border/40 space-y-1.5 text-xs">
- <div className="flex items-center gap-1.5 font-bold text-foreground">
+ <div className="p-3 rounded-lg bg-muted/10 border border-border/40 space-y-2 text-xs">
+ <div className="flex items-center gap-2 font-bold text-foreground">
  <Car className="size-3.5 text-primary" />
  <span>Horários do Transfer Bilateral (In / Out)</span>
  </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-muted-foreground pt-0.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground pt-0.5">
  {flightDetails.transfer_pickup_time && (
  <div>
  <span className="font-medium text-foreground">Transfer Ida:</span> {flightDetails.transfer_pickup_time}
@@ -1104,7 +1104,7 @@ export function TravelPackageDetailView({
  )}
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-border/40 text-xs">
- <div className="flex items-center gap-1.5 text-muted-foreground">
+ <div className="flex items-center gap-2 text-muted-foreground">
  <Luggage className="size-3.5 text-primary" />
  <span>
  {isBus
@@ -1114,7 +1114,7 @@ export function TravelPackageDetailView({
  : "Bagagem Despachada 23kg inclusa"}
  </span>
  </div>
- <div className="flex items-center gap-1.5 text-muted-foreground">
+ <div className="flex items-center gap-2 text-muted-foreground">
  <Car className="size-3.5 text-primary" />
  <span>Transfer In/Out Incluso</span>
  </div>
@@ -1123,7 +1123,7 @@ export function TravelPackageDetailView({
 
  {/* Datas & Saídas Confirmadas (Opções Disponíveis de Reserva) */}
  {departureOptions.length > 0 && (
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <Calendar className="size-4 text-primary" />
@@ -1131,7 +1131,7 @@ export function TravelPackageDetailView({
  Datas e Saídas Disponíveis
  </h4>
  </div>
- <span className="text-[11px] font-mono text-muted-foreground border border-border/60 px-2 py-0.5 rounded-full">
+ <span className="text-xs font-mono text-muted-foreground border border-border/60 px-2 py-1 rounded-full">
  {departureOptions.length} opções confirmadas
  </span>
  </div>
@@ -1148,41 +1148,41 @@ export function TravelPackageDetailView({
  key={opt.id || i}
  onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
  className={cn(
- "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border gap-2 transition-all cursor-pointer text-left",
+ "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border gap-2 transition-colors cursor-pointer text-left",
  isSelected
  ? "border-primary ring-2 ring-primary/25 bg-primary/5"
  : "bg-muted/20 border-border/50 hover:border-primary/40 hover:bg-muted/30"
  )}
  >
- <div className="flex items-start gap-2.5">
- <Calendar className="size-4 text-primary shrink-0 mt-0.5" />
+ <div className="flex items-start gap-2">
+ <Calendar className="size-4 text-primary shrink-0 mt-1" />
  <div>
  <div className="flex items-center gap-2 flex-wrap">
  <p className="text-xs font-bold text-foreground">
  {opt.label || `Opção de Saída ${i + 1}`}
  </p>
  {isSelected && (
- <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
- ✓ Selecionada
+ <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
+ Selecionada
  </span>
  )}
- <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", cfg.color)}>
+ <span className={cn("text-xs font-bold px-2 py-1 rounded-full border", cfg.color)}>
  {cfg.icon} {cfg.label}
  </span>
  </div>
- <p className="text-[11px] text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  {depDate}{depDate && retDate && " — "}{retDate}
  {opt.departure_time && <span className="font-mono ml-1 font-semibold text-foreground">• Saída: {opt.departure_time}</span>}
  </p>
  {opt.notes && (
- <p className="text-[10px] text-muted-foreground italic mt-0.5">{opt.notes}</p>
+ <p className="text-xs text-muted-foreground italic mt-1">{opt.notes}</p>
  )}
  </div>
  </div>
 
  <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/30">
  {opt.available_seats !== undefined && opt.available_seats > 0 && (
- <span className="text-[11px] font-semibold text-muted-foreground">
+ <span className="text-xs font-semibold text-muted-foreground">
  {opt.available_seats} vagas restantes
  </span>
  )}
@@ -1200,7 +1200,7 @@ export function TravelPackageDetailView({
  )}
 
  {/* Mapa Interativo ou Localização Oficial */}
- <div className="relative w-full rounded-2xl overflow-hidden border border-border/60 shadow-xs">
+ <div className="relative w-full rounded-lg overflow-hidden border border-border/60 shadow-xs">
  {(destination.lat && destination.lng) || (resort.lat && resort.lng) ? (
  <div className="h-56 sm:h-64 w-full">
  <MapLibreCanvas
@@ -1212,9 +1212,9 @@ export function TravelPackageDetailView({
  />
  </div>
  ) : (
- <div className="p-6 bg-muted/10 flex flex-col items-center justify-center text-center space-y-1.5 border border-border/50 rounded-2xl">
+ <div className="p-6 bg-muted/10 flex flex-col items-center justify-center text-center space-y-2 border border-border/50 rounded-lg">
  <h4 className="text-xs font-bold text-foreground">{destination.name || productTitle}</h4>
- <p className="text-[11px] text-muted-foreground max-w-sm">
+ <p className="text-xs text-muted-foreground max-w-sm">
  {resort.location || destination.region || "Localização sob consulta com a agência parceira."}
  </p>
  </div>
@@ -1228,24 +1228,24 @@ export function TravelPackageDetailView({
  <footer className={cn("fixed bottom-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/80 p-3 sm:p-4 shadow-lg pb-safe", isCompact ? "left-0 right-0" : "left-1/2 -translate-x-1/2 w-full max-w-4xl rounded-t-2xl border-x")}>
  <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
  <div className="flex flex-col">
- <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+ <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
  {resort.guests_text ? `Valor por pacote (${resort.guests_text})` : "Resumo de Valor"}
  </span>
  {totalCents > 0 ? (
  maxInstallments > 0 ? (
  <>
- <div className="flex items-baseline gap-1.5">
+ <div className="flex items-baseline gap-2">
  <span className="text-xs font-semibold text-muted-foreground">{maxInstallments}x</span>
  <span className="text-base sm:text-lg font-bold text-foreground tracking-tight">
  {formattedInstallment}
  </span>
  {feeFreeInstallments >= maxInstallments ? (
- <span className="text-[10px] font-medium text-emerald-600">sem juros</span>
+ <span className="text-xs font-medium text-emerald-600">sem juros</span>
  ) : (
- <span className="text-[10px] font-medium text-muted-foreground">({feeFreeInstallments}x sem juros)</span>
+ <span className="text-xs font-medium text-muted-foreground">({feeFreeInstallments}x sem juros)</span>
  )}
  </div>
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  {pixDiscountPercent > 0 ? (
  <>ou <strong className="text-foreground">{formattedPixTotal}</strong> no PIX ({pixDiscountPercent}% off)</>
  ) : (
@@ -1255,25 +1255,25 @@ export function TravelPackageDetailView({
  </>
  ) : (
  <>
- <div className="flex items-baseline gap-1.5">
+ <div className="flex items-baseline gap-2">
  <span className="text-base sm:text-lg font-bold text-foreground tracking-tight">
  {formattedTotal}
  </span>
- <span className="text-[10px] font-medium text-muted-foreground">à vista</span>
+ <span className="text-xs font-medium text-muted-foreground">à vista</span>
  </div>
  {pixDiscountPercent > 0 && (
- <span className="text-[10px] text-emerald-600 font-medium">
+ <span className="text-xs text-emerald-600 font-medium">
  ou {formattedPixTotal} no PIX ({pixDiscountPercent}% off)
  </span>
  )}
  </>
  )
  ) : (
- <div className="flex items-baseline gap-1.5">
+ <div className="flex items-baseline gap-2">
  <span className="text-base sm:text-lg font-bold text-foreground tracking-tight">
  Sob Consulta
  </span>
- <span className="text-[10px] text-muted-foreground">(Consulte disponibilidade)</span>
+ <span className="text-xs text-muted-foreground">(Consulte disponibilidade)</span>
  </div>
  )}
  </div>

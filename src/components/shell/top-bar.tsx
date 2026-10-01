@@ -60,7 +60,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
           <button
             type="button"
             onClick={() => setBetaModalOpen(true)}
-            title="Plataforma em Versão Beta — Saiba mais"
+            title="Versão Beta"
             className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border/50 bg-muted/20 hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
           >
             BETA

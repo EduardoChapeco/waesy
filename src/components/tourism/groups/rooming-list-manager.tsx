@@ -177,7 +177,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  size="sm"
  onClick={handleCopyReceptionSummary}
  className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
- title="Copiar lista formatada para enviar à recepção do hotel via WhatsApp"
+ title="Copiar lista para WhatsApp"
  >
  <Copy className="size-3.5 text-muted-foreground" />
  <span className="hidden sm:inline">Copiar Recepção</span>
@@ -188,7 +188,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  size="sm"
  onClick={handleExportCSV}
  className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
- title="Exportar planilha CSV / Excel para o hotel"
+ title="Exportar planilha CSV"
  >
  <FileSpreadsheet className="size-3.5 text-emerald-600" />
  <span className="hidden sm:inline">Exportar CSV</span>
@@ -200,7 +200,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  disabled={isExportingPdf}
  onClick={handleExportPDF}
  className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
- title="Exportar documento PDF formatado para a recepção"
+ title="Exportar documento PDF"
  >
  <Download className="size-3.5 text-blue-600" />
  <span className="hidden sm:inline">{isExportingPdf ? "Gerando..." : "Exportar PDF"}</span>

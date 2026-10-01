@@ -242,7 +242,7 @@ function WorkspaceTripDetailPage() {
   if (!aggregate || !aggregate.trip) {
     return (
       <div className="py-20 text-center space-y-4">
-        <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
           <Compass className="size-6" />
         </div>
         <div className="space-y-1">
@@ -251,7 +251,7 @@ function WorkspaceTripDetailPage() {
             A reserva solicitada não existe ou ainda não foi confirmada.
           </p>
         </div>
-        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold">
+        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold">
           <Link to="/workspace/turismo/viagens">Voltar para Viagens e Reservas</Link>
         </Button>
       </div>
@@ -338,7 +338,7 @@ function WorkspaceTripDetailPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. CABEÇALHO DA VIAGEM ── */}
-      <div className="flex flex-col gap-4 p-4 sm:p-5 rounded-2xl bg-card border border-border/80">
+      <div className="flex flex-col gap-4 p-4 sm:p-5 rounded-lg bg-card border border-border/80">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <NativeBackButton fallbackHref="/workspace/turismo/viagens" />
@@ -368,7 +368,7 @@ function WorkspaceTripDetailPage() {
               type="button"
               variant="outline"
               onClick={() => setIsImportVoucherOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 cursor-pointer"
             >
               <FileText className="size-4 sm:size-3.5" />
               <span>Importar da Operadora (OCR)</span>
@@ -379,7 +379,7 @@ function WorkspaceTripDetailPage() {
                 type="button"
                 variant="outline"
                 onClick={handleCopyVoucherUrl}
-                className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
+                className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
               >
                 {isCopied ? <Check className="size-4 sm:size-3.5 text-emerald-600" /> : <Copy className="size-4 sm:size-3.5" />}
                 <span>Copiar Voucher</span>
@@ -387,7 +387,7 @@ function WorkspaceTripDetailPage() {
             )}
 
             {voucherPublicUrl && (
-              <Button asChild variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer">
+              <Button asChild variant="outline" className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer">
                 <a href={voucherPublicUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="size-4 sm:size-3.5" />
                   <span>Abrir Voucher</span>
@@ -396,7 +396,7 @@ function WorkspaceTripDetailPage() {
             )}
 
             {contractPublicUrl && (
-              <Button asChild variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer">
+              <Button asChild variant="outline" className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer">
                 <a href={contractPublicUrl} target="_blank" rel="noopener noreferrer">
                   <FileCheck2 className="size-4 sm:size-3.5 text-primary" />
                   <span>Contrato</span>
@@ -404,7 +404,7 @@ function WorkspaceTripDetailPage() {
               </Button>
             )}
 
-            <Button asChild variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer">
+            <Button asChild variant="outline" className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer">
               <Link to="/workspace/turismo/vouchers">
                 <Ticket className="size-4 sm:size-3.5 text-primary" />
                 <span>Vouchers</span>
@@ -431,7 +431,7 @@ function WorkspaceTripDetailPage() {
                 window.open(`https://wa.me/55${rawPhone}?text=${msg}`, "_blank");
                 toast.success("Abrindo WhatsApp com Kit de Viagem...");
               }}
-              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shadow-xs"
+              className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shadow-xs"
             >
               <WhatsappLogo size={16} weight="fill" />
               <span>Disparar Kit WhatsApp</span>
@@ -472,7 +472,7 @@ function WorkspaceTripDetailPage() {
       <div className="flex items-center gap-1 border-b border-border/80 overflow-x-auto pb-px">
         <button
           onClick={() => setActiveTab("overview")}
-          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2 text-xs font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === "overview"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -484,7 +484,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("passengers")}
-          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2 text-xs font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === "passengers"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -496,7 +496,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("locators")}
-          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2 text-xs font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === "locators"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -508,7 +508,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("contract")}
-          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2 text-xs font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === "contract"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -520,7 +520,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("vouchers")}
-          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2 text-xs font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === "vouchers"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -532,7 +532,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("financial")}
-          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={`min-h-11 sm:min-h-11 sm:min-h-9 px-4 py-2 text-xs font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === "financial"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -549,7 +549,7 @@ function WorkspaceTripDetailPage() {
       {activeTab === "overview" && (
         <div className="space-y-4">
           {/* ── CARD 1: CHECKLIST OPERACIONAL DE ATENDIMENTO DA AGÊNCIA [REQ-19] ── */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 space-y-3">
+          <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/80 space-y-3">
             <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/60">
               <div className="flex items-center gap-2">
                 <FileCheck2 className="size-4 text-primary" />
@@ -560,11 +560,11 @@ function WorkspaceTripDetailPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
+              <label className="flex items-start gap-2 p-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
                   defaultChecked={Boolean(trip.client_document)}
-                  className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                  className="mt-1 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                 />
                 <div className="space-y-0.5 min-w-0">
                   <span className="font-bold text-foreground block">1. Validade de Documentos</span>
@@ -574,11 +574,11 @@ function WorkspaceTripDetailPage() {
                 </div>
               </label>
 
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
+              <label className="flex items-start gap-2 p-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
                   defaultChecked={Boolean((trip as any).contract_token)}
-                  className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                  className="mt-1 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                 />
                 <div className="space-y-0.5 min-w-0">
                   <span className="font-bold text-foreground block">2. Contrato Assinado</span>
@@ -588,11 +588,11 @@ function WorkspaceTripDetailPage() {
                 </div>
               </label>
 
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
+              <label className="flex items-start gap-2 p-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
                   defaultChecked={Boolean(mainVoucher)}
-                  className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                  className="mt-1 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                 />
                 <div className="space-y-0.5 min-w-0">
                   <span className="font-bold text-foreground block">3. Vouchers e Apólices Emitidos</span>
@@ -602,11 +602,11 @@ function WorkspaceTripDetailPage() {
                 </div>
               </label>
 
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
+              <label className="flex items-start gap-2 p-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
                   defaultChecked={aggregate.confirmationItems.some((it) => it.item_type === "flight" && it.status === "confirmed")}
-                  className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                  className="mt-1 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                 />
                 <div className="space-y-0.5 min-w-0">
                   <span className="font-bold text-foreground block">4. Check-in e Disparo de Kit</span>
@@ -620,7 +620,7 @@ function WorkspaceTripDetailPage() {
 
           {/* Card de Operadora & Suporte de Emergência */}
           {(trip.operator_name || trip.operator_contacts) && (
-            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-3">
+            <div className="p-4 rounded-lg bg-card border border-border/80 space-y-3">
               <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/60">
                 <div className="flex items-center gap-2">
                   <Building className="size-4 text-primary" />
@@ -637,8 +637,8 @@ function WorkspaceTripDetailPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 {trip.operator_contacts?.emergency_phone && (
-                  <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
-                    <span className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1.5 font-medium">
+                  <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
+                    <span className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-2 font-medium">
                       <Phone className="size-3.5 text-amber-500" /> Plantão de Emergência 24h
                     </span>
                     <p className="font-mono font-bold text-foreground text-sm">
@@ -647,8 +647,8 @@ function WorkspaceTripDetailPage() {
                   </div>
                 )}
                 {trip.operator_contacts?.commercial_phone && (
-                  <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
-                    <span className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1.5 font-medium">
+                  <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
+                    <span className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-2 font-medium">
                       <Phone className="size-3.5 text-primary" /> Suporte Comercial
                     </span>
                     <p className="font-mono font-bold text-foreground text-sm">
@@ -657,8 +657,8 @@ function WorkspaceTripDetailPage() {
                   </div>
                 )}
                 {trip.operator_contacts?.support_email && (
-                  <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
-                    <span className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1.5 font-medium">
+                  <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
+                    <span className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-2 font-medium">
                       <Mail className="size-3.5 text-muted-foreground" /> Desk Operacional
                     </span>
                     <p className="font-mono text-foreground text-xs truncate">
@@ -672,7 +672,7 @@ function WorkspaceTripDetailPage() {
 
           {/* Card de Regras Tarifárias & Cancelamento */}
           {trip.tariff_rules && Object.keys(trip.tariff_rules).length > 0 && (
-            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-3">
+            <div className="p-4 rounded-lg bg-card border border-border/80 space-y-3">
               <div className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <ShieldAlert className="size-4 text-amber-500" />
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -682,7 +682,7 @@ function WorkspaceTripDetailPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {(trip.tariff_rules.cancellation_deadline || trip.tariff_rules.cancel_deadline) && (
-                  <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-1">
+                  <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-1">
                     <span className="text-xs text-muted-foreground/75 font-bold text-amber-700 dark:text-amber-400 block">
                       Prazo Limite de Cancelamento
                     </span>
@@ -693,7 +693,7 @@ function WorkspaceTripDetailPage() {
                 )}
 
                 {(trip.tariff_rules.cancellation_penalty || trip.tariff_rules.cancel_penalty_text) && (
-                  <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
+                  <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
                     <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground block">
                       Penalidades e Multas de Cancelamento
                     </span>
@@ -704,8 +704,8 @@ function WorkspaceTripDetailPage() {
                 )}
 
                 {(trip.tariff_rules.baggage_rules || trip.tariff_rules.baggage_allowance_summary) && (
-                  <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1 sm:col-span-2">
-                    <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground flex items-center gap-1.5">
+                  <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1 sm:col-span-2">
+                    <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground flex items-center gap-2">
                       <Luggage className="size-3.5 text-primary" /> Franquia de Bagagem Oficial
                     </span>
                     <p className="text-foreground text-xs">
@@ -719,7 +719,7 @@ function WorkspaceTripDetailPage() {
 
           {/* Card de Condições Financeiras & Boletos */}
           {(trip.financial_details || trip.payment_method) && (
-            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-3">
+            <div className="p-4 rounded-lg bg-card border border-border/80 space-y-3">
               <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/60">
                 <div className="flex items-center gap-2">
                   <DollarSign className="size-4 text-emerald-600" />
@@ -733,21 +733,21 @@ function WorkspaceTripDetailPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
+                <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
                   <span className="text-xs text-muted-foreground/75 text-muted-foreground block">Forma de Pagamento</span>
                   <p className="font-bold text-foreground">
                     {trip.payment_method || trip.financial_details?.payment_method || "A Definir"}
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
+                <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
                   <span className="text-xs text-muted-foreground/75 text-muted-foreground block">Condição de Parcelamento</span>
                   <p className="font-bold text-foreground">
                     {trip.installments_count || trip.financial_details?.installments_count || 1}x sem juros
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-1">
+                <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
                   <span className="text-xs text-muted-foreground/75 text-muted-foreground block">Status Financeiro</span>
                   <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30 font-bold uppercase">
                     Confirmado
@@ -758,10 +758,10 @@ function WorkspaceTripDetailPage() {
               {/* Boletos / Linhas digitáveis se houver */}
               {trip.financial_details?.installments && trip.financial_details.installments.length > 0 && (
                 <div className="space-y-2 pt-2 border-t border-border/60">
-                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-2">
                     <Barcode className="size-4 text-primary" /> Parcelas / Boletos Bancários
                   </span>
-                  <div className="divide-y divide-border/60 rounded-xl border border-border/60 bg-muted/10">
+                  <div className="divide-y divide-border/60 rounded-lg border border-border/60 bg-muted/10">
                     {trip.financial_details.installments.map((inst: any, idx: number) => (
                       <div key={idx} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                         <div className="space-y-0.5">
@@ -786,7 +786,7 @@ function WorkspaceTripDetailPage() {
                               navigator.clipboard.writeText(inst.barcode);
                               toast.success("Código do boleto copiado!");
                             }}
-                            className="rounded-xl text-xs font-bold gap-1.5 h-8 self-start sm:self-auto"
+                            className="rounded-lg text-xs font-bold gap-2 h-8 self-start sm:self-auto"
                           >
                             <Copy className="size-3" />
                             <span>Copiar Código</span>
@@ -802,7 +802,7 @@ function WorkspaceTripDetailPage() {
 
           {/* Voos */}
           {trip.flights && trip.flights.length > 0 && (
-            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-3">
+            <div className="p-4 rounded-lg bg-card border border-border/80 space-y-3">
               <div className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <Plane className="size-4 text-primary" />
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -814,7 +814,7 @@ function WorkspaceTripDetailPage() {
                 {trip.flights.map((f: any, idx: number) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-xl border border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                    className="p-3 rounded-lg border border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                   >
                     <div>
                       <span className="font-bold text-foreground">
@@ -846,7 +846,7 @@ function WorkspaceTripDetailPage() {
 
           {/* Hospedagens */}
           {trip.hotels && trip.hotels.length > 0 && (
-            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-3">
+            <div className="p-4 rounded-lg bg-card border border-border/80 space-y-3">
               <div className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <Building2 className="size-4 text-primary" />
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -858,18 +858,18 @@ function WorkspaceTripDetailPage() {
                 {trip.hotels.map((h: any, idx: number) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-2 text-xs"
+                    className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2 text-xs"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="font-bold text-foreground">{h.name}</span>
                       {h.confirmation && (
-                        <span className="font-mono text-xs bg-card px-2 py-0.5 rounded border border-border">
+                        <span className="font-mono text-xs bg-card px-2 py-1 rounded border border-border">
                           Loc: {h.confirmation}
                         </span>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1.5 text-xs text-muted-foreground/75 text-muted-foreground">
+                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground/75 text-muted-foreground">
                       <span>Regime: <strong className="text-foreground">{h.meal_plan || "Café"}</strong></span>
                       <span>Quarto: <strong className="text-foreground">{h.room_type || "Standard"}</strong></span>
                       <span>Check-in: <strong className="text-foreground">{h.checkin || "—"}</strong></span>
@@ -883,7 +883,7 @@ function WorkspaceTripDetailPage() {
 
           {/* Inclusões & Observações */}
           {(trip.includes?.length > 0 || trip.notes) && (
-            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-3 text-xs">
+            <div className="p-4 rounded-lg bg-card border border-border/80 space-y-3 text-xs">
               <h3 className="font-bold text-foreground uppercase tracking-wider text-xs">
                 Inclusões e Orientações ao Viajante
               </h3>
@@ -895,7 +895,7 @@ function WorkspaceTripDetailPage() {
                 </ul>
               )}
               {trip.notes && (
-                <p className="p-3 rounded-xl bg-muted/30 border border-border/60 text-muted-foreground leading-relaxed">
+                <p className="p-3 rounded-lg bg-muted/30 border border-border/60 text-muted-foreground leading-relaxed">
                   {trip.notes}
                 </p>
               )}
@@ -906,7 +906,7 @@ function WorkspaceTripDetailPage() {
 
       {/* ABA 2: PASSAGEIROS & ROOMING LIST (Com Acompanhamento de Validade de Documentos) */}
       {activeTab === "passengers" && (
-        <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-4">
+        <div className="p-4 rounded-lg bg-card border border-border/80 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
             <div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
@@ -926,7 +926,7 @@ function WorkspaceTripDetailPage() {
                   onClick={() => {
                     toast.success(`Vouchers emitidos e atualizados para todos os ${aggregate.passengers.length} viajantes! Disponíveis na Carteira Digital.`);
                   }}
-                  className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-3.5 cursor-pointer border-primary/30 text-primary hover:bg-primary/5"
+                  className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 cursor-pointer border-primary/30 text-primary hover:bg-primary/5"
                 >
                   <Ticket className="size-3.5" />
                   <span>Emitir Vouchers para Todos ({aggregate.passengers.length})</span>
@@ -936,7 +936,7 @@ function WorkspaceTripDetailPage() {
               <Button
                 type="button"
                 onClick={openNewPassenger}
-                className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 cursor-pointer shadow-xs"
+                className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 cursor-pointer shadow-xs"
               >
                 <Plus className="size-4 sm:size-3.5" />
                 <span>Novo Passageiro</span>
@@ -955,7 +955,7 @@ function WorkspaceTripDetailPage() {
                 type="button"
                 variant="outline"
                 onClick={openNewPassenger}
-                className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer"
+                className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold cursor-pointer"
               >
                 Cadastrar Passageiro Titular
               </Button>
@@ -978,7 +978,7 @@ function WorkspaceTripDetailPage() {
                 return (
                   <div
                     key={pax.id}
-                    className="p-4 rounded-xl border border-border/60 bg-muted/15 space-y-3 text-xs flex flex-col justify-between"
+                    className="p-4 rounded-lg border border-border/60 bg-muted/15 space-y-3 text-xs flex flex-col justify-between"
                   >
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-2">
@@ -1003,7 +1003,7 @@ function WorkspaceTripDetailPage() {
                             size="icon"
                             variant="ghost"
                             onClick={() => openEditPassenger(pax)}
-                            className="size-10 sm:size-7 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+                            className="size-10 sm:size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
                           >
                             <Edit2 className="size-4 sm:size-3.5" />
                           </Button>
@@ -1017,7 +1017,7 @@ function WorkspaceTripDetailPage() {
                                 deletePassengerMut.mutate(pax.id);
                               }
                             }}
-                            className="size-10 sm:size-7 p-0 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer"
+                            className="size-10 sm:size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
                           >
                             <Trash2 className="size-4 sm:size-3.5" />
                           </Button>
@@ -1025,7 +1025,7 @@ function WorkspaceTripDetailPage() {
                       </div>
 
                       {/* Caixa de Documentos & Validade */}
-                      <div className="p-2.5 rounded-lg bg-card border border-border/70 space-y-2">
+                      <div className="p-2 rounded-lg bg-card border border-border/70 space-y-2">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs text-muted-foreground/75 text-muted-foreground">
                             {docTypeLabel}: <strong className="font-mono text-foreground">{pax.document || "Não cadastrado"}</strong>
@@ -1078,7 +1078,7 @@ function WorkspaceTripDetailPage() {
 
       {/* ABA 3: LOCALIZADORES PNR */}
       {activeTab === "locators" && (
-        <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-4">
+        <div className="p-4 rounded-lg bg-card border border-border/80 space-y-4">
           <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/60">
             <div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1092,7 +1092,7 @@ function WorkspaceTripDetailPage() {
             <Button
               type="button"
               onClick={() => setIsAddLocatorOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 cursor-pointer shadow-xs"
+              className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 cursor-pointer shadow-xs"
             >
               <Plus className="size-4 sm:size-3.5" />
               <span>Novo Localizador</span>
@@ -1107,7 +1107,7 @@ function WorkspaceTripDetailPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsAddLocatorOpen(true)}
-                className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer"
+                className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold cursor-pointer"
               >
                 Cadastrar Primeiro Localizador
               </Button>
@@ -1130,7 +1130,7 @@ function WorkspaceTripDetailPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="bg-muted/40 px-3 py-1.5 rounded-xl border border-border/60 font-mono font-bold text-sm text-foreground">
+                    <div className="bg-muted/40 px-3 py-2 rounded-lg border border-border/60 font-mono font-bold text-sm text-foreground">
                       {item.locator_code}
                     </div>
                     <Button
@@ -1141,7 +1141,7 @@ function WorkspaceTripDetailPage() {
                         navigator.clipboard.writeText(item.locator_code);
                         toast.success(`Localizador ${item.locator_code} copiado!`);
                       }}
-                      className="size-10 sm:size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="size-10 sm:size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       <Copy className="size-4 sm:size-3.5" />
                     </Button>
@@ -1155,7 +1155,7 @@ function WorkspaceTripDetailPage() {
 
       {/* ABA 4: CONTRATO DIGITAL */}
       {activeTab === "contract" && (
-        <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-4">
+        <div className="p-4 rounded-lg bg-card border border-border/80 space-y-4">
           <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/60">
             <div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -1167,7 +1167,7 @@ function WorkspaceTripDetailPage() {
             </div>
 
             {contractPublicUrl && (
-              <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-8.5">
+              <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 h-8.5">
                 <a href={contractPublicUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="size-3.5" />
                   <span>Página de Assinatura</span>
@@ -1178,7 +1178,7 @@ function WorkspaceTripDetailPage() {
 
           {aggregate.contract ? (
             <div className="space-y-3 text-xs">
-              <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between">
+              <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between">
                 <div>
                   <h4 className="font-bold text-foreground">{aggregate.contract.contract_title}</h4>
                   <span className="text-xs text-muted-foreground/75 text-muted-foreground">
@@ -1197,13 +1197,13 @@ function WorkspaceTripDetailPage() {
                 </Badge>
               </div>
 
-              <div className="p-3.5 rounded-xl border border-border/60 bg-card space-y-2">
+              <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
                 <span className="font-bold text-foreground block">Cláusulas e Condições Gerais:</span>
                 <p className="text-muted-foreground leading-relaxed text-xs text-muted-foreground/75">
                   {aggregate.contract.package_summary}
                 </p>
                 <div className="pt-2 flex items-center gap-2">
-                  <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold">
+                  <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold">
                     <Link to="/workspace/turismo/contratos">Abrir Central de Contratos</Link>
                   </Button>
                 </div>
@@ -1213,7 +1213,7 @@ function WorkspaceTripDetailPage() {
             <div className="py-8 text-center text-xs text-muted-foreground space-y-2">
               <FileCheck2 className="size-8 mx-auto text-muted-foreground/50" />
               <p>Nenhum contrato digital foi gerado automaticamente.</p>
-              <Button asChild size="sm" className="rounded-xl text-xs font-bold">
+              <Button asChild size="sm" className="rounded-lg text-xs font-bold">
                 <Link to="/workspace/turismo/contratos">Emitir Novo Contrato</Link>
               </Button>
             </div>
@@ -1224,7 +1224,7 @@ function WorkspaceTripDetailPage() {
       {/* ABA 5: CENTRAL DE VOUCHERS */}
       {activeTab === "vouchers" && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/80">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/80">
             <div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Voucher Oficial de Embarque (Padrão A4)
@@ -1239,7 +1239,7 @@ function WorkspaceTripDetailPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsImportVoucherOpen(true)}
-                className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8.5 px-4 sm:px-3 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 cursor-pointer"
+                className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-8.5 px-4 sm:px-3 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 cursor-pointer"
               >
                 <FileText className="size-4 sm:size-3.5" />
                 <span>Importar Voucher (OCR)</span>
@@ -1250,7 +1250,7 @@ function WorkspaceTripDetailPage() {
                 variant="outline"
                 disabled={isExportingPdf}
                 onClick={handleExportPdf}
-                className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8.5 px-4 sm:px-3 cursor-pointer"
+                className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-8.5 px-4 sm:px-3 cursor-pointer"
               >
                 {isExportingPdf ? <Loader2 className="size-4 sm:size-3.5 animate-spin" /> : <Download className="size-4 sm:size-3.5" />}
                 <span>Baixar PDF</span>
@@ -1259,7 +1259,7 @@ function WorkspaceTripDetailPage() {
               <Button
                 type="button"
                 onClick={handlePrint}
-                className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8.5 px-4 sm:px-3 bg-foreground text-background hover:bg-foreground/90 cursor-pointer shadow-xs"
+                className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-8.5 px-4 sm:px-3 bg-foreground text-background hover:bg-foreground/90 cursor-pointer shadow-xs"
               >
                 <Printer className="size-4 sm:size-3.5" />
                 <span>Imprimir Voucher</span>
@@ -1285,7 +1285,7 @@ function WorkspaceTripDetailPage() {
         <div className="space-y-6">
           {/* 1. KPIs FINANCEIROS & MARGEM DA AGÊNCIA */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+            <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
               <span className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground block">Venda Bruta (Cliente)</span>
               <span className="text-base sm:text-lg font-bold text-foreground">
                 {formatMoney(financialGrossCents)}
@@ -1293,7 +1293,7 @@ function WorkspaceTripDetailPage() {
               <span className="text-xs text-muted-foreground block">Valor final contratado</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+            <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
               <span className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground block">Custo Operadora B2B</span>
               <span className="text-base sm:text-lg font-bold text-muted-foreground">
                 {formatMoney(financialOperatorNetCents)}
@@ -1301,7 +1301,7 @@ function WorkspaceTripDetailPage() {
               <span className="text-xs text-muted-foreground block">{financialOperatorName || "Operadora"} líquida</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-1">
+            <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-1">
               <span className="text-xs text-muted-foreground/75 font-semibold text-emerald-800 dark:text-emerald-300 block">Lucro Bruto Agência</span>
               <span className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400">
                 {formatMoney(Math.max(0, financialGrossCents - financialOperatorNetCents))}
@@ -1313,7 +1313,7 @@ function WorkspaceTripDetailPage() {
               </span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 space-y-1">
+            <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 space-y-1">
               <span className="text-xs text-muted-foreground/75 font-semibold text-primary block">Comissão do Consultor</span>
               <span className="text-base sm:text-lg font-bold text-primary">
                 {formatMoney(Math.round(Math.max(0, financialGrossCents - financialOperatorNetCents) * (financialAgentPercent / 100)))}
@@ -1323,45 +1323,45 @@ function WorkspaceTripDetailPage() {
           </div>
 
           {/* 2. CONFIGURAÇÃO DE VALORES E OPERADORA */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 space-y-4">
+          <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/80 space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
               Composição da Venda e Comissão
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Valor Total Bruto (R$)</Label>
                 <Input
                   type="number"
                   step="0.01"
                   value={(financialGrossCents / 100).toFixed(2)}
                   onChange={(e) => setFinancialGrossCents(Math.round(parseFloat(e.target.value || "0") * 100))}
-                  className="h-9 text-xs rounded-xl font-mono"
+                  className="h-9 text-xs rounded-lg font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Custo Líquido Operador (R$)</Label>
                 <Input
                   type="number"
                   step="0.01"
                   value={(financialOperatorNetCents / 100).toFixed(2)}
                   onChange={(e) => setFinancialOperatorNetCents(Math.round(parseFloat(e.target.value || "0") * 100))}
-                  className="h-9 text-xs rounded-xl font-mono"
+                  className="h-9 text-xs rounded-lg font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Operadora / Consolidadora</Label>
                 <Input
                   value={financialOperatorName}
                   onChange={(e) => setFinancialOperatorName(e.target.value)}
                   placeholder="Ex: CVC, Trend, Orinter, Visual"
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">% Comissão do Consultor</Label>
                 <Input
                   type="number"
@@ -1369,16 +1369,16 @@ function WorkspaceTripDetailPage() {
                   max="100"
                   value={financialAgentPercent}
                   onChange={(e) => setFinancialAgentPercent(Number(e.target.value || 0))}
-                  className="h-9 text-xs rounded-xl font-mono"
+                  className="h-9 text-xs rounded-lg font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/60">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Forma de Pagamento Contratada</Label>
                 <Select value={financialPaymentMethod} onValueChange={setFinancialPaymentMethod}>
-                  <SelectTrigger className="h-9 text-xs rounded-xl">
+                  <SelectTrigger className="h-9 text-xs rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1394,17 +1394,17 @@ function WorkspaceTripDetailPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Link da Financiadora Externa (Opcional)</Label>
                 <div className="flex gap-2">
                   <Input
                     value={financialExternalUrl}
                     onChange={(e) => setFinancialExternalUrl(e.target.value)}
                     placeholder="https://financiadora.com.br/proposta/..."
-                    className="h-9 text-xs rounded-xl flex-1 font-mono"
+                    className="h-9 text-xs rounded-lg flex-1 font-mono"
                   />
                   {financialExternalUrl && (
-                    <Button asChild size="sm" variant="outline" className="h-9 rounded-xl px-2.5 shrink-0">
+                    <Button asChild size="sm" variant="outline" className="h-9 rounded-lg px-2.5 shrink-0">
                       <a href={financialExternalUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="size-3.5" />
                       </a>
@@ -1416,7 +1416,7 @@ function WorkspaceTripDetailPage() {
           </div>
 
           {/* 3. GESTÃO DE BOLETOS 3-EM-1 (OCR POR IA, MANUAL E EXTERNO) */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 space-y-4">
+          <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/80 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
@@ -1479,7 +1479,7 @@ function WorkspaceTripDetailPage() {
                   variant="outline"
                   disabled={isOcrBoletoLoading}
                   onClick={() => document.getElementById("boleto-ocr-file")?.click()}
-                  className="rounded-xl text-xs font-bold gap-1.5 h-9 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer"
+                  className="rounded-lg text-xs font-bold gap-2 h-9 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer"
                 >
                   {isOcrBoletoLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Barcode className="size-3.5" />}
                   <span>{isOcrBoletoLoading ? "Lendo Carnê..." : " Importar Carnê (OCR IA)"}</span>
@@ -1499,7 +1499,7 @@ function WorkspaceTripDetailPage() {
                     );
                     setIsAddInstallmentOpen(true);
                   }}
-                  className="rounded-xl text-xs font-bold gap-1.5 h-9 cursor-pointer"
+                  className="rounded-lg text-xs font-bold gap-2 h-9 cursor-pointer"
                 >
                   <Plus className="size-3.5" />
                   <span>Adicionar Parcela</span>
@@ -1509,7 +1509,7 @@ function WorkspaceTripDetailPage() {
 
             {/* TABELA DE PARCELAS DO CARNÊ */}
             {financialInstallments.length === 0 ? (
-              <div className="py-8 text-center space-y-2 border border-dashed border-border/70 rounded-xl">
+              <div className="py-8 text-center space-y-2 border border-dashed border-border/70 rounded-lg">
                 <Barcode className="size-8 text-muted-foreground mx-auto" />
                 <p className="text-xs font-bold text-foreground">Nenhum boleto registrado nesta viagem</p>
                 <p className="text-xs text-muted-foreground/75 text-muted-foreground max-w-sm mx-auto">
@@ -1517,7 +1517,7 @@ function WorkspaceTripDetailPage() {
                 </p>
               </div>
             ) : (
-              <div className="border border-border/70 rounded-xl overflow-hidden divide-y divide-border/60">
+              <div className="border border-border/70 rounded-lg overflow-hidden divide-y divide-border/60">
                 {financialInstallments.map((inst, idx) => {
                   const isPaid = inst.status === "paid";
                   return (
@@ -1550,7 +1550,7 @@ function WorkspaceTripDetailPage() {
                             </span>
                             <Badge
                               variant={isPaid ? "default" : "secondary"}
-                              className={`text-xs px-1.5 py-0 font-bold ${
+                              className={`text-xs px-2 py-0 font-bold ${
                                 isPaid ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
                               }`}
                             >
@@ -1561,7 +1561,7 @@ function WorkspaceTripDetailPage() {
                             )}
                           </div>
 
-                          <span className="text-xs text-muted-foreground/75 text-muted-foreground block mt-0.5">
+                          <span className="text-xs text-muted-foreground/75 text-muted-foreground block mt-1">
                             Vencimento: <strong className="text-foreground">{inst.due_date || "Não informada"}</strong>
                           </span>
 
@@ -1643,7 +1643,7 @@ function WorkspaceTripDetailPage() {
                     setIsSavingFinancial(false);
                   }
                 }}
-                className="rounded-xl text-xs font-bold gap-1.5 h-10 px-5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer"
+                className="rounded-lg text-xs font-bold gap-2 h-10 px-5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer"
               >
                 {isSavingFinancial ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
                 <span>{isSavingFinancial ? "Salvando..." : "Salvar Alterações Financeiras"}</span>
@@ -1663,65 +1663,65 @@ function WorkspaceTripDetailPage() {
 
               <div className="space-y-3 text-xs">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold">Número da Parcela</Label>
                     <Input
                       type="number"
                       value={newInstNumber}
                       onChange={(e) => setNewInstNumber(parseInt(e.target.value || "1"))}
-                      className="h-9 text-xs rounded-xl font-mono"
+                      className="h-9 text-xs rounded-lg font-mono"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold">Total de Parcelas</Label>
                     <Input
                       type="number"
                       value={newInstTotal}
                       onChange={(e) => setNewInstTotal(parseInt(e.target.value || "10"))}
-                      className="h-9 text-xs rounded-xl font-mono"
+                      className="h-9 text-xs rounded-lg font-mono"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold">Vencimento</Label>
                     <Input
                       type="date"
                       value={newInstDueDate}
                       onChange={(e) => setNewInstDueDate(e.target.value)}
-                      className="h-9 text-xs rounded-xl font-mono"
+                      className="h-9 text-xs rounded-lg font-mono"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold">Valor da Parcela (R$)</Label>
                     <Input
                       type="number"
                       step="0.01"
                       value={(newInstAmountCents / 100).toFixed(2)}
                       onChange={(e) => setNewInstAmountCents(Math.round(parseFloat(e.target.value || "0") * 100))}
-                      className="h-9 text-xs rounded-xl font-mono"
+                      className="h-9 text-xs rounded-lg font-mono"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Banco Emissor</Label>
                   <Input
                     value={newInstBankName}
                     onChange={(e) => setNewInstBankName(e.target.value)}
                     placeholder="Ex: Banco emissor"
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-lg"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Linha Digitável (47-48 dígitos)</Label>
                   <Input
                     value={newInstDigitableLine}
                     onChange={(e) => setNewInstDigitableLine(e.target.value.replace(/\D/g, ""))}
                     placeholder="Cole os números da linha digitável"
-                    className="h-9 text-xs rounded-xl font-mono"
+                    className="h-9 text-xs rounded-lg font-mono"
                   />
                 </div>
               </div>
@@ -1732,7 +1732,7 @@ function WorkspaceTripDetailPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsAddInstallmentOpen(false)}
-                  className="rounded-xl h-9 text-xs"
+                  className="rounded-lg h-9 text-xs"
                 >
                   Cancelar
                 </Button>
@@ -1760,7 +1760,7 @@ function WorkspaceTripDetailPage() {
                     setIsAddInstallmentOpen(false);
                     toast.success("Parcela adicionada!");
                   }}
-                  className="rounded-xl h-9 text-xs font-bold"
+                  className="rounded-lg h-9 text-xs font-bold"
                 >
                   Adicionar
                 </Button>
@@ -1787,24 +1787,24 @@ function WorkspaceTripDetailPage() {
           </SheetHeader>
 
           <div className="py-4 space-y-4 text-xs">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Nome Completo (como no Documento) *</Label>
               <Input
                 value={passengerForm.fullName}
                 onChange={(e) => setPassengerForm((p) => ({ ...p, fullName: e.target.value }))}
                 placeholder="Ex: Carlos Eduardo Silva"
-                className="h-9 text-xs rounded-xl"
+                className="h-9 text-xs rounded-lg"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Tipo de Documento</Label>
                 <Select
                   value={passengerForm.documentType}
                   onValueChange={(val) => setPassengerForm((p) => ({ ...p, documentType: val }))}
                 >
-                  <SelectTrigger className="h-9 text-xs rounded-xl">
+                  <SelectTrigger className="h-9 text-xs rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1817,80 +1817,80 @@ function WorkspaceTripDetailPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Número do Documento</Label>
                 <Input
                   value={passengerForm.document}
                   onChange={(e) => setPassengerForm((p) => ({ ...p, document: e.target.value.toUpperCase() }))}
                   placeholder="Ex: FL938472 ou 12.345.678-9"
-                  className="h-9 text-xs rounded-xl font-mono"
+                  className="h-9 text-xs rounded-lg font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Validade do Documento *</Label>
                 <Input
                   type="date"
                   value={passengerForm.documentExpiry}
                   onChange={(e) => setPassengerForm((p) => ({ ...p, documentExpiry: e.target.value }))}
-                  className="h-9 text-xs rounded-xl font-mono"
+                  className="h-9 text-xs rounded-lg font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Nacionalidade</Label>
                 <Input
                   value={passengerForm.nationality}
                   onChange={(e) => setPassengerForm((p) => ({ ...p, nationality: e.target.value }))}
                   placeholder="Ex: Brasileira"
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Data de Nascimento</Label>
                 <Input
                   type="date"
                   value={passengerForm.birthDate}
                   onChange={(e) => setPassengerForm((p) => ({ ...p, birthDate: e.target.value }))}
-                  className="h-9 text-xs rounded-xl font-mono"
+                  className="h-9 text-xs rounded-lg font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Assento</Label>
                 <Input
                   value={passengerForm.seatNumber}
                   onChange={(e) => setPassengerForm((p) => ({ ...p, seatNumber: e.target.value.toUpperCase() }))}
                   placeholder="Ex: 14A"
-                  className="h-9 text-xs rounded-xl font-mono uppercase"
+                  className="h-9 text-xs rounded-lg font-mono uppercase"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">WhatsApp / Telefone</Label>
                 <Input
                   value={passengerForm.phone}
                   onChange={(e) => setPassengerForm((p) => ({ ...p, phone: e.target.value }))}
                   placeholder="(00) 00000-0000"
-                  className="h-9 text-xs rounded-xl font-mono"
+                  className="h-9 text-xs rounded-lg font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">E-mail</Label>
                 <Input
                   type="email"
                   value={passengerForm.email}
                   onChange={(e) => setPassengerForm((p) => ({ ...p, email: e.target.value }))}
                   placeholder="cliente@email.com"
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                 />
               </div>
             </div>
@@ -1914,7 +1914,7 @@ function WorkspaceTripDetailPage() {
               type="button"
               variant="outline"
               onClick={() => setIsPassengerSheetOpen(false)}
-              className="h-11 sm:h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
@@ -1922,7 +1922,7 @@ function WorkspaceTripDetailPage() {
               type="button"
               disabled={savePassengerMut.isPending || !passengerForm.fullName}
               onClick={() => savePassengerMut.mutate(passengerForm)}
-              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+              className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
             >
               {savePassengerMut.isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
               <span>Salvar Passageiro</span>
@@ -1949,7 +1949,7 @@ function WorkspaceTripDetailPage() {
 
           <div className="py-4 space-y-4 text-xs">
             <div className="space-y-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Tipo de Serviço *</Label>
                 <Select
                   value={locatorForm.itemType}
@@ -1957,7 +1957,7 @@ function WorkspaceTripDetailPage() {
                     setLocatorForm((prev) => ({ ...prev, itemType: val }))
                   }
                 >
-                  <SelectTrigger className="h-9 text-xs rounded-xl">
+                  <SelectTrigger className="h-9 text-xs rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1973,7 +1973,7 @@ function WorkspaceTripDetailPage() {
               </div>
 
               {(locatorForm.itemType as string) === "hotel" && (
-                <div className="space-y-1.5 p-3 rounded-xl bg-primary/5 border border-primary/20">
+                <div className="space-y-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
                   <Label className="text-xs text-muted-foreground/75 font-bold text-primary flex items-center gap-1">
                     <Compass className="size-3" />
                     <span>Banco de Hotéis e Resorts Renomados (Preset Canônico)</span>
@@ -2005,33 +2005,33 @@ function WorkspaceTripDetailPage() {
                 </div>
               )}
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Nome do Fornecedor / Cia *</Label>
                 <Input
                   value={locatorForm.providerName}
                   onChange={(e) => setLocatorForm((prev) => ({ ...prev, providerName: e.target.value }))}
                   placeholder="Ex: LATAM, Gol, CVC, Hotel Fasano"
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Código Localizador / Reserva *</Label>
                 <Input
                   value={locatorForm.locatorCode}
                   onChange={(e) => setLocatorForm((prev) => ({ ...prev, locatorCode: e.target.value.toUpperCase() }))}
                   placeholder="Ex: AB34XY ou 982341"
-                  className="h-9 text-xs font-mono rounded-xl uppercase tracking-wider"
+                  className="h-9 text-xs font-mono rounded-lg uppercase tracking-wider"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Observações / Detalhes</Label>
                 <Input
                   value={locatorForm.notes}
                   onChange={(e) => setLocatorForm((prev) => ({ ...prev, notes: e.target.value }))}
                   placeholder="Ex: Voo JJ3451 ou Quarto Vista Mar"
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                 />
               </div>
             </div>
@@ -2042,7 +2042,7 @@ function WorkspaceTripDetailPage() {
               type="button"
               variant="outline"
               onClick={() => setIsAddLocatorOpen(false)}
-              className="h-11 sm:h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
@@ -2050,7 +2050,7 @@ function WorkspaceTripDetailPage() {
               type="button"
               disabled={saveLocatorMutation.isPending || !locatorForm.providerName || !locatorForm.locatorCode}
               onClick={() => saveLocatorMutation.mutate(locatorForm)}
-              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+              className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
             >
               {saveLocatorMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
               <span>Salvar Localizador</span>

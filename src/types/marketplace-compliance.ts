@@ -91,7 +91,8 @@ export interface StoreComplianceSummaryDTO {
 
 /**
  * Tipo de Navegação da Vitrine Principal:
- * - 'marketplace': Vitrine Oficial Verificada (Apenas empresas com CNPJ ativo e suporte)
- * - 'classifieds': Classificados Locais (Acesso P2P livre, WhatsApp direto, sem transação forçada)
+ * - 'empresas': Lugares, guia comercial e diretório local
+ * - 'marketplace': Vitrine Oficial de Lojas Verificadas com Workspace (Pro/Max)
+ * - 'classifieds': Classificados e desapegos P2P locais
  */
-export type VitrineEngineMode = "marketplace" | "classifieds";
+export type VitrineEngineMode = "empresas" | "marketplace" | "classifieds";

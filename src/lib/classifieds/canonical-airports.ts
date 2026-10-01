@@ -196,29 +196,29 @@ export interface TransportDetails {
   transfer_return_time?: string;
 }
 
-/** Mapeamento de ícones por transport_type para uso nos displays */
+/** Mapeamento de identificadores de ícones por transport_type */
 export const TRANSPORT_ICONS: Record<string, string> = {
-  airplane: "✈️",
-  bus: "🚌",
-  combo: "🔄",
-  cruise: "🛳️",
-  train: "🚂",
-  car: "🚗",
-  hotel_only: "🏨",
+  airplane: "Plane",
+  bus: "Bus",
+  combo: "RefreshCw",
+  cruise: "Ship",
+  train: "Train",
+  car: "Car",
+  hotel_only: "Hotel",
 };
 
-/** Helper: retorna ícone + label curto do tipo de transporte */
+/** Helper: retorna label curto do tipo de transporte */
 export function getTransportLabel(type: string): string {
   const map: Record<string, string> = {
-    airplane: "✈️ Aéreo",
-    bus: "🚌 Excursão Terrestre",
-    combo: "🔄 Multimodal",
-    cruise: "🛳️ Cruzeiro",
-    train: "🚂 Trem",
-    car: "🚗 Carro Próprio",
-    hotel_only: "🏨 Pacote Local",
+    airplane: "Aéreo",
+    bus: "Excursão Terrestre",
+    combo: "Multimodal",
+    cruise: "Cruzeiro",
+    train: "Trem",
+    car: "Carro Próprio",
+    hotel_only: "Pacote Local",
   };
-  return map[type] || "🧳 Viagem";
+  return map[type] || "Viagem";
 }
 
 /** Helper: checa se o tipo precisa de campos de aeroporto */

@@ -495,6 +495,7 @@ export const getOnboardingStatus = createServerFn({ method: "GET" }).handler(asy
 
 import { z } from "zod";
 import { getSSRClient } from "@/lib/supabase-ssr.server";
+import { resolveUniqueStoreSlug } from "@/lib/slug-utils";
 
 function generateSlug(text: string) {
  return text
@@ -594,7 +595,7 @@ export const provisionBusiness = createServerFn({ method: "POST" })
  }
 
  // 1. Criar Organização
- const orgSlug = generateSlug(data.name) + "-" + Math.floor(1000 + Math.random() * 9000);
+ const orgSlug = await resolveUniqueStoreSlug(db, data.name);
  const { data: org, error: orgError } = await db
  .from("organizations")
  .insert({ name: data.name, slug: orgSlug })
@@ -645,6 +646,7 @@ export const provisionBusiness = createServerFn({ method: "POST" })
  phone: data.phone || null,
  email: data.email || null,
  logo_url: data.logoUrl || null,
+ banner_url: data.bannerUrl || null,
  settings,
  };
 

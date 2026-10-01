@@ -155,7 +155,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
           subtitle: "Ingredientes frescos de produtores locais, receitas autorais e uma carta de vinhos selecionada com carinho.",
           primaryCta: {
             label: "Ver Cardápio & Pedir",
-            href: "/cardapio",
+            href: "#cardapio",
           },
           secondaryCta: {
             label: "Reservar Mesa",

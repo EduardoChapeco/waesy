@@ -1,3 +1,4 @@
+import { resolveUniqueStoreSlug } from "@/lib/slug-utils";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
@@ -1118,5 +1119,150 @@ export const getStoreDashboardSummary = createServerFn({ method: "GET" })
         todayRevenueCents,
         pendingOrdersCount,
       },
+    };
+  });
+
+// ---------------------------------------------------------------------------
+// UPDATE STORE PROFILE (CANONICAL IN-PAGE & DIRECTORY SYNC)
+// ---------------------------------------------------------------------------
+export const UpdateStoreProfileSchema = z.object({
+  storeId: z.string().uuid(),
+  name: z.string().min(2, "Nome da empresa é obrigatório").max(120).optional(),
+  slug: z.string().min(2).max(100).optional(),
+  description: z.string().max(1000).optional().nullable(),
+  category: z.string().optional().nullable(),
+  phone: z.string().max(30).optional().nullable(),
+  whatsapp: z.string().max(30).optional().nullable(),
+  email: z.string().email().optional().nullable().or(z.literal("")),
+  address: z.string().max(250).optional().nullable(),
+  city: z.string().max(100).optional().nullable(),
+  state: z.string().max(2).optional().nullable(),
+  logo_url: z.string().optional().nullable(),
+  banner_url: z.string().optional().nullable(),
+  cover_url: z.string().optional().nullable(),
+  website: z.string().optional().nullable(),
+  instagram: z.string().optional().nullable(),
+  working_hours: z.string().optional().nullable(),
+  biolinks: z.array(z.object({
+    id: z.string().optional(),
+    title: z.string(),
+    url: z.string(),
+    icon: z.string().optional(),
+    highlight: z.boolean().optional(),
+  })).optional(),
+});
+
+export const updateStoreProfileFn = createServerFn({ method: "POST" })
+  .validator(UpdateStoreProfileSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const db = getServerClient();
+
+    // Autorização: Usuário deve ter papel de gestão no storeId ou no perfil
+    const isOwnerOrAdmin =
+      identity.store_id === data.storeId ||
+      identity.role === "admin" ||
+      identity.role === "owner";
+
+    if (!isOwnerOrAdmin) {
+      const { data: membership } = await db
+        .from("workspace_members")
+        .select("role")
+        .eq("store_id", data.storeId)
+        .eq("profile_id", identity.id)
+        .maybeSingle();
+
+      if (!membership || !["owner", "admin", "manager"].includes(membership.role)) {
+        throw new Error("Acesso não autorizado para editar esta empresa.");
+      }
+    }
+
+    const { data: currentStore, error: fetchErr } = await db
+      .from("stores")
+      .select("id, name, slug, settings, organization_id")
+      .eq("id", data.storeId)
+      .single();
+
+    if (fetchErr || !currentStore) {
+      throw new Error("Empresa não encontrada no banco de dados.");
+    }
+
+    const currentSettings = (currentStore.settings as Record<string, any>) || {};
+
+    let finalSlug = currentStore.slug;
+    if (data.slug && data.slug !== currentStore.slug) {
+      finalSlug = await resolveUniqueStoreSlug(db, data.name || currentStore.name, data.slug, data.storeId);
+      if (currentStore.organization_id) {
+        await db.from("organizations").update({ slug: finalSlug }).eq("id", currentStore.organization_id);
+      }
+    }
+
+    const updatedSettings = {
+      ...currentSettings,
+      ...(data.category !== undefined ? { category: data.category, segment: data.category, niche: data.category } : {}),
+      ...(data.website !== undefined ? { website: data.website, websiteUrl: data.website } : {}),
+      ...(data.instagram !== undefined ? { instagram: data.instagram, instagramHandle: data.instagram } : {}),
+      ...(data.whatsapp !== undefined ? { whatsapp: data.whatsapp, contactWhatsapp: data.whatsapp } : {}),
+      ...(data.working_hours !== undefined ? { working_hours: data.working_hours, businessHours: data.working_hours } : {}),
+      ...(data.biolinks !== undefined ? { biolinks: data.biolinks } : {}),
+      ...(data.logo_url !== undefined ? { logoUrl: data.logo_url, logo_url: data.logo_url } : {}),
+      ...(data.banner_url !== undefined ? { bannerUrl: data.banner_url, banner_url: data.banner_url } : {}),
+      ...(data.cover_url !== undefined ? { cover_url: data.cover_url } : {}),
+    };
+
+    const storeUpdates: Record<string, any> = {
+      settings: updatedSettings,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.name !== undefined) storeUpdates.name = data.name;
+    if (finalSlug !== undefined) storeUpdates.slug = finalSlug;
+    if (data.description !== undefined) storeUpdates.description = data.description;
+    if (data.phone !== undefined) storeUpdates.phone = data.phone;
+    if (data.email !== undefined) storeUpdates.email = data.email;
+    if (data.address !== undefined) storeUpdates.address = data.address;
+    if (data.city !== undefined) storeUpdates.city = data.city;
+    if (data.state !== undefined) storeUpdates.state = data.state;
+    if (data.logo_url !== undefined) storeUpdates.logo_url = data.logo_url;
+    if (data.banner_url !== undefined) storeUpdates.banner_url = data.banner_url;
+
+    const { error: storeUpdateErr } = await db
+      .from("stores")
+      .update(storeUpdates)
+      .eq("id", data.storeId);
+
+    if (storeUpdateErr) {
+      throw new Error("Erro ao atualizar empresa: " + storeUpdateErr.message);
+    }
+
+    try {
+      const listingUpdates: Record<string, any> = {
+        updated_at: new Date().toISOString(),
+      };
+      if (data.name !== undefined) listingUpdates.business_name = data.name;
+      if (data.category !== undefined) listingUpdates.category = data.category;
+      if (data.description !== undefined) listingUpdates.description = data.description;
+      if (data.address !== undefined) listingUpdates.address = data.address;
+      if (data.city !== undefined) listingUpdates.city = data.city;
+      if (data.state !== undefined) listingUpdates.state = data.state;
+      if (data.phone !== undefined) listingUpdates.contact_phone = data.phone;
+      if (data.whatsapp !== undefined) listingUpdates.contact_whatsapp = data.whatsapp;
+      if (data.email !== undefined) listingUpdates.contact_email = data.email;
+      if (data.website !== undefined) listingUpdates.website_url = data.website;
+      if (data.working_hours !== undefined) listingUpdates.working_hours = data.working_hours;
+      if (data.banner_url !== undefined) listingUpdates.banner_url = data.banner_url;
+
+      await db
+        .from("directory_listings")
+        .update(listingUpdates)
+        .eq("store_id", data.storeId);
+    } catch (e: any) {
+      console.warn("[updateStoreProfileFn] Erro ao sincronizar directory_listings:", e?.message);
+    }
+
+    return {
+      success: true,
+      slug: finalSlug,
+      message: "Perfil da empresa atualizado com sucesso!",
     };
   });
