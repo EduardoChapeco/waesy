@@ -1018,3 +1018,29 @@
      - 150/150 arquivos de testes Vitest passando (994/994 testes verdes).
 - **Fundamentação:** AGENTS.md B.1 a B.12, Design Lint DL-01 a DL-30 e Critério R16 do Super Prompt.
 - **Consequências:** Ambos os monólitos de produto do Workspace (`novo.tsx` e `$id.tsx`) estão abaixo de 300 linhas e 100% modulares. Próximo alvo: `_store.classificados.$id.tsx` (R17).
+
+## DEC-092: Execução da Fase R17 (Bloco 3) — Decomposição de `_store.classificados.$id.tsx` e Ativação de Candidaturas
+- **Data:** 2026-10-01
+- **Contexto:** Execução da Fase R17 do PLANO 4 — OPERAÇÃO VERDADE ÚNICA. O arquivo de rota `_store.classificados.$id.tsx` continha 1.829 linhas de código acoplado, com estados de candidatura a vagas sem renderização de interface real e modais de reserva, proposta e guia digital gigantes embutidos na rota.
+- **Decisão:**
+  1. **Criação do Domínio Modular em `src/components/classifieds/detail/`:**
+     - `classified-status-banners.tsx`: Banners canônicos de ciclo de vida (expirado, esgotado, vendido, reservado).
+     - `classified-similar-ads-grid.tsx`: Grid de produtos similares sem dead-ends e com tokens canônicos.
+     - `classified-empty-state.tsx`: Tratamento honesto de anúncio não encontrado / identificador inválido com fallback navegável.
+     - `classified-booking-dialog.tsx`: Modal completo de reservas (pacotes de viagem com saídas e hospedagem com diárias, datas bloqueadas e cálculo transparente).
+     - `classified-proposal-dialog.tsx`: Diálogo completo de negociação formal (cálculo de entrada, parcelas, carnê digital e campos personalizados da loja).
+     - `classified-companion-dialog.tsx`: Cartão do Guia Digital 9:16 interativo com contatos de emergência e suporte.
+     - `classified-job-application-dialog.tsx`: Eliminação completa do placeholder com modal real de candidatura em 3 abas funcionais (`perfil_waesy`, `upload_cv`, `whatsapp`) conectado a `applyToClassifiedJob`.
+     - `classified-detail-dialogs.tsx`: Agregador declarativo de diálogos isolando o JSX de modais da rota.
+     - `classified-head.ts`: Helper desacoplado gerador de metadados SEO e JSON-LD Schema.org.
+     - `use-classified-detail.ts`: Hook de negócio concentrando chamadas ao BFF e regras de ciclo de vida.
+  2. **Refatoração da Rota:**
+     - `src/routes/_store.classificados.$id.tsx` reduzida de **1.829 linhas para 255 linhas** (redução de 86%, superando o Gate R17 de <300 linhas).
+  3. **Conformidade Estrita com o Design Lint:**
+     - 0 violações P0, 0 P1, 0 P2 e 0 P3 nos novos componentes e na rota.
+     - Touch targets móveis >= 44px (`h-11`), foco com `:focus-visible` em todos os botões e abas, zero classes arbitrárias com colchetes e grade estrita de múltiplos de 4px.
+  4. **Validação e Provas:**
+     - 150/150 arquivos de testes Vitest passando (994/994 testes verdes).
+- **Fundamentação:** AGENTS.md B.1 a B.12, DL-01 a DL-30 e Mandato R17 da Operação Verdade Única.
+- **Consequências:** Rota de detalhe de classificados completamente modularizada, reativa, auditada e sem nenhum mock ou placeholder. Próximo alvo: `_store.classificados.index.tsx` (R18).
+

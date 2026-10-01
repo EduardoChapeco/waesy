@@ -34,6 +34,7 @@ export function ClassifiedDetailMobile({
   currentProfile,
   onOpenBookingModal,
   onOpenProposalModal,
+  onOpenApplyModal,
   onDirectBuy,
   onDownloadDigital,
   onEdit,
@@ -202,6 +203,15 @@ export function ClassifiedDetailMobile({
         action: () => onDownloadDigital?.(),
       };
     }
+    if (classified.category === "job") {
+      return {
+        label: "Candidatar-se à Vaga",
+        action: () => {
+          if (onOpenApplyModal) onOpenApplyModal();
+          else if (cleanPhone) handleWhatsApp();
+        },
+      };
+    }
     // Protocolo V140: Se for anúncio conversacional (Classificados / Serviços),
     // o botão de Comprar DESAPARECE e o CTA primário vira Enviar Mensagem.
     if (isConversational) {
@@ -215,7 +225,7 @@ export function ClassifiedDetailMobile({
       label: isAddingCart ? "Adicionando..." : "Adicionar ao Carrinho",
       action: handleAddClassifiedToCart,
     };
-  }, [isDonation, isInvestmentOpportunity, niche, classified, onOpenBookingModal, onDownloadDigital, isDownloadingDigital, cleanPhone, isConversational, isStartingChat, isAddingCart]);
+  }, [isDonation, isInvestmentOpportunity, niche, classified, onOpenBookingModal, onOpenApplyModal, onDownloadDigital, isDownloadingDigital, cleanPhone, isConversational, isStartingChat, isAddingCart]);
 
   const locationText = useMemo(() => {
     if (classified.hide_location || attrs.hide_location) {

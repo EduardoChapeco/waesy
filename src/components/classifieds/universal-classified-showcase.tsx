@@ -11,6 +11,7 @@ export interface UniversalClassifiedShowcaseProps {
   currentProfile?: any;
   onOpenBookingModal?: (selectedDeparture?: any) => void;
   onOpenProposalModal?: () => void;
+  onOpenApplyModal?: () => void;
   onDirectBuy?: () => void;
   onDownloadDigital?: () => void;
   onEdit?: () => void;

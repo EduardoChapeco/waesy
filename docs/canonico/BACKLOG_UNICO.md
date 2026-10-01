@@ -40,7 +40,7 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 ### Bloco 3 — Monólitos de Rota (R15–R20) — EM ANDAMENTO
 - [x] **R15**: ALVO: `workspace.catalogo.produtos.novo.tsx` (1.644 para 251 linhas, redução de 85%). *(Concluído)*
 - [x] **R16**: ALVO: `workspace.catalogo.produtos.$id.tsx` (1.705 para 296 linhas, redução de 82%). *(Concluído)*
-- [ ] **R17**: ALVO: `_store.classificados.$id.tsx` (1.829 linhas).
+- [x] **R17**: ALVO: `_store.classificados.$id.tsx` (1.829 para 255 linhas, redução de 86%, 0 violações de lint). *(Concluído)*
 - [ ] **R18**: ALVO: `_store.classificados.index.tsx` (1.701 linhas).
 - [ ] **R19**: Varredura de todos os arquivos de rota acima de 500 linhas.
 - [ ] **R20**: Regra de composição de página e verificador automático no CI.

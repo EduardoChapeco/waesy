@@ -41,9 +41,9 @@
     },
     "PLANO_4_OPERACAO_VERDADE_UNICA": {
       "totalPhases": 64,
-      "completedPhases": 16,
+      "completedPhases": 17,
       "status": "IN_PROGRESS",
-      "currentPhase": "R17",
+      "currentPhase": "R18",
       "activeBlock": "BLOCO_3_MONOLITOS_DE_ROTA"
     }
   },
