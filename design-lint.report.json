@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-01T23:15:43.265Z",
-  "inspectedFiles": 9,
+  "timestamp": "2026-10-01T23:32:29.294Z",
+  "inspectedFiles": 6,
   "totalViolations": 0,
   "summary": {
     "totalViolations": 0,
@@ -14,7 +14,7 @@
     "byRule": {},
     "byModule": {},
     "filesWithViolations": 0,
-    "filesCount": 9
+    "filesCount": 6
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

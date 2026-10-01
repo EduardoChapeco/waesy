@@ -8,3 +8,7 @@ export * from "./product-category-modal";
 export * from "./product-import-sheet";
 export * from "./product-dimension-modal";
 export * from "./use-product-editor";
+export * from "./use-product-edit";
+export * from "./product-edit-general-form";
+export * from "./product-edit-media-manager";
+export * from "./product-edit-variants-manager";

@@ -999,3 +999,22 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, Catálogo DL-01 a DL-30 e Critérios R07 a R15 da Operação Verdade Única.
 - **Consequências:** Rotas enxutas, manutenibilidade extrema, fim de formulários gigantes monolíticos e base sólida para decomposição de `$id.tsx` (R16).
 
+## DEC-091: Execução da Fase R16 (Bloco 3) — Decomposição do Monólito `workspace.catalogo.produtos.$id.tsx`
+- **Data:** 2026-10-01
+- **Contexto:** Execução da Fase R16 do PLANO 4 — OPERAÇÃO VERDADE ÚNICA. O arquivo `workspace.catalogo.produtos.$id.tsx` continha 1.705 linhas com múltiplos formulários aninhados, gerenciamento de mídia, matriz de variações, mockup simulado redundante e violações de design lint.
+- **Decisão:**
+  1. **Decomposição Modular em `src/components/admin/catalog/product-editor/`:**
+     - `product-edit-general-form.tsx`: Formulário geral de identificação, precificação, categoria com modal, dimensões e SEO.
+     - `product-edit-media-manager.tsx`: Gerenciador de fotos/vídeos, upload, reordenação e metadados.
+     - `product-edit-variants-manager.tsx`: Gerador em lote e tabela 2D de matriz de variações com estoque granular.
+     - `use-product-edit.ts`: Hook desacoplado concentrando todos os estados locais de prévia, ficheiros técnicos e mutações.
+  2. **Refatoração da Rota:**
+     - `src/routes/workspace.catalogo.produtos.$id.tsx` reduzida de **1.705 linhas para 296 linhas** (redução de 82%, cumprindo o Gate R16 de <300 linhas).
+     - Integração de `ProductPreviewPane` unificado para padrões de Turismo, Mercado e Comércio Geral.
+  3. **Conformidade Estrita de Design Lint:**
+     - 0 violações P0, 0 P1, 0 P2 e 0 P3 no script `design-lint.mjs --changed`.
+     - Todos os alvos de toque >= 44px (`h-11`), foco com anel visível (`:focus-visible`), ausência de valores arbitrários entre colchetes e grade de 4px respeitada.
+  4. **Validação de Testes:**
+     - 150/150 arquivos de testes Vitest passando (994/994 testes verdes).
+- **Fundamentação:** AGENTS.md B.1 a B.12, Design Lint DL-01 a DL-30 e Critério R16 do Super Prompt.
+- **Consequências:** Ambos os monólitos de produto do Workspace (`novo.tsx` e `$id.tsx`) estão abaixo de 300 linhas e 100% modulares. Próximo alvo: `_store.classificados.$id.tsx` (R17).
