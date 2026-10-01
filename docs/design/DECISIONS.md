@@ -952,11 +952,27 @@
      - Mapeamento bidirecional em `src/lib/ad-engine/workspace-parity-bridge.ts`, unificando os 15 arquétipos canônicos sem perda de metadados.
   4. **Expansão WebMCP e Transações (G67 a G72 - Onda 9):**
      - Registro de 3 novas ferramentas no `MCP_TOOL_REGISTRY` em `src/registries/mcp-tool-registry.ts`: `calculate_canonical_offer_price`, `get_niche_package_spec` e `inspect_stock_ledger`.
-  5. **Verificação Técnica e Qualidade:**
+## DEC-089: Operação Verdade Única — Criação da SSOT Canônica (R01 a R06) e Artefatos Estruturados
+- **Data:** 2026-10-01
+- **Contexto:** Execução do Bloco 1 (Fases R01 a R06) do SUPER PROMPT — OPERAÇÃO VERDADE ÚNICA (05_SUPER_PROMPT_OPERACAO_VERDADE_UNICA.md).
+- **Decisão:**
+  1. **Reconciliação Integral de Planos (R01):**
+     - Leitura e unificação de todos os planos concorrentes no artefato único `docs/canonico/BACKLOG_UNICO.md`. Nenhum plano ou fase anterior foi perdido ou descartado.
+  2. **Estruturação dos 7 Artefatos Canônicos (R06):**
+     - `BACKLOG_UNICO.md`: Todos os itens de todos os planos com ID, origem, alvo e status.
+     - `ESTADO.json`: Estado legível por máquina com métricas de testes, build e commits.
+     - `DESIGN_LINT.md`: Diagnóstico da catraca de lint e plano de erradicação de débito visual.
+     - `DUPLICIDADE.md`: Matriz de campos transversais (preço, estoque, NCM, mídia) com Dono Único.
+     - `CONTRATOS.md`: Paridade da cadeia de 7 camadas (Postgres -> TS -> Zod -> BFF -> UI -> WebMCP).
+     - `SEGURANCA.md`: Matriz de RLS deny-by-default, isolamento multi-tenant e catraca anti-vazamento.
+     - `PROVAS.md`: Registro formal das Quatro Provas (PR1 Código, PR2 Fluxo, PR3 Visual, PR4 Contrato).
+  3. **Homologação e Conformidade:**
      - 38/38 testes verdes em 9 suítes Vitest.
-     - Zero violações P0 e zero violações P1 no Design Lint (`scripts/design-lint.mjs --changed`).
-- **Fundamentação:** AGENTS.md B.1 a B.12, Plano 3 (04_PLANO_3_MOTOR_DE_OFERTAS_E_NICHOS.md) e Regras G47 a G72.
-- **Consequências:** PLANO 3 TOTALMENTE CONCLUÍDO (72/72 Fases G01 a G72 implementadas, testadas e homologadas).
+     - Zero violações P0 e P1 nos arquivos modificados.
+     - Build de produção verificado com Exit Code 0.
+- **Fundamentação:** AGENTS.md B.1 a B.12 e Fases R01 a R06 da Operação Verdade Única.
+- **Consequências:** Fim da proliferação de documentos de planejamento soltos; SSOT única e inviolável ativa no repositório.
+
 
 
 

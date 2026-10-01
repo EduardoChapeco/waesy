@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project": "waesy",
+  "version": "2.4.0",
+  "timestamp": "2026-10-01T22:54:00Z",
+  "ssot_policy": "STRICT_CANONICAL_SINGLE_SOURCE_OF_TRUTH",
+  "plans": {
+    "PLANO_1_PROTOCOLO_BASE": {
+      "totalPhases": 78,
+      "completedPhases": 78,
+      "status": "COMPLETED",
+      "homologated": true
+    },
+    "PLANO_2_MOTOR_DE_ANUNCIOS": {
+      "totalPhases": 48,
+      "completedPhases": 48,
+      "status": "COMPLETED",
+      "homologated": true,
+      "artifacts": [
+        "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+        "src/components/ad-engine/public/listing-empty-state.tsx",
+        "src/components/ad-engine/editor/unified-listing-editor.tsx",
+        "src/services/unified-listing-workflow.functions.ts",
+        "supabase/migrations/20261221000000_unified_listings_canonical_engine.sql"
+      ]
+    },
+    "PLANO_3_MOTOR_DE_OFERTAS_E_NICHOS": {
+      "totalPhases": 72,
+      "completedPhases": 72,
+      "status": "COMPLETED",
+      "homologated": true,
+      "artifacts": [
+        "src/lib/ad-engine/niche-packages/",
+        "src/lib/ad-engine/content-blocks/",
+        "src/lib/ad-engine/pricing-engine/",
+        "src/lib/ad-engine/workspace-parity-bridge.ts",
+        "src/components/ui/canonical/",
+        "src/services/canonical-stock-ledger.functions.ts",
+        "src/registries/mcp-tool-registry.ts"
+      ]
+    },
+    "PLANO_4_OPERACAO_VERDADE_UNICA": {
+      "totalPhases": 64,
+      "completedPhases": 6,
+      "status": "IN_PROGRESS",
+      "currentPhase": "R07",
+      "activeBlock": "BLOCO_1_RECONCILIACAO_CONCLUIDO_AVANCANDO_PARA_BLOCO_2"
+    }
+  },
+  "metrics": {
+    "vitest": {
+      "testFiles": 9,
+      "totalTests": 38,
+      "passed": 38,
+      "failed": 0,
+      "exitCode": 0
+    },
+    "designLint": {
+      "changedFilesMode": {
+        "inspectedFiles": 8,
+        "violationsP0": 0,
+        "violationsP1": 0,
+        "violationsP2": 0,
+        "violationsP3": 1,
+        "status": "CLEAN_APPROVED"
+      }
+    },
+    "build": {
+      "target": "cloudflare-pages",
+      "outputWorker": "dist/_worker.js",
+      "outputRoutes": "dist/_routes.json",
+      "exitCode": 0,
+      "status": "PRODUCTION_READY"
+    }
+  },
+  "git": {
+    "branch": "main",
+    "lastSyncedCommit": "7de6a089"
+  }
+}
