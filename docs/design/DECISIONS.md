@@ -935,13 +935,28 @@
   3. **Primitivas de Design System e CMS (G27 a G38 - Onda 4):**
      - Implementação das primitivas em `src/components/ui/canonical/`: `CanonicalPage`, `CanonicalSection`, `CanonicalSplit`, `CanonicalBottomBar`, `CanonicalFieldGroup`, `CanonicalFormRow` e `CanonicalField`.
      - 100% de conformidade com os tokens, touch target >= 44px (`h-11`) e foco `:focus-visible`.
-  4. **Estoque e Ledger Imutável (G39 a G46 - Onda 5):**
-     - Serviço BFF em `src/services/canonical-stock-ledger.functions.ts` operando na tabela `public.stock_movements`.
-     - Suporte a reserva, liberação, baixa atômica e prevenção de venda acima do disponível (E8).
-  5. **Verificação e Testes:**
-     - 30/30 testes verdes em 6 suítes Vitest (`niche-packages.test.ts`, `content-blocks.test.ts`, `canonical-stock-ledger.test.ts`, etc.).
+## DEC-088: Implementação das Ondas 6 a 9 (G47 a G72) — Motor de Preço e Promoção, Paridade Classificados/Workspace, Componentes Adaptativos e Ferramentas WebMCP
+- **Data:** 2026-10-01
+- **Contexto:** Conclusão das Fases G47 a G72 do PLANO 3 — MOTOR DE OFERTAS, BIBLIOTECA DE NICHOS, PADRÃO DE CONTEÚDO, DESIGN SYSTEM E ESTOQUE.
+- **Decisão:**
+  1. **Motor Canônico de Preço e Promoção (G47 a G54 - Onda 6):**
+     - Criação do motor em `src/lib/ad-engine/pricing-engine/` com aritmética de centavos inteiros (Zero-Float Drift).
+     - Cálculo de lista, promocional, margem, markup e validação estrita de cupons com teto de desconto e restrições por nicho/arquétipo.
+     - Suporte a locação por diárias (G53) com descontos de longa permanência (7+ e 28+ dias), caução reembolsável e taxas adicionais.
+     - Suporte ao ciclo de vida de assinaturas e clubes (G50: trial, carência e cálculo de multa rescisória proporcional de 10%).
+     - Portão G54: Garantia absoluta de que nenhum cálculo aritmético de preço ocorre na camada visual do frontend.
+  2. **Componentes Adaptativos de Design System (G30 a G38 - Onda 4):**
+     - `AdaptiveModal` (P5/G31): Dialog no Desktop e Bottom Sheet no Mobile, com acessibilidade WCAG e tokens semânticos.
+     - `DenseDataGrid` (P7/G33): Tabela de alta densidade no Desktop e cards compactos no Mobile, com suporte à matriz completa de 4 estados (dados, skeleton com `motion-reduce:animate-none`, empty state e erro).
+  3. **Ponte de Paridade Classificados <-> Workspace (G55 a G60 - Onda 7):**
+     - Mapeamento bidirecional em `src/lib/ad-engine/workspace-parity-bridge.ts`, unificando os 15 arquétipos canônicos sem perda de metadados.
+  4. **Expansão WebMCP e Transações (G67 a G72 - Onda 9):**
+     - Registro de 3 novas ferramentas no `MCP_TOOL_REGISTRY` em `src/registries/mcp-tool-registry.ts`: `calculate_canonical_offer_price`, `get_niche_package_spec` e `inspect_stock_ledger`.
+  5. **Verificação Técnica e Qualidade:**
+     - 38/38 testes verdes em 9 suítes Vitest.
      - Zero violações P0 e zero violações P1 no Design Lint (`scripts/design-lint.mjs --changed`).
-- **Fundamentação:** AGENTS.md B.1 a B.12, Plano 3 (04_PLANO_3_MOTOR_DE_OFERTAS_E_NICHOS.md) e Regras E1 a E8.
-- **Consequências:** Base sólida, tipada, testada e blindada para todas as verticais e nichos da plataforma Waesy.
+- **Fundamentação:** AGENTS.md B.1 a B.12, Plano 3 (04_PLANO_3_MOTOR_DE_OFERTAS_E_NICHOS.md) e Regras G47 a G72.
+- **Consequências:** PLANO 3 TOTALMENTE CONCLUÍDO (72/72 Fases G01 a G72 implementadas, testadas e homologadas).
+
 
 

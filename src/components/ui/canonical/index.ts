@@ -4,3 +4,5 @@
 
 export * from './page-layout';
 export * from './canonical-form';
+export * from './adaptive-modal';
+export * from './dense-data-grid';

@@ -3,6 +3,9 @@ import type { PermissionAction, PermissionResource } from "./permission-registry
 import { getNicheManifest, NicheId } from "@/lib/niche-manifest";
 import { canTransition, getAllowedTransitions, getStatusMeta, StateMachineEntity } from "@/lib/state-machines";
 import { publishDomainEvent, DomainEventName } from "@/services/domain-events.functions";
+import { calculateBasePriceQuote, CouponRule } from "@/lib/ad-engine/pricing-engine";
+import { getNichePackage } from "@/lib/ad-engine/niche-packages";
+import { _listStockLedger } from "@/services/canonical-stock-ledger.functions";
 
 export type McpToolAccessTier = "public" | "store_staff" | "admin_only";
 
@@ -1984,7 +1987,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         .eq("id", args.listingId)
         .single();
 
-      if (error || !listing) {
+      if (error || listing === null || listing === undefined) {
         throw new Error("Anúncio não localizado para transação.");
       }
 
@@ -2006,7 +2009,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         .select("id")
         .single();
 
-      if (dealErr || !deal) {
+      if (dealErr || deal === null || deal === undefined) {
         throw new Error(`Falha ao registrar negociação WebMCP: ${dealErr?.message}`);
       }
 
@@ -2016,6 +2019,129 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         transactionType: args.transactionType,
         totalBrl: totalCents / 100,
         listingTitle: listing.title,
+      };
+    },
+  },
+
+  calculate_canonical_offer_price: {
+    name: "calculate_canonical_offer_price",
+    module: "orders",
+    description: "Calcula a cotação transparente de preço de uma oferta aplicando regras de cupom, margem e arquétipo sem cálculos no cliente (G47, G54).",
+    tier: "public",
+    requiredScope: "orders:read",
+    idempotent: true,
+    rateLimitBucket: "public_pricing_eval",
+    inputZodSchema: z.object({
+      archetypeId: z.string(),
+      nicheId: z.string(),
+      listPriceCents: z.number().int().nonnegative(),
+      salePriceCents: z.number().int().nonnegative().optional(),
+      couponCode: z.string().optional(),
+      couponDiscountPercent: z.number().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        archetypeId: { type: "string" },
+        nicheId: { type: "string" },
+        listPriceCents: { type: "integer" },
+        salePriceCents: { type: "integer" },
+        couponCode: { type: "string" },
+        couponDiscountPercent: { type: "number" },
+      },
+      required: ["archetypeId", "nicheId", "listPriceCents"],
+    },
+    handler: async (_ctx, args) => {
+      let coupon: CouponRule | undefined;
+      if (args.couponCode && args.couponDiscountPercent) {
+        coupon = {
+          code: args.couponCode,
+          type: "percentage",
+          value: args.couponDiscountPercent,
+        };
+      }
+
+      const quote = calculateBasePriceQuote(
+        {
+          archetypeId: args.archetypeId as any,
+          nicheId: args.nicheId as any,
+          listPriceCents: args.listPriceCents,
+          salePriceCents: args.salePriceCents,
+        },
+        coupon
+      );
+
+      return {
+        listPriceBrl: quote.listPriceCents / 100,
+        finalPriceBrl: quote.finalPriceCents / 100,
+        discountBrl: quote.discountCents / 100,
+        discountPercent: quote.discountPercent,
+        isPromotional: quote.isPromotional,
+      };
+    },
+  },
+
+  get_niche_package_spec: {
+    name: "get_niche_package_spec",
+    module: "catalog",
+    description: "Inspeciona o pacote canônico de um nicho específico com terminologias, arquétipos habilitados e regras regulatórias (G10, G18).",
+    tier: "public",
+    requiredScope: "catalog:read",
+    idempotent: true,
+    rateLimitBucket: "public_niche_spec",
+    inputZodSchema: z.object({
+      nicheId: z.string(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        nicheId: { type: "string" },
+      },
+      required: ["nicheId"],
+    },
+    handler: async (_ctx, args) => {
+      const pkg = getNichePackage(args.nicheId);
+      return {
+        id: pkg.id,
+        name: pkg.name,
+        description: pkg.description,
+        defaultArchetype: pkg.defaultArchetype,
+        terminology: pkg.terminology,
+        regulatoryBody: pkg.fiscalAndRegulatory.regulatoryBody,
+        mandatoryDisclaimers: pkg.fiscalAndRegulatory.mandatoryLegalDisclaimers,
+        sectionsCount: pkg.detailSections.length,
+      };
+    },
+  },
+
+  inspect_stock_ledger: {
+    name: "inspect_stock_ledger",
+    module: "catalog",
+    description: "Consulta o histórico imutável do ledger de movimentações de estoque para uma variante da loja (G39, G41).",
+    tier: "store_staff",
+    requiredScope: "inventory:read",
+    idempotent: true,
+    rateLimitBucket: "store_stock_audit",
+    inputZodSchema: z.object({
+      variantId: z.string().uuid(),
+      storeId: z.string().uuid(),
+      limit: z.number().int().positive().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        variantId: { type: "string", format: "uuid" },
+        storeId: { type: "string", format: "uuid" },
+        limit: { type: "integer" },
+      },
+      required: ["variantId", "storeId"],
+    },
+    handler: async (_ctx, args) => {
+      const ledgerHistory = await _listStockLedger(args.variantId, args.storeId, args.limit || 20);
+      return {
+        variantId: args.variantId,
+        movementsCount: ledgerHistory.length,
+        movements: ledgerHistory,
       };
     },
   },
