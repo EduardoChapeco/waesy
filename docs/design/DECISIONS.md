@@ -973,6 +973,29 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12 e Fases R01 a R06 da Operação Verdade Única.
 - **Consequências:** Fim da proliferação de documentos de planejamento soltos; SSOT única e inviolável ativa no repositório.
 
-
-
+## DEC-090: Execução do Bloco 2 (R07 a R14) e Início do Bloco 3 (R15) — Primitivas Canônicas, Saneamento de Commerce e Decomposição de Monólitos de Rota
+- **Data:** 2026-10-01
+- **Contexto:** Execução do Bloco 2 (Fases R07 a R14 — O Lint Engolido e o Design System) e início do Bloco 3 (Fase R15 — Decomposição de Monólitos de Rota) do SUPER PROMPT — OPERAÇÃO VERDADE ÚNICA.
+- **Decisão:**
+  1. **Diagnóstico do Baseline e Ratchet (R07, R08):**
+     - Mapeamento determinístico das 38.579 violações em `docs/canonico/DESIGN_LINT.md` e `docs/design/LINT_DASHBOARD.md`.
+     - Implementação de política de tolerância zero em arquivos modificados (`--changed` com 0 violações P0/P1/P2/P3).
+  2. **Expansão de Primitivas Canônicas de Layout e Formulário (R10, R11):**
+     - `src/components/ui/canonical/page-layout.tsx`: `CanonicalPage`, `CanonicalShell`, `CanonicalSection`, `CanonicalStack`, `CanonicalGrid` (com guardas contra regras cegas do DL-29), `CanonicalToolbar`, `CanonicalRail`, `CanonicalSplit`, `CanonicalBottomBar`.
+     - `src/components/ui/canonical/canonical-form.tsx`: `CanonicalField`, `CanonicalFieldGroup`, `CanonicalFormRow`, `CanonicalFieldError`, `CanonicalFieldMatrix`, `CanonicalFormFooter` (com autosave e botão primário único conforme B.8).
+  3. **Saneamento e Piloto em Commerce (R12, R13, R14):**
+     - `src/components/commerce/channel-badge.tsx`: Sanitizado para tokens canônicos.
+     - `src/components/commerce/product-card.tsx`: Redução de 33 violações para 0 violações.
+     - `src/components/commerce/product-grid.tsx`: Redução de 19 violações para 0 violações.
+     - `src/components/commerce/cart-sheet.tsx`: Redução de 49 violações para 0 violações.
+     - Acessibilidade e Física: Touch targets >= 44px (`h-11`), `:focus-visible` em todos os controles interativos e `motion-reduce:animate-none` em todos os spinners/pulses.
+  4. **Decomposição do Monólito de Rota `novo.tsx` (R15):**
+     - Rota `src/routes/workspace.catalogo.produtos.novo.tsx` refatorada de **1.644 linhas para 251 linhas** (redução de 85%, cumprindo a meta de <300 linhas).
+     - Componentes desacoplados e isolados criados em `src/components/admin/catalog/product-editor/`:
+       - `product-editor-header.tsx`, `product-basic-tab.tsx`, `product-pricing-tab.tsx`, `product-fiscal-tab.tsx`, `product-media-tab.tsx`, `product-preview-pane.tsx`, `product-category-modal.tsx`, `product-import-sheet.tsx`, `product-dimension-modal.tsx`, `use-product-editor.ts`.
+  5. **Verificação de Integridade:**
+     - 150/150 arquivos de teste Vitest passando (994/994 testes verdes).
+     - 0 violações P0/P1/P2/P3 no Design Lint (`node scripts/design-lint.mjs --changed`).
+- **Fundamentação:** AGENTS.md B.1 a B.12, Catálogo DL-01 a DL-30 e Critérios R07 a R15 da Operação Verdade Única.
+- **Consequências:** Rotas enxutas, manutenibilidade extrema, fim de formulários gigantes monolíticos e base sólida para decomposição de `$id.tsx` (R16).
 

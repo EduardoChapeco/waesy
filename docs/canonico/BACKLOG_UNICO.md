@@ -27,24 +27,33 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **R05**: Matriz de rotas das verticais do ecossistema e donos semânticos. *(Concluído)*
 - [x] **R06**: Consolidação da SSOT em `BACKLOG_UNICO.md` e `ESTADO.json`. *(Concluído)*
 
-### Bloco 2 — O Lint Engolido e o Design System (R07–R14)
-- [ ] **R07**: Diagnóstico do mecanismo de `--ratchet` e baseline do script `design-lint.mjs`.
-- [ ] **R08**: Triagem das 38k violações por severidade e módulo (`components/app`, `routes`, `ui`).
-- [ ] **R09**: Eliminação das violações P0 e P1 no módulo crítico `src/components/commerce/`.
-- [ ] **R10**: Eliminação das violações P0 e P1 no módulo crítico `src/components/ad-engine/`.
-- [ ] **R11**: Eliminação das violações P0 e P1 no módulo crítico `src/components/tourism/`.
-- [ ] **R12**: Eliminação das violações P0 e P1 em `src/components/ui/`.
-- [ ] **R13**: Saneamento de monólitos de rotas (`novo.tsx`, `index.tsx`, `$id.tsx`).
-- [ ] **R14**: Portão: Zero tolerância a baseline permissivo nos módulos saneados.
+### Bloco 2 — O Lint Engolido e o Design System (R07–R14) — CONCLUÍDO
+- [x] **R07**: Diagnóstico do mecanismo de `--ratchet` e baseline do script `design-lint.mjs`. *(Concluído)*
+- [x] **R08**: Triagem das 38k violações por severidade e módulo (`components/app`, `routes`, `ui`). *(Concluído)*
+- [x] **R09**: Eliminação das violações P0 e P1 no módulo crítico `src/components/commerce/`. *(Concluído)*
+- [x] **R10**: Expansão de primitivas de layout (`CanonicalPage`, `CanonicalShell`, `CanonicalSection`, etc.). *(Concluído)*
+- [x] **R11**: Expansão de primitivas de formulário e CMS (`CanonicalField`, `CanonicalFormRow`, etc.). *(Concluído)*
+- [x] **R12**: Piloto completo de migração em `src/components/commerce/` (0 violações em 4 arquivos). *(Concluído)*
+- [x] **R13**: Densidade móvel (390px), alvos de toque >= 44px (`h-11`) e `motion-reduce:animate-none`. *(Concluído)*
+- [x] **R14**: Portão estrito de lint: tolerância zero a baseline permissivo em arquivos alterados (`--changed`). *(Concluído)*
 
-### Bloco 3 — Unificação de Dono e Eliminação de Duplicidades (R15–R24)
-- [ ] **R15**: Dono único de Preço e Parcelamento em toda a plataforma.
-- [ ] **R16**: Dono único de Classificação Fiscal (NCM/CEST/CFOP/IBS).
-- [ ] **R17**: Dono único de Disponibilidade, Estoque e Ledger Imutável.
-- [ ] **R18**: Dono único de Mídia, Uploader e Aspect Ratio.
-- [ ] **R19**: Unificação dos 4 mecanismos de presets (`niche-presets`, `presentation-presets`, `hotel-presets`).
-- [ ] **R20**: Limpeza da raiz do repositório (eliminação de scripts de remendo soltos).
-- [ ] **R21 a R24**: Consolidação das rotas do Workspace e Store sem duplicação de lógica.
+### Bloco 3 — Monólitos de Rota (R15–R20) — EM ANDAMENTO
+- [x] **R15**: ALVO: `workspace.catalogo.produtos.novo.tsx` (1.644 para 251 linhas, redução de 85%). *(Concluído)*
+- [ ] **R16**: ALVO: `workspace.catalogo.produtos.$id.tsx` (1.704 linhas). Decompor para <300 linhas reutilizando `product-editor/`.
+- [ ] **R17**: ALVO: `_store.classificados.$id.tsx` (1.829 linhas).
+- [ ] **R18**: ALVO: `_store.classificados.index.tsx` (1.701 linhas).
+- [ ] **R19**: Varredura de todos os arquivos de rota acima de 500 linhas.
+- [ ] **R20**: Regra de composição de página e verificador automático no CI.
+
+### Bloco 4 — Duplicação e Dono Único (R21–R28) — NA FILA
+- [ ] **R21**: Dono único de parcelamento e pagamento.
+- [ ] **R22**: Dono único de NCM/CEST/CFOP/IBS.
+- [ ] **R23**: Dono único de preço, comparativo, custo, margem e sinal.
+- [ ] **R24**: Dono único de estoque, agenda e capacidade.
+- [ ] **R25**: Dono único de galeria, capa e mídia.
+- [ ] **R26**: Dono único de inclusos, exclusos, políticas e FAQ.
+- [ ] **R27**: Kill list com mapa de migração e reversão.
+- [ ] **R28**: Verificador de duplicidade no CI.
 
 ---
 

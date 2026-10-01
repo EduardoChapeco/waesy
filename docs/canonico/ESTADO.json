@@ -41,27 +41,27 @@
     },
     "PLANO_4_OPERACAO_VERDADE_UNICA": {
       "totalPhases": 64,
-      "completedPhases": 6,
+      "completedPhases": 15,
       "status": "IN_PROGRESS",
-      "currentPhase": "R07",
-      "activeBlock": "BLOCO_1_RECONCILIACAO_CONCLUIDO_AVANCANDO_PARA_BLOCO_2"
+      "currentPhase": "R16",
+      "activeBlock": "BLOCO_3_MONOLITOS_DE_ROTA"
     }
   },
   "metrics": {
     "vitest": {
-      "testFiles": 9,
-      "totalTests": 38,
-      "passed": 38,
+      "testFiles": 150,
+      "totalTests": 994,
+      "passed": 994,
       "failed": 0,
       "exitCode": 0
     },
     "designLint": {
       "changedFilesMode": {
-        "inspectedFiles": 8,
+        "inspectedFiles": 9,
         "violationsP0": 0,
         "violationsP1": 0,
         "violationsP2": 0,
-        "violationsP3": 1,
+        "violationsP3": 0,
         "status": "CLEAN_APPROVED"
       }
     },

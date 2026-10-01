@@ -146,7 +146,7 @@ export function ChannelBadge({
 
   return (
     <span
-      className={`text-[11px] font-bold uppercase tracking-wider ${info.badgeClass} ${className}`}
+      className={`text-xs font-bold uppercase tracking-wider ${info.badgeClass} ${className}`}
     >
       {info.label}
     </span>

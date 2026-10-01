@@ -78,7 +78,10 @@ export const MCP_TOOLS_MANIFEST: McpToolDefinition[] = getAllMcpTools().map((t) 
   tier: t.tier,
   requiredScope: t.requiredScope,
   idempotent: t.idempotent,
-  inputSchema: t.inputSchema,
+  inputSchema: {
+    ...t.inputSchema,
+    required: Array.isArray(t.inputSchema?.required) ? t.inputSchema.required : [],
+  },
   outputSchema: t.outputSchema,
 }));
 
