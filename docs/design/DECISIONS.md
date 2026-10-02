@@ -1768,3 +1768,18 @@
   3. `Suporte a Modos Operacionais`: Implementação das flags `--ci`, `--strict` e `--json` para execução silenciosa em pipelines automatizados.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F21-DEAD-CODE-DETECTOR, docs/canonico/PROXIMOS_PLANOS_EXECUCAO.md e Definition of Done B.9.
 - **Consequências:** Fase F21 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F22: CI Bloqueante Unificado (5 Gates de Qualidade)**.
+
+## DEC-148: Conclusão da Fase F22 (Plano de Estabilização E2E) — CI Bloqueante Unificado (5 Gates de Qualidade)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F22 do Plano de Estabilização E2E, estabelecendo o pipeline de integração contínua unificado no GitHub Actions (`.github/workflows/ci.yml`), orquestrando os 5 gates obrigatórios de qualidade e bloqueando pull requests com qualquer falha técnica, regressão visual ou quebra transacional.
+- **Decisão:**
+  1. `Pipeline Unificado de 5 Gates`: Configurado `.github/workflows/ci.yml` cobrindo:
+     - Gate 1: Typecheck estrito (`npm run typecheck`, Exit Code 0).
+     - Gate 2: Design Lint com catraca decrescente (`node scripts/design-lint.mjs --ratchet`, 0 P0/P1 adicionais).
+     - Gate 3: Bateria de testes automatizados (`npm run test`, 0 falhas).
+     - Gate 4: Build de produção do Edge Worker (`npm run build`).
+     - Gate 5: Detector de órfãos e componentes duplicados (`node scripts/dead-code-detector.mjs --ci`).
+  2. `Persistência e Rastreabilidade`: Upload automatizado dos relatórios `design-lint.report.json` e `dead-code.report.json` como artefatos vinculados a cada execução.
+  3. `Governança de Concorrência`: Cancelamento automático de builds anteriores no mesmo branch (`cancel-in-progress: true`), economizando minutos de computação no CI.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F22-UNIFIED-CI, docs/canonico/PROXIMOS_PLANOS_EXECUCAO.md e Definition of Done B.9.
+- **Consequências:** Fase F22 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F23: Auditoria de Segurança Final e RLS Abrangente**.

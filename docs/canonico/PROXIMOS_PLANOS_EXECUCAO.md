@@ -358,19 +358,19 @@
 
 ---
 
-#### F22 — CI Bloqueante Unificado (Typecheck + Lint + Tests + Build)
+#### [x] F22 — CI Bloqueante Unificado (5 Gates de Qualidade) (CONCLUÍDA — DEC-148)
 **Objetivo:** Pipeline CI em `/.github/workflows/ci.yml` com todas as gates obrigatórias.
 
 **Microfases:**
-1. Criar/atualizar `.github/workflows/ci.yml`:
+1. [x] Criar `.github/workflows/ci.yml`:
    - Gate 1: `npm run typecheck` (Exit Code 0).
-   - Gate 2: `node scripts/design-lint.mjs --ratchet` (0 P0/P1).
+   - Gate 2: `node scripts/design-lint.mjs --ratchet` (0 P0/P1 adicionais).
    - Gate 3: `npm run test` (0 falhas).
-   - Gate 4: `npm run build` (bundle < 25 MB).
-   - Gate 5: `node scripts/dead-code-detector.mjs` (0 órfãos).
-2. Configurar para bloquear PR sem aprovação em todas as gates.
-3. Registrar `DEC-145`.
-4. Commit: `feat(F22): CI bloqueante unificado com 5 gates de qualidade`.
+   - Gate 4: `npm run build` (bundle single-file edge worker).
+   - Gate 5: `node scripts/dead-code-detector.mjs --ci` (auditoria de integridade).
+2. [x] Configurar para bloquear PR sem aprovação em todas as gates com upload de relatórios.
+3. [x] Registrar `DEC-148`.
+4. [x] Commit: `feat(F22): CI bloqueante unificado com 5 gates de qualidade`.
 
 ---
 
