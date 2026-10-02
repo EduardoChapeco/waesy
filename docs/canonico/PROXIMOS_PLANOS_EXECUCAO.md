@@ -68,7 +68,7 @@
 | F15 | [x] | `6739ea8e` | Geolocalização e Filtros por Cidade/Bairro |
 | F16 | [x] | `e979401b` | Notificações em Tempo Real (Supabase Realtime) |
 | F17 | [x] | `b89542c4` | Painel Financeiro Real (Receita, Despesas e Fluxo de Caixa) |
-| F18 | [x] | `pendente` | Suporte Interno: Módulo de Tickets com SLA |
+| F18 | [x] | `6c7486a1` | Suporte Interno: Módulo de Tickets com SLA |
 
 ---
 
