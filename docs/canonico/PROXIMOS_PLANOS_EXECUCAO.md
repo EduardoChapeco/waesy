@@ -66,7 +66,8 @@
 | F13 | [x] | `76253115` | CRM de Clientes do Workspace (Lista Real) |
 | F14 | [x] | `9188a2f3` | Motor de Busca Universal (Classificados + Marketplace + Places) |
 | F15 | [x] | `6739ea8e` | Geolocalização e Filtros por Cidade/Bairro |
-| F16 | [x] | `pendente` | Notificações em Tempo Real (Supabase Realtime) |
+| F16 | [x] | `e979401b` | Notificações em Tempo Real (Supabase Realtime) |
+| F17 | [x] | `pendente` | Painel Financeiro Real (Receita, Despesas e Fluxo de Caixa) |
 
 ---
 

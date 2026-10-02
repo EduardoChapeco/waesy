@@ -1707,3 +1707,19 @@
      - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F16-NOTIFICATIONS-REALTIME, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
 - **Consequências:** Fase F16 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F17: Painel Financeiro Real (Receita, Despesas e Fluxo de Caixa)**.
+
+## DEC-143: Conclusão da Fase F17 (Plano de Estabilização E2E) — Painel Financeiro Real (Receita, Despesas e Fluxo de Caixa)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F17 do Plano de Estabilização E2E, consolidando a gestão financeira do Workspace Pro com zero mocks (M01), Server Functions puras (`src/services/financial.functions.ts`), validação Zod rigorosa, agregação de fluxo de caixa e resolução de rota sem 404 para `/workspace/financeiro/`.
+- **Decisão:**
+  1. `Server Functions Canônicas de Finanças`: Criado `src/services/financial.functions.ts` exportando `listFinancialEntriesFn`, `createFinancialEntryFn` e `getCashFlowSummaryFn`, reutilizando e blindando os handlers de `finance.functions.ts` com isolamento multi-tenant (`store_id` a partir da sessão segura).
+  2. `Regra Pétrea de Integridade de Receitas`: Bloqueio estrito de injeção manual de receitas (`revenue_sale`, `revenue_pos_sale`), assegurando que receitas decorrem exclusivamente de pedidos e transações reais do banco de dados.
+  3. `Resolução de Rota Canônica (/workspace/financeiro/)`: Criado `src/routes/workspace.financeiro.index.tsx` redirecionando transparentemente para o fluxo de caixa ativo em `/workspace/financeiro/caixa`.
+  4. `Aprovação Integral nas 4 Gates de Qualidade`:
+     - `vitest`: 5/5 testes unitários verdes em `src/services/financial.functions.test.ts`.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+     - `npm run typecheck`: 0 erros de compilação TypeScript em 1.797 arquivos.
+     - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F17-FINANCIAL-DASHBOARD, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F17 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F18: Suporte Interno — Módulo de Tickets com SLA**.
+

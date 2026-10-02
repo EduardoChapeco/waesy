@@ -67,6 +67,7 @@ export async function _listFinancialTransactions(filters: {
  startDate?: string;
  endDate?: string;
  type?: FinancialTxType;
+ category?: string;
  limit?: number;
  offset?: number;
 }) {
@@ -90,6 +91,9 @@ export async function _listFinancialTransactions(filters: {
  }
  if (filters.type) {
  query = query.eq("type", filters.type);
+ }
+ if (filters.category) {
+ query = query.eq("category", filters.category);
  }
  if (filters.limit) {
  query = query.limit(filters.limit);
@@ -210,6 +214,7 @@ export const listFinancialTransactions = createServerFn({ method: "GET" })
  startDate: z.string().optional(),
  endDate: z.string().optional(),
  type: z.enum(FINANCIAL_TX_TYPES).optional(),
+ category: z.string().optional(),
  limit: z.number().int().min(1).max(200).optional(),
  offset: z.number().int().min(0).optional(),
  }),

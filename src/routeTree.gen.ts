@@ -273,6 +273,7 @@ import { Route as WorkspaceEstoqueMovimentosRouteImport } from './routes/workspa
 import { Route as WorkspaceEstudioIndexRouteImport } from './routes/workspace.estudio.index'
 import { Route as WorkspaceEventosIndexRouteImport } from './routes/workspace.eventos.index'
 import { Route as WorkspaceEventosIdRouteImport } from './routes/workspace.eventos.$id'
+import { Route as WorkspaceFinanceiroIndexRouteImport } from './routes/workspace.financeiro.index'
 import { Route as WorkspaceFinanceiroAfiliadosRouteImport } from './routes/workspace.financeiro.afiliados'
 import { Route as WorkspaceFinanceiroComissoesRouteImport } from './routes/workspace.financeiro.comissoes'
 import { Route as WorkspaceFinanceiroComprovantesRouteImport } from './routes/workspace.financeiro.comprovantes'
@@ -1749,6 +1750,12 @@ const WorkspaceEventosIdRoute = WorkspaceEventosIdRouteImport.update({
   path: '/eventos/$id',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceFinanceiroIndexRoute =
+  WorkspaceFinanceiroIndexRouteImport.update({
+    id: '/financeiro/',
+    path: '/financeiro/',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceFinanceiroAfiliadosRoute =
   WorkspaceFinanceiroAfiliadosRouteImport.update({
     id: '/financeiro/afiliados',
@@ -2804,6 +2811,7 @@ export interface FileRoutesByFullPath {
   '/workspace/estoque/': typeof WorkspaceEstoqueIndexRoute
   '/workspace/estudio/': typeof WorkspaceEstudioIndexRoute
   '/workspace/eventos/': typeof WorkspaceEventosIndexRoute
+  '/workspace/financeiro/': typeof WorkspaceFinanceiroIndexRoute
   '/workspace/lojas/': typeof WorkspaceLojasIndexRoute
   '/workspace/moderacao/': typeof WorkspaceModeracaoIndexRoute
   '/workspace/noticias/': typeof WorkspaceNoticiasIndexRoute
@@ -3186,6 +3194,7 @@ export interface FileRoutesByTo {
   '/workspace/estoque': typeof WorkspaceEstoqueIndexRoute
   '/workspace/estudio': typeof WorkspaceEstudioIndexRoute
   '/workspace/eventos': typeof WorkspaceEventosIndexRoute
+  '/workspace/financeiro': typeof WorkspaceFinanceiroIndexRoute
   '/workspace/lojas': typeof WorkspaceLojasIndexRoute
   '/workspace/moderacao': typeof WorkspaceModeracaoIndexRoute
   '/workspace/noticias': typeof WorkspaceNoticiasIndexRoute
@@ -3579,6 +3588,7 @@ export interface FileRoutesById {
   '/workspace/estoque/': typeof WorkspaceEstoqueIndexRoute
   '/workspace/estudio/': typeof WorkspaceEstudioIndexRoute
   '/workspace/eventos/': typeof WorkspaceEventosIndexRoute
+  '/workspace/financeiro/': typeof WorkspaceFinanceiroIndexRoute
   '/workspace/lojas/': typeof WorkspaceLojasIndexRoute
   '/workspace/moderacao/': typeof WorkspaceModeracaoIndexRoute
   '/workspace/noticias/': typeof WorkspaceNoticiasIndexRoute
@@ -3972,6 +3982,7 @@ export interface FileRouteTypes {
     | '/workspace/estoque/'
     | '/workspace/estudio/'
     | '/workspace/eventos/'
+    | '/workspace/financeiro/'
     | '/workspace/lojas/'
     | '/workspace/moderacao/'
     | '/workspace/noticias/'
@@ -4354,6 +4365,7 @@ export interface FileRouteTypes {
     | '/workspace/estoque'
     | '/workspace/estudio'
     | '/workspace/eventos'
+    | '/workspace/financeiro'
     | '/workspace/lojas'
     | '/workspace/moderacao'
     | '/workspace/noticias'
@@ -4746,6 +4758,7 @@ export interface FileRouteTypes {
     | '/workspace/estoque/'
     | '/workspace/estudio/'
     | '/workspace/eventos/'
+    | '/workspace/financeiro/'
     | '/workspace/lojas/'
     | '/workspace/moderacao/'
     | '/workspace/noticias/'
@@ -6700,6 +6713,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceEventosIdRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/financeiro/': {
+      id: '/workspace/financeiro/'
+      path: '/financeiro'
+      fullPath: '/workspace/financeiro/'
+      preLoaderRoute: typeof WorkspaceFinanceiroIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/financeiro/afiliados': {
       id: '/workspace/financeiro/afiliados'
       path: '/financeiro/afiliados'
@@ -8251,6 +8271,7 @@ interface WorkspaceRouteChildren {
   WorkspaceEstoqueIndexRoute: typeof WorkspaceEstoqueIndexRoute
   WorkspaceEstudioIndexRoute: typeof WorkspaceEstudioIndexRoute
   WorkspaceEventosIndexRoute: typeof WorkspaceEventosIndexRoute
+  WorkspaceFinanceiroIndexRoute: typeof WorkspaceFinanceiroIndexRoute
   WorkspaceLojasIndexRoute: typeof WorkspaceLojasIndexRoute
   WorkspaceModeracaoIndexRoute: typeof WorkspaceModeracaoIndexRoute
   WorkspaceNoticiasIndexRoute: typeof WorkspaceNoticiasIndexRoute
@@ -8423,6 +8444,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceEstoqueIndexRoute: WorkspaceEstoqueIndexRoute,
   WorkspaceEstudioIndexRoute: WorkspaceEstudioIndexRoute,
   WorkspaceEventosIndexRoute: WorkspaceEventosIndexRoute,
+  WorkspaceFinanceiroIndexRoute: WorkspaceFinanceiroIndexRoute,
   WorkspaceLojasIndexRoute: WorkspaceLojasIndexRoute,
   WorkspaceModeracaoIndexRoute: WorkspaceModeracaoIndexRoute,
   WorkspaceNoticiasIndexRoute: WorkspaceNoticiasIndexRoute,
