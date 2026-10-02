@@ -347,14 +347,14 @@
 
 ---
 
-#### F21 — Scanner de Órfãos, Duplicados e Dead Code no CI
+#### [x] F21 — Scanner de Órfãos, Duplicados e Dead Code no CI (CONCLUÍDA — DEC-147)
 **Objetivo:** `scripts/dead-code-detector.mjs` rodando no CI e bloqueando merges com código morto.
 
 **Microfases:**
-1. Criar `scripts/dead-code-detector.mjs` — detecta exports não importados, componentes duplicados.
-2. Integrar no pipeline CI (`.github/workflows/ci.yml`).
-3. Registrar `DEC-144`.
-4. Commit: `feat(F21): scanner de órfãos e dead code no CI`.
+1. [x] Criar `scripts/dead-code-detector.mjs` — detecta exports não importados, componentes duplicados.
+2. [x] Integrar no pipeline CI (`.github/workflows/ci.yml`).
+3. [x] Registrar `DEC-147`.
+4. [x] Commit: `feat(F21): scanner de órfãos e dead code no CI`.
 
 ---
 

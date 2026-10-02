@@ -1,7 +1,7 @@
 /**
- * @fileoverview DETECTOR DETERMINÍSTICO DE CÓDIGO MORTO E ÓRFÃO (Plano 5 — S11)
- * Analisa o grafo de dependências a partir dos pontos de entrada (rotas, shells, testes)
- * e detecta arquivos desvinculados ou órfãos no repositório.
+ * @fileoverview DETECTOR DETERMINISTICO DE CODIGO MORTO, ORFAOS E COMPONENTES DUPLICADOS
+ * Analisa o grafo de dependencias a partir dos pontos de entrada (rotas, shells, testes)
+ * e detecta arquivos desvinculados ou componentes com nomes duplicados no repositorio.
  */
 
 import fs from "node:fs";
@@ -9,8 +9,9 @@ import path from "node:path";
 
 const ROOT_DIR = process.cwd();
 const SRC_DIR = path.resolve(ROOT_DIR, "src");
+const REPORT_PATH = path.resolve(ROOT_DIR, "dead-code.report.json");
 
-// Arquivos que são pontos de entrada raiz (não precisam ser importados por ninguém)
+// Arquivos que sao pontos de entrada raiz ou excecoes conhecidas
 const ENTRY_POINTS_PATTERNS = [
   "src/router.tsx",
   "src/routeTree.gen.ts",
@@ -21,6 +22,8 @@ const ENTRY_POINTS_PATTERNS = [
   ".test.tsx",
   "src/registries/",
   "src/types/",
+  "/index.ts",
+  "/index.tsx",
 ];
 
 function isEntryPoint(filePath) {
@@ -35,7 +38,7 @@ function getAllSourceFiles(dir) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (["node_modules", ".git", "dist"].includes(entry.name)) continue;
+      if (["node_modules", ".git", "dist", "legacy_quarantine"].includes(entry.name)) continue;
       files = files.concat(getAllSourceFiles(fullPath));
     } else if (entry.isFile() && (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx"))) {
       files.push(fullPath);
@@ -61,7 +64,33 @@ function extractImports(filePath) {
   return Array.from(imports);
 }
 
-export function auditDeadCode() {
+function detectDuplicateComponents(allFiles) {
+  const componentMap = new Map();
+  const duplicates = [];
+
+  for (const file of allFiles) {
+    const norm = file.replace(/\\/g, "/");
+    if (!norm.includes("/components/")) continue;
+
+    const baseName = path.basename(file, path.extname(file));
+    if (["index", "types", "utils", "constants"].includes(baseName.toLowerCase())) continue;
+
+    if (!componentMap.has(baseName)) {
+      componentMap.set(baseName, []);
+    }
+    componentMap.get(baseName).push(path.relative(ROOT_DIR, file).replace(/\\/g, "/"));
+  }
+
+  for (const [name, paths] of componentMap.entries()) {
+    if (paths.length > 1) {
+      duplicates.push({ componentName: name, count: paths.length, paths });
+    }
+  }
+
+  return duplicates;
+}
+
+export function auditDeadCode(options = {}) {
   const allFiles = getAllSourceFiles(SRC_DIR);
   const fileSet = new Set(allFiles.map((f) => f.replace(/\\/g, "/")));
 
@@ -80,7 +109,6 @@ export function auditDeadCode() {
         resolved = path.resolve(fileDir, imp).replace(/\\/g, "/");
       }
 
-      // Procura extensões
       const candidates = [
         resolved,
         resolved + ".ts",
@@ -102,35 +130,60 @@ export function auditDeadCode() {
   for (const file of allFiles) {
     const normFile = file.replace(/\\/g, "/");
     if (!isEntryPoint(normFile) && !importedSet.has(normFile)) {
-      unreferenced.push(path.relative(ROOT_DIR, file));
+      unreferenced.push(path.relative(ROOT_DIR, file).replace(/\\/g, "/"));
     }
   }
 
-  return {
+  const duplicates = detectDuplicateComponents(allFiles);
+
+  const report = {
+    timestamp: new Date().toISOString(),
     totalFiles: allFiles.length,
     totalImported: importedSet.size,
     unreferencedCount: unreferenced.length,
     unreferencedFiles: unreferenced,
+    duplicateComponentsCount: duplicates.length,
+    duplicateComponents: duplicates,
+    status: unreferenced.length > 0 && options.strict ? "FAIL" : "PASS",
   };
+
+  fs.writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2), "utf8");
+
+  return report;
 }
 
 if (process.argv[1] && process.argv[1].endsWith("dead-code-detector.mjs")) {
+  const isStrict = process.argv.includes("--strict");
+  const isCi = process.argv.includes("--ci");
+
   console.log("======================================================================");
-  console.log("WAESY DEAD CODE & ORPHAN DETECTOR (Plano 5 — S11)");
+  console.log("WAESY DEAD CODE & DUPLICATES DETECTOR (CI Gate 5)");
   console.log("======================================================================");
 
-  const report = auditDeadCode();
-  console.log(`Total de arquivos de código inspecionados: ${report.totalFiles}`);
-  console.log(`Total de arquivos ativamente importados:   ${report.totalImported}`);
-  console.log(`Arquivos sem referência direta ativa:       ${report.unreferencedCount}`);
+  const report = auditDeadCode({ strict: isStrict });
+  console.log(`Arquivos inspecionados:       ${report.totalFiles}`);
+  console.log(`Arquivos ativamente ligados:  ${report.totalImported}`);
+  console.log(`Arquivos orfaos detectados:   ${report.unreferencedCount}`);
+  console.log(`Componentes duplicados:       ${report.duplicateComponentsCount}`);
+  console.log(`Relatorio salvo em:           ${REPORT_PATH}`);
+
+  if (report.duplicateComponentsCount > 0) {
+    console.log("\nComponentes com nomes coincidentes em caminhos distintos:");
+    report.duplicateComponents.slice(0, 10).forEach((d) => {
+      console.log(`  - ${d.componentName} (${d.count}x): ${d.paths.join(", ")}`);
+    });
+  }
 
   if (report.unreferencedCount > 0) {
-    console.log("\nArquivos potencialmente órfãos / candidatos à poda:");
-    report.unreferencedFiles.slice(0, 30).forEach((f) => console.log(`  - ${f}`));
-    if (report.unreferencedFiles.length > 30) {
-      console.log(`  ... e mais ${report.unreferencedFiles.length - 30} arquivos.`);
-    }
+    console.log("\nPrimeiros orfaos encontrados:");
+    report.unreferencedFiles.slice(0, 15).forEach((f) => console.log(`  - ${f}`));
+  }
+
+  if (isStrict && (report.unreferencedCount > 0 || report.duplicateComponentsCount > 0)) {
+    console.error("\nFALHA CI: Encontrados orfaos ou duplicacoes em modo estrito!");
+    process.exit(1);
   } else {
-    console.log("\nPARABÉNS: Zero arquivos órfãos detectados no grafo de dependências!");
+    console.log("\nSUCESSO: Auditoria de codigo morto e duplicacoes concluida.");
+    process.exit(0);
   }
 }

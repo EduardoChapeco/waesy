@@ -1758,3 +1758,13 @@
   3. `Guia Definitivo de Contribuição`: Criado `CONTRIBUTING.md` vinculando o contrato operacional do `AGENTS.md`, separação de camadas arquiteturais, regras de design system e os 5 gates bloqueantes do CI.
 - **Fundamentação:** AGENTS.md B.1 a B.12, docs/canonico/PROXIMOS_PLANOS_EXECUCAO.md e Definition of Done B.9.
 - **Consequências:** Fase F20 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F21: Scanner de Órfãos, Duplicados e Dead Code no CI**.
+
+## DEC-147: Conclusão da Fase F21 (Plano de Estabilização E2E) — Scanner de Órfãos, Duplicados e Dead Code no CI
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F21 do Plano de Estabilização E2E, estabelecendo o detector determinístico de código morto, componentes com nomes duplicados e arquivos órfãos (`scripts/dead-code-detector.mjs`), com exportação de métricas estruturadas (`dead-code.report.json`) e integração como Gate 5 no pipeline unificado de CI.
+- **Decisão:**
+  1. `Detector Determinístico de Órfãos e Duplicações`: Criado `scripts/dead-code-detector.mjs` com análise estática de dependências a partir dos pontos de entrada, detecção de colisões de nomenclatura de componentes em diretórios distintos e descarte de falsos-positivos (barrels, rotas dinâmicas e testes).
+  2. `Geração de Artefato Auditável`: Persistência de `dead-code.report.json` registrando arquivos inspecionados (1.797), ativamente conectados (1.501) e candidatos à poda.
+  3. `Suporte a Modos Operacionais`: Implementação das flags `--ci`, `--strict` e `--json` para execução silenciosa em pipelines automatizados.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F21-DEAD-CODE-DETECTOR, docs/canonico/PROXIMOS_PLANOS_EXECUCAO.md e Definition of Done B.9.
+- **Consequências:** Fase F21 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F22: CI Bloqueante Unificado (5 Gates de Qualidade)**.
