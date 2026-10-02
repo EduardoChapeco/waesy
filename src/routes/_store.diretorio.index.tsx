@@ -59,12 +59,14 @@ export const Route = createFileRoute("/_store/diretorio/")({
   component: DirectoryPage,
 });
 
-function DirectoryPage() {
-  const { banners = [], hotpages = [] } = ((Route.useLoaderData?.() as any) || {});
- const [selectedCategory, setSelectedCategory] = useState("todos");
- const [viewMode, setViewMode] = useState<ViewModeType>("feed");
- const [searchQuery, setSearchQuery] = useState("");
- const navigate = useNavigate();
+export function DirectoryPage() {
+  const loaderData = ((typeof Route?.useLoaderData === "function" ? Route.useLoaderData() : {}) as any) || {};
+  const banners = loaderData?.banners || [];
+  const hotpages = loaderData?.hotpages || [];
+  const [selectedCategory, setSelectedCategory] = useState("todos");
+  const [viewMode, setViewMode] = useState<ViewModeType>("feed");
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
  const { data: listings, isLoading } = useQuery({
  queryKey: ["public-directory", selectedCategory, searchQuery],
@@ -117,10 +119,31 @@ function DirectoryPage() {
         searchPlaceholder="Buscar empresas, clínicas, serviços..."
       />
       <div className="px-4 sm:px-5 space-y-4 pt-2 sm:pt-4">
-      {/* ── 1. Banners Hero de Topo ── */}
- {banners && banners.length > 0 && (
- <BannerHeroCarousel banners={banners} className="w-full" />
- )}
+        {/* ── Desambiguação Canônica dos 4 Pilares (SPEC-F03) ── */}
+        <div className="rounded-lg border border-border bg-card p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="border-primary/20 text-primary">Places Oficial</Badge>
+              <span className="text-xs text-muted-foreground">Catálogo de Estabelecimentos</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Guia oficial de estabelecimentos físicos, contatos e localização. Para compra online integrada, visite o <Link to="/marketplace" className="text-primary underline font-medium hover:text-primary/80">Marketplace</Link>. Para desapego e vendas rápidas, consulte os <Link to="/classificados" className="text-primary underline font-medium hover:text-primary/80">Classificados</Link>.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button asChild variant="outline" size="sm" className="h-11 px-4">
+              <Link to="/marketplace">Ver Marketplace</Link>
+            </Button>
+            <Button asChild variant="default" size="sm" className="h-11 px-4">
+              <Link to="/workspace">Cadastrar Empresa</Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* ── 1. Banners Hero de Topo ── */}
+        {banners && banners.length > 0 && (
+          <BannerHeroCarousel banners={banners} className="w-full" />
+        )}
 
  {/* ── 2. Hotpages & Coleções Locais ── */}
  {hotpages && hotpages.length > 0 && (

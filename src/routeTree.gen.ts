@@ -191,6 +191,7 @@ import { Route as StoreNoticiasIndexRouteImport } from './routes/_store.noticias
 import { Route as StoreNoticiasSlugRouteImport } from './routes/_store.noticias.$slug'
 import { Route as StorePaginasSlugRouteImport } from './routes/_store.paginas.$slug'
 import { Route as StorePatrocinadorTokenRouteImport } from './routes/_store.patrocinador.$token'
+import { Route as StorePlacesIndexRouteImport } from './routes/_store.places.index'
 import { Route as StorePoliticasSlugRouteImport } from './routes/_store.politicas.$slug'
 import { Route as StoreProdutoSlugRouteImport } from './routes/_store.produto.$slug'
 import { Route as StorePropostaTokenRouteImport } from './routes/_store.proposta.$token'
@@ -1306,6 +1307,11 @@ const StorePaginasSlugRoute = StorePaginasSlugRouteImport.update({
 const StorePatrocinadorTokenRoute = StorePatrocinadorTokenRouteImport.update({
   id: '/patrocinador/$token',
   path: '/patrocinador/$token',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StorePlacesIndexRoute = StorePlacesIndexRouteImport.update({
+  id: '/places/',
+  path: '/places/',
   getParentRoute: () => StoreRoute,
 } as any)
 const StorePoliticasSlugRoute = StorePoliticasSlugRouteImport.update({
@@ -2750,6 +2756,7 @@ export interface FileRoutesByFullPath {
   '/empregos/': typeof StoreEmpregosIndexRoute
   '/marketplace/': typeof StoreMarketplaceIndexRoute
   '/noticias/': typeof StoreNoticiasIndexRoute
+  '/places/': typeof StorePlacesIndexRoute
   '/receitas/': typeof StoreReceitasIndexRoute
   '/turismo/': typeof StoreTurismoIndexRoute
   '/admin-master/seguranca/': typeof AdminMasterSegurancaIndexRoute
@@ -3127,6 +3134,7 @@ export interface FileRoutesByTo {
   '/empregos': typeof StoreEmpregosIndexRoute
   '/marketplace': typeof StoreMarketplaceIndexRoute
   '/noticias': typeof StoreNoticiasIndexRoute
+  '/places': typeof StorePlacesIndexRoute
   '/receitas': typeof StoreReceitasIndexRoute
   '/turismo': typeof StoreTurismoIndexRoute
   '/admin-master/seguranca': typeof AdminMasterSegurancaIndexRoute
@@ -3515,6 +3523,7 @@ export interface FileRoutesById {
   '/_store/empregos/': typeof StoreEmpregosIndexRoute
   '/_store/marketplace/': typeof StoreMarketplaceIndexRoute
   '/_store/noticias/': typeof StoreNoticiasIndexRoute
+  '/_store/places/': typeof StorePlacesIndexRoute
   '/_store/receitas/': typeof StoreReceitasIndexRoute
   '/_store/turismo/': typeof StoreTurismoIndexRoute
   '/admin-master/seguranca/': typeof AdminMasterSegurancaIndexRoute
@@ -3903,6 +3912,7 @@ export interface FileRouteTypes {
     | '/empregos/'
     | '/marketplace/'
     | '/noticias/'
+    | '/places/'
     | '/receitas/'
     | '/turismo/'
     | '/admin-master/seguranca/'
@@ -4280,6 +4290,7 @@ export interface FileRouteTypes {
     | '/empregos'
     | '/marketplace'
     | '/noticias'
+    | '/places'
     | '/receitas'
     | '/turismo'
     | '/admin-master/seguranca'
@@ -4667,6 +4678,7 @@ export interface FileRouteTypes {
     | '/_store/empregos/'
     | '/_store/marketplace/'
     | '/_store/noticias/'
+    | '/_store/places/'
     | '/_store/receitas/'
     | '/_store/turismo/'
     | '/admin-master/seguranca/'
@@ -6062,6 +6074,13 @@ declare module '@tanstack/react-router' {
       path: '/patrocinador/$token'
       fullPath: '/patrocinador/$token'
       preLoaderRoute: typeof StorePatrocinadorTokenRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/places/': {
+      id: '/_store/places/'
+      path: '/places'
+      fullPath: '/places/'
+      preLoaderRoute: typeof StorePlacesIndexRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/politicas/$slug': {
@@ -7739,6 +7758,7 @@ interface StoreRouteChildren {
   StoreClassificadosIndexRoute: typeof StoreClassificadosIndexRoute
   StoreMarketplaceIndexRoute: typeof StoreMarketplaceIndexRoute
   StoreNoticiasIndexRoute: typeof StoreNoticiasIndexRoute
+  StorePlacesIndexRoute: typeof StorePlacesIndexRoute
   StoreReceitasIndexRoute: typeof StoreReceitasIndexRoute
   StorePedidoPublicTokenConfirmacaoRoute: typeof StorePedidoPublicTokenConfirmacaoRoute
 }
@@ -7827,6 +7847,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreClassificadosIndexRoute: StoreClassificadosIndexRoute,
   StoreMarketplaceIndexRoute: StoreMarketplaceIndexRoute,
   StoreNoticiasIndexRoute: StoreNoticiasIndexRoute,
+  StorePlacesIndexRoute: StorePlacesIndexRoute,
   StoreReceitasIndexRoute: StoreReceitasIndexRoute,
   StorePedidoPublicTokenConfirmacaoRoute:
     StorePedidoPublicTokenConfirmacaoRoute,

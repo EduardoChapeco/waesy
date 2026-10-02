@@ -51,7 +51,8 @@ export type DomainEventName =
   | "ticket.opened"
   | "ticket.reply_sent"
   | "ticket.resolved"
-  | "ticket.closed";
+  | "ticket.closed"
+  | "classified.promoted_to_workspace";
 
 export interface DomainEventPayload {
   eventName: DomainEventName;
