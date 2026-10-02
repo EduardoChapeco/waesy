@@ -2,13 +2,14 @@ import * as React from "react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
-import { Star, Globe, Store, CheckCircle2, Loader2 } from "lucide-react";
+import { Star, Globe, Store, CheckCircle2, Loader2, FileText } from "lucide-react";
 
 export interface ProductEditorHeaderProps {
   entityName: string;
   isSubmitting: boolean;
   onOpenMasterCatalog: () => void;
   onOpenImportModal: () => void;
+  onSaveDraft?: () => void;
   onSubmit: () => void;
 }
 
@@ -17,6 +18,7 @@ export function ProductEditorHeader({
   isSubmitting,
   onOpenMasterCatalog,
   onOpenImportModal,
+  onSaveDraft,
   onSubmit,
 }: ProductEditorHeaderProps) {
   return (
@@ -60,6 +62,20 @@ export function ProductEditorHeader({
           </Button>
 
           <NativeBackButton fallbackHref="/workspace/catalogo/produtos" />
+
+          {onSaveDraft && (
+            <Button /* focus-visible: */
+              type="button"
+              variant="outline"
+              size="sm"
+              /* focus-visible:ring-2 */ onClick={onSaveDraft}
+              disabled={isSubmitting}
+              className="rounded-lg text-xs font-bold gap-2 h-11 px-4 border-border text-foreground hover:bg-muted/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              <FileText className="size-4 text-muted-foreground" />
+              <span>Salvar Rascunho</span>
+            </Button>
+          )}
 
           <Button /* focus-visible: */
             type="button"

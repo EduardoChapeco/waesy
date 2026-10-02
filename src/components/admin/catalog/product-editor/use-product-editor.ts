@@ -254,8 +254,69 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
     }
   };
 
+  const onSaveDraft = async () => {
+    const data = form.getValues();
+    if (Boolean(data.title?.trim()) === false) {
+      toast.error("Informe ao menos o nome para salvar o rascunho.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const generatedSlug = data.slug?.trim() || slugify(data.title || "rascunho");
+      const variantsPayload = variantsMatrix.length > 0
+        ? variantsMatrix.map((v, idx) => ({
+            sku: String(v.sku || `${generatedSlug}-var-${idx + 1}`),
+            attributes: (v.attributes || {}) as Record<string, unknown>,
+            stock: Number(v.stock ?? 10),
+            price_override_cents: v.price_override_cents != null && Number(v.price_override_cents) > 0 ? Number(v.price_override_cents) : null,
+            image_url: v.image_url || null,
+          }))
+        : [{ sku: String(data.sku || `${generatedSlug}-default`), attributes: {}, stock: Number(data.stock || 10), price_override_cents: null, image_url: images[0] || null }];
+
+      await createProduct({
+        data: {
+          title: data.title.trim(),
+          slug: generatedSlug,
+          description: data.description || null,
+          short_description: data.short_description || null,
+          status: "draft",
+          brand: data.brand || null,
+          ean: foodSpecs.barcodeEan?.trim() || data.ean || null,
+          price_cents: Number(data.price_cents || 0),
+          compare_at_cents: data.compare_at_cents && data.compare_at_cents > 0 ? data.compare_at_cents : null,
+          cost_cents: data.cost_cents && data.cost_cents > 0 ? data.cost_cents : null,
+          type_id: data.type_id || null,
+          is_physical: isTravelPackageMode ? false : data.is_physical,
+          weight_kg: isTravelPackageMode ? null : data.weight_kg ? Number(data.weight_kg) : null,
+          width_cm: isTravelPackageMode ? null : data.width_cm ? Number(data.width_cm) : null,
+          height_cm: isTravelPackageMode ? null : data.height_cm ? Number(data.height_cm) : null,
+          length_cm: isTravelPackageMode ? null : data.length_cm ? Number(data.length_cm) : null,
+          preparation_time_days: data.preparation_time_days ? Number(data.preparation_time_days) : null,
+          show_stock_publicly: data.show_stock_publicly ?? false,
+          media_urls: images,
+          category_ids: data.category_id ? [data.category_id] : [],
+          option_group_ids: selectedOptionGroupIds.length > 0 ? selectedOptionGroupIds : undefined,
+          variants: variantsPayload,
+          attributes: {
+            template_style: isGroceryMode ? "conveniencia" : isTravelPackageMode ? "editorial" : "standard",
+            ...(isTravelPackageMode ? { travel: travelData } : {}),
+            bill_of_materials: bomItems,
+            food_specs: foodSpecs,
+            fiscal: fiscalData,
+          },
+        },
+      });
+      toast.success(`Rascunho de ${nicheCtx.entityName} salvo com sucesso!`);
+      navigate({ to: "/workspace/catalogo/produtos" });
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar rascunho.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleImportProduct = async () => {
-    if ((!importUrl.trim())) return;
+    if (Boolean(importUrl?.trim()) === false) return;
     setIsImporting(true);
     try {
       const imported = await importProductFromUrl({ data: { url: importUrl.trim(), tone: importTone } });
@@ -335,6 +396,7 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
     handleTitleChange,
     handleSelectMasterProduct,
     handleAddDimensionSubmit,
+    onSaveDraft,
     onSubmit,
   };
 }

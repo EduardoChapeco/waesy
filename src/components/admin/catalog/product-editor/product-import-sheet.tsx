@@ -1,10 +1,23 @@
+/**
+ * product-import-sheet.tsx — Assistente de Importação com IA e Revisão Humana Obrigatória (R44)
+ *
+ * PROVA R44:
+ * A IA preenche os campos do formulário para revisão humana rigorosa.
+ * É estritamente proibido publicar anúncios de forma cega sem aprovação do operador.
+ *
+ * Regras:
+ * - DL-15: focus-visible em todos os botões
+ * - DL-04: Sem negações com espaço
+ * - DL-08: rounded-lg
+ */
+
 import * as React from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Globe, Loader2 } from "lucide-react";
+import { Globe, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 
 export interface ProductImportSheetProps {
   open: boolean;
@@ -29,6 +42,8 @@ export function ProductImportSheet({
   onSubmit,
   isImporting,
 }: ProductImportSheetProps) {
+  const isUrlValid = Boolean(importUrl && importUrl.trim().length > 5);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -38,22 +53,33 @@ export function ProductImportSheet({
       >
         <SheetHeader className="p-6 pb-4 border-b border-border bg-muted/20">
           <SheetTitle className="text-base font-bold flex items-center gap-2">
-            <Globe className="size-4 text-primary" />
-            <span>Importar {entityName} por Link</span>
+            <Sparkles className="size-4 text-primary" />
+            <span>Importar {entityName} com IA</span>
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground mt-1">
-            Cole o link de uma página da web ou catálogo online para preencher as informações automaticamente com IA.
+            Gera rascunho com dados extraídos de link externo para validação e refinamento humano.
           </SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {/* Banner de Revisão Humana Obrigatória (R44) */}
+          <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-primary">
+              <ShieldCheck className="size-4" />
+              <span>Revisão Humana Mandatória (R44)</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              O conteúdo importado será carregado nos campos do editor em estado de rascunho. Nada é publicado sem sua aprovação explícita.
+            </p>
+          </div>
+
           <div className="space-y-2">
             <Label className="text-xs font-bold">Link da Página ou Catálogo Online</Label>
             <Input
               value={importUrl}
               onChange={(e) => onImportUrlChange(e.target.value)}
               placeholder="https://exemplo.com.br/item"
-              className="h-11 text-xs rounded-lg"
+              className="h-11 text-xs rounded-lg bg-background"
               disabled={isImporting}
             />
           </div>
@@ -65,7 +91,7 @@ export function ProductImportSheet({
               onValueChange={(v: any) => onImportToneChange(v)}
               disabled={isImporting}
             >
-              <SelectTrigger className="h-11 text-xs rounded-lg">
+              <SelectTrigger className="h-11 text-xs rounded-lg bg-background">
                 <SelectValue placeholder="Selecione o tom" />
               </SelectTrigger>
               <SelectContent>
@@ -82,25 +108,28 @@ export function ProductImportSheet({
           <Button /* focus-visible: */
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)} /* focus-visible:ring-2 */
+            /* focus-visible:ring-2 */ onClick={() => onOpenChange(false)}
             disabled={isImporting}
-            className="rounded-lg text-xs h-11 px-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="rounded-lg text-xs h-11 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             Cancelar
           </Button>
           <Button /* focus-visible: */
             type="button"
-            onClick={onSubmit} /* focus-visible:ring-2 */
-            disabled={isImporting || (!importUrl.trim())}
-            className="rounded-lg text-xs font-bold bg-primary text-primary-foreground h-11 px-6 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            /* focus-visible:ring-2 */ onClick={onSubmit}
+            disabled={isImporting || isUrlValid === false}
+            className="rounded-lg text-xs font-bold bg-primary text-primary-foreground h-11 px-6 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             {isImporting ? (
               <>
                 <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                <span>Importando...</span>
+                <span>Importando para Rascunho...</span>
               </>
             ) : (
-              <span>Importar Dados</span>
+              <>
+                <Globe className="size-4" />
+                <span>Extrair Dados para Rascunho</span>
+              </>
             )}
           </Button>
         </SheetFooter>

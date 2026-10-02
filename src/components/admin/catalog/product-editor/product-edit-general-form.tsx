@@ -196,7 +196,7 @@ export function ProductEditGeneralForm({
   };
 
   const handleCreateCategory = async () => {
-    if ((!newCategoryName.trim())) return;
+    if (Boolean(newCategoryName?.trim()) === false) return;
     setIsCreatingCategory(true);
     try {
       const slug = newCategoryName

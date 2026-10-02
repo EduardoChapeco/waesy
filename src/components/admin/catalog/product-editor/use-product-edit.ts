@@ -79,7 +79,7 @@ export function useProductEdit(
     store?.segment === "grocery" ||
     store?.segment === "convenience";
 
-  const isGroceryMode = (!isTravelPackageMode) && isGroceryStore;
+  const isGroceryMode = Boolean(isTravelPackageMode) === false && isGroceryStore;
 
   const initialTravelData: Partial<TravelPackageData> = useMemo(() => {
     const saved = (product?.attributes as any)?.travel;
@@ -201,7 +201,7 @@ export function useProductEdit(
 
   const handleBomItemsChange = async (newItems: BomItem[]) => {
     setBomItems(newItems);
-    if (!product) return;
+    if (Boolean(product) === false) return;
     try {
       await updateProduct({
         data: {

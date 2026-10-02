@@ -18,7 +18,7 @@ import { publishDomainEvent } from "./domain-events.functions";
 export const unifiedTransactionSchema = z.object({
   listingId: z.string().uuid("ID do anúncio inválido"),
   origin: z.enum(["classified", "workspace"]),
-  transactionType: z.enum(["purchase", "booking", "quote", "service_order"]),
+  transactionType: z.enum(["purchase", "booking", "quote", "service_order", "subscription", "appointment"]),
   quantity: z.number().int().min(1).default(1),
   departureOptionId: z.string().optional(),
   scheduledDate: z.string().optional(),
@@ -114,11 +114,15 @@ export const createUnifiedListingTransaction = createServerFn({ method: "POST" }
     const transactionId = newDeal.id;
     const documentsGenerated: string[] = [];
 
-    // 4. F38: Geração de Documentos Específicos por Nicho
+    // 4. F38: Geração de Documentos Específicos por Nicho e Tipo de Transação
     if (listing.niche_id === "turismo") {
       documentsGenerated.push("voucher_turismo", "contrato_viagem");
-    } else if (listing.niche_id === "servico") {
-      documentsGenerated.push("ordem_servico");
+    } else if (listing.niche_id === "servicos" || listing.niche_id === "servico") {
+      documentsGenerated.push(data.transactionType === "appointment" ? "comprovante_agendamento" : "ordem_servico");
+    } else if (data.transactionType === "subscription") {
+      documentsGenerated.push("contrato_recorrente", "termo_adesao");
+    } else if (data.transactionType === "quote") {
+      documentsGenerated.push("proposta_comercial");
     } else {
       documentsGenerated.push("recibo_transacao");
     }

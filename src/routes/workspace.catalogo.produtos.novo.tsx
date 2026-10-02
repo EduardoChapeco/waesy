@@ -64,6 +64,7 @@ export function UnifiedNewProductPage() {
         isSubmitting={editor.isSubmitting}
         onOpenMasterCatalog={() => editor.setIsMasterCatalogOpen(true)}
         onOpenImportModal={() => editor.setIsImportModalOpen(true)}
+        onSaveDraft={editor.onSaveDraft}
         onSubmit={editor.form.handleSubmit(editor.onSubmit)}
       />
 
