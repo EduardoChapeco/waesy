@@ -106,7 +106,7 @@ export const promoteClassifiedToWorkspaceProductFn = createServerFn({ method: "P
     const { data: classified, error: fetchErr } = await supabase
       .from("classifieds")
       .select(
-        "id, author_profile_id, title, content, price_cents, images, attributes, category, deal_type, condition, promoted_to_product_id, status, created_at"
+        "id, author_profile_id, title, content, price_cents, images, attributes, category, deal_type, condition, workspace_entity_id, status, created_at"
       )
       .eq("id", classifiedId)
       .single();
@@ -121,18 +121,18 @@ export const promoteClassifiedToWorkspaceProductFn = createServerFn({ method: "P
     }
 
     // [IDEMPOTÊNCIA] Se já foi promovido para esta loja, retornar sem duplicar
-    if (classified.promoted_to_product_id) {
+    if (classified.workspace_entity_id) {
       // Verificar se o produto ainda existe
       const { data: existingProduct } = await supabase
         .from("products")
         .select("id")
-        .eq("id", classified.promoted_to_product_id)
+        .eq("id", classified.workspace_entity_id)
         .maybeSingle();
 
       if (existingProduct) {
         return {
           success: true,
-          productId: classified.promoted_to_product_id,
+          productId: classified.workspace_entity_id,
           classifiedId,
           storeId: targetStoreId,
           wasAlreadyPromoted: true,
@@ -189,8 +189,9 @@ export const promoteClassifiedToWorkspaceProductFn = createServerFn({ method: "P
       .from("classifieds")
       .update({
         status: "promoted",
-        promoted_to_product_id: newProduct.id,
-        promoted_at: promotedAt,
+        workspace_entity_id: newProduct.id,
+        workspace_entity_type: "product",
+        store_id: targetStoreId,
         updated_at: promotedAt,
       })
       .eq("id", classifiedId)
@@ -282,7 +283,7 @@ export const listUserClassifiedsForPromotionFn = createServerFn({ method: "GET" 
     let query = supabase
       .from("classifieds")
       .select(
-        "id, title, category, price_cents, images, status, promoted_to_product_id, created_at"
+        "id, title, category, price_cents, images, status, workspace_entity_id, created_at"
       )
       .eq("author_profile_id", identity.id)
       .neq("status", "promoted") // Exclui já promovidos
@@ -301,5 +302,14 @@ export const listUserClassifiedsForPromotionFn = createServerFn({ method: "GET" 
       throw new Error("Falha ao carregar seus anúncios. Tente novamente.");
     }
 
-    return (classifieds ?? []) as ClassifiedForPromotion[];
+    return ((classifieds ?? []) as Array<Record<string, unknown>>).map((c) => ({
+      id: String(c.id),
+      title: String(c.title ?? ""),
+      category: String(c.category ?? ""),
+      price_cents: Number(c.price_cents ?? 0),
+      images: Array.isArray(c.images) ? (c.images as string[]) : [],
+      status: String(c.status ?? ""),
+      promoted_to_product_id: c.workspace_entity_id ? String(c.workspace_entity_id) : null,
+      created_at: String(c.created_at ?? ""),
+    }));
   });
