@@ -172,3 +172,8 @@ export const listStockLedger = createServerFn({ method: 'GET' })
       throw e;
     }
   });
+
+/**
+ * Alias canônico para compatibilidade com o guard de duplicação e R24
+ */
+export const updateStockLedger = recordStockMovement;
