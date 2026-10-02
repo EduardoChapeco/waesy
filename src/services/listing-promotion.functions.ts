@@ -111,7 +111,7 @@ export const promoteClassifiedToWorkspaceProductFn = createServerFn({ method: "P
       .eq("id", classifiedId)
       .single();
 
-    if (fetchErr || !classified) {
+    if (fetchErr || classified === null || classified === undefined) {
       throw new Error("Classificado não encontrado ou sem permissão de acesso.");
     }
 
@@ -174,7 +174,7 @@ export const promoteClassifiedToWorkspaceProductFn = createServerFn({ method: "P
       .select("id")
       .single();
 
-    if (prodErr || !newProduct) {
+    if (prodErr || newProduct === null || newProduct === undefined) {
       console.error("[listing-promotion] Falha ao criar produto:", prodErr?.message);
       throw new Error(
         "Falha ao criar produto no catálogo da loja. Tente novamente."

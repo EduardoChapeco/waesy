@@ -456,7 +456,7 @@ function AdminProductsPage() {
               {
                 label: "Importar do Classificados",
                 icon: ArrowUpRight,
-                onClick: () => setIsClassifiedImportOpen(true),
+                onClick: () => setIsClassifiedImportOpen(true), /* focus-visible: */
               },
               {
                 label: semantics.nicheId === "gastronomy" ? "Importar Cardápio" : "Importar por Link",

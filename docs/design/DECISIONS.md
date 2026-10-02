@@ -1502,6 +1502,60 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, Constituição Técnica do Waesy e Definition of Done B.9.
 - **Consequências:** Ambiente de produção 100% atualizado, estável e operacional na borda e no banco de dados.
 
+## DEC-129: Conclusão da Fase F03 (Plano de Estabilização E2E) — Consolidação do Places e Guia Oficial de Estabelecimentos
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F03 do Bloco 1 (Separação Arquitetural dos 4 Pilares) do Plano de Estabilização E2E, consolidando o pilar Places (`/places` e `/diretorio`) como Guia Oficial da Cidade com desambiguação formal em relação a Marketplace e Classificados.
+- **Decisão:**
+  1. `Rota Canônica /places`: Criada a rota `src/routes/_store.places.index.tsx` reexportando `DirectoryPage` e declarando metadados semânticos de estabelecimentos locais.
+  2. `Desambiguação Visual no Topo`: Implementada seção em `src/routes/_store.diretorio.index.tsx` com botões táteis (`h-11`, `:focus-visible:ring-2`, `rounded-lg` em conformidade com DL-09) direcionando para o Marketplace (`/marketplace`) e Classificados (`/classificados`).
+  3. `Qualidade e Catraca Aprovadas`: Zero violações P0/P1 no `scripts/design-lint.mjs --ratchet` (37.702 violações preservadas). 4/4 testes unitários verdes em `src/routes/_store.places.test.ts` (7/7 na suíte conjunta com classificados). Zero erros de tipagem no `tsc --noEmit` em 3.356 arquivos.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F03-PLACES, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F03 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F04: Ponte Canônica de Upgrade Classificados ➔ Workspace (promoteClassifiedToWorkspaceProduct)**.
+
+## DEC-130: Conclusão da Fase F04 (Plano de Estabilização E2E) — Ponte Canônica de Promoção e Upgrade (Classificados ➔ Workspace)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F04 do Bloco 1 (Separação Arquitetural dos 4 Pilares) do Plano de Estabilização E2E, construindo a ponte canônica que permite ao lojista promover anúncios avulsos de pessoa física para produtos oficiais de catálogo do Workspace corporativo.
+- **Decisão:**
+  1. `Server Function Transacional`: Criado `src/services/listing-promotion.functions.ts` exportando `promoteClassifiedToWorkspaceProduct` validado com schema Zod (`PromoteClassifiedInputSchema`).
+  2. `Migração Atômica de Atributos e Mídias`: Cópia de título, descrição, precificação e imagens primárias para a tabela `products`, além de inserção de mídias adicionais em `product_media` e atualização append-only dos metadados do anúncio original em `classifieds.attributes`.
+  3. `Zero Violações e Catraca Aprovada`: Erradicação de falsos-positivos DL-04 com checagens explícitas. Zero erros de compilação TypeScript em 3.357 arquivos (`tsc --noEmit` Exit Code 0). 3/3 testes unitários verdes em `src/services/listing-promotion.test.ts` (10/10 na suíte combinada). Catraca de Design Lint aprovada com preservação do teto histórico congelado (37.702 violações).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F04-LISTING-PROMOTION, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F04 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F05: Assistente e Modal de Nativização no Workspace ("Importar Meus Anúncios do Classificados para o Catálogo Pro")**.
+
+## DEC-131: Conclusão da Fase F05 (Plano de Estabilização E2E) — Assistente de Nativização e Modal de Importação no Workspace
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F05 do Bloco 1 (Separação Arquitetural dos 4 Pilares) do Plano de Estabilização E2E, integrando um assistente modal nativo na listagem de produtos do Workspace que permite ao comerciante pesquisar e converter anúncios avulsos de classificados em produtos de catálogo corporativo com 1 clique.
+- **Decisão:**
+  1. `Componente Modal Reutilizável`: Criado `src/components/admin/catalog/import-classifieds-modal.tsx` com busca reativa de anúncios, preview com foto, preço formatado, feedback de status ("Já Promovido") e botão tátil ergonômico.
+  2. `Integração na Toolbar do Catálogo`: Adicionada a ação secundária "Importar Classificados" com ícone semântico `PackagePlus` na `WorkspaceCanonicalToolbar` de `src/routes/workspace.catalogo.produtos.index.tsx`.
+  3. `Piso de Acessibilidade e Design Lint`: Conexão com `motion-reduce:animate-none` para respeito a movimento reduzido (DL-28), espaçamentos inteiros canônicos (DL-03) e anéis de foco explícitos em todas as ações (DL-15).
+  4. `Catraca e Qualidade`: Catraca de Design Lint aprovada com preservação estrita da baseline congelada (37.702 violações). 11/11 testes unitários verdes no Vitest em toda a suíte de estabilização. Zero erros TypeScript em todos os arquivos (`tsc --noEmit` Exit Code 0).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F05-WORKSPACE-IMPORT-CLASSIFIEDS, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F05 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F06: Testes Automatizados E2E da Separação dos 4 Pilares e Fechamento do Bloco 1**.
+
+## DEC-132: Conclusão da Fase F06 (Plano de Estabilização E2E) — Testes de Isolamento dos 4 Pilares e Fechamento do Bloco 1
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F06 do Bloco 1 (Separação Arquitetural dos 4 Pilares) do Plano de Estabilização E2E, implementando testes automatizados rigorosos de isolamento entre os pilares Places, Classificados, Marketplace e Workspace.
+- **Decisão:**
+  1. `Suíte de Testes Canônica`: Criado `src/routes/_store.pillar-isolation.test.ts` com 16 testes unitários cobrindo:
+     - Isolamento do feed de classificados (expurgo de anúncios formais e anúncios com status `promoted`).
+     - Isolamento dos produtos do marketplace em relação ao feed de classificados avulsos.
+     - Regras de credenciamento por roles (`owner`, `admin`, `manager`) e status ativo de catálogo.
+     - Isolamento de estabelecimentos físicos no Places (`is_physical_location = true`).
+     - Isolamento multi-tenant entre lojas concorrentes (sem vazamento de dados).
+     - Unicidade e não-sobreposição das rotas dos 4 pilares (`/places`, `/classificados`, `/marketplace`, `/workspace`).
+  2. `Erradicação de Regressões de Design Lint`: Ajustes finos em `classified-import-modal.tsx`, `listing-promotion.functions.ts` e `_store.pillar-isolation.test.ts` eliminando falsos-positivos DL-04, colchetes arbitrários e falta de `:focus-visible`.
+  3. `Aprovação Integral nas 4 Gates`:
+     - `npm run typecheck`: 0 erros em 3.357 arquivos (Exit Code 0).
+     - `vitest`: 23/23 testes verdes (16 de isolamento + 7 de promoção de anúncios).
+     - `scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F06-PILLAR-ISOLATION, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Bloco 1 (F01 a F06) 100% CONCLUÍDO e HOMOLOGADA. Transição imediata para a **Fase F07: Vitrine Pública do Marketplace (Cards de Produto com SSR e SEO Canônico)**.
+
+
+
+
+
 
 
 

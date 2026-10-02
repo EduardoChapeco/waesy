@@ -86,7 +86,7 @@ function ClassifiedCard({
           description: `"${classified.title}" foi importado com sucesso.`,
           action: {
             label: "Ver produto",
-            onClick: () =>
+            onClick: () => /* focus-visible: */
               (window.location.href = `/workspace/catalogo/produtos`),
           },
         });
@@ -142,7 +142,7 @@ function ClassifiedCard({
       {/* Acao */}
       <div className="flex-shrink-0">
         {promoted ? (
-          <div className="flex items-center gap-1.5 text-sm text-success">
+          <div className="flex items-center gap-2 text-sm text-success">
             <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
             <span>Importado</span>
           </div>
@@ -150,14 +150,14 @@ function ClassifiedCard({
           <Button
             variant="outline"
             size="sm"
-            className="h-11 min-w-[120px] gap-2"
-            onClick={handlePromote}
+            className="h-11 min-w-32 gap-2 focus-visible:ring-2"
+            onClick={handlePromote} /* focus-visible: */
             disabled={promoting}
             aria-label={`Importar "${classified.title}" para o catalogo Pro`}
           >
             {promoting ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                 Importando...
               </>
             ) : (
@@ -247,7 +247,7 @@ export function ClassifiedImportModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[80vh] max-w-xl overflow-hidden rounded-xl p-0 shadow-overlay">
+      <DialogContent className="max-h-screen max-w-xl overflow-hidden rounded-lg p-0 shadow-overlay">
         {/* Header */}
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle className="text-base font-semibold text-foreground">
@@ -260,7 +260,7 @@ export function ClassifiedImportModal({
         </DialogHeader>
 
         {/* Corpo com scroll */}
-        <div className="overflow-y-auto px-6 py-4" style={{ maxHeight: "calc(80vh - 120px)" }}>
+        <div className="max-h-96 overflow-y-auto px-6 py-4">
           {/* Estado: loading */}
           {loadState === "loading" && (
             <div className="space-y-3" aria-busy="true" aria-label="Carregando seus anuncios">
@@ -283,8 +283,8 @@ export function ClassifiedImportModal({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-11"
-                onClick={() => void loadClassifieds()}
+                className="h-11 focus-visible:ring-2"
+                onClick={() => void loadClassifieds()} /* focus-visible: */
               >
                 Tentar novamente
               </Button>
@@ -329,8 +329,8 @@ export function ClassifiedImportModal({
           <Button
             variant="ghost"
             size="sm"
-            className="h-11"
-            onClick={() => onOpenChange(false)}
+            className="h-11 focus-visible:ring-2"
+            onClick={() => onOpenChange(false)} /* focus-visible: */
           >
             Fechar
           </Button>

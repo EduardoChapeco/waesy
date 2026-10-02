@@ -151,7 +151,7 @@ describe("Pilar 3 vs Pilar 2 — Produtos do Marketplace isolados dos Classifica
       { id: "p2", store_id: "s1", status: "active" },
     ];
 
-    const algumSemLoja = produtosRetornados.some((p) => !p.store_id);
+    const algumSemLoja = produtosRetornados.some((p) => Boolean(p.store_id) === false);
     expect(algumSemLoja).toBe(false); // CORRETO: todos têm store_id
   });
 });
