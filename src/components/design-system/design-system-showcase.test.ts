@@ -11,9 +11,13 @@ import {
   CanonicalBottomBar,
   CanonicalGlobalRail,
   CanonicalBreadcrumbsBar,
+  CanonicalSurface,
+  CanonicalKpiTile,
+  CanonicalLedgerRow,
+  CanonicalDataTable,
 } from "@/components/ui/canonical";
 
-describe("Design System Showcase — Fases S24 & S25 (Shell e Matriz de 4 Estados)", () => {
+describe("Design System Showcase — Fases S24, S25 & S26 (Shell, Superfícies, Dados e 4 Estados)", () => {
   it("deve exportar todas as famílias canônicas e componentes de apresentação", () => {
     expect(ActionsFamily).toBeDefined();
     expect(FormsFamily).toBeDefined();
@@ -24,11 +28,18 @@ describe("Design System Showcase — Fases S24 & S25 (Shell e Matriz de 4 Estado
     expect(StateCard).toBeDefined();
   });
 
-  it("deve exportar todas as primitivas de shell e navegação canônicas", () => {
+  it("deve exportar todas as primitivas de shell e navegação canônicas (S25)", () => {
     expect(CanonicalAppHeader).toBeDefined();
     expect(CanonicalBottomBar).toBeDefined();
     expect(CanonicalGlobalRail).toBeDefined();
     expect(CanonicalBreadcrumbsBar).toBeDefined();
+  });
+
+  it("deve exportar todas as primitivas de superfície e dados canônicas (S26)", () => {
+    expect(CanonicalSurface).toBeDefined();
+    expect(CanonicalKpiTile).toBeDefined();
+    expect(CanonicalLedgerRow).toBeDefined();
+    expect(CanonicalDataTable).toBeDefined();
   });
 
   it("deve aceitar os 5 modos canônicos de visualização de estados", () => {

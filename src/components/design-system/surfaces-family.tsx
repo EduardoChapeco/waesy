@@ -1,19 +1,69 @@
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+  CanonicalSurface,
+  CanonicalKpiTile,
+  CanonicalLedgerRow,
+  CanonicalDataTable,
+  type DataTableColumn,
+} from "@/components/ui/canonical";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StateCard } from "./state-card";
 import type { ComponentStateProps } from "./design-system-types";
-import { Table as TableIcon, AlertCircle, RefreshCw } from "lucide-react";
+import { DollarSign, Plus } from "lucide-react";
+
+interface TransactionItem {
+  id: string;
+  date: string;
+  title: string;
+  category: string;
+  amount: string;
+  type: "credit" | "debit";
+  status: string;
+}
+
+const sampleTransactions: TransactionItem[] = [
+  {
+    id: "tx-1",
+    date: "02/10 09:30",
+    title: "Pacote Serra Gaúcha",
+    category: "Turismo",
+    amount: "+R$ 1.850,00",
+    type: "credit",
+    status: "Aprovado",
+  },
+  {
+    id: "tx-2",
+    date: "02/10 09:12",
+    title: "Comissão Plataforma",
+    category: "Taxa",
+    amount: "-R$ 92,50",
+    type: "debit",
+    status: "Liquidado",
+  },
+];
+
+const tableColumns: DataTableColumn<TransactionItem>[] = [
+  {
+    key: "title",
+    header: "Item",
+    render: (item) => (
+      <div>
+        <p className="font-semibold text-foreground">{item.title}</p>
+        <p className="text-muted-foreground">{item.category}</p>
+      </div>
+    ),
+  },
+  {
+    key: "amount",
+    header: "Valor",
+    isNumeric: true,
+    render: (item) => (
+      <span className={item.type === "credit" ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}>
+        {item.amount}
+      </span>
+    ),
+  },
+];
 
 export function SurfacesFamily({ mode }: ComponentStateProps) {
   const showReady = mode === "all" || mode === "ready";
@@ -24,48 +74,46 @@ export function SurfacesFamily({ mode }: ComponentStateProps) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Família de Superfícies e Dados</h2>
+        <h2 className="text-lg font-semibold text-foreground">Família Superfície e Dados</h2>
         <p className="text-xs text-muted-foreground">
-          Cards, contêineres e tabelas de dados nas 4 matrizes de estado operacional.
+          CanonicalSurface, CanonicalKpiTile, CanonicalLedgerRow e CanonicalDataTable nas 4 matrizes de estado.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* ESTADO 1: PRONTO */}
         {showReady && (
-          <StateCard title="Tabela com Dados" state="ready">
+          <StateCard title="Superfície e Métricas" state="ready">
             <div className="flex flex-col gap-3">
-              <Card className="border border-border shadow-none">
-                <CardHeader className="p-3 pb-1">
-                  <CardTitle className="text-xs font-semibold text-muted-foreground">
-                    Faturamento do Dia
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 pt-0">
-                  <div className="text-xl font-bold font-mono">R$ 14.850,00</div>
-                </CardContent>
-              </Card>
+              <CanonicalKpiTile
+                label="Receita do Dia"
+                value="R$ 14.850,00"
+                trend={{ value: "+12.4%", isPositive: true }}
+                description="vs. ontem"
+                icon={<DollarSign className="h-4 w-4 text-primary" />}
+              />
 
-              <div className="rounded-md border border-border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="h-8">
-                      <TableHead className="text-[11px] p-2">Item</TableHead>
-                      <TableHead className="text-[11px] p-2 text-right">Qtd</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow className="h-9">
-                      <TableCell className="text-xs p-2 font-medium">Pacote Serra</TableCell>
-                      <TableCell className="text-xs p-2 text-right font-mono">12</TableCell>
-                    </TableRow>
-                    <TableRow className="h-9">
-                      <TableCell className="text-xs p-2 font-medium">Reserva Hotel</TableCell>
-                      <TableCell className="text-xs p-2 text-right font-mono">08</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </div>
+              <CanonicalSurface variant="default" padding="sm" className="space-y-1">
+                <p className="text-xs font-semibold text-muted-foreground px-2 pt-1">
+                  Extrato Contábil Recente
+                </p>
+                {sampleTransactions.map((tx) => (
+                  <CanonicalLedgerRow
+                    key={tx.id}
+                    id={tx.id}
+                    date={tx.date}
+                    title={tx.title}
+                    category={tx.category}
+                    amount={tx.amount}
+                    type={tx.type}
+                    status={
+                      <Badge variant="outline" className="text-xs font-normal">
+                        {tx.status}
+                      </Badge>
+                    }
+                  />
+                ))}
+              </CanonicalSurface>
             </div>
           </StateCard>
         )}
@@ -74,46 +122,46 @@ export function SurfacesFamily({ mode }: ComponentStateProps) {
         {showLoading && (
           <StateCard title="Superfície em Carga" state="loading">
             <div className="flex flex-col gap-3">
-              <Card className="border border-border shadow-none">
-                <CardHeader className="p-3 pb-1">
-                  <Skeleton className="h-3 w-28" />
-                </CardHeader>
-                <CardContent className="p-3 pt-0">
-                  <Skeleton className="h-6 w-32" />
-                </CardContent>
-              </Card>
+              <CanonicalKpiTile
+                label="Receita do Dia"
+                isLoading={true}
+                icon={<DollarSign className="h-4 w-4" />}
+              />
 
-              <div className="rounded-md border border-border p-2 flex flex-col gap-2">
-                <div className="flex justify-between border-b border-border pb-1.5">
-                  <Skeleton className="h-3 w-16" />
-                  <Skeleton className="h-3 w-10" />
-                </div>
-                <div className="flex justify-between py-1">
-                  <Skeleton className="h-3.5 w-24" />
-                  <Skeleton className="h-3.5 w-8" />
-                </div>
-                <div className="flex justify-between py-1">
-                  <Skeleton className="h-3.5 w-20" />
-                  <Skeleton className="h-3.5 w-8" />
-                </div>
-              </div>
+              <CanonicalDataTable
+                data={[]}
+                columns={tableColumns}
+                keyExtractor={(item) => item.id}
+                isLoading={true}
+              />
             </div>
           </StateCard>
         )}
 
         {/* ESTADO 3: VAZIO */}
         {showEmpty && (
-          <StateCard title="Sem Registros" state="empty">
-            <EmptyState
-              icon={TableIcon}
-              title="Sem dados na listagem"
-              description="Nenhuma transação foi registrada no período consultado."
-              action={{
-                label: "Cadastrar primeiro item",
-                onClick: () => {},
-              }}
-              className="py-4 min-h-[190px]"
-            />
+          <StateCard title="Sem Movimentação" state="empty">
+            <div className="flex flex-col gap-3">
+              <CanonicalKpiTile
+                label="Receita do Dia"
+                value=""
+                icon={<DollarSign className="h-4 w-4" />}
+              />
+
+              <CanonicalDataTable
+                data={[]}
+                columns={tableColumns}
+                keyExtractor={(item) => item.id}
+                emptyTitle="Nenhum lançamento no período"
+                emptyDescription="Nenhuma transação contábil ou venda foi registrada nesta data."
+                emptyAction={
+                  <Button size="sm" className="h-11 gap-1 text-xs">
+                    <Plus className="h-3.5 w-3.5" />
+                    Registrar Lançamento
+                  </Button>
+                }
+              />
+            </div>
           </StateCard>
         )}
 
@@ -121,22 +169,19 @@ export function SurfacesFamily({ mode }: ComponentStateProps) {
         {showError && (
           <StateCard title="Falha de Leitura" state="error">
             <div className="flex flex-col gap-3">
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Erro de Sincronização</AlertTitle>
-                <AlertDescription className="text-xs">
-                  Tempo limite de consulta excedido no cluster de persistência.
-                </AlertDescription>
-              </Alert>
+              <CanonicalKpiTile
+                label="Receita do Dia"
+                errorMessage="Cluster de leitura fora do ar."
+                onRetry={() => {}}
+              />
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-11 sm:h-9 w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
-              >
-                <RefreshCw className="h-3.5 w-3.5" />
-                Recarregar tabela
-              </Button>
+              <CanonicalDataTable
+                data={[]}
+                columns={tableColumns}
+                keyExtractor={(item) => item.id}
+                errorMessage="Tempo limite de resposta excedido ao consultar o ledger."
+                onRetry={() => {}}
+              />
             </div>
           </StateCard>
         )}

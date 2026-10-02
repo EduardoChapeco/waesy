@@ -1313,3 +1313,19 @@
   5. `Suíte de Testes`: 3/3 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S25, WCAG 2.2 AA (Critério 2.5.8), Apple HIG e Definition of Done B.9.
 - **Consequências:** Fase S25 100% CONCLUÍDA e HOMOLOGADA. Total de **25 de 48 fases do Plano 5 concluídas (52.1%)**. Próxima fase: **S26 (Família Superfície e Dados)**.
+
+## DEC-115: Conclusão da Fase S26 (Plano 5 — Bloco D) — Família Superfície e Dados Canônica
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S26 (Família Superfície e Dados) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
+- **Decisão:**
+  1. `Primitivas Canônicas de Superfície e Dados`: Criado `src/components/ui/canonical/data-surface.tsx` exportando:
+     - `CanonicalSurface`: Primitiva estrutural de container com variantes (`default`, `subtle`, `outlined`, `interactive`), paddings na grade modular de 4px (`none`, `sm`, `md`, `lg`) e zero sombras decorativas em superfícies utilitárias.
+     - `CanonicalKpiTile`: Bloco métrico de alta densidade com rótulo, valor monospaçado (`font-mono text-2xl font-bold tracking-tight`), indicador de tendência semântica (`TrendingUp` / `TrendingDown`) e matriz completa de 4 estados.
+     - `CanonicalLedgerRow`: Linha de lançamento contábil/estoque com altura tátil mínima de 44px (`min-h-11`), formatação monospaçada de valores, suporte a seleção e teclado acessível.
+     - `CanonicalDataTable`: Tabela de dados canônica com alinhamento numérico à direita em `font-mono`, linhas com hover suave e renderização integral dos 4 estados.
+  2. `Exportação Centralizada`: Atualizado `src/components/ui/canonical/index.ts` expondo todos os componentes e tipos de superfície e dados.
+  3. `Showcase de Superfícies e Matriz de 4 Estados`: Refatorado `src/components/design-system/surfaces-family.tsx` integrando as novas primitivas nas 4 matrizes (Pronto, Carregamento com Skeleton espelhado, Vazio com EmptyState e Ação, Erro com Alert e reintento).
+  4. `Piso de Acessibilidade e Design Lint`: 0 violações P0 e 0 violações P1 no `scripts/design-lint.mjs --changed`. Todos os alvos de toque com h-11 (>=44px), anéis de foco (:focus-visible) rigorosamente aplicados e gap modular na grade de 4px.
+  5. `Suíte de Testes`: 4/4 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S26, WCAG 2.2 AA (Critério 2.5.8), Apple HIG e Definition of Done B.9.
+- **Consequências:** Fase S26 100% CONCLUÍDA e HOMOLOGADA. Total de **26 de 48 fases do Plano 5 concluídas (54.2%)**. Próxima fase: **S27 (Família Mídia)**.
