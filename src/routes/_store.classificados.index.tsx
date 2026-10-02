@@ -1,5 +1,4 @@
-import React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Tag, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
@@ -119,6 +118,33 @@ function ClassifiedsMasterPage() {
       />
 
       <div className="px-4 sm:px-6 space-y-4 pt-2 sm:pt-4">
+        {/* Banner de Contexto e Desambiguação dos 4 Pilares */}
+        <section className="bg-card border border-border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+          <div className="flex flex-col gap-1">
+            <span className="font-semibold text-foreground flex items-center gap-2">
+              <span className="size-2 rounded-full bg-primary inline-block" />
+              Classificados Locais — Negociação Direta e Oportunidades
+            </span>
+            <p className="text-muted-foreground">
+              Anúncios rápidos de particulares e microcomércio. Para compras com checkout integrado e garantia de empresas, visite o Marketplace.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              to="/marketplace"
+              className="h-11 px-4 rounded-md text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              Ir para o Marketplace
+            </Link>
+            <Link
+              to="/diretorio"
+              className="h-11 px-3 rounded-md text-xs font-medium border border-border bg-background hover:bg-muted text-foreground transition-colors inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              Guia de Lugares (Places)
+            </Link>
+          </div>
+        </section>
+
         {/* Barra de controle superior */}
         <ClassifiedCatalogHeader
           search={catalog.search}
