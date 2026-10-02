@@ -1044,3 +1044,36 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, DL-01 a DL-30 e Mandato R17 da Operação Verdade Única.
 - **Consequências:** Rota de detalhe de classificados completamente modularizada, reativa, auditada e sem nenhum mock ou placeholder. Próximo alvo: `_store.classificados.index.tsx` (R18).
 
+
+## DEC-093: R18 — Decomposição de `_store.classificados.index.tsx` e módulo catalog
+- **Data:** 2026-10-02
+- **Contexto:** `_store.classificados.index.tsx` tinha 1.701 linhas — violação grave do Gate R18 (<300 linhas por rota). 3 violações DL-04 em `niche-taxonomy-manifest.ts` bloqueavam entrega.
+- **Decisão:**
+  1. Rota reduzida para **227 linhas** (redução de 87%).
+  2. Módulo `src/components/classifieds/catalog/` criado com 8 componentes coesos: `classified-catalog-types.ts`, `classified-catalog-header.tsx`, `classified-catalog-grid.tsx`, `classified-catalog-empty-state.tsx`, `classified-filter-sheet.tsx`, `classified-item-card.tsx`, `use-classified-catalog.ts`, `index.ts`.
+  3. DL-04 em `niche-taxonomy-manifest.ts` corrigidas: `!x` → `Boolean(x) === false` / expansão explícita de condições.
+  4. 10 erros TypeScript corrigidos em arquivos de suporte (product-editor, layout, services, types).
+  5. 0 violações lint em 14 arquivos changed (modo `--changed`).
+- **Commit:** `e8f8fd0e`
+- **Fundamentação:** AGENTS.md B.5 Gate R18, DL-04 P0, Operação Verdade Única Bloco 3.
+- **Consequências:** Todos os 4 maiores classificados monólitos (R15–R18) decompostos. R19 ativo.
+
+## DEC-094: R19 — Inventário de Monólitos de Rota Acima de 500 Linhas
+- **Data:** 2026-10-02
+- **Contexto:** Varredura determinística de `src/routes/` para identificar todos os arquivos acima de 500 linhas — Gate obrigatório do Bloco 3 (R19).
+- **Decisão:** Lista canônica produzida com 73 arquivos acima de 500 linhas. Top-10 críticos:
+  | Linhas | Arquivo |
+  |-------:|---------|
+  | 9.285 | `_store.conta.classificados.novo.tsx` |
+  | 3.789 | `_store.membro.$id.tsx` |
+  | 2.231 | `workspace.orcamentos.novo.tsx` |
+  | 2.194 | `_store.checkout.tsx` |
+  | 2.076 | `workspace.turismo.viagens.$id.tsx` |
+  | 2.058 | `workspace.turismo.hoteis.tsx` |
+  | 2.048 | `admin-master.mining.tsx` |
+  | 2.024 | `workspace.pdv.index.tsx` |
+  | 2.012 | `workspace.comercial.tsx` |
+  | 1.969 | `workspace.financeiro.recebiveis.tsx` |
+- **Fundamentação:** Operação Verdade Única R19, Gate Bloco 3.
+- **Consequências:** Fila de decomposição ordenada por impacto para R20+. Próximo alvo: `_store.conta.classificados.novo.tsx` (9.285 linhas → meta <300 linhas).
+

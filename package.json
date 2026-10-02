@@ -18,7 +18,10 @@
     "test": "vitest run",
     "audit:all": "node scripts/audit/audit-all.mjs",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name usewaesy --commit-dirty=true --no-bundle",
-    "check:canonical": "npm run typecheck && npm run lint:design && npm run lint"
+    "check:size": "node scripts/check-route-size.mjs",
+    "check:size:warn": "node scripts/check-route-size.mjs --warn",
+    "check:size:changed": "node scripts/check-route-size.mjs --changed",
+    "check:canonical": "npm run typecheck && npm run lint:design && npm run lint && npm run check:size:warn"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
