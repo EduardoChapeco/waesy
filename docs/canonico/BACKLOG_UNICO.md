@@ -161,9 +161,9 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **S30**: Migração de módulos para primitivas, com catraca de design zerando. *(Concluído — DEC-119, catraca aprovada, baseline rebaixada para 37.710 com -604 violações)*
 - [x] **S31**: Nativização mobile, tablet e desktop nos 5 viewports (320, 390, 768, 1280, 1920). *(Concluído — DEC-120, primitivas `CanonicalBentoGrid`, `AdaptiveViewportContainer` e `CanonicalHooberThumbZone`, showcase interativo e testes 100% verdes)*
 
-### Bloco E — Telemetria Real (S32–S37) — NA FILA
-- [ ] **S32**: Captura de erro de cliente e worker com correlação (request ID, tenant, release).
-- [ ] **S33**: Extinção definitiva do buffer de 5 segundos de `error-capture.ts`.
+### Bloco E — Telemetria Real (S32–S37) — EM ANDAMENTO
+- [x] **S32**: Captura de erro de cliente e worker com correlação (request ID, tenant, release). *(Concluído — DEC-121, `error-correlator.ts` com envelope estruturado e redação de PII)*
+- [x] **S33**: Extinção definitiva do buffer de 5 segundos de `error-capture.ts`. *(Concluído — DEC-121, eliminação de TTL_MS=5000 em favor do registro correlacionado)*
 - [ ] **S34**: Detecção de quebra silenciosa (catch vazio, promessa rejeitada, job não executado).
 - [ ] **S35**: Web Vitals reais por rota, dispositivo e vertical.
 - [ ] **S36**: Contabilização sistemática de erros de negócio.

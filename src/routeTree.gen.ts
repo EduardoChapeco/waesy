@@ -15,6 +15,7 @@ import { Route as HomeRouteImport } from './routes/home'
 import { Route as SitemapNewsDotxmlRouteImport } from './routes/sitemap-news[.]xml'
 import { Route as SitemapProductsDotxmlRouteImport } from './routes/sitemap-products[.]xml'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as StoreIndexRouteImport } from './routes/_store.index'
 import { Route as StoreAcougueRouteImport } from './routes/_store.acougue'
@@ -183,6 +184,7 @@ import { Route as StoreEventoIdRouteImport } from './routes/_store.evento.$id'
 import { Route as StoreFSlugRouteImport } from './routes/_store.f.$slug'
 import { Route as StoreGiftCardClaimTokenRouteImport } from './routes/_store.gift-card.$claimToken'
 import { Route as StoreLojaSlugRouteImport } from './routes/_store.loja.$slug'
+import { Route as StoreMarketplaceIndexRouteImport } from './routes/_store.marketplace.index'
 import { Route as StoreMembroIdRouteImport } from './routes/_store.membro.$id'
 import { Route as StoreMotoristaSlugRouteImport } from './routes/_store.motorista.$slug'
 import { Route as StoreNoticiasIndexRouteImport } from './routes/_store.noticias.index'
@@ -420,6 +422,11 @@ const SitemapProductsDotxmlRoute = SitemapProductsDotxmlRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkspaceRoute = WorkspaceRouteImport.update({
@@ -1264,6 +1271,11 @@ const StoreGiftCardClaimTokenRoute = StoreGiftCardClaimTokenRouteImport.update({
 const StoreLojaSlugRoute = StoreLojaSlugRouteImport.update({
   id: '/loja/$slug',
   path: '/loja/$slug',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreMarketplaceIndexRoute = StoreMarketplaceIndexRouteImport.update({
+  id: '/marketplace/',
+  path: '/marketplace/',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreMembroIdRoute = StoreMembroIdRouteImport.update({
@@ -2435,6 +2447,7 @@ export interface FileRoutesByFullPath {
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/status': typeof StatusRoute
   '/workspace': typeof WorkspaceRouteWithChildren
   '/acougue': typeof StoreAcougueRoute
   '/afiliados': typeof StoreAfiliadosRoute
@@ -2735,6 +2748,7 @@ export interface FileRoutesByFullPath {
   '/conta/': typeof StoreContaIndexRoute
   '/diretorio/': typeof StoreDiretorioIndexRoute
   '/empregos/': typeof StoreEmpregosIndexRoute
+  '/marketplace/': typeof StoreMarketplaceIndexRoute
   '/noticias/': typeof StoreNoticiasIndexRoute
   '/receitas/': typeof StoreReceitasIndexRoute
   '/turismo/': typeof StoreTurismoIndexRoute
@@ -2817,6 +2831,7 @@ export interface FileRoutesByTo {
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/status': typeof StatusRoute
   '/acougue': typeof StoreAcougueRoute
   '/afiliados': typeof StoreAfiliadosRoute
   '/agenda': typeof StoreAgendaRoute
@@ -3110,6 +3125,7 @@ export interface FileRoutesByTo {
   '/conta': typeof StoreContaIndexRoute
   '/diretorio': typeof StoreDiretorioIndexRoute
   '/empregos': typeof StoreEmpregosIndexRoute
+  '/marketplace': typeof StoreMarketplaceIndexRoute
   '/noticias': typeof StoreNoticiasIndexRoute
   '/receitas': typeof StoreReceitasIndexRoute
   '/turismo': typeof StoreTurismoIndexRoute
@@ -3195,6 +3211,7 @@ export interface FileRoutesById {
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/status': typeof StatusRoute
   '/workspace': typeof WorkspaceRouteWithChildren
   '/_store/acougue': typeof StoreAcougueRoute
   '/_store/afiliados': typeof StoreAfiliadosRoute
@@ -3496,6 +3513,7 @@ export interface FileRoutesById {
   '/_store/conta/': typeof StoreContaIndexRoute
   '/_store/diretorio/': typeof StoreDiretorioIndexRoute
   '/_store/empregos/': typeof StoreEmpregosIndexRoute
+  '/_store/marketplace/': typeof StoreMarketplaceIndexRoute
   '/_store/noticias/': typeof StoreNoticiasIndexRoute
   '/_store/receitas/': typeof StoreReceitasIndexRoute
   '/_store/turismo/': typeof StoreTurismoIndexRoute
@@ -3582,6 +3600,7 @@ export interface FileRouteTypes {
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
     | '/sitemap.xml'
+    | '/status'
     | '/workspace'
     | '/acougue'
     | '/afiliados'
@@ -3882,6 +3901,7 @@ export interface FileRouteTypes {
     | '/conta/'
     | '/diretorio/'
     | '/empregos/'
+    | '/marketplace/'
     | '/noticias/'
     | '/receitas/'
     | '/turismo/'
@@ -3964,6 +3984,7 @@ export interface FileRouteTypes {
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
     | '/sitemap.xml'
+    | '/status'
     | '/acougue'
     | '/afiliados'
     | '/agenda'
@@ -4257,6 +4278,7 @@ export interface FileRouteTypes {
     | '/conta'
     | '/diretorio'
     | '/empregos'
+    | '/marketplace'
     | '/noticias'
     | '/receitas'
     | '/turismo'
@@ -4341,6 +4363,7 @@ export interface FileRouteTypes {
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
     | '/sitemap.xml'
+    | '/status'
     | '/workspace'
     | '/_store/acougue'
     | '/_store/afiliados'
@@ -4642,6 +4665,7 @@ export interface FileRouteTypes {
     | '/_store/conta/'
     | '/_store/diretorio/'
     | '/_store/empregos/'
+    | '/_store/marketplace/'
     | '/_store/noticias/'
     | '/_store/receitas/'
     | '/_store/turismo/'
@@ -4727,6 +4751,7 @@ export interface RootRouteChildren {
   SitemapNewsDotxmlRoute: typeof SitemapNewsDotxmlRoute
   SitemapProductsDotxmlRoute: typeof SitemapProductsDotxmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StatusRoute: typeof StatusRoute
   WorkspaceRoute: typeof WorkspaceRouteWithChildren
   ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
   ApiSecurityTelemetryRoute: typeof ApiSecurityTelemetryRoute
@@ -4805,6 +4830,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/workspace': {
@@ -5981,6 +6013,13 @@ declare module '@tanstack/react-router' {
       path: '/loja/$slug'
       fullPath: '/loja/$slug'
       preLoaderRoute: typeof StoreLojaSlugRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/marketplace/': {
+      id: '/_store/marketplace/'
+      path: '/marketplace'
+      fullPath: '/marketplace/'
+      preLoaderRoute: typeof StoreMarketplaceIndexRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/membro/$id': {
@@ -7698,6 +7737,7 @@ interface StoreRouteChildren {
   StoreVendedoraSlugRoute: typeof StoreVendedoraSlugRoute
   StoreVoucherTokenRoute: typeof StoreVoucherTokenRoute
   StoreClassificadosIndexRoute: typeof StoreClassificadosIndexRoute
+  StoreMarketplaceIndexRoute: typeof StoreMarketplaceIndexRoute
   StoreNoticiasIndexRoute: typeof StoreNoticiasIndexRoute
   StoreReceitasIndexRoute: typeof StoreReceitasIndexRoute
   StorePedidoPublicTokenConfirmacaoRoute: typeof StorePedidoPublicTokenConfirmacaoRoute
@@ -7785,6 +7825,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreVendedoraSlugRoute: StoreVendedoraSlugRoute,
   StoreVoucherTokenRoute: StoreVoucherTokenRoute,
   StoreClassificadosIndexRoute: StoreClassificadosIndexRoute,
+  StoreMarketplaceIndexRoute: StoreMarketplaceIndexRoute,
   StoreNoticiasIndexRoute: StoreNoticiasIndexRoute,
   StoreReceitasIndexRoute: StoreReceitasIndexRoute,
   StorePedidoPublicTokenConfirmacaoRoute:
@@ -8327,6 +8368,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapNewsDotxmlRoute: SitemapNewsDotxmlRoute,
   SitemapProductsDotxmlRoute: SitemapProductsDotxmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StatusRoute: StatusRoute,
   WorkspaceRoute: WorkspaceRouteWithChildren,
   ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,
   ApiSecurityTelemetryRoute: ApiSecurityTelemetryRoute,

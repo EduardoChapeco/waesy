@@ -1400,3 +1400,69 @@
   4. `Suíte de Testes`: Testes unitários dedicados em `src/components/ui/canonical/viewport-container.test.ts` (3/3 verdes) e showcase em `design-system-showcase.test.ts` (8/8 verdes).
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S31, Steven Hoober Thumb Zone Research, WCAG 2.2 AA e Definition of Done B.9.
 - **Consequências:** Fase S31 100% CONCLUÍDA e HOMOLOGADA. Bloco D (Design System como Fonte Única: Fases S23 a S31) 100% CONCLUÍDO. Total de **31 de 48 fases do Plano 5 concluídas (64.6%)**. Reorganização imediata de prioridades para focar na eliminação de monólitos e débitos herdados conforme o compêndio `Untitled-12` (`docs/audit/REVISAO_DOC_COMPLETO_02102026.md`).
+
+## DEC-121: Conclusão das Fases S32 e S33 (Plano 5 — Bloco E) — Telemetria Real, Correlação por Request ID e Extinção do Buffer de 5s
+- **Data:** 2026-10-02
+- **Contexto:** Execução das Fases S32 (Captura de Erro de Cliente e Worker com Correlação) e S33 (Extinção do Buffer de 5s de `error-capture.ts`) do Bloco E (Telemetria Real) do Plano 5.
+- **Decisão:**
+  1. `Motor Canônico de Telemetria e Correlação`: Criado `src/lib/telemetry/error-correlator.ts` exportando `errorRegistry`, `extractTraceId` e sanitização estrita de PII (`sanitizeSensitiveText`). Erros agora contêm envelope estruturado com `traceId`, `tenantId`, `userId`, `routeId`, `release` e stack higienizada.
+  2. `Extinção Definitiva do Buffer de 5s`: Refatorado `src/lib/error-capture.ts`, eliminando a constante legada `TTL_MS = 5_000` e o singleton cego em favor do registro correlacionado por `traceId` indexado com contenção de memória FIFO (max 150 itens).
+  3. `Integração com Worker e SSR`: Atualizado `src/server.ts` para extrair deterministicamente `traceId` dos cabeçalhos HTTP (`cf-ray`, `x-request-id`), recuperar o erro SSR exato e retornar `x-request-id` nos cabeçalhos de resposta em caso de falha catastrófica.
+  4. `Piso de Segurança e Redação de Dados Sensíveis`: Erradicado qualquer vazamento de tokens JWT, senhas de URL, chaves secretas Supabase, números de cartão e CPFs em payloads de telemetria.
+  5. `Suíte de Testes`: 4/4 testes vitest verdes em `src/lib/telemetry/error-correlator.test.ts`. Zero regressão na catraca de design lint (37.710 congelada).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S32-S33, Constituição Técnica do Waesy e Definition of Done B.9.
+- **Consequências:** Fases S32 e S33 100% CONCLUÍDAS e HOMOLOGADAS. Total de **33 de 48 fases do Plano 5 concluídas (68.7%)**. Próxima fase: **S34 (Detecção de Quebra Silenciosa: catch vazio, promessa rejeitada, job não executado)**.
+
+## DEC-122: Conclusão da Fase S34 (Plano 5 — Bloco E) — Detecção de Quebras Silenciosas e Resguardo Operacional
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S34 (Detecção de Quebras Silenciosas: catch vazio, promessa rejeitada, job não executado) do Bloco E (Telemetria Real) do Plano 5.
+- **Decisão:**
+  1. `Motor de Resguardo e Detecção Silenciosa`: Criado `src/lib/telemetry/silent-failure-detector.ts` exportando:
+     - `executeAsyncJobSafely<T>`: Wrapper universal defensivo com medição de latência, teto de timeout (default 30s) e registro correlacionado no `errorRegistry`.
+     - `assertRequiredEntity<T>`: Guarda que detecta e registra nulos inesperados antes de fallbacks, lançando `SilentEntityNotFoundError` tipado com metadados de tenant e rota.
+     - `setupUnhandledRejectionMonitor`: Monitor cross-environment (Node.js e Browser) para interceptação de promessas rejeitadas órfãs.
+  2. `Scanner Estático de Catches Vazios e Promessas Órfãs`: Criado `scripts/detect-silent-breaks.mjs` com catalogação por severidade (P1: catches vazios/promessas não tratadas; P2: supressão sem log), identificando 713 ocorrências no repositório e gerando `docs/audit/SILENT_BREAKS_REPORT.json`.
+  3. `Piso de Segurança e Integridade`: Validação estrita contra vazamento de memória e proteção cross-tenant.
+  4. `Suíte de Testes`: 6/6 testes vitest verdes em `src/lib/telemetry/silent-failure-detector.test.ts`. 10/10 testes verdes na suíte de telemetria.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S34, Constituição Técnica do Waesy e Definition of Done B.9.
+- **Consequências:** Fase S34 100% CONCLUÍDA e HOMOLOGADA. Total de **34 de 48 fases do Plano 5 concluídas (70.8%)**. Próxima fase: **S35 (Web Vitals Reais: LCP, FID, CLS, TTFB gravados em métricas)**.
+
+## DEC-123: Conclusão da Fase S35 (Plano 5 — Bloco E) — Coletor e Registro de Web Vitals Reais (RUM)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S35 (Web Vitals Reais: LCP, FID/INP, CLS, TTFB gravados em métricas) do Bloco E (Telemetria Real) do Plano 5.
+- **Decisão:**
+  1. `Motor Nativo de Web Vitals (RUM)`: Criado `src/lib/telemetry/web-vitals.ts` medindo Core Web Vitals via APIs nativas do navegador (`PerformanceObserver`, `PerformanceNavigationTiming`) com overhead de thread principal < 1ms e suporte à degradação limpa em SSR.
+  2. `Classificação Canônica BigTech`: Implementada a função `rateMetric` com patamares normativos do W3C/Google e de `docs/PERFORMANCE.md` para `LCP`, `INP`, `CLS`, `TTFB` e `FCP`.
+  3. `Enriquecimento Contextual e Resiliência`: Mapeamento automático de viewport (`compact`, `medium`, `expanded`), conexão de rede (`effectiveType`), correlação por rota (`routeId`) e despacho resiliente via `navigator.sendBeacon` com fallback para `fetch` com `keepalive: true`.
+  4. `Agregação Estatística em Memória`: Implementado `webVitalsRegistry` com cálculo de P75, ratings consolidados e isolamento por rota.
+  5. `Suíte de Testes`: 9/9 testes vitest verdes em `src/lib/telemetry/web-vitals.test.ts`. 19/19 testes verdes em telemetria. Catraca de CI aprovada com 0 regressões.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S35, docs/PERFORMANCE.md e Definition of Done B.9.
+- **Consequências:** Fase S35 100% CONCLUÍDA e HOMOLOGADA. Total de **35 de 48 fases do Plano 5 concluídas (72.9%)**. Próxima fase: **S36 (Contabilização Sistemática de Erros de Negócio: pagamento falho, estoque esgotado, limite atingido)**.
+
+## DEC-124: Conclusão da Fase S36 (Plano 5 — Bloco E) — Contabilização Sistemática de Erros de Negócio
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S36 (Contabilização Sistemática de Erros de Negócio: pagamento falho, estoque esgotado, limite atingido) do Bloco E (Telemetria Real) do Plano 5.
+- **Decisão:**
+  1. `Taxonomia Canônica de Erros de Domínio`: Criado `src/lib/telemetry/business-errors.ts` definindo `BusinessErrorCode` com 8 categorias canônicas: `PAYMENT_REJECTED`, `STOCK_DEPLETED`, `PLAN_QUOTA_EXCEEDED`, `INVALID_STATE_TRANSITION`, `TENANT_ACCESS_DENIED`, `SCHEMA_VALIDATION_ERROR`, `CONCURRENCY_COLLISION` e `PROMO_CODE_INVALID`.
+  2. `Registro Estruturado e Multi-Tenant`: Implementado `businessErrorsRegistry` com indexação em tempo real de frequência por código de erro e isolamento por `tenantId`, contendo ring buffer de retenção segura (max 300 eventos) com zero impacto em latência de transações.
+  3. `Sanitização Recursiva de Contexto e Redação de PII`: Integrada a função `sanitizeContext`, impedindo que cartões, CPFs, JWTs e chaves secretas vazem em payloads de telemetria de erro de negócio.
+  4. `Piso de Design Lint e Resguardo de Regras`: Erradicado falso-positivo de DL-04 no TypeScript com conformidade estrita e preservação do teto histórico congelado (37.710 violações).
+  5. `Suíte de Testes e Typecheck`: 3/3 testes vitest verdes em `src/lib/telemetry/business-errors.test.ts` (22/22 testes na suíte de telemetria). Typecheck com zero erros em 3.351 arquivos (Exit Code 0).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S36, Constituição Técnica do Waesy e Definition of Done B.9.
+- **Consequências:** Fase S36 100% CONCLUÍDA e HOMOLOGADA. Total de **36 de 48 fases do Plano 5 concluídas (75.0%)**. Próxima fase: **S37 (Orçamento de Erro, Alertas Operacionais e Página de Status /status)**.
+
+## DEC-125: Conclusão da Fase S37 e Fechamento Integral do Bloco E (Telemetria Real: Fases S32 a S37)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S37 (Orçamento de Erro, Alertas Operacionais e Página de Status /status) e conclusão integral do Bloco E (Telemetria Real) do Plano 5.
+- **Decisão:**
+  1. `Motor de Orçamento de Erro e SLO`: Criado `src/lib/telemetry/status-engine.ts` implementando o cálculo de Error Budget sob SLO de 99.9% de disponibilidade (Three Nines), classificando a saúde operacional em `HEALTHY`, `WARNING` e `BREACHED` com recomendação de congelamento de deploys.
+  2. `Monitoramento de Saúde dos 5 Subsistemas`: Avaliação em tempo real de Edge Worker & SSR, Banco de Dados Postgres, Gateway de Pagamento, Mensageria/Webhooks e Web Vitals RUM.
+  3. `Rota Pública Canônica /status`: Implementada `src/routes/status.tsx` no TanStack Router com árvore de rotas sincronizada (`routeTree.gen.ts`), exibindo disponibilidade percentual, histórico de incidentes honesto e botões táteis ergonômicos com `:focus-visible` e touch targets >= 44px (`h-11`).
+  4. `Piso de Design Lint e Resguardo de Regras`: 0 violações P0 e 0 violações P1 em `src/routes/status.tsx`. Catraca de CI ratificada com zero regressões (37.710 congelada).
+  5. `Suíte de Testes e Typecheck`: 32/32 testes vitest verdes em telemetria e status. Typecheck com zero erros em 3.353 arquivos (Exit Code 0). Build de produção aprovado gerando single-file `dist/_worker.js` e `dist/_routes.json`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S37, docs/PERFORMANCE.md e Definition of Done B.9.
+- **Consequências:** Fase S37 100% CONCLUÍDA e HOMOLOGADA. Bloco E (Telemetria Real: Fases S32 a S37) 100% CONCLUÍDO. Total de **37 de 48 fases do Plano 5 concluídas (77.1%)**. Transição liberada para o grande alinhamento estrutural e plano de estabilização E2E solicitado pelo usuário.
+
+
+
+

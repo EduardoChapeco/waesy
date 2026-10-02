@@ -1,0 +1,5721 @@
+{
+  "scannedFiles": 1591,
+  "totalFindings": 713,
+  "bySeverity": {
+    "P1": 330,
+    "P2": 383
+  },
+  "byRule": {
+    "SB-01": 83,
+    "SB-02": 169,
+    "SB-03": 78,
+    "SB-04": 383
+  },
+  "timestamp": "2026-10-02T13:57:30.652Z",
+  "findings": [
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/classifieds/catalog/classified-item-card.tsx",
+      "line": 36,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/classifieds/classified-detail-desktop.tsx",
+      "line": 165,
+      "snippet": "catch {         // cancelado       }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/classifieds/classified-detail-mobile.tsx",
+      "line": 164,
+      "snippet": "catch {         // usuário cancelou       }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/classifieds/convenience-showcase-view.tsx",
+      "line": 108,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/classifieds/convenience-showcase-view.tsx",
+      "line": 406,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/classifieds/convenience-showcase-view.tsx",
+      "line": 456,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/classifieds/detail/use-classified-detail.ts",
+      "line": 80,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/classifieds/editorial-showcase-view.tsx",
+      "line": 471,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/classifieds/editorial-showcase-view.tsx",
+      "line": 512,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/classifieds/editorial-showcase-view.tsx",
+      "line": 454,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/classifieds/editorial-showcase-view.tsx",
+      "line": 470,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/classifieds/editorial-showcase-view.tsx",
+      "line": 511,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/ad-telemetry-beacon.tsx",
+      "line": 70,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/ad-telemetry-beacon.tsx",
+      "line": 109,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/commerce/business-location-picker.tsx",
+      "line": 422,
+      "snippet": "catch {  // Silent fallback  }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/business-location-picker.tsx",
+      "line": 235,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 134,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 153,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 498,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 500,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 2718,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/commerce/canonical-store-profile-view.tsx",
+      "line": 2709,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/commerce/cookie-banner.tsx",
+      "line": 68,
+      "snippet": "catch {  // Non-blocking for UI  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/commerce/dynamic-product-card.tsx",
+      "line": 28,
+      "snippet": "catch (e) {  // ignore  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/commerce/dynamic-sections/tourism-quote-hero.tsx",
+      "line": 61,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/commerce/dynamic-sections/tourism-services-grid.tsx",
+      "line": 70,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/commerce/flyers/flyer-interactive-viewer-modal.tsx",
+      "line": 89,
+      "snippet": "catch (err) {         // Usuário cancelou       }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/flyers/flyer-interactive-viewer-modal.tsx",
+      "line": 50,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/flyers/flyer-interactive-viewer-modal.tsx",
+      "line": 126,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/commerce/product-detail-mobile.tsx",
+      "line": 90,
+      "snippet": "catch {         // usuário cancelou       }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/product-telemetry.tsx",
+      "line": 145,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/product-telemetry.tsx",
+      "line": 138,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/product-telemetry.tsx",
+      "line": 140,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/product-telemetry.tsx",
+      "line": 143,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/product-telemetry.tsx",
+      "line": 230,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/shipping-label-modal.tsx",
+      "line": 72,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/store-vitrine-sections-editor.tsx",
+      "line": 171,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/commerce/unified-feed-card.tsx",
+      "line": 248,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/commercial/deal-delivery-tracking-card.tsx",
+      "line": 31,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/commercial/deal-delivery-tracking-card.tsx",
+      "line": 37,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/community/moment-detail-drawer.tsx",
+      "line": 33,
+      "snippet": "catch {  // Revert silently if not authenticated  }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/community/post-card.tsx",
+      "line": 101,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/community/post-creation-drawer.tsx",
+      "line": 96,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/crm/NewClientWizard.tsx",
+      "line": 127,
+      "snippet": "catch {  // Fallback silencioso  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/delivery/company-delivery-manager-modal.tsx",
+      "line": 59,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/landing/enterprise-landing-view.tsx",
+      "line": 32,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/landing/founder-smartphone-mockup.tsx",
+      "line": 84,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/location/location-master-pill.tsx",
+      "line": 128,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/location/location-master-pill.tsx",
+      "line": 34,
+      "snippet": "catch {  // ignore  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/location/location-master-pill.tsx",
+      "line": 74,
+      "snippet": "catch {  // fallback  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/location/location-master-pill.tsx",
+      "line": 96,
+      "snippet": "catch {  // fallback  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/location/location-master-pill.tsx",
+      "line": 170,
+      "snippet": "catch {  // ignore  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/location/location-master-pill.tsx",
+      "line": 203,
+      "snippet": "catch {  // ignore  }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/location/location-master-pill.tsx",
+      "line": 189,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/mining/advanced-mining-tabs.tsx",
+      "line": 30,
+      "snippet": "catch {         // Silencioso em caso de erro de rede       }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/news/news-sponsor-banner.tsx",
+      "line": 41,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/news/news-sponsor-banner.tsx",
+      "line": 56,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/news/news-sponsor-banner.tsx",
+      "line": 88,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/onboarding/interest-picker-modal.tsx",
+      "line": 135,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/profile/creator-profile-sheet-editor.tsx",
+      "line": 184,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/scanner/barcode-scanner-modal.tsx",
+      "line": 149,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/search/instant-search-dialog.tsx",
+      "line": 39,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/search/instant-search-dialog.tsx",
+      "line": 80,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/components/search/instant-search-dialog.tsx",
+      "line": 93,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/shell/utility-cluster.tsx",
+      "line": 112,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/social/threads-feed-card.tsx",
+      "line": 96,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/stories/advanced-story-viewer.tsx",
+      "line": 98,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/stories/advanced-story-viewer.tsx",
+      "line": 164,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/stories/advanced-story-viewer.tsx",
+      "line": 178,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/studio/SocialCardGeneratorModal.tsx",
+      "line": 217,
+      "snippet": "catch {         // Usuário cancelou       }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/tourism/studio/StudioMapWidget.tsx",
+      "line": 62,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/components/ui/address-field.tsx",
+      "line": 51,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/components/ui/phone-field.tsx",
+      "line": 58,
+      "snippet": "catch {  // Ignora formatação se inválido  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/components/workspace/workspace-shell.tsx",
+      "line": 323,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/hooks/use-classifieds-draft.ts",
+      "line": 62,
+      "snippet": "catch {       // silently ignore malformed draft     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/hooks/use-classifieds-draft.ts",
+      "line": 112,
+      "snippet": "catch {       // silently ignore     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/hooks/use-classifieds-draft.ts",
+      "line": 123,
+      "snippet": "catch {       // silently ignore     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/hooks/use-form-draft.ts",
+      "line": 51,
+      "snippet": "catch {       // Ignora erro de JSON malformado     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/hooks/use-form-draft.ts",
+      "line": 99,
+      "snippet": "catch {       // Ignora falha de restauração     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/hooks/use-form-draft.ts",
+      "line": 110,
+      "snippet": "catch {       // Ignora erro     }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/hooks/use-pwa-telemetry.ts",
+      "line": 57,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/hooks/use-pwa-telemetry.ts",
+      "line": 80,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/hooks/use-pwa-telemetry.ts",
+      "line": 97,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/hooks/use-pwa-telemetry.ts",
+      "line": 126,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/hooks/use-telemetry.ts",
+      "line": 102,
+      "snippet": "catch {       // Ignorar exceções de fechamento de página     }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/hooks/use-telemetry.ts",
+      "line": 100,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/agency-context.tsx",
+      "line": 37,
+      "snippet": "catch {       /* noop */     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/agency-context.tsx",
+      "line": 45,
+      "snippet": "catch {       /* noop */     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/lib/agency-context.tsx",
+      "line": 185,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/lib/agency-context.tsx",
+      "line": 195,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/ai/openrouter.ts",
+      "line": 68,
+      "snippet": "catch {     // Pool indisponível — continua para env var   }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/lib/ai/openrouter.ts",
+      "line": 135,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/lib/ai/openrouter.ts",
+      "line": 137,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/ai/prompt-shield.ts",
+      "line": 140,
+      "snippet": "catch {  // Ignora strings que não são base64 válido  }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/lib/audio-chimes.ts",
+      "line": 82,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/lib/audio-chimes.ts",
+      "line": 38,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/lib/audio-chimes.ts",
+      "line": 57,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/cache/edge-cache.ts",
+      "line": 115,
+      "snippet": "catch {       // Ignora se não estiver em contexto HTTP direto (ex: invocação direta em testes)   "
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/canvas/cors-safe-image.ts",
+      "line": 33,
+      "snippet": "catch {     // Falha silenciosa de CORS no navegador — avança para o fallback server-side   }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/lib/cart-context.tsx",
+      "line": 50,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/city-helper.ts",
+      "line": 33,
+      "snippet": "catch {         // ignore       }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/lib/classifieds/semantics.ts",
+      "line": 1547,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/clipboard-media.ts",
+      "line": 109,
+      "snippet": "catch {       // Falha silenciosa em HTML malformado     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/crypto-vault.server.ts",
+      "line": 80,
+      "snippet": "catch {       // fallthrough     }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/lib/identity.server.ts",
+      "line": 301,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/identity.server.ts",
+      "line": 273,
+      "snippet": "catch {         // Auto-heal não bloqueante       }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/legal-consent.server.ts",
+      "line": 39,
+      "snippet": "catch {  // Visitante anônimo  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/legal-consent.server.ts",
+      "line": 96,
+      "snippet": "catch (e) {  // Non-blocking  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/legal-consent.server.ts",
+      "line": 108,
+      "snippet": "catch (e) {  // Cookie context might not be available in some scenarios  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/mining/continuous-crawler.engine.ts",
+      "line": 148,
+      "snippet": "catch {     // ignore   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/mining/continuous-crawler.engine.ts",
+      "line": 198,
+      "snippet": "catch {     // ignore json parsing errors   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/mining/firecrawl-client.ts",
+      "line": 33,
+      "snippet": "catch {     // Continua para variável de ambiente   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/mining/intent-classifier.engine.ts",
+      "line": 104,
+      "snippet": "catch {     // Ignora erro de parsing de URL   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/mining/intent-classifier.engine.ts",
+      "line": 223,
+      "snippet": "catch {       // Falha graciosa de IA     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/mining/rss-ingester.engine.ts",
+      "line": 79,
+      "snippet": "catch {         // continua       }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/mining/scraper-utils.ts",
+      "line": 145,
+      "snippet": "catch {         // Fallback defensivo silencioso       }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/mining/scraper-utils.ts",
+      "line": 160,
+      "snippet": "catch {         // Fallback defensivo silencioso       }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/lib/mining/scraper-utils.ts",
+      "line": 148,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/lib/mining/scraper-utils.ts",
+      "line": 163,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/lib/network-telemetry.server.ts",
+      "line": 211,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/network-telemetry.server.ts",
+      "line": 177,
+      "snippet": "catch {         // ignora erro de parsing       }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/network-telemetry.server.ts",
+      "line": 197,
+      "snippet": "catch {         // ignora       }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/lib/resilient-api-client.ts",
+      "line": 121,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/security-sentinel.ts",
+      "line": 178,
+      "snippet": "catch {  // Silencioso  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/security-sentinel.ts",
+      "line": 217,
+      "snippet": "catch {  // Nunca propagar erros de telemetria — não deve afetar o usuário  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/lib/store-context.ts",
+      "line": 8,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/lib/store-context.ts",
+      "line": 14,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/lib/supabase-ssr.server.ts",
+      "line": 55,
+      "snippet": "catch {  // Silently ignore cookie setting outside request context  }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/lib/theme.ts",
+      "line": 54,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/lib/theme.ts",
+      "line": 143,
+      "snippet": "catch(e) {}"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/lib/whatsapp.ts",
+      "line": 173,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/lib/whatsapp.ts",
+      "line": 175,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/admin-master.ads-network.tsx",
+      "line": 19,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/admin-master.ads-network.tsx",
+      "line": 21,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/admin-master.carnes.tsx",
+      "line": 28,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/admin-master.lojas.tsx",
+      "line": 67,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/admin-master.portal-completo.tsx",
+      "line": 21,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/admin-master.pre-cadastro.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/admin-master.seguranca.telemetria.tsx",
+      "line": 17,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/admin-master.seguranca.telemetria.tsx",
+      "line": 94,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/admin-master.seguranca.telemetria.tsx",
+      "line": 96,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/admin-master.usuarios.tsx",
+      "line": 133,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/api.auth.govbr.callback.ts",
+      "line": 144,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/api.auth.linkedin.callback.ts",
+      "line": 29,
+      "snippet": "catch {               // fallback             }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/api.auth.marketplace.callback.ts",
+      "line": 28,
+      "snippet": "catch {               // fallback             }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/assinar.$token.tsx",
+      "line": 85,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/assinar.$token.tsx",
+      "line": 188,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/viajante.carteira.tsx",
+      "line": 45,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/viajante.carteira.tsx",
+      "line": 61,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.atendimento.index.tsx",
+      "line": 38,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.atendimento.index.tsx",
+      "line": 39,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.catalogo.atributos.tsx",
+      "line": 61,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.catalogo.categorias.$id.tsx",
+      "line": 21,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.catalogo.categorias.index.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.catalogo.produtos.$id.tsx",
+      "line": 44,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.catalogo.produtos.$id.tsx",
+      "line": 48,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.catalogo.produtos.index.tsx",
+      "line": 37,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.catalogo.produtos.novo.tsx",
+      "line": 37,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.clientes.index.tsx",
+      "line": 29,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.comercial.tsx",
+      "line": 37,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.comercial.tsx",
+      "line": 444,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.configuracoes.index.tsx",
+      "line": 32,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.configuracoes.index.tsx",
+      "line": 33,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.configuracoes.index.tsx",
+      "line": 34,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.configuracoes.index.tsx",
+      "line": 411,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.configuracoes.index.tsx",
+      "line": 415,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.configuracoes.integracoes.tsx",
+      "line": 30,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.configuracoes.integracoes.tsx",
+      "line": 31,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.configuracoes.inteligencia-artificial.tsx",
+      "line": 22,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.configuracoes.parceiros.tsx",
+      "line": 20,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.configuracoes.privacidade-loja.tsx",
+      "line": 25,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.contador.index.tsx",
+      "line": 22,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.contador.index.tsx",
+      "line": 24,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.crm.tsx",
+      "line": 34,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.estudio.index.tsx",
+      "line": 36,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/workspace.eventos.$id.checkin.tsx",
+      "line": 240,
+      "snippet": "catch {  // Fallback silencioso  }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/workspace.eventos.$id.checkin.tsx",
+      "line": 258,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.eventos.index.tsx",
+      "line": 26,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.financeiro.caixa.index.tsx",
+      "line": 34,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.financeiro.caixa.lancamentos.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.financeiro.recebiveis.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.inteligencia.radar.tsx",
+      "line": 12,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.licitacoes.tsx",
+      "line": 30,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.lojas.index.tsx",
+      "line": 44,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.anuncios.tsx",
+      "line": 32,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.anuncios.tsx",
+      "line": 34,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.brand-kit.tsx",
+      "line": 23,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.brand-kit.tsx",
+      "line": 24,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.briefing.tsx",
+      "line": 33,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.briefing.tsx",
+      "line": 34,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.canvas-bmc.tsx",
+      "line": 40,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.canvas-bmc.tsx",
+      "line": 42,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.canvas-pecados.tsx",
+      "line": 12,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.concursos.tsx",
+      "line": 25,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.formularios.tsx",
+      "line": 38,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.hotpages.tsx",
+      "line": 26,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.hotpages.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/workspace.marketing.stories.tsx",
+      "line": 130,
+      "snippet": "catch (err) {         // Cancelado pelo usuário       }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.stories.tsx",
+      "line": 23,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/workspace.marketing.studio.tsx",
+      "line": 188,
+      "snippet": "catch {         // Usuário cancelou       }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.swot.tsx",
+      "line": 33,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.marketing.swot.tsx",
+      "line": 35,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.mural.novo.tsx",
+      "line": 21,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.mural.novo.tsx",
+      "line": 22,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.orcamentos.novo.tsx",
+      "line": 37,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.pdv.comandas.tsx",
+      "line": 26,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.pdv.comandas.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/workspace.pdv.cozinha.tsx",
+      "line": 205,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/workspace.pdv.cozinha.tsx",
+      "line": 210,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/workspace.pdv.cozinha.tsx",
+      "line": 214,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.pdv.cozinha.tsx",
+      "line": 73,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/workspace.pdv.index.tsx",
+      "line": 442,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/workspace.pdv.index.tsx",
+      "line": 446,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.pdv.index.tsx",
+      "line": 168,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.pdv.index.tsx",
+      "line": 173,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.pedidos.$id.tsx",
+      "line": 37,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.pedidos.gestor.tsx",
+      "line": 28,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.pedidos.gestor.tsx",
+      "line": 30,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.pedidos.index.tsx",
+      "line": 32,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.relatorios.gastronomia.tsx",
+      "line": 17,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.relatorios.gastronomia.tsx",
+      "line": 18,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.reservas.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.reservas.tsx",
+      "line": 195,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/workspace.simlab.focus-group.tsx",
+      "line": 68,
+      "snippet": "catch {       // fallback     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.simlab.focus-group.tsx",
+      "line": 21,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.simulacao.tsx",
+      "line": 38,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.squads.index.tsx",
+      "line": 17,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.suporte.tsx",
+      "line": 23,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.tarefas.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.tarefas.tsx",
+      "line": 31,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/workspace.tokens.tsx",
+      "line": 111,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.tokens.tsx",
+      "line": 22,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.tokens.tsx",
+      "line": 23,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/workspace.tsx",
+      "line": 104,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.aereos.tsx",
+      "line": 38,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.contratos.index.tsx",
+      "line": 26,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.cotacoes.tsx",
+      "line": 50,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.destinos.tsx",
+      "line": 31,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.embarques.tsx",
+      "line": 30,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.fornecedores.tsx",
+      "line": 22,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.frota.$id.tsx",
+      "line": 21,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.frota.$id.tsx",
+      "line": 24,
+      "snippet": ".catch(  () => null  )"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.frota.index.tsx",
+      "line": 23,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.grupos.$id.embarque.tsx",
+      "line": 22,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.grupos.$id.embarque.tsx",
+      "line": 25,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.grupos.$id.embarque.tsx",
+      "line": 27,
+      "snippet": ".catch(  () => null  )"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.grupos.index.tsx",
+      "line": 26,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.hoteis.tsx",
+      "line": 33,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.incidentes.tsx",
+      "line": 23,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.propostas.index.tsx",
+      "line": 41,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.radar.tsx",
+      "line": 29,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.reacomodacao.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.viagens.$id.tsx",
+      "line": 219,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.viagens.$id.tsx",
+      "line": 234,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.viagens.$id.tsx",
+      "line": 2070,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.viagens.index.tsx",
+      "line": 49,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.vistos.tsx",
+      "line": 22,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/workspace.turismo.vouchers.index.tsx",
+      "line": 30,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.afiliados.tsx",
+      "line": 34,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.afiliados.tsx",
+      "line": 309,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.agenda.tsx",
+      "line": 54,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.agenda.tsx",
+      "line": 124,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.bio.$slug.tsx",
+      "line": 14,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.buscar.tsx",
+      "line": 433,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.buscar.tsx",
+      "line": 444,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.buscar.tsx",
+      "line": 454,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.buscar.tsx",
+      "line": 463,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.buscar.tsx",
+      "line": 32,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.buscar.tsx",
+      "line": 563,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.cadastro.tsx",
+      "line": 78,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.checkout.tsx",
+      "line": 692,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.checkout.tsx",
+      "line": 55,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.checkout.tsx",
+      "line": 58,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.checkout.tsx",
+      "line": 60,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.classificados.$id.tsx",
+      "line": 45,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.agendamentos.tsx",
+      "line": 22,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/_store.conta.classificados.index.tsx",
+      "line": 306,
+      "snippet": "catch {       // Polling silencioso     }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 317,
+      "snippet": "catch (e) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 333,
+      "snippet": "catch (e) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 488,
+      "snippet": "catch (e) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 516,
+      "snippet": "catch (e) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 2625,
+      "snippet": "catch (e) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 2721,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 56,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 967,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 1723,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 1731,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 2633,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.classificados.novo.tsx",
+      "line": 2640,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.colaborador.tsx",
+      "line": 17,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.comissoes.tsx",
+      "line": 28,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.comissoes.tsx",
+      "line": 29,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.concursos.tsx",
+      "line": 21,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.conversas.index.tsx",
+      "line": 278,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.conversas.index.tsx",
+      "line": 287,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.conversas.index.tsx",
+      "line": 319,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.criadores.tsx",
+      "line": 29,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.criadores.tsx",
+      "line": 30,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.curriculo.tsx",
+      "line": 34,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.index.tsx",
+      "line": 20,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.index.tsx",
+      "line": 23,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.mobilidade.tsx",
+      "line": 20,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.mobilidade.tsx",
+      "line": 30,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.notificacoes.tsx",
+      "line": 18,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.perfil.tsx",
+      "line": 29,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.tokens.tsx",
+      "line": 25,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.tsx",
+      "line": 9,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.conta.tsx",
+      "line": 20,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.convite.tsx",
+      "line": 26,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.criar-negocio.avancado.tsx",
+      "line": 72,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.criar-negocio.avancado.tsx",
+      "line": 313,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.criar-negocio.tsx",
+      "line": 75,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.criar-negocio.tsx",
+      "line": 318,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/_store.destaques.$slug.tsx",
+      "line": 362,
+      "snippet": "catch {  // Ignorado  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.destaques.$slug.tsx",
+      "line": 239,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.diretorio.$id.tsx",
+      "line": 43,
+      "snippet": ".catch(         () => null       )"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.diretorio.$id.tsx",
+      "line": 84,
+      "snippet": ".catch(           () => null         )"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.diretorio.$id.tsx",
+      "line": 99,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.diretorio.$id.tsx",
+      "line": 117,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.diretorio.$id.tsx",
+      "line": 120,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.diretorio.$id.tsx",
+      "line": 122,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.empregos.$id.tsx",
+      "line": 43,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.empregos.$id.tsx",
+      "line": 44,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.empregos.$id.tsx",
+      "line": 45,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.empregos.$id.tsx",
+      "line": 52,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.entrar.tsx",
+      "line": 28,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.entrar.tsx",
+      "line": 338,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.entrega.$token.tsx",
+      "line": 95,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/_store.entrega.$token.tsx",
+      "line": 226,
+      "snippet": "catch {  // Ignora erro de timeout/permissão de GPS e segue  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.entrega.$token.tsx",
+      "line": 19,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.entrega.$token.tsx",
+      "line": 67,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.entrega.$token.tsx",
+      "line": 130,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.entregador.cadastro.tsx",
+      "line": 36,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.entregador.cadastro.tsx",
+      "line": 37,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.evento.$id.tsx",
+      "line": 90,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.evento.$id.tsx",
+      "line": 130,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.evento.$id.tsx",
+      "line": 140,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.evento.$id.tsx",
+      "line": 210,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.evento.$id.tsx",
+      "line": 220,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.evento.$id.tsx",
+      "line": 36,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.evento.$id.tsx",
+      "line": 38,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/_store.explorar.tsx",
+      "line": 110,
+      "snippet": "catch {             // ignore           }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.feed.tsx",
+      "line": 36,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.feed.tsx",
+      "line": 37,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/_store.index.tsx",
+      "line": 122,
+      "snippet": "catch {             // ignore           }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.loja.$slug.tsx",
+      "line": 74,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.loja.$slug.tsx",
+      "line": 93,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.loja.$slug.tsx",
+      "line": 94,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.loja.$slug.tsx",
+      "line": 101,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.loja.$slug.tsx",
+      "line": 102,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.membro.$id.tsx",
+      "line": 300,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.membro.$id.tsx",
+      "line": 64,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/_store.mobilidade.tsx",
+      "line": 217,
+      "snippet": "catch {  // fallback  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.mobilidade.tsx",
+      "line": 29,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.motorista.$slug.tsx",
+      "line": 17,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.mural.tsx",
+      "line": 25,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.mural.tsx",
+      "line": 26,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.noticias.$slug.tsx",
+      "line": 49,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.noticias.$slug.tsx",
+      "line": 69,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.noticias.$slug.tsx",
+      "line": 20,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.patrocinador.$token.tsx",
+      "line": 25,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/routes/_store.pedido.$publicToken.confirmacao.tsx",
+      "line": 103,
+      "snippet": "catch {  // Silencioso no fallback  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.pedido.$publicToken.confirmacao.tsx",
+      "line": 23,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.perfil-da-loja.tsx",
+      "line": 85,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.perfil-da-loja.tsx",
+      "line": 124,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.perfil-da-loja.tsx",
+      "line": 125,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.perfil-da-loja.tsx",
+      "line": 129,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.perfil-da-loja.tsx",
+      "line": 132,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.perfil-da-loja.tsx",
+      "line": 133,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.politicas.$slug.tsx",
+      "line": 21,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.politicas.$slug.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.portal-completo.tsx",
+      "line": 26,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.portal-completo.tsx",
+      "line": 27,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.privacidade.tsx",
+      "line": 46,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.produto.$slug.tsx",
+      "line": 240,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.produto.$slug.tsx",
+      "line": 243,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.produto.$slug.tsx",
+      "line": 244,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.publicacao.$id.tsx",
+      "line": 119,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.publicacao.$id.tsx",
+      "line": 34,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.publicacao.$id.tsx",
+      "line": 35,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.receitas.$id.tsx",
+      "line": 125,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.receitas.$id.tsx",
+      "line": 68,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.receitas.$id.tsx",
+      "line": 111,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.receitas.$id.tsx",
+      "line": 193,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.receitas.$id.tsx",
+      "line": 35,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.termos.tsx",
+      "line": 44,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.trocas-e-devolucoes.tsx",
+      "line": 46,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.tsx",
+      "line": 20,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.tsx",
+      "line": 21,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.tsx",
+      "line": 22,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.tsx",
+      "line": 25,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/routes/_store.turismo.$id.tsx",
+      "line": 121,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.turismo.$id.tsx",
+      "line": 44,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.turismo.$id.tsx",
+      "line": 45,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/_store.u.$username.tsx",
+      "line": 38,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/routes/__root.tsx",
+      "line": 323,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/__root.tsx",
+      "line": 81,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/__root.tsx",
+      "line": 82,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/routes/__root.tsx",
+      "line": 83,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/admin-catalog.functions.ts",
+      "line": 299,
+      "snippet": "catch {  // Utiliza organizationId padrão  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/admin-catalog.functions.ts",
+      "line": 348,
+      "snippet": "catch {  // Ignora erro de mídia no fallback  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/admin-catalog.functions.ts",
+      "line": 2286,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ads.functions.ts",
+      "line": 249,
+      "snippet": "catch {  // Ignora erro não impeditivo de log  }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/ai-agent-squad-orchestrator.functions.ts",
+      "line": 382,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-agent-squad-orchestrator.functions.ts",
+      "line": 414,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-conversations.functions.ts",
+      "line": 320,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-conversations.functions.ts",
+      "line": 368,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-conversations.functions.ts",
+      "line": 405,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-conversations.functions.ts",
+      "line": 471,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-conversations.functions.ts",
+      "line": 585,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-conversations.functions.ts",
+      "line": 622,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ai-core-gateway.functions.ts",
+      "line": 283,
+      "snippet": "catch { /* ignore */ }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ai-core-gateway.functions.ts",
+      "line": 336,
+      "snippet": "catch { /* ignore */ }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ai-core-gateway.functions.ts",
+      "line": 384,
+      "snippet": "catch { /* ignore */ }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ai-core-gateway.functions.ts",
+      "line": 475,
+      "snippet": "catch {       // Cache miss ou indisponível     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ai-core-gateway.functions.ts",
+      "line": 493,
+      "snippet": "catch {       // Continua normalmente se a promise falhou     }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/ai-core-gateway.functions.ts",
+      "line": 451,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/ai-core-gateway.functions.ts",
+      "line": 663,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/ai-core-gateway.functions.ts",
+      "line": 701,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/ai-core-gateway.functions.ts",
+      "line": 753,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-core-gateway.functions.ts",
+      "line": 791,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ai-master-prompts.functions.ts",
+      "line": 519,
+      "snippet": "catch {       // Falha ou indisponibilidade de banco aciona fallback automático para Tier 3     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-memory-curation.functions.ts",
+      "line": 117,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-memory-curation.functions.ts",
+      "line": 206,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-memory-curation.functions.ts",
+      "line": 425,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ai-persona.functions.ts",
+      "line": 225,
+      "snippet": "catch {       // Ignorar falha assíncrona de cache de persona     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ai-persona.functions.ts",
+      "line": 254,
+      "snippet": "catch {         // Visitante não autenticado       }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-pool.ts",
+      "line": 87,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-pool.ts",
+      "line": 187,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-pool.ts",
+      "line": 242,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-quotas-and-byok.functions.ts",
+      "line": 144,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ai-sdr.functions.ts",
+      "line": 245,
+      "snippet": "catch { /* visitante anônimo */ }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/ai-sdr.functions.ts",
+      "line": 312,
+      "snippet": "catch (e) {       // Ignora falhas para manter chat resiliente     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-sdr.functions.ts",
+      "line": 144,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-sdr.functions.ts",
+      "line": 409,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-sdr.functions.ts",
+      "line": 585,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-skills-router.functions.ts",
+      "line": 206,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ai-skills-router.functions.ts",
+      "line": 417,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 692,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 756,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 826,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 896,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 968,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 1140,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 333,
+      "snippet": "catch {     // Prossegue para a pool da plataforma   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 497,
+      "snippet": "catch {       // ignore     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 326,
+      "snippet": ".catch(() => undefined)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 328,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 600,
+      "snippet": ".catch(() => undefined)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 601,
+      "snippet": ".catch(() => undefined)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 603,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/api-orchestrator.functions.ts",
+      "line": 610,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/auth.functions.ts",
+      "line": 551,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/auth.functions.ts",
+      "line": 556,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/auth.functions.ts",
+      "line": 1041,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/auth.functions.ts",
+      "line": 197,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/auth.functions.ts",
+      "line": 260,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/auth.functions.ts",
+      "line": 578,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/booking.functions.ts",
+      "line": 477,
+      "snippet": "catch (e) {  // Guest user  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/brand-kit.functions.ts",
+      "line": 127,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/brand-kit.functions.ts",
+      "line": 326,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/canvas-bmc.functions.ts",
+      "line": 70,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/canvas-bmc.functions.ts",
+      "line": 203,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/canvas-bmc.functions.ts",
+      "line": 321,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/cart.functions.ts",
+      "line": 57,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/cart.functions.ts",
+      "line": 546,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/cash-safes.functions.ts",
+      "line": 64,
+      "snippet": "catch {       // Fallback gracioso em ambientes de teste     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/cash-safes.functions.ts",
+      "line": 167,
+      "snippet": "catch {       // fallback     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/cash-safes.functions.ts",
+      "line": 206,
+      "snippet": "catch {       // fallback     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/cash-safes.functions.ts",
+      "line": 276,
+      "snippet": "catch {       // fallback     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/cash-safes.functions.ts",
+      "line": 331,
+      "snippet": "catch {       // fallback     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/cash-safes.functions.ts",
+      "line": 376,
+      "snippet": "catch {       // fallback     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/cash-safes.functions.ts",
+      "line": 452,
+      "snippet": "catch {       // fallback     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/cash-safes.functions.ts",
+      "line": 542,
+      "snippet": "catch {       // fallback     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 67,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 124,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 181,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 239,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 294,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 349,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 401,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 453,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 506,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 564,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 622,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 681,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 744,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 810,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 875,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/central-knowledge.functions.ts",
+      "line": 937,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/chat-commerce.functions.ts",
+      "line": 224,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/chat-commerce.functions.ts",
+      "line": 256,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/chat-commerce.functions.ts",
+      "line": 382,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/chat-commerce.functions.ts",
+      "line": 446,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/chat-commerce.functions.ts",
+      "line": 692,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/chat-commerce.functions.ts",
+      "line": 742,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/chat-commerce.functions.ts",
+      "line": 800,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/chat-commerce.functions.ts",
+      "line": 935,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/chat.functions.ts",
+      "line": 85,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/chat.functions.ts",
+      "line": 917,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/checkout.functions.ts",
+      "line": 280,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/checkout.functions.ts",
+      "line": 467,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/classifieds.functions.ts",
+      "line": 2189,
+      "snippet": "catch {       // Ignora erro em ambientes de teste     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/classifieds.functions.ts",
+      "line": 2478,
+      "snippet": "catch {         // Silencioso       }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/classifieds.functions.ts",
+      "line": 1053,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/classifieds.functions.ts",
+      "line": 232,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/classifieds.functions.ts",
+      "line": 1140,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/classifieds.functions.ts",
+      "line": 1557,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/classifieds.functions.ts",
+      "line": 2236,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/company-delivery.functions.ts",
+      "line": 76,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/company-delivery.functions.ts",
+      "line": 131,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/company-delivery.functions.ts",
+      "line": 178,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/contracts.functions.ts",
+      "line": 1412,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/contracts.functions.ts",
+      "line": 763,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/courier-verification.functions.ts",
+      "line": 310,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/crm.functions.ts",
+      "line": 1137,
+      "snippet": "catch {  // deduplicação silenciosa  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/crm.functions.ts",
+      "line": 1225,
+      "snippet": "catch {           // deduplicação defensiva em lote         }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/curadoria.functions.ts",
+      "line": 44,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/destination-intelligence.functions.ts",
+      "line": 15,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/destination-intelligence.functions.ts",
+      "line": 93,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/destination-intelligence.functions.ts",
+      "line": 157,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/directory.functions.ts",
+      "line": 371,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/domain-events.functions.ts",
+      "line": 85,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/events.functions.ts",
+      "line": 307,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/favorites.functions.ts",
+      "line": 77,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/giftcard.functions.ts",
+      "line": 148,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/giftcard.functions.ts",
+      "line": 185,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/group-tour-tokens.functions.ts",
+      "line": 200,
+      "snippet": "catch {  // parse silencioso  }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/group-tours.functions.ts",
+      "line": 169,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/growth-targets.functions.ts",
+      "line": 44,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/hotpage.functions.ts",
+      "line": 340,
+      "snippet": "catch {  // rpc telemetry optional  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/hotpage.functions.ts",
+      "line": 306,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/hotpage.functions.ts",
+      "line": 357,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/hr.functions.ts",
+      "line": 633,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ibge-market-intelligence.functions.ts",
+      "line": 93,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/ibge-market-intelligence.functions.ts",
+      "line": 97,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/identity.functions.ts",
+      "line": 40,
+      "snippet": "catch {         // Ignorado se header já foi enviado       }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/identity.functions.ts",
+      "line": 96,
+      "snippet": "catch {       // Ignorado     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/identity.functions.ts",
+      "line": 184,
+      "snippet": "catch {     // Ignorado   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/immutable-ledger.functions.ts",
+      "line": 82,
+      "snippet": "catch {     // Contexto fora de request HTTP direta (cron, background task)   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/integrations.functions.ts",
+      "line": 294,
+      "snippet": "catch {     // Ignora erro   }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/invite.functions.ts",
+      "line": 137,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/invite.functions.ts",
+      "line": 380,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/invite.functions.ts",
+      "line": 822,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/invite.functions.ts",
+      "line": 891,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/invite.functions.ts",
+      "line": 947,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/invite.functions.ts",
+      "line": 1249,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/invite.functions.ts",
+      "line": 1328,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/invite.functions.ts",
+      "line": 1385,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/invoices.functions.ts",
+      "line": 159,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/jobs.functions.ts",
+      "line": 975,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/jus.functions.ts",
+      "line": 282,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/jus.functions.ts",
+      "line": 752,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/lead-forms.functions.ts",
+      "line": 160,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/lead-forms.functions.ts",
+      "line": 305,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/lead-forms.functions.ts",
+      "line": 219,
+      "snippet": "catch {       // Ignora erro se for anônimo     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/lead-forms.functions.ts",
+      "line": 215,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/legal.functions.ts",
+      "line": 44,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/linkedin-integrations.functions.ts",
+      "line": 753,
+      "snippet": "catch {           // mantém token original se não for encrypted         }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/linkedin-integrations.functions.ts",
+      "line": 482,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/linkedin-integrations.functions.ts",
+      "line": 536,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/market-intelligence.functions.ts",
+      "line": 162,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/market-radar.functions.ts",
+      "line": 71,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/market-radar.functions.ts",
+      "line": 165,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/market-radar.functions.ts",
+      "line": 326,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/market-radar.functions.ts",
+      "line": 449,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/market-radar.functions.ts",
+      "line": 540,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/market-radar.functions.ts",
+      "line": 604,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/marketplace-webhooks.functions.ts",
+      "line": 681,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/marketplace-webhooks.functions.ts",
+      "line": 679,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/master-catalog.functions.ts",
+      "line": 48,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/master.functions.ts",
+      "line": 47,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/master.functions.ts",
+      "line": 719,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/master.functions.ts",
+      "line": 918,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/mcp-orchestrator.functions.ts",
+      "line": 298,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/mcp-server.functions.ts",
+      "line": 301,
+      "snippet": "catch {     // Falhas de telemetria nunca devem quebrar a resposta de negócio   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/mining/datajud-harvester.ts",
+      "line": 198,
+      "snippet": "catch {       // Segue com chave padrão     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/mining/datajud-harvester.ts",
+      "line": 540,
+      "snippet": "catch {       // Ignora erro não-bloqueante no monitor     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/mining/mechanical-extractor.ts",
+      "line": 189,
+      "snippet": "catch {     // Segue para erro padrão se proxy também falhar   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/mining/mechanical-extractor.ts",
+      "line": 318,
+      "snippet": "catch {       // Ignora JSON-LD mal formatado e tenta o próximo bloco     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/mining/mechanical-extractor.ts",
+      "line": 545,
+      "snippet": "catch {     // Continua para extração padrão se falhar   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/mining/specialized-extractors.ts",
+      "line": 158,
+      "snippet": "catch {       // Ignora JSON-LD malformado e continua     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/mining/specialized-extractors.ts",
+      "line": 284,
+      "snippet": "catch {       // Ignora JSON-LD malformado e continua     }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/mining.functions.ts",
+      "line": 3187,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/mining.functions.ts",
+      "line": 2625,
+      "snippet": "catch {                     // Mantém tom padrão defensivamente                   }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/mining.functions.ts",
+      "line": 3412,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/mining.functions.ts",
+      "line": 3551,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/mining.functions.ts",
+      "line": 3576,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/mobility.functions.ts",
+      "line": 297,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/mobility.functions.ts",
+      "line": 432,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/mobility.functions.ts",
+      "line": 756,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/mobility.functions.ts",
+      "line": 895,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/mobility.functions.ts",
+      "line": 1091,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/moderation.functions.ts",
+      "line": 24,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/multi-store-checkout.functions.ts",
+      "line": 83,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/multimodal-ocr.functions.ts",
+      "line": 120,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/notifications.functions.ts",
+      "line": 37,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/notifications.functions.ts",
+      "line": 100,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/notifications.functions.ts",
+      "line": 124,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/notifications.functions.ts",
+      "line": 306,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/onboarding-pipeline.server.ts",
+      "line": 275,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/onboarding-pipeline.server.ts",
+      "line": 365,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/onboarding.functions.ts",
+      "line": 682,
+      "snippet": "catch {  // Silencioso  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/onboarding.functions.ts",
+      "line": 709,
+      "snippet": "catch {  // Silencioso  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/onboarding.functions.ts",
+      "line": 727,
+      "snippet": "catch {  // Ignora erro não impeditivo de log  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/onboarding.functions.ts",
+      "line": 784,
+      "snippet": "catch {  // Ignora se cabeçalhos já enviados  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/onboarding.functions.ts",
+      "line": 796,
+      "snippet": "catch {  // Ignora caso theme_settings não exista estruturalmente  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/order.functions.ts",
+      "line": 1656,
+      "snippet": "catch {       // Fallback     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/order.functions.ts",
+      "line": 1169,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/order.functions.ts",
+      "line": 1307,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/payment.functions.ts",
+      "line": 285,
+      "snippet": "catch (e) {  // Ignore increment error  }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/pixels.functions.ts",
+      "line": 221,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/portal-completo.functions.ts",
+      "line": 188,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/portal-waitlist.functions.ts",
+      "line": 25,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/portal-waitlist.functions.ts",
+      "line": 69,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/public-apis.functions.ts",
+      "line": 155,
+      "snippet": "catch {       // Fallback para o ViaCEP     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/public-apis.functions.ts",
+      "line": 237,
+      "snippet": "catch {     // Silencioso   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/public-apis.functions.ts",
+      "line": 277,
+      "snippet": "catch {       // Degradação graciosa em caso de indisponibilidade de geocodificação     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/public-apis.functions.ts",
+      "line": 400,
+      "snippet": "catch {         // Prossegue com desconstrução inteligente       }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/public-apis.functions.ts",
+      "line": 443,
+      "snippet": "catch {             // Segue com as partes extraídas pela IA           }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/public-apis.functions.ts",
+      "line": 533,
+      "snippet": "catch {       // Silencioso     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/public-apis.functions.ts",
+      "line": 787,
+      "snippet": "catch {       // Falha defensiva: prosseguir para fallback     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/public-apis.functions.ts",
+      "line": 808,
+      "snippet": "catch {       // Ignora erro de RLS     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/public-apis.functions.ts",
+      "line": 843,
+      "snippet": "catch {       // Admin master global sem store_id fixo na sessão     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/quick-order.functions.ts",
+      "line": 73,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/reservations.functions.ts",
+      "line": 248,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/rma.functions.ts",
+      "line": 444,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/search.functions.ts",
+      "line": 178,
+      "snippet": "catch (err) {  // ignore error and fallback  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/search.functions.ts",
+      "line": 234,
+      "snippet": "catch (err) {  // ignore error and fallback  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/search.functions.ts",
+      "line": 291,
+      "snippet": "catch (err) {  // ignore error and fallback  }"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/secret-vault.functions.ts",
+      "line": 461,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/secret-vault.functions.ts",
+      "line": 86,
+      "snippet": "catch { /* fora de contexto HTTP */ }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/secret-vault.functions.ts",
+      "line": 189,
+      "snippet": "catch {       // Ignora falhas em mocks de testes unitários     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/secret-vault.functions.ts",
+      "line": 227,
+      "snippet": "catch {       // Ignora falhas em mocks de testes unitários     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/secret-vault.functions.ts",
+      "line": 276,
+      "snippet": "catch {       // Ignora falhas defensivamente     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/secret-vault.functions.ts",
+      "line": 43,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/secret-vault.functions.ts",
+      "line": 304,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/secret-vault.functions.ts",
+      "line": 308,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/security.functions.ts",
+      "line": 340,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/service-packages.functions.ts",
+      "line": 50,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/seven-sins-simlab.functions.ts",
+      "line": 103,
+      "snippet": "catch {       // Fallback gracioso     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/seven-sins-simlab.functions.ts",
+      "line": 113,
+      "snippet": "catch {       // Fallback     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/seven-sins-simlab.functions.ts",
+      "line": 80,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/seven-sins-simlab.functions.ts",
+      "line": 111,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/seven-sins-simlab.functions.ts",
+      "line": 347,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/seven-sins-simlab.functions.ts",
+      "line": 391,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/shipping.functions.ts",
+      "line": 50,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/shipping.functions.ts",
+      "line": 307,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 1333,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 1953,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 1985,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 2156,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 300,
+      "snippet": "catch {       // anonymous visitor — no likes/follows     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 460,
+      "snippet": "catch {       // safe fallback     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 1113,
+      "snippet": "catch {  // Fallback silencioso para lista vazia  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 1265,
+      "snippet": "catch {  // fallback silencioso caso já exista  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 1325,
+      "snippet": "catch {  // visitante anônimo  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 1600,
+      "snippet": "catch {  // deal_reviews fallback seguro  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 1645,
+      "snippet": "catch {  // ignore  }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/social.functions.ts",
+      "line": 2452,
+      "snippet": "catch {       // fallback     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/social.functions.ts",
+      "line": 2411,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/squads-runtime.functions.ts",
+      "line": 372,
+      "snippet": "catch {       // no-op em caso de restrição de ambiente     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/squads-runtime.functions.ts",
+      "line": 401,
+      "snippet": "catch {       // no-op     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/squads-runtime.functions.ts",
+      "line": 430,
+      "snippet": "catch {           // no-op         }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/store-flyers.functions.ts",
+      "line": 510,
+      "snippet": "catch {       // Falhas em telemetria nunca bloqueiam a experiência do usuário     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/store.functions.ts",
+      "line": 760,
+      "snippet": "catch {  // Fallback silencioso para contagem  }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/store.functions.ts",
+      "line": 12,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/telemetry-affinity.functions.ts",
+      "line": 60,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/telemetry-affinity.functions.ts",
+      "line": 174,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/telemetry-affinity.functions.ts",
+      "line": 249,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/telemetry-affinity.functions.ts",
+      "line": 54,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/telemetry-affinity.functions.ts",
+      "line": 107,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/telemetry-affinity.functions.ts",
+      "line": 171,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/telemetry-affinity.functions.ts",
+      "line": 244,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/telemetry.functions.ts",
+      "line": 204,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/tenders.functions.ts",
+      "line": 69,
+      "snippet": "catch {       // Visitante ou sem loja selecionada     }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/tourism-airports.functions.ts",
+      "line": 51,
+      "snippet": "catch {       // Fallback gracioso in-memory     }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/tourism.functions.ts",
+      "line": 255,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/tourism.functions.ts",
+      "line": 408,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/tourism.functions.ts",
+      "line": 437,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-catalog.functions.ts",
+      "line": 198,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-catalog.functions.ts",
+      "line": 436,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-contract.functions.ts",
+      "line": 125,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-contract.functions.ts",
+      "line": 437,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 240,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 254,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 169,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 719,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 776,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 888,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1404,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1681,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1740,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 193,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 613,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 626,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 771,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 784,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 806,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 978,
+      "snippet": "catch (_) {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 372,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 904,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-03",
+      "ruleName": "Promessa com .catch(() => {}) vazio",
+      "severity": "P1",
+      "file": "src/services/unified-listing-workflow.functions.ts",
+      "line": 219,
+      "snippet": ".catch(() => {})"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/unified-listing.functions.ts",
+      "line": 135,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/unified-listing.functions.ts",
+      "line": 379,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/unified-listing.functions.ts",
+      "line": 450,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/vertical-ai-modules.functions.ts",
+      "line": 78,
+      "snippet": "catch {     // Fallback determinístico seguro   }"
+    },
+    {
+      "ruleId": "SB-02",
+      "ruleName": "Bloco catch contendo apenas comentários",
+      "severity": "P1",
+      "file": "src/services/vertical-ai-modules.functions.ts",
+      "line": 152,
+      "snippet": "catch {     // Fallback determinístico   }"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/waitlist.functions.ts",
+      "line": 32,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/waitlist.functions.ts",
+      "line": 137,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-01",
+      "ruleName": "Bloco catch completamente vazio",
+      "severity": "P1",
+      "file": "src/services/whatsapp-leads.functions.ts",
+      "line": 78,
+      "snippet": "catch {}"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/whatsapp-leads.functions.ts",
+      "line": 69,
+      "snippet": ".catch(() => null)"
+    },
+    {
+      "ruleId": "SB-04",
+      "ruleName": "Promessa com .catch(() => null) sem telemetria",
+      "severity": "P2",
+      "file": "src/services/whatsapp-leads.functions.ts",
+      "line": 163,
+      "snippet": ".catch(() => null)"
+    }
+  ]
+}
