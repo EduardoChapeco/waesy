@@ -18,33 +18,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-export type AIActivityStepType =
-  | "skill"
-  | "tool"
-  | "search"
-  | "database"
-  | "squad"
-  | "model";
-
-export type AIActivityStepStatus =
-  | "running"
-  | "completed"
-  | "failed"
-  | "cancelled";
-
-export interface AIActivityStep {
-  id: string;
-  type: AIActivityStepType;
-  label: string;
-  detail?: string;
-  status: AIActivityStepStatus;
-  startedAt: string;
-  completedAt?: string;
-  durationMs?: number;
-  tokensUsed?: number;
-  costUsd?: number;
-}
+import type { AIActivityStepType, AIActivityStepStatus, AIActivityStep } from "@/types/chat";
+export type { AIActivityStepType, AIActivityStepStatus, AIActivityStep };
 
 export interface AIActivityTrailProps {
   steps: AIActivityStep[];

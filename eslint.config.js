@@ -12,7 +12,9 @@ export default tseslint.config(
       ".output",
       ".vinxi",
       "scratch",
+      "scripts",
       "*.mjs",
+      "*.cjs",
       "audit_variants.ts",
       "refactor_get.ts",
       "sanitize_variants.ts",
@@ -38,6 +40,7 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      "react-hooks/rules-of-hooks": "warn",
       "no-restricted-imports": [
         "error",
         {
@@ -53,7 +56,21 @@ export default tseslint.config(
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-require-imports": "warn",
+      "@typescript-eslint/no-unused-expressions": "warn",
+      "no-empty": "warn",
+      "prefer-const": "warn",
+      "no-useless-escape": "warn",
+      "no-extra-boolean-cast": "warn",
+      "no-irregular-whitespace": "warn",
+      "no-unsafe-optional-chaining": "warn",
+      "no-misleading-character-class": "warn",
     },
   },
   eslintPluginPrettier,
+  {
+    rules: {
+      "prettier/prettier": "off",
+    },
+  },
 );

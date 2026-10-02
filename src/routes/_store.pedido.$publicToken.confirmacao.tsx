@@ -8,7 +8,7 @@ import { getOrderByToken } from "@/services/checkout.functions";
 import { formatMoney } from "@/lib/money";
 import { formatHumanOrderId } from "@/lib/order-id";
 import { PostOrderAuditModal } from "@/components/commerce/post-order-audit-modal";
-import { getBrowserClient } from "@/lib/supabase";
+import { subscribeToTableChanges } from "@/services/realtime-channel";
 import { trackPurchaseEvent } from "@/components/commerce/product-telemetry";
 import { generateContractFromOrder } from "@/services/contracts.functions";
 import { toast } from "sonner";
@@ -105,37 +105,30 @@ function ConfirmationPage() {
  }
  }, 4000);
 
- // 2. Realtime WebSocket subscription
- const supabase = getBrowserClient();
- const channel = supabase
- .channel(`order-status-${order.id}`)
- .on(
- "postgres_changes",
- {
- event: "UPDATE",
- schema: "public",
- table: "orders",
- filter: `id=eq.${order.id}`,
- },
- (payload) => {
- if (payload.new && isMounted) {
- setOrder((prev: any) => ({ ...prev, ...payload.new }));
- if (payload.new.status === "paid") {
- toast.success("Pagamento confirmado via Pix! Preparando seu pedido.");
- }
- }
- },
- )
- .subscribe();
+ // 2. Realtime WebSocket subscription via BFF service
+  const unsubscribeRealtime = subscribeToTableChanges({
+    channelName: "order-status-" + order.id,
+    table: "orders",
+    event: "UPDATE",
+    filter: "id=eq." + order.id,
+    onPayload: ({ new: newOrder }) => {
+      if (newOrder && isMounted) {
+        setOrder((prev: any) => ({ ...prev, ...newOrder }));
+        if (newOrder.status === "paid") {
+          toast.success("Pagamento confirmado via Pix! Preparando seu pedido.");
+        }
+      }
+    },
+  });
 
- return () => {
- isMounted = false;
- clearInterval(interval);
- supabase.removeChannel(channel);
- };
- }, [order?.id, order?.public_token, order?.status]);
+  return () => {
+    isMounted = false;
+    clearInterval(interval);
+    unsubscribeRealtime();
+  };
+  }, [order?.id, order?.public_token, order?.status]);
 
- if (!order) {
+  if (!order) {
  return (
  <div className="mx-auto max-w-screen-xl px-4 py-20 md:px-6">
  <ErrorState />

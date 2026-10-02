@@ -14,7 +14,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, requirePlatformAdmin } from "@/lib/server-access";
 import { encryptSecret, decryptSecret, maskSecret } from "@/lib/crypto-vault.server";
 import { enrichExperienceMath, type ResumeExperience } from "@/lib/schemas/resume-experience.schema";
-import type { ResumeDataDTO } from "@/components/profile/professional-resume-editor";
+import type { ResumeDataDTO } from "@/types/resume";
 
 // ─── ESQUEMA DO LINKEDIN MASTER CREDENTIALS ──────────────────────────────────
 

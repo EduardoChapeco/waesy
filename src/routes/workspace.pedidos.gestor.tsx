@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect, Fragment } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, ChefHat, Clock, CheckCircle2, Bike, PackageSearch, Maximize, Printer, FileText, MessageCircle, AlertTriangle, TrendingUp, Activity, Kanban, LayoutDashboard, Users, UtensilsCrossed, MapPin, Phone, Navigation, History } from "lucide-react";
 
-import { getBrowserClient } from "@/lib/supabase";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
 import { formatMoney } from "@/lib/money";
 import { playNewOrderAlert, unlockAudioContext } from "@/lib/audio-chimes";
@@ -165,9 +165,9 @@ function KDSPage() {
  // Supabase Realtime WebSockets Listener
  useEffect(() => {
  if (!storeId) return;
- const supabase = getBrowserClient();
- const channel = supabase
- .channel("orders-kds-realtime")
+ const { channel, unsubscribe } = getRealtimeChannel("orders-kds-realtime");
+ if (!channel) return;
+ channel
  .on(
  "postgres_changes",
  { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
@@ -212,7 +212,7 @@ function KDSPage() {
  });
 
  return () => {
- supabase.removeChannel(channel);
+ unsubscribe();
  };
   }, [storeId]);
 

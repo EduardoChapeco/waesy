@@ -17,7 +17,7 @@ import type {
   CompanionCardSectionItem,
   CompanionRuleItem,
   CompanionContactItem,
-} from "@/components/documents/digital-companion-card";
+} from "@/types/digital-companion";
 
 export interface UniversalOcrResult {
   niche: CompanionCardNiche;

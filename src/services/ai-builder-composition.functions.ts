@@ -23,8 +23,8 @@ import {
   OmniPageDocument,
   OmniPageDocumentSchema,
   OmniBlockInstance,
-} from "@/components/builder/types";
-import { SITE_BUILDER_BLOCKS } from "@/components/builder/registry";
+  CANONICAL_BUILDER_BLOCK_IDS,
+} from "@/types/omni-builder";
 
 // Helper dinâmico para montagem de cores de renderização sem violar DL-01 no linter
 const hexColor = (hex: string): string => String.fromCharCode(35) + hex;
@@ -313,7 +313,7 @@ export function evaluateArtifactQuality(
 
   // Dimensão 3: Rigor do Registry & Ausência de HTML Cru (0-20)
   let registryScore = 20;
-  const validBlockIds = new Set(SITE_BUILDER_BLOCKS.map((b) => b.id));
+  const validBlockIds = new Set<string>(CANONICAL_BUILDER_BLOCK_IDS);
   validBlockIds.add("bento_asymmetric_4");
   validBlockIds.add("pricing_three_tiers");
 

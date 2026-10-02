@@ -131,9 +131,9 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 
 ### Bloco B — Estrutura e Camadas (S06–S14) — EM ANDAMENTO
 - [x] **S06**: Definir as 6 camadas canônicas e contrato de dependência com teste automatizado. *(Concluído — `src/lib/architecture/layer-contract.ts` e `layer-contract.test.ts` 4/4 verdes)*
-- [ ] **S07**: `src/lib` puro desacoplado de domínio. Domínio movido para módulo dono.
-- [ ] **S08**: `src/services` migrado para casos de uso estruturados, eliminando arquivos `.functions.ts` acoplados a UI.
-- [ ] **S09**: `src/routes` com rota fina, subpastas por vertical e colocation (zero rotas > 300 linhas).
+- [x] **S07**: `src/lib` puro desacoplado de domínio. Domínio movido para módulo dono. *(Concluído — DEC-106)*
+- [x] **S08**: `src/services` migrado para casos de uso estruturados, eliminando arquivos `.functions.ts` acoplados a UI. *(Concluído — DEC-106)*
+- [x] **S09**: `src/routes` com rota fina, subpastas por vertical e colocation (zero rotas > 300 linhas / 0 rotas com db direto). *(Concluído — DEC-106)*
 - [ ] **S10**: Módulos de vertical com fronteira explícita e manifesto.
 - [ ] **S11**: Eliminação de código morto, órfão e desvinculado com detector de CI.
 - [ ] **S12**: Padronização de nomes de arquivo, símbolo e pasta.

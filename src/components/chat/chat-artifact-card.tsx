@@ -14,28 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-export type ChatArtifactType =
-  | "document"
-  | "spreadsheet"
-  | "presentation"
-  | "landing_page"
-  | "proposal"
-  | "image";
-
-export interface ChatArtifactData {
-  id: string;
-  type: ChatArtifactType;
-  title: string;
-  version: number;
-  totalVersions?: number;
-  authorName?: string;
-  authorRole?: string;
-  updatedAt?: string;
-  previewSummary?: string;
-  data?: Record<string, any>;
-  fileSizeBytes?: number;
-}
+import type { ChatArtifactType, ChatArtifactData } from "@/types/chat";
+export type { ChatArtifactType, ChatArtifactData };
 
 export interface ChatArtifactCardProps {
   artifact: ChatArtifactData;

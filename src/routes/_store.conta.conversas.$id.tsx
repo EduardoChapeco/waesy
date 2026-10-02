@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { getCustomerChatThread, sendCustomerChatMessage } from "@/services/chat.functions";
-import { getBrowserClient } from "@/lib/supabase";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NativeBackButton } from "@/components/navigation";
@@ -65,9 +65,9 @@ function CustomerChatPage() {
   useEffect(() => {
     if (!id) return;
 
-    const supabase = getBrowserClient();
-    const channel = supabase
-      .channel(`customer-chat-${id}`)
+    const { channel, unsubscribe: unsubChat } = getRealtimeChannel(`customer-chat-${id}`);
+    if (!channel) return;
+    channel
       .on(
         "postgres_changes",
         {
@@ -76,7 +76,7 @@ function CustomerChatPage() {
           table: "chat_messages",
           filter: `thread_id=eq.${id}`,
         },
-        (payload) => {
+        (payload: any) => {
           const newMsg = {
             id: payload.new.id,
             message: payload.new.message,
@@ -94,7 +94,7 @@ function CustomerChatPage() {
           });
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: any) => {
         if (status === "SUBSCRIBED") {
           getCustomerChatThread({ data: { threadId: id } })
             .then((res) => {
@@ -104,14 +104,15 @@ function CustomerChatPage() {
         }
       });
 
-    const protocolChannel = supabase.channel("messenger-protocol-v115");
+    const { channel: protocolChannel, unsubscribe: unsubProtocol } = getRealtimeChannel("messenger-protocol-v115");
+    if (!protocolChannel) return;
     protocolChannel
       .on("broadcast", { event: "is_typing" }, ({ payload }: any) => {
         if (payload?.threadId === id && payload?.sender !== "customer") {
           setIsPeerTyping(Boolean(payload.isTyping));
         }
       })
-      .subscribe((status) => {
+      .subscribe((status: any) => {
         if (status === "SUBSCRIBED") {
           protocolChannel.send({
             type: "broadcast",
@@ -124,8 +125,8 @@ function CustomerChatPage() {
     messengerChannelRef.current = protocolChannel;
 
     return () => {
-      supabase.removeChannel(channel);
-      supabase.removeChannel(protocolChannel);
+      unsubChat();
+      unsubProtocol();
     };
   }, [id]);
 

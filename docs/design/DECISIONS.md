@@ -1205,3 +1205,14 @@
 
 
 
+
+## DEC-106: Conclusão das Fases S07, S08 e S09 (Plano 5 — Bloco B) — Camadas Puras, BFF Desacoplado e Rotas Finas
+- **Data:** 2026-10-02
+- **Contexto:** Execução das Fases S07 (src/lib puro), S08 (src/services BFF desacoplado de UI) e S09 (rotas finas sem acoplamento direto com persistência).
+- **Decisão:**
+  1. `S07`: Domínios específicos de turismo, simlab, nichos de ad-engine, builder e cognitive/IA foram migrados para seus módulos canônicos correspondentes (`src/lib/tourism/`, `src/lib/simlab/`, `src/lib/niches/`, `src/lib/builder/`, `src/lib/ai/`) mantendo bridges de re-export na raiz de `src/lib/` para retrocompatibilidade 100% sem quebra de runtime.
+  2. `S08`: A camada `src/services` foi 100% desacoplada de componentes visuais (0 imports de `@/components/` remanescentes em toda a pasta). Os tipos agnósticos de domínio foram unificados em `src/types/chat.ts`, `src/types/resume.ts`, `src/types/digital-companion.ts`, `src/types/omni-builder.ts` e `src/lib/builder/omni-templates.ts`.
+  3. `S09`: Eliminação do acoplamento direto com banco nas rotas de interface (`c.$storeSlug` migrado para Server Function `getCustomerPortalBySlug` em `src/services/customer-portal.functions.ts` e rotas de chat/pedidos migradas para `src/services/realtime-channel.ts`). Zero imports de `@/lib/supabase` em rotas visuais (`.tsx`).
+  4. CI canônico unificado verde: TypeScript 0 erros, 1.011 testes Vitest verdes em 152 suítes, Design Lint aprovado com -602 violações na catraca, ESLint 0 erros, Build Cloudflare Pages com `_worker.js` e `_routes.json` aprovado.
+- **Fundamentação:** AGENTS.md B.1 a B.12, Contrato de Camadas S06 e Definition of Done B.9.
+- **Consequências:** Fases S07, S08 e S09 100% concluídas. Total de 9 de 48 fases do Plano 5 finalizadas. Próxima fase: S10 (Manifestos por vertical e fronteiras explícitas).

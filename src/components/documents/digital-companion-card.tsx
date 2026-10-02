@@ -5,43 +5,21 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export type CompanionCardNiche =
-  | "tourism"
-  | "real_estate"
-  | "service"
-  | "auto"
-  | "retail"
-  | "health";
+import type {
+  CompanionCardNiche,
+  CompanionDetailItem,
+  CompanionCardSectionItem,
+  CompanionRuleItem,
+  CompanionContactItem,
+} from "@/types/digital-companion";
 
-export interface CompanionDetailItem {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}
-
-export interface CompanionCardSectionItem {
-  id?: string;
-  type: "flight" | "hotel" | "transport" | "tour" | "insurance" | "service_item" | "custom";
-  badge?: string;
-  title: string;
-  subtitle?: string;
-  details: CompanionDetailItem[];
-}
-
-export interface CompanionRuleItem {
-  title: string;
-  description: string;
-  badge?: string;
-  highlight?: boolean;
-}
-
-export interface CompanionContactItem {
-  name: string;
-  category: string;
-  phone: string;
-  whatsapp?: boolean;
-  is24h?: boolean;
-}
+export type {
+  CompanionCardNiche,
+  CompanionDetailItem,
+  CompanionCardSectionItem,
+  CompanionRuleItem,
+  CompanionContactItem,
+};
 
 export interface DigitalCompanionCardProps {
   niche: CompanionCardNiche;

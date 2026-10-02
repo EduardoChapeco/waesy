@@ -7,8 +7,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
-import type { AIActivityStep, AIActivityStepType } from "@/components/chat/ai-activity-trail";
-import type { ChatArtifactData, ChatArtifactType } from "@/components/chat/chat-artifact-card";
+import type {
+  AIActivityStep,
+  AIActivityStepType,
+  ChatArtifactData,
+  ChatArtifactType,
+} from "@/types/chat";
 
 // ============================================================
 // Schemas de Validação

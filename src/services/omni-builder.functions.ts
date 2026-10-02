@@ -9,8 +9,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin, getServerIdentity } from "@/lib/server-access";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
-import { OmniPageDocumentSchema, OmniPageDocument, createEmptyOmniPage } from "@/components/builder/types";
-import { applyTemplateToPage } from "@/components/builder/templates";
+import { OmniPageDocumentSchema, OmniPageDocument, createEmptyOmniPage } from "@/types/omni-builder";
+import { applyTemplateToPage } from "@/lib/builder/omni-templates";
 
 // ── 1. SALVAMENTO ATÔMICO DO DOCUMENTO NO SUPABASE ──
 export const saveOmniPageDocument = createServerFn({ method: "POST" })

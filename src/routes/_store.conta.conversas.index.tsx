@@ -40,7 +40,7 @@ import {
   type ChatListItemData,
   type ReadReceiptState,
 } from "@/components/chat/chat-list-item";
-import { getBrowserClient } from "@/lib/supabase";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/conversas/")({
@@ -124,12 +124,11 @@ function CustomerConversationsIndexPage() {
 
   // FASE 4: Motor Realtime E2E (Supabase Presence + Broadcast Typing + Read Receipts)
   useEffect(() => {
-    const supabase = getBrowserClient();
-    if (!supabase) return;
-
-    const channel = supabase.channel("messenger-protocol-v115", {
+    const { channel, unsubscribe } = getRealtimeChannel("messenger-protocol-v115", {
       config: { presence: { key: "active-peers" } },
     });
+
+    if (!channel) return;
 
     channel
       .on("presence", { event: "sync" }, () => {
@@ -162,7 +161,7 @@ function CustomerConversationsIndexPage() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, []);
 

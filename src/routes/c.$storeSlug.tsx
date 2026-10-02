@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { getServerClient } from "@/lib/supabase";
+import { getCustomerPortalBySlug } from "@/services/customer-portal.functions";
 import { PortalContractsWidget } from "@/components/commerce/dynamic-sections/portal-contracts-widget";
 import { PortalCarnesBillsWidget } from "@/components/commerce/dynamic-sections/portal-carnes-bills-widget";
 import { PortalAppointmentsWidget } from "@/components/commerce/dynamic-sections/portal-appointments-widget";
@@ -21,42 +21,15 @@ export const Route = createFileRoute("/c/$storeSlug")({
  ],
  }),
  loader: async ({ params }) => {
-   try {
- const db = getServerClient();
- 
- // 1. Busca loja pelo slug
- const { data: store } = await db
- .from("stores")
- .select("id, name, slug, description, phone, email, settings")
- .eq("slug", params.storeSlug)
- .maybeSingle();
-
- if (!store) {
- return {
- store: { name: "Empresa", slug: params.storeSlug, settings: {} },
- portalConfig: null,
- document: null,
- };
- }
-
- // 2. Busca configuração do portal do cliente
- const { data: portalConfig } = await db
- .from("customer_portal_configs")
- .select("*")
- .eq("store_id", store.id)
- .maybeSingle();
-
- return {
- store,
- portalConfig,
- document: null,
- };
-   } catch (err) {
-     console.error("[loader:c.$storeSlug] Unhandled error:", err);
-     return { store: null, portalConfig: null, document: null };
-   }
- },
- component: CustomerPortalWhitelabelPage,
+    try {
+      const data = await getCustomerPortalBySlug({ data: { slug: params.storeSlug } });
+      return data;
+    } catch (err) {
+      console.error("[loader:c.$storeSlug] Unhandled error:", err);
+      return { store: null, portalConfig: null, document: null };
+    }
+  },
+  component: CustomerPortalWhitelabelPage,
 });
 
 function CustomerPortalWhitelabelPage() {

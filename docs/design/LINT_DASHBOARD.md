@@ -1,16 +1,16 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-02T02:26:15.984Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-02T04:51:14.953Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 1686 | 1581 | Estável |
-| **Arquivos com Débito** | 1127 | 1122 | Monitorado |
-| **Total de Violações** | **37720** | **38314** | PASS (<= Baseline) |
-| **P0 (Bloqueia Entrega)** | **7197** | 7275 | PASS |
-| **P1 (Bloqueia Merge)** | **17924** | 18237 | PASS |
+| **Total de Arquivos** | 1719 | 1581 | Estável |
+| **Arquivos com Débito** | 1126 | 1122 | Monitorado |
+| **Total de Violações** | **37712** | **38314** | PASS (<= Baseline) |
+| **P0 (Bloqueia Entrega)** | **7195** | 7275 | PASS |
+| **P1 (Bloqueia Merge)** | **17918** | 18237 | PASS |
 | **P2 (Fila de Correção)** | 11128 | 11293 | Acompanhamento |
 | **P3 (Polimento)** | 1471 | 1509 | Acompanhamento |
 
@@ -27,7 +27,7 @@
 | `components/ui` | 892 | 127 | 582 | 152 | 31 |
 | `routes/other` | 535 | 78 | 231 | 217 | 9 |
 | `lib` | 370 | 90 | 219 | 61 | 0 |
-| `components/builder` | 369 | 109 | 140 | 103 | 17 |
+| `components/builder` | 361 | 107 | 134 | 103 | 17 |
 | `components/chat` | 97 | 13 | 62 | 21 | 1 |
 | `hooks` | 28 | 14 | 10 | 4 | 0 |
 | `routes/api` | 21 | 15 | 6 | 0 | 0 |
@@ -41,11 +41,11 @@
 | **DL-09** | Diretriz do Catálogo | `P2` | 9681 |
 | **DL-03** | Diretriz do Catálogo | `P1` | 8986 |
 | **DL-02** | Diretriz do Catálogo | `P1` | 5753 |
-| **DL-15** | Diretriz do Catálogo | `P0` | 5469 |
+| **DL-15** | Diretriz do Catálogo | `P0` | 5467 |
 | **DL-04** | Diretriz do Catálogo | `P0` | 1728 |
 | **DL-18** | Diretriz do Catálogo | `P1` | 1317 |
 | **DL-27** | Diretriz do Catálogo | `P3` | 1210 |
-| **DL-01** | Diretriz do Catálogo | `P1` | 1020 |
+| **DL-01** | Diretriz do Catálogo | `P1` | 1014 |
 | **DL-23** | Diretriz do Catálogo | `P2` | 537 |
 | **DL-07** | Diretriz do Catálogo | `P2` | 499 |
 | **DL-14** | Diretriz do Catálogo | `P1` | 324 |

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { listChatThreads, getChatMessages, sendChatMessage, assignChatThread, updateTicketStatus } from "@/services/chat.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
-import { getBrowserClient } from "@/lib/supabase";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -167,9 +167,9 @@ function WorkspaceAtendimentoPage() {
  useEffect(() => {
  if (!activeThreadId) return;
 
- const supabase = getBrowserClient();
- const channel = supabase
- .channel(`staff-chat-${activeThreadId}`)
+ const { channel, unsubscribe } = getRealtimeChannel(`staff-chat-${activeThreadId}`);
+ if (!channel) return;
+ channel
  .on(
  "postgres_changes",
  {
@@ -178,7 +178,7 @@ function WorkspaceAtendimentoPage() {
  table: "chat_messages",
  filter: `thread_id=eq.${activeThreadId}`,
  },
- (payload) => {
+ (payload: any) => {
  const newMsg = {
  id: payload.new.id,
  message: payload.new.message,
@@ -199,7 +199,7 @@ function WorkspaceAtendimentoPage() {
  });
  },
  )
- .subscribe((status) => {
+ .subscribe((status: any) => {
  if (status === "SUBSCRIBED") {
  getChatMessages({ data: { threadId: activeThreadId } })
  .then((res) => {
@@ -210,7 +210,7 @@ function WorkspaceAtendimentoPage() {
  });
 
  return () => {
- supabase.removeChannel(channel);
+ unsubscribe();
  };
  }, [activeThreadId]);
 
