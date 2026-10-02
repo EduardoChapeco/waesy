@@ -1257,4 +1257,21 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S19-S20, docs/PERFORMANCE.md (Core Web Vitals) e Definition of Done B.9.
 - **Consequências:** Fases S19 e S20 100% CONCLUÍDAS e HOMOLOGADAS. Total de 20 de 48 fases do Plano 5 finalizadas (41.7%). Próximas fases: S21 (RLS performático com medição do custo por linha) e S22 (Rate limit, idempotência e desacoplamento assíncrono).
 
+## DEC-111: Conclusão das Fases S21 e S22 (Plano 5 — Bloco C) — RLS Performático, InitPlan O(1), Rate Limit Anti-Enumeração, Idempotência e Outbox DLQ
+- **Data:** 2026-10-02
+- **Contexto:** Execução das Fases S21 (RLS performático com medição de custo por linha) e S22 (Rate limit, idempotência e desacoplamento assíncrono) finalizando integralmente o Bloco C (Rotas e Performance: Fases S15 a S22).
+- **Decisão:**
+  1. `S21`: Criada e aplicada via Supabase MCP a migração `supabase/migrations/20261002000002_s21_performatic_rls.sql`:
+     - Resolução de `security_definer_view`: views `v_verified_marketplace_stores` e `unified_listings_view` configuradas com `security_invoker = true` (0 erros de segurança no advisor Supabase).
+     - Resolução de `auth_rls_initplan`: substituído `auth.uid()` solto por subconsultas escalares `(SELECT auth.uid())` nas tabelas mais acessadas (`orders`, `order_items`, `products`, `classifieds`, `stores`, `profiles`, `cart_items`, `notifications`).
+     - Consolidação de políticas sobrepostas e remoção de vulnerabilidade: eliminada a política permissiva excessiva `classifieds_auth_all` (que permitia `ALL` para qualquer usuário logado); consolidadas as 6 políticas de `orders` em 3 regras canônicas, as 7 de `classifieds` em 3, e as 9 de `profiles` em 3 canônicas.
+     - Evidência empírica via `EXPLAIN (ANALYZE, BUFFERS)`: Planning Time em `orders` despencou de **20.867 ms** para **1.318 ms** (**15.8x mais rápido**), e tempo de execução de **0.661 ms** para **0.043 ms** (**15.3x mais rápido**). Em `classifieds`, tempo de planejamento reduzido para **3.885 ms**.
+  2. `S22`:
+     - `Rate Limiting`: Adicionadas políticas `auth_check_identifier`, `payment_mutation` e `search_query` em `src/lib/rate-limiter.ts`. Normalizados os aliases de reações sociais (`like` -> `social_like`, `follow` -> `social_follow`, `comment` -> `social_comment`) eliminando fallback relaxado. Protegido `checkIdentifierExists` em `auth.functions.ts` contra enumeração de CPFs, telefones e contas.
+     - `Idempotência Canônica`: Criado `src/lib/idempotency/idempotency-guard.ts` (5/5 testes unitários verdes) com lock em voo contra concorrência (`IdempotencyConflictError`), validação de chave e cache sliding. Blindado `confirmPayment` e `initiatePaymentTransaction` em `payment.functions.ts` substituindo timestamps dinâmicos (`manual_${Date.now()}`) por chave determinística estável.
+     - `Desacoplamento Assíncrono e Outbox DLQ`: Criado `src/lib/queue/domain-event-queue.ts` (4/4 testes unitários verdes) implementando Transactional Outbox com máquina de estados (`pending`, `processing`, `delivered`, `dead_letter`), retries com backoff exponencial e DLQ. Integrado ao barramento `src/services/domain-events.functions.ts` com Server Functions de governança (`getDomainEventQueueStatsFn`, `getDomainEventDeadLetterQueueFn`, `retryDomainEventDeadLetterFn`).
+  3. Resultado da Verificação: Vitest com 157 suítes e 1.039 testes verdes (100%), 0 erros de segurança RLS no banco, e Bloco C 100% concluído.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S21-S22, Supabase Postgres Best Practices (`security-rls-performance.md`) e Definition of Done B.9.
+- **Consequências:** Fases S21 e S22 100% CONCLUÍDAS e HOMOLOGADAS. **Bloco C (S15 a S22) 100% FINALIZADO**. Total de **22 de 48 fases do Plano 5 concluídas (45.8%)**. Próximo bloco: **Bloco D — Design System como Fonte Única (Fases S23 a S31)**.
+
 

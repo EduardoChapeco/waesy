@@ -10,8 +10,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server-access";
 import { logAuditAction } from "./audit.functions";
+import {
+  enqueueDomainEvent,
+  getQueueStats,
+  getDeadLetterQueue,
+  retryDeadLetterEvent,
+  markEventDelivered,
+  markEventFailed,
+} from "@/lib/queue/domain-event-queue";
 
 export type DomainEventName =
   | "lead.created"
@@ -70,7 +78,7 @@ export interface UnifiedTimelineEntry {
 
 /**
  * Publica um evento de domínio canônico, persistindo no log de auditoria
- * e disponibilizando para a timeline multi-módulo da entidade.
+ * e disponibilizando para a timeline multi-módulo da entidade e outbox assíncrono.
  */
 export async function publishDomainEvent(payload: DomainEventPayload) {
   const supabase = getServerClient();
@@ -78,6 +86,18 @@ export async function publishDomainEvent(payload: DomainEventPayload) {
 
   const effectiveStoreId = payload.storeId || identity?.store_id;
   if (!effectiveStoreId) return null;
+
+  // 1. Enfileiramento desacoplado no motor Outbox
+  const queued = enqueueDomainEvent({
+    eventName: payload.eventName,
+    entityType: payload.entityType,
+    entityId: payload.entityId,
+    storeId: effectiveStoreId,
+    customerId: payload.customerId,
+    title: payload.title,
+    description: payload.description,
+    metadata: payload.metadata,
+  });
 
   const eventRecord = {
     store_id: effectiveStoreId,
@@ -90,13 +110,17 @@ export async function publishDomainEvent(payload: DomainEventPayload) {
       description: payload.description || "",
       customer_id: payload.customerId || null,
       metadata: payload.metadata || {},
+      outbox_id: queued.id,
       created_at: new Date().toISOString(),
     },
   };
 
   const { data, error } = await supabase.from("audit_logs").insert(eventRecord).select().single();
   if (error) {
+    markEventFailed(queued.id, error.message);
     console.warn("[domain-events] Aviso ao persistir evento:", error.message);
+  } else {
+    markEventDelivered(queued.id);
   }
 
   return data;
@@ -182,4 +206,34 @@ export const getEntityUnifiedTimeline = createServerFn({ method: "GET" })
     });
 
     return timeline;
+  });
+
+/**
+ * Retorna métricas operacionais em tempo real da fila outbox de eventos.
+ */
+export const getDomainEventQueueStatsFn = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin"]);
+    return getQueueStats();
+  });
+
+/**
+ * Retorna eventos retidos na Dead-Letter Queue para governança e auditoria.
+ */
+export const getDomainEventDeadLetterQueueFn = createServerFn({ method: "GET" })
+  .handler(async () => {
+    await requireAdmin();
+    return getDeadLetterQueue();
+  });
+
+/**
+ * Reenfileira manualmente um evento da Dead-Letter Queue.
+ */
+export const retryDomainEventDeadLetterFn = createServerFn({ method: "POST" })
+  .validator(z.object({ eventId: z.string().min(1) }))
+  .handler(async ({ data: { eventId } }) => {
+    await requireAdmin();
+    const success = retryDeadLetterEvent(eventId);
+    return { success, eventId };
   });

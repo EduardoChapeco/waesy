@@ -124,6 +124,20 @@ export const checkIdentifierExists = createServerFn({ method: "POST" })
  .validator(z.object({ identifier: z.string().min(1) }))
  .handler(async ({ data: { identifier } }) => {
  try {
+  let request: Request | null = null;
+  try {
+    request = getRequest();
+  } catch {
+    request = null;
+  }
+  const ip = request ? getClientIp(request) : "unknown";
+  const rateCheck = checkRateLimit(ip, "auth_check_identifier");
+  if (!rateCheck.allowed) {
+    throw new Error(
+      `Muitas consultas a partir deste endereço IP. Aguarde ${formatRetryAfter(rateCheck.retryAfterSec!)} antes de tentar novamente.`
+    );
+  }
+
  const db = getServerClient();
  const raw = identifier.trim();
 

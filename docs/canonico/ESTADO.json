@@ -60,16 +60,16 @@
     },
     "PLANO_5_ESTRUTURA_ESCALA_OPERACAO_BIGTECH": {
       "totalPhases": 48,
-      "completedPhases": 20,
+      "completedPhases": 22,
       "status": "IN_PROGRESS",
-      "currentPhase": "S21",
-      "activeBlock": "BLOCO_C_ROTAS_E_PERFORMANCE",
+      "currentPhase": "S23",
+      "activeBlock": "BLOCO_D_DESIGN_SYSTEM_COMO_FONTE_UNICA",
       "completedBlocks": [
         "BLOCO_A_RE_BASELINE_E_VERDADE",
-        "BLOCO_B_ESTRUTURA_E_CAMADAS"
+        "BLOCO_B_ESTRUTURA_E_CAMADAS",
+        "BLOCO_C_ROTAS_E_PERFORMANCE"
       ],
       "pendingBlocks": [
-        "BLOCO_C_ROTAS_E_PERFORMANCE",
         "BLOCO_D_DESIGN_SYSTEM_COMO_FONTE_UNICA",
         "BLOCO_E_TELEMETRIA",
         "BLOCO_F_DOCUMENTACAO_ROADMAP_SUPORTE",
@@ -79,9 +79,9 @@
   },
   "metrics": {
     "vitest": {
-      "testFiles": 155,
-      "totalTests": 1030,
-      "passed": 1030,
+      "testFiles": 157,
+      "totalTests": 1039,
+      "passed": 1039,
       "failed": 0,
       "exitCode": 0
     },

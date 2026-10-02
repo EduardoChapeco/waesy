@@ -15,6 +15,7 @@ import { getEnvVar } from "@/lib/env";
 import { requireAdmin } from "@/lib/server-access";
 import { withDataPayload } from "./cart-helpers";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 
 // Schema for initiating a payment
 const InitiatePaymentSchema = z.object({
@@ -22,6 +23,7 @@ const InitiatePaymentSchema = z.object({
  method: z.enum(["pix", "credit_card", "boleto", "manual"]),
  amountCents: z.number().int().positive(),
  publicToken: z.string().optional(),
+ idempotencyKey: z.string().optional(),
 });
 
 /**
@@ -30,7 +32,11 @@ const InitiatePaymentSchema = z.object({
  */
 export const initiatePaymentTransaction = createServerFn({ method: "POST" })
  .validator(withDataPayload(InitiatePaymentSchema))
- .handler(async ({ data: { orderId, method, amountCents, publicToken } }) => {
+ .handler(async ({ data: { orderId, method, amountCents, publicToken, idempotencyKey } }) => {
+  // Rate limiting anti-flood de transações financeiras
+  const callerId = publicToken || orderId;
+  enforceRateLimit(callerId, method === "pix" ? "pix_generation" : "payment_mutation");
+
  const supabase = getServerClient();
  const ssrClient = await getSSRClient();
  const {
@@ -127,62 +133,72 @@ export const initiatePaymentTransaction = createServerFn({ method: "POST" })
  * Server function to handle post-payment confirmations cleanly (used by Webhooks or Admin bypass in emergencies)
  */
 export const confirmPayment = createServerFn({ method: "POST" })
- .validator(z.object({ orderId: z.string().uuid(), receivedMethod: z.string().optional() }))
- .handler(async ({ data: { orderId, receivedMethod } }) => {
- // SECURITY FIX: Enforce administrative authorization
- await requireAdmin();
- const identity = await getServerIdentity();
- if (!identity.store_id) throw new Error("Contexto de loja inválido");
+  .validator(
+    z.object({
+      orderId: z.string().uuid(),
+      receivedMethod: z.string().optional(),
+      idempotencyKey: z.string().optional(),
+    })
+  )
+  .handler(async ({ data: { orderId, receivedMethod, idempotencyKey } }) => {
+  // SECURITY FIX: Enforce administrative authorization
+  await requireAdmin();
+  const identity = await getServerIdentity();
+  if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
- const supabase = getServerClient();
+  enforceRateLimit(identity.id || identity.store_id, "payment_mutation");
 
- // 1. Get the order
- const { data: order, error: orderError } = await supabase
- .from("orders")
- .select("id, status, store_id, total_cents")
- .eq("id", orderId)
- .eq("store_id", identity.store_id)
- .single();
+  const supabase = getServerClient();
 
- if (orderError || !order) throw new Error("Pedido não encontrado");
- if (order.status === "paid" || order.status === "completed" || order.status === "processing") {
- throw new Error("Pedido já processado ou faturado");
- }
+  // 1. Get the order
+  const { data: order, error: orderError } = await supabase
+  .from("orders")
+  .select("id, status, store_id, total_cents")
+  .eq("id", orderId)
+  .eq("store_id", identity.store_id)
+  .single();
 
- // 2. Mark payment transaction as paid first (so it's available)
- const { data: existingTx } = await supabase
- .from("payments")
- .select("id, amount_cents, method")
- .eq("order_id", orderId)
- .order("created_at", { ascending: false })
- .limit(1)
- .maybeSingle();
+  if (orderError || !order) throw new Error("Pedido não encontrado");
+  if (order.status === "paid" || order.status === "completed" || order.status === "processing") {
+  throw new Error("Pedido já processado ou faturado");
+  }
 
- const actualMethod = receivedMethod || existingTx?.method || "cash";
+  // 2. Mark payment transaction as paid first (so it's available)
+  const { data: existingTx } = await supabase
+  .from("payments")
+  .select("id, amount_cents, method")
+  .eq("order_id", orderId)
+  .order("created_at", { ascending: false })
+  .limit(1)
+  .maybeSingle();
 
- if (existingTx) {
- await supabase
- .from("payments")
- .update({
- status: "paid",
- method: actualMethod,
- paid_at: new Date().toISOString(),
- })
- .eq("id", existingTx.id);
- } else {
- // If there's no transaction (legacy or bypass), create one
- await supabase.from("payments").insert({
- order_id: orderId,
- store_id: order.store_id,
- idempotency_key: `manual_${Date.now()}`,
- provider_ref: `manual_${Date.now()}`,
- provider_name: "manual",
- amount_cents: order.total_cents,
- method: actualMethod,
- status: "paid",
- paid_at: new Date().toISOString(),
- });
- }
+  const actualMethod = receivedMethod || existingTx?.method || "cash";
+  const deterministicKey = idempotencyKey || `manual_pay_${orderId}_${order.total_cents}`;
+
+  if (existingTx) {
+  await supabase
+  .from("payments")
+  .update({
+  status: "paid",
+  method: actualMethod,
+  idempotency_key: deterministicKey,
+  paid_at: new Date().toISOString(),
+  })
+  .eq("id", existingTx.id);
+  } else {
+  // If there's no transaction (legacy or bypass), create one
+  await supabase.from("payments").insert({
+  order_id: orderId,
+  store_id: order.store_id,
+  idempotency_key: deterministicKey,
+  provider_ref: `manual_ref_${orderId}`,
+  provider_name: "manual",
+  amount_cents: order.total_cents,
+  method: actualMethod,
+  status: "paid",
+  paid_at: new Date().toISOString(),
+  });
+  }
 
  // 3. Mark order as paid/processing
  const { error: updateError } = await supabase

@@ -140,15 +140,15 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **S13**: Unificação de tipos e schemas duplicados entre camadas. *(Concluído — `scripts/check-type-duplications.mjs`, `npm run check:types-ssot`)*
 - [x] **S14**: Grafo sem dependência circular entre verticais de negócio. *(Concluído — `scripts/check-circular-deps.mjs`, `npm run check:cycles`)*
 
-### Bloco C — Rotas e Performance (S15–S22) — EM ANDAMENTO
+### Bloco C — Rotas e Performance (S15–S22) — CONCLUÍDO
 - [x] **S15**: Code-split por vertical e preload por intenção. *(Concluído — `src/router.tsx`, `vite.config.ts`)*
 - [x] **S16**: Orçamento por rota bloqueante no CI. *(Concluído — `scripts/route-budget-guard.mjs`, `npm run check:route-budget`)*
 - [x] **S17**: Paginação keyset e streaming em listagens volumosas. *(Concluído — DEC-109, `src/lib/pagination/keyset-pagination.ts`, testes 9/9 verdes)*
 - [x] **S18**: Cache de edge para páginas públicas e invalidação precisa. *(Concluído — DEC-109, `src/lib/cache/edge-cache.ts`, testes 6/6 verdes)*
 - [x] **S19**: Otimização do Cloudflare Worker (bundle, cold start, imports seletivos). *(Concluído — DEC-110, esbuild tree-shaking, isolamento de node:fs no edge)*
 - [x] **S20**: Índices no banco, seleção explícita de colunas e fim do N+1. *(Concluído — DEC-110, migração 20261002000001 com 5 índices e batching de queries)*
-- [ ] **S21**: RLS performático com medição do custo por linha.
-- [ ] **S22**: Rate limit, idempotência e desacoplamento assíncrono para filas/webhooks.
+- [x] **S21**: RLS performático com medição do custo por linha. *(Concluído — DEC-111, migração 20261002000002, Planning Time reduzido de 20.8ms para 1.3ms, security_definer_view: 0)*
+- [x] **S22**: Rate limit, idempotência e desacoplamento assíncrono para filas/webhooks. *(Concluído — DEC-111, `idempotency-guard.ts`, `domain-event-queue.ts`, rate limit anti-enumeração e anti-flood)*
 
 ### Bloco D — Design System como Fonte Única (S23–S31) — NA FILA
 - [ ] **S23**: Auditoria de tokens e consolidação na fonte única.

@@ -45,11 +45,28 @@ export const RATE_LIMIT_POLICIES: Record<string, RateLimitPolicy> = {
  maxAllowed: 10,
  message: "Muitas tentativas de cadastro a partir deste endereço IP. Aguarde alguns minutos.",
  },
- auth_password_reset: {
- windowMs: 30 * 60 * 1000, // 30 minutos
- maxAllowed: 10,
- message: "Muitas solicitações de redefinição de senha. Verifique sua caixa de entrada ou aguarde.",
- },
+  auth_password_reset: {
+    windowMs: 30 * 60 * 1000, // 30 minutos
+    maxAllowed: 10,
+    message: "Muitas solicitações de redefinição de senha. Verifique sua caixa de entrada ou aguarde.",
+  },
+  auth_check_identifier: {
+    windowMs: 60 * 1000, // 1 minuto
+    maxAllowed: 30, // 30 consultas por minuto por IP para evitar enumeração de contas
+    lockoutMs: 5 * 60 * 1000,
+    message: "Muitas consultas de identificador a partir deste endereço IP. Aguarde alguns minutos.",
+  },
+  payment_mutation: {
+    windowMs: 60 * 1000, // 1 minuto
+    maxAllowed: 10,
+    lockoutMs: 5 * 60 * 1000,
+    message: "Muitas solicitações financeiras ou de pagamento. Aguarde antes de tentar novamente.",
+  },
+  search_query: {
+    windowMs: 60 * 1000,
+    maxAllowed: 60,
+    message: "Frequência de buscas acima do limite permitido. Reduza a velocidade de consulta.",
+  },
 
   // Inteligência Artificial, LLMs & WebMCP Protocol
   ai_generation: {
@@ -169,43 +186,52 @@ export function checkRateLimit(
  actionType: string = "general",
  customOptions?: Partial<RateLimitPolicy>
 ): RateLimitResult {
+ const actionKey =
+   actionType === "like"
+     ? "social_like"
+     : actionType === "follow"
+       ? "social_follow"
+       : actionType === "comment"
+         ? "social_comment"
+         : actionType;
+
  const policy = {
- ...(RATE_LIMIT_POLICIES[actionType] || RATE_LIMIT_POLICIES.general),
- ...customOptions,
+   ...(RATE_LIMIT_POLICIES[actionKey] || RATE_LIMIT_POLICIES.general),
+   ...customOptions,
  };
 
  const now = Date.now();
 
  // Executa o garbage collection em ~10% das requisições para economizar CPU na Borda
  if (Math.random() < 0.1) {
- passiveCleanup();
+   passiveCleanup();
  }
 
- const isLocalOrUnknown =
- !identifier ||
- identifier === "127.0.0.1" ||
- identifier === "localhost" ||
- identifier === "::1" ||
- identifier === "unknown" ||
- identifier === "unknown_ip";
+ const isLocalDev =
+   identifier === "127.0.0.1" ||
+   identifier === "localhost" ||
+   identifier === "::1";
 
- if (isLocalOrUnknown) {
- return {
- allowed: true,
- limit: 999,
- remaining: 999,
- resetInMs: policy.windowMs,
- retryAfterSec: 0,
- headers: {
- "X-RateLimit-Limit": "999",
- "X-RateLimit-Remaining": "999",
- "X-RateLimit-Reset": String(Math.ceil((now + policy.windowMs) / 1000)),
- },
- };
+ if (isLocalDev && (typeof process !== "undefined" && process.env?.NODE_ENV !== "production")) {
+   return {
+     allowed: true,
+     limit: 999,
+     remaining: 999,
+     resetInMs: policy.windowMs,
+     retryAfterSec: 0,
+     headers: {
+       "X-RateLimit-Limit": "999",
+       "X-RateLimit-Remaining": "999",
+       "X-RateLimit-Reset": String(Math.ceil((now + policy.windowMs) / 1000)),
+     },
+   };
  }
 
- const key = `${actionType}:${identifier}`;
- const record = memoryStore.get(key);
+  const effectiveIdentifier = identifier && identifier !== "unknown" && identifier !== "unknown_ip"
+    ? identifier
+    : "shared_unknown_pool";
+  const key = `${actionKey}:${effectiveIdentifier}`;
+  const record = memoryStore.get(key);
 
  // 1. Caso esteja em período de lockout estendido
  if (record?.blockedUntil && now < record.blockedUntil) {
