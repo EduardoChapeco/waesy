@@ -9,12 +9,12 @@
 | Parâmetro | Valor Canônico |
 | :--- | :--- |
 | **Projeto** | Waesy — Plataforma BigTech Multitenant de Comércio, Serviços e Gestão Local |
-| **Commit HEAD** | `fa1c4504` (2026-10-02) |
-| **Fases Concluídas** | S01–S37 + F01–F06 |
-| **Última Decisão Homologada** | `DEC-132` — Suíte de Isolamento dos 4 Pilares (F06) |
-| **Próxima Fase** | **F07** — Vitrine Pública do Marketplace (Cards de Produto com SSR) |
+| **Commit HEAD** | `8d50feab` (2026-10-02) |
+| **Fases Concluídas** | S01–S37 + F01–F07 |
+| **Última Decisão Homologada** | `DEC-133` — Vitrine Pública Marketplace SSR (F07) |
+| **Próxima Fase** | **F08** — Checkout do Marketplace (Fluxo B2C Completo com Wizard 3 Etapas) |
 | **TypeScript** | `npm run typecheck` — 0 erros |
-| **Testes** | 168 arquivos, 1.111 testes verdes |
+| **Testes** | 169 arquivos, 1.117 testes verdes |
 | **Design Lint** | Catraca aprovada (teto 37.702 violações congelado) |
 | **Produção** | `https://usewaesy.pages.dev/` — HTTP 200 em todas as rotas |
 | **Banco de Dados** | Supabase PostgreSQL, RLS deny-by-default em 100% das tabelas |
@@ -57,6 +57,7 @@
 | F04 | [x] | `f50240ac` | Ponte de upgrade classificados -> workspace com `promoteClassifiedToWorkspaceProductFn` |
 | F05 | [x] | `f50240ac` | Componente `ClassifiedImportModal` integrado na toolbar de catálogo do Workspace |
 | F06 | [x] | `fa1c4504` | Suíte E2E de isolamento dos 4 pilares (`_store.pillar-isolation.test.ts`) |
+| F07 | [x] | `8d50feab` | Vitrine pública do Marketplace por loja (`/marketplace/:storeSlug`) com SSR e SEO |
 
 ---
 

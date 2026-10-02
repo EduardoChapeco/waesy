@@ -1552,6 +1552,22 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F06-PILLAR-ISOLATION, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
 - **Consequências:** Bloco 1 (F01 a F06) 100% CONCLUÍDO e HOMOLOGADA. Transição imediata para a **Fase F07: Vitrine Pública do Marketplace (Cards de Produto com SSR e SEO Canônico)**.
 
+## DEC-133: Conclusão da Fase F07 (Plano de Estabilização E2E) — Vitrine Pública do Marketplace por Loja (SSR e SEO Canônico)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F07 do Plano de Estabilização E2E, implementando a vitrine pública individual de loja no Marketplace (`/marketplace/:storeSlug`) com SSR de produtos, SEO canônico OpenGraph e isolamento rigoroso de empresas credenciadas (Workspace Pro).
+- **Decisão:**
+  1. `BFF Server Function Transacional`: Criado `src/services/marketplace-showcase.functions.ts` exportando `getMarketplaceStoreShowcaseFn` com resolução por slug ou UUID e busca atômica de produtos ativos (`published`/`active`) via `getAnonServerClient()`.
+  2. `Rota Pública e Layout Canônico`: Criada `src/routes/_store.marketplace.$storeSlug.tsx` no TanStack Router com `routeTree.gen.ts` sincronizado, exibindo perfil da empresa, selo de verificação, link direto para WhatsApp, navegação estrutural e grade de produtos responsiva.
+  3. `Matriz de Estados Completa`: Implementados estados de Carregamento (skeleton), Vazio (EmptyState honesto), Not Found (tratamento gracioso de slug inexistente sem erro 500) e Dados (cards de produto com mídia, preço formatado e CTAs táteis).
+  4. `Piso de Design e Acessibilidade (WCAG 2.2 AA)`: Zero `!important`, zero colchetes arbitrários (DL-02), anéis de foco explícitos em todas as ações (`:focus-visible:ring-2`), alvos de toque >= 44px (`h-11`) e respeito a `motion-reduce`.
+  5. `Aprovação Integral nas 4 Gates`:
+     - `vitest`: 6/6 testes verdes em `src/routes/_store.marketplace.$storeSlug.test.ts` (1.117 testes verdes no ecossistema).
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada com preservação estrita da baseline congelada (37.702 violações).
+     - `npm run build`: Build de produção aprovado gerando worker Cloudflare Pages em arquivo único (`dist/_worker.js`) e mapeamento de rotas (`dist/_routes.json`).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F07-MARKETPLACE-SHOWCASE, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F07 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F08: Checkout do Marketplace (Fluxo B2C Completo com Wizard de 3 Etapas)**.
+
+
 
 
 
