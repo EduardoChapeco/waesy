@@ -6,6 +6,7 @@ import { OverlaysFamily } from "./overlays-family";
 import { NavigationFamily } from "./navigation-family";
 import { DesignSystemHeader } from "./design-system-header";
 import { StateCard } from "./state-card";
+import { MediaShowcaseFamily } from "./media-showcase-family";
 import {
   CanonicalAppHeader,
   CanonicalBottomBar,
@@ -15,15 +16,19 @@ import {
   CanonicalKpiTile,
   CanonicalLedgerRow,
   CanonicalDataTable,
+  CanonicalMediaFrame,
+  CanonicalAvatarCluster,
+  CanonicalUploadDropzone,
 } from "@/components/ui/canonical";
 
-describe("Design System Showcase — Fases S24, S25 & S26 (Shell, Superfícies, Dados e 4 Estados)", () => {
+describe("Design System Showcase — Fases S24 a S27 (Shell, Superfícies, Dados, Mídia e 4 Estados)", () => {
   it("deve exportar todas as famílias canônicas e componentes de apresentação", () => {
     expect(ActionsFamily).toBeDefined();
     expect(FormsFamily).toBeDefined();
     expect(SurfacesFamily).toBeDefined();
     expect(OverlaysFamily).toBeDefined();
     expect(NavigationFamily).toBeDefined();
+    expect(MediaShowcaseFamily).toBeDefined();
     expect(DesignSystemHeader).toBeDefined();
     expect(StateCard).toBeDefined();
   });
@@ -40,6 +45,12 @@ describe("Design System Showcase — Fases S24, S25 & S26 (Shell, Superfícies, 
     expect(CanonicalKpiTile).toBeDefined();
     expect(CanonicalLedgerRow).toBeDefined();
     expect(CanonicalDataTable).toBeDefined();
+  });
+
+  it("deve exportar todas as primitivas de mídia canônicas (S27)", () => {
+    expect(CanonicalMediaFrame).toBeDefined();
+    expect(CanonicalAvatarCluster).toBeDefined();
+    expect(CanonicalUploadDropzone).toBeDefined();
   });
 
   it("deve aceitar os 5 modos canônicos de visualização de estados", () => {

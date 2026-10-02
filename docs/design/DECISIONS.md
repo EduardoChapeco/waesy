@@ -1329,3 +1329,18 @@
   5. `Suíte de Testes`: 4/4 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S26, WCAG 2.2 AA (Critério 2.5.8), Apple HIG e Definition of Done B.9.
 - **Consequências:** Fase S26 100% CONCLUÍDA e HOMOLOGADA. Total de **26 de 48 fases do Plano 5 concluídas (54.2%)**. Próxima fase: **S27 (Família Mídia)**.
+
+## DEC-116: Conclusão da Fase S27 (Plano 5 — Bloco D) — Família Mídia Canônica
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S27 (Família Mídia) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
+- **Decisão:**
+  1. `Primitivas Canônicas de Mídia e Ativos`: Criado `src/components/ui/canonical/media-family.tsx` exportando:
+     - `CanonicalMediaFrame`: Container responsivo de mídia anti-CLS com proporções fixas (`aspect-square`, `aspect-video`), border-border, rounded-lg, suporte a lazy-loading nativo, fallback automático anti-quebra visual e matriz de 4 estados.
+     - `CanonicalAvatarCluster`: Agrupador canônico de avatares com espaçamento negativo (`-space-x-2`), indicador semântico de presença em tempo real (online, offline), contraste WCAG AA no fallback de iniciais e contador de remanescentes.
+     - `CanonicalUploadDropzone`: Zona de upload e arraste tátil com dimensão mínima de 44px (`h-11`), foco via teclado (`focus-visible:ring-2`), feedback de formatos suportados e recuperação contra erros de extensão/tamanho.
+  2. `Exportação Centralizada`: Atualizado `src/components/ui/canonical/index.ts` expondo todos os componentes e tipos de mídia.
+  3. `Showcase de Mídia e Matriz de 4 Estados`: Criado `src/components/design-system/media-showcase-family.tsx` e integrado à rota `src/routes/workspace.design-system.tsx` com aba dedicada e exibição completa dos 4 estados operacionais.
+  4. `Piso de Acessibilidade e Design Lint`: 0 violações P0 e 0 violações P1 no `scripts/design-lint.mjs --changed`. Skeletons com suporte canônico a `motion-reduce:animate-none`, alvos de toque >= 44px e gap modular na grade de 4px.
+  5. `Suíte de Testes`: 5/5 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S27, WCAG 2.2 AA (Critério 2.5.8), docs/PERFORMANCE.md (CLS = 0) e Definition of Done B.9.
+- **Consequências:** Fase S27 100% CONCLUÍDA e HOMOLOGADA. Total de **27 de 48 fases do Plano 5 concluídas (56.3%)**. Próxima fase: **S28 (Família Formulário e Wizard)**.
