@@ -13,7 +13,7 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 | **PLANO-2** | `03_PLANO_MOTOR_DE_ANUNCIOS_E_VITRINE_F01_A_F48.md` | Motor de Anúncios Unificado, Preview Real e Vitrine | 48 Fases (F01–F48) | Concluído e Homologado | DEC-086 / Migração 20261221 / View ativa |
 | **PLANO-3** | `04_PLANO_3_MOTOR_DE_OFERTAS_E_NICHOS.md` | Nichos, 11 Blocos, Estoque Ledger e Motor de Preço | 72 Fases (G01–G72) | Concluído e Homologado | DEC-087 / DEC-088 / 38 testes verdes |
 | **PLANO-4** | `05_SUPER_PROMPT_OPERACAO_VERDADE_UNICA.md` | Operação Verdade Única, Erradicação de Remendos | 64 Fases (R01–R64) | **Concluído e Homologado** | 64/64 Fases / DEC-089 a DEC-104 / 1.007 testes verdes / 0 erros TS / Build OK |
-| **PLANO-5** | `06_PROMPT_ESTRUTURA_ESCALA_OPERACAO_BIGTECH.md` | Governança BigTech, Camadas, Telemetria e Escala | 48 Fases (S01–S48) | **Em Andamento (20/48 concluídas)** | DEC-105 a DEC-110 / 20 fases concluídas / 1.030 testes verdes |
+| **PLANO-5** | `06_PROMPT_ESTRUTURA_ESCALA_OPERACAO_BIGTECH.md` | Governança BigTech, Camadas, Telemetria e Escala | 48 Fases (S01–S48) | **Em Andamento (23/48 concluídas)** | DEC-105 a DEC-112 / 23 fases concluídas / 1.039 testes verdes |
 
 ---
 
@@ -150,8 +150,8 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **S21**: RLS performático com medição do custo por linha. *(Concluído — DEC-111, migração 20261002000002, Planning Time reduzido de 20.8ms para 1.3ms, security_definer_view: 0)*
 - [x] **S22**: Rate limit, idempotência e desacoplamento assíncrono para filas/webhooks. *(Concluído — DEC-111, `idempotency-guard.ts`, `domain-event-queue.ts`, rate limit anti-enumeração e anti-flood)*
 
-### Bloco D — Design System como Fonte Única (S23–S31) — NA FILA
-- [ ] **S23**: Auditoria de tokens e consolidação na fonte única.
+### Bloco D — Design System como Fonte Única (S23–S31) — EM ANDAMENTO
+- [x] **S23**: Auditoria de tokens e consolidação na fonte única. *(Concluído — DEC-112, `scripts/token-sync.mjs` com 133 tokens W3C DTCG e 100% de paridade com `src/styles.css`)*
 - [ ] **S24**: Showcase interno que renderiza todos os elementos e estados.
 - [ ] **S25**: Família shell e navegação.
 - [ ] **S26**: Família superfície e dados.

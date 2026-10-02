@@ -1274,4 +1274,16 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S21-S22, Supabase Postgres Best Practices (`security-rls-performance.md`) e Definition of Done B.9.
 - **Consequências:** Fases S21 e S22 100% CONCLUÍDAS e HOMOLOGADAS. **Bloco C (S15 a S22) 100% FINALIZADO**. Total de **22 de 48 fases do Plano 5 concluídas (45.8%)**. Próximo bloco: **Bloco D — Design System como Fonte Única (Fases S23 a S31)**.
 
+## DEC-112: Conclusão da Fase S23 (Plano 5 — Bloco D) — Auditoria de Tokens e Consolidação na Fonte Única (W3C DTCG)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S23 (Auditoria de Tokens e Consolidação na Fonte Única) abrindo o Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
+- **Decisão:**
+  1. `Sincronizador e Validador Canônico`: Implementado `scripts/token-sync.mjs` com suporte a `--check` e `--json`. O script resolve todos os 133 tokens no padrão W3C Design Tokens Community Group (DTCG) de `docs/design/tokens.json`, valida referências cruzadas e detecta quebras de alias.
+  2. `Paridade Bidirecional de CSS`: Identificadas e resolvidas 28 variáveis CSS pendentes de mapeamento em `src/styles.css`. Adicionadas as variáveis semânticas de superfície, texto, bordas, feedbacks e componentes (`--surface-canvas`, `--surface-card`, `--text-primary`, `--border-default`, `--feedback-danger`, etc.) em `:root`, `.dark` e mapeadas no `@theme inline` do Tailwind v4.
+  3. `Gate de CI Bloqueante`: Adicionado `"check:tokens": "node scripts/token-sync.mjs --check"` em `package.json` e integrado ao pipeline canônico unificado `npm run check:canonical`.
+  4. `Resultado da Auditoria`: 133 tokens carregados, 0 aliases quebrados, 0 variáveis ausentes em CSS (100% de paridade estrita), 0 violações P0/P1 no Design Lint com catraca aprovada.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S23, docs/design/DESIGN.md e Definition of Done B.9.
+- **Consequências:** Fase S23 100% CONCLUÍDA e HOMOLOGADA. Total de **23 de 48 fases do Plano 5 concluídas (47.9%)**. Próxima fase: **S24 (Showcase Interno com Renderização Completa e Matriz de 4 Estados)**.
+
+
 

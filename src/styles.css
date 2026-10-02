@@ -117,6 +117,20 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  /* ── W3C DTCG Token Mappings (Fase S23) ──────────────── */
+  --color-surface-canvas: var(--surface-canvas);
+  --color-surface-card: var(--surface-card);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-muted: var(--surface-muted);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+  --color-border-default: var(--border-default);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-control: var(--border-control);
+  --color-border-focus: var(--border-focus);
+
   /* ── Motion ──────────────────────────────────────────── */
   --duration-fast: 150ms;
   --duration-base: 250ms;
@@ -197,6 +211,42 @@
   --border: oklch(0.93 0 0); /* Borda clarinha, clean */
   --input: oklch(0.93 0 0);
   --ring: oklch(0.12 0 0); /* Anel de foco preto suave */
+
+  /* ── W3C DTCG Canonical Tokens Parity (Fase S23 / tokens.json) ───────── */
+  --surface-canvas: var(--background);
+  --surface-card: var(--card);
+  --surface-subtle: var(--muted);
+  --surface-muted: var(--muted);
+
+  --text-primary: var(--foreground);
+  --text-secondary: var(--muted-foreground);
+  --text-muted: var(--muted-foreground);
+  --text-inverse: var(--primary-foreground);
+
+  --border-default: var(--border);
+  --border-subtle: var(--border);
+  --border-control: var(--input);
+  --border-focus: var(--ring);
+
+  --feedback-danger: var(--destructive);
+  --feedback-warning: var(--warning);
+  --feedback-success: var(--success);
+  --feedback-info: var(--info);
+
+  --button-primary-bg: var(--primary);
+  --button-primary-text: var(--primary-foreground);
+  --button-secondary-bg: var(--background);
+  --button-secondary-border: var(--border);
+  --button-secondary-text: var(--foreground);
+  --button-radius: var(--radius-lg);
+
+  --input-bg: var(--background);
+  --input-border: var(--border);
+  --input-radius: var(--radius-md);
+
+  --card-bg: var(--card);
+  --card-border: var(--border);
+  --card-radius: var(--radius-xl);
 }
 
 /* ===========================================================================
