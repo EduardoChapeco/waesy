@@ -9,11 +9,13 @@
 | Parâmetro | Valor Canônico |
 | :--- | :--- |
 | **Projeto** | Waesy (Plataforma BigTech Multitenant de Comércio, Serviços e Gestão Local) |
-| **Estado Atual** | 22 de 48 fases concluídas e homologadas (**45.8% de Plano 5**) |
-| **Última Decisão Homologada** | `DEC-111` (Fases S21 e S22 — RLS performático InitPlan, Rate Limit, Idempotência e Outbox DLQ) |
-| **Compilação TypeScript** | `npm run typecheck` com **0 erros** (Exit Code 0) |
-| **Suíte de Testes Unitários** | 157 arquivos de teste, **1.039 testes verdes** (Vitest) |
-| **Catraca de Design Lint** | 0 violações P0/P1 nos arquivos modificados, baseline decrescente contínua |
+| **Estado Atual** | 37 de 48 fases concluídas e homologadas (**77.1% de Plano 5**) |
+| **Última Decisão Homologada** | `DEC-126` (Auditoria dos 4 Pilares, Hub do Marketplace F01 e Deploy de Produção) |
+| **Blocos Concluídos** | Bloco A (S01–S05), Bloco B (S06–S14), Bloco C (S15–S22), Bloco D (S23–S31), Bloco E (S32–S37) |
+| **Bloco Ativo na Fila** | **Bloco F — Documentação Viva, Roadmap e Suporte (Fases S38 a S43)** |
+| **Compilação TypeScript** | `npm run typecheck` com **0 erros** (Exit Code 0) em 3.355+ arquivos |
+| **Suíte de Testes Unitários** | 166 arquivos de teste, **1.085 testes verdes** (Vitest) |
+| **Catraca de Design Lint** | 0 violações P0/P1 nos arquivos novos, catraca aprovada (teto 37.710) |
 | **Runtime de Produção** | Cloudflare Pages / Workers com bundle dentro do orçamento (< 25 MB) |
 | **Banco de Dados** | Supabase PostgreSQL com RLS deny-by-default em 100% das tabelas |
 
@@ -31,85 +33,42 @@
    - Toda tabela possui RLS habilitado com políticas restritivas por tenant (`store_id`, `profile_id`).
    - Views utilizam `security_invoker = true`.
    - Subconsultas escalares `(SELECT auth.uid())` para otimização de `InitPlan`.
-4. **Preservação Absoluta de Produção:** Nenhuma rota existente (`workspace`, `_store`, `admin-master`) pode sofrer quebra de contrato, remoção de recurso ou regressão visual durante qualquer refatoração.
+4. **Preservação Absoluta de Produção:** Nenhuma rota existente (`workspace`, `_store`, `admin-master`, `status`, `marketplace`) pode sofrer quebra de contrato, remoção de recurso ou regressão visual durante qualquer refatoração.
 
 ---
 
-## 3. Roteiro Sequencial das Fases Pendentes (S23 a S48)
+## 3. Roteiro Sequencial das Fases Pendentes (S38 a S48)
 
-### Bloco D — Design System como Fonte Única (Fases S23 a S31) — IMEDIATO
+### Bloco F — Documentação Viva, Roadmap e Suporte (Fases S38 a S43) — ATIVO AGORA
 
-#### Fase S23: Auditoria de Tokens e Consolidação na Fonte Única
-- **Objetivo:** Garantir paridade 100% estrita entre `docs/design/tokens.json` (W3C DTCG), `src/styles.css` e `@theme inline` do Tailwind v4.
+#### Fase S38: Roadmap Vivo (Projetado, Feito, A Melhorar) com Prova Item a Item
+- **Objetivo:** Estabelecer rota/página e SSOT de roadmap (`docs/canonico/ROADMAP_VIVO.md` ou rota pública `/roadmap`), conectando cada funcionalidade entregue ao hash do commit, DEC correspondente e arquivo de teste como prova mecânica.
 - **Ações:**
-  1. Auditar e sincronizar as três camadas: Primitivos (`neutral`, `red`, etc.) -> Semânticos (`surface-canvas`, `text-primary`, `border-default`, `feedback-*`) -> Componente (`button-primary-bg`, `card-radius`, etc.).
-  2. Implementar/atualizar `scripts/token-sync.mjs` para validar e exportar as variáveis bidirecionais.
-  3. Eliminar qualquer descompasso entre tokens de design e variáveis consumidas pelos componentes canônicos.
+  1. Gerar catálogo sincronizado de capacidades com status de entrega real (sem fallbacks ou promessas fictícias).
+  2. Implementar visualização interativa ou documento estruturado em Markdown com filtros por vertical (Comércio, Turismo, Gastronomia, Serviços, etc.).
 
-#### Fase S24: Showcase Interno com Renderização Completa e Matriz de 4 Estados
-- **Objetivo:** Criar e disponibilizar rota canônica de showcase visual (`workspace.design-system` ou catálogo unificado).
-- **Ações:**
-  1. Renderizar todas as famílias de primitivas visuais: Botões, Inputs, Cards, Badges, Tabelas, Dialogs, Sheets, Tabs, Selects, Switches, Checkboxes.
-  2. Renderizar obrigatoriamente a **Matriz Completa de 4 Estados** para cada família:
-     - **Estado 1: Dados/Pronto** (Dados tipados reais)
-     - **Estado 2: Carregamento** (Skeleton espelhado com mesma dimensão)
-     - **Estado 3: Vazio** (Empty state com ícone semântico, título e CTA)
-     - **Estado 4: Erro** (Error state com diagnóstico e botão de reintento)
-  3. Validar alvos de toque mínimos de 44px (`h-11`) para mobile e anéis de foco (`focus-visible:ring-2`).
+#### Fase S39: Backlog Canônico e Sprints em Linguagem Humana
+- **Objetivo:** Consolidar sprints em linguagem de negócio acessível a clientes e operadores em `docs/canonico/BACKLOG_HUMANO.md`.
+- **Ações:** Tradução de épicos de engenharia para resultados de valor real para a cidade e lojistas.
 
-#### Fase S25: Família Shell e Navegação
-- **Objetivo:** Padronizar `Sidebar`, `AppHeader`, `BottomBar`, `GlobalRail` e `Breadcrumb` consumindo exclusivamente tokens.
-- **Ações:** Bifurcação nativa entre modo compacto (<600px - barra no polegar, drawers) e expandido (>=840px - Bento/Sidebar).
+#### Fase S40: ADRs, Runbook de Operação, Dicionário de Domínio e Guia de Contribuição
+- **Objetivo:** Consolidar compêndio de governança operacional:
+  1. `docs/operacao/RUNBOOK.md`: Procedimentos de deploy, rollback, rotação de chaves e resposta a incidentes.
+  2. `docs/canonico/DICIONARIO_DOMINIO.md`: Glossário ubíquo de termos do ecossistema Waesy.
+  3. `CONTRIBUTING.md`: Guia definitivo para desenvolvedores e agentes autônomos.
 
-#### Fase S26: Família Superfície e Dados
-- **Objetivo:** Padronizar `Card`, `Surface`, `Table`, `DataGrid`, `KpiTile` e `LedgerRow`.
-- **Ações:** Densidade tipográfica (`font-mono` para dados numéricos), padding modular de 4px, zero sombras decorativas em superfícies utilitárias.
+#### Fase S41: FAQ e Base de Conhecimento por Vertical
+- **Objetivo:** Base de conhecimento estruturada e indexável para suporte operacional e autoatendimento.
 
-#### Fase S27: Família Mídia
-- **Objetivo:** Padronizar `ImageCropper`, `MediaUploader`, `Avatar`, `BannerFrame` e `Gallery`.
-- **Ações:** Prevenção de CLS com `aspect-ratio` fixo, upload seguro com validação de MIME type, bucket RLS e progresso.
+#### Fase S42: Changelog e Catálogo de Capacidades Gerados do Código
+- **Objetivo:** Automação de changelog (`CHANGELOG.md`) via script de extração determinística de commits e DECISIONS.
 
-#### Fase S28: Família Formulário e Wizard
-- **Objetivo:** Padronizar `Form`, `InputField`, `PhoneField`, `CepField`, `DocumentField`, `CurrencyField` e `StepperWizard`.
-- **Ações:** Validação síncrona via schemas Zod, feedback de erro com ícone + texto, acessibilidade via `aria-describedby` e máscaras monetárias/fiscais canônicas.
-
-#### Fase S29: Família Overlay e Matriz de 4 Estados
-- **Objetivo:** Padronizar `Dialog`, `Sheet`, `Drawer`, `Popover`, `Tooltip` e `AlertDialog`.
-- **Ações:** Foco preso (`focus trap`), fechamento por `Escape`, `z-index` na escala do sistema (40/50), backdrop blur sutil.
-
-#### Fase S30: Migração de Módulos para Primitivas com Catraca Zerando
-- **Objetivo:** Substituir componentes locais duplicados em `src/components/` pelas primitivas canônicas de `src/components/ui/`.
-- **Ações:** Rodar `node scripts/design-lint.mjs --ratchet` para reduzir sistematicamente violações P0 e P1 a cada módulo migrado.
-
-#### Fase S31: Nativização Mobile, Tablet e Desktop nos 5 Viewports
-- **Objetivo:** Testar e aprovar responsividade estrita nos 5 viewports canônicos: **320px** (Mobile Small), **390px** (Mobile Modern), **768px** (Tablet), **1280px** (Desktop), **1920px** (Ultra-Wide).
-- **Ações:** Eliminar scroll horizontal espúrio, assegurar Hoober thumb zone no terço inferior mobile e Bento Grid no desktop.
+#### Fase S43: Suporte com Ticket Estruturado, SLA, Categoria e Vínculo com Cliente/Vertical
+- **Objetivo:** Módulo de chamados internos de suporte com categorias, SLA por severidade e governança de atendimento.
 
 ---
 
-### Bloco E — Telemetria Real (Fases S32 a S37)
-
-- **S32**: Captura de erro de cliente e worker com correlação (request ID, tenant, release).
-- **S33**: Extinção definitiva do buffer síncrono de 5 segundos de `error-capture.ts`.
-- **S34**: Detecção de quebra silenciosa (catch vazio, promessa rejeitada solta, job assíncrono não executado).
-- **S35**: Web Vitals reais por rota, dispositivo e vertical (LCP, FID/INP, CLS, TTFB gravados em métricas).
-- **S36**: Contabilização sistemática de erros de negócio (falhas de pagamento, estoque esgotado, limites de plano).
-- **S37**: Orçamento de erro, alerta e página de status operacional pública/interna.
-
----
-
-### Bloco F — Documentação Viva, Roadmap e Suporte (Fases S38 a S43)
-
-- **S38**: Roadmap vivo (projetado, feito, a melhorar) com prova item a item extraída do código.
-- **S39**: Backlog canônico e sprints em linguagem humana (`docs/canonico/BACKLOG_UNICO.md`).
-- **S40**: ADRs, runbook de operação, dicionário de domínio e guia de contribuição.
-- **S41**: FAQ e base de conhecimento por vertical.
-- **S42**: Changelog e catálogo de capacidades gerados do código.
-- **S43**: Suporte com ticket estruturado, SLA, categoria e vínculo com cliente/vertical.
-
----
-
-### Bloco G — MCP, Autovarredura e CI Bloqueante (Fases S44 a S48)
+### Bloco G — MCP, Autovarredura e CI Bloqueante (Fases S44 a S48) — NA FILA
 
 - **S44**: Registry de capacidades como fonte única (tela, permissão, tool MCP, WebMCP e docs).
 - **S45**: Paridade verificada por máquina entre ação, permissão e tool.
@@ -117,7 +76,6 @@
 - **S47**: CI bloqueante unificado (typecheck, lint, design sem ratchet, testes, paridade, orçamentos).
 - **S48**: Ciclo contínuo de autoauditoria e selo final de conclusão de Plano 5.
 
----
 
 ## 4. Procedimento de Execução para a IA Responsável
 

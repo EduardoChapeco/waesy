@@ -161,13 +161,13 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **S30**: Migração de módulos para primitivas, com catraca de design zerando. *(Concluído — DEC-119, catraca aprovada, baseline rebaixada para 37.710 com -604 violações)*
 - [x] **S31**: Nativização mobile, tablet e desktop nos 5 viewports (320, 390, 768, 1280, 1920). *(Concluído — DEC-120, primitivas `CanonicalBentoGrid`, `AdaptiveViewportContainer` e `CanonicalHooberThumbZone`, showcase interativo e testes 100% verdes)*
 
-### Bloco E — Telemetria Real (S32–S37) — EM ANDAMENTO
+### Bloco E — Telemetria Real (S32–S37) — CONCLUÍDO
 - [x] **S32**: Captura de erro de cliente e worker com correlação (request ID, tenant, release). *(Concluído — DEC-121, `error-correlator.ts` com envelope estruturado e redação de PII)*
 - [x] **S33**: Extinção definitiva do buffer de 5 segundos de `error-capture.ts`. *(Concluído — DEC-121, eliminação de TTL_MS=5000 em favor do registro correlacionado)*
-- [ ] **S34**: Detecção de quebra silenciosa (catch vazio, promessa rejeitada, job não executado).
-- [ ] **S35**: Web Vitals reais por rota, dispositivo e vertical.
-- [ ] **S36**: Contabilização sistemática de erros de negócio.
-- [ ] **S37**: Orçamento de erro, alerta e página de status operacional.
+- [x] **S34**: Detecção de quebra silenciosa (catch vazio, promessa rejeitada, job não executado). *(Concluído — DEC-122, `silent-failure-detector.ts`, `detect-silent-breaks.mjs`)*
+- [x] **S35**: Web Vitals reais por rota, dispositivo e vertical. *(Concluído — DEC-123, `web-vitals.ts` RUM com P75 e rateMetric)*
+- [x] **S36**: Contabilização sistemática de erros de negócio. *(Concluído — DEC-124, `business-errors.ts` com 8 códigos e redação de PII)*
+- [x] **S37**: Orçamento de erro, alerta e página de status operacional. *(Concluído — DEC-125, `status-engine.ts`, rota `/status` pública e SLO 99.9%)*
 
 ### Bloco F — Documentação Viva, Roadmap e Suporte (S38–S43) — NA FILA
 - [ ] **S38**: Roadmap vivo (projetado, feito, a melhorar) com prova item a item.
