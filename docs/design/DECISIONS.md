@@ -1480,6 +1480,30 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md, Parecer do BigTech Board e Definition of Done B.9.
 - **Consequências:** Plataforma Waesy estabilizada e publicada em produção; separação conceitual dos 4 pilares consolidada; liberação para a execução contínua das próximas fases do plano de estabilização E2E (F02 a F24).
 
+## DEC-127: Conclusão da Fase F02 (Plano de Estabilização E2E) — Blindagem da Rota de Classificados e Desambiguação de Contexto
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F02 do Bloco 1 (Separação Arquitetural dos 4 Pilares) do Plano de Estabilização E2E, estabelecendo as fronteiras visuais e funcionais dos Classificados avulsos em relação ao Marketplace e Places.
+- **Decisão:**
+  1. `Desambiguação Visual Canônica no Topo`: Implementado banner de contexto em `src/routes/_store.classificados.index.tsx` esclarecendo o escopo de desapego e negociação direta de pessoa física / microcomércio, com direcionamento tátil direto para o Marketplace (`/marketplace`) e para o Guia de Lugares (`/diretorio`).
+  2. `Piso de Design Tokens e Acessibilidade`: 100% de conformidade com a grade espacial de 4px, `:focus-visible:ring-2` em controles interativos e touch targets >= 44px (`h-11`).
+  3. `Catraca e Qualidade`: Zero violações P0/P1 no `scripts/design-lint.mjs --ratchet` (37.710 mantida intacta). 3/3 testes unitários verdes em `src/routes/_store.classificados.test.ts`. Compilação estrita com zero erros TypeScript em 3.356 arquivos (`tsc --noEmit` Exit Code 0).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F02-CLASSIFICADOS, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F02 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F03: Consolidação da Rota Places / Diretório Local (`/places` / `/diretorio`) como Guia Oficial de Estabelecimentos**.
+
+## DEC-128: Deploy Completo de Produção (GitHub + Supabase + Cloudflare Pages Edge Worker)
+- **Data:** 2026-10-02
+- **Contexto:** Solicitação executiva de deploy completo de produção cobrindo sincronização de migrações do Supabase, empacotamento otimizado com injeção de credenciais seguras e publicação na borda Cloudflare Pages com validação HTTP.
+- **Decisão:**
+  1. `Sincronização Integral do Supabase`: Executado `scripts/apply-all-pending-migrations.mjs` no pooler Postgres de produção (`aws-0-sa-east-1.pooler.supabase.com:6543`), garantindo compatibilidade de sinônimos, RPCs e tabelas.
+  2. `Otimização de Borda Cloudflare Pages`: Executado `scripts/wrap-worker.js` com compilação e minificação em arquivo único (`_worker.js` de 16.9 MiB, abaixo do limite de 25 MiB uncompressed) e injeção atômica de variáveis de ambiente do Supabase.
+  3. `Deploy via Wrangler`: Publicação em produção (`https://usewaesy.pages.dev` e deployment `https://850a7109.usewaesy.pages.dev`) via `node ./node_modules/wrangler/bin/wrangler.js pages deploy dist --project-name=usewaesy --branch=main --commit-dirty=true --no-bundle`.
+  4. `Smoke Test Homologado`: Todos os endpoints responderam com HTTP 200 OK (`/`, `/status`, `/marketplace`, `/classificados`).
+  5. `Catraca de Design Lint Rebaixada`: Baseline rebaixada de 37.710 para 37.702 violações (-8 violações). Zero erros TypeScript em 3.356 arquivos (`tsc --noEmit` Exit Code 0).
+- **Fundamentação:** AGENTS.md B.1 a B.12, Constituição Técnica do Waesy e Definition of Done B.9.
+- **Consequências:** Ambiente de produção 100% atualizado, estável e operacional na borda e no banco de dados.
+
+
+
 
 
 

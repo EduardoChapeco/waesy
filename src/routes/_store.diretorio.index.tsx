@@ -21,15 +21,15 @@ import { EmptyState } from "@/components/state/states";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
 
 const DIRECTORY_CATEGORIES: FilterChipOption[] = [
- { id: "todos", label: "Tudo", emoji: "🏢", icon: Tag },
- { id: "turismo", label: "Turismo", emoji: "✈️", icon: AirplaneTilt },
- { id: "gastronomia", label: "Gastronomia", emoji: "🍽️", icon: ForkKnife },
- { id: "comercio", label: "Comércio", emoji: "🛍️", icon: Storefront },
- { id: "saude", label: "Saúde", emoji: "🩺", icon: Heartbeat },
- { id: "reformas", label: "Reformas", emoji: "🔨", icon: Wrench },
- { id: "auto", label: "Automotivo", emoji: "🚗", icon: CarProfile },
- { id: "pet", label: "Pet", emoji: "🐾", icon: Tag },
- { id: "servicos", label: "Serviços", emoji: "💼", icon: Briefcase },
+  { id: "todos", label: "Tudo", icon: Tag },
+  { id: "turismo", label: "Turismo", icon: AirplaneTilt },
+  { id: "gastronomia", label: "Gastronomia", icon: ForkKnife },
+  { id: "comercio", label: "Comércio", icon: Storefront },
+  { id: "saude", label: "Saúde", icon: Heartbeat },
+  { id: "reformas", label: "Reformas", icon: Wrench },
+  { id: "auto", label: "Automotivo", icon: CarProfile },
+  { id: "pet", label: "Pet", icon: Tag },
+  { id: "servicos", label: "Serviços", icon: Briefcase },
 ];
 
 export const Route = createFileRoute("/_store/diretorio/")({
