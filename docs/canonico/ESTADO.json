@@ -60,17 +60,17 @@
     },
     "PLANO_5_ESTRUTURA_ESCALA_OPERACAO_BIGTECH": {
       "totalPhases": 48,
-      "completedPhases": 30,
+      "completedPhases": 31,
       "status": "IN_PROGRESS",
-      "currentPhase": "S31",
-      "activeBlock": "BLOCO_D_DESIGN_SYSTEM_COMO_FONTE_UNICA",
+      "currentPhase": "S32",
+      "activeBlock": "BLOCO_E_TELEMETRIA",
       "completedBlocks": [
         "BLOCO_A_RE_BASELINE_E_VERDADE",
         "BLOCO_B_ESTRUTURA_E_CAMADAS",
-        "BLOCO_C_ROTAS_E_PERFORMANCE"
+        "BLOCO_C_ROTAS_E_PERFORMANCE",
+        "BLOCO_D_DESIGN_SYSTEM_COMO_FONTE_UNICA"
       ],
       "pendingBlocks": [
-        "BLOCO_D_DESIGN_SYSTEM_COMO_FONTE_UNICA",
         "BLOCO_E_TELEMETRIA",
         "BLOCO_F_DOCUMENTACAO_ROADMAP_SUPORTE",
         "BLOCO_G_MCP_AUTOVARREDURA_E_CI"

@@ -150,7 +150,7 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **S21**: RLS performático com medição do custo por linha. *(Concluído — DEC-111, migração 20261002000002, Planning Time reduzido de 20.8ms para 1.3ms, security_definer_view: 0)*
 - [x] **S22**: Rate limit, idempotência e desacoplamento assíncrono para filas/webhooks. *(Concluído — DEC-111, `idempotency-guard.ts`, `domain-event-queue.ts`, rate limit anti-enumeração e anti-flood)*
 
-### Bloco D — Design System como Fonte Única (S23–S31) — EM ANDAMENTO
+### Bloco D — Design System como Fonte Única (S23–S31) — CONCLUÍDO
 - [x] **S23**: Auditoria de tokens e consolidação na fonte única. *(Concluído — DEC-112, `scripts/token-sync.mjs` com 133 tokens W3C DTCG e 100% de paridade com `src/styles.css`)*
 - [x] **S24**: Showcase interno que renderiza todos os elementos e estados. *(Concluído — DEC-113, rota `workspace.design-system` com 11 famílias e matriz de 4 estados)*
 - [x] **S25**: Família shell e navegação. *(Concluído — DEC-114, `CanonicalAppHeader`, `CanonicalBottomBar`, `CanonicalGlobalRail`, `CanonicalBreadcrumbsBar`)*
@@ -159,7 +159,7 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **S28**: Família formulário e wizard. *(Concluído — DEC-117, `CanonicalStepperWizard`, `CanonicalField`, `CanonicalFieldError`)*
 - [x] **S29**: Família overlay e matriz de 4 estados. *(Concluído — DEC-118, `AdaptiveModal`, `CanonicalDrawer`, `CanonicalConfirmDialog`)*
 - [x] **S30**: Migração de módulos para primitivas, com catraca de design zerando. *(Concluído — DEC-119, catraca aprovada, baseline rebaixada para 37.710 com -604 violações)*
-- [ ] **S31**: Nativização mobile, tablet e desktop nos 5 viewports (320, 390, 768, 1280, 1920).
+- [x] **S31**: Nativização mobile, tablet e desktop nos 5 viewports (320, 390, 768, 1280, 1920). *(Concluído — DEC-120, primitivas `CanonicalBentoGrid`, `AdaptiveViewportContainer` e `CanonicalHooberThumbZone`, showcase interativo e testes 100% verdes)*
 
 ### Bloco E — Telemetria Real (S32–S37) — NA FILA
 - [ ] **S32**: Captura de erro de cliente e worker com correlação (request ID, tenant, release).

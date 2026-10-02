@@ -11,3 +11,4 @@ export * from './data-surface';
 export * from './media-family';
 export * from './canonical-wizard';
 export * from './canonical-overlay';
+export * from './viewport-container';

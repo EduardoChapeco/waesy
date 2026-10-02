@@ -116,6 +116,7 @@ import { Route as WorkspaceAutomacoesRouteImport } from './routes/workspace.auto
 import { Route as WorkspaceAvaliacoesRouteImport } from './routes/workspace.avaliacoes'
 import { Route as WorkspaceComercialRouteImport } from './routes/workspace.comercial'
 import { Route as WorkspaceCrmRouteImport } from './routes/workspace.crm'
+import { Route as WorkspaceDesignSystemRouteImport } from './routes/workspace.design-system'
 import { Route as WorkspaceLicitacoesRouteImport } from './routes/workspace.licitacoes'
 import { Route as WorkspaceMiningRouteImport } from './routes/workspace.mining'
 import { Route as WorkspaceNotificacoesRouteImport } from './routes/workspace.notificacoes'
@@ -927,6 +928,11 @@ const WorkspaceComercialRoute = WorkspaceComercialRouteImport.update({
 const WorkspaceCrmRoute = WorkspaceCrmRouteImport.update({
   id: '/crm',
   path: '/crm',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceDesignSystemRoute = WorkspaceDesignSystemRouteImport.update({
+  id: '/design-system',
+  path: '/design-system',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceLicitacoesRoute = WorkspaceLicitacoesRouteImport.update({
@@ -2527,6 +2533,7 @@ export interface FileRoutesByFullPath {
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
   '/workspace/crm': typeof WorkspaceCrmRoute
+  '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
   '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
@@ -2902,6 +2909,7 @@ export interface FileRoutesByTo {
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
   '/workspace/crm': typeof WorkspaceCrmRoute
+  '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
   '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
@@ -3285,6 +3293,7 @@ export interface FileRoutesById {
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
   '/workspace/crm': typeof WorkspaceCrmRoute
+  '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
   '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
@@ -3671,6 +3680,7 @@ export interface FileRouteTypes {
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
     | '/workspace/crm'
+    | '/workspace/design-system'
     | '/workspace/licitacoes'
     | '/workspace/mining'
     | '/workspace/notificacoes'
@@ -4046,6 +4056,7 @@ export interface FileRouteTypes {
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
     | '/workspace/crm'
+    | '/workspace/design-system'
     | '/workspace/licitacoes'
     | '/workspace/mining'
     | '/workspace/notificacoes'
@@ -4428,6 +4439,7 @@ export interface FileRouteTypes {
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
     | '/workspace/crm'
+    | '/workspace/design-system'
     | '/workspace/licitacoes'
     | '/workspace/mining'
     | '/workspace/notificacoes'
@@ -5500,6 +5512,13 @@ declare module '@tanstack/react-router' {
       path: '/crm'
       fullPath: '/workspace/crm'
       preLoaderRoute: typeof WorkspaceCrmRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/design-system': {
+      id: '/workspace/design-system'
+      path: '/design-system'
+      fullPath: '/workspace/design-system'
+      preLoaderRoute: typeof WorkspaceDesignSystemRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/licitacoes': {
@@ -7960,6 +7979,7 @@ interface WorkspaceRouteChildren {
   WorkspaceAvaliacoesRoute: typeof WorkspaceAvaliacoesRoute
   WorkspaceComercialRoute: typeof WorkspaceComercialRoute
   WorkspaceCrmRoute: typeof WorkspaceCrmRoute
+  WorkspaceDesignSystemRoute: typeof WorkspaceDesignSystemRoute
   WorkspaceLicitacoesRoute: typeof WorkspaceLicitacoesRoute
   WorkspaceMiningRoute: typeof WorkspaceMiningRoute
   WorkspaceNotificacoesRoute: typeof WorkspaceNotificacoesRoute
@@ -8126,6 +8146,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAvaliacoesRoute: WorkspaceAvaliacoesRoute,
   WorkspaceComercialRoute: WorkspaceComercialRoute,
   WorkspaceCrmRoute: WorkspaceCrmRoute,
+  WorkspaceDesignSystemRoute: WorkspaceDesignSystemRoute,
   WorkspaceLicitacoesRoute: WorkspaceLicitacoesRoute,
   WorkspaceMiningRoute: WorkspaceMiningRoute,
   WorkspaceNotificacoesRoute: WorkspaceNotificacoesRoute,

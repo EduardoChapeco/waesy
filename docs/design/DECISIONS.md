@@ -1385,3 +1385,18 @@
   4. `Suíte de Testes`: 7/7 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S30, Constituição Técnica do Waesy e Definition of Done B.9.
 - **Consequências:** Fase S30 100% CONCLUÍDA e HOMOLOGADA. Total de **30 de 48 fases do Plano 5 concluídas (62.5%)**. Próxima fase: **S31 (Nativização Mobile, Tablet e Desktop nos 5 Viewports: 320, 390, 768, 1280, 1920)**.
+
+## DEC-120: Conclusão da Fase S31 (Plano 5 — Bloco D) — Nativização Mobile, Tablet e Desktop nos 5 Viewports e Fechamento do Bloco D
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S31 (Nativização Mobile, Tablet e Desktop nos 5 Viewports: 320px, 390px, 768px, 1280px, 1920px) e Fechamento Integral do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
+- **Decisão:**
+  1. `Primitivas Canônicas de Viewport e Bento Grid`: Criado `src/components/ui/canonical/viewport-container.tsx` exportando:
+     - `CANONICAL_VIEWPORTS` & `CANONICAL_VIEWPORT_LIST`: Especificação dos 5 viewports normativos (320px Mobile Small, 390px Mobile Modern, 768px Tablet, 1280px Desktop e 1920px Ultra-Wide).
+     - `AdaptiveViewportContainer`: Container adaptativo com contenção anti-overflow (`overflow-x: hidden`), margens fluidas escalonadas e folga inferior para barras fixas (DL-24).
+     - `CanonicalBentoGrid` & `CanonicalBentoItem`: Grid adaptativo para dashboards que rearranja de 1 coluna (Mobile) para 2 colunas (Tablet) e 3-4 colunas (Desktop/Ultrawide).
+     - `CanonicalHooberThumbZone`: Ancoragem de ações no terço inferior da viewport mobile para alcance ergonômico do polegar com alvos de toque >= 44px (`h-11`).
+  2. `Showcase Interativo de Viewports`: Criado `src/components/design-system/viewports-family.tsx` e integrado à rota `/workspace/design-system` com seletor interativo em tempo real para simular os 5 viewports e matriz de 4 estados.
+  3. `Piso de Acessibilidade e Design Lint`: 0 violações P0 e 0 violações P1 no `scripts/design-lint.mjs --changed`. Catraca de CI aprovada com 0 regressões em 37.710 violações congeladas.
+  4. `Suíte de Testes`: Testes unitários dedicados em `src/components/ui/canonical/viewport-container.test.ts` (3/3 verdes) e showcase em `design-system-showcase.test.ts` (8/8 verdes).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S31, Steven Hoober Thumb Zone Research, WCAG 2.2 AA e Definition of Done B.9.
+- **Consequências:** Fase S31 100% CONCLUÍDA e HOMOLOGADA. Bloco D (Design System como Fonte Única: Fases S23 a S31) 100% CONCLUÍDO. Total de **31 de 48 fases do Plano 5 concluídas (64.6%)**. Reorganização imediata de prioridades para focar na eliminação de monólitos e débitos herdados conforme o compêndio `Untitled-12` (`docs/audit/REVISAO_DOC_COMPLETO_02102026.md`).

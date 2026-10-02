@@ -7,6 +7,7 @@ import { NavigationFamily } from "./navigation-family";
 import { DesignSystemHeader } from "./design-system-header";
 import { StateCard } from "./state-card";
 import { MediaShowcaseFamily } from "./media-showcase-family";
+import { ViewportsFamily } from "./viewports-family";
 import {
   CanonicalAppHeader,
   CanonicalBottomBar,
@@ -25,9 +26,13 @@ import {
   AdaptiveModal,
   CanonicalDrawer,
   CanonicalConfirmDialog,
+  CanonicalBentoGrid,
+  CanonicalBentoItem,
+  CanonicalHooberThumbZone,
+  AdaptiveViewportContainer,
 } from "@/components/ui/canonical";
 
-describe("Design System Showcase — Fases S24 a S29 (Shell, Superfícies, Dados, Mídia, Forms, Wizard e Overlays)", () => {
+describe("Design System Showcase — Fases S24 a S31 (Shell, Superfícies, Dados, Mídia, Forms, Wizard, Overlays e Viewports)", () => {
   it("deve exportar todas as famílias canônicas e componentes de apresentação", () => {
     expect(ActionsFamily).toBeDefined();
     expect(FormsFamily).toBeDefined();
@@ -69,6 +74,14 @@ describe("Design System Showcase — Fases S24 a S29 (Shell, Superfícies, Dados
     expect(AdaptiveModal).toBeDefined();
     expect(CanonicalDrawer).toBeDefined();
     expect(CanonicalConfirmDialog).toBeDefined();
+  });
+
+  it("deve exportar todas as primitivas de viewport e bento grid canônicas (S31)", () => {
+    expect(ViewportsFamily).toBeDefined();
+    expect(CanonicalBentoGrid).toBeDefined();
+    expect(CanonicalBentoItem).toBeDefined();
+    expect(CanonicalHooberThumbZone).toBeDefined();
+    expect(AdaptiveViewportContainer).toBeDefined();
   });
 
   it("deve aceitar os 5 modos canônicos de visualização de estados", () => {

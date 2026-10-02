@@ -8,6 +8,7 @@ import { SurfacesFamily } from "@/components/design-system/surfaces-family";
 import { OverlaysFamily } from "@/components/design-system/overlays-family";
 import { NavigationFamily } from "@/components/design-system/navigation-family";
 import { MediaShowcaseFamily } from "@/components/design-system/media-showcase-family";
+import { ViewportsFamily } from "@/components/design-system/viewports-family";
 import type { DesignSystemStateMode } from "@/components/design-system/design-system-types";
 
 export const Route = createFileRoute("/workspace/design-system")({
@@ -48,6 +49,9 @@ function WorkspaceDesignSystemPage() {
           <TabsTrigger value="overlays" className="h-11 px-4 text-xs">
             Modais
           </TabsTrigger>
+          <TabsTrigger value="viewports" className="h-11 px-4 text-xs">
+            Viewports
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="flex flex-col gap-8 outline-none">
@@ -57,6 +61,7 @@ function WorkspaceDesignSystemPage() {
           <SurfacesFamily mode={mode} />
           <MediaShowcaseFamily mode={mode} />
           <OverlaysFamily mode={mode} />
+          <ViewportsFamily mode={mode} />
         </TabsContent>
 
         <TabsContent value="navigation" className="outline-none">
@@ -81,6 +86,10 @@ function WorkspaceDesignSystemPage() {
 
         <TabsContent value="overlays" className="outline-none">
           <OverlaysFamily mode={mode} />
+        </TabsContent>
+
+        <TabsContent value="viewports" className="outline-none">
+          <ViewportsFamily mode={mode} />
         </TabsContent>
       </Tabs>
     </div>

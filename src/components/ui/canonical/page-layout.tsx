@@ -286,13 +286,13 @@ export const CanonicalSplit = React.forwardRef<HTMLDivElement, CanonicalSplitPro
 CanonicalSplit.displayName = 'CanonicalSplit';
 
 /**
- * P2 / R10: CanonicalBottomBar — Barra de ação fixa inferior para mobile e desktop
+ * P2 / R10: CanonicalBottomBarContainer — Barra de ação fixa inferior para mobile e desktop
  */
-export interface CanonicalBottomBarProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CanonicalBottomBarContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-export const CanonicalBottomBar = React.forwardRef<HTMLDivElement, CanonicalBottomBarProps>(
+export const CanonicalBottomBarContainer = React.forwardRef<HTMLDivElement, CanonicalBottomBarContainerProps>(
   ({ className, children, ...props }, ref) => {
     return (
       <div
@@ -308,4 +308,4 @@ export const CanonicalBottomBar = React.forwardRef<HTMLDivElement, CanonicalBott
     );
   }
 );
-CanonicalBottomBar.displayName = 'CanonicalBottomBar';
+CanonicalBottomBarContainer.displayName = 'CanonicalBottomBarContainer';
