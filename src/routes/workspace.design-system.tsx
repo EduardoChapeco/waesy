@@ -6,6 +6,7 @@ import { ActionsFamily } from "@/components/design-system/actions-family";
 import { FormsFamily } from "@/components/design-system/forms-family";
 import { SurfacesFamily } from "@/components/design-system/surfaces-family";
 import { OverlaysFamily } from "@/components/design-system/overlays-family";
+import { NavigationFamily } from "@/components/design-system/navigation-family";
 import type { DesignSystemStateMode } from "@/components/design-system/design-system-types";
 
 export const Route = createFileRoute("/workspace/design-system")({
@@ -28,6 +29,9 @@ function WorkspaceDesignSystemPage() {
           <TabsTrigger value="overview" className="h-11 sm:h-9 text-xs px-4">
             Visão Geral
           </TabsTrigger>
+          <TabsTrigger value="navigation" className="h-11 sm:h-9 text-xs px-4">
+            Navegação
+          </TabsTrigger>
           <TabsTrigger value="actions" className="h-11 sm:h-9 text-xs px-4">
             Ações
           </TabsTrigger>
@@ -43,10 +47,15 @@ function WorkspaceDesignSystemPage() {
         </TabsList>
 
         <TabsContent value="overview" className="flex flex-col gap-8 outline-none">
+          <NavigationFamily mode={mode} />
           <ActionsFamily mode={mode} />
           <FormsFamily mode={mode} />
           <SurfacesFamily mode={mode} />
           <OverlaysFamily mode={mode} />
+        </TabsContent>
+
+        <TabsContent value="navigation" className="outline-none">
+          <NavigationFamily mode={mode} />
         </TabsContent>
 
         <TabsContent value="actions" className="outline-none">

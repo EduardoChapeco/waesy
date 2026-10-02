@@ -1302,9 +1302,14 @@
      - **Estado 4 (Erro)**: Alert de diagnóstico técnico com borda semântica e botão de reintento.
   4. `Piso de Acessibilidade e Ergonomia`: Alvos de toque móveis garantidos com dimensão mínima de 44x44px (`h-11`) e anéis de foco visíveis em todos os elementos (`focus-visible:ring-2`).
   5. `Verificação e Provas`: Testes unitários em `src/components/design-system/design-system-showcase.test.ts` (2/2 testes verdes), Design Lint com 0 violações P0/P1/P2 nos arquivos alterados, e grafo acíclico mantido com 0 ciclos.
-- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S24, WCAG 2.2 AA (Critério 2.5.8) e Definition of Done B.9.
-- **Consequências:** Fase S24 100% CONCLUÍDA e HOMOLOGADA. Total de **24 de 48 fases do Plano 5 concluídas (50.0%)**. Próxima fase: **S25 (Família Shell e Navegação)**.
-
-
-
-
+## DEC-114: Conclusão da Fase S25 (Plano 5 — Bloco D) — Família Shell e Navegação Canônica
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S25 (Família Shell e Navegação) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
+- **Decisão:**
+  1. `Primitivas Canônicas do Shell`: Criado `src/components/ui/canonical/navigation-shell.tsx` exportando `CanonicalAppHeader` (cabeçalho sticky com h-14, breadcrumbs, badge e ações com touch target h-11), `CanonicalBottomBar` (barra de navegação móvel <600px com pb-safe, h-16, alvos táteis h-11 e badges numéricos), `CanonicalGlobalRail` (trilho desktop >=840px w-16 com ícones h-11 e foco acessível) e `CanonicalBreadcrumbsBar` (trilha de navegação com separadores Chevron e alvos táteis).
+  2. `Exportação Centralizada`: Atualizado `src/components/ui/canonical/index.ts` expondo todos os componentes e tipos de navegação canônica.
+  3. `Showcase de Navegação e Matriz de 4 Estados`: Criado `src/components/design-system/navigation-family.tsx` exibindo a família nas 4 matrizes de estado: Estado 1 (Dados: Shell ativo e responsivo com botões e breadcrumbs), Estado 2 (Carregamento: Skeleton espelhado com Zero CLS), Estado 3 (Vazio: EmptyState informativo com ícone Navigation e ação de liberação), Estado 4 (Erro: Alert destrutivo de rota inacessível e botão de reintento h-11). Integrado na rota canônica `src/routes/workspace.design-system.tsx`.
+  4. `Piso de Acessibilidade e Design Lint`: 0 violações P0 e P1 no `scripts/design-lint.mjs --changed`. Todos os alvos de toque com h-11 (>=44px), anéis de foco (:focus-visible) rigorosamente aplicados e gap modular na grade de 4px.
+  5. `Suíte de Testes`: 3/3 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S25, WCAG 2.2 AA (Critério 2.5.8), Apple HIG e Definition of Done B.9.
+- **Consequências:** Fase S25 100% CONCLUÍDA e HOMOLOGADA. Total de **25 de 48 fases do Plano 5 concluídas (52.1%)**. Próxima fase: **S26 (Família Superfície e Dados)**.
