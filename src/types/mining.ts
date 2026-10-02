@@ -366,3 +366,12 @@ export interface MinedLawsuit {
   created_at: string;
   updated_at: string;
 }
+
+export interface ContentStats {
+  wordCount: number;
+  sentenceCount: number;
+  paragraphCount: number;
+  averageWordLength: number;
+  level?: "short" | "medium" | "long";
+  contentLevel?: "short" | "medium" | "long";
+}

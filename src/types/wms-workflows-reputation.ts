@@ -3,8 +3,9 @@ export type WorkflowTriggerType = 'order_created' | 'order_paid' | 'lead_capture
 export type WorkflowExecutionStatus = 'running' | 'completed' | 'failed' | 'paused';
 export type PwaDisplayMode = 'standalone' | 'fullscreen' | 'minimal-ui' | 'browser';
 export type PwaOrientation = 'portrait' | 'landscape' | 'any';
-export type ClaimCategory = 'atendimento' | 'entrega' | 'produto_defeituoso' | 'cobranca_indevida' | 'cancelamento_estorno' | 'outro';
-export type ClaimStatus = 'pending_store_response' | 'replied_by_store' | 'under_moderation' | 'resolved' | 'not_resolved' | 'cancelled';
+export type ReputationClaimCategory = 'atendimento' | 'entrega' | 'produto_defeituoso' | 'cobranca_indevida' | 'cancelamento_estorno' | 'outro';
+export type ReputationClaimStatus = 'pending_store_response' | 'replied_by_store' | 'under_moderation' | 'resolved' | 'not_resolved' | 'cancelled';
+export type { ReputationClaimCategory as ClaimCategory, ReputationClaimStatus as ClaimStatus };
 export type ClaimSenderType = 'customer' | 'store_staff' | 'platform_moderator';
 export type ReputationBadgeLevel = 'otimo' | 'bom' | 'regular' | 'ruim' | 'nao_recomendado' | 'sem_indice';
 
@@ -101,8 +102,8 @@ export interface StoreReputationClaim {
  order_id?: string | null;
  title: string;
  description: string;
- category: ClaimCategory;
- status: ClaimStatus;
+ category: ReputationClaimCategory;
+ status: ReputationClaimStatus;
  public_token: string;
  is_public: boolean;
  satisfaction_rating?: number | null;

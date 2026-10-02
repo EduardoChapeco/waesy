@@ -5,26 +5,40 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFo
 import { cn } from "@/lib/utils";
 
 export interface SheetPageProps {
- open: boolean;
- onOpenChange: (open: boolean) => void;
- title: React.ReactNode;
+ open?: boolean;
+ isOpen?: boolean;
+ onOpenChange?: (open: boolean) => void;
+ onClose?: () => void;
+ title?: React.ReactNode;
  description?: React.ReactNode;
  children: React.ReactNode;
  footer?: React.ReactNode;
  size?: "sm" | "default" | "lg" | "xl" | "2xl" | "wide" | "70" | "full";
  className?: string;
+ contentClassName?: string;
+ side?: "top" | "bottom" | "left" | "right";
 }
 
 export function SheetPage({
  open,
+ isOpen,
  onOpenChange,
+ onClose,
  title,
  description,
  children,
  footer,
  size = "default",
  className,
+ contentClassName,
+ side = "right",
 }: SheetPageProps) {
+ const isSheetOpen = open ?? isOpen ?? false;
+ const handleOpenChange = (nextOpen: boolean) => {
+   if (onOpenChange) onOpenChange(nextOpen);
+   if (!nextOpen && onClose) onClose();
+ };
+
  const sizeClasses = {
     sm: "w-full sm:max-w-xl md:max-w-2xl",
     default: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
@@ -37,9 +51,9 @@ export function SheetPage({
  }[size];
 
  return (
- <Sheet open={open} onOpenChange={onOpenChange}>
+ <Sheet open={isSheetOpen} onOpenChange={handleOpenChange}>
  <SheetContent
- side="right"
+ side={side}
  className={cn(
  "w-full h-full flex flex-col p-0 bg-background z-50",
  sizeClasses,

@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { QuickModuleConfigDrawer } from "./quick-module-config-drawer";
 
-export type ViewModeType = "list" | "table" | "grid" | "kanban" | "calendar" | string;
+import type { WorkspaceViewModeType } from "@/types/domain";
+export type ModuleViewModeType = WorkspaceViewModeType;
 
 export interface ViewModeOption {
-  id: ViewModeType;
+  id: ModuleViewModeType;
   label: string;
   icon?: any;
 }
@@ -31,8 +32,8 @@ export interface ModuleActionHeaderProps {
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   viewModes?: ViewModeOption[];
-  currentViewMode?: ViewModeType;
-  onViewModeChange?: (mode: ViewModeType) => void;
+  currentViewMode?: ModuleViewModeType;
+  onViewModeChange?: (mode: ModuleViewModeType) => void;
   primaryAction?: PrimaryActionConfig;
   configTitle?: string;
   configContent?: ReactNode;
@@ -64,7 +65,7 @@ export function ModuleActionHeader({
 }: ModuleActionHeaderProps) {
   const [configDrawerOpen, setConfigDrawerOpen] = useState(false);
 
-  const getDefaultIcon = (mode: ViewModeType) => {
+  const getDefaultIcon = (mode: ModuleViewModeType) => {
     switch (mode) {
       case "grid": return LayoutGrid;
       case "kanban": return Kanban;

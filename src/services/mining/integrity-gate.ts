@@ -108,13 +108,8 @@ export function isContentPolluted(content: string): boolean {
   return POLLUTION_PATTERNS.some((pattern) => pattern.test(content));
 }
 
-export interface ContentStats {
-  wordCount: number;
-  sentenceCount: number;
-  paragraphCount: number;
-  averageWordLength: number;
-  contentLevel: "short" | "medium" | "long";
-}
+import type { ContentStats } from "@/types/mining";
+export type { ContentStats };
 
 export function computeContentStats(content: string): ContentStats {
   const words = content.match(/\b[\p{L}\p{N}]+\b/gu) || [];

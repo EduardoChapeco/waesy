@@ -273,16 +273,8 @@ export const createManualTransaction = createServerFn({ method: "POST" })
 // OMNI-HUB ERP (V122): Resumo financeiro por canal de origem
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface ChannelFinancialSummaryDTO {
-  channel: string;
-  order_count: number;
-  gross_sales_cents: number;
-  platform_fee_cents: number;
-  shipping_cost_cents: number;
-  payment_fee_cents: number;
-  net_revenue_cents: number;
-  avg_margin_percent: number;
-}
+import type { ChannelFinancialSummaryDTO } from "@/types/billing-ledger";
+export type { ChannelFinancialSummaryDTO };
 
 const ChannelSummaryParamsSchema = z.object({
   from: z.string().datetime().optional(), // ISO 8601 — ex: "2026-09-01T00:00:00Z"

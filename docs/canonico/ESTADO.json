@@ -60,15 +60,15 @@
     },
     "PLANO_5_ESTRUTURA_ESCALA_OPERACAO_BIGTECH": {
       "totalPhases": 48,
-      "completedPhases": 9,
+      "completedPhases": 14,
       "status": "IN_PROGRESS",
-      "currentPhase": "S10",
-      "activeBlock": "BLOCO_B_ESTRUTURA_E_CAMADAS",
+      "currentPhase": "S15",
+      "activeBlock": "BLOCO_C_ROTAS_E_PERFORMANCE",
       "completedBlocks": [
-        "BLOCO_A_RE_BASELINE_E_VERDADE"
+        "BLOCO_A_RE_BASELINE_E_VERDADE",
+        "BLOCO_B_ESTRUTURA_E_CAMADAS"
       ],
       "pendingBlocks": [
-        "BLOCO_B_ESTRUTURA_E_CAMADAS",
         "BLOCO_C_ROTAS_E_PERFORMANCE",
         "BLOCO_D_DESIGN_SYSTEM_COMO_FONTE_UNICA",
         "BLOCO_E_TELEMETRIA",
@@ -79,9 +79,9 @@
   },
   "metrics": {
     "vitest": {
-      "testFiles": 152,
-      "totalTests": 1011,
-      "passed": 1011,
+      "testFiles": 153,
+      "totalTests": 1015,
+      "passed": 1015,
       "failed": 0,
       "exitCode": 0
     },

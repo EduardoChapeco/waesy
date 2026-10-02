@@ -230,3 +230,23 @@ export interface UnifiedListingMedia {
   video_url?: string | null;
 }
 
+export type PreviewViewport = "mobile" | "tablet" | "desktop";
+
+export interface UniversalClassifiedShowcaseProps {
+  classified: any;
+  isOwner?: boolean;
+  canManage?: boolean;
+  viewerContext?: string;
+  currentProfile?: any;
+  onOpenBookingModal?: (selectedDeparture?: any) => void;
+  onOpenProposalModal?: () => void;
+  onOpenApplyModal?: () => void;
+  onDirectBuy?: () => void;
+  onDownloadDigital?: () => void;
+  onEdit?: () => void;
+  onOpenCompanion?: () => void;
+  isBooking?: boolean;
+  isBuyingDirect?: boolean;
+  isDownloadingDigital?: boolean;
+}
+

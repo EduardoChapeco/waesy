@@ -12,7 +12,7 @@ import { normalizeHexPalette, inferProductCategoryFromText } from "@/lib/color-e
 
 // ── 1. SCHEMAS E TIPOS CANÔNICOS ─────────────────────────────────────────────
 
-export interface BrandKitColorsDTO {
+export interface BrandKitProfileColorsDTO {
   primary: string;
   secondary: string;
   accent: string;
@@ -21,28 +21,33 @@ export interface BrandKitColorsDTO {
   palette: string[];
 }
 
-export interface BrandKitTypographyDTO {
+export interface BrandKitProfileTypographyDTO {
   heading: string;
   body: string;
   mono: string;
   display?: string;
 }
 
-export interface BrandKitLogosDTO {
+export interface BrandKitProfileLogosDTO {
   main_url: string | null;
   dark_url: string | null;
   icon_url: string | null;
   light_url: string | null;
 }
 
-export interface BrandKitVoiceDTO {
+export interface BrandKitProfileVoiceDTO {
   tone_of_voice: string;
   tone_rules: string[];
   do_words: string[];
   dont_words: string[];
 }
 
-export interface BrandKitDTO {
+type BrandKitColorsDTO = BrandKitProfileColorsDTO;
+type BrandKitTypographyDTO = BrandKitProfileTypographyDTO;
+type BrandKitLogosDTO = BrandKitProfileLogosDTO;
+type BrandKitVoiceDTO = BrandKitProfileVoiceDTO;
+
+export interface BrandKitProfileDTO {
   id: string;
   store_id: string;
   company_name?: string;
@@ -68,6 +73,8 @@ export interface BrandKitDTO {
   edited_by_human: boolean;
   updated_at: string;
 }
+
+type BrandKitDTO = BrandKitProfileDTO;
 
 const DEFAULT_BRAND_KIT_COLORS: BrandKitColorsDTO = {
   primary: "#0A84FF",

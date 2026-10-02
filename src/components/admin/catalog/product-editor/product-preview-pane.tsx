@@ -26,7 +26,7 @@ import { TravelPackageDetailView } from "@/components/commerce/travel/travel-pac
 import { getBestInterestFreeInstallment } from "@/lib/payment/installment-calculator";
 import type { TravelPackageData } from "@/types/travel-package";
 
-export type PreviewViewport = "compact" | "medium" | "expanded";
+export type ProductPreviewPaneViewport = "compact" | "medium" | "expanded";
 
 export interface ProductPreviewPaneProps {
   isTravelPackageMode: boolean;
@@ -59,13 +59,13 @@ export function ProductPreviewPane({
   setActivePreviewImage,
   store,
 }: ProductPreviewPaneProps) {
-  const [viewport, setViewport] = React.useState<PreviewViewport>("compact");
+  const [viewport, setViewport] = React.useState<ProductPreviewPaneViewport>("compact");
 
   const bestInstallment = React.useMemo(() => {
     return getBestInterestFreeInstallment(formValues.price_cents || 0);
   }, [formValues.price_cents]);
 
-  const viewportContainerClasses: Record<PreviewViewport, string> = {
+  const viewportContainerClasses: Record<ProductPreviewPaneViewport, string> = {
     compact: "max-w-sm mx-auto border-x border-border shadow-xs",
     medium: "max-w-3xl mx-auto border-x border-border shadow-xs",
     expanded: "w-full",

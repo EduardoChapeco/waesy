@@ -3,7 +3,7 @@ import { FileText, Plus, BookOpen, Printer, CheckCircle2, Shield, Eye, Edit3, X 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ContractClauseLibrary, ContractClause, replaceContractVariables, DEFAULT_CLAUSES } from './contract-clause-library';
+import { ContractClauseLibrary, OfficeContractClause, replaceContractVariables, DEFAULT_CLAUSES } from './contract-clause-library';
 import { ContractSignPad, SignatureData } from './contract-sign-pad';
 
 interface ContractEditorSheetProps {
@@ -42,7 +42,7 @@ export function ContractEditorSheet({
 
  const previewContent = replaceContractVariables(content, computedVariables);
 
- const handleInsertClause = (clause: ContractClause) => {
+ const handleInsertClause = (clause: OfficeContractClause) => {
  setContent((prev) => prev + '\n\n' + clause.title + '\n' + clause.content);
  setActiveTab('editor');
  };

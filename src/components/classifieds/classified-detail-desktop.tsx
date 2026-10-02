@@ -13,7 +13,7 @@ import { startCustomerChatThread } from "@/services/chat.functions";
 import { addToCart } from "@/services/cart.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { toast } from "sonner";
-import type { UniversalClassifiedShowcaseProps } from "./universal-classified-showcase";
+import type { UniversalClassifiedShowcaseProps } from "@/types/unified-ad-engine";
 
 function isVideoUrl(url?: string | null): boolean {
   if (!url) return false;

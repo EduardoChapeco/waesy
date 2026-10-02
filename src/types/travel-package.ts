@@ -15,6 +15,24 @@ export interface TravelItineraryDay {
  highlights?: string[];
 }
 
+export interface ItineraryDay {
+  id?: string;
+  day?: string | number;
+  day_number?: number;
+  date?: string;
+  title: string;
+  description: string;
+  images?: string[];
+  activities?: string[];
+  imageLayout?: "grid" | "carousel" | "single" | string;
+  meals_included?: Array<"breakfast" | "lunch" | "dinner">;
+  transport?: string;
+  hotel_name?: string;
+  city?: string;
+  meals?: string[];
+  overnight?: string;
+}
+
 export interface TravelNearbyRecommendation {
  id: string;
  title: string;

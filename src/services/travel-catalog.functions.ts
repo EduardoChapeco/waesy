@@ -39,7 +39,7 @@ export interface DestinationAttraction {
  ticket_required?: boolean;
 }
 
-export interface DestinationReview {
+export interface DestinationCatalogReview {
  id: string;
  author_name: string;
  author_avatar_url?: string;
@@ -49,6 +49,7 @@ export interface DestinationReview {
  comment: string;
  verified: boolean;
 }
+
 
 export interface DestinationDTO {
  id: string;
@@ -70,7 +71,7 @@ export interface DestinationDTO {
  tags: string[];
  sections: DestinationSection[];
  attractions: DestinationAttraction[];
- reviews: DestinationReview[];
+ reviews: DestinationCatalogReview[];
  average_rating: number;
  reviews_count: number;
  highlights: string[];

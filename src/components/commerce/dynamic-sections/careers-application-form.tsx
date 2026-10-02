@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { uploadMediaUniversal } from "@/services/storage.functions";
 import { toast } from "sonner";
-import type { JobPostingItem } from "./careers-job-grid";
+import type { JobPostingItem } from "@/types/hr";
 
 interface CareersApplicationFormProps {
  job: JobPostingItem | null;

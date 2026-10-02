@@ -129,18 +129,18 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **S04**: Decisão e destino formal de diretórios legados e paralelos. *(Concluído — `docs/canonico/REGISTRO_LIMPEZA_R59_R60.md`)*
 - [x] **S05**: Orçamento de escala medido e congelado. *(Concluído — `scripts/bigtech-scale-budget-s05.mjs`, Worker 16.94 MB vs 25 MB max)*
 
-### Bloco B — Estrutura e Camadas (S06–S14) — EM ANDAMENTO
+### Bloco B — Estrutura e Camadas (S06–S14) — CONCLUÍDO
 - [x] **S06**: Definir as 6 camadas canônicas e contrato de dependência com teste automatizado. *(Concluído — `src/lib/architecture/layer-contract.ts` e `layer-contract.test.ts` 4/4 verdes)*
 - [x] **S07**: `src/lib` puro desacoplado de domínio. Domínio movido para módulo dono. *(Concluído — DEC-106)*
 - [x] **S08**: `src/services` migrado para casos de uso estruturados, eliminando arquivos `.functions.ts` acoplados a UI. *(Concluído — DEC-106)*
 - [x] **S09**: `src/routes` com rota fina, subpastas por vertical e colocation (zero rotas > 300 linhas / 0 rotas com db direto). *(Concluído — DEC-106)*
-- [ ] **S10**: Módulos de vertical com fronteira explícita e manifesto.
-- [ ] **S11**: Eliminação de código morto, órfão e desvinculado com detector de CI.
-- [ ] **S12**: Padronização de nomes de arquivo, símbolo e pasta.
-- [ ] **S13**: Unificação de tipos e schemas duplicados entre camadas.
-- [ ] **S14**: Grafo sem dependência circular entre verticais de negócio.
+- [x] **S10**: Módulos de vertical com fronteira explícita e manifesto. *(Concluído — `src/lib/architecture/vertical-manifest.ts` e `vertical-manifest.test.ts` 4/4 verdes)*
+- [x] **S11**: Eliminação de código morto, órfão e desvinculado com detector de CI. *(Concluído — `scripts/dead-code-detector.mjs`, `npm run check:deadcode`)*
+- [x] **S12**: Padronização de nomes de arquivo, símbolo e pasta. *(Concluído — `scripts/naming-convention-validator.mjs`, `npm run check:naming`)*
+- [x] **S13**: Unificação de tipos e schemas duplicados entre camadas. *(Concluído — `scripts/check-type-duplications.mjs`, `npm run check:types-ssot`)*
+- [x] **S14**: Grafo sem dependência circular entre verticais de negócio. *(Concluído — `scripts/check-circular-deps.mjs`, `npm run check:cycles`)*
 
-### Bloco C — Rotas e Performance (S15–S22) — NA FILA
+### Bloco C — Rotas e Performance (S15–S22) — EM ANDAMENTO
 - [ ] **S15**: Code-split por vertical e preload por intenção.
 - [ ] **S16**: Orçamento por rota bloqueante no CI.
 - [ ] **S17**: Paginação keyset e streaming em listagens volumosas.

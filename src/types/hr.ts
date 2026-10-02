@@ -194,3 +194,14 @@ export interface EmployeePinAuditLog {
  details: Record<string, unknown>;
  created_at: string;
 }
+
+export interface JobPostingItem {
+  id: string;
+  title: string;
+  department: string;
+  location: string;
+  work_model: "on_site" | "remote" | "hybrid";
+  employment_type: "clt" | "pj" | "internship" | "temporary";
+  salary_range?: string;
+  description_markdown?: string;
+}

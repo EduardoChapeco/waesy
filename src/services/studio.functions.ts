@@ -710,15 +710,8 @@ export const listStudioTemplates = createServerFn({ method: "GET" })
 // BRAND KIT — DNA Visual da Loja
 // ============================================================
 
-export interface BrandKitDTO {
-  id?: string;
-  store_id?: string | null;
-  colors: Record<string, any>;
-  fonts: Record<string, any>;
-  logos: Record<string, any>;
-  voice: Record<string, any>;
-  updated_at?: string;
-}
+import type { BrandKitDTO } from "@/types/studio";
+export type { BrandKitDTO };
 
 /**
  * getBrandKit — Carrega o Brand Kit da loja autenticada

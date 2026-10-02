@@ -17,7 +17,7 @@ import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/works
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { uploadStoreMedia } from "@/services/storage.functions";
-import { listDestinations, createDestination, updateDestination, deleteDestination, type DestinationDTO, type DestinationSection, type DestinationAttraction, type DestinationReview } from "@/services/travel-catalog.functions";
+import { listDestinations, createDestination, updateDestination, deleteDestination, type DestinationDTO, type DestinationSection, type DestinationAttraction, type DestinationCatalogReview } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { CANONICAL_DESTINATIONS, BRAZIL_STATES, MAJOR_IATA_AIRPORTS, TOURISM_TAGS_PRESETS, getDestinationsByState, findAirportByIata, searchCanonicalDestinations, type CanonicalDestination } from "@/lib/destinations-catalog";
@@ -75,7 +75,7 @@ export default function WorkspaceDestinationsPage() {
  const [description, setDescription] = useState("");
 
  // Form states — Aba 4: Avaliações de Viajantes & Provas Sociais
- const [reviews, setReviews] = useState<DestinationReview[]>([]);
+ const [reviews, setReviews] = useState<DestinationCatalogReview[]>([]);
  const [newReviewAuthor, setNewReviewAuthor] = useState("");
  const [newReviewCity, setNewReviewCity] = useState("");
  const [newReviewRating, setNewReviewRating] = useState(5);
@@ -435,7 +435,7 @@ export default function WorkspaceDestinationsPage() {
  toast.error("Informe o nome do autor e o comentário da avaliação.");
  return;
  }
- const review: DestinationReview = {
+ const review: DestinationCatalogReview = {
  id: crypto.randomUUID(),
  author_name: newReviewAuthor.trim(),
  author_city: newReviewCity.trim() || undefined,

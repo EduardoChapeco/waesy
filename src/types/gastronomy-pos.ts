@@ -5,7 +5,8 @@ export type KdsPriority = 'low' | 'normal' | 'high' | 'urgent';
 export type KdsOrderStatus = 'pending' | 'in_preparation' | 'ready' | 'collected' | 'cancelled';
 export type KdsItemStatus = 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
 export type MultiPaymentMethod = 'cash' | 'pix' | 'credit_card' | 'debit_card' | 'meal_voucher' | 'store_credit' | 'cryptocurrency' | 'other';
-export type PaymentStatus = 'pending' | 'approved' | 'rejected' | 'refunded' | 'cancelled';
+export type PosPaymentStatus = 'pending' | 'approved' | 'rejected' | 'refunded' | 'cancelled';
+export type { PosPaymentStatus as PaymentStatus };
 
 export interface KdsStation {
  id: string;
@@ -97,7 +98,7 @@ export interface PosMultiPayment {
  authorization_code?: string | null;
  payer_name?: string | null;
  payer_document_masked?: string | null;
- status: PaymentStatus;
+ status: PosPaymentStatus;
  received_by?: string | null;
  metadata: Record<string, any>;
  created_at: string;

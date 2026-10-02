@@ -7,17 +7,8 @@ import { toast } from "sonner";
 // ─────────────────────────────────────────────────────────────────────────────
 // ItineraryDay — Tipo Canônico
 // ─────────────────────────────────────────────────────────────────────────────
-export interface ItineraryDay {
-  day_number: number;
-  date: string;            // "YYYY-MM-DD" ou "Dia N"
-  title: string;
-  description: string;
-  images: string[];        // URLs públicas das fotos do dia
-  activities: string[];    // tags de atividades
-  meals_included: Array<"breakfast" | "lunch" | "dinner">;
-  transport?: string;      // "Ônibus fretado", "Avião", etc.
-  hotel_name?: string;     // "Pousada Morro Branco"
-}
+import type { ItineraryDay } from "@/types/travel-package";
+export type { ItineraryDay };
 
 interface ItineraryDayEditorProps {
   days: ItineraryDay[];
@@ -98,7 +89,7 @@ export function ItineraryDayEditor({
 
   const removeActivity = (dayIndex: number, activity: string) => {
     updateDay(dayIndex, {
-      activities: days[dayIndex].activities.filter((a) => a !== activity),
+      activities: (days[dayIndex]?.activities || []).filter((a) => a !== activity),
     });
   };
 
@@ -127,7 +118,7 @@ export function ItineraryDayEditor({
   };
 
   const removeImage = (dayIndex: number, imgIndex: number) => {
-    const next = days[dayIndex].images.filter((_, i) => i !== imgIndex);
+    const next = (days[dayIndex]?.images || []).filter((_, i) => i !== imgIndex);
     updateDay(dayIndex, { images: next });
   };
 
@@ -322,9 +313,9 @@ export function ItineraryDayEditor({
                         + Adicionar
                       </button>
                     </div>
-                    {day.activities.length > 0 && (
+                    {(day.activities?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-1.5 pt-1">
-                        {day.activities.map((act) => (
+                        {day.activities?.map((act) => (
                           <span
                             key={act}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-medium text-foreground"
@@ -351,7 +342,7 @@ export function ItineraryDayEditor({
                     Fotos do Dia
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {day.images.map((img, imgIdx) => (
+                    {day.images?.map((img, imgIdx) => (
                       <div key={imgIdx} className="relative size-16 sm:size-20 group">
                         <img
                           src={img}

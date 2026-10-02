@@ -3,10 +3,10 @@ import { Smartphone, Tablet, Monitor, RefreshCw, ZoomIn, ZoomOut, Eye, ExternalL
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CanonicalListingView } from "../public/canonical-listing-view";
-import type { UnifiedListing } from "@/types/unified-ad-engine";
+import type { UnifiedListing, PreviewViewport } from "@/types/unified-ad-engine";
 import { cn } from "@/lib/utils";
 
-export type PreviewViewport = "mobile" | "tablet" | "desktop";
+export type { PreviewViewport };
 
 export interface CanonicalListingPreviewFrameProps {
   listing: Partial<UnifiedListing>;

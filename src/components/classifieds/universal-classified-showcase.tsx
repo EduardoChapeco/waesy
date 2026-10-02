@@ -3,23 +3,8 @@ import { useIsDesktop } from "@/hooks/use-mobile";
 import { ClassifiedDetailMobile } from "./classified-detail-mobile";
 import { ClassifiedDetailDesktop } from "./classified-detail-desktop";
 
-export interface UniversalClassifiedShowcaseProps {
-  classified: any;
-  isOwner?: boolean;
-  canManage?: boolean;
-  viewerContext?: string;
-  currentProfile?: any;
-  onOpenBookingModal?: (selectedDeparture?: any) => void;
-  onOpenProposalModal?: () => void;
-  onOpenApplyModal?: () => void;
-  onDirectBuy?: () => void;
-  onDownloadDigital?: () => void;
-  onEdit?: () => void;
-  onOpenCompanion?: () => void;
-  isBooking?: boolean;
-  isBuyingDirect?: boolean;
-  isDownloadingDigital?: boolean;
-}
+import type { UniversalClassifiedShowcaseProps } from "@/types/unified-ad-engine";
+export type { UniversalClassifiedShowcaseProps };
 
 /**
  * UniversalClassifiedShowcase — Native-First Bifurcation Wrapper (MASTER PROMPT V40)

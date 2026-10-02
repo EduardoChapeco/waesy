@@ -74,7 +74,7 @@ export interface ExternalOrderDTO {
   imported_at: string;
 }
 
-export interface ChannelFinancialSummaryDTO {
+export interface MarketplaceChannelFinancialSummaryDTO {
   platform: string;
   order_count: number;
   gross_sales_cents: number;
@@ -663,7 +663,7 @@ export const listMarketplaceExternalOrders = createServerFn({ method: "GET" })
  */
 export const getMarketplaceFinancialSummary = createServerFn({ method: "GET" })
   .validator(z.object({ storeId: z.string().optional() }).optional())
-  .handler(async ({ data }): Promise<ChannelFinancialSummaryDTO[]> => {
+  .handler(async ({ data }): Promise<MarketplaceChannelFinancialSummaryDTO[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
@@ -678,7 +678,7 @@ export const getMarketplaceFinancialSummary = createServerFn({ method: "GET" })
 
     if (error || !rows) return [];
 
-    const summaryMap = new Map<string, ChannelFinancialSummaryDTO>();
+    const summaryMap = new Map<string, MarketplaceChannelFinancialSummaryDTO>();
 
     for (const row of rows) {
       const plat = row.platform || "outros";

@@ -149,48 +149,6 @@ const SheetDescription = React.forwardRef<
 ));
 SheetDescription.displayName = SheetPrimitive.Description.displayName;
 
-export interface SheetPageProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  description?: string;
-  children: React.ReactNode;
-  contentClassName?: string;
-  side?: "top" | "bottom" | "left" | "right";
-}
-
-export function SheetPage({
-  isOpen,
-  onClose,
-  title,
-  description,
-  children,
-  contentClassName,
-  side = "right",
-}: SheetPageProps) {
-  return (
-    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <SheetContent
-        side={side}
-        size="wide"
-        className={cn(
-          "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background border-l border-border",
-          contentClassName,
-        )}
-      >
-        {title && (
-          <SheetHeader className="px-6 py-4 border-b border-border/60 text-left shrink-0">
-            <SheetTitle className="text-base font-bold">{title}</SheetTitle>
-            {description && <SheetDescription>{description}</SheetDescription>}
-          </SheetHeader>
-        )}
-        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
-          {children}
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-}
 
 export {
  Sheet,

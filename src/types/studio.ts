@@ -132,3 +132,66 @@ export const DEFAULT_SHAPE_PROPERTIES: ShapeProperties = {
  fill: "#FACC15",
  borderRadius: 16,
 };
+
+export interface BrandKitColorsDTO {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  text_primary: string;
+  text_secondary: string;
+}
+
+export interface BrandKitTypographyDTO {
+  heading_font: string;
+  body_font: string;
+  accent_font?: string;
+  heading_scale: "compact" | "normal" | "expressive";
+}
+
+export interface BrandKitLogosDTO {
+  primary_url?: string;
+  secondary_url?: string;
+  favicon_url?: string;
+  watermark_url?: string;
+}
+
+export interface BrandKitVoiceDTO {
+  tone: string[];
+  formality: "casual" | "neutral" | "formal";
+  keywords: string[];
+  prohibited_words: string[];
+  emoji_policy: "strict_none" | "minimal" | "free";
+  tone_rules?: string[];
+  do_words?: string[];
+  dont_words?: string[];
+}
+
+export interface BrandKitDTO {
+  id?: string;
+  store_id?: string | null;
+  company_name?: string;
+  archetype?: string;
+  archetype_justification?: string;
+  colors: BrandKitColorsDTO | Record<string, any>;
+  typography?: BrandKitTypographyDTO;
+  fonts?: Record<string, any>;
+  logos: BrandKitLogosDTO | Record<string, any>;
+  voice: BrandKitVoiceDTO | Record<string, any>;
+  content_pillars?: string[];
+  visual_style?: {
+    border_radius: "none" | "small" | "medium" | "large" | "full";
+    shadow: "none" | "subtle" | "medium";
+    icon_set: "lucide" | "phosphor";
+  };
+  swot_analysis?: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  seven_sins_triggers?: Record<string, string>;
+  edited_by_human?: boolean;
+  updated_at?: string;
+}

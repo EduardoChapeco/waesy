@@ -15,7 +15,7 @@ export type ProposalTemplateId =
   | "group-catalog"
   | "vertical-premium";
 
-export interface TemplateDefinition {
+export interface ProposalTemplateDefinition {
   id: ProposalTemplateId;
   label: string;
   description: string;
@@ -23,7 +23,7 @@ export interface TemplateDefinition {
   previewBg: string; // bg color for thumbnail
 }
 
-export const PROPOSAL_TEMPLATES: TemplateDefinition[] = [
+export const PROPOSAL_TEMPLATES: ProposalTemplateDefinition[] = [
   {
     id: "vertical-premium",
     label: "Roteiro Vertical Premium",

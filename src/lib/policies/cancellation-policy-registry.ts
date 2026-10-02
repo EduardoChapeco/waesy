@@ -41,13 +41,14 @@ export interface RefundRule {
   conditions: string[];
 }
 
-export interface FaqItem {
+export interface PolicyFaqItem {
   id: string;
   question: string;
   answer: string;
   category: 'payment' | 'cancellation' | 'delivery' | 'product' | 'general';
   nicheId: string | null; // null = FAQ genérico
 }
+
 
 // ── Políticas Canônicas por Nicho ────────────────────────────────────────────
 
@@ -156,7 +157,7 @@ export const REFUND_RULES: RefundRule[] = [
 
 // ── FAQ Canônico por Nicho ──────────────────────────────────────────────────
 
-export const FAQ_REGISTRY: FaqItem[] = [
+export const FAQ_REGISTRY: PolicyFaqItem[] = [
   // FAQ Geral
   {
     id: 'faq-gen-01',
@@ -237,7 +238,7 @@ export function calcRefundPercent(nicheId: string, archetypeId: string, hoursUnt
  * Retorna os itens de FAQ filtrados por nicho.
  * DONO ÚNICO desta lógica (R26) — buildFaqItems é declarado apenas aqui.
  */
-export function buildFaqItems(nicheId: string | null): FaqItem[] {
+export function buildFaqItems(nicheId: string | null): PolicyFaqItem[] {
   return FAQ_REGISTRY.filter((item) => item.nicheId === null || item.nicheId === nicheId);
 }
 

@@ -9,13 +9,8 @@ import { classifyMinedEntity, type ClassificationResult } from './intent-classif
 
 export type CrawlStrategy = 'default' | 'focused' | 'extended' | 'rescue';
 
-export interface ContentStats {
-  wordCount: number;
-  sentenceCount: number;
-  paragraphCount: number;
-  averageWordLength: number;
-  level: 'short' | 'medium' | 'long';
-}
+import type { ContentStats } from "@/types/mining";
+export type { ContentStats };
 
 export interface ExtractedProductData {
   title: string;

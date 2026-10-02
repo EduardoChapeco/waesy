@@ -5,14 +5,14 @@
  * Todo item transacionável do ecossistema mapeia para um dos 15 arquétipos canônicos (A01 a A15).
  */
 
-import { CanonicalArchetypeId, NicheId } from './niche-packages/types';
+import { CanonicalArchetypeId, NichePackageId } from './niche-packages/types';
 import { getNichePackage, isArchetypeAllowedForNiche } from './niche-packages/registry';
 
 export interface UnifiedListingContext {
   id: string;
   sourceType: 'product' | 'classified';
   archetypeId: CanonicalArchetypeId;
-  nicheId: NicheId;
+  nicheId: NichePackageId;
   title: string;
   slug: string;
   priceCents: number;
@@ -35,7 +35,7 @@ export interface UnifiedListingContext {
  */
 export function inferArchetypeFromRawListing(
   rawRecord: Record<string, unknown>,
-  targetNiche: NicheId
+  targetNiche: NichePackageId
 ): CanonicalArchetypeId {
   // 1. Veículos
   if (targetNiche === 'veiculos' || rawRecord.vehicle_make || rawRecord.renavam) {
@@ -87,9 +87,9 @@ export function inferArchetypeFromRawListing(
 export function resolveUnifiedListingContext(
   sourceType: 'product' | 'classified',
   rawRecord: Record<string, unknown>,
-  explicitNiche?: NicheId
+  explicitNiche?: NichePackageId
 ): UnifiedListingContext {
-  const nicheId = (explicitNiche || rawRecord.niche_id || 'varejo') as NicheId;
+  const nicheId = (explicitNiche || rawRecord.niche_id || 'varejo') as NichePackageId;
   const inferredArchetype = inferArchetypeFromRawListing(rawRecord, nicheId);
 
   // Garante conformidade com o Niche Package (G18)

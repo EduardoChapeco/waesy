@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DynamicMediaChip, type MediaChipTexture } from "@/components/commerce/dynamic-media-chip";
 
-export type ViewModeType = "grid" | "list" | "feed";
+import type { ViewModeType } from "@/types/domain";
+export type { ViewModeType };
 
 export interface FilterChipOption {
   id: string;

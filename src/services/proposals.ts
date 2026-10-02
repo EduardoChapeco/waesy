@@ -61,18 +61,8 @@ export type Tour = {
   notes?: string;
 };
 
-export type ItineraryDay = {
-  id?: string;
-  day_number: number;
-  day?: string;
-  title: string;
-  description: string;
-  city?: string;
-  images?: string[];
-  imageLayout?: string;
-  meals?: string[];
-  overnight?: string;
-};
+import type { ItineraryDay } from "@/types/travel-package";
+export type { ItineraryDay };
 
 export type ProposalOption = {
   id: string;

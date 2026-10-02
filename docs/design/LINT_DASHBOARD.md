@@ -1,16 +1,16 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-02T04:51:14.953Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-02T06:40:26.097Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 1719 | 1581 | Estável |
-| **Arquivos com Débito** | 1126 | 1122 | Monitorado |
-| **Total de Violações** | **37712** | **38314** | PASS (<= Baseline) |
-| **P0 (Bloqueia Entrega)** | **7195** | 7275 | PASS |
-| **P1 (Bloqueia Merge)** | **17918** | 18237 | PASS |
+| **Total de Arquivos** | 1722 | 1581 | Estável |
+| **Arquivos com Débito** | 1125 | 1122 | Monitorado |
+| **Total de Violações** | **37710** | **38314** | PASS (<= Baseline) |
+| **P0 (Bloqueia Entrega)** | **7194** | 7275 | PASS |
+| **P1 (Bloqueia Merge)** | **17917** | 18237 | PASS |
 | **P2 (Fila de Correção)** | 11128 | 11293 | Acompanhamento |
 | **P3 (Polimento)** | 1471 | 1509 | Acompanhamento |
 
@@ -24,7 +24,7 @@
 | `components/tourism` | 2785 | 446 | 1507 | 757 | 75 |
 | `routes/admin` | 2742 | 458 | 1422 | 740 | 122 |
 | `services` | 898 | 577 | 239 | 80 | 2 |
-| `components/ui` | 892 | 127 | 582 | 152 | 31 |
+| `components/ui` | 890 | 126 | 581 | 152 | 31 |
 | `routes/other` | 535 | 78 | 231 | 217 | 9 |
 | `lib` | 370 | 90 | 219 | 61 | 0 |
 | `components/builder` | 361 | 107 | 134 | 103 | 17 |
@@ -39,10 +39,10 @@
 | Regra | Descrição Sumária | Severidade | Ocorrências |
 | :--- | :--- | :--- | :--- |
 | **DL-09** | Diretriz do Catálogo | `P2` | 9681 |
-| **DL-03** | Diretriz do Catálogo | `P1` | 8986 |
+| **DL-03** | Diretriz do Catálogo | `P1` | 8985 |
 | **DL-02** | Diretriz do Catálogo | `P1` | 5753 |
 | **DL-15** | Diretriz do Catálogo | `P0` | 5467 |
-| **DL-04** | Diretriz do Catálogo | `P0` | 1728 |
+| **DL-04** | Diretriz do Catálogo | `P0` | 1727 |
 | **DL-18** | Diretriz do Catálogo | `P1` | 1317 |
 | **DL-27** | Diretriz do Catálogo | `P3` | 1210 |
 | **DL-01** | Diretriz do Catálogo | `P1` | 1014 |

@@ -3,7 +3,7 @@
  * Contém capitais, polos regionais do interior, códigos IBGE, DDDs, coordenadas e aeroportos IATA mais próximos.
  */
 
-export interface CityRecord {
+export interface BrazilCityRecord {
   ibge_code: string;
   name: string;
   state: string; // UF (SP, SC, PR, RS, RJ, etc.)
@@ -16,7 +16,7 @@ export interface CityRecord {
   is_state_capital: boolean;
 }
 
-export const GLOBAL_BRAZIL_CITIES_CATALOG: CityRecord[] = [
+export const GLOBAL_BRAZIL_CITIES_CATALOG: BrazilCityRecord[] = [
   // ── SANTA CATARINA ──
   {
     ibge_code: "4217203",

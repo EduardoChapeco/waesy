@@ -12,6 +12,8 @@
 import { z } from 'zod';
 
 export const RoleSchema = z.enum([
+  'visitor',
+  'customer',
   'owner',
   'admin',
   'manager',
@@ -20,7 +22,8 @@ export const RoleSchema = z.enum([
   'finance',
   'content',
   'support',
-  'customer',
+  'platform_admin',
+  'master',
   'courier',
   'creator',
   'traveler',
@@ -137,6 +140,18 @@ export const RolePermissionsRegistry: Record<Role, Permission[]> = {
   customer: [
     // Clientes acessam apenas suas próprias entidades via RLS
   ],
+
+  visitor: [
+    // Visitantes possuem acesso anônimo somente-leitura público
+  ],
+
+  platform_admin: [
+    { action: 'manage', resource: 'settings' },
+  ],
+
+  master: [
+    { action: 'manage', resource: 'settings' },
+  ],
 };
 
 /**
@@ -147,7 +162,7 @@ export function hasPermission(
   action: PermissionAction,
   resource: PermissionResource
 ): boolean {
-  if (role === 'owner' || role === 'admin') return true;
+  if (role === 'owner' || role === 'admin' || role === 'master' || role === 'platform_admin') return true;
 
   const permissions = RolePermissionsRegistry[role] || [];
   return permissions.some(

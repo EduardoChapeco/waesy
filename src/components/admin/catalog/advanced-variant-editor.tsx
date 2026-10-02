@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RawVariant } from "./variant-matrix-grid";
+import type { RawVariant } from "@/types/catalog";
 import { formatMoney } from "@/lib/money";
 
 interface AdvancedVariantEditorProps {

@@ -67,3 +67,14 @@ export interface BillingStatementDTO {
   reconciled: boolean;
   discrepancyCents: number;
 }
+
+export interface ChannelFinancialSummaryDTO {
+  channel: string;
+  order_count: number;
+  gross_sales_cents: number;
+  platform_fee_cents: number;
+  shipping_cost_cents: number;
+  payment_fee_cents: number;
+  net_revenue_cents: number;
+  avg_margin_percent: number;
+}

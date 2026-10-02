@@ -1,5 +1,5 @@
 export { FullViewportKanban, type FullViewportKanbanProps, type KanbanColumnDefinition } from './kanban/full-viewport-kanban';
-export { ModuleActionHeader, type ViewModeType, type ViewModeOption, type PrimaryActionConfig } from './module-action-header';
+export { ModuleActionHeader, type ModuleViewModeType, type ViewModeOption, type PrimaryActionConfig } from './module-action-header';
 export { SocialStudioModal, type SocialStudioModalProps } from './social-studio-modal';
 export { WorkspaceCanonicalToolbar } from './workspace-canonical-toolbar';
 export { WorkspaceDashboardSheet, type MetricCardItem } from './workspace-dashboard-sheet';

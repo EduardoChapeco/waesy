@@ -5,17 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CareersApplicationForm } from "./careers-application-form";
 import { cn } from "@/lib/utils";
-
-export interface JobPostingItem {
- id: string;
- title: string;
- department: string;
- location: string;
- work_model: "on_site" | "remote" | "hybrid";
- employment_type: "clt" | "pj" | "internship" | "temporary";
- salary_range?: string;
- description_markdown?: string;
-}
+import type { JobPostingItem } from "@/types/hr";
+export type { JobPostingItem };
 
 interface CareersJobGridProps {
  content?: {

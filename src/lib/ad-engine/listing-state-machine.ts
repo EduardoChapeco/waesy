@@ -15,14 +15,14 @@ import type {
   ListingModerationEvent,
 } from "@/types/unified-ad-engine";
 
-export interface StateTransitionRule {
+export interface ListingStateTransitionRule {
   from: ListingStatus[];
   to: ListingStatus;
   allowedOrigins: ListingOrigin[];
   requiresReason?: boolean;
 }
 
-export const VALID_TRANSITIONS: StateTransitionRule[] = [
+export const VALID_TRANSITIONS: ListingStateTransitionRule[] = [
   // De Rascunho para Revisão ou Publicado
   {
     from: ["draft"],

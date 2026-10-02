@@ -12,17 +12,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getPublicMapConfig } from "@/services/integrations.functions";
 import { toast } from "sonner";
 
-export interface AddressData {
-  text: string;
-  lat?: number;
-  lng?: number;
-  cep?: string;
-  street?: string;
-  number?: string;
-  neighborhood?: string;
-  city?: string;
-  state?: string;
-}
+import type { AddressData } from "@/types/domain";
+export type { AddressData };
 
 export interface AddressFieldProps {
   value?: AddressData;

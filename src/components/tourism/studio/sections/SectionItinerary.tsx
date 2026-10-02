@@ -101,7 +101,7 @@ export function SectionItinerary({ draft, save }: Props) {
         <Card key={d.id || i} onRemove={() => remove(i)}>
           <div className="grid grid-cols-3 gap-2 mb-2">
             <L label="Label">
-              <Inp value={d.day || ""} onChange={(v) => upd(i, { day: v })} ph={`Dia ${i + 1}`} />
+              <Inp value={String(d.day ?? "")} onChange={(v) => upd(i, { day: v })} ph={`Dia ${i + 1}`} />
             </L>
             <div className="col-span-2">
               <L label="Título">

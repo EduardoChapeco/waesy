@@ -4,13 +4,8 @@ import { cn } from "@/lib/utils";
 import { formatCep, validateCep } from "@/lib/document-validator";
 import { Loader2, MapPin } from "lucide-react";
 
-export interface AddressData {
-  street: string;
-  neighborhood: string;
-  city: string;
-  state: string;
-  ibge?: string;
-}
+import type { AddressData } from "@/types/domain";
+export type { AddressData };
 
 export interface CepFieldProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {

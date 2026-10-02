@@ -3,7 +3,7 @@ import { BookOpen, Plus, Trash2, Edit2, Copy, Check, Search, Tag, Layers } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export interface ContractClause {
+export interface OfficeContractClause {
  id: string;
  title: string;
  category: 'general' | 'cancellation' | 'liability' | 'payment' | 'lgpd' | 'custom';
@@ -12,7 +12,7 @@ export interface ContractClause {
  isDefault?: boolean;
 }
 
-export const DEFAULT_CLAUSES: ContractClause[] = [
+export const DEFAULT_CLAUSES: OfficeContractClause[] = [
  {
  id: 'cl-1',
  title: 'Objeto do Contrato e Prestação de Serviços',
@@ -75,7 +75,7 @@ export function replaceContractVariables(template: string, vars: Record<string, 
 }
 
 interface ContractClauseLibraryProps {
- onInsertClause?: (clause: ContractClause) => void;
+ onInsertClause?: (clause: OfficeContractClause) => void;
  className?: string;
 }
 
@@ -83,7 +83,7 @@ export function ContractClauseLibrary({
  onInsertClause,
  className = '',
 }: ContractClauseLibraryProps) {
- const [clauses, setClauses] = useState<ContractClause[]>(DEFAULT_CLAUSES);
+ const [clauses, setClauses] = useState<OfficeContractClause[]>(DEFAULT_CLAUSES);
  const [selectedCategory, setSelectedCategory] = useState<string>('all');
  const [searchQuery, setSearchQuery] = useState('');
  const [copiedId, setCopiedId] = useState<string | null>(null);

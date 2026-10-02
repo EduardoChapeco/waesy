@@ -13,7 +13,7 @@ import { IMOVEIS_NICHE_PACKAGE } from './imoveis';
 import { VEICULOS_NICHE_PACKAGE } from './veiculos';
 import { DIGITAL_NICHE_PACKAGE } from './digital';
 import {
-  NicheId,
+  NichePackageId,
   NichePackage,
   CanonicalArchetypeId,
   nichePackageSchema,
@@ -31,7 +31,7 @@ const RAW_PACKAGES: Record<string, NichePackage> = {
 };
 
 // Validação estrita Zod em tempo de carregamento
-const VALIDATED_REGISTRY = new Map<NicheId, NichePackage>();
+const VALIDATED_REGISTRY = new Map<NichePackageId, NichePackage>();
 
 for (const [key, pkg] of Object.entries(RAW_PACKAGES)) {
   const result = nichePackageSchema.safeParse(pkg);
@@ -39,14 +39,14 @@ for (const [key, pkg] of Object.entries(RAW_PACKAGES)) {
     const errorDetails = result.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('; ');
     throw new Error(`[NICHE_REGISTRY_ERROR] Pacote de nicho inválido "${key}": ${errorDetails}`);
   }
-  VALIDATED_REGISTRY.set(key as NicheId, result.data as NichePackage);
+  VALIDATED_REGISTRY.set(key as NichePackageId, result.data as NichePackage);
 }
 
 /**
  * Obtém o pacote canônico de um nicho específico
  */
-export function getNichePackage(nicheId: NicheId | string): NichePackage {
-  const pkg = VALIDATED_REGISTRY.get(nicheId as NicheId);
+export function getNichePackage(nicheId: NichePackageId | string): NichePackage {
+  const pkg = VALIDATED_REGISTRY.get(nicheId as NichePackageId);
   if (!pkg) {
     // Fallback seguro para o pacote canônico de varejo geral
     return VALIDATED_REGISTRY.get('varejo')!;
@@ -65,7 +65,7 @@ export function listAllNichePackages(): NichePackage[] {
  * Verifica se um arquétipo é permitido em um determinado nicho
  */
 export function isArchetypeAllowedForNiche(
-  nicheId: NicheId | string,
+  nicheId: NichePackageId | string,
   archetypeId: CanonicalArchetypeId
 ): boolean {
   const pkg = getNichePackage(nicheId);
@@ -76,7 +76,7 @@ export function isArchetypeAllowedForNiche(
 /**
  * Retorna a lista de arquétipos habilitados para um determinado nicho
  */
-export function getEnabledArchetypesForNiche(nicheId: NicheId | string): CanonicalArchetypeId[] {
+export function getEnabledArchetypesForNiche(nicheId: NichePackageId | string): CanonicalArchetypeId[] {
   const pkg = getNichePackage(nicheId);
   return (Object.keys(pkg.allowedArchetypes) as CanonicalArchetypeId[]).filter(
     (arch) => pkg.allowedArchetypes[arch] === 'enabled' || pkg.allowedArchetypes[arch] === 'optional'
@@ -87,7 +87,7 @@ export function getEnabledArchetypesForNiche(nicheId: NicheId | string): Canonic
  * Valida se um conjunto de atributos respeita as regras do nicho e oculta campos internos (G24)
  */
 export function sanitizeNicheAttributesForPublic(
-  nicheId: NicheId | string,
+  nicheId: NichePackageId | string,
   rawAttributes: Record<string, unknown>
 ): Record<string, unknown> {
   const pkg = getNichePackage(nicheId);

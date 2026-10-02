@@ -289,3 +289,20 @@ export interface AdminProductRow {
  product_media: { url: string; alt?: string | null }[];
  options?: { name: string; values: string[] }[];
 }
+
+export type RawVariant = {
+  id?: string;
+  sku?: string;
+  ean?: string | null;
+  attributes: Record<string, string>;
+  stock: number;
+  original_stock?: number;
+  price_override_cents?: number | null;
+  cost_cents?: number | null;
+  weight_kg?: number | null;
+  image_url?: string | null;
+  status?: "active" | "archived" | "inactive";
+  allow_backorder?: boolean;
+  backorder_lead_time_days?: number;
+  requires_payment_for_backorder?: boolean;
+};

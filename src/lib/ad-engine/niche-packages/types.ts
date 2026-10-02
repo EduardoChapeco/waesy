@@ -25,7 +25,7 @@ export type CanonicalArchetypeId =
   | 'A14' // Varejo de Consumo (Peso/Volume/Perecível)
   | 'A15'; // Serviço Avulso / Taxa / Processo
 
-export type NicheId =
+export type NichePackageId =
   | 'turismo'
   | 'varejo'
   | 'mercado'
@@ -37,6 +37,7 @@ export type NicheId =
   | 'saude_clinica'
   | 'locacao_equipamentos'
   | 'eventos';
+
 
 export type ArchetypePermission = 'enabled' | 'optional' | 'prohibited';
 
@@ -116,7 +117,7 @@ export interface UiSemanticsConfig {
 }
 
 export interface NichePackage {
-  id: NicheId;
+  id: NichePackageId;
   name: string;
   description: string;
   version: string;

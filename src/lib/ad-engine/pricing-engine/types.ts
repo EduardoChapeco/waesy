@@ -6,13 +6,13 @@
  */
 
 import { z } from 'zod';
-import { CanonicalArchetypeId, NicheId } from '../niche-packages/types';
+import { CanonicalArchetypeId, NichePackageId } from '../niche-packages/types';
 
 export type BillingCycle = 'monthly' | 'quarterly' | 'semiannual' | 'annual';
 
 export interface BasePriceInput {
   archetypeId: CanonicalArchetypeId;
-  nicheId: NicheId;
+  nicheId: NichePackageId;
   listPriceCents: number;
   salePriceCents?: number;
   compareAtPriceCents?: number;
@@ -39,7 +39,7 @@ export interface CouponRule {
   maxDiscountCents?: number;
   validUntil?: string; // ISO 8601
   maxUsesPerCustomer?: number;
-  applicableNiches?: NicheId[];
+  applicableNiches?: NichePackageId[];
   applicableArchetypes?: CanonicalArchetypeId[];
 }
 

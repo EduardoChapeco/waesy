@@ -1216,3 +1216,17 @@
   4. CI canônico unificado verde: TypeScript 0 erros, 1.011 testes Vitest verdes em 152 suítes, Design Lint aprovado com -602 violações na catraca, ESLint 0 erros, Build Cloudflare Pages com `_worker.js` e `_routes.json` aprovado.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Contrato de Camadas S06 e Definition of Done B.9.
 - **Consequências:** Fases S07, S08 e S09 100% concluídas. Total de 9 de 48 fases do Plano 5 finalizadas. Próxima fase: S10 (Manifestos por vertical e fronteiras explícitas).
+
+## DEC-107: Conclusão das Fases S10 a S14 e Fechamento Integral do Bloco B (Plano 5) — Estrutura e Camadas
+- **Data:** 2026-10-02
+- **Contexto:** Execução das Fases S10 (Manifestos por vertical e fronteiras explícitas), S11 (Detector de código morto e órfão em CI), S12 (Padronização de nomenclatura e sufixos canônicos), S13 (Unificação de tipos e schemas duplicados) e S14 (Grafo acíclico sem dependência circular entre verticais).
+- **Decisão:**
+  1. `S10`: Consolidado o manifesto canônico de verticais em `src/lib/architecture/vertical-manifest.ts` e suíte de testes `src/lib/architecture/vertical-manifest.test.ts` (4/4 testes verdes). Todas as 8 verticais possuem fronteiras declaradas, donos, rotas autorizadas e regras de isolamento explícitas.
+  2. `S11`: Implementado `scripts/dead-code-detector.mjs` analisando 1.721 arquivos e integrado ao `package.json` (`npm run check:deadcode`). 1.454 arquivos ativamente importados na árvore produtiva.
+  3. `S12`: Implementado `scripts/naming-convention-validator.mjs` (`npm run check:naming`). Hooks legados fora da convenção foram normalizados para kebab-case (`use-classifieds-draft.ts`, `use-form-draft.ts`, `use-picking.ts`). Validador com 0 violações críticas e 100% de conformidade.
+  4. `S13`: Implementado `scripts/check-type-duplications.mjs` (`npm run check:types-ssot`). As 24 duplicações concorrentes de tipos/interfaces exportados foram unificadas em seus donos canônicos (`Role`, `IntegrationStatus`, `ViewModeType` vs `WorkspaceViewModeType`, `AddressData`, `ItineraryDay`, `RawVariant`, `SheetPageProps`, `PolicyFaqItem`, `DestinationCatalogReview`, `NichePackageId`, etc.). Validador: 100% de unicidade e zero declarações duplicadas.
+  5. `S14`: Implementado `scripts/check-circular-deps.mjs` (`npm run check:cycles`). Módulos intermediários e folhas extraídos (`src/services/mining/mined-product-enricher.ts`, `src/types/hr.ts`, `src/types/catalog.ts`, `src/types/unified-ad-engine.ts`, desvinculação `sheet.tsx` e `sheet-page.tsx`). Validador: Grafo estritamente acíclico com 0 ciclos de aplicação.
+  6. CI e Build de Produção: TypeScript `tsc --noEmit` com 0 erros, `npm run check:canonical` 100% aprovado em todos os 8 gates, Vitest com 153 suítes e 1.015 testes verdes (100%), e `npm run build` gerando `dist/_worker.js` e `dist/_routes.json` para Cloudflare Pages com sucesso.
+- **Fundamentação:** AGENTS.md B.1 a B.12, Contrato de Camadas S06, Manifesto de Verticais S10 e Definition of Done B.9.
+- **Consequências:** Bloco B (S06 a S14) 100% CONCLUÍDO e HOMOLOGADO. Total de 14 de 48 fases do Plano 5 finalizadas. Início do Bloco C — Rotas e Performance (S15 a S22).
+

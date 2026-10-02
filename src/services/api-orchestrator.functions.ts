@@ -8,7 +8,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server-access";
 import { getActiveSecretForProvider, internalTestSecretKeyConnection } from "./secret-vault.functions";
-import { enrichOrInsertMinedProduct } from "./mining.functions";
+import { enrichOrInsertMinedProduct } from "./mining/mined-product-enricher";
 
 // ============================================================
 // Schemas e Tipos

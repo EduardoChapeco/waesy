@@ -14,7 +14,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { GLOBAL_VEHICLES_CATALOG, VehicleModelRecord } from "@/lib/data/vehicles-catalog";
 import { GLOBAL_SERVICES_CATALOG, MasterServiceRecord } from "@/lib/data/services-catalog";
-import { GLOBAL_BRAZIL_CITIES_CATALOG, CityRecord } from "@/lib/data/cities-brazil-catalog";
+import { GLOBAL_BRAZIL_CITIES_CATALOG, BrazilCityRecord } from "@/lib/data/cities-brazil-catalog";
 import { GLOBAL_FINANCIAL_INSTITUTIONS_CATALOG, FinancialInstitutionDefinition } from "@/lib/data/financial-institutions-catalog";
 import { GLOBAL_COUNTRIES_CATALOG, CountryDefinition } from "@/lib/data/countries-catalog";
 import { GLOBAL_AIRLINES_CATALOG, GLOBAL_CRUISES_CATALOG, AirlineRecord, CruiseLineRecord } from "@/lib/data/airlines-cruises-catalog";

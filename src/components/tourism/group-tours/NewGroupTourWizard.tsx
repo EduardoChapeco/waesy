@@ -11,7 +11,7 @@ import { FormTextarea as Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
 import { formatDate, formatCurrency } from "@/lib/formatters";
-import { SheetPage } from "@/components/ui/sheet";
+import { SheetPage } from "@/components/ui/sheet-page";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

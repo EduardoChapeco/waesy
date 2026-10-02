@@ -3,6 +3,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, assertOwnerAccess } from "@/lib/server-access";
+import type { Weekday, TimeInterval, DaySchedule, WeeklySchedule as WorkingHours } from "@/lib/business-hours";
+export type { Weekday, TimeInterval, DaySchedule, WorkingHours };
 
 // --- DADOS DA LOJA ---
 
@@ -535,7 +537,6 @@ export const executeHardRefresh = createServerFn({ method: "POST" })
 
 /** Dias da semana canônicos */
 export const WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-export type Weekday = (typeof WEEKDAYS)[number];
 
 export const WEEKDAY_LABELS: Record<Weekday, string> = {
  mon: "Segunda",
@@ -546,18 +547,6 @@ export const WEEKDAY_LABELS: Record<Weekday, string> = {
  sat: "Sábado",
  sun: "Domingo",
 };
-
-export type TimeInterval = {
- from: string; // "09:00"
- to: string; // "18:00"
-};
-
-export type DaySchedule = {
- open: boolean;
- intervals: TimeInterval[];
-};
-
-export type WorkingHours = Record<Weekday, DaySchedule>;
 
 /** Horário padrão caso não exista configuração */
 export const DEFAULT_WORKING_HOURS: WorkingHours = {
