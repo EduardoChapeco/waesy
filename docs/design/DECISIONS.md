@@ -1595,7 +1595,18 @@
      - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações estritamente mantidas, zero regressões).
      - `npm run build`: Sincronização do `routeTree.gen.ts` e compilação do bundle de produção.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F09-PLACES-DETAIL, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
-- **Consequências:** Fase F09 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F10: Workspace — Dashboard com KPIs Reais do Supabase (Zero Mocks)**.
+## DEC-136: Conclusão da Fase F10 (Plano de Estabilização E2E) — Workspace: Dashboard com KPIs Reais do Supabase (Zero Mocks)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F10 do Plano de Estabilização E2E, implementando agregação e cálculo de KPIs reais do Supabase para o Workspace Pro (`getWorkspaceDashboardKpisFn`), cobrindo vendas (receita bruta, ticket médio, pedidos pendentes), catálogo (ativos e sem estoque), clientes e finanças consolidadas, com isolamento rigoroso multi-tenant (`assertStoreAccess`).
+- **Decisão:**
+  1. `BFF Server Functions`: Criado `src/services/workspace-dashboard.functions.ts` exportando `getWorkspaceDashboardKpisFn` com agregação por período (`today`, `7d`, `30d`), aritmética inteira de centavos (Zero-Float Drift), consulta nas tabelas `orders`, `products`, `customers_crm` e `financial_transactions`.
+  2. `Integração no Workspace`: Atualizado `src/routes/workspace.index.tsx` para carregar e disponibilizar `workspaceKpis` via loader concorrente `Promise.all`.
+  3. `Governança e Segurança`: Proteção multi-tenant inviolável via `assertStoreAccess` impedindo vazamento de métricas entre lojas concorrentes.
+  4. `Aprovação Integral nas Gates`:
+     - `vitest`: 4/4 testes unitários verdes em `src/services/workspace-dashboard.functions.test.ts`.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F10-WORKSPACE-DASHBOARD-REAL-KPIS, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F10 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F11: Workspace — Gestão de Pedidos Real (CRUD Completo e Transições de Status)**.
 
 
 

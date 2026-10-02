@@ -11,10 +11,10 @@
 | **Projeto** | Waesy — Plataforma BigTech Multitenant de Comércio, Serviços e Gestão Local |
 | **Commit HEAD** | `8d50feab` (2026-10-02) |
 | **Fases Concluídas** | S01–S37 + F01–F07 |
-| **Última Decisão Homologada** | `DEC-135` — Places Detalhe do Estabelecimento com Reputação e Mapa (F09) |
-| **Próxima Fase** | **F10** — Workspace: Dashboard KPI Real com Dados do DB (Zero Mocks) |
+| **Última Decisão Homologada** | `DEC-136` — Workspace Dashboard KPIs Reais do Supabase (F10) |
+| **Próxima Fase** | **F11** — Workspace: Gestão de Pedidos Real (CRUD Completo e Status) |
 | **TypeScript** | `npm run typecheck` — 0 erros |
-| **Testes** | 171 arquivos, 1.131 testes verdes |
+| **Testes** | 172 arquivos, 1.135 testes verdes |
 | **Design Lint** | Catraca aprovada (teto 37.702 violações congelado) |
 | **Produção** | `https://usewaesy.pages.dev/` — HTTP 200 em todas as rotas |
 | **Banco de Dados** | Supabase PostgreSQL, RLS deny-by-default em 100% das tabelas |
@@ -59,7 +59,8 @@
 | F06 | [x] | `fa1c4504` | Suíte E2E de isolamento dos 4 pilares (`_store.pillar-isolation.test.ts`) |
 | F07 | [x] | `8d50feab` | Vitrine pública do Marketplace por loja (`/marketplace/:storeSlug`) com SSR e SEO |
 | F08 | [x] | `33373c9a` | Checkout transacional B2C do Marketplace com wizard de 3 etapas e frete |
-| F09 | [x] | `pendente` | Places: Detalhe do Estabelecimento Físico com Reputação, Galeria e Mapa |
+| F09 | [x] | `8174c661` | Places: Detalhe do Estabelecimento Físico com Reputação, Galeria e Mapa |
+| F10 | [x] | `pendente` | Workspace: Dashboard KPI Real com Dados do DB (Zero Mocks) |
 
 ---
 

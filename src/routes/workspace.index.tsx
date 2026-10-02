@@ -13,6 +13,7 @@ import { getNicheSemantics } from "@/lib/niche-semantics";
 import { formatMoney } from "@/lib/money";
 import { SeasonalMarketingCalendarWidget } from "@/components/admin/marketing/seasonal-marketing-calendar-widget";
 import { PolymorphicDashboardRenderer } from "@/components/workspace/dashboard/PolymorphicDashboardRenderer";
+import { getWorkspaceDashboardKpisFn } from "@/services/workspace-dashboard.functions";
 
 export const Route = createFileRoute("/workspace/")({
   head: () => ({ meta: [{ title: "Operação | Workspace Waesy" }] }),
@@ -29,41 +30,45 @@ export const Route = createFileRoute("/workspace/")({
       const activeStoreId = session?.store_id || memberships[0]?.store_id || null;
       const activeStore = memberships.find((m: any) => m.store_id === activeStoreId) || memberships[0] || null;
 
-      const dashboardMetrics = await getDashboardData().catch(() => ({
-        salesTodayCents: 0,
-        salesMonthCents: 0,
-        salesLastMonthCents: 0,
-        growthPercentage: null,
-        ordersTodayCount: 0,
-        ordersMonthCount: 0,
-        ordersBreakdown: {
-          awaitingPayment: 0,
-          needsSeparation: 0,
-          shippedOrReady: 0,
-          completed: 0,
-          cancelled: 0,
-          pendingBackorders: 0,
-        },
-        lowStockItems: [],
-        criticalStockCount: 0,
-        newCustomers30d: 0,
-        newLeads30d: 0,
-        abandonedCartsCount: 0,
-        recentActivities: [],
-        activeCashRegister: null,
-        setupChecklist: [],
-        setupProgressPercentage: 100,
-      } as DashboardMetrics));
+      const [dashboardMetrics, workspaceKpis] = await Promise.all([
+        getDashboardData().catch(() => ({
+          salesTodayCents: 0,
+          salesMonthCents: 0,
+          salesLastMonthCents: 0,
+          growthPercentage: null,
+          ordersTodayCount: 0,
+          ordersMonthCount: 0,
+          ordersBreakdown: {
+            awaitingPayment: 0,
+            needsSeparation: 0,
+            shippedOrReady: 0,
+            completed: 0,
+            cancelled: 0,
+            pendingBackorders: 0,
+          },
+          lowStockItems: [],
+          criticalStockCount: 0,
+          newCustomers30d: 0,
+          newLeads30d: 0,
+          abandonedCartsCount: 0,
+          recentActivities: [],
+          activeCashRegister: null,
+          setupChecklist: [],
+          setupProgressPercentage: 100,
+        } as DashboardMetrics)),
+        getWorkspaceDashboardKpisFn({ data: { period: "30d" } }).catch(() => null),
+      ]);
 
       return {
         session,
         activeStore,
         memberships,
         dashboardMetrics,
+        workspaceKpis,
       };
     } catch (err) {
       console.error("[loader:workspace.index] Unhandled loader error:", err);
-      return { session: null, activeStore: null, memberships: null, dashboardMetrics: null };
+      return { session: null, activeStore: null, memberships: null, dashboardMetrics: null, workspaceKpis: null };
     }
   },
   component: WorkspaceDashboardPage,
