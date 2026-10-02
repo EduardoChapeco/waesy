@@ -42,18 +42,18 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **R16**: ALVO: `workspace.catalogo.produtos.$id.tsx` (1.705 para 296 linhas, redução de 82%). *(Concluído)*
 - [x] **R17**: ALVO: `_store.classificados.$id.tsx` (1.829 para 255 linhas, redução de 86%, 0 violações de lint). *(Concluído)*
 - [x] **R18**: ALVO: `_store.classificados.index.tsx` (reduzido para 227 linhas; 8 componentes catalog criados; 0 violações lint changed). *(Concluído — commit e8f8fd0e)*
-- [ ] **R19**: Varredura de todos os arquivos de rota acima de 500 linhas.
-- [ ] **R20**: Regra de composição de página e verificador automático no CI.
+- [x] **R19**: Varredura de todos os arquivos de rota acima de 500 linhas. *(Concluído — 73 rotas identificadas, top monolito: 9.285L)*
+- [x] **R20**: Regra de composição de página e verificador automático no CI. *(Concluído — `scripts/check-route-size.mjs`, gate 300L/250L integrado em `check:canonical`)*
 
-### Bloco 4 — Duplicação e Dono Único (R21–R28) — NA FILA
-- [ ] **R21**: Dono único de parcelamento e pagamento.
-- [ ] **R22**: Dono único de NCM/CEST/CFOP/IBS.
-- [ ] **R23**: Dono único de preço, comparativo, custo, margem e sinal.
-- [ ] **R24**: Dono único de estoque, agenda e capacidade.
-- [ ] **R25**: Dono único de galeria, capa e mídia.
-- [ ] **R26**: Dono único de inclusos, exclusos, políticas e FAQ.
-- [ ] **R27**: Kill list com mapa de migração e reversão.
-- [ ] **R28**: Verificador de duplicidade no CI.
+### Bloco 4 — Duplicação e Dono Único (R21–R28) — EM ANDAMENTO
+- [ ] **R21**: Dono único de parcelamento e pagamento. *(Em execução — subagente ativo)*
+- [ ] **R22**: Dono único de NCM/CEST/CFOP/IBS. *(Em execução — subagente ativo)*
+- [ ] **R23**: Dono único de preço, comparativo, custo, margem e sinal. *(Em execução — subagente ativo)*
+- [ ] **R24**: Dono único de estoque, agenda e capacidade. *(Em execução — subagente ativo)*
+- [ ] **R25**: Dono único de galeria, capa e mídia. *(Em execução — subagente ativo)*
+- [x] **R26**: Dono único de inclusos, exclusos, políticas e FAQ. *(Concluído — `src/lib/policies/cancellation-policy-registry.ts`, commit 1a7037cb)*
+- [x] **R27**: Kill list com mapa de migração de dados e reversão. *(Concluído — `KILL_LIST_R27` em cancellation-policy-registry.ts; 3 arquivos mapeados)*
+- [x] **R28**: Verificador de duplicidade no CI. *(Concluído — `scripts/check-duplication.mjs`, integrado em `check:canonical`)*
 
 ---
 

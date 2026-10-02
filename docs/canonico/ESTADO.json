@@ -41,10 +41,13 @@
     },
     "PLANO_4_OPERACAO_VERDADE_UNICA": {
       "totalPhases": 64,
-      "completedPhases": 18,
+      "completedPhases": 21,
       "status": "IN_PROGRESS",
-      "currentPhase": "R19",
-      "activeBlock": "BLOCO_3_MONOLITOS_DE_ROTA"
+      "currentPhase": "R21",
+      "activeBlock": "BLOCO_4_DUPLICACAO_DONO_UNICO",
+      "completedInBlock4": ["R26", "R27", "R28"],
+      "pendingInBlock4": ["R21", "R22", "R23", "R24", "R25"],
+      "subagentsActive": ["da854a39-ced2-474a-ae5a-a5b40604cb13", "c2243fe8-3913-43b9-bc6f-5b1e84f026d9"]
     }
   },
   "metrics": {
