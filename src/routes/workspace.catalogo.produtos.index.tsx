@@ -2,7 +2,8 @@ import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Plus, Search, MoreVertical, Copy, Eye, Edit3, Archive, CheckCircle2, FileText, Trash2, Download, Package, Filter, Layers, Palette, Globe } from "lucide-react";
+import { Plus, Search, MoreVertical, Copy, Eye, Edit3, Archive, CheckCircle2, FileText, Trash2, Download, Package, Filter, Layers, Palette, Globe, ArrowUpRight } from "lucide-react";
+import { ClassifiedImportModal } from "@/components/workspace/classified-import-modal";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
@@ -213,6 +214,7 @@ function AdminProductsPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isClassifiedImportOpen, setIsClassifiedImportOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -452,6 +454,11 @@ function AdminProductsPage() {
             onSearchChange={setSearchQuery}
             secondaryActions={[
               {
+                label: "Importar do Classificados",
+                icon: ArrowUpRight,
+                onClick: () => setIsClassifiedImportOpen(true),
+              },
+              {
                 label: semantics.nicheId === "gastronomy" ? "Importar Cardápio" : "Importar por Link",
                 icon: Globe,
                 onClick: () => setIsImportModalOpen(true),
@@ -468,6 +475,19 @@ function AdminProductsPage() {
               onClick: () => navigate({ to: "/workspace/catalogo/produtos/novo" }),
             }}
           />
+
+          {/* Modal de Importação de Classificados — F05 */}
+          {store?.id && (
+            <ClassifiedImportModal
+              open={isClassifiedImportOpen}
+              onOpenChange={setIsClassifiedImportOpen}
+              storeId={store.id}
+              onProductCreated={async () => {
+                const reloaded = await listAdminProducts().catch(() => null);
+                if (reloaded) setProducts(reloaded);
+              }}
+            />
+          )}
 
  {/* Barra Flutuante de Ações em Lote */}
  {selectedIds.length > 0 && (
