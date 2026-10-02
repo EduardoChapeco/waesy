@@ -1460,8 +1460,26 @@
   3. `Rota Pública Canônica /status`: Implementada `src/routes/status.tsx` no TanStack Router com árvore de rotas sincronizada (`routeTree.gen.ts`), exibindo disponibilidade percentual, histórico de incidentes honesto e botões táteis ergonômicos com `:focus-visible` e touch targets >= 44px (`h-11`).
   4. `Piso de Design Lint e Resguardo de Regras`: 0 violações P0 e 0 violações P1 em `src/routes/status.tsx`. Catraca de CI ratificada com zero regressões (37.710 congelada).
   5. `Suíte de Testes e Typecheck`: 32/32 testes vitest verdes em telemetria e status. Typecheck com zero erros em 3.353 arquivos (Exit Code 0). Build de produção aprovado gerando single-file `dist/_worker.js` e `dist/_routes.json`.
-- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S37, docs/PERFORMANCE.md e Definition of Done B.9.
 - **Consequências:** Fase S37 100% CONCLUÍDA e HOMOLOGADA. Bloco E (Telemetria Real: Fases S32 a S37) 100% CONCLUÍDO. Total de **37 de 48 fases do Plano 5 concluídas (77.1%)**. Transição liberada para o grande alinhamento estrutural e plano de estabilização E2E solicitado pelo usuário.
+
+## DEC-126: Auditoria Forense dos 4 Pilares, Fase F01 (Marketplace Hub) e Deploy Completo de Produção (GitHub + Cloudflare Pages)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da auditoria forense do ecossistema Waesy convocada pelo BigTech Executive Board, desentrelaçamento dos 4 Pilares (Places, Classificados, Marketplace e Workspace), implementação da Fase F01 (Hub do Marketplace), commit no GitHub (`2394c2e0`) e deploy de produção no Cloudflare Pages.
+- **Decisão:**
+  1. `Matriz Canônica de Desentrelaçamento dos 4 Pilares`:
+     - **Places (`/places` / `/diretorio`):** Guia oficial de estabelecimentos da cidade com localização física, contatos, horários e reputação.
+     - **Classificados (`/classificados`):** Anúncios rápidos e informais de pessoa física ou microcomércio, com ciclo de vida de 30 dias e contato direto.
+     - **Marketplace (`/marketplace`):** Vitrines de produtos e serviços exclusivamente de empresas credenciadas (Workspace Pro), com garantia, checkout integrado e filtragem por nicho.
+     - **Workspace / Painel Pro (`/workspace`):** SaaS e ERP corporativo avançado (CRM, Estoque, NFe, Módulos especializados de Turismo, Gastronomia, etc.) com assistente de upgrade para converter anúncios avulsos em produtos Pro.
+  2. `Hub do Marketplace (Fase F01)`: Criada a rota `src/routes/_store.marketplace.index.tsx` e o componente `src/components/marketplace/marketplace-hub.tsx`, com seletor das 6 vitrines nichadas (Turismo, Gastronomia, Varejo, Serviços, Imóveis e Veículos) e selo de "Empresa Verificada".
+  3. `Compilação e Suíte de Testes`: Zero erros TypeScript em 3.355 arquivos (`tsc --noEmit` Exit Code 0). 35/35 testes verdes no Vitest. Catraca de Design Lint aprovada com zero regressões (37.710 congelada).
+  4. `Publicação no GitHub e Deploy de Produção`:
+     - Commit `2394c2e0` sincronizado com sucesso na branch `main` do GitHub.
+     - Deploy de produção no Cloudflare Pages via Wrangler (`usewaesy`) gerando `dist/_worker.js` e `dist/_routes.json`.
+     - Smoke test validado com **HTTP 200 OK** em `https://usewaesy.pages.dev/`, `https://usewaesy.pages.dev/status` e `https://usewaesy.pages.dev/marketplace`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md, Parecer do BigTech Board e Definition of Done B.9.
+- **Consequências:** Plataforma Waesy estabilizada e publicada em produção; separação conceitual dos 4 pilares consolidada; liberação para a execução contínua das próximas fases do plano de estabilização E2E (F02 a F24).
+
 
 
 
