@@ -60,9 +60,9 @@
     },
     "PLANO_5_ESTRUTURA_ESCALA_OPERACAO_BIGTECH": {
       "totalPhases": 48,
-      "completedPhases": 23,
+      "completedPhases": 24,
       "status": "IN_PROGRESS",
-      "currentPhase": "S24",
+      "currentPhase": "S25",
       "activeBlock": "BLOCO_D_DESIGN_SYSTEM_COMO_FONTE_UNICA",
       "completedBlocks": [
         "BLOCO_A_RE_BASELINE_E_VERDADE",
@@ -79,9 +79,9 @@
   },
   "metrics": {
     "vitest": {
-      "testFiles": 157,
-      "totalTests": 1039,
-      "passed": 1039,
+      "testFiles": 158,
+      "totalTests": 1041,
+      "passed": 1041,
       "failed": 0,
       "exitCode": 0
     },

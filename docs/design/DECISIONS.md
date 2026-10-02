@@ -1285,5 +1285,26 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S23, docs/design/DESIGN.md e Definition of Done B.9.
 - **Consequências:** Fase S23 100% CONCLUÍDA e HOMOLOGADA. Total de **23 de 48 fases do Plano 5 concluídas (47.9%)**. Próxima fase: **S24 (Showcase Interno com Renderização Completa e Matriz de 4 Estados)**.
 
+## DEC-113: Conclusão da Fase S24 (Plano 5 — Bloco D) — Showcase Interno com Renderização Completa e Matriz de 4 Estados
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S24 (Showcase Interno com Renderização Completa e Matriz de 4 Estados) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
+- **Decisão:**
+  1. `Rota Canônica de Governança`: Implementada a rota fina `src/routes/workspace.design-system.tsx` (68 linhas, abaixo do teto de 300L) com metadados estruturados, seletor dinâmico de estados e tabs organizadas por vertical.
+  2. `Famílias Modulares e Primitivas`: Criados os módulos de apresentação em `src/components/design-system/`:
+     - `actions-family.tsx`: Botões nas 5 variantes, switches, checkboxes e badges.
+     - `forms-family.tsx`: Inputs, selects, textareas e labels acessíveis.
+     - `surfaces-family.tsx`: Cards KPI de faturamento e tabelas de dados.
+     - `overlays-family.tsx`: Diálogos adaptativos (`Dialog`) e painéis laterais (`Sheet`).
+  3. `Matriz de Quatro Estados Obrigatória`: Implementada a renderização integral dos 4 estados operacionais:
+     - **Estado 1 (Dados)**: Controles ativos com dados tipados reais.
+     - **Estado 2 (Carregamento)**: Skeletons espelhados de mesma dimensão geométrica (Zero CLS).
+     - **Estado 3 (Vazio)**: EmptyState minimalista com ícone semântico, descrição concisa e CTA de recuperação.
+     - **Estado 4 (Erro)**: Alert de diagnóstico técnico com borda semântica e botão de reintento.
+  4. `Piso de Acessibilidade e Ergonomia`: Alvos de toque móveis garantidos com dimensão mínima de 44x44px (`h-11`) e anéis de foco visíveis em todos os elementos (`focus-visible:ring-2`).
+  5. `Verificação e Provas`: Testes unitários em `src/components/design-system/design-system-showcase.test.ts` (2/2 testes verdes), Design Lint com 0 violações P0/P1/P2 nos arquivos alterados, e grafo acíclico mantido com 0 ciclos.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S24, WCAG 2.2 AA (Critério 2.5.8) e Definition of Done B.9.
+- **Consequências:** Fase S24 100% CONCLUÍDA e HOMOLOGADA. Total de **24 de 48 fases do Plano 5 concluídas (50.0%)**. Próxima fase: **S25 (Família Shell e Navegação)**.
+
+
 
 

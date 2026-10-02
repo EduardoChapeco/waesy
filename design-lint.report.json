@@ -1,30 +1,19 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-02T12:15:49.777Z",
+  "timestamp": "2026-10-02T12:21:56.233Z",
   "inspectedFiles": 1,
-  "totalViolations": 9,
+  "totalViolations": 0,
   "summary": {
-    "totalViolations": 9,
+    "totalViolations": 0,
     "bySeverity": {
       "P0": 0,
       "P1": 0,
-      "P2": 9,
+      "P2": 0,
       "P3": 0
     },
-    "byRule": {
-      "DL-07": 6,
-      "DL-26": 3
-    },
-    "byModule": {
-      "styles": {
-        "total": 9,
-        "P0": 0,
-        "P1": 0,
-        "P2": 9,
-        "P3": 0
-      }
-    },
-    "filesWithViolations": 1,
+    "byRule": {},
+    "byModule": {},
+    "filesWithViolations": 0,
     "filesCount": 1
   },
   "config": {
@@ -191,105 +180,5 @@
       }
     ]
   },
-  "violationsSample": [
-    {
-      "id": "DL-07",
-      "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/styles.css",
-      "module": "styles",
-      "line": 36,
-      "column": 5,
-      "severity": "P2",
-      "match": "shadow-sm",
-      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
-    },
-    {
-      "id": "DL-07",
-      "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/styles.css",
-      "module": "styles",
-      "line": 37,
-      "column": 5,
-      "severity": "P2",
-      "match": "shadow-md",
-      "message": "Sombra decorativa \"shadow-md\" em superfície de aplicação. Sombras restritas a overlays."
-    },
-    {
-      "id": "DL-07",
-      "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/styles.css",
-      "module": "styles",
-      "line": 38,
-      "column": 5,
-      "severity": "P2",
-      "match": "shadow-lg",
-      "message": "Sombra decorativa \"shadow-lg\" em superfície de aplicação. Sombras restritas a overlays."
-    },
-    {
-      "id": "DL-26",
-      "rule": "DL-26",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/styles.css",
-      "module": "styles",
-      "line": 153,
-      "column": 2,
-      "severity": "P2",
-      "match": "duration-500",
-      "message": "Duração de animação superior a 300ms: \"duration-500\"."
-    },
-    {
-      "id": "DL-26",
-      "rule": "DL-26",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/styles.css",
-      "module": "styles",
-      "line": 154,
-      "column": 2,
-      "severity": "P2",
-      "match": "duration-700",
-      "message": "Duração de animação superior a 300ms: \"duration-700\"."
-    },
-    {
-      "id": "DL-26",
-      "rule": "DL-26",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/styles.css",
-      "module": "styles",
-      "line": 155,
-      "column": 2,
-      "severity": "P2",
-      "match": "duration-1000",
-      "message": "Duração de animação superior a 300ms: \"duration-1000\"."
-    },
-    {
-      "id": "DL-07",
-      "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/styles.css",
-      "module": "styles",
-      "line": 851,
-      "column": 2,
-      "severity": "P2",
-      "match": "shadow-sm",
-      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
-    },
-    {
-      "id": "DL-07",
-      "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/styles.css",
-      "module": "styles",
-      "line": 852,
-      "column": 2,
-      "severity": "P2",
-      "match": "shadow-md",
-      "message": "Sombra decorativa \"shadow-md\" em superfície de aplicação. Sombras restritas a overlays."
-    },
-    {
-      "id": "DL-07",
-      "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/styles.css",
-      "module": "styles",
-      "line": 853,
-      "column": 2,
-      "severity": "P2",
-      "match": "shadow-lg",
-      "message": "Sombra decorativa \"shadow-lg\" em superfície de aplicação. Sombras restritas a overlays."
-    }
-  ]
+  "violationsSample": []
 }
