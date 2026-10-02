@@ -17,7 +17,7 @@ export interface QueuedEventPayload {
   customerId?: string | null;
   title: string;
   description?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, any>;
   maxAttempts?: number;
 }
 
