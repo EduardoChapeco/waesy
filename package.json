@@ -14,6 +14,7 @@
     "lint:design:test": "node scripts/design-lint.test.mjs",
     "lint:design:update-baseline": "node scripts/design-lint.mjs --update-baseline",
     "format": "prettier --write .",
+    "changelog:generate": "node scripts/generate-changelog.mjs",
     "typecheck": "node --max-old-space-size=6144 ./node_modules/typescript/bin/tsc --noEmit",
     "test": "vitest run",
     "audit:all": "node scripts/audit/audit-all.mjs",

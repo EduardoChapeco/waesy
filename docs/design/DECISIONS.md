@@ -1735,6 +1735,21 @@
      - `npm run typecheck`: 0 erros de compilação TypeScript em 1.798 arquivos.
      - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F18-SUPPORT-TICKETS, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
-- **Consequências:** Fase F18 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para deploy e publicações.
+- **Consequências:** Fase F18 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F19: Roadmap Vivo e Changelog Automatizado**.
+
+## DEC-145: Conclusão da Fase F19 (Plano de Estabilização E2E) — Roadmap Vivo e Changelog Automatizado
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F19 do Plano de Estabilização E2E, estabelecendo o motor determinístico de documentação viva e rastreabilidade contínua da plataforma Waesy (`scripts/generate-changelog.mjs`), sincronizando `CHANGELOG.md` e `docs/canonico/ROADMAP_VIVO.md` diretamente dos commits e das decisões de arquitetura.
+- **Decisão:**
+  1. `Script de Geração Determinística`: Criado `scripts/generate-changelog.mjs` que extrai commits recentes do Git e decisões `DEC-XXX` de `docs/design/DECISIONS.md`, formatando `CHANGELOG.md` em padrão Keep a Changelog.
+  2. `SSOT de Roadmap Vivo`: Criado `docs/canonico/ROADMAP_VIVO.md` mapeando os 4 pilares em produção e o status exato das 24 fases do plano mestre.
+  3. `Aprovação Integral nas 4 Gates de Qualidade`:
+     - `vitest`: 100% dos testes unitários e de integração verdes.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+     - `npm run typecheck`: 0 erros de compilação TypeScript.
+     - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F19-ROADMAP-CHANGELOG, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F19 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F20: ADRs, Runbook de Operação e Dicionário de Domínio**.
+
 
 
