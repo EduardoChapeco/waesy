@@ -1678,3 +1678,18 @@
      - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F14-UNIVERSAL-SEARCH, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
 - **Consequências:** Fase F14 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F15: Geolocalização e Filtros de Cidade/Bairro**.
+
+## DEC-141: Conclusão da Fase F15 (Plano de Estabilização E2E) — Geolocalização e Filtros de Proximidade (Places & Classificados)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F15 do Plano de Estabilização E2E, implementando os motores geodésicos server-side de proximidade física para estabelecimentos de Places e filtros espaciais por cidade e bairro em Classificados e Lojas, eliminando dependências de dados fictícios (M01: Zero Mocks).
+- **Decisão:**
+  1. `Busca Geodésica Haversine (geoSearchPlacesFn)`: Criada Server Function em `src/services/geo-search.functions.ts` que calcula distâncias esféricas de Haversine (raio de 6371km) a partir de coordenadas GPS reais cadastradas em `stores.settings`, ordenando por menor distância e ignorando entidades sem coordenadas.
+  2. `Filtro Espacial em Classificados (geoSearchClassifiedsFn)`: Filtragem textual e territorial em `classifieds.location_text` por cidade e bairro para anúncios ativos.
+  3. `Resolução Canônica de Cidade (resolveLocationCityFn)`: Resolução determinística da cidade canônica mais próxima a partir de `src/lib/constants/cities.ts`.
+  4. `Aprovação Integral nas 4 Gates de Qualidade`:
+     - `vitest`: 5/5 testes unitários verdes em `src/services/geo-search.functions.test.ts`.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+     - `npm run typecheck`: 0 erros de compilação TypeScript.
+     - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F15-GEO-SEARCH, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F15 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F16: Notificações em Tempo Real (Supabase Realtime)**.
