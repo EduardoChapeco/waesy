@@ -60,9 +60,9 @@
     },
     "PLANO_5_ESTRUTURA_ESCALA_OPERACAO_BIGTECH": {
       "totalPhases": 48,
-      "completedPhases": 14,
+      "completedPhases": 16,
       "status": "IN_PROGRESS",
-      "currentPhase": "S15",
+      "currentPhase": "S17",
       "activeBlock": "BLOCO_C_ROTAS_E_PERFORMANCE",
       "completedBlocks": [
         "BLOCO_A_RE_BASELINE_E_VERDADE",

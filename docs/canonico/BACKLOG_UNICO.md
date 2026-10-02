@@ -141,8 +141,8 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **S14**: Grafo sem dependência circular entre verticais de negócio. *(Concluído — `scripts/check-circular-deps.mjs`, `npm run check:cycles`)*
 
 ### Bloco C — Rotas e Performance (S15–S22) — EM ANDAMENTO
-- [ ] **S15**: Code-split por vertical e preload por intenção.
-- [ ] **S16**: Orçamento por rota bloqueante no CI.
+- [x] **S15**: Code-split por vertical e preload por intenção. *(Concluído — `src/router.tsx`, `vite.config.ts`)*
+- [x] **S16**: Orçamento por rota bloqueante no CI. *(Concluído — `scripts/route-budget-guard.mjs`, `npm run check:route-budget`)*
 - [ ] **S17**: Paginação keyset e streaming em listagens volumosas.
 - [ ] **S18**: Cache de edge para páginas públicas e invalidação precisa.
 - [ ] **S19**: Otimização do Cloudflare Worker (bundle, cold start, imports seletivos).

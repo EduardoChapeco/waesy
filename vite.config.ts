@@ -17,6 +17,17 @@ export default defineConfig({
     build: {
       rollupOptions: {
         external: ["vinxi/routes"],
+        output: {
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("maplibre-gl")) return "vendor-maps";
+              if (id.includes("jspdf") || id.includes("html2canvas")) return "vendor-pdf";
+              if (id.includes("recharts")) return "vendor-charts";
+              if (id.includes("@radix-ui")) return "vendor-radix";
+              if (id.includes("@phosphor-icons") || id.includes("lucide-react")) return "vendor-icons";
+            }
+          },
+        },
       },
     },
   },

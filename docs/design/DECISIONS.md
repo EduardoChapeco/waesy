@@ -1227,6 +1227,14 @@
   4. `S13`: Implementado `scripts/check-type-duplications.mjs` (`npm run check:types-ssot`). As 24 duplicações concorrentes de tipos/interfaces exportados foram unificadas em seus donos canônicos (`Role`, `IntegrationStatus`, `ViewModeType` vs `WorkspaceViewModeType`, `AddressData`, `ItineraryDay`, `RawVariant`, `SheetPageProps`, `PolicyFaqItem`, `DestinationCatalogReview`, `NichePackageId`, etc.). Validador: 100% de unicidade e zero declarações duplicadas.
   5. `S14`: Implementado `scripts/check-circular-deps.mjs` (`npm run check:cycles`). Módulos intermediários e folhas extraídos (`src/services/mining/mined-product-enricher.ts`, `src/types/hr.ts`, `src/types/catalog.ts`, `src/types/unified-ad-engine.ts`, desvinculação `sheet.tsx` e `sheet-page.tsx`). Validador: Grafo estritamente acíclico com 0 ciclos de aplicação.
   6. CI e Build de Produção: TypeScript `tsc --noEmit` com 0 erros, `npm run check:canonical` 100% aprovado em todos os 8 gates, Vitest com 153 suítes e 1.015 testes verdes (100%), e `npm run build` gerando `dist/_worker.js` e `dist/_routes.json` para Cloudflare Pages com sucesso.
-- **Fundamentação:** AGENTS.md B.1 a B.12, Contrato de Camadas S06, Manifesto de Verticais S10 e Definition of Done B.9.
-- **Consequências:** Bloco B (S06 a S14) 100% CONCLUÍDO e HOMOLOGADO. Total de 14 de 48 fases do Plano 5 finalizadas. Início do Bloco C — Rotas e Performance (S15 a S22).
+## DEC-108: Conclusão das Fases S15 e S16 (Plano 5 — Bloco C) — Code-Split por Vertical, Preload por Intenção e Orçamento Bloqueante por Rota
+- **Data:** 2026-10-02
+- **Contexto:** Execução das Fases S15 (Code-split por vertical e preload por intenção) e S16 (Orçamento por rota bloqueante no CI) do Bloco C (Rotas e Performance).
+- **Decisão:**
+  1. `S15`: TanStack Router configurado em `src/router.tsx` com `defaultPreload: "intent"`, `defaultPreloadDelay: 50` e `defaultPreloadStaleTime: 30000`, disparando preload determinístico de componentes e dados em hover/focus nos links da aplicação. Em `vite.config.ts`, configurado `manualChunks` isolando bibliotecas pesadas de terceiros (`vendor-maps`, `vendor-pdf`, `vendor-charts`, `vendor-radix`, `vendor-icons`), impedindo a poluição de chunks leves e melhorando o TTI em rotas de consumo e PDV.
+  2. `S16`: Implementado `scripts/route-budget-guard.mjs` e integrado a `package.json` (`npm run check:route-budget`) e ao `npm run check:canonical`. O script audita o tamanho cru e gzipped de cada chunk em `dist/assets` e do Cloudflare Worker (`dist/_worker.js`), aplicando tetos rigorosos (Entry router <= 450 kB gzip, CSS <= 120 kB gzip, chunks de rota <= 95 kB gzip, Worker SSR <= 25 MB).
+  3. Resultado da Verificação: 100% dos chunks de rota e workers aprovados. `dist/_worker.js` otimizado para 16.82 MB (abaixo do teto de 25 MB). TypeScript `tsc --noEmit` 0 erros, Vitest 153/153 arquivos e 1.015 testes verdes (100%), e todos os 9 gates de CI canônico aprovados.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S15-S16, docs/PERFORMANCE.md (Core Web Vitals) e Definition of Done B.9.
+- **Consequências:** Fases S15 e S16 100% CONCLUÍDAS e HOMOLOGADAS. Total de 16 de 48 fases do Plano 5 finalizadas. Próxima fase: S17 (Paginação keyset e streaming em listagens volumosas).
+
 
