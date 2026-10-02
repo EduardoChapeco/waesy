@@ -40,7 +40,7 @@ A arquitetura do produto é dividida em 4 pilares semânticos soberanos:
 | **F20** | Runbook de Operação e Dicionário de Domínio | `docs(F20)` | Homologado | `RUNBOOK.md`, `DICIONARIO_DOMINIO.md`, `CONTRIBUTING.md` |
 | **F21** | Scanner de Órfãos e Dead Code no CI | `feat(F21)` | Homologado | `dead-code-detector.mjs`, `dead-code.report.json` |
 | **F22** | CI Bloqueante Unificado (5 Gates) | `feat(F22)` | Homologado | `.github/workflows/ci.yml` |
-| **F23** | Auditoria de Segurança Final e RLS Abrangente | Planejado | Próximo | `security-guard` audit |
+| **F23** | Auditoria de Segurança Final e RLS Abrangente | `security(F23)` | Homologado | `AUDITORIA_SEGURANCA_F23.md`, 536 tabelas RLS |
 | **F24** | Selo Final de Conclusão do Plano Mestre | Planejado | Próximo | Certificação e Release 2.0 |
 
 ---

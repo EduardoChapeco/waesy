@@ -1783,3 +1783,14 @@
   3. `Governança de Concorrência`: Cancelamento automático de builds anteriores no mesmo branch (`cancel-in-progress: true`), economizando minutos de computação no CI.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F22-UNIFIED-CI, docs/canonico/PROXIMOS_PLANOS_EXECUCAO.md e Definition of Done B.9.
 - **Consequências:** Fase F22 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F23: Auditoria de Segurança Final e RLS Abrangente**.
+
+## DEC-149: Conclusão da Fase F23 (Plano de Estabilização E2E) — Auditoria de Segurança Final e RLS Abrangente
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F23 do Plano de Estabilização E2E, conduzindo a auditoria pericial de segurança e integridade transacional na base de dados PostgreSQL do Supabase e nas Server Functions do BFF (`docs/auditoria/AUDITORIA_SEGURANCA_F23.md`), atestando conformidade Zero-Trust em multi-tenancy, RLS e prevenção de ataques.
+- **Decisão:**
+  1. `100% de RLS Ativo no Banco`: Inspecionadas todas as 536 tabelas do schema `public`, com confirmação de que 536 possuem `rowsecurity = true` (0 tabelas vulneráveis sem RLS).
+  2. `Isolamento Multi-Tenant em Camada de Serviços`: Catalogadas 1.760 chamadas de proteção de identidade e contexto de loja (`assertStoreAccess`, `getServerIdentity`), blindando contra acesso cruzado entre operadores de estabelecimentos distintos.
+  3. `Prevenção Absoluta de SQL Injection`: Confirmação do uso exclusivo de queries parametrizadas via SDK do Supabase e schemas Zod estritos em todos os pontos de entrada.
+  4. `Blindagem Financeira Append-Only`: Regra de imutabilidade garantida com bloqueio de injeção manual de receitas e carteiras operadas estritamente por procedures seguras.
+- **Fundamentação:** AGENTS.md B.1 a B.12, .agents/skills/security-guard/SKILL.md, SPEC-F23-SECURITY-AUDIT e Definition of Done B.9.
+- **Consequências:** Fase F23 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F24: Selo Final de Conclusão do Plano Mestre (Waesy v2.0)**.

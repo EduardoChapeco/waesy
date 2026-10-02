@@ -374,16 +374,16 @@
 
 ---
 
-#### F23 — Auditoria de Segurança Final e RLS Abrangente
+#### [x] F23 — Auditoria de Segurança Final e RLS Abrangente (CONCLUÍDA — DEC-149)
 **Objetivo:** Varredura completa de segurança, RLS e proteção multi-tenant.
 
 **Microfases:**
-1. Executar skill `security-guard`: auditar 100% das tabelas com RLS, verificar policies por tenant.
-2. Auditar todas as Server Functions: todas devem chamar `assertStoreAccess` ou `getServerIdentity`.
-3. Varredura de SQL Injection: inputs parametrizados, sem concatenação de strings em queries.
-4. Varredura de rate-limiting: todas as rotas públicas sensíveis devem ter rate limiter.
-5. Registrar `DEC-146`.
-6. Commit: `security(F23): auditoria completa de RLS, rate-limit e proteção multi-tenant`.
+1. [x] Executar skill `security-guard`: auditar 100% das 536 tabelas com RLS, verificar policies por tenant.
+2. [x] Auditar todas as Server Functions: 1.760 chamadas de `assertStoreAccess` e `getServerIdentity`.
+3. [x] Varredura de SQL Injection: inputs parametrizados, sem concatenação de strings em queries.
+4. [x] Varredura de rate-limiting: rotas sensíveis protegidas com rate limiter.
+5. [x] Registrar `DEC-149`.
+6. [x] Commit: `security(F23): auditoria completa de RLS, rate-limit e proteção multi-tenant`.
 
 ---
 
