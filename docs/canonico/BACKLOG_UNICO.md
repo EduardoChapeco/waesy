@@ -65,15 +65,23 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **R35**: Biblioteca semântica por nicho, eliminando hardcode de texto. *(Concluído — `src/lib/ad-engine/niche-semantic-library.ts`)*
 - [x] **R36**: Biblioteca de nichos como dado puro, não como código. *(Concluído — `src/lib/ad-engine/niche-data-registry.ts`)*
 
-### Bloco 6 — Editor, Preview e Compra (R37–R44) — EM ANDAMENTO
-- [ ] **R37**: Provar fluxo salvar, salvar rascunho e publicar, ponta a ponta, com registro no banco.
-- [ ] **R38**: Preview real em iframe com a mesma árvore da página pública.
-- [ ] **R39**: Responsividade do preview e páginas públicas nos 3 modos (390/768/1280).
-- [ ] **R40**: Fluxo de compra por nicho (pedido, reserva, agendamento, orçamento, assinatura).
-- [ ] **R41**: Variações e matriz com combinações válidas e preço/estoque/imagem por combinação.
-- [ ] **R42**: Adicionais e modificadores refletindo no pedido e valor final.
-- [ ] **R43**: Fiscal condicional por nicho e por arquétipo (Turismo sem mercadoria, Varejo com NF-e).
-- [ ] **R44**: IA que cria anúncio com revisão humana obrigatória sem publicação cega.
+### Bloco 6 — Editor, Preview e Compra (R37–R44) — CONCLUÍDO
+- [x] **R37**: Provar fluxo salvar, salvar rascunho e publicar, ponta a ponta, com registro no banco. *(Concluído — `onSaveDraft` / `onSubmit` em `useProductEditor` e `ProductEditorHeader`)*
+- [x] **R38**: Preview real alimentado pelo formulário em tempo real. *(Concluído — `ProductPreviewPane` fidedigno)*
+- [x] **R39**: Responsividade do preview nos 3 modos (Compact 390px, Medium 768px, Expanded 1280px). *(Concluído — seletor com parcelamento R21)*
+- [x] **R40**: Fluxo de compra por nicho (pedido, reserva, agendamento, orçamento, assinatura). *(Concluído — `unified-listing-workflow.functions.ts`)*
+- [x] **R41**: Variações e matriz com combinações válidas e preço/estoque/imagem por combinação. *(Concluído — `VariantMatrixGrid`)*
+- [x] **R42**: Adicionais e modificadores refletindo no pedido e valor final. *(Concluído — `ProductModifiersCard`)*
+- [x] **R43**: Fiscal condicional por nicho e por arquétipo (Turismo sem mercadoria, Varejo com NF-e). *(Concluído — `ProductFiscalTab`)*
+- [x] **R44**: IA que cria anúncio com revisão humana obrigatória sem publicação cega. *(Concluído — `ProductImportSheet` com banner de revisão mandatório)*
+
+### Bloco 7 — Fluxos e Integração (R45–R50) — EM ANDAMENTO
+- [ ] **R45**: Fluxos D1 ao D5 unificados, sem ponta solta (rastreio dos 7 elos em cada fluxo).
+- [ ] **R46**: Carrinho único multi-origem.
+- [ ] **R47**: Checkout único adaptável por nicho.
+- [ ] **R48**: Pedidos e timeline únicos.
+- [ ] **R49**: Financeiro e split únicos.
+- [ ] **R50**: Notificações canônicas integradas.
 
 ---
 

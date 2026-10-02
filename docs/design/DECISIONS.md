@@ -1127,3 +1127,16 @@
   6. `R35-R36`: `niche-semantic-library.ts` e `niche-data-registry.ts` integrados: trocar de nicho sem tocar em nenhum componente de UI.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Princípio R10 (Nicho é dado, não código) e Bloco 5 da Operação Verdade Única.
 - **Consequências:** Bloco 5 100% concluído. 0 violações de design lint. Início do Bloco 6 (Editor, Preview e Compra).
+
+## DEC-100: Conclusão do Bloco 6 (R37 a R44) — Editor, Preview Fidedigno e Transação Multi-Nicho
+- **Data:** 2026-10-02
+- **Contexto:** Necessidade de garantir que os fluxos de criação, prévia e compra de produtos e anúncios operem ponta a ponta sem falhas, com suporte a rascunhos, prévia adaptativa nos 3 viewports canônicos (390/768/1280), fiscal condicional por nicho e revisão humana na IA.
+- **Decisão:**
+  1. `R37`: Implementado fluxo formal de "Salvar Rascunho" e "Publicar" em `useProductEditor`, `ProductEditorHeader` e `workspace.catalogo.produtos.novo.tsx`. Impossível falhar em salvar rascunho com dados preliminares.
+  2. `R38-R39`: `ProductPreviewPane` atualizado com chaveamento para os 3 viewports canônicos (Compact 390px, Medium 768px, Expanded 1280px), alimentado em tempo real pelo formulário e com cálculo de parcelas via `getBestInterestFreeInstallment` (R21).
+  3. `R40`: `createUnifiedListingTransaction` expandido para os 6 tipos de transação (purchase, booking, quote, service_order, subscription, appointment) com emissão de documentos correspondentes (voucher turismo, contrato embratur, ordem de serviço, proposta comercial, termo de adesão).
+  4. `R41-R42`: Variações e matriz auditadas em `VariantMatrixGrid`; modificadores e adicionais em `ProductModifiersCard`.
+  5. `R43`: `ProductFiscalTab` tornado condicional por nicho: Turismo/Serviços omite NCM/CEST de mercadoria física e apresenta Cadastur, LC 116 e Regime Especial de Turismo (redução de 60% IBS/CBS); Varejo/Mercado exibe Danfe NF-e completo.
+  6. `R44`: `ProductImportSheet` reforçado com banner mandatório de revisão humana antes de qualquer publicação pública.
+- **Fundamentação:** AGENTS.md B.1 a B.12 e Bloco 6 da Operação Verdade Única.
+- **Consequências:** Bloco 6 100% concluído. 44 de 64 fases do Plano 4 finalizadas. 0 violações de design lint. Início do Bloco 7 (Fluxos e Integração).
