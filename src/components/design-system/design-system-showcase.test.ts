@@ -19,9 +19,12 @@ import {
   CanonicalMediaFrame,
   CanonicalAvatarCluster,
   CanonicalUploadDropzone,
+  CanonicalStepperWizard,
+  CanonicalField,
+  CanonicalFieldError,
 } from "@/components/ui/canonical";
 
-describe("Design System Showcase — Fases S24 a S27 (Shell, Superfícies, Dados, Mídia e 4 Estados)", () => {
+describe("Design System Showcase — Fases S24 a S28 (Shell, Superfícies, Dados, Mídia, Forms e Wizard)", () => {
   it("deve exportar todas as famílias canônicas e componentes de apresentação", () => {
     expect(ActionsFamily).toBeDefined();
     expect(FormsFamily).toBeDefined();
@@ -51,6 +54,12 @@ describe("Design System Showcase — Fases S24 a S27 (Shell, Superfícies, Dados
     expect(CanonicalMediaFrame).toBeDefined();
     expect(CanonicalAvatarCluster).toBeDefined();
     expect(CanonicalUploadDropzone).toBeDefined();
+  });
+
+  it("deve exportar todas as primitivas de formulário e wizard canônicas (S28)", () => {
+    expect(CanonicalStepperWizard).toBeDefined();
+    expect(CanonicalField).toBeDefined();
+    expect(CanonicalFieldError).toBeDefined();
   });
 
   it("deve aceitar os 5 modos canônicos de visualização de estados", () => {

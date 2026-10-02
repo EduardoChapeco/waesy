@@ -1344,3 +1344,15 @@
   5. `Suíte de Testes`: 5/5 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S27, WCAG 2.2 AA (Critério 2.5.8), docs/PERFORMANCE.md (CLS = 0) e Definition of Done B.9.
 - **Consequências:** Fase S27 100% CONCLUÍDA e HOMOLOGADA. Total de **27 de 48 fases do Plano 5 concluídas (56.3%)**. Próxima fase: **S28 (Família Formulário e Wizard)**.
+
+## DEC-117: Conclusão da Fase S28 (Plano 5 — Bloco D) — Família Formulário e Wizard Canônica
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S28 (Família Formulário e Wizard) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
+- **Decisão:**
+  1. `Primitivas Canônicas de Wizard e Formulário`: Criado `src/components/ui/canonical/canonical-wizard.tsx` exportando `CanonicalStepperWizard` com navegação linear de etapas, indicador visual de progresso (concluído com ícone Check, ativo com borda de realce, futuro desabilitado), validação integrada e garantia estrita de ação primária única (`variant="default"`).
+  2. `Exportação Centralizada`: Atualizado `src/components/ui/canonical/index.ts` expondo todos os componentes e tipos de formulário e wizard.
+  3. `Showcase de Formulários e Matriz de 4 Estados`: Refatorado `src/components/design-system/forms-family.tsx` integrando `CanonicalStepperWizard`, `CanonicalField` e `CanonicalFieldError` com a matriz completa dos 4 estados (Pronto com navegação real entre passos, Carregamento com Skeleton espelhado, Vazio com EmptyState e Erro com campo CNPJ em destaque).
+  4. `Piso de Acessibilidade e Design Lint`: 0 violações P0 e 0 violações P1 no `scripts/design-lint.mjs --changed`. Alvos de toque >= 44px (`h-11`), conformidade estrita com a regra de ação primária única (DL-25), anéis de foco (:focus-visible) e espaçamentos na grade modular de 4px.
+  5. `Suíte de Testes`: 6/6 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S28, WCAG 2.2 AA (Critério 2.5.8), Apple HIG e Definition of Done B.9.
+- **Consequências:** Fase S28 100% CONCLUÍDA e HOMOLOGADA. Total de **28 de 48 fases do Plano 5 concluídas (58.3%)**. Próxima fase: **S29 (Família Overlay e Matriz de 4 Estados)**.

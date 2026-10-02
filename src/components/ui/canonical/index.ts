@@ -9,3 +9,4 @@ export * from './dense-data-grid';
 export * from './navigation-shell';
 export * from './data-surface';
 export * from './media-family';
+export * from './canonical-wizard';
