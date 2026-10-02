@@ -45,15 +45,25 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **R19**: Varredura de todos os arquivos de rota acima de 500 linhas. *(Concluído — 73 rotas identificadas, top monolito: 9.285L)*
 - [x] **R20**: Regra de composição de página e verificador automático no CI. *(Concluído — `scripts/check-route-size.mjs`, gate 300L/250L integrado em `check:canonical`)*
 
-### Bloco 4 — Duplicação e Dono Único (R21–R28) — EM ANDAMENTO
-- [ ] **R21**: Dono único de parcelamento e pagamento. *(Em execução — subagente ativo)*
-- [ ] **R22**: Dono único de NCM/CEST/CFOP/IBS. *(Em execução — subagente ativo)*
-- [ ] **R23**: Dono único de preço, comparativo, custo, margem e sinal. *(Em execução — subagente ativo)*
-- [ ] **R24**: Dono único de estoque, agenda e capacidade. *(Em execução — subagente ativo)*
-- [ ] **R25**: Dono único de galeria, capa e mídia. *(Em execução — subagente ativo)*
-- [x] **R26**: Dono único de inclusos, exclusos, políticas e FAQ. *(Concluído — `src/lib/policies/cancellation-policy-registry.ts`, commit 1a7037cb)*
-- [x] **R27**: Kill list com mapa de migração de dados e reversão. *(Concluído — `KILL_LIST_R27` em cancellation-policy-registry.ts; 3 arquivos mapeados)*
-- [x] **R28**: Verificador de duplicidade no CI. *(Concluído — `scripts/check-duplication.mjs`, integrado em `check:canonical`)*
+### Bloco 4 — Duplicação e Dono Único (R21–R28) — CONCLUÍDO
+- [x] **R21**: Dono único de parcelamento e pagamento. *(Concluído — `src/lib/payment/installment-calculator.ts`)*
+- [x] **R22**: Dono único de NCM/CEST/CFOP/IBS. *(Concluído — `src/lib/fiscal/ncm-registry.ts`)*
+- [x] **R23**: Dono único de preço, comparativo, custo, margem e sinal. *(Concluído — `src/lib/pricing/price-calculator.ts`)*
+- [x] **R24**: Dono único de estoque, agenda e capacidade. *(Concluído — `src/services/canonical-stock-ledger.functions.ts`)*
+- [x] **R25**: Dono único de galeria, capa e mídia. *(Concluído — `src/lib/media/gallery-manager.ts`)*
+- [x] **R26**: Dono único de inclusos, exclusos, políticas e FAQ. *(Concluído — `src/lib/policies/cancellation-policy-registry.ts`)*
+- [x] **R27**: Kill list com mapa de migração de dados e reversão. *(Concluído — `KILL_LIST_R27` em cancellation-policy-registry.ts)*
+- [x] **R28**: Verificador de duplicidade no CI. *(Concluído — `scripts/check-duplication.mjs`, 9/9 campos canônicos aprovados)*
+
+### Bloco 5 — Metamorfose e Nichos (R29–R36) — EM ANDAMENTO
+- [x] **R29**: Inventário completo dos mecanismos concorrentes de template. *(Concluído — DEC-095)*
+- [ ] **R30**: Eleger dono único da metamorfose e sanitizar concorrentes. *(Em andamento)*
+- [ ] **R31**: `product-field-registry.ts` como coração de padronização de campos por nicho.
+- [ ] **R32**: Alinhar `permission-registry.ts` e `route-registry.ts` com a capacidade real.
+- [ ] **R33**: Matriz nicho × arquétipo de oferta canônica.
+- [ ] **R34**: Templates coerentes — filtro estrito por nicho na UI.
+- [x] **R35**: Biblioteca semântica por nicho, eliminando hardcode de texto. *(Concluído — `src/lib/ad-engine/niche-semantic-library.ts`)*
+- [x] **R36**: Biblioteca de nichos como dado puro, não como código. *(Concluído — `src/lib/ad-engine/niche-data-registry.ts`)*
 
 ---
 

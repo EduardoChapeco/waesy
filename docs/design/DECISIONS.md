@@ -1101,3 +1101,16 @@
 - **Fundamentação:** R36 Operação Verdade Única, Gate: "trocar de nicho sem tocar em componente".
 - **Consequências:** Adicionar novo nicho = adicionar entrada em `NICHE_DEFINITIONS[]` + `NICHE_TAXONOMY_REGISTRY` + `NICHE_SEMANTIC_LIBRARY`. Zero toques em componentes.
 
+
+## DEC-098: Conclusão do Bloco 4 (R21 a R28) — Duplicação e Dono Único Canônico
+- **Data:** 2026-10-02
+- **Contexto:** Existência de duplicações concorrentes em cálculo de parcelamento, classificação fiscal NCM/CFOP, precificação/margem, movimentação de estoque e gestão de galeria de mídia.
+- **Decisão:**
+  1. `R21`: Criado `src/lib/payment/installment-calculator.ts` como dono único de parcelas (`MAX_INSTALLMENTS`, `calcInstallments`, `getBestInterestFreeInstallment`, `splitAmountIntoInstallments`).
+  2. `R22`: Criado `src/lib/fiscal/ncm-registry.ts` como dono único fiscal (`NCM_REGISTRY`, `CFOP_TABLE`, validações e simulação de IBS/CBS EC 132/2023).
+  3. `R23`: Criado `src/lib/pricing/price-calculator.ts` como dono único de preço (`calcDiscountPix`, `calcMargin`, `calcCommercialConditions`, `formatCurrencyBRL`).
+  4. `R24`: Exportado `updateStockLedger` canônico em `src/services/canonical-stock-ledger.functions.ts`.
+  5. `R25`: Criado `src/lib/media/gallery-manager.ts` como dono único de mídia (`GALLERY_MANAGER`).
+  6. `R26-R28`: Validado via `scripts/check-duplication.mjs`: 9/9 campos canônicos aprovados com 1 ocorrência única em 1.614 arquivos do codebase.
+- **Fundamentação:** AGENTS.md B.1, B.2, B.5, B.8 e Bloco 4 da Operação Verdade Única.
+- **Consequências:** 0 duplicidades nos campos canônicos F01–F09. Bloco 4 100% concluído.
