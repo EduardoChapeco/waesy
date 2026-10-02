@@ -102,8 +102,7 @@ describe("F09: Rota _store.places.$placeSlug", () => {
       reviews: [],
     };
 
-    // @ts-expect-error simulação de chamada de head
-    const headResult = Route.options.head({
+    const headResult = (Route.options.head as any)({
       loaderData: { place: mockPlace },
     });
 

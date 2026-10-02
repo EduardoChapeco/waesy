@@ -118,7 +118,6 @@ describe("F10: workspace-dashboard.functions", () => {
     expect(workspaceDashboardKpisInputSchema.safeParse({ period: "today" }).success).toBe(true);
     expect(workspaceDashboardKpisInputSchema.safeParse({ period: "7d" }).success).toBe(true);
     expect(workspaceDashboardKpisInputSchema.safeParse({ period: "30d" }).success).toBe(true);
-    // @ts-expect-error período inválido
     expect(workspaceDashboardKpisInputSchema.safeParse({ period: "1year" }).success).toBe(false);
   });
 

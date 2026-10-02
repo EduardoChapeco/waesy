@@ -60,7 +60,8 @@
 | F07 | [x] | `8d50feab` | Vitrine pública do Marketplace por loja (`/marketplace/:storeSlug`) com SSR e SEO |
 | F08 | [x] | `33373c9a` | Checkout transacional B2C do Marketplace com wizard de 3 etapas e frete |
 | F09 | [x] | `8174c661` | Places: Detalhe do Estabelecimento Físico com Reputação, Galeria e Mapa |
-| F10 | [x] | `pendente` | Workspace: Dashboard KPI Real com Dados do DB (Zero Mocks) |
+| F10 | [x] | `966119f2` | Workspace: Dashboard KPI Real com Dados do DB (Zero Mocks) |
+| F11 | [x] | `pendente` | Workspace: Gestão de Pedidos Real (CRUD Completo e Status) |
 
 ---
 

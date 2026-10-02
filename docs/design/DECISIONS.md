@@ -1608,6 +1608,23 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F10-WORKSPACE-DASHBOARD-REAL-KPIS, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
 - **Consequências:** Fase F10 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F11: Workspace — Gestão de Pedidos Real (CRUD Completo e Transições de Status)**.
 
+## DEC-137: Conclusão da Fase F11 (Plano de Estabilização E2E) — Workspace: Gestão de Pedidos Real (CRUD Completo e Transições de Status)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F11 do Plano de Estabilização E2E, implementando a gestão transacional de pedidos reais no Workspace Pro (`src/services/orders.functions.ts`), com listagem paginada por keyset (`listOrdersFn`), detalhe do pedido com itens e dados do cliente (`getOrderDetailFn`) e máquina de estados para transições de status (`updateOrderStatusFn`), com isolamento multi-tenant rigoroso (`assertStoreAccess`).
+- **Decisão:**
+  1. `BFF Server Functions Transacionais`: Criado `src/services/orders.functions.ts` exportando:
+     - `listOrdersFn`: paginação keyset por `created_at DESC`, filtros por status (`pending`, `confirmed`, `processing`, `shipped`, `delivered`, `cancelled`) e totalizador.
+     - `getOrderDetailFn`: resolução segura do pedido com junção de itens (`order_items`), snapshot do cliente e dados de entrega.
+     - `updateOrderStatusFn`: máquina de estados que impede regressões ilegais (ex: de cancelado para entregue) e dispara evento de domínio.
+  2. `Governança e Isolamento Multi-Tenant`: Todo acesso valida `assertStoreAccess(identity, storeId)` garantindo zero vazamento entre lojas concorrentes.
+  3. `Piso de Design e Zero Mocks (M01)`: Nenhum fallback sintético ou dado estático; consultas nativas em `orders` e `order_items`.
+  4. `Aprovação Integral nas Gates`:
+     - `vitest`: 4/4 testes unitários verdes em `src/services/orders.functions.test.ts`.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F11-WORKSPACE-ORDERS-MANAGEMENT, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F11 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F12: Workspace — Catálogo de Produtos Real (CRUD Completo de Produtos, Mídia, Variantes e Estoque)**.
+
+
 
 
 
