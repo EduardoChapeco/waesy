@@ -1114,3 +1114,16 @@
   6. `R26-R28`: Validado via `scripts/check-duplication.mjs`: 9/9 campos canônicos aprovados com 1 ocorrência única em 1.614 arquivos do codebase.
 - **Fundamentação:** AGENTS.md B.1, B.2, B.5, B.8 e Bloco 4 da Operação Verdade Única.
 - **Consequências:** 0 duplicidades nos campos canônicos F01–F09. Bloco 4 100% concluído.
+
+## DEC-099: Conclusão do Bloco 5 (R29 a R36) — Metamorfose e Nichos como Dado Puro
+- **Data:** 2026-10-02
+- **Contexto:** Mecanismos concorrentes de metamorfose e seleção de template soltos em 33 arquivos, com textos hardcoded por nicho e ausência de correlação formal com arquétipos.
+- **Decisão:**
+  1. `R29-R30`: Eleito `src/lib/ad-engine/template-metamorphosis.ts` como dono único da metamorfose (`resolveTemplate`, `listAllowedTemplatesForNiche`, `CANONICAL_TEMPLATES_CATALOG`). Substituídas cores hex em `presentation-presets.ts` por tokens CSS `var(--color-*)`.
+  2. `R31`: `src/registries/product-field-registry.ts` expandido como autoridade única de validação e emissão de atributos por nicho (`getFieldsForNiche`, `validateNicheAttributes`).
+  3. `R32`: `src/registries/permission-registry.ts` expandido para 12 papéis e 15 recursos, alinhado à capacidade real multi-nicho.
+  4. `R33`: Criado `src/lib/ad-engine/niche-archetype-matrix.ts` consolidando os 15 arquétipos canônicos de oferta (A01 a A15) e suas restrições por nicho.
+  5. `R34`: `src/components/ad-engine/editor/sections/listing-template-selector.tsx` conectado ao resolvedor de metamorfose, com mitigação DL-08 (`rounded-lg`) e DL-15 (`focus-visible`).
+  6. `R35-R36`: `niche-semantic-library.ts` e `niche-data-registry.ts` integrados: trocar de nicho sem tocar em nenhum componente de UI.
+- **Fundamentação:** AGENTS.md B.1 a B.12, Princípio R10 (Nicho é dado, não código) e Bloco 5 da Operação Verdade Única.
+- **Consequências:** Bloco 5 100% concluído. 0 violações de design lint. Início do Bloco 6 (Editor, Preview e Compra).

@@ -55,15 +55,25 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **R27**: Kill list com mapa de migração de dados e reversão. *(Concluído — `KILL_LIST_R27` em cancellation-policy-registry.ts)*
 - [x] **R28**: Verificador de duplicidade no CI. *(Concluído — `scripts/check-duplication.mjs`, 9/9 campos canônicos aprovados)*
 
-### Bloco 5 — Metamorfose e Nichos (R29–R36) — EM ANDAMENTO
+### Bloco 5 — Metamorfose e Nichos (R29–R36) — CONCLUÍDO
 - [x] **R29**: Inventário completo dos mecanismos concorrentes de template. *(Concluído — DEC-095)*
-- [ ] **R30**: Eleger dono único da metamorfose e sanitizar concorrentes. *(Em andamento)*
-- [ ] **R31**: `product-field-registry.ts` como coração de padronização de campos por nicho.
-- [ ] **R32**: Alinhar `permission-registry.ts` e `route-registry.ts` com a capacidade real.
-- [ ] **R33**: Matriz nicho × arquétipo de oferta canônica.
-- [ ] **R34**: Templates coerentes — filtro estrito por nicho na UI.
+- [x] **R30**: Eleger dono único da metamorfose e sanitizar concorrentes. *(Concluído — `src/lib/ad-engine/template-metamorphosis.ts`, `presentation-presets.ts` sem hex)*
+- [x] **R31**: `product-field-registry.ts` como coração de padronização de campos por nicho. *(Concluído — `src/registries/product-field-registry.ts`)*
+- [x] **R32**: Alinhar `permission-registry.ts` e `route-registry.ts` com a capacidade real. *(Concluído — papéis e recursos sincronizados)*
+- [x] **R33**: Matriz nicho × arquétipo de oferta canônica. *(Concluído — `src/lib/ad-engine/niche-archetype-matrix.ts`, A01–A15)*
+- [x] **R34**: Templates coerentes — filtro estrito por nicho na UI. *(Concluído — `listing-template-selector.tsx` conectado e saneado)*
 - [x] **R35**: Biblioteca semântica por nicho, eliminando hardcode de texto. *(Concluído — `src/lib/ad-engine/niche-semantic-library.ts`)*
 - [x] **R36**: Biblioteca de nichos como dado puro, não como código. *(Concluído — `src/lib/ad-engine/niche-data-registry.ts`)*
+
+### Bloco 6 — Editor, Preview e Compra (R37–R44) — EM ANDAMENTO
+- [ ] **R37**: Provar fluxo salvar, salvar rascunho e publicar, ponta a ponta, com registro no banco.
+- [ ] **R38**: Preview real em iframe com a mesma árvore da página pública.
+- [ ] **R39**: Responsividade do preview e páginas públicas nos 3 modos (390/768/1280).
+- [ ] **R40**: Fluxo de compra por nicho (pedido, reserva, agendamento, orçamento, assinatura).
+- [ ] **R41**: Variações e matriz com combinações válidas e preço/estoque/imagem por combinação.
+- [ ] **R42**: Adicionais e modificadores refletindo no pedido e valor final.
+- [ ] **R43**: Fiscal condicional por nicho e por arquétipo (Turismo sem mercadoria, Varejo com NF-e).
+- [ ] **R44**: IA que cria anúncio com revisão humana obrigatória sem publicação cega.
 
 ---
 
