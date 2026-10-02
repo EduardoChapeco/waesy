@@ -13,7 +13,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
-import { emitDomainEvent } from "./domain-events.functions";
+import { publishDomainEvent } from "./domain-events.functions";
 
 export const unifiedTransactionSchema = z.object({
   listingId: z.string().uuid("ID do anúncio inválido"),
@@ -48,7 +48,7 @@ export const createUnifiedListingTransaction = createServerFn({ method: "POST" }
     const supabase = getServerClient();
     const identity = await getServerIdentity();
 
-    if (!identity.user) {
+    if (!identity.id) {
       throw new Error("Autenticação obrigatória para iniciar transações no anúncio.");
     }
 
@@ -59,7 +59,7 @@ export const createUnifiedListingTransaction = createServerFn({ method: "POST" }
       .eq("id", data.listingId)
       .single();
 
-    if (listingErr || !listing) {
+    if (listingErr || Boolean(listing) === false) {
       throw new Error("Anúncio não localizado ou indisponível para transação.");
     }
 
@@ -95,7 +95,7 @@ export const createUnifiedListingTransaction = createServerFn({ method: "POST" }
       .from("deals")
       .insert({
         classified_id: data.origin === "classified" ? data.listingId : null,
-        buyer_id: identity.user.id,
+        buyer_id: identity.id,
         seller_id: listing.author_id,
         status: "accepted",
         proposed_price_cents: totalCents,
@@ -107,7 +107,7 @@ export const createUnifiedListingTransaction = createServerFn({ method: "POST" }
       .select("id")
       .single();
 
-    if (dealErr || !newDeal) {
+    if (dealErr || Boolean(newDeal) === false) {
       throw new Error(`Falha ao registrar negociação: ${dealErr?.message}`);
     }
 
@@ -125,27 +125,25 @@ export const createUnifiedListingTransaction = createServerFn({ method: "POST" }
 
     // 5. F39: Disparo de Evento de Domínio e Linha do Tempo Unificada
     const eventName = data.transactionType === "booking" ? "reservation.created" : "order.created";
-    await emitDomainEvent({
-      data: {
-        eventName,
-        entityType: "deal",
-        entityId: transactionId,
-        storeId: listing.store_id || undefined,
-        customerId: identity.user.id,
-        title: `Nova transação: ${listing.title}`,
-        description: `Transação de R$ ${(totalCents / 100).toFixed(2)} confirmada para o item "${listing.title}".`,
-        metadata: {
-          listingId: listing.id,
-          origin: data.origin,
-          quantity: data.quantity,
-          totalCents,
-          depositCents,
-          balanceCents,
-          departureOptionId: data.departureOptionId,
-          documentsGenerated,
-        },
+    await publishDomainEvent({
+      eventName,
+      entityType: "deal",
+      entityId: transactionId,
+      storeId: listing.store_id || undefined,
+      customerId: identity.id,
+      title: `Nova transação: ${listing.title}`,
+      description: `Transação de R$ ${(totalCents / 100).toFixed(2)} confirmada para o item "${listing.title}".`,
+      metadata: {
+        listingId: listing.id,
+        origin: data.origin,
+        quantity: data.quantity,
+        totalCents,
+        depositCents,
+        balanceCents,
+        departureOptionId: data.departureOptionId,
+        documentsGenerated,
       },
-    }).catch((err) => {
+    }).catch((err: unknown) => {
       console.warn("[domain-events] Falha ao registrar evento da transação:", err);
     });
 
@@ -185,7 +183,7 @@ export const createListingQuoteProposal = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
 
-    if (!identity.user) {
+    if (!identity.id) {
       throw new Error("Autenticação necessária para emitir propostas.");
     }
 
@@ -202,19 +200,17 @@ export const createListingQuoteProposal = createServerFn({ method: "POST" })
     const expiresAt = new Date(Date.now() + data.validDays * 24 * 60 * 60 * 1000).toISOString();
 
     // Emite evento de proposta criada na timeline (F39)
-    await emitDomainEvent({
-      data: {
-        eventName: "proposal.created",
-        entityType: "quote",
-        entityId: data.listingId,
-        storeId: listing.store_id || undefined,
-        title: `Proposta enviada para ${data.targetEmail}`,
-        description: `Orçamento comercial gerado com ${data.scenarios.length} cenário(s) para "${listing.title}". Validade: ${data.validDays} dias.`,
-        metadata: {
-          targetEmail: data.targetEmail,
-          expiresAt,
-          scenarios: data.scenarios,
-        },
+    await publishDomainEvent({
+      eventName: "proposal.created",
+      entityType: "quote",
+      entityId: data.listingId,
+      storeId: listing.store_id || undefined,
+      title: `Proposta enviada para ${data.targetEmail}`,
+      description: `Orçamento comercial gerado com ${data.scenarios.length} cenário(s) para "${listing.title}". Validade: ${data.validDays} dias.`,
+      metadata: {
+        targetEmail: data.targetEmail,
+        expiresAt,
+        scenarios: data.scenarios,
       },
     }).catch(() => {});
 
@@ -235,7 +231,7 @@ export const getListingNegotiationsAndLeads = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
 
-    if (!identity.user) {
+    if (!identity.id) {
       throw new Error("Acesso restrito ao responsável pelo anúncio.");
     }
 

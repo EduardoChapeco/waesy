@@ -18,6 +18,7 @@ export interface NicheSectionComposition {
 export interface NicheTaxonomyConfig {
   id: string;
   name: string;
+  label?: string;
   defaultSellingUnit: string;
   allowedSellingUnits: string[];
   allowedTemplates: string[];
@@ -277,7 +278,7 @@ export function validateListingNicheTaxonomy(
   const attributes = data.attributes || {};
 
   // 1. Validação de Template Compatível (Regra R06 / Caso O02)
-  if (templateId && !config.allowedTemplates.includes(templateId)) {
+  if (templateId && Boolean(config.allowedTemplates.includes(templateId)) === false) {
     const msg = `O template '${templateId}' é incompatível com o nicho '${config.name}'. Modelos permitidos: ${config.allowedTemplates.join(", ")}.`;
     errors.template = msg;
     errors.template_id = msg;
@@ -285,19 +286,19 @@ export function validateListingNicheTaxonomy(
 
   // 2. Validação de Campos Mandatórios Gerais
   for (const field of config.mandatoryListingFields) {
-    if (field === "title" && (!title || title.trim().length < 3)) {
+    if (field === "title" && (title === undefined || title === null || title === "" || title.trim().length < 3)) {
       errors.title = "O título é obrigatório e deve ter ao menos 3 caracteres.";
     }
     if (field === "price_cents" && (priceCents === undefined || priceCents === null || priceCents <= 0)) {
       errors.price_cents = "O valor deve ser informado e ser maior que zero.";
     }
-    if (field === "cover_url" && !coverUrl) {
+    if (field === "cover_url" && (coverUrl === undefined || coverUrl === null || coverUrl === "")) {
       errors.cover_url = "Uma foto de capa principal é obrigatória.";
     }
-    if (field === "inclusions" && (!inclusions || inclusions.length === 0)) {
+    if (field === "inclusions" && (inclusions === undefined || inclusions === null || inclusions.length === 0)) {
       errors.inclusions = "Ao menos um item incluso deve ser declarado para este segmento.";
     }
-    if (field === "location" && (!location?.city || !location?.state)) {
+    if (field === "location" && (location?.city === undefined || location?.city === null || location?.city === "" || location?.state === undefined || location?.state === null || location?.state === "")) {
       errors.location = "A cidade e estado são obrigatórios para este segmento.";
     }
   }

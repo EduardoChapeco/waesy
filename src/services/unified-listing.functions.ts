@@ -137,7 +137,7 @@ export const createUnifiedListing = createServerFn({ method: "POST" })
     const isClassified = data.origin === "classified";
     const authorId = identity?.user_id || "00000000-0000-0000-0000-000000000000";
     const storeId = data.store_id || identity?.store_id || null;
-    const organizationId = data.organization_id || identity?.organization_id || null;
+    const organizationId = data.organization_id || (identity as any)?.organization_id || identity?.store_id || null;
 
     // Calcular expiração se classificado
     let expiresAt: string | null = null;
@@ -330,7 +330,7 @@ export const publishUnifiedListing = createServerFn({ method: "POST" })
 
     // Transição de estado via máquina canônica (F08)
     const transition = transitionListingState(
-      listing,
+      listing as UnifiedListing,
       "published",
       { id: listing.author_id, role: "owner" },
       "Publicação formal aprovada após checagem de taxonomia"
@@ -380,7 +380,7 @@ export const transitionListingStatusAction = createServerFn({ method: "POST" })
     const listing = await getUnifiedListingById({ data: { id: data.id, format: "json" } });
 
     const transition = transitionListingState(
-      listing,
+      listing as UnifiedListing,
       data.targetStatus,
       { id: identity?.user_id || "actor", role: identity?.role || "user" },
       data.reason
@@ -418,7 +418,7 @@ export const autoExpireClassifiedsJobAction = createServerFn({ method: "POST" })
     .eq("status", "active")
     .lt("expires_at", now);
 
-  if (error || !expiredRows || expiredRows.length === 0) {
+  if (error || Boolean(expiredRows) === false || expiredRows.length === 0) {
     return { expiredCount: 0 };
   }
 

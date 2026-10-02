@@ -29,24 +29,24 @@ export function ClassifiedDetailDialogs({
         boardingGateways={detail.boardingGateways}
         flightDetails={detail.flightDetails}
         selectedDeparture={detail.selectedDeparture}
-        onSelectDeparture={detail.setSelectedDeparture}
+        setSelectedDeparture={detail.setSelectedDeparture}
         selectedBoardingPoint={detail.selectedBoardingPoint}
-        onSelectBoardingPoint={detail.setSelectedBoardingPoint}
+        setSelectedBoardingPoint={detail.setSelectedBoardingPoint}
         travelPassengers={detail.travelPassengers}
-        onTravelPassengersChange={detail.setTravelPassengers}
+        setTravelPassengers={detail.setTravelPassengers}
         effectiveTravelUnitPriceCents={detail.effectiveTravelUnitPriceCents}
         isPerPerson={detail.isPerPerson}
         travelTotalCents={detail.travelTotalCents}
         maxInstallments={detail.maxInstallments}
         travelInstallmentCents={detail.travelInstallmentCents}
-        onDirectBooking={detail.handleDirectBooking}
+        handleDirectBooking={detail.handleDirectBooking}
         isBooking={detail.isBooking}
         checkInDate={detail.checkInDate}
-        onCheckInDateChange={detail.setCheckInDate}
+        setCheckInDate={detail.setCheckInDate}
         checkOutDate={detail.checkOutDate}
-        onCheckOutDateChange={detail.setCheckOutDate}
+        setCheckOutDate={detail.setCheckOutDate}
         bookingGuests={detail.bookingGuests}
-        onBookingGuestsChange={detail.setBookingGuests}
+        setBookingGuests={detail.setBookingGuests}
         bookedDates={detail.bookedDates}
         isDateRangeOverlapping={detail.isDateRangeOverlapping}
         dailyRateCents={detail.dailyRateCents}
@@ -60,19 +60,19 @@ export function ClassifiedDetailDialogs({
         onOpenChange={detail.setProposalOpen}
         viewerContext={viewerContext}
         proposalPriceCents={detail.proposalPriceCents}
-        onProposalPriceChange={detail.setProposalPriceCents}
+        setProposalPriceCents={detail.setProposalPriceCents}
         proposalPaymentMethod={detail.proposalPaymentMethod}
-        onProposalPaymentMethodChange={detail.setProposalPaymentMethod}
+        setProposalPaymentMethod={detail.setProposalPaymentMethod}
         proposalInstallments={detail.proposalInstallments}
-        onProposalInstallmentsChange={detail.setProposalInstallments}
+        setProposalInstallments={detail.setProposalInstallments}
         proposalDepositCents={detail.proposalDepositCents}
-        onProposalDepositChange={detail.setProposalDepositCents}
+        setProposalDepositCents={detail.setProposalDepositCents}
         proposalTerms={detail.proposalTerms}
-        onProposalTermsChange={detail.setProposalTerms}
+        setProposalTerms={detail.setProposalTerms}
         customAnswers={detail.customAnswers}
-        onCustomAnswersChange={detail.setCustomAnswers}
+        setCustomAnswers={detail.setCustomAnswers}
         isSendingProposal={detail.isSendingProposal}
-        onSendProposal={detail.handleSendProposal}
+        handleSendProposal={detail.handleSendProposal}
       />
       <ClassifiedCompanionDialog
         classified={classified}
@@ -82,6 +82,7 @@ export function ClassifiedDetailDialogs({
       <ClassifiedJobApplicationDialog
         classified={classified}
         currentProfile={currentProfile}
+        viewerContext={viewerContext}
         open={detail.applyModalOpen}
         onOpenChange={detail.setApplyModalOpen}
       />

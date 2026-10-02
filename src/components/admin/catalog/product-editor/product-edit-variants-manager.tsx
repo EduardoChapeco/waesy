@@ -98,7 +98,7 @@ export function ProductEditVariantsManager({ product }: ProductEditVariantsManag
           <VariantMatrixGrid
             variants={variants}
             onChange={setVariants}
-            productId={product.id}
+            basePriceCents={product.price_cents || 0}
           />
         </div>
       </div>

@@ -175,4 +175,14 @@ export interface UnifiedListing {
   // Dinâmico por Nicho e SEO
   attributes: Record<string, any>;
   seo_metadata: ListingSeoMetadata;
+
+  // View & Legacy Bridge Fields
+  location_data?: ListingLocation | null;
+  departures?: DepartureOption[] | null;
+  contact_channels?: {
+    whatsapp?: string;
+    phone?: string;
+    email?: string;
+    website?: string;
+  } | null;
 }

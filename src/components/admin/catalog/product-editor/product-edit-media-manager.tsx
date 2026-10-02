@@ -34,8 +34,6 @@ export function ProductEditMediaManager({ product }: ProductEditMediaManagerProp
         data: {
           product_id: product.id,
           url,
-          media_type: "image",
-          sort_order: (product.product_media?.length || 0),
         },
       });
       if (res) {

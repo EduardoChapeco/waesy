@@ -75,7 +75,7 @@ export function ClassifiedJobApplicationDialog({
 
   const handleWhatsAppApplication = () => {
     const phone = classified?.contact_whatsapp || classified?.whatsapp || classified?.profiles?.phone;
-    if ((!phone)) {
+    if (!phone) {
       toast.error("Telefone de WhatsApp do anunciante não disponível.");
       return;
     }
@@ -85,6 +85,7 @@ export function ClassifiedJobApplicationDialog({
       message,
       storeId: classified?.store_id,
       productId: classified?.id,
+      entityType: "job",
     });
     onOpenChange(false);
   };

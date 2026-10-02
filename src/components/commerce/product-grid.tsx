@@ -180,8 +180,6 @@ export function ProductGrid({
         <DynamicProductCard
           key={product.id}
           product={product}
-          onQuickAdd={handleQuickAdd}
-          isQuickAdding={addingId === product.id}
         />
       ))}
     </div>

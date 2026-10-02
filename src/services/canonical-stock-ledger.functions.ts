@@ -128,7 +128,7 @@ export const recordStockMovement = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     try {
       const identity = await getServerIdentity();
-      return await _recordStockMovement(data, identity?.userId);
+      return await _recordStockMovement(data, identity?.userId || undefined);
     } catch (e) {
       if (e instanceof SupabaseUnconfiguredError) throw e;
       console.error('[stock-ledger] Erro em recordStockMovement:', e);

@@ -2,7 +2,7 @@ import React, { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 
-export interface ToolbarProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ToolbarProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
   badge?: React.ReactNode;
@@ -47,8 +47,8 @@ export const Toolbar = forwardRef<HTMLDivElement, ToolbarProps>(
           <div className="flex items-center gap-3 min-w-0">
             {(backHref || onBack) && (
               <NativeBackButton
-                to={backHref}
-                onClick={onBack} /* focus-visible:ring-2 */
+                fallbackHref={backHref}
+                onBack={onBack} /* focus-visible:ring-2 */
                 className="shrink-0 focus-visible:ring-2"
               />
             )}
