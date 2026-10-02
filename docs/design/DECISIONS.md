@@ -1565,7 +1565,19 @@
      - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada com preservação estrita da baseline congelada (37.702 violações).
      - `npm run build`: Build de produção aprovado gerando worker Cloudflare Pages em arquivo único (`dist/_worker.js`) e mapeamento de rotas (`dist/_routes.json`).
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F07-MARKETPLACE-SHOWCASE, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
-- **Consequências:** Fase F07 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F08: Checkout do Marketplace (Fluxo B2C Completo com Wizard de 3 Etapas)**.
+## DEC-134: Conclusão da Fase F08 (Plano de Estabilização E2E) — Checkout do Marketplace B2C com Wizard de 3 Etapas e Cálculo de Frete
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F08 do Plano de Estabilização E2E, implementando o fluxo transacional de checkout B2C do Marketplace (`/marketplace/checkout`) com cálculo real de frete, carrinho com produtos multiloja/loja única, seleção de método de pagamento (Pix, Cartão de Crédito, Pagar na Entrega) e persistência de pedidos na tabela `orders`.
+- **Decisão:**
+  1. `BFF Server Functions Transacionais`: Criado `src/services/marketplace-checkout.functions.ts` exportando `calculateMarketplaceShippingFn` (com taxa base e prazo) e `createMarketplaceOrderFn` (com isolamento de tenant, validação via Zod e persistência de itens).
+  2. `Wizard de Checkout em 3 Etapas`: Criada a rota `src/routes/_store.marketplace.checkout.tsx` com stepper progressivo (Revisão de Itens, Entrega e Frete, Pagamento), respeitando a matriz de estados (loading, empty se carrinho vazio, error e dados).
+  3. `Piso de Design e Acessibilidade (WCAG 2.2 AA)`: Zero `!important`, zero colchetes arbitrários (DL-02), anéis de foco explícitos em todas as ações (`:focus-visible:ring-2`), alvos de toque >= 44px (`h-11`), único botão primário com `variant="default"` por tela (DL-25) e suporte a `motion-reduce:animate-none`.
+  4. `Aprovação Integral nas Gates`:
+     - `vitest`: 7/7 testes unitários verdes em `src/services/marketplace-checkout.functions.test.ts`.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada com preservação estrita da baseline congelada (37.702 violações, zero regressões).
+     - `npm run build`: Sincronização do `routeTree.gen.ts` e compilação do bundle de produção.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F08-MARKETPLACE-CHECKOUT, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F08 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F09: Places — Detalhe do Estabelecimento Físico com Reputação, Galeria e Mapa**.
 
 
 

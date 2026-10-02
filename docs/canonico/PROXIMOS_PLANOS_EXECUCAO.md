@@ -11,10 +11,10 @@
 | **Projeto** | Waesy — Plataforma BigTech Multitenant de Comércio, Serviços e Gestão Local |
 | **Commit HEAD** | `8d50feab` (2026-10-02) |
 | **Fases Concluídas** | S01–S37 + F01–F07 |
-| **Última Decisão Homologada** | `DEC-133` — Vitrine Pública Marketplace SSR (F07) |
-| **Próxima Fase** | **F08** — Checkout do Marketplace (Fluxo B2C Completo com Wizard 3 Etapas) |
+| **Última Decisão Homologada** | `DEC-134` — Checkout Marketplace B2C com Wizard 3 Etapas e Frete (F08) |
+| **Próxima Fase** | **F09** — Places: Detalhe do Estabelecimento (Reputação, Galeria e Mapa) |
 | **TypeScript** | `npm run typecheck` — 0 erros |
-| **Testes** | 169 arquivos, 1.117 testes verdes |
+| **Testes** | 170 arquivos, 1.124 testes verdes |
 | **Design Lint** | Catraca aprovada (teto 37.702 violações congelado) |
 | **Produção** | `https://usewaesy.pages.dev/` — HTTP 200 em todas as rotas |
 | **Banco de Dados** | Supabase PostgreSQL, RLS deny-by-default em 100% das tabelas |
@@ -58,6 +58,7 @@
 | F05 | [x] | `f50240ac` | Componente `ClassifiedImportModal` integrado na toolbar de catálogo do Workspace |
 | F06 | [x] | `fa1c4504` | Suíte E2E de isolamento dos 4 pilares (`_store.pillar-isolation.test.ts`) |
 | F07 | [x] | `8d50feab` | Vitrine pública do Marketplace por loja (`/marketplace/:storeSlug`) com SSR e SEO |
+| F08 | [x] | `pendente` | Checkout transacional B2C do Marketplace com wizard de 3 etapas e frete |
 
 ---
 

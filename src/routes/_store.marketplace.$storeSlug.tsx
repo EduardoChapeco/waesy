@@ -328,7 +328,7 @@ function MarketplaceStoreShowcasePage() {
                 {/* CTA Acessível */}
                 <div className="pt-2">
                   <Link
-                    to="/_store/produto/$slug"
+                    to="/produto/$slug"
                     params={{ slug: product.slug }}
                     className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-border bg-card px-4 text-xs font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring /* focus-visible: */"
                   >
