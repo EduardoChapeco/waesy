@@ -20,7 +20,7 @@ import { readCookieFromRequest } from "@/lib/http-cookies";
 import { generateTransactionCertificate } from "@/services/security.functions";
 
 export interface CheckoutDynamicConfig {
-  niche: "grocery" | "food" | "retail" | "services" | "general";
+  niche: "grocery" | "food" | "retail" | "services" | "general" | "tourism";
   cpfOnReceipt: {
     enabled: boolean;
     required: boolean;
@@ -47,6 +47,11 @@ export interface CheckoutDynamicConfig {
   orderNotes: {
     enabled: boolean;
     placeholder: string;
+  };
+  travelerInfo?: {
+    enabled: boolean;
+    label: string;
+    requireDocument: boolean;
   };
   customFields: Array<{
     id: string;
@@ -106,12 +111,14 @@ export const getStoreCheckoutConfig = createServerFn({ method: "GET" })
       .single();
 
     const seg = (store?.segment || "").toLowerCase();
-    let detectedNiche: "grocery" | "food" | "retail" | "services" | "general" = "general";
+    let detectedNiche: "grocery" | "food" | "retail" | "services" | "general" | "tourism" = "general";
     if (seg.includes("mercado") || seg.includes("market") || seg.includes("conveniencia") || seg.includes("supermercado")) {
       detectedNiche = "grocery";
     } else if (seg.includes("gastro") || seg.includes("food") || seg.includes("restaurante") || seg.includes("lanche") || seg.includes("pizz") || seg.includes("bar")) {
       detectedNiche = "food";
-    } else if (seg.includes("servi") || seg.includes("turis") || seg.includes("consult")) {
+    } else if (seg.includes("turis") || seg.includes("viagem") || seg.includes("travel") || seg.includes("hotel")) {
+      detectedNiche = "tourism";
+    } else if (seg.includes("servi") || seg.includes("consult")) {
       detectedNiche = "services";
     } else if (seg.includes("varejo") || seg.includes("retail") || seg.includes("loja") || seg.includes("moda")) {
       detectedNiche = "retail";
@@ -123,9 +130,9 @@ export const getStoreCheckoutConfig = createServerFn({ method: "GET" })
       niche: detectedNiche,
       cpfOnReceipt: {
         enabled: savedConfig.cpf_on_receipt?.enabled ?? true,
-        required: savedConfig.cpf_on_receipt?.required ?? false,
+        required: savedConfig.cpf_on_receipt?.required ?? (detectedNiche === "tourism"),
         defaultRequested: savedConfig.cpf_on_receipt?.default_requested ?? false,
-        label: savedConfig.cpf_on_receipt?.label || "CPF na Nota Fiscal",
+        label: savedConfig.cpf_on_receipt?.label || (detectedNiche === "tourism" ? "CPF do Titular do Pacote (Obrigatório Cadastur)" : "CPF na Nota Fiscal"),
       },
       substitutionPolicy: {
         enabled: savedConfig.substitution_policy?.enabled ?? (detectedNiche === "grocery"),
@@ -139,6 +146,11 @@ export const getStoreCheckoutConfig = createServerFn({ method: "GET" })
       receiverInfo: {
         enabled: savedConfig.receiver_info?.enabled ?? (detectedNiche === "grocery" || detectedNiche === "retail"),
         label: savedConfig.receiver_info?.label || "Quem irá receber as compras",
+      },
+      travelerInfo: {
+        enabled: savedConfig.traveler_info?.enabled ?? (detectedNiche === "tourism"),
+        label: savedConfig.traveler_info?.label || "Dados do Viajante Titular (Voucher Embratur)",
+        requireDocument: true,
       },
       utensilsPolicy: {
         enabled: savedConfig.utensils_policy?.enabled ?? (detectedNiche === "food"),
@@ -242,7 +254,7 @@ const CheckoutSchema = z
  })
  .superRefine((val, ctx) => {
  if (val.shippingMethod === "manual_table" || val.shippingMethod === "provider") {
- if (!val.shippingAddress || !val.shippingAddress.zipcode) {
+ if (Boolean(val.shippingAddress) === false || Boolean(val.shippingAddress?.zipcode) === false) {
  ctx.addIssue({
  code: z.ZodIssueCode.custom,
  message: "Endereço de entrega completo é obrigatório para esta modalidade de frete.",
@@ -457,7 +469,7 @@ export const processCheckout = createServerFn({ method: "POST" })
         // Se houver observações por item, persiste em order_items
         if (params.itemNotes && Object.keys(params.itemNotes).length > 0) {
           for (const [key, noteText] of Object.entries(params.itemNotes)) {
-            if (!noteText || typeof noteText !== "string" || !noteText.trim()) continue;
+            if (Boolean(noteText) === false || typeof noteText !== "string" || Boolean(noteText.trim()) === false) continue;
             await db
               .from("order_items")
               .update({ notes: noteText.trim() })
