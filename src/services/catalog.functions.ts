@@ -1203,3 +1203,19 @@ export const trackProductView = createServerFn({ method: "POST" })
       return { success: false };
     }
   });
+
+// ---------------------------------------------------------------------------
+// Canonical Workspace Catalog Functions (F12)
+// ---------------------------------------------------------------------------
+export {
+  listWorkspaceProductsFn,
+  createWorkspaceProductFn,
+  updateWorkspaceProductFn,
+  archiveWorkspaceProductFn,
+  getWorkspaceProductDetailFn,
+  listWorkspaceProductsFn as listProductsFn,
+  createWorkspaceProductFn as createProductFn,
+  updateWorkspaceProductFn as updateProductFn,
+  archiveWorkspaceProductFn as archiveProductFn,
+} from "./workspace-catalog.functions";
+

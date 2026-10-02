@@ -61,7 +61,8 @@
 | F08 | [x] | `33373c9a` | Checkout transacional B2C do Marketplace com wizard de 3 etapas e frete |
 | F09 | [x] | `8174c661` | Places: Detalhe do Estabelecimento Físico com Reputação, Galeria e Mapa |
 | F10 | [x] | `966119f2` | Workspace: Dashboard KPI Real com Dados do DB (Zero Mocks) |
-| F11 | [x] | `pendente` | Workspace: Gestão de Pedidos Real (CRUD Completo e Status) |
+| F11 | [x] | `942e8964` | Workspace: Gestão de Pedidos Real (CRUD Completo e Status) |
+| F12 | [x] | `pendente` | Workspace: Catálogo de Produtos Real (CRUD Completo) |
 
 ---
 

@@ -1624,6 +1624,20 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F11-WORKSPACE-ORDERS-MANAGEMENT, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
 - **Consequências:** Fase F11 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F12: Workspace — Catálogo de Produtos Real (CRUD Completo de Produtos, Mídia, Variantes e Estoque)**.
 
+## DEC-138: Conclusão da Fase F12 (Plano de Estabilização E2E) — Workspace: Catálogo de Produtos Real (CRUD Completo de Produtos, Mídia, Variantes e Estoque)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F12 do Plano de Estabilização E2E, implementando as Server Functions transacionais para o ciclo de vida completo do catálogo de produtos no Workspace Pro (`src/services/workspace-catalog.functions.ts` e integração em `catalog.functions.ts`), com paginação keyset por `created_at DESC`, filtros por status e busca textual (`listWorkspaceProductsFn`), criação atômica com mídia e variantes (`createWorkspaceProductFn`), atualização parcial com validação de posse (`updateWorkspaceProductFn`), arquivamento soft delete (`archiveWorkspaceProductFn`) e resolução de detalhes (`getWorkspaceProductDetailFn`).
+- **Decisão:**
+  1. `BFF Server Functions Transacionais`: Criado `src/services/workspace-catalog.functions.ts` com validação estrita via schemas Zod e re-exportação unificada em `src/services/catalog.functions.ts`.
+  2. `Governança e Isolamento Multi-Tenant`: Todo acesso valida obrigatoriamente `assertStoreAccess(identity, storeId)` com proteção multi-tenant estrita.
+  3. `Zero Mocks e Precisão de Centavos`: Preços, custos e descontos manipulados exclusivamente em inteiros de centavos; consultas reais no Supabase em `products`, `product_variants` e `product_media`.
+  4. `Aprovação Integral nas Gates`:
+     - `vitest`: 5/5 testes unitários verdes em `src/services/workspace-catalog.functions.test.ts`.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F12-WORKSPACE-CATALOG-CRUD, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F12 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F13: Workspace — CRM de Clientes Real (Lista Paginada, Detalhe e LTV Calculado)**.
+
+
 
 
 
