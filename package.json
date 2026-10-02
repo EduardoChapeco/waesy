@@ -21,7 +21,9 @@
     "check:size": "node scripts/check-route-size.mjs",
     "check:size:warn": "node scripts/check-route-size.mjs --warn",
     "check:size:changed": "node scripts/check-route-size.mjs --changed",
-    "check:canonical": "npm run typecheck && npm run lint:design && npm run lint && npm run check:size:warn"
+    "check:duplication": "node scripts/check-duplication.mjs",
+    "check:duplication:warn": "node scripts/check-duplication.mjs --warn",
+    "check:canonical": "npm run typecheck && npm run lint:design && npm run lint && npm run check:size:warn && npm run check:duplication:warn"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
