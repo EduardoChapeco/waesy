@@ -1,5 +1,6 @@
 import { getRealClientIP } from "@/lib/network-telemetry.server";
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseHeader } from "@tanstack/start-server-core";
 import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
@@ -8,6 +9,7 @@ import { z } from "zod";
 import { withDataPayload } from "@/services/cart-helpers";
 import { classifiedSchema } from "@/types/community";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
+import { applyServerFnEdgeCache, CACHE_TAGS } from "@/lib/cache/edge-cache";
 
 // ---------------------------------------------------------------------------
 // PUBLIC (no auth required) — 100% Real no Supabase | Zero Mocks
@@ -18,6 +20,7 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
  z
  .object({
  limit: z.number().int().min(1).max(100).optional(),
+ cursor: z.string().optional(),
  category: z.string().optional(),
  dealType: z.string().optional(),
  search: z.string().optional(),
@@ -27,15 +30,21 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
  )
  .handler(async ({ data }) => {
  const supabase = getServerClient();
- const limit = data?.limit ?? 50;
+ const limit = Math.min(Math.max(data?.limit ?? 50, 1), 100);
 
  try {
  let query = supabase
  .from("classifieds")
- .select("*")
+ .select(
+ "id, author_profile_id, store_id, category, deal_type, title, content, price_cents, images, contact_whatsapp, location_name, location_text, expires_at, condition, negotiable, attributes, status, is_sponsored, is_boosted, sponsored_until, boosted_until, created_at, updated_at",
+ )
  .eq("status", "active")
  .order("created_at", { ascending: false })
  .limit(limit);
+
+ if (data?.cursor) {
+ query = query.lt("created_at", data.cursor);
+ }
 
 	if (data?.storeId) {
 		query = query.eq("store_id", data.storeId);
@@ -98,6 +107,12 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
        interleaved.push(organicPool[oIdx++]);
      }
    }
+
+   applyServerFnEdgeCache(
+     setResponseHeader,
+     "PUBLIC_DYNAMIC",
+     [CACHE_TAGS.classifieds(), ...(data?.storeId ? [CACHE_TAGS.store(data.storeId)] : [])],
+   );
 
    return interleaved;
  }
@@ -548,7 +563,7 @@ export const getClassifieds = createServerFn({ method: "GET" }).handler(async ()
 		query = query.eq("author_profile_id", identity.id);
 	}
 
-	const { data, error } = await query.order("created_at", { ascending: false });
+	const { data, error } = await query.order("created_at", { ascending: false }).limit(100);
 
 	if (error) {
 		console.error("Error fetching classifieds:", error);

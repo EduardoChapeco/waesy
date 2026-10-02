@@ -11,11 +11,13 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseHeader } from "@tanstack/start-server-core";
 import { z } from "zod";
 
 import { getAnonServerClient, getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
 import { withDataPayload } from "./cart-helpers";
+import { applyServerFnEdgeCache, CACHE_TAGS } from "@/lib/cache/edge-cache";
 import type {
  ProductListResult,
  ProductCardDTO,
@@ -345,6 +347,12 @@ export const listPublishedProducts = createServerFn({ method: "GET" })
 
 		// Trim to requested limit after sorting
 		products = products.slice(0, params.limit);
+
+		applyServerFnEdgeCache(
+			setResponseHeader,
+			"PUBLIC_DYNAMIC",
+			[CACHE_TAGS.store(storeId), CACHE_TAGS.catalog(storeId)],
+		);
 
 		return { status: "ok", data: products };
  } catch (e) {

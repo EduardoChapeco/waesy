@@ -83,20 +83,31 @@ export function calculateOrderFinancialSplit(
 }
 
 
-export async function _listOrders(store_id: string) {
+export async function _listOrders(
+  store_id: string,
+  options?: { limit?: number; cursor?: string | null }
+) {
  const db = getServerClient();
+ const safeLimit = Math.min(Math.max(options?.limit || 50, 1), 100);
 
- const { data, error } = await db
- .from("orders")
- .select(
- `
- id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, customer_snapshot, created_at, shipping_method,
- shipping_address, channel_origin, origin_channel, cost_breakdown, prep_started_at, ready_at, table_identifier, notes, custom_fields,
- order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, metadata, item_type, item_id, selected_options )
- `,
- )
- .eq("store_id", store_id)
- .order("created_at", { ascending: false });
+ let query = db
+  .from("orders")
+  .select(
+  `
+  id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, customer_snapshot, created_at, shipping_method,
+  shipping_address, channel_origin, origin_channel, cost_breakdown, prep_started_at, ready_at, table_identifier, notes, custom_fields,
+  order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, metadata, item_type, item_id, selected_options )
+  `,
+  )
+  .eq("store_id", store_id)
+  .order("created_at", { ascending: false })
+  .limit(safeLimit);
+
+ if (options?.cursor) {
+   query = query.lt("created_at", options.cursor);
+ }
+
+ const { data, error } = await query;
 
  if (error) throw error;
  return data || [];
@@ -272,20 +283,22 @@ export async function _updateOrderStatus(
 // Server Functions
 // ---------------------------------------------------------------------------
 
-export const listOrders = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
- if (!identity.store_id) return [];
+export const listOrders = createServerFn({ method: "GET" })
+  .validator((input?: { limit?: number; cursor?: string | null }) => input || {})
+  .handler(async ({ data: input }) => {
+    try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+      if (!identity.store_id) return [];
 
- const data = await _listOrders(identity.store_id);
- return data || [];
- } catch (e: unknown) {
- if (e instanceof SupabaseUnconfiguredError) throw e;
- console.error("[order.functions] listOrders:", e instanceof Error ? e.message : String(e));
- return [];
- }
-});
+      const data = await _listOrders(identity.store_id, input);
+      return data || [];
+    } catch (e: unknown) {
+      if (e instanceof SupabaseUnconfiguredError) throw e;
+      console.error("[order.functions] listOrders:", e instanceof Error ? e.message : String(e));
+      return [];
+    }
+  });
 
 export const getOrderById = createServerFn({ method: "GET" })
  .validator(withDataPayload(z.object({ orderId: z.string().min(1) })))

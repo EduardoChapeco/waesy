@@ -1237,4 +1237,14 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S15-S16, docs/PERFORMANCE.md (Core Web Vitals) e Definition of Done B.9.
 - **Consequências:** Fases S15 e S16 100% CONCLUÍDAS e HOMOLOGADAS. Total de 16 de 48 fases do Plano 5 finalizadas. Próxima fase: S17 (Paginação keyset e streaming em listagens volumosas).
 
+## DEC-109: Conclusão das Fases S17 e S18 (Plano 5 — Bloco C) — Paginação Keyset, Streaming e Cache de Borda com Invalidação Precisa
+- **Data:** 2026-10-02
+- **Contexto:** Execução das Fases S17 (Paginação keyset e streaming em listagens volumosas) e S18 (Cache de borda para páginas públicas e invalidação precisa) do Bloco C (Rotas e Performance).
+- **Decisão:**
+  1. `S17`: Criado o motor canônico de paginação por cursor em `src/lib/pagination/keyset-pagination.ts` e suíte de testes `src/lib/pagination/keyset-pagination.test.ts` (9/9 testes verdes). Eliminadas consultas ilimitadas em serviços críticos (`_listOrders`, `_listAdminProducts`, `getPublicClassifieds`, `listCustomers`, `_getPublicEvents`), aplicando teto seguro padrão (50–100, max 200) e suporte a cursor keyset opaco `encodeCursor`/`decodeCursor` ou ordenação por timestamp/id. Em `getPublicClassifieds` e `listCustomers`, queries que utilizavam `select('*')` foram substituídas por projeção explícita de colunas, reduzindo drasticamente o tráfego de dados.
+  2. `S18`: Criado o motor de cache de borda em `src/lib/cache/edge-cache.ts` e suíte de testes `src/lib/cache/edge-cache.test.ts` (6/6 testes verdes). Definidos perfis canônicos (`PUBLIC_STATIC`, `PUBLIC_DYNAMIC`, `REALTIME_QUICK`, `PRIVATE_MUTABLE`) e utilitário `applyServerFnEdgeCache` integrado a Server Functions públicas (`getPublicClassifieds`, `listPublishedProducts`, `getPublicStoreSettings`, `getPublicEvents`). Adicionado utilitário `purgeEdgeCacheTags` para expurgo cirúrgico de cache na borda Cloudflare (Cache-Tag purge) disparado em mutações como `updateProduct`.
+  3. Resultado da Verificação: TypeScript `tsc --noEmit` com 0 erros, Vitest com 155 suítes e 1.030 testes verdes (100%), e todos os 9 gates de CI `npm run check:canonical` aprovados com 100% de conformidade.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S17-S18, docs/PERFORMANCE.md (Core Web Vitals) e Definition of Done B.9.
+- **Consequências:** Fases S17 e S18 100% CONCLUÍDAS e HOMOLOGADAS. Total de 18 de 48 fases do Plano 5 finalizadas (37.5%). Próxima fase: S19 (Otimização do Worker: bundle, cold start e imports seletivos).
+
 

@@ -12,6 +12,8 @@ export const listCustomersInputSchema = z.object({
  kind: z.enum(["all", "individual", "company"]).optional(),
  channel: z.string().optional(),
  city: z.string().optional(),
+ limit: z.number().int().min(1).max(100).optional(),
+ cursor: z.string().nullable().optional(),
 }).optional();
 
 export const listCustomers = createServerFn({ method: "GET" })
@@ -21,12 +23,21 @@ export const listCustomers = createServerFn({ method: "GET" })
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
 
+ const safeLimit = Math.min(Math.max(filter?.limit ?? 50, 1), 100);
+
  // 1. Busca direta na tabela master customers_crm
  let qb = supabase
  .from("customers_crm")
- .select("*")
+ .select(
+ "id, store_id, full_name, legal_name, kind, document, email, phone, city, state, address, channel, status, tags, notes, total_orders, total_spent_cents, last_order_at, created_at, updated_at, deleted_at",
+ )
  .eq("store_id", identity.store_id)
- .order("created_at", { ascending: false });
+ .order("created_at", { ascending: false })
+ .limit(safeLimit);
+
+ if (filter?.cursor) {
+ qb = qb.lt("created_at", filter.cursor);
+ }
 
  if (filter?.status && filter.status !== "all") {
  if (filter.status === "archived") {
@@ -60,7 +71,7 @@ export const listCustomers = createServerFn({ method: "GET" })
  console.error("[crm] error listing customers_crm:", error);
  }
 
- const list = customers || [];
+ const list: any[] = customers ? [...customers] : [];
 
  // Se a tabela customers_crm estiver vazia, verificamos se há clientes legados em workspace_members
  if (list.length === 0 && (!filter?.query && !filter?.status)) {
@@ -79,15 +90,23 @@ export const listCustomers = createServerFn({ method: "GET" })
  store_id: identity.store_id,
  kind: "individual",
  full_name: p.full_name || "Cliente",
+ legal_name: null,
  email: null,
  phone: p.phone || null,
  document: p.tax_id || null,
+ city: null,
+ state: null,
+ address: null,
  status: "active",
  channel: "direct",
  tags: [],
  notes: null,
+ total_orders: 0,
+ total_spent_cents: 0,
+ last_order_at: null,
  created_at: p.created_at,
  updated_at: p.created_at,
+ deleted_at: null,
  });
  }
  }

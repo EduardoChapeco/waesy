@@ -11,6 +11,7 @@ import { z } from "zod";
 
 import { requireAdmin, getServerIdentity } from "@/lib/server-access";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
+import { purgeEdgeCacheTags, CACHE_TAGS } from "@/lib/cache/edge-cache";
 
 // ---------------------------------------------------------------------------
 // Product Types (Formulário Adaptativo)
@@ -185,7 +186,7 @@ export const deleteProductType = createServerFn({ method: "POST" })
 // Products
 // ---------------------------------------------------------------------------
 
-export async function _listAdminProducts() {
+export async function _listAdminProducts(options?: { limit?: number; cursor?: string | null }) {
  const db = getServerClient();
  const { getServerIdentity } = await import("@/lib/server-access");
  const { store_id } = await getServerIdentity();
@@ -202,16 +203,19 @@ export async function _listAdminProducts() {
  `,
  )
  .eq("store_id", store_id)
- .order("created_at", { ascending: false });
+ .order("created_at", { ascending: false })
+ .limit(Math.min(Math.max(options?.limit || 100, 1), 200));
 
  if (error) throw error;
  return data;
 }
 
-export const listAdminProducts = createServerFn({ method: "GET" }).handler(async () => {
+export const listAdminProducts = createServerFn({ method: "GET" })
+ .validator((input?: { limit?: number; cursor?: string | null }) => input || {})
+ .handler(async ({ data: input }) => {
  try {
  await requireAdmin(); // SECURITY FIX
- const data = await _listAdminProducts();
+ const data = await _listAdminProducts(input);
  return data || [];
  } catch (e) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
@@ -1030,6 +1034,7 @@ export const updateProduct = createServerFn({ method: "POST" })
  try {
  await requireAdmin(); // SECURITY FIX
  const data = await _updateProduct(input);
+ void purgeEdgeCacheTags([CACHE_TAGS.product(input.id), ...(data?.store_id ? [CACHE_TAGS.store(data.store_id), CACHE_TAGS.catalog(data.store_id)] : [])]);
  return data;
  } catch (e: unknown) {
  console.error("[admin-catalog] updateProduct error:", e);

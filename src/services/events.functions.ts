@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseHeader } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { applyServerFnEdgeCache } from "@/lib/cache/edge-cache";
 import { eventSchema, ticketLotSchema } from "@/types/community";
 import { generateTicketQRHash } from "@/lib/tokens";
 import { logAuditAction } from "./audit.functions";
@@ -455,6 +457,7 @@ export const getEventWithLots = createServerFn({ method: "GET" })
 
 async function _getPublicEvents(opts: {
   limit?: number;
+  cursor?: string;
   category?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -463,7 +466,7 @@ async function _getPublicEvents(opts: {
   searchQuery?: string;
 } = {}) {
   const supabase = getServerClient();
-  const limit = opts.limit ?? 50;
+  const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
 
   try {
     let query = supabase
@@ -475,6 +478,10 @@ async function _getPublicEvents(opts: {
       .gte("event_date", new Date().toISOString()) // só eventos futuros
       .order("event_date", { ascending: true })
       .limit(limit);
+
+    if (opts.cursor) {
+      query = query.gt("event_date", opts.cursor);
+    }
 
     if (opts.category && opts.category !== "todos") {
       query = query.eq("category", opts.category);
@@ -518,7 +525,8 @@ export const getPublicEvents = createServerFn({ method: "GET" })
   .validator(
     z
       .object({
-        limit: z.number().int().min(1).max(200).optional(),
+        limit: z.number().int().min(1).max(100).optional(),
+        cursor: z.string().optional(),
         category: z.string().optional(),
         dateFrom: z.string().optional(),
         dateTo: z.string().optional(),
@@ -528,7 +536,10 @@ export const getPublicEvents = createServerFn({ method: "GET" })
       })
       .optional(),
   )
-  .handler(async ({ data }) => _getPublicEvents(data || {}));
+  .handler(async ({ data }) => {
+    applyServerFnEdgeCache(setResponseHeader, "PUBLIC_DYNAMIC", ["events:public"]);
+    return _getPublicEvents(data || {});
+  });
 
 // ---------------------------------------------------------------------------
 // SUBPAINÉIS DE EVENTOS & LOGÍSTICA RECURSIVA (PERSONA NEXUS TRANSFUSION)

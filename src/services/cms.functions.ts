@@ -5,9 +5,11 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseHeader } from "@tanstack/start-server-core";
 import { z } from "zod";
 
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
+import { applyServerFnEdgeCache, CACHE_TAGS } from "@/lib/cache/edge-cache";
 
 // ---------------------------------------------------------------------------
 // Admin CRUD
@@ -261,6 +263,12 @@ export const getPublicStoreSettings = createServerFn({ method: "GET" }).handler(
  const settings = (store.settings as Record<string, any>) || {};
  const logoUrl = settings.logoUrl || settings.logo_url || null;
  const faviconUrl = settings.faviconUrl || settings.favicon_url || null;
+
+ applyServerFnEdgeCache(
+ setResponseHeader,
+ "PUBLIC_STATIC",
+ [CACHE_TAGS.store(store.id), CACHE_TAGS.theme(store.id)],
+ );
 
  return { status: "ok" as const, data: { ...store, logoUrl, faviconUrl } };
  } catch (err) {
