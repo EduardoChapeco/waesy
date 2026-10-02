@@ -1,4 +1,5 @@
 import React from "react";
+// EmptyState: listagens internas e opções de nicho com fallbacks garantidos
 import { Zap, Tag, DollarSign, ImagePlus, FileText, Phone, ArrowRight, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,9 +48,9 @@ export function ListingQuickEditor({
   return (
     <div className={cn("space-y-6 max-w-3xl mx-auto", className)}>
       {/* Banner de Modo Rápido */}
-      <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="size-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+      <div className="bg-primary/5 rounded-lg p-4 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="size-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0">
             <Zap className="size-4" />
           </div>
           <div>
@@ -64,15 +65,15 @@ export function ListingQuickEditor({
           variant="outline"
           size="sm"
           onClick={onSwitchToFullMode}
-          className="h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shrink-0"
+          className="h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
         >
           <span>Ir para Modo Completo</span>
-          <ArrowRight className="size-3.5" />
+          <ArrowRight className="size-4" />
         </Button>
       </div>
 
       {/* ── 1. Título & Segmento ── */}
-      <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4">
+      <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <Tag className="size-4 text-primary shrink-0" />
           <span>Informações Principais</span>
@@ -80,24 +81,28 @@ export function ListingQuickEditor({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Segmento / Nicho */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium text-foreground">Segmento / Nicho</Label>
             <Select value={niche} onValueChange={(v) => handleNicheChange(v as UnifiedNiche)}>
-              <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+              <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                 <SelectValue placeholder="Selecione o nicho" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(NICHE_TAXONOMY_REGISTRY).map(([key, config]) => (
-                  <SelectItem key={key} value={key}>
-                    {config.label}
-                  </SelectItem>
-                ))}
+                {Object.entries(NICHE_TAXONOMY_REGISTRY).length === 0 ? (
+                  <SelectItem value="retail">Varejo & Comércio</SelectItem>
+                ) : (
+                  Object.entries(NICHE_TAXONOMY_REGISTRY).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>
+                      {config.label}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
 
           {/* Título do Anúncio */}
-          <div className="sm:col-span-2 space-y-1.5">
+          <div className="sm:col-span-2 space-y-2">
             <Label className="text-xs font-medium text-foreground flex items-center gap-1">
               <span>Título do Anúncio</span>
               <span className="text-destructive font-bold">*</span>
@@ -110,34 +115,34 @@ export function ListingQuickEditor({
                   ? "Ex: Excursão Beto Carrero World — Fim de Semana"
                   : "Ex: Tênis Esportivo Casual — Conforto Dia a Dia"
               }
-              className={cn("h-11 rounded-xl text-xs bg-background", errors.title && "border-destructive")}
+              className={cn("h-11 rounded-lg text-xs bg-background", errors.title && "border-destructive")}
             />
             {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
           </div>
         </div>
 
         {/* Descrição Curta */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium text-foreground">Descrição do Anúncio</Label>
           <Textarea
             value={listing.description || ""}
             onChange={(e) => onChange({ description: e.target.value })}
             placeholder="Descreva detalhes essenciais, benefícios, estado de conservação ou o que está incluso..."
             rows={3}
-            className="rounded-xl text-xs bg-background resize-none"
+            className="rounded-lg text-xs bg-background resize-none"
           />
         </div>
       </div>
 
       {/* ── 2. Preço & Condição Básica ── */}
-      <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4">
+      <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <DollarSign className="size-4 text-primary shrink-0" />
           <span>Preço de Venda</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium text-foreground flex items-center gap-1">
               <span>Valor Principal</span>
               <span className="text-destructive font-bold">*</span>
@@ -146,24 +151,26 @@ export function ListingQuickEditor({
               value={commercial.price_cents ?? 0}
               onChange={(cents) =>
                 onChange({
-                  commercial: { ...commercial, price_cents: cents },
+                  price_cents: cents ?? 0,
+                  commercial: { ...commercial, price_cents: cents ?? 0 },
                 })
               }
-              className={cn("h-11 rounded-xl text-sm bg-background", errors.price_cents && "border-destructive")}
+              className={cn("h-11 rounded-lg text-sm bg-background", errors.price_cents && "border-destructive")}
             />
             {errors.price_cents && <p className="text-xs text-destructive">{errors.price_cents}</p>}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground">Preço Comparativo (De)</Label>
             <CurrencyField
               value={commercial.compare_at_cents ?? 0}
               onChange={(cents) =>
                 onChange({
-                  commercial: { ...commercial, compare_at_cents: cents > 0 ? cents : null },
+                  compare_at_cents: typeof cents === "number" && cents > 0 ? cents : null,
+                  commercial: { ...commercial, compare_at_cents: typeof cents === "number" && cents > 0 ? cents : null },
                 })
               }
-              className="h-11 rounded-xl text-sm bg-background"
+              className="h-11 rounded-lg text-sm bg-background"
             />
             <p className="text-xs text-muted-foreground">Opcional para destacar promoção</p>
           </div>
@@ -179,14 +186,14 @@ export function ListingQuickEditor({
       />
 
       {/* ── 4. Contato / WhatsApp (Obrigatório em Classificados) ── */}
-      <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4">
+      <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <Phone className="size-4 text-primary shrink-0" />
           <span>Contato & Negociação</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium text-foreground">WhatsApp para Contato Direto</Label>
             <Input
               value={listing.contact_channels?.whatsapp || ""}
@@ -199,14 +206,14 @@ export function ListingQuickEditor({
                 })
               }
               placeholder="Ex: 49999999999"
-              className="h-11 rounded-xl text-xs bg-background font-mono"
+              className="h-11 rounded-lg text-xs bg-background font-mono"
             />
             <p className="text-xs text-muted-foreground">
               Compradores poderão falar diretamente pelo WhatsApp.
             </p>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium text-foreground">Cidade / Região</Label>
             <Input
               value={listing.location_data?.city || ""}
@@ -220,7 +227,7 @@ export function ListingQuickEditor({
                 })
               }
               placeholder="Ex: Chapecó - SC"
-              className="h-11 rounded-xl text-xs bg-background"
+              className="h-11 rounded-lg text-xs bg-background"
             />
           </div>
         </div>
@@ -231,7 +238,7 @@ export function ListingQuickEditor({
         <Button
           type="button"
           onClick={onRequestPublish}
-          className="h-11 rounded-xl text-xs font-bold gap-2 px-6 shadow-xs cursor-pointer"
+          className="h-11 rounded-lg text-xs font-bold gap-2 px-6 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
         >
           <ShieldCheck className="size-4" />
           <span>Revisar & Publicar Anúncio</span>

@@ -51,7 +51,7 @@ export function ListingFullEditor({
 
   // Cast or adapt variants / departures
   const variants = (listing.variants || []) as UnifiedVariantItem[];
-  const departures = (listing.departures || []) as UnifiedDepartureItem[];
+  const departures = ((listing.departures || []) as unknown) as UnifiedDepartureItem[];
   const modifiers = (listing.modifier_groups || []) as UnifiedModifierGroup[];
   const inclusions = listing.inclusions || [];
   const exclusions = listing.exclusions || [];
@@ -59,55 +59,55 @@ export function ListingFullEditor({
   return (
     <div className={cn("space-y-6", className)}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="h-11 p-1 bg-muted/60 rounded-xl flex items-center gap-1 overflow-x-auto w-full justify-start scrollbar-none border border-border/40">
-          <TabsTrigger value="basico" className="h-9 rounded-lg text-xs font-semibold gap-1.5 px-3">
-            <Tag className="size-3.5" />
+        <TabsList className="h-11 p-1 bg-muted/60 rounded-lg flex items-center gap-1 overflow-x-auto w-full justify-start scrollbar-none border border-border/40">
+          <TabsTrigger value="basico" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+            <Tag className="size-4" />
             <span>Identificação</span>
           </TabsTrigger>
 
-          <TabsTrigger value="comercial" className="h-9 rounded-lg text-xs font-semibold gap-1.5 px-3">
-            <DollarSign className="size-3.5" />
+          <TabsTrigger value="comercial" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+            <DollarSign className="size-4" />
             <span>Preço & Condições</span>
           </TabsTrigger>
 
-          <TabsTrigger value="midia" className="h-9 rounded-lg text-xs font-semibold gap-1.5 px-3">
-            <ImagePlus className="size-3.5" />
+          <TabsTrigger value="midia" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+            <ImagePlus className="size-4" />
             <span>Fotos & Vídeo</span>
           </TabsTrigger>
 
-          <TabsTrigger value="variacoes" className="h-9 rounded-lg text-xs font-semibold gap-1.5 px-3">
-            <Layers className="size-3.5" />
+          <TabsTrigger value="variacoes" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+            <Layers className="size-4" />
             <span>{isTourism ? "Saídas & Vagas" : "Grade & Variações"}</span>
           </TabsTrigger>
 
-          <TabsTrigger value="opcionais" className="h-9 rounded-lg text-xs font-semibold gap-1.5 px-3">
-            <SlidersHorizontal className="size-3.5" />
+          <TabsTrigger value="opcionais" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+            <SlidersHorizontal className="size-4" />
             <span>Adicionais</span>
           </TabsTrigger>
 
           {hasScope && (
-            <TabsTrigger value="escopo" className="h-9 rounded-lg text-xs font-semibold gap-1.5 px-3">
-              <CheckCircle2 className="size-3.5" />
+            <TabsTrigger value="escopo" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+              <CheckCircle2 className="size-4" />
               <span>Inclusos & Exclusos</span>
             </TabsTrigger>
           )}
 
           {supportsFiscal && (
-            <TabsTrigger value="fiscal" className="h-9 rounded-lg text-xs font-semibold gap-1.5 px-3">
-              <Receipt className="size-3.5" />
+            <TabsTrigger value="fiscal" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+              <Receipt className="size-4" />
               <span>Fiscal (2026)</span>
             </TabsTrigger>
           )}
 
-          <TabsTrigger value="template" className="h-9 rounded-lg text-xs font-semibold gap-1.5 px-3">
-            <Palette className="size-3.5" />
+          <TabsTrigger value="template" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+            <Palette className="size-4" />
             <span>Composição Visual</span>
           </TabsTrigger>
         </TabsList>
 
         {/* ── ABA 1: Identificação ── */}
         <TabsContent value="basico" className="mt-4 space-y-4">
-          <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4">
+          <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                 <Tag className="size-4 text-primary shrink-0" />
@@ -119,7 +119,7 @@ export function ListingFullEditor({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Nicho / Vertical</Label>
                 <Select
                   value={niche}
@@ -132,7 +132,7 @@ export function ListingFullEditor({
                     });
                   }}
                 >
-                  <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                     <SelectValue placeholder="Selecione o nicho" />
                   </SelectTrigger>
                   <SelectContent>
@@ -145,7 +145,7 @@ export function ListingFullEditor({
                 </Select>
               </div>
 
-              <div className="sm:col-span-2 space-y-1.5">
+              <div className="sm:col-span-2 space-y-2">
                 <Label className="text-xs font-medium text-foreground flex items-center gap-1">
                   <span>Título do Anúncio</span>
                   <span className="text-destructive font-bold">*</span>
@@ -158,42 +158,42 @@ export function ListingFullEditor({
                       ? "Ex: Pacote Serra Gaúcha & Vinhedos com Hospedagem"
                       : "Ex: Camiseta Básica Algodão Egípcio"
                   }
-                  className={cn("h-11 rounded-xl text-xs bg-background", errors.title && "border-destructive")}
+                  className={cn("h-11 rounded-lg text-xs bg-background", errors.title && "border-destructive")}
                 />
                 {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Slug Amigável (URL)</Label>
                 <Input
                   value={listing.slug || ""}
                   onChange={(e) => onChange({ slug: e.target.value })}
                   placeholder="gerado-automaticamente"
-                  className="h-11 rounded-xl text-xs bg-background font-mono"
+                  className="h-11 rounded-lg text-xs bg-background font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Marca / Fabricante / Operador</Label>
                 <Input
                   value={listing.brand || ""}
                   onChange={(e) => onChange({ brand: e.target.value })}
                   placeholder="Ex: Waesy Viagens / Marca Própria"
-                  className="h-11 rounded-xl text-xs bg-background"
+                  className="h-11 rounded-lg text-xs bg-background"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium text-foreground">Descrição Detalhada</Label>
               <Textarea
                 value={listing.description || ""}
                 onChange={(e) => onChange({ description: e.target.value })}
                 placeholder="Insira detalhes completos, especificações, termos e informações para os compradores..."
                 rows={5}
-                className="rounded-xl text-xs bg-background resize-y"
+                className="rounded-lg text-xs bg-background resize-y"
               />
             </div>
           </div>

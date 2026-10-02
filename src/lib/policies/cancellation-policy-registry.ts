@@ -14,7 +14,7 @@
 
 // ── Tipos Canônicos ──────────────────────────────────────────────────────────
 
-export type CancellationWindowHours = 0 | 6 | 12 | 24 | 48 | 72 | 168;
+export type CancellationWindowHours = 0 | 6 | 12 | 24 | 48 | 72 | 168 | 720;
 
 export interface CancellationTier {
   windowHours: CancellationWindowHours;

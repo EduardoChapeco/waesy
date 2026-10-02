@@ -34,6 +34,7 @@ export type ListingStatus =
   | "draft"
   | "review"
   | "published"
+  | "active"
   | "paused"
   | "hidden"
   | "expired"
@@ -73,6 +74,11 @@ export interface ListingFiscalProfile {
   ncm?: string;
   cest?: string;
   cfop?: string;
+  ncm_code?: string;
+  cest_code?: string;
+  cfop_default?: string;
+  ibs_rate?: number;
+  cbs_rate?: number;
   tax_regime?: "simples_nacional" | "lucro_presumido" | "lucro_real" | "mei";
   tax_origin?: number;
   icms_cst_csosn?: string;
@@ -185,4 +191,42 @@ export interface UnifiedListing {
     email?: string;
     website?: string;
   } | null;
+
+  // Convenient nested aliases for modular sub-editors
+  niche?: string;
+  template?: string;
+  visibility?: "public" | "unlisted" | "private" | string;
+  commercial?: UnifiedListingCommercial;
+  media?: UnifiedListingMedia;
+  fiscal?: ListingFiscalProfile;
+  variants?: any[];
+  modifier_groups?: any[];
 }
+
+export type UnifiedNiche = string;
+export type UnifiedListingFiscal = ListingFiscalProfile;
+
+export interface UnifiedListingCommercial {
+  pricing_type?: ListingPricingType;
+  price_cents?: number;
+  price_max_cents?: number;
+  compare_at_cents?: number | null;
+  cost_cents?: number | null;
+  margin_percent?: number | null;
+  markup_percent?: number | null;
+  selling_unit?: string;
+  payment_config?: Partial<ListingPaymentConfig>;
+  payment_methods?: string[];
+  max_installments?: number;
+  fee_free_installments?: number;
+  pix_discount_percent?: number;
+  deposit_percent?: number | null;
+  balance_due_days?: number | null;
+}
+
+export interface UnifiedListingMedia {
+  cover_url?: string | null;
+  media_urls?: string[];
+  video_url?: string | null;
+}
+

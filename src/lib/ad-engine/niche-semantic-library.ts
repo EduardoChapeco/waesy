@@ -10,12 +10,14 @@
 
 export type {
   NicheSemantics,
+  NicheSemantics as NicheSemanticConfig,
   NicheQuickAction,
   NicheKpiMetric,
 } from '../niche-semantics';
 
 export {
   NICHE_SEMANTICS_REGISTRY,
+  NICHE_SEMANTICS_REGISTRY as NICHE_SEMANTIC_LIBRARY,
   getNicheSemantics,
   enrichNicheSemantics,
 } from '../niche-semantics';

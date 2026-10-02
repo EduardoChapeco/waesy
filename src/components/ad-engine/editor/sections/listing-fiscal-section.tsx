@@ -32,7 +32,7 @@ export function ListingFiscalSection({
   const supportsFiscal = nicheConfig?.supportsShipping || niche === "retail";
 
   // F22: Declarativa - Turismo e Serviços puros não mostram fiscal de mercadorias
-  if (!supportsFiscal || !isWorkspace) {
+  if (Boolean(supportsFiscal) === false || Boolean(isWorkspace) === false) {
     return null;
   }
 
@@ -44,7 +44,7 @@ export function ListingFiscalSection({
   const taxRegime = value.tax_regime ?? "padrao_bens_servicos";
 
   return (
-    <div className={cn("bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4", className)}>
+    <div className={cn("bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4", className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <Receipt className="size-4 text-primary shrink-0" />
@@ -57,9 +57,9 @@ export function ListingFiscalSection({
               variant="outline"
               size="sm"
               onClick={onOpenMasterCatalog}
-              className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+              className="h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             >
-              <Search className="size-3.5 text-primary" />
+              <Search className="size-4 text-primary" />
               <span>Buscar NCM no Catálogo</span>
             </Button>
           )}
@@ -71,33 +71,33 @@ export function ListingFiscalSection({
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Código NCM */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium text-foreground">Código NCM (8 dígitos)</Label>
           <Input
             value={ncm}
             onChange={(e) => onChange({ ncm_code: e.target.value.replace(/\D/g, "").slice(0, 8) })}
             placeholder="Ex: 21069090"
-            className={cn("h-11 rounded-xl text-xs bg-background font-mono", errors.ncm_code && "border-destructive")}
+            className={cn("h-11 rounded-lg text-xs bg-background font-mono", errors.ncm_code && "border-destructive")}
           />
           {errors.ncm_code && <p className="text-xs text-destructive">{errors.ncm_code}</p>}
         </div>
 
         {/* Código CEST */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium text-foreground">Código CEST (7 dígitos)</Label>
           <Input
             value={cest}
             onChange={(e) => onChange({ cest_code: e.target.value.replace(/\D/g, "").slice(0, 7) })}
             placeholder="Ex: 1709900"
-            className="h-11 rounded-xl text-xs bg-background font-mono"
+            className="h-11 rounded-lg text-xs bg-background font-mono"
           />
         </div>
 
         {/* CFOP Padrão */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium text-foreground">CFOP Padrão de Saída</Label>
           <Select value={cfop} onValueChange={(v) => onChange({ cfop_default: v })}>
-            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-mono">
+            <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-mono">
               <SelectValue placeholder="Selecione o CFOP" />
             </SelectTrigger>
             <SelectContent>
@@ -112,7 +112,7 @@ export function ListingFiscalSection({
 
       {/* Alíquotas da Reforma Tributária (IBS e CBS) */}
       <div className="pt-2 border-t border-border/40 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
             <span>Alíquota IBS (%)</span>
             <span className="text-xs text-muted-foreground">(Estadual/Municipal)</span>
@@ -123,13 +123,13 @@ export function ListingFiscalSection({
               step="0.1"
               value={ibsRate}
               onChange={(e) => onChange({ ibs_rate: Number(e.target.value) })}
-              className="h-11 rounded-xl text-xs bg-background pr-8 font-mono"
+              className="h-11 rounded-lg text-xs bg-background pr-8 font-mono"
             />
-            <Percent className="size-3.5 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Percent className="size-4 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
             <span>Alíquota CBS (%)</span>
             <span className="text-xs text-muted-foreground">(Federal)</span>
@@ -140,16 +140,16 @@ export function ListingFiscalSection({
               step="0.1"
               value={cbsRate}
               onChange={(e) => onChange({ cbs_rate: Number(e.target.value) })}
-              className="h-11 rounded-xl text-xs bg-background pr-8 font-mono"
+              className="h-11 rounded-lg text-xs bg-background pr-8 font-mono"
             />
-            <Percent className="size-3.5 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Percent className="size-4 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium text-muted-foreground">Regime de Tributação</Label>
-          <Select value={taxRegime} onValueChange={(v) => onChange({ tax_regime: v })}>
-            <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+          <Select value={taxRegime} onValueChange={(v) => onChange({ tax_regime: v as any })}>
+            <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
               <SelectValue placeholder="Regime" />
             </SelectTrigger>
             <SelectContent>

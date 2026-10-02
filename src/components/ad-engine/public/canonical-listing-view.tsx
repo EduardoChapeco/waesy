@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+// EmptyState: listagens de embarques e miniaturas vazias prevenidas (empty)
 import {
   Calendar,
   MapPin,
@@ -52,9 +53,9 @@ export function CanonicalListingView({
   const niche = (listing.niche || "retail") as UnifiedNiche;
   const nicheConfig = NICHE_TAXONOMY_REGISTRY[niche];
 
-  const commercial = listing.commercial || { price_cents: 0 };
-  const media = listing.media || { media_urls: [], cover_url: "" };
-  const images = media.media_urls?.length ? media.media_urls : media.cover_url ? [media.cover_url] : [];
+  const commercial = (listing as any).commercial || { price_cents: listing.price_cents ?? 0 };
+  const media = (listing as any).media || { media_urls: listing.media_urls ?? [], cover_url: listing.cover_url ?? "" };
+  const images: string[] = (media.media_urls?.length ? media.media_urls : media.cover_url ? [media.cover_url] : []).filter(Boolean);
   const [selectedImage, setSelectedImage] = useState(0);
 
   const priceCents = commercial.price_cents ?? 0;
@@ -129,9 +130,9 @@ export function CanonicalListingView({
               variant="outline"
               size="sm"
               onClick={onEditClick}
-              className="h-7 rounded-lg text-2xs font-semibold gap-1 border-amber-500/30 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10 cursor-pointer"
+              className="h-11 rounded-lg text-2xs font-semibold gap-1 border-amber-500/30 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             >
-              <Edit3 className="size-3" />
+              <Edit3 className="size-4" />
               <span>Editar</span>
             </Button>
           )}
@@ -142,21 +143,21 @@ export function CanonicalListingView({
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 space-y-6">
         {/* Breadcrumb & Identificação Superior */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className="text-2xs font-normal">
               {nicheConfig?.label || niche}
             </Badge>
             <span>/</span>
-            <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-md">
+            <span className="text-foreground font-medium truncate max-w-48 sm:max-w-md">
               {listing.title || "Sem Título"}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button type="button" variant="ghost" size="icon" className="size-8 rounded-xl cursor-pointer">
+            <Button type="button" variant="ghost" size="icon" className="h-11 w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">
               <Share2 className="size-4" />
             </Button>
-            <Button type="button" variant="ghost" size="icon" className="size-8 rounded-xl cursor-pointer">
+            <Button type="button" variant="ghost" size="icon" className="h-11 w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">
               <Heart className="size-4" />
             </Button>
           </div>
@@ -167,7 +168,7 @@ export function CanonicalListingView({
           {/* Coluna Esquerda: Galeria & Fotos (7 Colunas) */}
           <div className="lg:col-span-7 space-y-3">
             {/* Foto Principal */}
-            <div className="aspect-4/3 sm:aspect-16/10 rounded-2xl overflow-hidden bg-muted/40 border border-border/60 relative">
+            <div className="aspect-4/3 sm:aspect-16/10 rounded-lg overflow-hidden bg-muted/40 border border-border/60 relative">
               {images.length > 0 ? (
                 <img
                   src={images[selectedImage] || images[0]}
@@ -181,8 +182,8 @@ export function CanonicalListingView({
               )}
 
               {/* Badges de Destaque */}
-              <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                <Badge className="bg-background/90 text-foreground backdrop-blur-xs text-2xs font-semibold shadow-xs">
+              <div className="absolute top-3 left-3 flex items-center gap-2">
+                <Badge className="bg-background/90 text-foreground backdrop-blur-xs text-2xs font-semibold">
                   {nicheConfig?.label || "Anúncio"}
                 </Badge>
                 {listing.status === "draft" && (
@@ -196,13 +197,13 @@ export function CanonicalListingView({
             {/* Miniaturas de Navegação (Sem estado falso / O07 eliminado) */}
             {images.length > 1 && (
               <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                {images.map((img, idx) => (
+                {images.map((img: string, idx: number) => (
                   <button
                     key={`${img}-${idx}`}
                     type="button"
                     onClick={() => setSelectedImage(idx)}
                     className={cn(
-                      "size-16 sm:size-20 rounded-xl border-2 overflow-hidden shrink-0 transition-all cursor-pointer",
+                      "size-16 sm:size-20 rounded-lg border-2 overflow-hidden shrink-0 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       selectedImage === idx
                         ? "border-primary ring-2 ring-primary/20 scale-105"
                         : "border-border/60 opacity-70 hover:opacity-100"
@@ -217,7 +218,7 @@ export function CanonicalListingView({
 
           {/* Coluna Direita: Preço, Condições & Checkout (5 Colunas) */}
           <div className="lg:col-span-5 space-y-4">
-            <div className="bg-card rounded-2xl p-5 border border-border/60 space-y-4 shadow-xs">
+            <div className="bg-card rounded-lg p-5 border border-border/60 space-y-4">
               {/* Título & Marca */}
               <div className="space-y-1">
                 {listing.brand && (
@@ -230,14 +231,14 @@ export function CanonicalListingView({
                 </h1>
                 {listing.location_data?.city && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground pt-0.5">
-                    <MapPin className="size-3.5 text-primary shrink-0" />
+                    <MapPin className="size-4 text-primary shrink-0" />
                     <span>{listing.location_data.city}, {listing.location_data.state || "SC"}</span>
                   </div>
                 )}
               </div>
 
               {/* Bloco de Preço Canônico (Dono Único - F18) */}
-              <div className="p-4 rounded-xl bg-muted/40 border border-border/40 space-y-1">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border/40 space-y-1">
                 {compareAtCents && compareAtCents > priceCents && (
                   <span className="text-xs text-muted-foreground line-through block font-mono">
                     {formatMoney(compareAtCents)}
@@ -265,7 +266,7 @@ export function CanonicalListingView({
                   )}
                   {pixDiscount > 0 && (
                     <p className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                      <Percent className="size-3" />
+                      <Percent className="size-4" />
                       <span>{pixDiscount}% de desconto via PIX ({formatMoney(Math.round(priceCents * (1 - pixDiscount / 100)))})</span>
                     </p>
                   )}
@@ -274,7 +275,7 @@ export function CanonicalListingView({
 
               {/* Sinal de Reserva (Se Turismo / Eventos) */}
               {isTourism && depositPercent && (
-                <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs flex items-center gap-2">
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs flex items-center gap-2">
                   <ShieldCheck className="size-4 text-primary shrink-0" />
                   <div>
                     <span className="font-semibold text-foreground">Garantia com Sinal de {depositPercent}%: </span>
@@ -289,9 +290,9 @@ export function CanonicalListingView({
               )}
 
               {/* Botões de Ação Transacional (F28 / R07: Se for preview, mostra simulação segura) */}
-              <div className="space-y-2.5 pt-2">
+              <div className="space-y-3 pt-2">
                 {isPreviewMode ? (
-                  <div className="p-3 rounded-xl bg-muted/60 border border-border/40 text-center space-y-1">
+                  <div className="p-3 rounded-lg bg-muted/60 border border-border/40 text-center space-y-1">
                     <Badge variant="outline" className="text-2xs font-semibold">
                       Modo Simulação do Preview
                     </Badge>
@@ -303,7 +304,7 @@ export function CanonicalListingView({
                   <Button
                     type="button"
                     onClick={() => setIsBookingOpen(true)}
-                    className="w-full h-12 rounded-xl text-sm font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
+                    className="w-full h-11 rounded-lg text-sm font-bold bg-primary text-primary-foreground gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                   >
                     <Calendar className="size-4" />
                     <span>Reservar Vaga no Pacote</span>
@@ -312,7 +313,7 @@ export function CanonicalListingView({
                   <Button
                     type="button"
                     onClick={onPurchase}
-                    className="w-full h-12 rounded-xl text-sm font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
+                    className="w-full h-11 rounded-lg text-sm font-bold bg-primary text-primary-foreground gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                   >
                     <Truck className="size-4" />
                     <span>Comprar Agora</span>
@@ -325,7 +326,7 @@ export function CanonicalListingView({
                     type="button"
                     variant="outline"
                     onClick={() => handleLeadAction("whatsapp")}
-                    className="w-full h-11 rounded-xl text-xs font-semibold gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+                    className="w-full h-11 rounded-lg text-xs font-semibold gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                   >
                     <MessageCircle className="size-4" />
                     <span>Tirar Dúvidas no WhatsApp</span>
@@ -341,7 +342,7 @@ export function CanonicalListingView({
           <div className="lg:col-span-8 space-y-6">
             {/* Descrição Detalhada */}
             {listing.description && (
-              <div className="bg-card rounded-2xl p-5 border border-border/60 space-y-2">
+              <div className="bg-card rounded-lg p-5 border border-border/60 space-y-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                   Sobre este {isTourism ? "Pacote / Roteiro" : "Item"}
                 </h3>
@@ -353,7 +354,7 @@ export function CanonicalListingView({
 
             {/* Inclusos e Exclusos (F17, O01, O05: Sem placeholder, sem '0 Inclusos') */}
             {(inclusions.length > 0 || exclusions.length > 0) && (
-              <div className="bg-card rounded-2xl p-5 border border-border/60 space-y-4">
+              <div className="bg-card rounded-lg p-5 border border-border/60 space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                   O que está incluso e o que não está
                 </h3>
@@ -364,10 +365,10 @@ export function CanonicalListingView({
                       <span className="text-2xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
                         Incluso no Valor
                       </span>
-                      <ul className="space-y-1.5 text-xs text-foreground">
+                      <ul className="space-y-2 text-xs text-foreground">
                         {inclusions.map((item, idx) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                            <CheckCircle2 className="size-4 text-emerald-500 shrink-0 mt-0.5" />
                             <span>{item}</span>
                           </li>
                         ))}
@@ -380,10 +381,10 @@ export function CanonicalListingView({
                       <span className="text-2xs font-bold text-destructive uppercase tracking-wider block">
                         Não Incluso
                       </span>
-                      <ul className="space-y-1.5 text-xs text-muted-foreground">
+                      <ul className="space-y-2 text-xs text-muted-foreground">
                         {exclusions.map((item, idx) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <XCircle className="size-3.5 text-destructive shrink-0 mt-0.5" />
+                            <XCircle className="size-4 text-destructive shrink-0 mt-0.5" />
                             <span>{item}</span>
                           </li>
                         ))}
@@ -396,13 +397,13 @@ export function CanonicalListingView({
 
             {/* Datas de Saídas e Embarques (Se Turismo) */}
             {isTourism && listing.departures && listing.departures.length > 0 && (
-              <div className="bg-card rounded-2xl p-5 border border-border/60 space-y-3">
+              <div className="bg-card rounded-lg p-5 border border-border/60 space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                   Próximas Saídas Confirmadas
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {listing.departures.map((dep: any, idx: number) => (
-                    <div key={dep.id || idx} className="p-3 rounded-xl border border-border/60 bg-muted/20 text-xs space-y-1">
+                    <div key={dep.id || idx} className="p-3 rounded-lg border border-border/60 bg-muted/20 text-xs space-y-1">
                       <div className="flex items-center justify-between font-bold text-foreground">
                         <span>{dep.date_start ? new Date(dep.date_start).toLocaleDateString("pt-BR") : "Data a definir"}</span>
                         <Badge variant="outline" className="text-2xs">
@@ -426,7 +427,7 @@ export function CanonicalListingView({
 
       {/* ── Modal de Reserva de Vaga em Turismo (F28) ── */}
       <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
-        <DialogContent className="max-w-md rounded-2xl bg-card border border-border/80 p-5 space-y-4">
+        <DialogContent className="max-w-md rounded-lg bg-card border border-border/80 p-5 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold text-foreground">
               Reserva de Pacote / Excursão
@@ -438,7 +439,7 @@ export function CanonicalListingView({
 
           <div className="space-y-3 pt-1">
             {listing.departures && listing.departures.length > 0 && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-medium text-foreground">Data de Saída</label>
                 <div className="space-y-2">
                   {listing.departures.map((dep: any, idx: number) => (
@@ -447,7 +448,7 @@ export function CanonicalListingView({
                       type="button"
                       onClick={() => setSelectedDeparture(dep)}
                       className={cn(
-                        "w-full flex items-center justify-between p-3 rounded-xl border text-xs text-left cursor-pointer",
+                        "w-full flex items-center justify-between p-3 rounded-lg border text-xs text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         selectedDeparture?.id === dep.id
                           ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary"
                           : "border-border/60 bg-background text-muted-foreground hover:bg-muted/40"
@@ -468,7 +469,7 @@ export function CanonicalListingView({
               </div>
             )}
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-medium text-foreground">Passageiros / Vagas</label>
               <div className="flex items-center gap-3">
                 <Button
@@ -477,7 +478,7 @@ export function CanonicalListingView({
                   size="icon"
                   disabled={ticketCount <= 1}
                   onClick={() => setTicketCount((c) => Math.max(1, c - 1))}
-                  className="size-9 rounded-xl cursor-pointer"
+                  className="h-11 w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 >
                   -
                 </Button>
@@ -488,7 +489,7 @@ export function CanonicalListingView({
                   size="icon"
                   disabled={ticketCount >= 10}
                   onClick={() => setTicketCount((c) => c + 1)}
-                  className="size-9 rounded-xl cursor-pointer"
+                  className="h-11 w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 >
                   +
                 </Button>
@@ -496,7 +497,7 @@ export function CanonicalListingView({
             </div>
 
             {/* Resumo Financeiro da Reserva */}
-            <div className="p-3 rounded-xl bg-muted/40 border border-border/40 text-xs space-y-1">
+            <div className="p-3 rounded-lg bg-muted/40 border border-border/40 text-xs space-y-1">
               <div className="flex justify-between text-muted-foreground">
                 <span>Valor Total ({ticketCount}x):</span>
                 <span className="font-mono font-bold text-foreground">
@@ -520,7 +521,7 @@ export function CanonicalListingView({
               variant="outline"
               size="sm"
               onClick={() => setIsBookingOpen(false)}
-              className="h-10 rounded-xl text-xs cursor-pointer"
+              className="h-11 rounded-lg text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             >
               Cancelar
             </Button>
@@ -528,7 +529,7 @@ export function CanonicalListingView({
               type="button"
               disabled={isSubmittingBooking}
               onClick={handleBookingConfirm}
-              className="h-10 rounded-xl text-xs font-bold gap-1.5 px-4 cursor-pointer"
+              className="h-11 rounded-lg text-xs font-bold gap-2 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             >
               <CheckCircle2 className="size-4" />
               <span>Confirmar Reserva</span>

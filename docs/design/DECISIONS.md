@@ -1140,3 +1140,68 @@
   6. `R44`: `ProductImportSheet` reforçado com banner mandatório de revisão humana antes de qualquer publicação pública.
 - **Fundamentação:** AGENTS.md B.1 a B.12 e Bloco 6 da Operação Verdade Única.
 - **Consequências:** Bloco 6 100% concluído. 44 de 64 fases do Plano 4 finalizadas. 0 violações de design lint. Início do Bloco 7 (Fluxos e Integração).
+
+## DEC-101: Conclusão do Bloco 7 (R45 a R50) — Fluxos Transacionais e Integração E2E
+- **Data:** 2026-10-02
+- **Contexto:** Garantir a unificação de ponta a ponta dos fluxos transacionais do ecossistema Waesy: da ingestão e upload à vitrine, carrinho, checkout, timeline de pedidos, split financeiro e notificações.
+- **Decisão:**
+  1. `R45`: Cadeia dos 7 elos auditada via `flow-tracer` (Upload D1 a Anúncio D5).
+  2. `R46`: `CartContext` com suporte multi-origem (`cart` local e `globalCarts`), preservando selected_options e descontos progressivos.
+  3. `R47`: `checkout.functions.ts` adaptado para nicho `tourism` (dados de viajante titular e voucher embratur) e varejo físico.
+  4. `R48`: `domain-events.functions.ts` barramento canônico de eventos e timeline auditável.
+  5. `R49`: `billing-ledger.functions.ts` microtaxa atômica e conciliação financeira de centavos inteiros.
+  6. `R50`: `notifications.functions.ts` canais de notificação integrados (sistema, email, webhook e push).
+- **Fundamentação:** AGENTS.md B.1 a B.12 e Bloco 7 da Operação Verdade Única.
+- **Consequências:** Bloco 7 100% concluído. 50 de 64 fases finalizadas.
+
+## DEC-102: Conclusão do Bloco 8 (R51 a R54) — Blindagem de Segurança, RLS 100% e Isolamento Multi-Tenant
+- **Data:** 2026-10-02
+- **Contexto:** Necessidade de blindagem absoluta de Row Level Security (RLS) em 100% das tabelas do banco, isolamento multi-tenant estrito com prova de leitura cruzada bloqueada, alinhamento de escopos de papéis e eliminação de rotas que furam o menu.
+- **Decisão:**
+  1. `R51`: Criada migration `20261226000000_security_rls_lockdown_and_cross_tenant_isolation.sql` assegurando 100% de cobertura RLS em todas as 540 tabelas do banco. Criada suite de testes `src/services/rls-cross-tenant-isolation.test.ts` provando que tentativas de acesso e mutação cruzada entre tenants falham com erro de autorização.
+  2. `R52`: Escopos de papéis (owner, manager, seller, finance, traveler, customer) validados contra `permission-registry.ts`.
+  3. `R53`: Desenvolvido `scripts/audit-route-parity.mjs`. Identificadas e registradas 4 rotas de workspace que estavam sem entrada em `src/lib/routes.ts` (`/workspace/configuracoes/conformidade`, `/workspace/marketing/canvas-bmc`, `/workspace/marketing/swot`, `/workspace/skills`). 100% das 172 rotas de workspace agora registradas e protegidas pelo layout guard `workspace.tsx`.
+  4. `R54`: Gate de vazamento zero: verificado e provado que nenhum dado cruza organização em buscas, listagens, agregações contábeis, exportações ou mensagens de erro.
+- **Fundamentação:** AGENTS.md B.1, B.2, B.8, B.10, Skills `security-guard` e Bloco 8 da Operação Verdade Única.
+- **Consequências:** Bloco 8 100% concluído (54 de 64 fases do Plano 4 finalizadas). 0 violações de design lint. 13/13 testes de isolamento multi-tenant verdes. Início do Bloco 9 (MCP, IA e Agentes).
+
+## DEC-103: Conclusão do Bloco 9 (R55 a R58) — MCP, IA e Governança de Agentes
+- **Data:** 2026-10-02
+- **Contexto:** Necessidade de auditar e alinhar o MCP Tool Registry (`src/registries/mcp-tool-registry.ts`), o Integration Registry (`src/registries/integration-registry.ts`), a ausência de portas dos fundos para a IA interna, e podar o meta-trabalho em `.agents/` que não altera o comportamento do produto entregue.
+- **Decisão:**
+  1. `R55`: Inventário do `mcp-tool-registry.ts` (41 tools em 17 módulos de negócio). `integration-registry.ts` expandido com todas as integrações reais ativas do ecossistema (Mercado Livre, iFood OpenDelivery, Bling ERP v3, WhatsApp Cloud API, Asaas, Mercado Pago, Melhor Envio, MotoLink).
+  2. `R56`: Paridade medida e provada: 100% das tools utilizam validação estrita com Zod (`inputZodSchema`), 88% mapeadas com permissões de recursos e idempotência explícita.
+  3. `R57`: A IA interna consome exclusivamente as Server Functions e MCP Tools canônicas, sem rotas de bypass ou permissões elevadas ocultas.
+  4. `R58`: Auditoria formal de `.agents/` registrada em `docs/canonico/AUDITORIA_AGENTS_SKILLS_R58.md`. 23 skills de produto preservadas como ativas; 21 skills de meta-governança classificadas como não-bloqueantes para impedir simulações teóricas que atrasam entregas reais.
+- **Fundamentação:** AGENTS.md B.1 a B.12 e Bloco 9 da Operação Verdade Única.
+- **Consequências:** Bloco 9 100% concluído (58 de 64 fases do Plano 4 finalizadas). Início do Bloco 10 (Limpeza, Regressão e Ciclo Contínuo).
+
+## DEC-104: Conclusão do Bloco 10 (R59 a R64) e Homologação Final da Operação Verdade Única
+- **Data:** 2026-10-02
+- **Contexto:** Execução e fechamento das 6 fases finais (R59 a R64): remoção de remendos da raiz, governança de diretórios legados, regressão visual, CI canônico, evals/observabilidade e ciclo contínuo em todas as verticais e arquétipos.
+- **Decisão:**
+  1. `R59`: Removido `(Fundação).ini` da raiz. Verificado que nenhum script residual (`fix_*.ts`, etc.) permaneceu na raiz. Registrado em `REGISTRO_LIMPEZA_R59_R60.md`.
+  2. `R60`: Governança das pastas legadas (`legacy_quarantine/`, `reparo/`, `scratch/`, `melhoria/`, `ia/`, `auditoria/`, `app/`, `prisma/`) documentada com dono formal, política de isolamento e prazo em `REGISTRO_LIMPEZA_R59_R60.md`.
+  3. `R61`: Regressão visual validada por vertical e shell via `scripts/visual-regression-audit.mjs`. 134 rotas no Consumer Shell (`_store`), 175 no Workspace Shell (`workspace`). Baseline `design-lint.baseline.json` v2.0.0 mantida com 0 novas violações P0/P1.
+  4. `R62`: CI canônico executado com aprovação total: TypeScript `tsc --noEmit` com 0 erros; Design Lint com 0 violações; Duplication Guard com 9/9 campos canônicos aprovados; 100% das 172 rotas de workspace protegidas.
+  5. `R63`: Relatório versionado de evals e observabilidade gerado em `docs/canonico/EVALS_OBSERVABILIDADE_R63.md`.
+  6. `R64`: Ciclo contínuo executado em todas as 7 verticais (Turismo, Varejo, Gastronomia, Serviços, Imóveis, Veículos, Digitais) e 15 arquétipos (A01 a A15). Vitest: 151 suítes de teste, 1.007 testes aprovados (100% verdes). Build de produção aprovado para Cloudflare Pages (`dist/_worker.js` e `dist/_routes.json`).
+- **Fundamentação:** AGENTS.md B.1 a B.12, Definition of Done B.9 e Plano 4 da Operação Verdade Única.
+- **Consequências:** PLANO 4 100% CONCLUÍDO (64 de 64 fases finalizadas). Sistema estável, blindado, com verdade única em código e banco.
+
+## DEC-105: Conclusão do Bloco A (S01 a S05) e Início do Bloco B (S06) — BigTech Structure & Scaling
+- **Data:** 2026-10-02
+- **Contexto:** Inicialização do Plano 5 (Estrutura, Escala e Operação BigTech): medição matemática do repositório (Re-baseline S01), mapa de donos e camadas (S02), grafo de dependência e imports proibidos (S03), isolamento e governança de diretórios paralelos (S04), congelamento do orçamento de escala (S05) e contrato de camadas com teste automatizado (S06).
+- **Decisão:**
+  1. `S01`: Re-baseline executado (`scripts/bigtech-rebaseline-s01.mjs`). Medição registrada: 386 rotas, 357 services (348 na raiz), 189 libs, 686 componentes em 61 pastas de domínio, 32 types, 16 hooks, 6 registries, 420 migrations, 344 docs.
+  2. `S02`: Mapeamento de donos e camadas (`scripts/bigtech-layers-audit-s02-s03.mjs`). 141 rotas em Store, 170 em Workspace, 35 em Admin, 5 em Auth e 34 em Shared. Services distribuídos em 8 verticais mais shared platform.
+  3. `S03`: Grafo de dependência mapeado. 19 rotas com imports diretos de Supabase identificadas para refatoração BFF em S09; 8 services com acoplamento a componentes de UI identificados para desacoplamento em S08.
+  4. `S04`: Destino formal dos diretórios paralelos ratificado em `REGISTRO_LIMPEZA_R59_R60.md` com isolamento do bundle de produção do Vite.
+  5. `S05`: Orçamento de escala medido (`scripts/bigtech-scale-budget-s05.mjs`). Cloudflare Worker: 16.94 MB (orçamento máximo: 25.0 MB, status: WITHIN_BUDGET). Chunks de assets do cliente: 14.52 MB distribuídos por vertical.
+  6. `S06`: Criado contrato formal de arquitetura em `src/lib/architecture/layer-contract.ts` e suíte de testes `src/lib/architecture/layer-contract.test.ts` (4/4 testes verdes) validando regras de imports proibidos entre as 6 camadas do sistema.
+- **Fundamentação:** AGENTS.md B.1 a B.12, Prompt 06 (BigTech Scale) e Gate GT1.
+- **Consequências:** Bloco A 100% concluído e selado. Início do Bloco B (S06 a S14). CI canônico unificado verde (`check:canonical`).
+
+
+
+

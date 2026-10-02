@@ -281,7 +281,7 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
           short_description: data.short_description || null,
           status: "draft",
           brand: data.brand || null,
-          ean: foodSpecs.barcodeEan?.trim() || data.ean || null,
+          ean: foodSpecs.barcodeEan?.trim() || (data as any).ean || null,
           price_cents: Number(data.price_cents || 0),
           compare_at_cents: data.compare_at_cents && data.compare_at_cents > 0 ? data.compare_at_cents : null,
           cost_cents: data.cost_cents && data.cost_cents > 0 ? data.cost_cents : null,

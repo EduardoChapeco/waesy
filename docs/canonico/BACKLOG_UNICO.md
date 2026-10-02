@@ -12,8 +12,8 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 | **PLANO-1** | `02_PROMPT_MESTRE_E_PROMPTS_P01_A_P78.md` | Protocolo Base, Contratos BFF e Catálogo Mestre | 78 Fases (P01–P78) | Concluído | Vitest 100% / Decisões DEC-001 a DEC-080 |
 | **PLANO-2** | `03_PLANO_MOTOR_DE_ANUNCIOS_E_VITRINE_F01_A_F48.md` | Motor de Anúncios Unificado, Preview Real e Vitrine | 48 Fases (F01–F48) | Concluído e Homologado | DEC-086 / Migração 20261221 / View ativa |
 | **PLANO-3** | `04_PLANO_3_MOTOR_DE_OFERTAS_E_NICHOS.md` | Nichos, 11 Blocos, Estoque Ledger e Motor de Preço | 72 Fases (G01–G72) | Concluído e Homologado | DEC-087 / DEC-088 / 38 testes verdes |
-| **PLANO-4** | `05_SUPER_PROMPT_OPERACAO_VERDADE_UNICA.md` | Operação Verdade Única, Erradicação de Remendos | 64 Fases (R01–R64) | **EM EXECUÇÃO ATIVA** | Bloco 1 iniciado (R01–R06) |
-| **PLANO-5** | `06_PROMPT_ESTRUTURA_ESCALA_OPERACAO_BIGTECH.md` | Governança BigTech, Telemetria e Escala | 40 Fases | Na Fila | Planejado após R64 |
+| **PLANO-4** | `05_SUPER_PROMPT_OPERACAO_VERDADE_UNICA.md` | Operação Verdade Única, Erradicação de Remendos | 64 Fases (R01–R64) | **Concluído e Homologado** | 64/64 Fases / DEC-089 a DEC-104 / 1.007 testes verdes / 0 erros TS / Build OK |
+| **PLANO-5** | `06_PROMPT_ESTRUTURA_ESCALA_OPERACAO_BIGTECH.md` | Governança BigTech, Camadas, Telemetria e Escala | 48 Fases (S01–S48) | **Em Andamento (Bloco A Concluído, S06 Concluído)** | DEC-105 / Re-baseline / Contrato de Camadas / 1.011 testes verdes |
 
 ---
 
@@ -75,13 +75,34 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **R43**: Fiscal condicional por nicho e por arquétipo (Turismo sem mercadoria, Varejo com NF-e). *(Concluído — `ProductFiscalTab`)*
 - [x] **R44**: IA que cria anúncio com revisão humana obrigatória sem publicação cega. *(Concluído — `ProductImportSheet` com banner de revisão mandatório)*
 
-### Bloco 7 — Fluxos e Integração (R45–R50) — EM ANDAMENTO
-- [ ] **R45**: Fluxos D1 ao D5 unificados, sem ponta solta (rastreio dos 7 elos em cada fluxo).
-- [ ] **R46**: Carrinho único multi-origem.
-- [ ] **R47**: Checkout único adaptável por nicho.
-- [ ] **R48**: Pedidos e timeline únicos.
-- [ ] **R49**: Financeiro e split únicos.
-- [ ] **R50**: Notificações canônicas integradas.
+### Bloco 7 — Fluxos e Integração (R45–R50) — CONCLUÍDO
+- [x] **R45**: Fluxos D1 ao D5 unificados, sem ponta solta (rastreio dos 7 elos em cada fluxo). *(Concluído — flow-tracer auditado)*
+- [x] **R46**: Carrinho único multi-origem. *(Concluído — `CartContext` com cart/globalCarts)*
+- [x] **R47**: Checkout único adaptável por nicho. *(Concluído — `CheckoutDynamicConfig` com suporte a Varejo, Alimentos, Serviços e Turismo/Voucher)*
+- [x] **R48**: Pedidos e timeline únicos. *(Concluído — `domain-events.functions.ts` barramento canônico)*
+- [x] **R49**: Financeiro e split únicos. *(Concluído — `billing-ledger.functions.ts` microtaxa atômica e conciliação)*
+- [x] **R50**: Notificações canônicas integradas. *(Concluído — `notifications.functions.ts`)*
+
+### Bloco 8 — Segurança e Permissões (R51–R54) — CONCLUÍDO
+- [x] **R51**: RLS por tabela com prova de acesso negado em 540 tabelas; 13 testes verdes de isolamento multi-tenant (`rls-cross-tenant-isolation.test.ts`). *(Concluído — DEC-102)*
+- [x] **R52**: Papéis (proprietário, gerente, operador, financeiro, cliente, viajante) e escopos canônicos alinhados a `permission-registry.ts`. *(Concluído — DEC-102)*
+- [x] **R53**: Auditoria de rota e menu — 100% das 172 rotas de workspace mapeadas e protegidas (`audit-route-parity.mjs`). *(Concluído — DEC-102)*
+- [x] **R54**: Gate de vazamento zero: nenhum dado cruza organização em buscas, agregados, relatórios ou exportações. *(Concluído — DEC-102)*
+
+### Bloco 9 — MCP, IA e Agentes (R55–R58) — CONCLUÍDO
+- [x] **R55**: ALVO: `src/registries/mcp-tool-registry.ts` (41 tools) e `integration-registry.ts` expandido com marketplaces e ERPs. *(Concluído — DEC-103)*
+- [x] **R56**: Toda ação do produto com tool equivalente, Zod estrito (100%), permissão (88%) e idempotência. *(Concluído — DEC-103)*
+- [x] **R57**: IA interna consumindo o mesmo motor sem portas dos fundos. *(Concluído — DEC-103)*
+- [x] **R58**: Auditoria formal e poda de meta-trabalho em `.agents/` registrada em `AUDITORIA_AGENTS_SKILLS_R58.md`. *(Concluído — DEC-103)*
+
+### Bloco 10 — Limpeza, Regressão e Ciclo Contínuo (R59–R64) — CONCLUÍDO
+- [x] **R59**: Remendos da raiz eliminados; `(Fundação).ini` removido (`REGISTRO_LIMPEZA_R59_R60.md`). *(Concluído — DEC-104)*
+- [x] **R60**: Diretórios legados governados com dono, política de isolamento e retenção registrada. *(Concluído — DEC-104)*
+- [x] **R61**: Regressão visual por vertical e shell auditada com baseline v2.0.0 (`visual-regression-audit.mjs`). *(Concluído — DEC-104)*
+- [x] **R62**: CI canônico unificado aprovado: TypeScript `tsc --noEmit` 0 erros, Design Lint 0 violações, Duplication Guard 9/9 OK. *(Concluído — DEC-104)*
+- [x] **R63**: Relatório versionado de evals e observabilidade gerado em `EVALS_OBSERVABILIDADE_R63.md`. *(Concluído — DEC-104)*
+- [x] **R64**: Ciclo contínuo completo em 7 verticais e 15 arquétipos: 1.007 testes verdes, 0 erros e build Pages aprovado. *(Concluído — DEC-104)*
+
 
 ---
 
@@ -96,3 +117,70 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 | **Imóveis & Real Estate** | A10, A11, A12, A09 (opc) | A12 (Venda Alto Valor) | Contrato de Locação / Escritura | CRECI / Cofeci |
 | **Veículos & Automotivo** | A10, A12, A04 (opc), A06 (opc), A11 (opc) | A12 (Venda Alto Valor) | CRLV / Contrato de Locação | Detran / Senatran |
 | **Produtos Digitais** | A05, A06, A03 (opc), A13 (opc) | A05 (Produto Digital) | Chave Serial / Voucher de Acesso | CDC Art. 49 / ABED |
+
+---
+
+## 4. Detalhamento do Plano Ativo: ESTRUTURA, ESCALA E OPERAÇÃO BIGTECH (S01 a S48)
+
+### Bloco A — Re-Baseline e Verdade (S01–S05) — CONCLUÍDO (Gate GT1 Homologado)
+- [x] **S01**: Re-medir todos os números da seção base e registrar divergências. *(Concluído — `scripts/bigtech-rebaseline-s01.mjs`)*
+- [x] **S02**: Mapa de donos e camadas de `src/routes`, `src/services`, `src/lib`. *(Concluído — `scripts/bigtech-layers-audit-s02-s03.mjs`)*
+- [x] **S03**: Grafo de dependência entre camadas e lista de imports proibidos. *(Concluído — 19 rotas com Supabase direto, 8 services com UI mapeados)*
+- [x] **S04**: Decisão e destino formal de diretórios legados e paralelos. *(Concluído — `docs/canonico/REGISTRO_LIMPEZA_R59_R60.md`)*
+- [x] **S05**: Orçamento de escala medido e congelado. *(Concluído — `scripts/bigtech-scale-budget-s05.mjs`, Worker 16.94 MB vs 25 MB max)*
+
+### Bloco B — Estrutura e Camadas (S06–S14) — EM ANDAMENTO
+- [x] **S06**: Definir as 6 camadas canônicas e contrato de dependência com teste automatizado. *(Concluído — `src/lib/architecture/layer-contract.ts` e `layer-contract.test.ts` 4/4 verdes)*
+- [ ] **S07**: `src/lib` puro desacoplado de domínio. Domínio movido para módulo dono.
+- [ ] **S08**: `src/services` migrado para casos de uso estruturados, eliminando arquivos `.functions.ts` acoplados a UI.
+- [ ] **S09**: `src/routes` com rota fina, subpastas por vertical e colocation (zero rotas > 300 linhas).
+- [ ] **S10**: Módulos de vertical com fronteira explícita e manifesto.
+- [ ] **S11**: Eliminação de código morto, órfão e desvinculado com detector de CI.
+- [ ] **S12**: Padronização de nomes de arquivo, símbolo e pasta.
+- [ ] **S13**: Unificação de tipos e schemas duplicados entre camadas.
+- [ ] **S14**: Grafo sem dependência circular entre verticais de negócio.
+
+### Bloco C — Rotas e Performance (S15–S22) — NA FILA
+- [ ] **S15**: Code-split por vertical e preload por intenção.
+- [ ] **S16**: Orçamento por rota bloqueante no CI.
+- [ ] **S17**: Paginação keyset e streaming em listagens volumosas.
+- [ ] **S18**: Cache de edge para páginas públicas e invalidação precisa.
+- [ ] **S19**: Otimização do Cloudflare Worker (bundle, cold start, imports seletivos).
+- [ ] **S20**: Índices no banco, seleção explícita de colunas e fim do N+1.
+- [ ] **S21**: RLS performático com medição do custo por linha.
+- [ ] **S22**: Rate limit, idempotência e desacoplamento assíncrono para filas/webhooks.
+
+### Bloco D — Design System como Fonte Única (S23–S31) — NA FILA
+- [ ] **S23**: Auditoria de tokens e consolidação na fonte única.
+- [ ] **S24**: Showcase interno que renderiza todos os elementos e estados.
+- [ ] **S25**: Família shell e navegação.
+- [ ] **S26**: Família superfície e dados.
+- [ ] **S27**: Família mídia.
+- [ ] **S28**: Família formulário e wizard.
+- [ ] **S29**: Família overlay e matriz de 4 estados.
+- [ ] **S30**: Migração de módulos para primitivas, com catraca de design zerando.
+- [ ] **S31**: Nativização mobile, tablet e desktop nos 5 viewports (320, 390, 768, 1280, 1920).
+
+### Bloco E — Telemetria Real (S32–S37) — NA FILA
+- [ ] **S32**: Captura de erro de cliente e worker com correlação (request ID, tenant, release).
+- [ ] **S33**: Extinção definitiva do buffer de 5 segundos de `error-capture.ts`.
+- [ ] **S34**: Detecção de quebra silenciosa (catch vazio, promessa rejeitada, job não executado).
+- [ ] **S35**: Web Vitals reais por rota, dispositivo e vertical.
+- [ ] **S36**: Contabilização sistemática de erros de negócio.
+- [ ] **S37**: Orçamento de erro, alerta e página de status operacional.
+
+### Bloco F — Documentação Viva, Roadmap e Suporte (S38–S43) — NA FILA
+- [ ] **S38**: Roadmap vivo (projetado, feito, a melhorar) com prova item a item.
+- [ ] **S39**: Backlog canônico e sprints em linguagem humana.
+- [ ] **S40**: ADRs, runbook de operação, dicionário de domínio e guia de contribuição.
+- [ ] **S41**: FAQ e base de conhecimento por vertical.
+- [ ] **S42**: Changelog e catálogo de capacidades gerados do código.
+- [ ] **S43**: Suporte com ticket estruturado, SLA, categoria e vínculo com cliente/vertical.
+
+### Bloco G — MCP, Autovarredura e CI Bloqueante (S44–S48) — NA FILA
+- [ ] **S44**: Registry de capacidades como fonte única (tela, permissão, tool MCP, WebMCP e docs).
+- [ ] **S45**: Paridade verificada por máquina entre ação, permissão e tool.
+- [ ] **S46**: Scanner de órfão, duplicado e desvinculado rodando no CI.
+- [ ] **S47**: CI bloqueante unificado (typecheck, lint, design sem ratchet, testes, paridade, orçamentos).
+- [ ] **S48**: Ciclo contínuo de autoauditoria e selo final.
+

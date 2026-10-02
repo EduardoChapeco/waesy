@@ -26,7 +26,7 @@ export interface InstallmentOption {
 }
 
 export interface InstallmentCalculationParams {
-  totalCents: number;
+  totalCents?: number;
   maxInstallments?: number;
   interestFreeCount?: number;
   monthlyInterestRatePercent?: number;

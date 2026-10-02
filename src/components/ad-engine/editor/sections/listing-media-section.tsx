@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MediaUploader } from "@/components/ui/media-uploader";
+import { MediaUploader, type MediaData } from "@/components/ui/media-uploader";
 import type { UnifiedListingMedia, ListingOrigin } from "@/types/unified-ad-engine";
 import { cn } from "@/lib/utils";
 
@@ -23,15 +23,15 @@ export function ListingMediaSection({
   errors = {},
   className,
 }: ListingMediaSectionProps) {
-  const images = value.media_urls ?? [];
-  const coverUrl = value.cover_url ?? (images.length > 0 ? images[0] : "");
-  const videoUrl = value.video_url ?? "";
+  const images: string[] = value.media_urls ?? [];
+  const coverUrl: string = value.cover_url ?? (images.length > 0 ? images[0] : "");
+  const videoUrl: string = value.video_url ?? "";
 
   const maxPhotos = origin === "workspace" ? 20 : 6;
 
   const handleSetCover = (url: string) => {
     // Reorder: cover becomes index 0
-    const reordered = [url, ...images.filter((img) => img !== url)];
+    const reordered = [url, ...images.filter((img: string) => img !== url)];
     onChange({
       cover_url: url,
       media_urls: reordered,
@@ -39,7 +39,7 @@ export function ListingMediaSection({
   };
 
   const handleRemoveImage = (indexToRemove: number) => {
-    const nextImages = images.filter((_, idx) => idx !== indexToRemove);
+    const nextImages = images.filter((_: string, idx: number) => idx !== indexToRemove);
     const nextCover = nextImages.includes(coverUrl) ? coverUrl : (nextImages[0] ?? "");
     onChange({
       media_urls: nextImages,
@@ -58,7 +58,8 @@ export function ListingMediaSection({
     });
   };
 
-  const handleUploadComplete = (newUrls: string[]) => {
+  const handleUploadComplete = (media: MediaData[]) => {
+    const newUrls = media.map((m) => m.url);
     const combined = [...images, ...newUrls].slice(0, maxPhotos);
     onChange({
       media_urls: combined,
@@ -69,7 +70,7 @@ export function ListingMediaSection({
   return (
     <div className={cn("space-y-6", className)}>
       {/* ── Galeria de Fotos com Capa Travada ── */}
-      <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4">
+      <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
             <ImagePlus className="size-4 text-primary shrink-0" />
@@ -82,11 +83,11 @@ export function ListingMediaSection({
 
         {/* Uploader com drag-and-drop */}
         {images.length < maxPhotos && (
-          <div className="rounded-xl border border-dashed border-border/80 bg-background/50 p-4">
+          <div className="rounded-lg border border-dashed border-border/80 bg-background/50 p-4">
             <MediaUploader
               onUploadComplete={handleUploadComplete}
               maxFiles={maxPhotos - images.length}
-              accept="image/*"
+              accept="image"
             />
           </div>
         )}
@@ -98,13 +99,13 @@ export function ListingMediaSection({
         {/* Grade de Fotos Carregadas */}
         {images.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-2">
-            {images.map((url, idx) => {
+            {images.map((url: string, idx: number) => {
               const isCover = url === coverUrl || idx === 0;
               return (
                 <div
                   key={`${url}-${idx}`}
                   className={cn(
-                    "group relative aspect-4/3 rounded-xl overflow-hidden border bg-muted/40 transition-all",
+                    "group relative aspect-4/3 rounded-lg overflow-hidden border bg-muted/40 transition-colors",
                     isCover ? "border-primary ring-2 ring-primary/20" : "border-border/60 hover:border-border"
                   )}
                 >
@@ -118,7 +119,7 @@ export function ListingMediaSection({
                   {/* Badge de Capa */}
                   {isCover && (
                     <div className="absolute top-2 left-2 z-10">
-                      <Badge className="bg-primary text-primary-foreground text-2xs px-1.5 py-0.5 font-bold shadow-xs">
+                      <Badge className="bg-primary text-primary-foreground text-2xs px-2 py-1 font-bold">
                         Principal
                       </Badge>
                     </div>
@@ -133,10 +134,10 @@ export function ListingMediaSection({
                           variant="secondary"
                           size="icon"
                           onClick={() => handleSetCover(url)}
-                          className="size-8 rounded-lg cursor-pointer"
+                          className="h-11 w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                           title="Definir como foto principal"
                         >
-                          <Star className="size-3.5 text-foreground" />
+                          <Star className="size-4 text-foreground" />
                         </Button>
                       )}
                       <div className="ml-auto flex items-center gap-1">
@@ -145,10 +146,10 @@ export function ListingMediaSection({
                           variant="destructive"
                           size="icon"
                           onClick={() => handleRemoveImage(idx)}
-                          className="size-8 rounded-lg cursor-pointer"
+                          className="h-11 w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                           title="Remover foto"
                         >
-                          <Trash2 className="size-3.5" />
+                          <Trash2 className="size-4" />
                         </Button>
                       </div>
                     </div>
@@ -161,10 +162,10 @@ export function ListingMediaSection({
                         size="icon"
                         disabled={idx === 0}
                         onClick={() => handleMoveImage(idx, idx - 1)}
-                        className="size-8 rounded-lg cursor-pointer disabled:opacity-40"
+                        className="h-11 w-11 rounded-lg cursor-pointer disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                         title="Mover para esquerda"
                       >
-                        <ArrowLeft className="size-3.5" />
+                        <ArrowLeft className="size-4" />
                       </Button>
                       <span className="text-2xs font-mono font-medium text-foreground">
                         {idx + 1}
@@ -175,10 +176,10 @@ export function ListingMediaSection({
                         size="icon"
                         disabled={idx === images.length - 1}
                         onClick={() => handleMoveImage(idx, idx + 1)}
-                        className="size-8 rounded-lg cursor-pointer disabled:opacity-40"
+                        className="h-11 w-11 rounded-lg cursor-pointer disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                         title="Mover para direita"
                       >
-                        <ArrowRight className="size-3.5" />
+                        <ArrowRight className="size-4" />
                       </Button>
                     </div>
                   </div>
@@ -187,7 +188,7 @@ export function ListingMediaSection({
             })}
           </div>
         ) : (
-          <div className="p-8 text-center rounded-xl bg-muted/20 border border-border/40 space-y-2">
+          <div className="p-8 text-center rounded-lg bg-muted/20 border border-border/40 space-y-2">
             <UploadCloud className="size-8 text-muted-foreground mx-auto" />
             <p className="text-xs font-semibold text-foreground">Nenhuma foto adicionada ainda</p>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -198,18 +199,18 @@ export function ListingMediaSection({
       </div>
 
       {/* ── Vídeo Promocional (Opcional) ── */}
-      <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-3">
+      <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-3">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <Video className="size-4 text-primary shrink-0" />
           <span>Vídeo Promocional (Opcional)</span>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium text-foreground">Link do Vídeo (YouTube, Vimeo ou Reels)</Label>
           <Input
             value={videoUrl}
             onChange={(e) => onChange({ video_url: e.target.value })}
             placeholder="https://www.youtube.com/watch?v=..."
-            className="h-11 rounded-xl text-xs bg-background"
+            className="h-11 rounded-lg text-xs bg-background"
           />
           <p className="text-xs text-muted-foreground">
             O player de vídeo será integrado no detalhe do anúncio na vitrine.

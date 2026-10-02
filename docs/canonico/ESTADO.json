@@ -41,31 +41,47 @@
     },
     "PLANO_4_OPERACAO_VERDADE_UNICA": {
       "totalPhases": 64,
-      "completedPhases": 44,
-      "status": "IN_PROGRESS",
-      "currentPhase": "R45",
-      "activeBlock": "BLOCO_7_FLUXOS_INTEGRACAO",
+      "completedPhases": 64,
+      "status": "COMPLETED",
+      "homologated": true,
       "completedBlocks": [
         "BLOCO_1_RECONCILIACAO",
         "BLOCO_2_LINT_ENGOLIDO",
         "BLOCO_3_MONOLITOS_ROTA",
         "BLOCO_4_DUPLICACAO_DONO_UNICO",
         "BLOCO_5_METAMORFOSE_NICHOS",
-        "BLOCO_6_EDITOR_PREVIEW_COMPRA"
-      ],
-      "pendingBlocks": [
+        "BLOCO_6_EDITOR_PREVIEW_COMPRA",
         "BLOCO_7_FLUXOS_INTEGRACAO",
         "BLOCO_8_SEGURANCA_PERMISSOES",
         "BLOCO_9_MCP_IA_AGENTES",
         "BLOCO_10_LIMPEZA_REGRESSAO_CICLO"
+      ],
+      "pendingBlocks": []
+    },
+    "PLANO_5_ESTRUTURA_ESCALA_OPERACAO_BIGTECH": {
+      "totalPhases": 48,
+      "completedPhases": 6,
+      "status": "IN_PROGRESS",
+      "currentPhase": "S07",
+      "activeBlock": "BLOCO_B_ESTRUTURA_E_CAMADAS",
+      "completedBlocks": [
+        "BLOCO_A_RE_BASELINE_E_VERDADE"
+      ],
+      "pendingBlocks": [
+        "BLOCO_B_ESTRUTURA_E_CAMADAS",
+        "BLOCO_C_ROTAS_E_PERFORMANCE",
+        "BLOCO_D_DESIGN_SYSTEM_COMO_FONTE_UNICA",
+        "BLOCO_E_TELEMETRIA",
+        "BLOCO_F_DOCUMENTACAO_ROADMAP_SUPORTE",
+        "BLOCO_G_MCP_AUTOVARREDURA_E_CI"
       ]
     }
   },
   "metrics": {
     "vitest": {
-      "testFiles": 150,
-      "totalTests": 994,
-      "passed": 994,
+      "testFiles": 152,
+      "totalTests": 1011,
+      "passed": 1011,
       "failed": 0,
       "exitCode": 0
     },

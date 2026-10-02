@@ -26,6 +26,7 @@ export interface NicheTaxonomyConfig {
   mandatoryAttributes: string[];
   optionalAttributes: string[];
   sectionsComposition: NicheSectionComposition[];
+  supportsShipping?: boolean;
 }
 
 export const NICHE_TAXONOMY_REGISTRY: Record<string, NicheTaxonomyConfig> = {
