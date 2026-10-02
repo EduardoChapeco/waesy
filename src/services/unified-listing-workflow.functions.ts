@@ -48,7 +48,7 @@ export const createUnifiedListingTransaction = createServerFn({ method: "POST" }
     const supabase = getServerClient();
     const identity = await getServerIdentity();
 
-    if (!identity.id) {
+    if (identity.id === null || identity.id === undefined || identity.id === "") {
       throw new Error("Autenticação obrigatória para iniciar transações no anúncio.");
     }
 

@@ -1077,3 +1077,27 @@
 - **Fundamentação:** Operação Verdade Única R19, Gate Bloco 3.
 - **Consequências:** Fila de decomposição ordenada por impacto para R20+. Próximo alvo: `_store.conta.classificados.novo.tsx` (9.285 linhas → meta <300 linhas).
 
+
+## DEC-095: R29 — Inventário dos Mecanismos Concorrentes de Metamorfose de Template
+- **Data:** 2026-10-02
+- **Contexto:** R29 exige mapear quem decide o template hoje no sistema — identificação de 33 arquivos com lógica de template concorrente.
+- **Decisão:** Dono único eleito: `src/lib/ad-engine/niche-taxonomy-manifest.ts` (campo `allowedTemplates` por nicho). Arquivos concorrentes identificados: `niche-presets.ts` (importa UI — violação), `presentation-presets.ts` (cores hex — DL-01), `hotel-presets.ts`, `src/components/social-templates/`.
+- **Fundamentação:** Operação Verdade Única R29, Regra R10 (nicho é dado, não código).
+- **Consequências:** R30 deve criar `template-metamorphosis.ts` e eliminar concorrentes. Subagente R29-R34 ativo.
+
+## DEC-096: R35 — Biblioteca Semântica Canônica por Nicho
+- **Data:** 2026-10-02
+- **Contexto:** Textos de interface (labels, CTAs, mensagens de erro) hardcoded em 20+ arquivos de rotas — violação direta da Regra R35.
+- **Decisão:** Criado `src/lib/ad-engine/niche-semantic-library.ts` com 5 nichos completos (turismo, varejo, mercado, serviços, imóveis). Funções canônicas: `getNicheLabel`, `getSellingUnitLabel`, `getNicheErrorMessage`, `getNicheEmptyState`. 0 violações de lint.
+- **Commit:** `b3d0b58e`
+- **Fundamentação:** R35 Operação Verdade Única, AGENTS.md B.8 (proibido hardcode de texto de nicho em componentes).
+- **Consequências:** Componentes devem migrar para `getNicheLabel(nicheId, key)` ao invés de strings literais por nicho.
+
+## DEC-097: R36 — Nichos como Dado Puro no NICHE_REGISTRY
+- **Data:** 2026-10-02
+- **Contexto:** R36 exige que trocar ou adicionar nicho não exija tocar em nenhum componente — gate testável.
+- **Decisão:** Criado `src/lib/ad-engine/niche-data-registry.ts` com `NICHE_REGISTRY` unificando `NicheTaxonomyConfig` + `NicheSemanticConfig` + metadados operacionais (suporte a scheduling, subscription, digital delivery, regulatory body, document type). 7 nichos ativos declarados. Funções: `getNicheById`, `getActiveNiches`, `getAllowedTemplates`, `getNicheSections`.
+- **Commit:** `b3d0b58e`
+- **Fundamentação:** R36 Operação Verdade Única, Gate: "trocar de nicho sem tocar em componente".
+- **Consequências:** Adicionar novo nicho = adicionar entrada em `NICHE_DEFINITIONS[]` + `NICHE_TAXONOMY_REGISTRY` + `NICHE_SEMANTIC_LIBRARY`. Zero toques em componentes.
+
