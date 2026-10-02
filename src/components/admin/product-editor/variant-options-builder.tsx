@@ -180,7 +180,7 @@ export function VariantOptionsBuilder({ product, onClose }: VariantOptionsBuilde
 
  <div>
  <Label className="text-xs text-muted-foreground mb-1 block">Valores da Opção</Label>
- <div className="flex flex-wrap gap-2 items-center border rounded-xl p-2 bg-background min-h-[44px]">
+ <div className="flex flex-wrap gap-2 items-center border rounded-lg p-2 bg-background min-h-11">
  {option.values.map((val, vIdx) => (
  <Badge
  key={vIdx}

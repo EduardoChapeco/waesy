@@ -99,7 +99,7 @@ function PublicRecipesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4 pt-1">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-xl bg-primary/10 text-primary">
+            <span className="p-2 rounded-lg bg-primary/10 text-primary">
               <CookingPot className="size-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -120,7 +120,7 @@ function PublicRecipesPage() {
             placeholder="Buscar receita ou ingrediente..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10 text-base sm:text-xs rounded-xl bg-card border-border/60"
+            className="pl-9 h-10 text-base sm:text-xs rounded-lg bg-card border-border/60"
           />
         </div>
       </div>
@@ -145,7 +145,7 @@ function PublicRecipesPage() {
 
       {/* ── 3. Grid de Cards de Receitas ── */}
       {filteredRecipes.length === 0 ? (
-        <div className="rounded-2xl border border-border/60 bg-card p-10 text-center space-y-3">
+        <div className="rounded-lg border border-border/60 bg-card p-10 text-center space-y-3">
           <CookingPot className="size-10 text-muted-foreground/40 mx-auto" />
           <h3 className="text-sm font-bold text-foreground">Nenhuma receita encontrada</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -158,7 +158,7 @@ function PublicRecipesPage() {
               setSearch("");
               setSelectedCategory("Todas");
             }}
-            className="rounded-xl text-xs h-8"
+            className="rounded-lg text-xs h-8"
           >
             Limpar Filtros
           </Button>
@@ -170,7 +170,7 @@ function PublicRecipesPage() {
               key={rec.id}
               to="/receitas/$id"
               params={{ id: rec.id }}
-              className="group rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-primary/40 transition-all cursor-pointer flex flex-col justify-between"
+              className="group rounded-lg bg-card border border-border/60 overflow-hidden hover:border-primary/40 transition-all cursor-pointer flex flex-col justify-between"
             >
               <div>
                 {/* Imagem de Capa 16:9 */}
@@ -185,13 +185,13 @@ function PublicRecipesPage() {
                     loading="lazy"
                   />
                   {rec.total_time && (
-                    <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-0.5 text-[11px] font-mono font-bold text-foreground">
+                    <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-1 text-[11px] font-mono font-bold text-foreground">
                       <Clock className="size-3 text-primary" />
                       {rec.total_time}
                     </span>
                   )}
                   {rec.recipe_yield && (
-                    <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-0.5 text-[11px] font-mono font-bold text-foreground">
+                    <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-1 text-[11px] font-mono font-bold text-foreground">
                       <Users className="size-3 text-muted-foreground" />
                       {rec.recipe_yield}
                     </span>
@@ -201,7 +201,7 @@ function PublicRecipesPage() {
                 {/* Conteúdo do Card */}
                 <div className="p-4 space-y-2">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs uppercase font-mono py-0 px-1.5 text-primary border-primary/30">
+                    <Badge variant="outline" className="text-xs uppercase font-mono py-0 px-2 text-primary border-primary/30">
                       {rec.category || "Culinária"}
                     </Badge>
                     {rec.cuisine && (
@@ -240,7 +240,7 @@ function PublicRecipesPage() {
         open={Boolean(selectedRecipe)}
         onOpenChange={(open) => !open && setSelectedRecipe(null)}
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card border border-border/60 p-0">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg bg-card border border-border/60 p-0">
           {selectedRecipe && (
             <div>
               {/* Capa */}
@@ -255,7 +255,7 @@ function PublicRecipesPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
                 <div className="absolute bottom-3 left-4 right-4">
-                  <Badge variant="outline" className="text-xs uppercase font-mono py-0 px-2 text-primary border-primary/30 bg-background/80 mb-1.5">
+                  <Badge variant="outline" className="text-xs uppercase font-mono py-0 px-2 text-primary border-primary/30 bg-background/80 mb-2">
                     {selectedRecipe.category}
                   </Badge>
                   <h2 className="text-base sm:text-xl font-bold text-foreground leading-snug">
@@ -266,7 +266,7 @@ function PublicRecipesPage() {
 
               <div className="p-4 sm:p-6 space-y-6">
                 {/* Métricas Rápidas */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 rounded-xl bg-muted/40 border border-border/50 text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 rounded-lg bg-muted/40 border border-border/50 text-center">
                   <div>
                     <span className="text-xs uppercase font-mono text-muted-foreground block">
                       Preparo
@@ -296,7 +296,7 @@ function PublicRecipesPage() {
                 {/* Seção 1: Ingredientes com Checklist Interativo */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                       <ShoppingBag className="size-4 text-primary" />
                       Ingredientes ({selectedRecipe.ingredients.length})
                     </h3>
@@ -311,13 +311,13 @@ function PublicRecipesPage() {
                     </Button>
                   </div>
 
-                  <div className="space-y-1.5 p-3 rounded-xl bg-card border border-border/50">
+                  <div className="space-y-2 p-3 rounded-lg bg-card border border-border/50">
                     {selectedRecipe.ingredients.map((ing, idx) => (
                       <div
                         key={idx}
                         onClick={() => toggleIngredient(idx)}
                         className={cn(
-                          "flex items-start gap-2.5 p-1.5 rounded-lg text-xs cursor-pointer select-none transition-colors",
+                          "flex items-start gap-3 p-2 rounded-lg text-xs cursor-pointer select-none transition-colors",
                           checkedIngredients[idx]
                             ? "line-through text-muted-foreground/60 bg-muted/20"
                             : "text-foreground hover:bg-muted/40"
@@ -325,7 +325,7 @@ function PublicRecipesPage() {
                       >
                         <CheckCircle2
                           className={cn(
-                            "size-4 shrink-0 mt-0.5 transition-colors",
+                            "size-4 shrink-0 mt-1 transition-colors",
                             checkedIngredients[idx]
                               ? "text-emerald-500 fill-emerald-500/20"
                               : "text-muted-foreground/40"
@@ -340,7 +340,7 @@ function PublicRecipesPage() {
                 {/* Seção 2: Modo de Preparo Passo a Passo */}
                 {selectedRecipe.instructions && selectedRecipe.instructions.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                       <BookOpen className="size-4 text-primary" />
                       Modo de Preparo
                     </h3>
@@ -348,10 +348,10 @@ function PublicRecipesPage() {
                     <div className="space-y-3">
                       {selectedRecipe.instructions.map((step, idx) => (
                         <div key={idx} className="flex items-start gap-3">
-                          <span className="size-6 rounded-full bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="size-6 rounded-full bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-1">
                             {idx + 1}
                           </span>
-                          <p className="text-xs text-foreground/90 leading-relaxed pt-0.5">
+                          <p className="text-xs text-foreground/90 leading-relaxed pt-1">
                             {step}
                           </p>
                         </div>
@@ -368,7 +368,7 @@ function PublicRecipesPage() {
                       href={selectedRecipe.source_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-foreground inline-flex items-center gap-0.5 underline"
+                      className="hover:text-foreground inline-flex items-center gap-1 underline"
                     >
                       {selectedRecipe.source_name || selectedRecipe.source_domain}
                       <ExternalLink className="size-2.5" />

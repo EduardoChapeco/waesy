@@ -58,8 +58,8 @@ export function MetricWidget(props: MetricWidgetProps) {
   const parseResult = MetricWidgetPropsSchema.safeParse(props);
   if (!parseResult.success) {
     return (
-      <div className="w-full max-w-sm p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs space-y-1">
-        <div className="flex items-center gap-1.5 font-bold">
+      <div className="w-full max-w-sm p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs space-y-1">
+        <div className="flex items-center gap-2 font-bold">
           <AlertCircle className="size-4 shrink-0" />
           <span>Formato de Widget Inválido</span>
         </div>
@@ -79,24 +79,24 @@ export function MetricWidget(props: MetricWidgetProps) {
     const strokeDashoffset = circumference - (data.percentage / 100) * circumference;
 
     return (
-      <div className="w-full max-w-sm p-4 sm:p-5 rounded-2xl bg-card border border-border/60 shadow-2xs select-none">
+      <div className="w-full max-w-sm p-4 sm:p-5 rounded-lg bg-card border border-border/60 shadow-2xs select-none">
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-1 min-w-0">
             <span className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground/75 truncate">
               {data.title}
             </span>
-            <div className="flex items-center gap-2 pt-0.5">
+            <div className="flex items-center gap-2 pt-1">
               <span className="text-2xl font-bold tracking-tight text-foreground font-mono">
                 {data.percentage}%
               </span>
               {data.statusLabel && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-bold bg-primary/10 text-primary border border-primary/20">
                   {data.statusLabel}
                 </span>
               )}
             </div>
             {data.subtitle && (
-              <p className="text-xs text-muted-foreground truncate pt-0.5">
+              <p className="text-xs text-muted-foreground truncate pt-1">
                 {data.subtitle}
               </p>
             )}
@@ -137,9 +137,9 @@ export function MetricWidget(props: MetricWidgetProps) {
     const maxValue = Math.max(...data.dataPoints.map((d) => d.value), 1);
 
     return (
-      <div className="w-full max-w-sm p-4 sm:p-5 rounded-2xl bg-card border border-border/60 shadow-2xs select-none space-y-3">
+      <div className="w-full max-w-sm p-4 sm:p-5 rounded-lg bg-card border border-border/60 shadow-2xs select-none space-y-3">
         <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/75">
               {data.title}
             </span>
@@ -147,18 +147,18 @@ export function MetricWidget(props: MetricWidgetProps) {
               <p className="text-xs text-muted-foreground">{data.subtitle}</p>
             )}
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground font-mono bg-muted/50 px-2 py-1 rounded-lg">
+          <div className="flex items-center gap-2 text-xs font-bold text-foreground font-mono bg-muted/50 px-2 py-1 rounded-lg">
             <Clock className="size-3.5 text-primary" />
             <span>{data.totalLabel}</span>
           </div>
         </div>
 
         {/* Barras Minimalistas Nativas em Grade 4px */}
-        <div className="pt-2 flex items-end justify-between gap-1.5 h-20">
+        <div className="pt-2 flex items-end justify-between gap-2 h-20">
           {data.dataPoints.map((dp, idx) => {
             const heightPercent = Math.max(10, Math.round((dp.value / maxValue) * 100));
             return (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+              <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
                 <div className="w-full h-14 flex items-end">
                   <div
                     style={{ height: `${heightPercent}%` }}
@@ -187,7 +187,7 @@ export function MetricWidget(props: MetricWidgetProps) {
     const isPositive = (data.trendPercentage ?? 0) >= 0;
 
     return (
-      <div className="w-full max-w-sm p-4 sm:p-5 rounded-2xl bg-card border border-border/60 shadow-2xs select-none space-y-2">
+      <div className="w-full max-w-sm p-4 sm:p-5 rounded-lg bg-card border border-border/60 shadow-2xs select-none space-y-2">
         <span className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground/75 truncate">
           {data.title}
         </span>
@@ -200,7 +200,7 @@ export function MetricWidget(props: MetricWidgetProps) {
           {data.trendPercentage !== undefined && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold font-mono",
+                "inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold font-mono",
                 isPositive
                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                   : "bg-rose-500/10 text-rose-600 dark:text-rose-400"

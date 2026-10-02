@@ -167,7 +167,7 @@ function EditableStockCell({
  return (
  <div
  onClick={() => setEditing(true)}
- className="font-mono text-xs cursor-text hover:bg-muted/50 px-1.5 py-0.5 rounded transition-colors border border-transparent hover:border-border inline-flex items-center gap-1"
+ className="font-mono text-xs cursor-text hover:bg-muted/50 px-2 py-1 rounded transition-colors border border-transparent hover:border-border inline-flex items-center gap-1"
  title="Clique para editar estoque"
  >
  <span className={initialStock > 0 ? "text-foreground font-semibold" : "text-destructive font-bold"}>
@@ -408,12 +408,12 @@ function AdminProductsPage() {
  return (
     <div className="space-y-6">
       {/* Abas Principais do Catálogo (Estilo Apple HIG / Omnichannel) */}
-      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 border border-border/60 w-fit">
+      <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/40 border border-border/60 w-fit">
         <button
           type="button"
           onClick={() => setMainTab("products")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
             mainTab === "products"
               ? "bg-background text-foreground shadow-2xs font-black"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
@@ -425,7 +425,7 @@ function AdminProductsPage() {
           type="button"
           onClick={() => setMainTab("complements")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
             mainTab === "complements"
               ? "bg-background text-foreground shadow-2xs font-black"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
@@ -491,7 +491,7 @@ function AdminProductsPage() {
 
  {/* Barra Flutuante de Ações em Lote */}
  {selectedIds.length > 0 && (
- <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border border-primary/30 bg-primary/10 dark:bg-primary/20 rounded-xl animate-in fade-in-50 gap-3">
+ <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border border-primary/30 bg-primary/10 dark:bg-primary/20 rounded-lg animate-in fade-in-50 gap-3">
  <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
  <Badge variant="default" className="font-bold">
  {selectedIds.length}
@@ -545,8 +545,8 @@ function AdminProductsPage() {
 
  {/* Tabela de Produtos */}
  {filteredProducts.length === 0 ? (
- <div className="py-12 text-center rounded-2xl border-0 bg-card/60 space-y-4">
- <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+ <div className="py-12 text-center rounded-lg border-0 bg-card/60 space-y-4">
+ <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
  <Package className="size-6" />
  </div>
  <div className="space-y-1">
@@ -562,7 +562,7 @@ function AdminProductsPage() {
  {statusFilter === "active" && (
  <Button
  asChild
- className="h-11 px-6 rounded-xl font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+ className="h-11 px-6 rounded-lg font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
  >
  <Link to="/workspace/catalogo/produtos/novo">
  <Plus className="size-4" />
@@ -583,7 +583,7 @@ function AdminProductsPage() {
  return (
  <div
  key={product.id}
- className={`p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-3 transition-all ${
+ className={`p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-3 transition-all ${
  isSelected ? "ring-2 ring-primary/40 bg-primary/5" : ""
  }`}
  >
@@ -601,10 +601,10 @@ function AdminProductsPage() {
  <img
  src={cover}
  alt=""
- className="size-18 object-cover rounded-xl shrink-0 border border-border/40"
+ className="size-18 object-cover rounded-lg shrink-0 border border-border/40"
  />
  ) : (
- <div className="size-18 bg-muted/60 border border-border/40 rounded-xl flex items-center justify-center shrink-0">
+ <div className="size-18 bg-muted/60 border border-border/40 rounded-lg flex items-center justify-center shrink-0">
  <Package className="size-7 text-muted-foreground" aria-hidden />
  </div>
  )}
@@ -629,7 +629,7 @@ function AdminProductsPage() {
  ? "outline"
  : "secondary"
  }
- className="text-xs px-2 py-0.5 rounded-full font-semibold"
+ className="text-xs px-2 py-1 rounded-full font-semibold"
  >
  {product.status === "published"
  ? "Publicado"
@@ -645,7 +645,7 @@ function AdminProductsPage() {
  </div>
 
  {/* Preço e Estoque em Destaque com Edição Direta */}
- <div className="pt-2.5 border-t border-border/40 flex items-center justify-between gap-2">
+ <div className="pt-3 border-t border-border/40 flex items-center justify-between gap-2">
  <div className="flex items-baseline gap-2">
  <EditablePriceCell
  productId={product.id}
@@ -659,7 +659,7 @@ function AdminProductsPage() {
  ) : null}
  </div>
 
- <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-xl border border-border/40">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 px-3 py-2 rounded-lg border border-border/40">
  <span className="font-medium">Estoque:</span>
  <EditableStockCell
  productId={product.id}
@@ -674,7 +674,7 @@ function AdminProductsPage() {
  </div>
 
  {/* VISÃO DESKTOP: DataGrid / Tabela de Alta Densidade */}
- <div className="hidden md:block rounded-2xl overflow-hidden bg-surface-paper border border-border/40 shadow-2xs">
+ <div className="hidden md:block rounded-lg overflow-hidden bg-surface-paper border border-border/40 shadow-2xs">
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/30">

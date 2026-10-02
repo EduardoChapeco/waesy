@@ -97,7 +97,7 @@ export function StoreShareQrModal({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border-border/70">
+ <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-lg border-border/70">
  <DialogHeader className="p-6 pb-2 text-left space-y-1">
  <div className="flex items-center gap-2">
  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary uppercase">
@@ -115,7 +115,7 @@ export function StoreShareQrModal({
 
  <div className="px-6 py-2 space-y-5">
  {/* Card Visual de Display para Impressão */}
- <div className="p-5 rounded-2xl bg-muted/20 border border-border/60 flex flex-col items-center justify-center text-center space-y-3 shadow-2xs print:border-none print:shadow-none">
+ <div className="p-5 rounded-lg bg-muted/20 border border-border/60 flex flex-col items-center justify-center text-center space-y-3 shadow-2xs print:border-none print:shadow-none">
  <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
  {store.logo_url ? (
  <img src={store.logo_url} alt={store.name} className="size-full object-cover" />
@@ -129,7 +129,7 @@ export function StoreShareQrModal({
  </div>
 
  {/* Imagem do QR Code em Alta Resolução */}
- <div className="p-3 rounded-2xl bg-white border border-border/80 shadow-xs">
+ <div className="p-3 rounded-lg bg-white border border-border/80 shadow-xs">
  <img
  src={qrImageUrl}
  alt={`QR Code de ${store.name}`}
@@ -139,20 +139,20 @@ export function StoreShareQrModal({
  </div>
 
  {/* Link Copiável */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <span className="text-xs font-semibold text-foreground">{semantics.directLinkLabel}</span>
  <div className="flex items-center gap-2">
  <Input
  readOnly
  value={storeUrl}
- className="h-10 text-xs font-mono bg-muted/40 rounded-xl"
+ className="h-10 text-xs font-mono bg-muted/40 rounded-lg"
  />
  <Button
  type="button"
  onClick={handleCopyLink}
  size="sm"
  variant="outline"
- className="h-10 px-3 rounded-xl text-xs font-bold shrink-0 gap-1.5 cursor-pointer"
+ className="h-10 px-3 rounded-lg text-xs font-bold shrink-0 gap-2 cursor-pointer"
  >
  {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
  <span>{copied ? "Copiado" : "Copiar"}</span>
@@ -166,7 +166,7 @@ export function StoreShareQrModal({
  type="button"
  onClick={handleShareWhatsApp}
  size="sm"
- className="h-10 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer"
+ className="h-10 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer"
  >
  <WhatsappLogo className="size-4" weight="bold" />
  <span>Enviar WhatsApp</span>
@@ -176,7 +176,7 @@ export function StoreShareQrModal({
  onClick={handleShareNative}
  size="sm"
  variant="outline"
- className="h-10 rounded-xl text-xs font-bold gap-2 cursor-pointer border-border/80"
+ className="h-10 rounded-lg text-xs font-bold gap-2 cursor-pointer border-border/80"
  >
  <Share2 className="size-3.5" />
  <span>Compartilhar</span>
@@ -190,7 +190,7 @@ export function StoreShareQrModal({
  variant="ghost"
  size="sm"
  onClick={handlePrint}
- className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 cursor-pointer"
  >
  <Printer className="size-3.5" />
  <span>Imprimir</span>
@@ -200,7 +200,7 @@ export function StoreShareQrModal({
  type="button"
  onClick={handleDownloadQr}
  size="sm"
- className="rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1.5 cursor-pointer"
+ className="rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer"
  >
  <Download className="size-3.5" />
  <span>Baixar PNG</span>

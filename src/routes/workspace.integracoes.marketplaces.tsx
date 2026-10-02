@@ -492,12 +492,12 @@ function MarketplaceHubPage() {
         />
         <div className="flex items-center gap-2">
           
-          <Button asChild variant="outline" className="h-10 rounded-xl text-xs font-medium">
+          <Button asChild variant="outline" className="h-10 rounded-lg text-xs font-medium">
             <Link to="/workspace/fiscal/nfe">
               Módulo Fiscal (NF-e)
             </Link>
           </Button>
-          <Button asChild className="h-10 rounded-xl text-xs font-semibold bg-foreground text-background">
+          <Button asChild className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background">
             <Link to="/workspace/pedidos/expedicao">
               Expedição WMS
             </Link>
@@ -507,9 +507,9 @@ function MarketplaceHubPage() {
 
       {/* V143 Truth Engine: Silent Empty State quando nenhum marketplace está conectado */}
       {totalConnected === 0 && (
-        <div className="rounded-2xl border border-border/70 bg-card p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="rounded-lg border border-border/70 bg-card p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="size-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground grayscale shrink-0">
+            <div className="size-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground grayscale shrink-0">
               <Utensils className="size-6" />
             </div>
             <div className="space-y-1">
@@ -522,7 +522,7 @@ function MarketplaceHubPage() {
           <Button
             size="sm"
             onClick={() => handleOpenConfig(PLATFORMS_CATALOG[1])}
-            className="h-11 rounded-xl text-xs font-bold px-5 shrink-0"
+            className="h-11 rounded-lg text-xs font-bold px-5 shrink-0"
           >
             Ativar Integração
           </Button>
@@ -531,7 +531,7 @@ function MarketplaceHubPage() {
 
       {/* Métricas Financeiras e Operacionais Reais */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <p className="text-xs text-muted-foreground font-medium">Canais Ativos</p>
           <p className="text-2xl font-bold tracking-tight mt-1 text-foreground">
             {totalConnected} <span className="text-xs text-muted-foreground font-normal">/ {PLATFORMS_CATALOG.length}</span>
@@ -539,7 +539,7 @@ function MarketplaceHubPage() {
           <p className="text-xs text-emerald-600 font-medium mt-1">Conexões oficiais ativas</p>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <p className="text-xs text-muted-foreground font-medium">Vendas em Marketplaces</p>
           <p className="text-2xl font-bold tracking-tight mt-1 text-foreground">
             {formatMoney(totalGrossSalesCents)}
@@ -547,7 +547,7 @@ function MarketplaceHubPage() {
           <p className="text-xs text-muted-foreground mt-1">Faturamento bruto nos canais</p>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <p className="text-xs text-muted-foreground font-medium">Taxas de Intermediação</p>
           <p className="text-2xl font-bold tracking-tight mt-1 text-rose-600">
             {formatMoney(totalFeesCents)}
@@ -555,7 +555,7 @@ function MarketplaceHubPage() {
           <p className="text-xs text-muted-foreground mt-1">Comissões retidas nas plataformas</p>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <p className="text-xs text-muted-foreground font-medium">Repasse Líquido D+0</p>
           <p className="text-2xl font-bold tracking-tight mt-1 text-emerald-600">
             {formatMoney(totalNetCents)}
@@ -570,7 +570,7 @@ function MarketplaceHubPage() {
           type="button"
           onClick={() => setMainView("connectors")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer",
+            "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
             mainView === "connectors"
               ? "bg-foreground text-background"
               : "text-muted-foreground hover:text-foreground bg-muted/40"
@@ -582,7 +582,7 @@ function MarketplaceHubPage() {
           type="button"
           onClick={() => setMainView("mapping")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer",
+            "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
             mainView === "mapping"
               ? "bg-foreground text-background"
               : "text-muted-foreground hover:text-foreground bg-muted/40"
@@ -594,7 +594,7 @@ function MarketplaceHubPage() {
           type="button"
           onClick={() => setMainView("audit")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer",
+            "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
             mainView === "audit"
               ? "bg-foreground text-background"
               : "text-muted-foreground hover:text-foreground bg-muted/40"
@@ -656,14 +656,14 @@ function MarketplaceHubPage() {
                 <div
                   key={item.platform}
                   className={cn(
-                    "rounded-2xl border p-5 flex flex-col justify-between transition-all bg-card shadow-xs min-h-[195px]",
+                    "rounded-lg border p-5 flex flex-col justify-between transition-all bg-card shadow-xs min-h-[195px]",
                     isConnected ? "border-emerald-500/40 bg-emerald-500/[0.02]" : "border-border/70"
                   )}
                 >
                   <div className="space-y-1">
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="size-10 rounded-xl bg-muted text-foreground border border-border/60 flex items-center justify-center shadow-2xs">
+                        <div className="size-10 rounded-lg bg-muted text-foreground border border-border/60 flex items-center justify-center shadow-2xs">
                           <Icon className="size-5" />
                         </div>
                         <div>
@@ -723,7 +723,7 @@ function MarketplaceHubPage() {
                       </a>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {isConnected ? (
                         <>
                           <Button
@@ -739,7 +739,7 @@ function MarketplaceHubPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 px-2.5 text-xs font-medium cursor-pointer"
+                            className="h-8 px-3 text-xs font-medium cursor-pointer"
                             onClick={() => syncMutation.mutate(item.platform)}
                             disabled={syncMutation.isPending}
                           >
@@ -778,7 +778,7 @@ function MarketplaceHubPage() {
       {/* ========================================================================= */}
       {mainView === "mapping" && (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-xs space-y-4">
+          <div className="rounded-lg border border-border/70 bg-card p-6 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h3 className="font-bold text-base text-foreground">Catálogo Integrado e Vínculo de SKUs</h3>
@@ -794,7 +794,7 @@ function MarketplaceHubPage() {
                     setMappingPlatform("mercadolivre");
                     setMappingModalOpen(true);
                   }}
-                  className="rounded-xl text-xs font-bold gap-1.5 h-9 px-4 bg-primary hover:opacity-90 text-primary-foreground cursor-pointer shadow-xs"
+                  className="rounded-lg text-xs font-bold gap-2 h-9 px-4 bg-primary hover:opacity-90 text-primary-foreground cursor-pointer shadow-xs"
                 >
                   <ShoppingBag className="size-3.5" />
                   <span>Vincular ao Mercado Livre</span>
@@ -802,7 +802,7 @@ function MarketplaceHubPage() {
               </div>
             </div>
 
-            <div className="border border-border/70 rounded-xl overflow-hidden">
+            <div className="border border-border/70 rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40 text-xs">
@@ -863,7 +863,7 @@ function MarketplaceHubPage() {
                                       type="button"
                                       onClick={() => deleteMappingMutation.mutate({ productId: item.id, platform: ch as MarketplacePlatform })}
                                       disabled={deleteMappingMutation.isPending}
-                                      className="opacity-40 hover:opacity-100 hover:text-destructive cursor-pointer ml-0.5 text-xs leading-none"
+                                      className="opacity-40 hover:opacity-100 hover:text-destructive cursor-pointer ml-1 text-xs leading-none"
                                       title={`Desvincular canal ${ch}`}
                                     >
                                       ×
@@ -873,11 +873,11 @@ function MarketplaceHubPage() {
                               </div>
                             )}
                           </TableCell>
-                          <TableCell className="text-right space-x-1.5">
+                          <TableCell className="text-right space-x-2">
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-8 px-2.5 text-xs font-medium cursor-pointer"
+                              className="h-8 px-3 text-xs font-medium cursor-pointer"
                               onClick={() => syncStockMutation.mutate({ productId: item.id, newStockQty: item.stock_on_hand })}
                               disabled={syncStockMutation.isPending}
                               title="Sincronizar estoque nos canais"
@@ -887,7 +887,7 @@ function MarketplaceHubPage() {
                             </Button>
                             <Button
                               size="sm"
-                              className="h-8 px-2.5 text-xs font-semibold bg-foreground text-background cursor-pointer"
+                              className="h-8 px-3 text-xs font-semibold bg-foreground text-background cursor-pointer"
                               onClick={() => handleOpenMapping(item)}
                             >
                               <Plus className="size-3 mr-1" /> Vincular Canal
@@ -910,7 +910,7 @@ function MarketplaceHubPage() {
       {mainView === "audit" && (
         <div className="space-y-6">
           {/* Tabela de Eventos de Webhooks Recebidos */}
-          <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-xs space-y-4">
+          <div className="rounded-lg border border-border/70 bg-card p-6 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h3 className="font-bold text-base text-foreground flex items-center gap-2">
@@ -930,7 +930,7 @@ function MarketplaceHubPage() {
               </Button>
             </div>
 
-            <div className="border border-border/70 rounded-xl overflow-hidden">
+            <div className="border border-border/70 rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40 text-xs">
@@ -1000,12 +1000,12 @@ function MarketplaceHubPage() {
           </div>
 
           {/* Tabela de Logs de Sincronização */}
-          <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-xs space-y-4">
+          <div className="rounded-lg border border-border/70 bg-card p-6 shadow-xs space-y-4">
             <h3 className="font-bold text-base text-foreground flex items-center gap-2">
               <History className="size-4 text-primary" /> Histórico de Despacho e Sincronização
             </h3>
 
-            <div className="border border-border/70 rounded-xl overflow-hidden">
+            <div className="border border-border/70 rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40 text-xs">
@@ -1070,7 +1070,7 @@ function MarketplaceHubPage() {
 
       {/* Modal 1: Configurar Conexão de Canal */}
       <Dialog open={configModalOpen} onOpenChange={setConfigModalOpen}>
-        <DialogContent className="max-w-md rounded-2xl p-6">
+        <DialogContent className="max-w-md rounded-lg p-6">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               Configurar {selectedPlatform?.name}
@@ -1082,23 +1082,23 @@ function MarketplaceHubPage() {
 
           <div className="space-y-4 py-2">
             {/* Apelido da conta */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Apelido da Conta / Loja</Label>
               <Input
                 id="connector-nickname"
                 placeholder="Ex: Loja Oficial SP"
                 value={accountNickname}
                 onChange={(e) => setAccountNickname(e.target.value)}
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
 
             {/* Campos dinâmicos específicos da plataforma (Anti-GAP C1) */}
             {selectedPlatform?.credentialFields.map((field) => (
-              <div key={field.key} className="space-y-1.5">
+              <div key={field.key} className="space-y-2">
                 <Label htmlFor={`cred-${field.key}`} className="text-xs font-medium">
                   {field.label}
-                  {field.required && <span className="text-rose-500 ml-0.5">*</span>}
+                  {field.required && <span className="text-rose-500 ml-1">*</span>}
                 </Label>
                 <Input
                   id={`cred-${field.key}`}
@@ -1106,7 +1106,7 @@ function MarketplaceHubPage() {
                   placeholder={field.placeholder}
                   value={formValues[field.key] || ""}
                   onChange={(e) => setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  className="h-10 text-xs rounded-xl font-mono"
+                  className="h-10 text-xs rounded-lg font-mono"
                   autoComplete={field.type === "password" ? "new-password" : undefined}
                 />
                 {field.hint && (
@@ -1141,13 +1141,13 @@ function MarketplaceHubPage() {
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">
             <Button
               variant="outline"
-              className="h-10 rounded-xl text-xs cursor-pointer"
+              className="h-10 rounded-lg text-xs cursor-pointer"
               onClick={() => setConfigModalOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="h-10 rounded-xl text-xs font-semibold bg-foreground text-background cursor-pointer"
+              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
               onClick={handleSaveConfig}
               disabled={saveConnectorMutation.isPending}
             >
@@ -1159,7 +1159,7 @@ function MarketplaceHubPage() {
 
       {/* Modal 2: URL de Webhook do Canal */}
       <Dialog open={webhookModalOpen} onOpenChange={setWebhookModalOpen}>
-        <DialogContent className="max-w-md rounded-2xl p-6">
+        <DialogContent className="max-w-md rounded-lg p-6">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               Webhook URL — {selectedPlatform?.name}
@@ -1170,7 +1170,7 @@ function MarketplaceHubPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">URL Canônica de Recepção (POST)</Label>
               <div className="flex items-center gap-2">
                 <Input
@@ -1180,7 +1180,7 @@ function MarketplaceHubPage() {
                       ? `${window.location.origin}/api/webhooks/marketplaces?platform=${selectedPlatform?.platform || "mercadolivre"}`
                       : `/api/webhooks/marketplaces?platform=${selectedPlatform?.platform || "mercadolivre"}`
                   }
-                  className="h-10 text-xs rounded-xl font-mono bg-muted/30"
+                  className="h-10 text-xs rounded-lg font-mono bg-muted/30"
                 />
                 <Button
                   size="sm"
@@ -1197,7 +1197,7 @@ function MarketplaceHubPage() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-muted/40 p-3 text-xs text-muted-foreground space-y-1.5">
+            <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground space-y-2">
               <p className="font-semibold text-foreground">Garantias Técnicas Ativas:</p>
               <p>• Idempotência transacional com prevenção estrita de duplicidade.</p>
               <p>• Inserção automática na tabela mestra de pedidos e KDS.</p>
@@ -1207,7 +1207,7 @@ function MarketplaceHubPage() {
 
           <div className="flex justify-end pt-2">
             <Button
-              className="h-10 rounded-xl text-xs font-semibold bg-foreground text-background cursor-pointer"
+              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
               onClick={() => setWebhookModalOpen(false)}
             >
               Fechar
@@ -1218,7 +1218,7 @@ function MarketplaceHubPage() {
 
       {/* Modal 3: Vincular Canal ao Produto */}
       <Dialog open={mappingModalOpen} onOpenChange={setMappingModalOpen}>
-        <DialogContent className="max-w-md rounded-2xl p-6">
+        <DialogContent className="max-w-md rounded-lg p-6">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               Vincular Canal ao Produto
@@ -1229,12 +1229,12 @@ function MarketplaceHubPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Plataforma Externa</Label>
               <select
                 value={mappingPlatform}
                 onChange={(e) => setMappingPlatform(e.target.value as any)}
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs"
+                className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs"
               >
                 <option value="mercadolivre">Mercado Livre</option>
                 <option value="ifood">iFood</option>
@@ -1244,27 +1244,27 @@ function MarketplaceHubPage() {
               </select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">ID do Anúncio Externo (Listing ID)</Label>
               <Input
                 placeholder="Ex: MLB9988223311 ou 492021"
                 value={externalListingId}
                 onChange={(e) => setExternalListingId(e.target.value)}
-                className="h-10 text-xs rounded-xl font-mono"
+                className="h-10 text-xs rounded-lg font-mono"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">SKU no Canal (Opcional)</Label>
               <Input
                 placeholder="Ex: CAM-BRANCA-G"
                 value={externalSku}
                 onChange={(e) => setExternalSku(e.target.value)}
-                className="h-10 text-xs rounded-xl font-mono"
+                className="h-10 text-xs rounded-lg font-mono"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Acréscimo de Margem no Canal (%)</Label>
               <Input
                 type="number"
@@ -1272,9 +1272,9 @@ function MarketplaceHubPage() {
                 max="100"
                 value={priceMarginPercent}
                 onChange={(e) => setPriceMarginPercent(Number(e.target.value))}
-                className="h-10 text-xs rounded-xl font-mono"
+                className="h-10 text-xs rounded-lg font-mono"
               />
-              <div className="flex items-center justify-between text-xs text-muted-foreground pt-0.5">
+              <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
                 <span>Compensa taxas e comissões da plataforma.</span>
                 {selectedProductForMapping && (
                   <span className="font-semibold text-foreground">
@@ -1288,13 +1288,13 @@ function MarketplaceHubPage() {
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">
             <Button
               variant="outline"
-              className="h-10 rounded-xl text-xs cursor-pointer"
+              className="h-10 rounded-lg text-xs cursor-pointer"
               onClick={() => setMappingModalOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="h-10 rounded-xl text-xs font-semibold bg-foreground text-background cursor-pointer"
+              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
               onClick={handleSaveMapping}
               disabled={mapProductMutation.isPending || !externalListingId.trim()}
             >

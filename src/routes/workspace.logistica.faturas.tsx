@@ -144,7 +144,7 @@ function WorkspaceLogisticsInvoicesPage() {
               onClick={handleExportCSV}
               variant="outline"
               size="sm"
-              className="font-bold text-xs gap-1.5 h-10 px-3.5 rounded-xl cursor-pointer"
+              className="font-bold text-xs gap-2 h-10 px-4 rounded-lg cursor-pointer"
             >
               <FileSpreadsheet className="size-4 text-emerald-600" />
               <span>Exportar CSV</span>
@@ -152,7 +152,7 @@ function WorkspaceLogisticsInvoicesPage() {
             <Button
               asChild
               size="sm"
-              className="font-bold text-xs bg-primary text-primary-foreground gap-1.5 h-10 px-4 rounded-xl cursor-pointer shadow-2xs"
+              className="font-bold text-xs bg-primary text-primary-foreground gap-2 h-10 px-4 rounded-lg cursor-pointer shadow-2xs"
             >
               <Link to="/workspace/pedidos/frota">
                 <Truck className="size-4" />
@@ -165,8 +165,8 @@ function WorkspaceLogisticsInvoicesPage() {
 
       {/* ── 4 KPIS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Clock className="size-3.5 text-amber-600" />
             Pendente de Repasse
           </span>
@@ -178,8 +178,8 @@ function WorkspaceLogisticsInvoicesPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
             Total Liquidado
           </span>
@@ -191,8 +191,8 @@ function WorkspaceLogisticsInvoicesPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Truck className="size-3.5 text-primary" />
             Corridas / Entregas
           </span>
@@ -204,8 +204,8 @@ function WorkspaceLogisticsInvoicesPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Coins className="size-3.5 text-foreground" />
             Ticket Médio por Frete
           </span>
@@ -219,23 +219,23 @@ function WorkspaceLogisticsInvoicesPage() {
       </div>
 
       {/* ── BARRA DE FERRAMENTAS E FILTROS ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/70 shadow-2xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/70 shadow-2xs">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por entregador, telefone ou ciclo..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-10 rounded-xl bg-background border-border/80 text-xs font-mono"
+            className="pl-9 h-10 rounded-lg bg-background border-border/80 text-xs font-mono"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
           <Button
             variant={statusFilter === "all" ? "default" : "outline"}
             size="sm"
             onClick={() => setStatusFilter("all")}
-            className="h-9 rounded-xl text-xs font-bold cursor-pointer"
+            className="h-9 rounded-lg text-xs font-bold cursor-pointer"
           >
             Todos ({invoices.length})
           </Button>
@@ -243,7 +243,7 @@ function WorkspaceLogisticsInvoicesPage() {
             variant={statusFilter === "pending" ? "default" : "outline"}
             size="sm"
             onClick={() => setStatusFilter("pending")}
-            className="h-9 rounded-xl text-xs font-bold cursor-pointer"
+            className="h-9 rounded-lg text-xs font-bold cursor-pointer"
           >
             Pendentes ({kpis.pendingCount})
           </Button>
@@ -251,7 +251,7 @@ function WorkspaceLogisticsInvoicesPage() {
             variant={statusFilter === "paid" ? "default" : "outline"}
             size="sm"
             onClick={() => setStatusFilter("paid")}
-            className="h-9 rounded-xl text-xs font-bold cursor-pointer"
+            className="h-9 rounded-lg text-xs font-bold cursor-pointer"
           >
             Liquidados ({kpis.paidCount})
           </Button>
@@ -259,7 +259,7 @@ function WorkspaceLogisticsInvoicesPage() {
       </div>
 
       {/* ── TABELA DE FATURAS ── */}
-      <div className="rounded-2xl bg-card border border-border/70 overflow-hidden shadow-2xs">
+      <div className="rounded-lg bg-card border border-border/70 overflow-hidden shadow-2xs">
         <div className="p-4 border-b border-border/50 bg-muted/20 flex items-center justify-between">
           <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
             Demonstrativo de Repasses ({filteredInvoices.length})
@@ -269,7 +269,7 @@ function WorkspaceLogisticsInvoicesPage() {
 
         {filteredInvoices.length === 0 && !isLoading ? (
           <div className="p-16 text-center space-y-4">
-            <div className="size-12 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto text-muted-foreground">
+            <div className="size-12 rounded-lg bg-muted/50 flex items-center justify-center mx-auto text-muted-foreground">
               <Inbox className="size-6" />
             </div>
             <div className="space-y-1 max-w-sm mx-auto">
@@ -282,10 +282,10 @@ function WorkspaceLogisticsInvoicesPage() {
               <Button
                 asChild
                 variant="outline"
-                className="rounded-xl font-bold text-xs h-10 px-4"
+                className="rounded-lg font-bold text-xs h-10 px-4"
               >
                 <Link to="/workspace/pedidos/frota">
-                  <Truck className="size-3.5 mr-1.5" />
+                  <Truck className="size-3.5 mr-2" />
                   <span>Gerenciar Frota e Despachos</span>
                 </Link>
               </Button>
@@ -332,7 +332,7 @@ function WorkspaceLogisticsInvoicesPage() {
                       onClick={() => setSelectedInvoice(inv)}
                       variant="outline"
                       size="sm"
-                      className="h-10 px-3 rounded-xl text-xs font-bold gap-1 cursor-pointer"
+                      className="h-10 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer"
                     >
                       <Eye className="size-3.5 text-muted-foreground" />
                       <span className="hidden sm:inline">Detalhes</span>
@@ -343,7 +343,7 @@ function WorkspaceLogisticsInvoicesPage() {
                         onClick={() => handleMarkAsPaid(inv.id)}
                         disabled={settleMutation.isPending}
                         size="sm"
-                        className="h-10 px-4 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer shadow-2xs"
+                        className="h-10 px-4 rounded-lg font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-2xs"
                       >
                         {settleMutation.isPending ? (
                           <Loader2 className="size-3.5 animate-spin" />
@@ -368,7 +368,7 @@ function WorkspaceLogisticsInvoicesPage() {
 
       {/* ── MODAL / DIALOG DE COMPROVANTE DE REPASSE ── */}
       <Dialog open={!!selectedInvoice} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
-        <DialogContent className="max-w-md rounded-2xl">
+        <DialogContent className="max-w-md rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
               Comprovante de Repasse de Frota
@@ -380,7 +380,7 @@ function WorkspaceLogisticsInvoicesPage() {
 
           {selectedInvoice && (
             <div className="space-y-4 pt-2">
-              <div className="p-4 rounded-xl bg-muted/30 border border-border/60 space-y-2">
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-2">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-muted-foreground">Entregador:</span>
                   <span className="font-bold text-foreground">{selectedInvoice.courier_name}</span>
@@ -412,7 +412,7 @@ function WorkspaceLogisticsInvoicesPage() {
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-card border border-border/70 flex items-center justify-between">
+              <div className="p-4 rounded-lg bg-card border border-border/70 flex items-center justify-between">
                 <div>
                   <span className="text-xs uppercase font-bold text-muted-foreground">Valor Líquido do Repasse</span>
                   <p className="text-xl font-mono font-bold text-foreground">
@@ -429,7 +429,7 @@ function WorkspaceLogisticsInvoicesPage() {
               variant="outline"
               size="sm"
               onClick={() => setSelectedInvoice(null)}
-              className="rounded-xl h-10 text-xs font-bold"
+              className="rounded-lg h-10 text-xs font-bold"
             >
               Fechar
             </Button>
@@ -438,7 +438,7 @@ function WorkspaceLogisticsInvoicesPage() {
                 onClick={() => selectedInvoice && handleMarkAsPaid(selectedInvoice.id)}
                 disabled={settleMutation.isPending}
                 size="sm"
-                className="rounded-xl h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-2xs"
+                className="rounded-lg h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-2xs"
               >
                 {settleMutation.isPending ? (
                   <Loader2 className="size-3.5 animate-spin" />

@@ -90,12 +90,12 @@ export function WorkspaceDashboardSheet({
             </div>
 
             {/* Seletor de Período Temporal */}
-            <div className="flex items-center p-1 rounded-xl bg-muted/60 border border-border/50 text-xs font-semibold">
+            <div className="flex items-center p-1 rounded-lg bg-muted/60 border border-border/50 text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setPeriod("today")}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg transition-all cursor-pointer min-h-[36px]",
+                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-9",
                   period === "today"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -107,7 +107,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("7d")}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg transition-all cursor-pointer min-h-[36px]",
+                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-9",
                   period === "7d"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -119,7 +119,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("30d")}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg transition-all cursor-pointer min-h-[36px]",
+                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-9",
                   period === "30d"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -131,7 +131,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("all")}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg transition-all cursor-pointer min-h-[36px]",
+                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-9",
                   period === "all"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -150,14 +150,14 @@ export function WorkspaceDashboardSheet({
         <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-5">
           {/* Grid de Cards de Indicadores Principais */}
           {metrics.length > 0 && (
-            <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2 sm:gap-3.5">
+            <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2 sm:gap-4">
               {metrics.map((m) => {
                 const Icon = m.icon;
                 return (
                   <div
                     key={m.id || m.label || m.title}
                     className={cn(
-                      "p-4 sm:p-5 rounded-2xl border space-y-2 transition-all shadow-2xs",
+                      "p-4 sm:p-5 rounded-lg border space-y-2 transition-all shadow-2xs",
                       getVariantStyles(m.variant)
                     )}
                   >
@@ -177,7 +177,7 @@ export function WorkspaceDashboardSheet({
                     )}
 
                     {m.trend && (
-                      <div className="flex items-center gap-1.5 text-xs font-semibold pt-1">
+                      <div className="flex items-center gap-2 text-xs font-semibold pt-1">
                         <TrendingUp
                           className={cn(
                             "size-3.5",

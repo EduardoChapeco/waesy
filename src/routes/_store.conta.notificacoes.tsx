@@ -139,7 +139,7 @@ function NotificationsPage() {
         fallbackHref="/conta"
         badge={
           unreadCount > 0 ? (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {unreadCount} novas
             </Badge>
           ) : null
@@ -151,7 +151,7 @@ function NotificationsPage() {
               size="sm"
               onClick={() => markAllMutation.mutate()}
               disabled={markAllMutation.isPending}
-              className="h-8.5 px-3 rounded-xl border border-border/70 bg-card hover:bg-muted/50 font-semibold text-xs gap-1.5 cursor-pointer shadow-2xs active:scale-98"
+              className="h-8.5 px-3 rounded-lg border border-border/70 bg-card hover:bg-muted/50 font-semibold text-xs gap-2 cursor-pointer shadow-2xs active:scale-98"
             >
               <CheckCheck className="size-3.5 text-primary" />
               <span>Lidas</span>
@@ -161,7 +161,7 @@ function NotificationsPage() {
       />
 
       {/* ── 2. Tabs / Filtros Horizontais (Padrão Botão Grande) ── */}
-      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 no-scrollbar">
+      <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto pb-1 no-scrollbar">
         {CATEGORY_TABS.map((tab) => {
           const isActive = activeCategory === tab.id;
           return (
@@ -170,7 +170,7 @@ function NotificationsPage() {
               type="button"
               onClick={() => setActiveCategory(tab.id)}
               className={cn(
-                "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center select-none active:scale-98 shadow-2xs",
+                "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center select-none active:scale-98 shadow-2xs",
                 isActive
                   ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                   : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -200,13 +200,13 @@ function NotificationsPage() {
                     }
                   }}
                   className={cn(
-                    "p-3.5 sm:p-4 rounded-2xl bg-card border flex items-start gap-3.5 transition-all duration-200 cursor-pointer hover:border-foreground/30",
+                    "p-4 sm:p-4 rounded-lg bg-card border flex items-start gap-4 transition-all duration-200 cursor-pointer hover:border-foreground/30",
                     isSelected ? "border-primary ring-1 ring-primary bg-primary/5" : "border-border/60",
                     !item.isRead && !isSelected && "bg-muted/30 border-primary/40 font-medium"
                   )}
                 >
                   {/* Avatar Squircle */}
-                  <div className="size-10 rounded-xl bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
+                  <div className="size-10 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
                     {item.avatarUrl ? (
                       <img src={item.avatarUrl} alt="" className="size-full object-cover" />
                     ) : (
@@ -230,7 +230,7 @@ function NotificationsPage() {
                     </p>
 
                     {item.authorName && (
-                      <span className="text-[10px] font-semibold text-foreground/80 block pt-0.5 truncate">
+                      <span className="text-[10px] font-semibold text-foreground/80 block pt-1 truncate">
                         {item.authorName}
                       </span>
                     )}
@@ -248,11 +248,11 @@ function NotificationsPage() {
           {/* Coluna Direita: Painel de Leitura & Ação no Desktop (7 colunas no Desktop) */}
           <div className="hidden lg:block lg:col-span-7 lg:sticky lg:top-24">
             {activeNotification ? (
-              <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-6 animate-in fade-in duration-200">
+              <div className="bg-card rounded-lg border border-border/70 p-6 sm:p-7 space-y-6 animate-in fade-in duration-200">
                 {/* Cabeçalho do Leitor */}
                 <div className="flex items-start justify-between gap-4 border-b border-border/40 pb-5">
-                  <div className="flex items-center gap-3.5">
-                    <div className="size-12 rounded-2xl bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
+                  <div className="flex items-center gap-4">
+                    <div className="size-12 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
                       {activeNotification.avatarUrl ? (
                         <img src={activeNotification.avatarUrl} alt="" className="size-full object-cover" />
                       ) : (
@@ -274,7 +274,7 @@ function NotificationsPage() {
                           </span>
                         )}
                       </div>
-                      <h2 className="text-lg sm:text-xl font-black text-foreground tracking-tight mt-0.5">
+                      <h2 className="text-lg sm:text-xl font-black text-foreground tracking-tight mt-1">
                         {activeNotification.title}
                       </h2>
                     </div>
@@ -284,7 +284,7 @@ function NotificationsPage() {
                     <span className="text-xs font-mono text-muted-foreground block">
                       {getRelativeTime(activeNotification.createdAt)}
                     </span>
-                    <span className="text-[11px] text-muted-foreground/80 block mt-0.5">
+                    <span className="text-[11px] text-muted-foreground/80 block mt-1">
                       {getFullFormattedDate(activeNotification.createdAt)}
                     </span>
                   </div>
@@ -304,7 +304,7 @@ function NotificationsPage() {
                       <Button
                         type="button"
                         onClick={() => handleNotificationAction(activeNotification)}
-                        className="rounded-xl font-bold text-xs gap-1.5 h-10 px-5 cursor-pointer"
+                        className="rounded-lg font-bold text-xs gap-2 h-10 px-5 cursor-pointer"
                       >
                         <span>Abrir Conteúdo</span>
                         <ExternalLink className="size-3.5" />
@@ -318,7 +318,7 @@ function NotificationsPage() {
                 </div>
               </div>
             ) : (
-              <div className="bg-card rounded-2xl border border-dashed border-border/70 p-12 text-center space-y-2">
+              <div className="bg-card rounded-lg border border-dashed border-border/70 p-12 text-center space-y-2">
                 <Bell className="size-8 text-muted-foreground/50 mx-auto" />
                 <p className="text-sm font-semibold text-foreground">Nenhuma notificação selecionada</p>
                 <p className="text-xs text-muted-foreground">Selecione uma notificação na coluna ao lado para ler.</p>
@@ -327,7 +327,7 @@ function NotificationsPage() {
           </div>
         </div>
       ) : (
-        <div className="py-20 text-center space-y-3 bg-muted/10 rounded-2xl border-0 p-8">
+        <div className="py-20 text-center space-y-3 bg-muted/10 rounded-lg border-0 p-8">
           <Bell className="size-10 text-muted-foreground/40 mx-auto" />
           <h3 className="text-sm font-bold text-foreground">Nenhuma notificação encontrada</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">

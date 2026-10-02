@@ -156,13 +156,13 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
  </p>
  </div>
  {allItemsChecked ? (
- <Badge variant="success" className="text-sm py-1.5 px-3">
- <CheckCircle2 className="h-4 w-4 mr-1.5" />
+ <Badge variant="success" className="text-sm py-2 px-3">
+ <CheckCircle2 className="h-4 w-4 mr-2" />
  Pronto para Despacho
  </Badge>
  ) : (
- <Badge variant="outline" className="text-sm py-1.5 px-3 bg-background">
- <Box className="h-4 w-4 mr-1.5" />
+ <Badge variant="outline" className="text-sm py-2 px-3 bg-background">
+ <Box className="h-4 w-4 mr-2" />
  Faltam {totalExpected - totalPicked} itens
  </Badge>
  )}
@@ -197,7 +197,7 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
  </div>
 
  {item.image_url ? (
- <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden border bg-background">
+ <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden border bg-background">
  <img
  src={item.image_url}
  alt={item.product_title}
@@ -205,7 +205,7 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
  />
  </div>
  ) : (
- <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden border bg-muted flex items-center justify-center">
+ <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden border bg-muted flex items-center justify-center">
  <Box className="h-6 w-6 text-muted-foreground/50" />
  </div>
  )}
@@ -217,7 +217,7 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
  {item.product_title}
  </h4>
  {item.notes && (
- <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold italic mt-0.5">
+ <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold italic mt-1">
  Obs: {item.notes}
  </p>
  )}
@@ -244,8 +244,8 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
  </div>
 
  {!allItemsChecked && (
- <div className="flex items-start gap-3 p-3 bg-muted/40 text-foreground rounded-xl text-sm mt-4">
- <AlertCircle className="h-5 w-5 shrink-0 mt-0.5 text-muted-foreground" />
+ <div className="flex items-start gap-3 p-3 bg-muted/40 text-foreground rounded-lg text-sm mt-4">
+ <AlertCircle className="h-5 w-5 shrink-0 mt-1 text-muted-foreground" />
  <p>
  A transação de expedição está protegida via RLS/RPC. O servidor exige integridade
  total antes de permitir o despacho.

@@ -259,13 +259,13 @@ export default function TourismIncidentsPage() {
               <div
                 key={incident.id}
                 onClick={() => setSelectedId(incident.id)}
-                className="flex items-center justify-between p-3.5 sm:p-4 rounded-xl border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-all shadow-2xs group"
+                className="flex items-center justify-between p-4 sm:p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-all shadow-2xs group"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <IncidentTypeIcon type={incident.incident_type} />
                   </div>
-                  <div className="space-y-0.5 min-w-0 flex-1">
+                  <div className="space-y-1 min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-bold text-foreground">
                         {INCIDENT_TYPE_LABELS[incident.incident_type]}
@@ -340,30 +340,30 @@ export default function TourismIncidentsPage() {
 
                 {/* ANAC Rights badge for flight incidents */}
                 {isFlightType && anacRights?.material_assistance && (
-                  <div className="mt-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 grid grid-cols-2 gap-1.5 text-xs">
-                    <div className="flex items-center gap-1.5 col-span-2">
+                  <div className="mt-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 grid grid-cols-2 gap-2 text-xs">
+                    <div className="flex items-center gap-2 col-span-2">
                       <ShieldAlert className="size-3.5 text-amber-600" />
                       <span className="font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide text-xs">Direitos ANAC 400</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Utensils className="size-3 text-muted-foreground" />
                       <span className={anacRights.material_assistance.food_voucher ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-muted-foreground'}>
                         Alimentação: {anacRights.material_assistance.food_voucher ? 'Obrigatório' : 'Não requerido'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Hotel className="size-3 text-muted-foreground" />
                       <span className={anacRights.material_assistance.lodging_and_transfer ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-muted-foreground'}>
                         Hospedagem: {anacRights.material_assistance.lodging_and_transfer ? 'Obrigatório' : 'Não requerido'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <RefreshCw className="size-3 text-muted-foreground" />
                       <span className={anacRights.reaccommodation_options?.competitor_flights ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-muted-foreground'}>
                         Voo concorrente: {anacRights.reaccommodation_options?.competitor_flights ? 'Permitido' : 'Só própria CIA'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <FileText className="size-3 text-muted-foreground" />
                       <span className={anacRights.reaccommodation_options?.full_refund_eligible ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-muted-foreground'}>
                         Reembolso 100%: {anacRights.reaccommodation_options?.full_refund_eligible ? 'Direito' : 'Sujeito a regra'}
@@ -381,7 +381,7 @@ export default function TourismIncidentsPage() {
                         size="sm"
                         onClick={() => updateStatusMutation.mutate({ status: 'in_analysis' })}
                         disabled={updateStatusMutation.isPending}
-                        className="h-7 px-2.5 text-xs gap-1 font-semibold cursor-pointer"
+                        className="h-7 px-3 text-xs gap-1 font-semibold cursor-pointer"
                       >
                         Em Análise
                       </Button>
@@ -392,7 +392,7 @@ export default function TourismIncidentsPage() {
                         size="sm"
                         onClick={() => updateStatusMutation.mutate({ status: 'awaiting_airline' })}
                         disabled={updateStatusMutation.isPending}
-                        className="h-10 sm:h-8 px-3.5 sm:px-2.5 text-xs rounded-xl sm:rounded-lg gap-1 font-semibold cursor-pointer"
+                        className="h-10 sm:h-8 px-4 sm:px-3 text-xs rounded-lg sm:rounded-lg gap-1 font-semibold cursor-pointer"
                       >
                         Aguardando CIA
                       </Button>
@@ -402,7 +402,7 @@ export default function TourismIncidentsPage() {
                       size="sm"
                       onClick={() => updateStatusMutation.mutate({ status: 'resolved', note: 'Incidente resolvido pela agência.' })}
                       disabled={updateStatusMutation.isPending}
-                      className="h-10 sm:h-8 px-3.5 sm:px-2.5 text-xs rounded-xl sm:rounded-lg gap-1 text-emerald-600 hover:text-emerald-700 font-semibold cursor-pointer"
+                      className="h-10 sm:h-8 px-4 sm:px-3 text-xs rounded-lg sm:rounded-lg gap-1 text-emerald-600 hover:text-emerald-700 font-semibold cursor-pointer"
                     >
                       <CheckCircle2 className="size-3.5" />
                       Marcar Resolvido
@@ -418,7 +418,7 @@ export default function TourismIncidentsPage() {
                 </p>
                 {events.map((ev, i) => (
                   <div key={ev.id} className="flex gap-3">
-                    <div className="flex flex-col items-center gap-0.5 shrink-0">
+                    <div className="flex flex-col items-center gap-1 shrink-0">
                       <div className="size-6 rounded-full bg-muted flex items-center justify-center">
                         <EventIcon type={ev.event_type} />
                       </div>
@@ -428,7 +428,7 @@ export default function TourismIncidentsPage() {
                     </div>
                     <div className="pb-3 flex-1 min-w-0">
                       <p className="text-xs font-semibold text-foreground leading-snug">{ev.description}</p>
-                      <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                      <p className="text-xs text-muted-foreground font-mono mt-1">
                         {new Date(ev.created_at).toLocaleString('pt-BR', {
                           day: '2-digit', month: '2-digit', year: '2-digit',
                           hour: '2-digit', minute: '2-digit',
@@ -448,7 +448,7 @@ export default function TourismIncidentsPage() {
                   <select
                     value={replyType}
                     onChange={(e) => setReplyType(e.target.value as TourismEventType)}
-                    className="h-10 sm:h-8 px-3 rounded-xl sm:rounded-lg border border-input bg-background text-xs font-medium text-foreground focus:outline-none shrink-0 cursor-pointer"
+                    className="h-10 sm:h-8 px-3 rounded-lg sm:rounded-lg border border-input bg-background text-xs font-medium text-foreground focus:outline-none shrink-0 cursor-pointer"
                   >
                     <option value="note">Nota Interna</option>
                     <option value="airline_contact">Contato CIA</option>
@@ -467,12 +467,12 @@ export default function TourismIncidentsPage() {
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder="Registrar ação, contato ou observação..."
-                    className="h-10 rounded-xl text-xs flex-1"
+                    className="h-10 rounded-lg text-xs flex-1"
                   />
                   <Button
                     type="submit"
                     disabled={addEventMutation.isPending || !replyText.trim()}
-                    className="size-10 rounded-xl shrink-0 cursor-pointer"
+                    className="size-10 rounded-lg shrink-0 cursor-pointer"
                   >
                     <Send className="size-4" />
                   </Button>
@@ -482,7 +482,7 @@ export default function TourismIncidentsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full h-11 sm:h-9 rounded-xl gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 border-emerald-500/30 cursor-pointer"
+                    className="w-full h-11 sm:h-9 rounded-lg gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 border-emerald-500/30 cursor-pointer"
                     onClick={() => {
                       const msg = encodeURIComponent(
                         `Olá${detail.passenger_name ? ` ${detail.passenger_name}` : ''}! Estamos acompanhando sua situação${detail.booking_reference ? ` (Reserva: ${detail.booking_reference})` : ''} e trabalhando para resolver o mais rápido possível. Por favor aguarde nosso contato.`
@@ -526,7 +526,7 @@ export default function TourismIncidentsPage() {
                   <select
                     value={incidentType}
                     onChange={(e) => setIncidentType(e.target.value as TourismIncidentType)}
-                    className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs font-medium text-foreground focus:outline-none"
+                    className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs font-medium text-foreground focus:outline-none"
                   >
                     <option value="flight_change">Alteração de Voo pela CIA Aérea</option>
                     <option value="flight_cancellation">Cancelamento de Voo</option>
@@ -545,7 +545,7 @@ export default function TourismIncidentsPage() {
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value as TourismIncidentPriority)}
-                    className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs text-foreground focus:outline-none"
+                    className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs text-foreground focus:outline-none"
                   >
                     <option value="urgent">Urgente — Passageiro no aeroporto agora</option>
                     <option value="high">Alta — Viagem nas próximas 24h</option>
@@ -562,7 +562,7 @@ export default function TourismIncidentsPage() {
                       min={0}
                       value={delayHours}
                       onChange={(e) => setDelayHours(Number(e.target.value))}
-                      className="h-10 text-xs rounded-xl"
+                      className="h-10 text-xs rounded-lg"
                     />
                   </div>
                 )}
@@ -573,7 +573,7 @@ export default function TourismIncidentsPage() {
                     value={passengerName}
                     onChange={(e) => setPassengerName(e.target.value)}
                     placeholder="Nome completo"
-                    className="h-10 text-xs rounded-xl"
+                    className="h-10 text-xs rounded-lg"
                   />
                 </div>
 
@@ -583,7 +583,7 @@ export default function TourismIncidentsPage() {
                     value={passengerContact}
                     onChange={(e) => setPassengerContact(e.target.value)}
                     placeholder="+55 49 9 9999-9999"
-                    className="h-10 text-xs rounded-xl font-mono"
+                    className="h-10 text-xs rounded-lg font-mono"
                   />
                 </div>
 
@@ -593,7 +593,7 @@ export default function TourismIncidentsPage() {
                     value={bookingRef}
                     onChange={(e) => setBookingRef(e.target.value)}
                     placeholder="Ex: LABB3K, RO4521..."
-                    className="h-10 text-xs rounded-xl font-mono uppercase"
+                    className="h-10 text-xs rounded-lg font-mono uppercase"
                   />
                 </div>
 
@@ -605,7 +605,7 @@ export default function TourismIncidentsPage() {
                         value={airlineCode}
                         onChange={(e) => setAirlineCode(e.target.value.toUpperCase())}
                         placeholder="Ex: LA, G3, AD..."
-                        className="h-10 text-xs rounded-xl font-mono"
+                        className="h-10 text-xs rounded-lg font-mono"
                         maxLength={3}
                       />
                     </div>
@@ -615,7 +615,7 @@ export default function TourismIncidentsPage() {
                         value={flightNumber}
                         onChange={(e) => setFlightNumber(e.target.value.toUpperCase())}
                         placeholder="Ex: LA3214, G3 1234..."
-                        className="h-10 text-xs rounded-xl font-mono"
+                        className="h-10 text-xs rounded-lg font-mono"
                       />
                     </div>
                   </>
@@ -627,7 +627,7 @@ export default function TourismIncidentsPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Descreva o que aconteceu: o que a CIA comunicou, quando, e qual o impacto para o passageiro..."
-                    className="w-full h-24 p-3 rounded-xl border border-input bg-background text-xs text-foreground focus:outline-none resize-none leading-relaxed"
+                    className="w-full h-24 p-3 rounded-lg border border-input bg-background text-xs text-foreground focus:outline-none resize-none leading-relaxed"
                     required
                   />
                 </div>
@@ -639,17 +639,17 @@ export default function TourismIncidentsPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setNewOpen(false)}
-                className="h-10 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+                className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={createMutation.isPending || !description.trim()}
-                className="h-10 px-5 rounded-xl text-xs font-bold cursor-pointer"
+                className="h-10 px-5 rounded-lg text-xs font-bold cursor-pointer"
               >
                 {createMutation.isPending ? (
-                  <><Loader2 className="size-3 animate-spin mr-1.5" />Registrando...</>
+                  <><Loader2 className="size-3 animate-spin mr-2" />Registrando...</>
                 ) : (
                   'Registrar Incidente'
                 )}

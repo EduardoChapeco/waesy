@@ -99,7 +99,7 @@ export function StudioFrame({
  left: 0,
  backgroundColor: "#ffffff",
  }}
- className="shadow-2xl rounded-2xl overflow-hidden text-foreground border border-border/60 transition-transform duration-200"
+ className="shadow-2xl rounded-lg overflow-hidden text-foreground border border-border/60 transition-transform duration-200"
  >
  {children}
  </div>

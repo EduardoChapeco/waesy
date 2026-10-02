@@ -262,7 +262,7 @@ class BlockErrorBoundary extends React.Component<
  if (this.state.hasError) {
  if (this.props.isEditing) {
  return (
- <div className="p-4 border border-dashed border-destructive/40 bg-destructive/10 text-destructive rounded-xl text-sm w-full h-full flex flex-col items-center justify-center">
+ <div className="p-4 border border-dashed border-destructive/40 bg-destructive/10 text-destructive rounded-lg text-sm w-full h-full flex flex-col items-center justify-center">
  <span className="font-bold">Erro de Renderização no Bloco: {this.props.blockName}</span>
  <span className="text-xs opacity-80 mt-1">{this.state.error?.message}</span>
  </div>

@@ -89,7 +89,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div
  ref={ref}
  id="voucher-printable-area"
- className="w-full max-w-4xl mx-auto bg-white text-neutral-900 shadow-md border border-neutral-200 rounded-2xl overflow-hidden print:border-none print:shadow-none print:rounded-none print:m-0 print:w-full print:max-w-none text-xs"
+ className="w-full max-w-4xl mx-auto bg-white text-neutral-900 shadow-md border border-neutral-200 rounded-lg overflow-hidden print:border-none print:shadow-none print:rounded-none print:m-0 print:w-full print:max-w-none text-xs"
  style={{ fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif" }}
  >
  {/* ── HEADER DA AGÊNCIA & GUIA DE EMBARQUE ── */}
@@ -104,7 +104,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  />
  ) : (
  <div className="flex items-center gap-2">
- <div className="size-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+ <div className="size-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
  <Compass className="size-6" />
  </div>
  <div>
@@ -115,8 +115,8 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  )}
  </div>
 
- <div className="text-left sm:text-right space-y-0.5">
- <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-white font-mono text-[11px] font-bold">
+ <div className="text-left sm:text-right space-y-1">
+ <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white font-mono text-[11px] font-bold">
  <Ticket className="size-3 text-primary" />
  <span>{voucher.voucher_code}</span>
  </div>
@@ -135,17 +135,17 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  {/* ── 1. PASSAGEIROS TITULARES & ROOMING LIST ── */}
  {voucher.passengers && voucher.passengers.length > 0 && (
  <div className="space-y-3">
- <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
+ <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
  <Users className="size-4 text-neutral-500" />
  <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
  Passageiros e Documentação
  </span>
  </div>
- <div className="flex flex-col gap-2.5 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+ <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-3">
  {voucher.passengers.map((p: any, idx: number) => (
  <div
  key={idx}
- className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50/60 flex flex-col justify-between space-y-1.5"
+ className="p-4 rounded-lg border border-neutral-200 bg-neutral-50/60 flex flex-col justify-between space-y-2"
  >
  <span className="font-bold text-neutral-900 text-sm truncate">{p.name}</span>
  <div className="flex items-center gap-3 text-xs text-neutral-600 font-mono">
@@ -161,7 +161,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  {/* ── 2. VOOS & BILHETES AÉREOS ── */}
  {voucher.flights && voucher.flights.length > 0 && (
  <div className="space-y-3">
- <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
+ <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
  <Plane className="size-4 text-neutral-500" />
  <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
  Malha Aérea e Cartões de Embarque
@@ -172,15 +172,15 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  {voucher.flights.map((flight: any, idx: number) => (
  <div
  key={idx}
- className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 "
+ className="p-4 rounded-lg border border-neutral-200 bg-neutral-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4 "
  >
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center gap-2 flex-wrap">
  <span className="font-black text-base sm:text-lg text-neutral-900">
  {flight.origin || "Origem"} → {flight.destination || "Destino"}
  </span>
  {flight.class && (
- <span className="px-2.5 py-0.5 rounded-md bg-neutral-200 text-neutral-800 text-xs font-bold uppercase">
+ <span className="px-3 py-1 rounded-md bg-neutral-200 text-neutral-800 text-xs font-bold uppercase">
  {flight.class}
  </span>
  )}
@@ -201,7 +201,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
  )}
  {flight.locator && (
- <div className="bg-white px-3 py-1.5 rounded-lg border border-neutral-200 shadow-2xs">
+ <div className="bg-white px-3 py-2 rounded-lg border border-neutral-200 shadow-2xs">
  <span className="text-[10px] text-neutral-400 block uppercase font-sans">Localizador PNR</span>
  <span className="font-black text-neutral-900 text-sm tracking-wider">
  {flight.locator}
@@ -209,7 +209,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
  )}
  {flight.baggage && (
- <div className="flex items-center gap-1.5 text-xs text-neutral-600">
+ <div className="flex items-center gap-2 text-xs text-neutral-600">
  <Luggage className="size-3.5" />
  <span>{flight.baggage}</span>
  </div>
@@ -224,7 +224,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   {/* ── 3. HOSPEDAGEM & ACOMODAÇÃO ── */}
   {voucher.hotels && voucher.hotels.length > 0 && (
   <div className="space-y-3">
-  <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
+  <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
   <Building2 className="size-4 text-neutral-500" />
   <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
   Hospedagem e Voucher Hoteleiro
@@ -235,13 +235,13 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   {voucher.hotels.map((hotel: any, idx: number) => (
   <div
   key={idx}
-  className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-3 shadow-2xs"
+  className="p-4 rounded-lg border border-neutral-200 bg-neutral-50/70 space-y-3 shadow-2xs"
   >
   <div className="flex items-start justify-between gap-2">
   <div>
   <h4 className="font-bold text-neutral-900 text-sm sm:text-base line-clamp-1 truncate">{hotel.name}</h4>
   {hotel.city && (
-  <span className="text-xs text-neutral-500 flex items-center gap-1 mt-0.5">
+  <span className="text-xs text-neutral-500 flex items-center gap-1 mt-1">
   <MapPin className="size-3.5" /> {hotel.city}
   </span>
   )}
@@ -256,7 +256,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   )}
   </div>
 
-  <div className="grid grid-cols-2 gap-2.5 text-xs bg-white p-2.5 rounded-lg border border-neutral-200">
+  <div className="grid grid-cols-2 gap-3 text-xs bg-white p-3 rounded-lg border border-neutral-200">
   <div>
   <span className="text-[10px] text-neutral-400 block uppercase">Check-in</span>
   <span className="font-bold text-neutral-800">{hotel.checkin || "—"}</span>
@@ -290,27 +290,27 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   {((voucher.transfers && voucher.transfers.length > 0) ||
   (voucher.tours && voucher.tours.length > 0)) && (
   <div className="space-y-3">
-  <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
+  <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
   <Car className="size-4 text-neutral-500" />
   <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
   Transfers e Passeios Inclusos
   </span>
   </div>
 
-  <div className="flex flex-col gap-2.5 sm:grid sm:grid-cols-2">
+  <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2">
   {voucher.transfers?.map((t: any, idx: number) => (
   <div
   key={idx}
-  className="p-3 rounded-xl border border-neutral-200 bg-neutral-50/60 flex items-center justify-between text-xs sm:text-sm"
+  className="p-3 rounded-lg border border-neutral-200 bg-neutral-50/60 flex items-center justify-between text-xs sm:text-sm"
   >
-  <div className="space-y-0.5">
+  <div className="space-y-1">
   <span className="font-bold text-neutral-900 block">{t.type || "Transfer"}</span>
   <span className="text-neutral-500 text-xs">
   {t.origin} ➔ {t.destination}
   </span>
   </div>
   {t.date && (
-  <span className="font-mono text-xs text-neutral-700 bg-white px-2.5 py-1 rounded border border-neutral-200 shadow-2xs font-semibold">
+  <span className="font-mono text-xs text-neutral-700 bg-white px-3 py-1 rounded border border-neutral-200 shadow-2xs font-semibold">
   {t.date}
   </span>
   )}
@@ -320,16 +320,16 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   {voucher.tours?.map((tour: any, idx: number) => (
   <div
   key={idx}
-  className="p-3 rounded-xl border border-neutral-200 bg-neutral-50/60 flex items-center justify-between text-xs sm:text-sm"
+  className="p-3 rounded-lg border border-neutral-200 bg-neutral-50/60 flex items-center justify-between text-xs sm:text-sm"
   >
-  <div className="space-y-0.5">
+  <div className="space-y-1">
   <span className="font-bold text-neutral-900 block">{tour.title}</span>
   {tour.location && (
   <span className="text-neutral-500 text-xs">{tour.location}</span>
   )}
   </div>
   {tour.date && (
-  <span className="font-mono text-xs text-neutral-700 bg-white px-2.5 py-1 rounded border border-neutral-200 shadow-2xs font-semibold">
+  <span className="font-mono text-xs text-neutral-700 bg-white px-3 py-1 rounded border border-neutral-200 shadow-2xs font-semibold">
   {tour.date}
   </span>
   )}
@@ -341,8 +341,8 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
 
  {/* ── 5. SEGURO VIAGEM & ASSISTÊNCIA ── */}
  {voucher.insurance && voucher.insurance.policy_number && (
- <div className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 space-y-1.5">
- <div className="flex items-center gap-1.5 text-emerald-800 font-bold text-[11px]">
+ <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/40 space-y-2">
+ <div className="flex items-center gap-2 text-emerald-800 font-bold text-[11px]">
  <Shield className="size-3.5 text-emerald-600" />
  <span>Seguro Viagem e Assistência Médica 24h</span>
  </div>
@@ -367,8 +367,8 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
 
  {/* ── 6. ORIENTAÇÕES GERAIS & PLANTÃO ── */}
  {voucher.observations && (
- <div className="p-3 rounded-xl border border-neutral-200 bg-neutral-50 text-[10px] text-neutral-600 leading-relaxed">
- <span className="font-bold text-neutral-800 block mb-0.5 uppercase tracking-wider text-[9px]">
+ <div className="p-3 rounded-lg border border-neutral-200 bg-neutral-50 text-[10px] text-neutral-600 leading-relaxed">
+ <span className="font-bold text-neutral-800 block mb-1 uppercase tracking-wider text-[9px]">
  Orientações Importantes:
  </span>
  {voucher.observations}
@@ -378,7 +378,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  {/* ── 7. FOOTER COM QR CODE OFICIAL DE VALIDAÇÃO ── */}
  <div className="pt-4 border-t-2 border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4">
  <div className="space-y-1 text-center sm:text-left">
- <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[11px] font-bold text-neutral-900">
+ <div className="flex items-center justify-center sm:justify-start gap-2 text-[11px] font-bold text-neutral-900">
  <FileCheck className="size-4 text-emerald-600" />
  <span>Documento Oficial de Viagem e Embarque</span>
  </div>
@@ -392,13 +392,13 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  )}
  </div>
 
- <div className="flex items-center gap-3 bg-neutral-50 p-2 rounded-xl border border-neutral-200">
+ <div className="flex items-center gap-3 bg-neutral-50 p-2 rounded-lg border border-neutral-200">
  <img
  src={qrUrl}
  alt="QR Code de Validação"
  className="size-16 rounded-lg object-contain bg-white p-1 border border-neutral-200"
  />
- <div className="text-[9px] font-mono text-neutral-500 space-y-0.5">
+ <div className="text-[9px] font-mono text-neutral-500 space-y-1">
  <span className="font-bold text-neutral-900 block uppercase">Autenticidade</span>
  <span>Token: {voucher?.public_token ? `${voucher.public_token.substring(0, 10)}...` : "—"}</span>
  <span className="block text-[8px] text-neutral-400">Escaneie para validar</span>

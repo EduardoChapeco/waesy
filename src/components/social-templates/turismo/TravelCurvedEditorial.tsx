@@ -42,7 +42,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
 
         {/* Safe Zone Superior (Topo): Identidade da Agência & Selo */}
         <div className="absolute top-16 left-14 right-14 flex items-center justify-between z-10">
-          <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/20 px-5 py-2.5 rounded-full">
+          <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/20 px-5 py-3 rounded-full">
             {data.logoUrl ? (
               <img
                 src={data.logoUrl}
@@ -62,7 +62,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
           </div>
 
           {data.promoBadge && (
-            <div className="bg-amber-400 text-slate-950 text-base font-bold uppercase tracking-wider px-6 py-2.5 rounded-full shadow-lg">
+            <div className="bg-amber-400 text-slate-950 text-base font-bold uppercase tracking-wider px-6 py-3 rounded-full shadow-lg">
               {data.promoBadge}
             </div>
           )}
@@ -70,7 +70,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
 
         {/* Badge Flutuante no Rodapé da Foto */}
         {data.destinationOrLocation && (
-          <div className="absolute bottom-10 left-14 flex items-center gap-2.5 bg-black/60 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-full z-10">
+          <div className="absolute bottom-10 left-14 flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-full z-10">
             <MapPin className="w-5 h-5 text-emerald-400 shrink-0" />
             <span className="text-lg font-medium tracking-wide">
               {data.destinationOrLocation}
@@ -97,11 +97,11 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
 
           {/* Highlights em Chips Claros */}
           {data.highlights && data.highlights.length > 0 && (
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-3">
               {data.highlights.slice(0, 3).map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 bg-white border border-slate-200/80 shadow-sm px-4 py-2 rounded-xl text-slate-700 text-base font-medium"
+                  className="flex items-center gap-2 bg-white border border-slate-200/80 shadow-sm px-4 py-2 rounded-lg text-slate-700 text-base font-medium"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>{item}</span>
@@ -130,7 +130,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
           </div>
 
           {/* CTA Dinâmico com Ergonomia de Toque */}
-          <div className="bg-slate-950 hover:bg-slate-900 text-white px-8 py-5 rounded-2xl shadow-xl flex items-center gap-3 transition-transform active:scale-95 shrink-0">
+          <div className="bg-slate-950 hover:bg-slate-900 text-white px-8 py-5 rounded-lg shadow-xl flex items-center gap-3 transition-transform active:scale-95 shrink-0">
             <span className="text-xl font-bold tracking-wide">
               {data.ctaLabel || "Garantir Pacote"}
             </span>

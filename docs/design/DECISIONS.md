@@ -1812,3 +1812,13 @@
      - Teto de qualidade visual mantido sob a catraca determinística do Design Lint.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F01 a SPEC-F24, docs/canonico/ROADMAP_VIVO.md e Definition of Done B.9.
 - **Consequências:** Plano Mestre dos 4 Pilares 100% CONCLUÍDO e HOMOLOGADO. Plataforma Waesy consolidada na versão estável 2.0.
+
+## DEC-151: Redução Massiva de Débito Visual e Catraca do Design Lint V2
+- **Data:** 2026-10-02
+- **Contexto:** Execução da remediação determinística em lote em 808 arquivos do repositório através de `scripts/remediate-design-lint.mjs`, normalizando raios geométricos (DL-09), espaçamentos fracionários fora da grade de 4px (DL-03), valores arbitrários entre colchetes (DL-02), classes forçadas (DL-04) e alvos de toque móveis (DL-14).
+- **Decisão:**
+  1. `Eliminação de 19.078 Violações Visuais`: O débito total caiu de 37.702 para 18.624 violações (queda de 50,6% do passivo visual do sistema).
+  2. `Padronização Geométrica Estrita (DL-09 e DL-03)`: Conversão de raios arbitrários para a escala canônica de 4 raios (`none`, `sm`, `md`, `lg`, `full`) e alinhamento de espaçamentos (`p-`, `m-`, `gap-`, `space-`) à grade múltipla de 4px (IBM Carbon 2x).
+  3. `Atualização da Catraca`: Executado `node scripts/design-lint.mjs --update-baseline`, abaixando permanentemente o teto congelado para 18.624 (P0: 7.187, P1: 8.526, P2: 1.440, P3: 1.471), impedindo novas regressões.
+- **Fundamentação:** AGENTS.md B.1 a B.12, docs/design/DESIGN.md, docs/design/DESIGN-LINT.md e Definition of Done B.9.
+- **Consequências:** Base de código substancialmente mais limpa, consistente, moderna e nativa, com aprovação contínua no Gate 2 do CI.

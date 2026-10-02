@@ -15,7 +15,7 @@ export function ThumbnailPreviewRail({ items = [], onSelectPost }: ThumbnailPrev
  return (
  <div className="w-full py-1">
  <ScrollArea className="w-full whitespace-nowrap">
- <div className="flex gap-2.5 px-1 py-1">
+ <div className="flex gap-3 px-1 py-1">
  {visualPosts.slice(0, 10).map((post) => (
  <button
  key={post.id}
@@ -30,12 +30,12 @@ export function ThumbnailPreviewRail({ items = [], onSelectPost }: ThumbnailPrev
  />
  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
- <div className="relative z-10 p-1.5 w-full">
+ <div className="relative z-10 p-2 w-full">
  <p className="text-[10px] font-bold text-white truncate leading-tight">
  {post.author.name}
  </p>
  {post.location_name && (
- <p className="text-[9px] text-white/80 truncate flex items-center gap-0.5 mt-0.5">
+ <p className="text-[9px] text-white/80 truncate flex items-center gap-1 mt-1">
  <MapPin className="size-2.5 shrink-0" />
  {post.location_name}
  </p>

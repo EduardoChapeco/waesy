@@ -25,9 +25,9 @@ export function GpsMismatchModal({
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-6 rounded-3xl border border-border/80 bg-background shadow-2xl">
+      <DialogContent className="max-w-md p-6 rounded-lg border border-border/80 bg-background shadow-2xl">
         <DialogHeader className="space-y-2 text-left">
-          <div className="size-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+          <div className="size-10 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
             <MapPin className="size-5" />
           </div>
           <DialogTitle className="text-base font-bold text-foreground">
@@ -39,7 +39,7 @@ export function GpsMismatchModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/40 text-xs space-y-1">
+        <div className="p-4 rounded-lg bg-muted/30 border border-border/40 text-xs space-y-1">
           <p className="font-bold text-foreground">{deliveryAddressSummary}</p>
           <p className="text-[11px] text-muted-foreground">
             Se você estiver pedindo para outra pessoa (presente) ou para receber em outro local, confirme abaixo.
@@ -54,7 +54,7 @@ export function GpsMismatchModal({
               onOpenChange(false);
               onChangeAddress();
             }}
-            className="w-full sm:flex-1 h-11 rounded-xl text-xs font-bold cursor-pointer"
+            className="w-full sm:flex-1 h-11 rounded-lg text-xs font-bold cursor-pointer"
           >
             Alterar Endereço
           </Button>
@@ -64,7 +64,7 @@ export function GpsMismatchModal({
               onOpenChange(false);
               onConfirmOrder();
             }}
-            className="w-full sm:flex-1 h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground cursor-pointer"
+            className="w-full sm:flex-1 h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer"
           >
             Sim, Confirmar Pedido
           </Button>

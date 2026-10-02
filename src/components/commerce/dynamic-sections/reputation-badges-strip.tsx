@@ -21,11 +21,11 @@ export function ReputationBadgesStrip({ content, design_tokens }: ReputationBadg
  <div className={cn("w-full max-w-5xl mx-auto py-6 px-4", design_tokens?.className)}>
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
  {badges.map((b, i) => (
- <div key={i} className="p-4 rounded-2xl border border-border/60 bg-card/60 flex items-start gap-3 shadow-xs">
- <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+ <div key={i} className="p-4 rounded-lg border border-border/60 bg-card/60 flex items-start gap-3 shadow-xs">
+ <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
  <Award className="w-4 h-4" />
  </div>
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <h4 className="font-semibold text-xs text-foreground">{b.title}</h4>
  <p className="text-[11px] text-muted-foreground leading-snug">{b.desc}</p>
  </div>

@@ -85,7 +85,7 @@ export function PublicHeader({
  <Link
  key={item.url}
  to={item.url}
- className="px-4 py-3 text-lg font-semibold text-foreground hover:bg-muted/50 transition-colors rounded-xl"
+ className="px-4 py-3 text-lg font-semibold text-foreground hover:bg-muted/50 transition-colors rounded-lg"
  activeProps={{ className: "bg-secondary text-primary font-bold" }}
  >
  {item.label}
@@ -114,7 +114,7 @@ export function PublicHeader({
  <Link
  key={item.url}
  to={item.url}
- className="px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted/50 transition-colors rounded-xl"
+ className="px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted/50 transition-colors rounded-lg"
  activeProps={{ className: "bg-secondary text-primary" }}
  >
  {item.label}
@@ -125,7 +125,7 @@ export function PublicHeader({
  <div className="ml-auto flex items-center gap-1 flex-1 justify-end">
  {/* Expandable Search */}
  <div
- className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${isSearchOpen ? "w-full max-w-[280px] opacity-100 mr-2" : "w-0 opacity-0 md:w-0 md:opacity-0"}`}
+ className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${isSearchOpen ? "w-full max-w-72 opacity-100 mr-2" : "w-0 opacity-0 md:w-0 md:opacity-0"}`}
  >
  <form onSubmit={handleSearchSubmit} className="relative w-full">
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />

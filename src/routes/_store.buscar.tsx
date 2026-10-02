@@ -78,7 +78,7 @@ function RecipeCard({ recipe, isMobileList = false }: { recipe: SearchResultReci
           />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-0.5">
+          <div className="flex items-center gap-2 mb-1">
             <span className="text-[10px] uppercase font-bold text-primary font-mono tracking-wider">
               {recipe.category || "Receita"}
             </span>
@@ -106,7 +106,7 @@ function RecipeCard({ recipe, isMobileList = false }: { recipe: SearchResultReci
     <Link
       to="/receitas/$id"
       params={{ id: recipe.id }}
-      className="group rounded-xl border border-border/50 bg-card overflow-hidden hover:border-primary/40 transition-all flex flex-col justify-between"
+      className="group rounded-lg border border-border/50 bg-card overflow-hidden hover:border-primary/40 transition-all flex flex-col justify-between"
     >
       <div className="aspect-video w-full bg-muted overflow-hidden relative">
         <img
@@ -116,12 +116,12 @@ function RecipeCard({ recipe, isMobileList = false }: { recipe: SearchResultReci
           loading="lazy"
         />
         {recipe.prep_time && (
-          <span className="absolute bottom-2 left-2 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-mono font-medium text-foreground">
+          <span className="absolute bottom-2 left-2 rounded-md bg-background/90 px-2 py-1 text-[10px] font-mono font-medium text-foreground">
             {recipe.prep_time}
           </span>
         )}
       </div>
-      <div className="p-3.5 space-y-1.5 flex-1 flex flex-col justify-between">
+      <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
         <div>
           <span className="text-[10px] font-mono uppercase text-primary font-semibold">
             {recipe.category || "Receita"}
@@ -162,18 +162,18 @@ function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; 
         params={{ id: event.id }}
         className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group cursor-pointer"
       >
-        <div className="size-12 rounded-xl bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
+        <div className="size-12 rounded-lg bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
           {event.cover_image ? (
             <img src={event.cover_image} alt={event.title} className="size-full object-cover" />
           ) : (
             <Calendar className="size-5 text-muted-foreground/40" />
           )}
         </div>
-        <div className="min-w-0 flex-1 space-y-0.5">
+        <div className="min-w-0 flex-1 space-y-1">
           <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
             {event.title}
           </p>
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground truncate">
             <span>{formatted}</span>
             {event.location && (
               <>
@@ -195,7 +195,7 @@ function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; 
     <Link
       to="/evento/$id"
       params={{ id: event.id }}
-      className="flex items-stretch rounded-2xl bg-card hover:bg-muted/50 transition-colors overflow-hidden p-0 group border border-border/60"
+      className="flex items-stretch rounded-lg bg-card hover:bg-muted/50 transition-colors overflow-hidden p-0 group border border-border/60"
     >
       <div className="relative w-20 sm:w-24 bg-muted shrink-0 overflow-hidden">
         {event.cover_image ? (
@@ -218,7 +218,7 @@ function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; 
         {event.location && (
           <p className="text-xs text-muted-foreground truncate">{event.location}</p>
         )}
-        <Badge variant="outline" className="mt-1 text-[10px] font-mono border-border/70 py-0 px-1.5">
+        <Badge variant="outline" className="mt-1 text-[10px] font-mono border-border/70 py-0 px-2">
           {event.is_free ? "Gratuito" : "Pago"}
         </Badge>
       </div>
@@ -235,7 +235,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
         params={{ id: classified.id }}
         className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group cursor-pointer"
       >
-        <div className="size-12 rounded-xl bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
+        <div className="size-12 rounded-lg bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
           {classified.images && classified.images[0] ? (
             <img
               src={classified.images[0]}
@@ -247,8 +247,8 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
             <Tag size={20} className="text-muted-foreground/40" />
           )}
         </div>
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
               {classified.title}
             </h4>
@@ -279,7 +279,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
     <Link
       to="/classificados/$id"
       params={{ id: classified.id }}
-      className="flex items-stretch justify-between rounded-2xl bg-card hover:border-foreground/30 transition-all overflow-hidden p-0 group border border-border/60"
+      className="flex items-stretch justify-between rounded-lg bg-card hover:border-foreground/30 transition-all overflow-hidden p-0 group border border-border/60"
     >
       <div className="relative w-24 sm:w-28 bg-muted shrink-0 overflow-hidden">
         {classified.images && classified.images[0] ? (
@@ -297,9 +297,9 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
       </div>
 
       <div className="flex-1 min-w-0 p-3 space-y-1">
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           {classified.category && (
-            <Badge variant="outline" className="text-[9px] uppercase font-mono px-1.5 py-0 border-border/70">
+            <Badge variant="outline" className="text-[9px] uppercase font-mono px-2 py-0 border-border/70">
               {classified.category}
             </Badge>
           )}
@@ -338,14 +338,14 @@ function StoreCard({ store, isMobileList = false }: { store: SearchResultStore; 
         params={{ slug: store.slug }}
         className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group cursor-pointer"
       >
-        <div className="size-11 rounded-xl bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
+        <div className="size-11 rounded-lg bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
           {store.logo_url ? (
             <img src={store.logo_url} alt={store.name} className="size-full object-cover" />
           ) : (
             <Store className="size-5 text-muted-foreground/50" />
           )}
         </div>
-        <div className="min-w-0 flex-1 space-y-0.5">
+        <div className="min-w-0 flex-1 space-y-1">
           <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
             {store.name}
           </p>
@@ -362,16 +362,16 @@ function StoreCard({ store, isMobileList = false }: { store: SearchResultStore; 
     <Link
       to="/vendedora/$slug"
       params={{ slug: store.slug }}
-      className="flex gap-3 p-3 rounded-2xl bg-card hover:bg-muted transition-colors group border border-border/60"
+      className="flex gap-3 p-3 rounded-lg bg-card hover:bg-muted transition-colors group border border-border/60"
     >
       {store.logo_url ? (
         <img
           src={store.logo_url}
           alt={store.name}
-          className="size-12 object-cover rounded-xl shrink-0"
+          className="size-12 object-cover rounded-lg shrink-0"
         />
       ) : (
-        <div className="size-12 bg-muted rounded-xl shrink-0 flex items-center justify-center">
+        <div className="size-12 bg-muted rounded-lg shrink-0 flex items-center justify-center">
           <Store className="size-5 text-muted-foreground" />
         </div>
       )}
@@ -654,7 +654,7 @@ function SearchPage() {
           {recentSearches.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Clock className="size-3.5 text-muted-foreground" />
                   <span>Buscas recentes</span>
                 </span>
@@ -666,11 +666,11 @@ function SearchPage() {
                   Limpar tudo
                 </button>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {recentSearches.map((term) => (
                   <div
                     key={term}
-                    className="inline-flex items-center gap-1.5 pl-3 pr-2 py-1 rounded-xl text-xs font-semibold bg-muted/60 hover:bg-muted text-foreground transition-all group"
+                    className="inline-flex items-center gap-2 pl-3 pr-2 py-1 rounded-lg text-xs font-semibold bg-muted/60 hover:bg-muted text-foreground transition-all group"
                   >
                     <button
                       type="button"
@@ -702,11 +702,11 @@ function SearchPage() {
           {/* Recomendado para Você (Afinidade Real do Usuário) */}
           {userAffinities && userAffinities.length > 0 && (
             <div className="space-y-2">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Star className="size-3.5 text-primary" />
                 <span>Recomendado para você</span>
               </span>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {userAffinities.map((item: any) => {
                   const tagLabel = item.tag || item.category || String(item);
                   return (
@@ -717,7 +717,7 @@ function SearchPage() {
                         setInput(tagLabel);
                         handleSearch(tagLabel);
                       }}
-                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted/40 text-foreground border border-border/40 hover:bg-muted transition-all cursor-pointer select-none active:scale-95"
+                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-muted/40 text-foreground border border-border/40 hover:bg-muted transition-all cursor-pointer select-none active:scale-95"
                     >
                       #{tagLabel}
                     </button>
@@ -730,11 +730,11 @@ function SearchPage() {
           {/* Em Alta na Cidade (Trending dinâmico do banco) */}
           {discoveryData?.trendingTerms && discoveryData.trendingTerms.length > 0 && (
             <div className="space-y-2">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <TrendingUp className="size-3.5 text-primary" />
                 <span>Em alta na região</span>
               </span>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {discoveryData.trendingTerms.map((term: string) => (
                   <button
                     key={term}
@@ -743,7 +743,7 @@ function SearchPage() {
                       setInput(term);
                       handleSearch(term);
                     }}
-                    className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-card border border-border/60 hover:border-primary/40 hover:text-primary text-foreground transition-all cursor-pointer select-none active:scale-95"
+                    className="px-4 py-2 rounded-lg text-xs font-semibold bg-card border border-border/60 hover:border-primary/40 hover:text-primary text-foreground transition-all cursor-pointer select-none active:scale-95"
                   >
                     {term}
                   </button>
@@ -765,9 +765,9 @@ function SearchPage() {
                 <Link
                   key={cat.to}
                   to={cat.to as any}
-                  className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-card border border-border/60 hover:bg-muted/40 transition-all group"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/60 hover:bg-muted/40 transition-all group"
                 >
-                  <div className={`flex size-9 items-center justify-center rounded-xl ${cat.color} shrink-0 group-hover:scale-105 transition-transform`}>
+                  <div className={`flex size-9 items-center justify-center rounded-lg ${cat.color} shrink-0 group-hover:scale-105 transition-transform`}>
                     <Icon className="size-4.5" />
                   </div>
                   <span className="text-xs font-bold text-foreground truncate">
@@ -795,7 +795,7 @@ function SearchPage() {
                     key={p.id}
                     to="/produto/$slug"
                     params={{ slug: p.slug || p.id }}
-                    className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/60 hover:border-border transition-all group"
+                    className="flex flex-col rounded-lg overflow-hidden bg-card border border-border/60 hover:border-border transition-all group"
                   >
                     <div className="aspect-square bg-muted overflow-hidden relative">
                       {p.cover_url ? (
@@ -810,7 +810,7 @@ function SearchPage() {
                         </div>
                       )}
                     </div>
-                    <div className="p-2.5 space-y-1">
+                    <div className="p-3 space-y-1">
                       <p className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
                         {p.title}
                       </p>
@@ -835,15 +835,15 @@ function SearchPage() {
                   Guia completo
                 </Link>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {discoveryData.stores.slice(0, 4).map((s: any) => (
                   <Link
                     key={s.id}
                     to="/bio/$slug"
                     params={{ slug: s.slug }}
-                    className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-card border border-border/60 hover:bg-muted/50 transition-all group"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/60 hover:bg-muted/50 transition-all group"
                   >
-                    <div className="size-10 rounded-xl overflow-hidden bg-muted shrink-0 flex items-center justify-center border border-border/40">
+                    <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center border border-border/40">
                       {s.logo_url ? (
                         <img src={s.logo_url} alt={s.name} className="size-full object-cover" />
                       ) : (
@@ -865,7 +865,7 @@ function SearchPage() {
       )}
 
  {input.length >= 2 && result !== null && total === 0 && (
- <div className="py-12 text-center space-y-4 bg-card rounded-2xl p-6">
+ <div className="py-12 text-center space-y-4 bg-card rounded-lg p-6">
  <EmptyState
  title={`Nenhum resultado encontrado para "${input}"`}
  description="Tente buscar por termos mais genéricos ou explore as categorias abaixo."
@@ -873,19 +873,19 @@ function SearchPage() {
  <div className="flex flex-wrap justify-center gap-2 pt-2">
  <Link
  to="/mercado"
- className="px-4 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
+ className="px-4 py-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
  >
  Ir para o Mercado
  </Link>
  <Link
  to="/gastronomia"
- className="px-4 py-2 rounded-xl text-xs font-bold bg-muted hover:bg-muted/80 text-foreground transition-all"
+ className="px-4 py-2 rounded-lg text-xs font-bold bg-muted hover:bg-muted/80 text-foreground transition-all"
  >
  Ver Restaurantes
  </Link>
  <Link
  to="/classificados"
- className="px-4 py-2 rounded-xl text-xs font-bold bg-muted hover:bg-muted/80 text-foreground transition-all"
+ className="px-4 py-2 rounded-lg text-xs font-bold bg-muted hover:bg-muted/80 text-foreground transition-all"
  >
  Explorar Desapegos
  </Link>
@@ -896,7 +896,7 @@ function SearchPage() {
  {/* Visualização de Radar no Mapa quando viewMode === "feed" */}
  {hasResults && viewMode === "feed" && (
  <div className="space-y-4">
- <div className="h-[460px] w-full rounded-2xl overflow-hidden border border-border/60 relative">
+ <div className="h-[460px] w-full rounded-lg overflow-hidden border border-border/60 relative">
  <MapLibreCanvas
  markers={mapMarkers}
  selectedMarkerId={selectedStoreMarker?.id}
@@ -909,9 +909,9 @@ function SearchPage() {
 
  {/* Bottom Card Flutuante de Estabelecimento Selecionado */}
  {selectedStoreMarker && (
- <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 p-3.5 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-md flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2">
+ <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 p-4 rounded-lg border border-border/60 bg-card/95 backdrop-blur-md flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2">
  <div className="flex items-center gap-3 min-w-0">
- <div className="size-10 rounded-xl overflow-hidden bg-muted shrink-0 flex items-center justify-center">
+ <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
  {selectedStoreMarker.logo_url ? (
  <img src={selectedStoreMarker.logo_url} alt={selectedStoreMarker.name} className="size-full object-cover" />
  ) : (
@@ -945,7 +945,7 @@ function SearchPage() {
         icon={Store}
       >
         {/* Mobile: WhatsApp Minimalist List */}
-        <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+        <div className="block sm:hidden divide-y divide-border/30 rounded-lg border border-border/40 bg-card overflow-hidden">
           {filteredStores.map((store) => (
             <StoreCard key={store.id} store={store} isMobileList />
           ))}
@@ -986,7 +986,7 @@ function SearchPage() {
         icon={Tag}
       >
         {/* Mobile: WhatsApp Minimalist List */}
-        <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+        <div className="block sm:hidden divide-y divide-border/30 rounded-lg border border-border/40 bg-card overflow-hidden">
           {filteredClassifieds.map((classified) => (
             <ClassifiedCard key={classified.id} classified={classified} isMobileList />
           ))}
@@ -1007,7 +1007,7 @@ function SearchPage() {
         icon={CookingPot}
       >
         {/* Mobile: WhatsApp Minimalist List */}
-        <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+        <div className="block sm:hidden divide-y divide-border/30 rounded-lg border border-border/40 bg-card overflow-hidden">
           {filteredRecipes.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} isMobileList />
           ))}
@@ -1027,7 +1027,7 @@ function SearchPage() {
         icon={Calendar}
       >
         {/* Mobile: WhatsApp Minimalist List */}
-        <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+        <div className="block sm:hidden divide-y divide-border/30 rounded-lg border border-border/40 bg-card overflow-hidden">
           {filteredEvents.map((event) => (
             <EventCard key={event.id} event={event} isMobileList />
           ))}

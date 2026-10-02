@@ -32,7 +32,7 @@ export function SocialGrid({ content }: SocialGridProps) {
  href={`https://instagram.com/${username}`}
  target="_blank"
  rel="noopener noreferrer"
- className="text-xs font-semibold text-primary hover:underline flex items-center gap-1.5 mt-1"
+ className="text-xs font-semibold text-primary hover:underline flex items-center gap-2 mt-1"
  >
  <Instagram className="size-4" />@{username}
  </a>
@@ -69,13 +69,13 @@ export function SocialGrid({ content }: SocialGridProps) {
  {(metrics.likes || metrics.comments) && (
  <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex items-center justify-center gap-4 text-white">
  {metrics.likes && (
- <div className="flex items-center gap-1.5 text-sm font-semibold">
+ <div className="flex items-center gap-2 text-sm font-semibold">
  <Heart className="size-5 fill-white" />
  <span>{metrics.likes}</span>
  </div>
  )}
  {metrics.comments && (
- <div className="flex items-center gap-1.5 text-sm font-semibold">
+ <div className="flex items-center gap-2 text-sm font-semibold">
  <MessageCircle className="size-5 fill-white" />
  <span>{metrics.comments}</span>
  </div>

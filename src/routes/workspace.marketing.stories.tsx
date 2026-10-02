@@ -143,7 +143,7 @@ export default function WorkspaceMarketingStoriesPage() {
           <div className="flex items-center gap-2">
             <Link
               to="/workspace/marketing/pixels"
-              className="inline-flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex size-8 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="size-4" />
             </Link>
@@ -157,12 +157,12 @@ export default function WorkspaceMarketingStoriesPage() {
         </div>
 
         {/* Formatos Rápidos */}
-        <div className="flex items-center gap-2 bg-muted/40 p-1.5 rounded-2xl border border-border/40">
+        <div className="flex items-center gap-2 bg-muted/40 p-2 rounded-lg border border-border/40">
           <button
             type="button"
             onClick={() => setFormat("story_9_16")}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all",
               format === "story_9_16"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -175,7 +175,7 @@ export default function WorkspaceMarketingStoriesPage() {
             type="button"
             onClick={() => setFormat("feed_1_1")}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all",
               format === "feed_1_1"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -188,7 +188,7 @@ export default function WorkspaceMarketingStoriesPage() {
             type="button"
             onClick={() => setFormat("banner_16_9")}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all",
               format === "banner_16_9"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -205,13 +205,13 @@ export default function WorkspaceMarketingStoriesPage() {
         <div className="lg:col-span-6 space-y-6">
           {/* Seletor Rápido de Produtos do Catálogo */}
           {products.length > 0 && (
-            <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-3">
+            <div className="rounded-lg border border-border/60 bg-card p-5 space-y-3">
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Importar Produto do Catálogo
               </Label>
               <select
                 aria-label="Selecionar produto do catálogo"
-                className="w-full h-11 rounded-xl border border-border bg-background px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full h-11 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                 onChange={(e) => handleSelectProduct(e.target.value)}
                 defaultValue=""
               >
@@ -228,7 +228,7 @@ export default function WorkspaceMarketingStoriesPage() {
           )}
 
           {/* Dados do Card */}
-          <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-5">
+          <div className="rounded-lg border border-border/60 bg-card p-6 space-y-5">
             <h2 className="text-sm font-bold text-foreground">Conteúdo da Arte</h2>
 
             <div className="space-y-4">
@@ -240,7 +240,7 @@ export default function WorkspaceMarketingStoriesPage() {
                   id="storeName"
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
-                  className="mt-1.5 h-11 rounded-xl text-xs"
+                  className="mt-2 h-11 rounded-lg text-xs"
                   placeholder="Nome exibido no topo do card"
                 />
               </div>
@@ -253,7 +253,7 @@ export default function WorkspaceMarketingStoriesPage() {
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="mt-1.5 h-11 rounded-xl text-xs"
+                  className="mt-2 h-11 rounded-lg text-xs"
                   placeholder="Ex: Tênis Runner Air Max 2026"
                 />
               </div>
@@ -266,7 +266,7 @@ export default function WorkspaceMarketingStoriesPage() {
                   id="subtitle"
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
-                  className="mt-1.5 h-11 rounded-xl text-xs"
+                  className="mt-2 h-11 rounded-lg text-xs"
                   placeholder="Ex: Últimas unidades em estoque com frete grátis"
                 />
               </div>
@@ -281,7 +281,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     type="number"
                     value={priceCents}
                     onChange={(e) => setPriceCents(Number(e.target.value))}
-                    className="mt-1.5 h-11 rounded-xl text-xs"
+                    className="mt-2 h-11 rounded-lg text-xs"
                     placeholder="Ex: 14990 = R$ 149,90"
                   />
                   <span className="text-xs text-muted-foreground mt-1 block">
@@ -291,12 +291,12 @@ export default function WorkspaceMarketingStoriesPage() {
 
                 <div>
                   <Label className="text-xs font-bold text-muted-foreground">Tema Visual</Label>
-                  <div className="mt-1.5 flex gap-2">
+                  <div className="mt-2 flex gap-2">
                     <button
                       type="button"
                       onClick={() => setTheme("dark")}
                       className={cn(
-                        "flex-1 h-11 rounded-xl border text-xs font-bold transition-colors",
+                        "flex-1 h-11 rounded-lg border text-xs font-bold transition-colors",
                         theme === "dark"
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border bg-background text-muted-foreground",
@@ -308,7 +308,7 @@ export default function WorkspaceMarketingStoriesPage() {
                       type="button"
                       onClick={() => setTheme("light")}
                       className={cn(
-                        "flex-1 h-11 rounded-xl border text-xs font-bold transition-colors",
+                        "flex-1 h-11 rounded-lg border text-xs font-bold transition-colors",
                         theme === "light"
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border bg-background text-muted-foreground",
@@ -328,7 +328,7 @@ export default function WorkspaceMarketingStoriesPage() {
                   id="imageUrl"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  className="mt-1.5 h-11 rounded-xl text-xs"
+                  className="mt-2 h-11 rounded-lg text-xs"
                   placeholder="https://exemplo.com/foto.jpg"
                 />
               </div>
@@ -341,7 +341,7 @@ export default function WorkspaceMarketingStoriesPage() {
                   id="targetUrl"
                   value={targetUrl}
                   onChange={(e) => setTargetUrl(e.target.value)}
-                  className="mt-1.5 h-11 rounded-xl text-xs"
+                  className="mt-2 h-11 rounded-lg text-xs"
                   placeholder="https://usewaesy.com/produto/tenis-runner"
                 />
               </div>
@@ -351,7 +351,7 @@ export default function WorkspaceMarketingStoriesPage() {
               type="button"
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="w-full h-11 rounded-xl font-bold gap-2 text-xs"
+              className="w-full h-11 rounded-lg font-bold gap-2 text-xs"
             >
               {isGenerating ? (
                 <RefreshCw className="size-4 animate-spin" />
@@ -365,7 +365,7 @@ export default function WorkspaceMarketingStoriesPage() {
 
         {/* ── Visualização em Tempo Real (Direita) ── */}
         <div className="lg:col-span-6 space-y-6">
-          <div className="rounded-2xl border border-border/60 bg-card p-6 flex flex-col items-center">
+          <div className="rounded-lg border border-border/60 bg-card p-6 flex flex-col items-center">
             <div className="w-full flex items-center justify-between pb-4 border-b border-border/40">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Prévia Interativa ({format === "story_9_16" ? "9:16" : format === "feed_1_1" ? "1:1" : "16:9"})
@@ -382,7 +382,7 @@ export default function WorkspaceMarketingStoriesPage() {
               {generatedCard?.svgMarkup ? (
                 <div
                   className={cn(
-                    "overflow-hidden rounded-3xl shadow-xs border border-border/60 bg-black flex items-center justify-center transition-all",
+                    "overflow-hidden rounded-lg shadow-xs border border-border/60 bg-black flex items-center justify-center transition-all",
                     format === "story_9_16"
                       ? "w-[270px] h-[480px]"
                       : format === "feed_1_1"
@@ -394,7 +394,7 @@ export default function WorkspaceMarketingStoriesPage() {
               ) : (
                 <div
                   className={cn(
-                    "flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/80 bg-muted/20 text-center p-6 transition-all",
+                    "flex flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-muted/20 text-center p-6 transition-all",
                     format === "story_9_16"
                       ? "w-[270px] h-[480px]"
                       : format === "feed_1_1"
@@ -419,7 +419,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     type="button"
                     variant="outline"
                     onClick={handleDownloadSvg}
-                    className="h-11 rounded-xl text-xs font-bold gap-2"
+                    className="h-11 rounded-lg text-xs font-bold gap-2"
                   >
                     <Download className="size-4" />
                     <span>Baixar SVG</span>
@@ -428,7 +428,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     type="button"
                     variant="outline"
                     onClick={handleCopySvg}
-                    className="h-11 rounded-xl text-xs font-bold gap-2"
+                    className="h-11 rounded-lg text-xs font-bold gap-2"
                   >
                     <Copy className="size-4" />
                     <span>Copiar SVG</span>
@@ -440,7 +440,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     type="button"
                     variant="default"
                     onClick={handleShareWhatsApp}
-                    className="h-11 rounded-xl text-xs font-bold gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-black"
+                    className="h-11 rounded-lg text-xs font-bold gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-black"
                   >
                     <WhatsappLogo className="size-4" weight="bold" />
                     <span>WhatsApp</span>
@@ -449,7 +449,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     type="button"
                     variant="secondary"
                     onClick={handleNativeShare}
-                    className="h-11 rounded-xl text-xs font-bold gap-2"
+                    className="h-11 rounded-lg text-xs font-bold gap-2"
                   >
                     <Share2 className="size-4" />
                     <span>Compartilhar</span>

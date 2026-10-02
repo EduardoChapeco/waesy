@@ -157,7 +157,7 @@ function WorkspacePatrocinadoresPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+            <span className="px-3 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
               Marketing e Monetização
             </span>
             <span className="text-xs text-muted-foreground font-mono">Rede Display e Telemetria</span>
@@ -165,13 +165,13 @@ function WorkspacePatrocinadoresPage() {
           <h1 className="text-2xl font-black tracking-tight text-foreground mt-1">
             Patrocinadores e Anunciantes
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Cadastre anunciantes locais. As mídias e vídeos aparecem randomicamente nas suas notícias e feed com telemetria e links mágicos de auditoria.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button onClick={handleOpenCreate} className="rounded-2xl font-bold gap-2 text-xs">
+          <Button onClick={handleOpenCreate} className="rounded-lg font-bold gap-2 text-xs">
             <Plus className="size-4" />
             <span>Novo Patrocinador</span>
           </Button>
@@ -180,7 +180,7 @@ function WorkspacePatrocinadoresPage() {
 
       {/* Grid de Patrocinadores */}
       {sponsors.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl border bg-card/50 space-y-4">
+        <div className="py-16 text-center rounded-lg border bg-card/50 space-y-4">
           <Megaphone className="size-12 text-muted-foreground/40 mx-auto" />
           <div className="space-y-1">
             <h3 className="text-base font-bold text-foreground">Nenhum patrocinador cadastrado</h3>
@@ -188,8 +188,8 @@ function WorkspacePatrocinadoresPage() {
               Cadastre marcas e comércios parceiros para veicular propagandas nativas com métricas reais de visualização e envio de link mágico.
             </p>
           </div>
-          <Button onClick={handleOpenCreate} className="rounded-2xl font-bold text-xs">
-            <Plus className="size-4 mr-1.5" />
+          <Button onClick={handleOpenCreate} className="rounded-lg font-bold text-xs">
+            <Plus className="size-4 mr-2" />
             <span>Cadastrar Primeiro Patrocinador</span>
           </Button>
         </div>
@@ -203,12 +203,12 @@ function WorkspacePatrocinadoresPage() {
             return (
               <div
                 key={sp.id}
-                className="p-5 rounded-2xl bg-card border hover-elevate transition-all space-y-4 flex flex-col justify-between"
+                className="p-5 rounded-lg bg-card border hover-elevate transition-all space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider ${
+                      className={`px-2 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
                         sp.tier === "gold"
                           ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
                           : sp.tier === "silver"
@@ -228,7 +228,7 @@ function WorkspacePatrocinadoresPage() {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="size-12 rounded-2xl bg-muted p-1.5 flex items-center justify-center shrink-0 overflow-hidden border">
+                    <div className="size-12 rounded-lg bg-muted p-2 flex items-center justify-center shrink-0 overflow-hidden border">
                       {sp.logo_url ? (
                         <img
                           src={sp.logo_url}
@@ -256,28 +256,28 @@ function WorkspacePatrocinadoresPage() {
 
                   {/* Telemetria em Tempo Real */}
                   <div className="grid grid-cols-3 gap-2 pt-2 border-t text-center font-mono">
-                    <div className="p-2 rounded-xl bg-muted/40">
+                    <div className="p-2 rounded-lg bg-muted/40">
                       <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                         <Eye className="size-3" />
                         <span>Views</span>
                       </div>
-                      <p className="text-xs font-bold text-foreground mt-0.5">{views}</p>
+                      <p className="text-xs font-bold text-foreground mt-1">{views}</p>
                     </div>
 
-                    <div className="p-2 rounded-xl bg-muted/40">
+                    <div className="p-2 rounded-lg bg-muted/40">
                       <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                         <MousePointerClick className="size-3" />
                         <span>Cliques</span>
                       </div>
-                      <p className="text-xs font-bold text-foreground mt-0.5">{clicks}</p>
+                      <p className="text-xs font-bold text-foreground mt-1">{clicks}</p>
                     </div>
 
-                    <div className="p-2 rounded-xl bg-muted/40">
+                    <div className="p-2 rounded-lg bg-muted/40">
                       <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                         <TrendingUp className="size-3 text-emerald-500" />
                         <span>CTR</span>
                       </div>
-                      <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{ctr}%</p>
+                      <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1">{ctr}%</p>
                     </div>
                   </div>
                 </div>
@@ -289,7 +289,7 @@ function WorkspacePatrocinadoresPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleCopyMagicLink(sp.magic_token)}
-                      className="w-full rounded-xl text-xs font-bold gap-1.5 h-11 border-primary/25 hover:bg-primary/5 min-h-[44px]"
+                      className="w-full rounded-lg text-xs font-bold gap-2 h-11 border-primary/25 hover:bg-primary/5 min-h-11"
                     >
                       <Share2 className="size-4 text-primary" />
                       <span>Copiar Link Mágico</span>
@@ -306,7 +306,7 @@ function WorkspacePatrocinadoresPage() {
                           variant="ghost"
                           size="icon"
                           title="Abrir Relatório do Patrocinador"
-                          className="size-11 rounded-xl min-h-[44px] min-w-[44px]"
+                          className="size-11 rounded-lg min-h-11 min-w-[44px]"
                         >
                           <ExternalLink className="size-4" />
                         </Button>
@@ -319,7 +319,7 @@ function WorkspacePatrocinadoresPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleOpenEdit(sp)}
-                      className="h-10 px-3 text-xs font-bold text-muted-foreground hover:text-foreground rounded-xl min-h-[40px]"
+                      className="h-10 px-3 text-xs font-bold text-muted-foreground hover:text-foreground rounded-lg min-h-10"
                     >
                       Editar Dados
                     </Button>
@@ -352,7 +352,7 @@ function WorkspacePatrocinadoresPage() {
 
       {/* Modal de Criação / Edição */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-lg p-0 overflow-hidden sm:rounded-2xl bg-background">
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden sm:rounded-lg bg-background">
           <DialogHeader className="p-6 pb-4 bg-muted/20">
             <DialogTitle className="flex items-center gap-2 text-lg font-black tracking-tight">
               <Megaphone className="size-5 text-primary" />
@@ -364,23 +364,23 @@ function WorkspacePatrocinadoresPage() {
           </DialogHeader>
 
           <form onSubmit={handleSave} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto no-scrollbar">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Nome da Empresa / Marca</Label>
               <Input
                 placeholder="Ex: Sicredi Alto Uruguai"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="rounded-xl h-11 text-sm"
+                className="rounded-lg h-11 text-sm"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Nível / Tier</Label>
                 <select
                   value={tier}
                   onChange={(e) => setTier(e.target.value as any)}
-                  className="w-full h-11 px-3 rounded-xl bg-background text-xs font-semibold border"
+                  className="w-full h-11 px-3 rounded-lg bg-background text-xs font-semibold border"
                 >
                   <option value="gold">Master Gold</option>
                   <option value="silver">Silver</option>
@@ -389,19 +389,19 @@ function WorkspacePatrocinadoresPage() {
                 </select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Texto do Botão (CTA)</Label>
                 <Input
                   placeholder="Ex: Saiba Mais"
                   value={ctaLabel}
                   onChange={(e) => setCtaLabel(e.target.value)}
-                  className="rounded-xl h-11 text-sm"
+                  className="rounded-lg h-11 text-sm"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Logotipo do Parceiro</Label>
                 <ImageUpload
                   value={logoUrl}
@@ -412,7 +412,7 @@ function WorkspacePatrocinadoresPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Banner Gráfico (Imagem)</Label>
                 <ImageUpload
                   value={bannerUrl}
@@ -425,8 +425,8 @@ function WorkspacePatrocinadoresPage() {
             </div>
 
             {/* Vídeo para Anúncio */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
                 <Video className="size-3.5 text-primary" />
                 <Label className="text-xs font-bold">Vídeo do Anúncio (URL MP4 / WebM Opcional)</Label>
               </div>
@@ -434,26 +434,26 @@ function WorkspacePatrocinadoresPage() {
                 placeholder="https://exemplo.com/comercial.mp4"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                className="rounded-xl h-11 font-mono text-xs"
+                className="rounded-lg h-11 font-mono text-xs"
               />
               <p className="text-xs text-muted-foreground">
                 Se informado, o banner executará o vídeo em loop suave e silencioso.
               </p>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Link de Destino (Site / WhatsApp)</Label>
               <Input
                 placeholder="https://seusite.com.br"
                 value={websiteUrl}
                 onChange={(e) => setWebsiteUrl(e.target.value)}
-                className="rounded-xl h-11 font-mono text-xs"
+                className="rounded-lg h-11 font-mono text-xs"
               />
             </div>
 
             {/* Vinculação de Loja / Empresa no App */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
                 <Building2 className="size-3.5 text-primary" />
                 <Label className="text-xs font-bold">ID da Empresa Parceira no App (Opcional)</Label>
               </div>
@@ -461,21 +461,21 @@ function WorkspacePatrocinadoresPage() {
                 placeholder="UUID da loja parceira cadastrada"
                 value={sponsorStoreId}
                 onChange={(e) => setSponsorStoreId(e.target.value)}
-                className="rounded-xl h-11 font-mono text-xs"
+                className="rounded-lg h-11 font-mono text-xs"
               />
               <p className="text-xs text-muted-foreground">
                 Vincule o patrocinador ao portal de uma empresa do app para que ela consulte seus relatórios direto no painel corporativo.
               </p>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Descrição Curta</Label>
               <textarea
                 placeholder="Uma frase sobre o serviço ou produto anunciado..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={2}
-                className="w-full p-3 rounded-xl bg-background text-xs resize-none border"
+                className="w-full p-3 rounded-lg bg-background text-xs resize-none border"
               />
             </div>
 
@@ -484,14 +484,14 @@ function WorkspacePatrocinadoresPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-xl font-bold h-11 min-h-[44px]"
+                className="rounded-lg font-bold h-11 min-h-11"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl font-bold bg-primary text-primary-foreground h-11 min-h-[44px]"
+                className="rounded-lg font-bold bg-primary text-primary-foreground h-11 min-h-11"
               >
                 {isSubmitting ? (
                   <Loader2 className="size-4 animate-spin mr-2" />

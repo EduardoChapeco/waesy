@@ -152,14 +152,14 @@ export function DeliveryTimeAndRadiusMatrix({
  type="button"
  onClick={() => setActiveTab("preparo")}
  className={cn(
- "text-xs font-bold transition-all relative pb-3 flex items-center gap-1.5 cursor-pointer",
+ "text-xs font-bold transition-all relative pb-3 flex items-center gap-2 cursor-pointer",
  activeTab === "preparo"
  ? "text-primary border-b-2 border-primary"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
  <span>Meu tempo de preparo</span>
- <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-none px-1.5 py-0">
+ <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-none px-2 py-0">
  {currentPrepTime} min
  </Badge>
  </button>
@@ -175,7 +175,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
  {/* Lado Esquerdo: Truthful Preview da Loja & Mapa Conceitual */}
  <div className="lg:col-span-6 space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <MapPin className="size-4 text-primary" />
  <span>Raio de Atendimento e Visualização</span>
@@ -186,7 +186,7 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
 
  {/* Truthful Preview Card — Estilo iFood */}
- <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-xs hover:border-primary/40 transition-all">
+ <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-xs hover:border-primary/40 transition-all">
  {/* Banner */}
  <div className="relative h-28 sm:h-32 w-full bg-muted overflow-hidden">
  {storeBannerUrl ? (
@@ -197,7 +197,7 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
  )}
  {/* Logo Sobreposto */}
- <div className="absolute -bottom-4 left-4 size-16 rounded-2xl bg-card border-2 border-background overflow-hidden shadow-md flex items-center justify-center">
+ <div className="absolute -bottom-4 left-4 size-16 rounded-lg bg-card border-2 border-background overflow-hidden shadow-md flex items-center justify-center">
  {storeLogoUrl ? (
  <img src={storeLogoUrl} alt={storeName} className="size-full object-cover" />
  ) : (
@@ -238,8 +238,8 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
 
  {/* Aviso da Equação de Entrega */}
- <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 text-xs space-y-1">
- <div className="flex items-center gap-1.5 font-bold text-foreground">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1">
+ <div className="flex items-center gap-2 font-bold text-foreground">
  <Zap className="size-3.5 text-amber-500" />
  <span>Cálculo Inteligente de Entrega</span>
  </div>
@@ -259,7 +259,7 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
 
  {/* Tabela de Tiers */}
- <div className="rounded-2xl border border-border/60 overflow-hidden bg-card divide-y divide-border/50">
+ <div className="rounded-lg border border-border/60 overflow-hidden bg-card divide-y divide-border/50">
  <div className="grid grid-cols-12 bg-muted/50 p-3 text-[11px] font-bold text-muted-foreground">
  <span className="col-span-3">Raio (km)</span>
  <span className="col-span-4">Tempo Total (Preparo+Viagem)</span>
@@ -275,7 +275,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <span className="col-span-3 font-semibold text-foreground">
  Até {tier.radiusKm} km
  </span>
- <span className="col-span-4 text-muted-foreground flex items-center gap-1.5">
+ <span className="col-span-4 text-muted-foreground flex items-center gap-2">
  <Clock className="size-3 text-primary" />
  <strong className="text-foreground">{totalTimeForTier} min</strong>
  <span className="text-[10px] opacity-70">({tier.transitTimeMin}m rota)</span>
@@ -311,20 +311,20 @@ export function DeliveryTimeAndRadiusMatrix({
  placeholder="Km (ex: 5.0)"
  value={newRadius}
  onChange={(e) => setNewRadius(e.target.value)}
- className="col-span-4 h-8 text-xs rounded-xl"
+ className="col-span-4 h-8 text-xs rounded-lg"
  />
  <Input
  type="number"
  placeholder="Minutos rota"
  value={newTransitTime}
  onChange={(e) => setNewTransitTime(e.target.value)}
- className="col-span-4 h-8 text-xs rounded-xl"
+ className="col-span-4 h-8 text-xs rounded-lg"
  />
  <Input
  placeholder="R$ 8,90"
  value={newFee}
  onChange={(e) => setNewFee(e.target.value)}
- className="col-span-4 h-8 text-xs rounded-xl"
+ className="col-span-4 h-8 text-xs rounded-lg"
  />
  </div>
  <Button
@@ -332,7 +332,7 @@ export function DeliveryTimeAndRadiusMatrix({
  size="sm"
  onClick={handleAddTier}
  disabled={!newRadius || !newTransitTime}
- className="w-full h-8 rounded-xl text-xs font-bold gap-1 bg-foreground text-background hover:bg-foreground/90 mt-1"
+ className="w-full h-8 rounded-lg text-xs font-bold gap-1 bg-foreground text-background hover:bg-foreground/90 mt-1"
  >
  <Plus className="size-3" />
  <span>Incluir Faixa de Raio</span>
@@ -356,9 +356,9 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
 
  {/* Bloco de Ajuste Rápido (+ / -) */}
- <div className="p-5 rounded-2xl border border-border/70 bg-card space-y-4">
+ <div className="p-5 rounded-lg border border-border/70 bg-card space-y-4">
  <div className="flex items-center justify-between">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <Label className="text-xs font-bold text-foreground">Tempo de preparo ativo</Label>
  <p className="text-[11px] text-muted-foreground">Ajuste instantâneo para a operação de hoje</p>
  </div>
@@ -369,12 +369,12 @@ export function DeliveryTimeAndRadiusMatrix({
  variant="outline"
  size="icon"
  onClick={() => handlePrepTimeChange(-5)}
- className="size-9 rounded-xl border-border"
+ className="size-9 rounded-lg border-border"
  >
  <Minus className="size-4" />
  </Button>
 
- <div className="flex items-baseline gap-1 px-3 py-1 bg-muted rounded-xl min-w-[70px] justify-center">
+ <div className="flex items-baseline gap-1 px-3 py-1 bg-muted rounded-lg min-w-[70px] justify-center">
  <span className="font-mono text-xl font-black text-foreground">{currentPrepTime}</span>
  <span className="text-xs text-muted-foreground font-semibold">min</span>
  </div>
@@ -384,7 +384,7 @@ export function DeliveryTimeAndRadiusMatrix({
  variant="outline"
  size="icon"
  onClick={() => handlePrepTimeChange(5)}
- className="size-9 rounded-xl border-border"
+ className="size-9 rounded-lg border-border"
  >
  <Plus className="size-4" />
  </Button>
@@ -393,7 +393,7 @@ export function DeliveryTimeAndRadiusMatrix({
 
  {/* Chave de Tempo Manual */}
  <div className="flex items-center justify-between pt-3 border-t border-border/50">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <span className="text-xs font-bold text-foreground">Modo Tempo Manual Fixo</span>
  <p className="text-[10px] text-muted-foreground">Sobrescreve estimativas automáticas por IA</p>
  </div>
@@ -405,7 +405,7 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
 
  {/* Pré-configurações Rápidas (Estilo iFood) */}
- <div className="space-y-2.5">
+ <div className="space-y-3">
  <Label className="text-xs font-bold text-foreground">Pré-configurações Rápidas de Operação</Label>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  {PRESETS.map((p) => {
@@ -416,7 +416,7 @@ export function DeliveryTimeAndRadiusMatrix({
  type="button"
  onClick={() => handleApplyPreset(p)}
  className={cn(
- "flex items-center justify-between p-3 rounded-2xl border text-xs text-left transition-all cursor-pointer",
+ "flex items-center justify-between p-3 rounded-lg border text-xs text-left transition-all cursor-pointer",
  isSelected
  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
  : "border-border/60 bg-card text-muted-foreground hover:border-foreground/40 hover:text-foreground"
@@ -441,8 +441,8 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
 
  {/* Heatmap Visual da Semana */}
- <div className="rounded-2xl border border-border/60 bg-card p-4 space-y-3">
- <div className="grid grid-cols-8 gap-1.5 text-center text-[10px] font-bold text-muted-foreground border-b border-border/40 pb-2">
+ <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+ <div className="grid grid-cols-8 gap-2 text-center text-[10px] font-bold text-muted-foreground border-b border-border/40 pb-2">
  <span>Hora</span>
  <span>Seg</span>
  <span>Ter</span>
@@ -453,7 +453,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <span className="text-primary font-black">Dom</span>
  </div>
 
- <div className="space-y-1.5 text-xs max-h-64 overflow-y-auto scrollbar-none pr-1">
+ <div className="space-y-2 text-xs max-h-64 overflow-y-auto scrollbar-none pr-1">
  {[
  { hour: "11:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Almoço" },
  { hour: "12:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Pico Almoço" },
@@ -464,7 +464,7 @@ export function DeliveryTimeAndRadiusMatrix({
  { hour: "21:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Jantar" },
  { hour: "22:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Encerramento" },
  ].map((row) => (
- <div key={row.hour} className="grid grid-cols-8 gap-1.5 items-center text-center">
+ <div key={row.hour} className="grid grid-cols-8 gap-2 items-center text-center">
  <span className="font-mono text-[10px] text-muted-foreground">{row.hour}</span>
  {[1, 2, 3, 4, 5, 6, 7].map((day) => (
  <div
@@ -480,7 +480,7 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
 
  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-2 border-t border-border/40">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <div className="size-2.5 rounded-xs bg-emerald-500/30 border border-emerald-500/60" />
  <span>Turno ativo com preparo calibrado</span>
  </div>

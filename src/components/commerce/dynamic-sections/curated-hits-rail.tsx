@@ -84,7 +84,7 @@ export function CuratedHitsRailSection({
  </div>
 
  {savingsText && (
- <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-primary font-semibold max-w-xs">
+ <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-semibold max-w-xs">
  {savingsText}
  </div>
  )}
@@ -98,7 +98,7 @@ export function CuratedHitsRailSection({
  return (
  <div
  key={item.id}
- className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-2xs group hover:border-primary/40 transition-all flex flex-col justify-between"
+ className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs group hover:border-primary/40 transition-all flex flex-col justify-between"
  >
  {/* Imagem do Produto com Badge de Ranking */}
  <div className="aspect-4/3 overflow-hidden bg-muted relative">

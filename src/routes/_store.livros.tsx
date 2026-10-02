@@ -229,7 +229,7 @@ function LivrosVerticalPage() {
  })()}
  </div>
  ) : (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhum livro ou item de papelaria encontrado"
  description="Tente selecionar outro departamento ou busque por títulos específicos."
@@ -240,7 +240,7 @@ function LivrosVerticalPage() {
  ) : (
  <section aria-label="Vitrine de Produtos">
  {filteredProducts.length === 0 ? (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhum livro ou item de papelaria encontrado"
  description="Tente selecionar outro departamento ou busque por títulos específicos."

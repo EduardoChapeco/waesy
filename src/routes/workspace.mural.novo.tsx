@@ -94,7 +94,7 @@ function WorkspaceNewMuralPostPage() {
       />
 
       {/* ── 2. Card de Composição Clean ── */}
-      <form onSubmit={handleSubmit} className="bg-card rounded-2xl border border-border/60 p-5 sm:p-6 space-y-5 shadow-xs">
+      <form onSubmit={handleSubmit} className="bg-card rounded-lg border border-border/60 p-5 sm:p-6 space-y-5 shadow-xs">
         {/* Tipo de Publicação */}
         <div className="space-y-2">
           <Label className="text-xs font-semibold text-foreground">Formato da Publicação</Label>
@@ -111,7 +111,7 @@ function WorkspaceNewMuralPostPage() {
                   key={t.id}
                   type="button"
                   onClick={() => setPostType(t.id as any)}
-                  className={`p-3 rounded-xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
+                  className={`p-3 rounded-lg border text-left flex items-center gap-3 transition-all cursor-pointer ${
                     isSelected
                       ? "bg-primary/10 border-primary text-foreground font-bold shadow-xs"
                       : "bg-background border-border/50 text-muted-foreground hover:bg-muted/40"
@@ -127,37 +127,37 @@ function WorkspaceNewMuralPostPage() {
 
         {/* Campos Específicos de Notícia */}
         {postType === "news" && (
-          <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border/40">
-            <div className="space-y-1.5">
+          <div className="space-y-3 p-4 rounded-lg bg-muted/30 border border-border/40">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Manchete / Título da Notícia</Label>
               <Input
                 value={newsTitle}
                 onChange={(e) => setNewsTitle(e.target.value)}
                 placeholder="Ex: Novo cardápio de inverno já disponível..."
-                className="h-9 text-xs rounded-xl bg-background"
+                className="h-9 text-xs rounded-lg bg-background"
                 required={postType === "news"}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Fonte / Autoridade</Label>
               <Input
                 value={newsSource}
                 onChange={(e) => setNewsSource(e.target.value)}
                 placeholder="Ex: Assessoria de Imprensa, Loja Oficial..."
-                className="h-9 text-xs rounded-xl bg-background"
+                className="h-9 text-xs rounded-lg bg-background"
               />
             </div>
           </div>
         )}
 
         {/* Conteúdo / Mensagem */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-semibold text-foreground">Mensagem da Publicação</Label>
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Compartilhe novidades, eventos, novos pratos ou avisos com os clientes da cidade..."
-            className="rounded-xl text-xs min-h-28 resize-none bg-background"
+            className="rounded-lg text-xs min-h-28 resize-none bg-background"
             required
           />
         </div>
@@ -175,7 +175,7 @@ function WorkspaceNewMuralPostPage() {
           {mediaUrls.length > 0 && (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">
               {mediaUrls.map((url, idx) => (
-                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden bg-muted group">
+                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-muted group">
                   <img src={url} alt={`Mídia ${idx + 1}`} className="size-full object-cover" />
                   <button
                     type="button"
@@ -199,7 +199,7 @@ function WorkspaceNewMuralPostPage() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="h-10 px-5 rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground cursor-pointer shadow-sm"
+            className="h-10 px-5 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer shadow-sm"
           >
             {isSubmitting ? (
               <Loader2 className="size-4 animate-spin" />

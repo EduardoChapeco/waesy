@@ -134,7 +134,7 @@ export default function WorkspaceNotificationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="p-2 rounded-xl bg-primary/10 text-primary">
+            <span className="p-2 rounded-lg bg-primary/10 text-primary">
               <Bell className="w-5 h-5" />
             </span>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -156,7 +156,7 @@ export default function WorkspaceNotificationsPage() {
             variant="outline"
             size="sm"
             onClick={toggleSound}
-            className="rounded-xl h-10 px-3 text-xs gap-1.5"
+            className="rounded-lg h-10 px-3 text-xs gap-2"
             title={soundMuted ? "Ativar som de alertas" : "Silenciar som de alertas"}
           >
             {soundMuted ? (
@@ -173,7 +173,7 @@ export default function WorkspaceNotificationsPage() {
               size="sm"
               onClick={() => markAllAsReadMutation.mutate()}
               disabled={markAllAsReadMutation.isPending}
-              className="rounded-xl h-10 px-4 text-xs gap-1.5"
+              className="rounded-lg h-10 px-4 text-xs gap-2"
             >
               <CheckCheck className="w-4 h-4" />
               <span>Marcar todas como lidas</span>
@@ -183,9 +183,9 @@ export default function WorkspaceNotificationsPage() {
       </div>
 
       {/* Banner de Status Web Push */}
-      <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="p-2.5 rounded-xl bg-muted text-foreground">
+      <div className="bg-card border border-border/60 rounded-lg p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="p-3 rounded-lg bg-muted text-foreground">
             <BellRing className="w-5 h-5 text-primary" />
           </div>
           <div>
@@ -207,7 +207,7 @@ export default function WorkspaceNotificationsPage() {
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Receba alertas sonoros e notificações de vendas na tela do computador ou celular mesmo com a aba em segundo plano.
             </p>
           </div>
@@ -219,7 +219,7 @@ export default function WorkspaceNotificationsPage() {
               variant="outline"
               size="sm"
               onClick={handleTestNotification}
-              className="rounded-xl h-9 text-xs px-3.5 gap-1.5"
+              className="rounded-lg h-9 text-xs px-4 gap-2"
             >
               <span>Testar Notificação</span>
             </Button>
@@ -227,7 +227,7 @@ export default function WorkspaceNotificationsPage() {
             <Button
               size="sm"
               onClick={handleRequestPush}
-              className="rounded-xl h-9 text-xs px-4 gap-1.5 shadow-xs"
+              className="rounded-lg h-9 text-xs px-4 gap-2 shadow-xs"
             >
               <span>Ativar Notificações</span>
             </Button>
@@ -241,7 +241,7 @@ export default function WorkspaceNotificationsPage() {
           type="button"
           onClick={() => setActiveFilter("all")}
           className={cn(
-            "px-3.5 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap",
+            "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
             activeFilter === "all"
               ? "bg-foreground text-background font-semibold"
               : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -253,7 +253,7 @@ export default function WorkspaceNotificationsPage() {
           type="button"
           onClick={() => setActiveFilter("order")}
           className={cn(
-            "px-3.5 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap",
+            "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
             activeFilter === "order"
               ? "bg-foreground text-background font-semibold"
               : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -265,7 +265,7 @@ export default function WorkspaceNotificationsPage() {
           type="button"
           onClick={() => setActiveFilter("interaction")}
           className={cn(
-            "px-3.5 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap",
+            "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
             activeFilter === "interaction"
               ? "bg-foreground text-background font-semibold"
               : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -277,7 +277,7 @@ export default function WorkspaceNotificationsPage() {
           type="button"
           onClick={() => setActiveFilter("system")}
           className={cn(
-            "px-3.5 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap",
+            "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
             activeFilter === "system"
               ? "bg-foreground text-background font-semibold"
               : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -290,7 +290,7 @@ export default function WorkspaceNotificationsPage() {
       {/* Lista de Notificações */}
       <div className="space-y-3">
         {filteredNotifications.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border p-12 text-center bg-card">
+          <div className="rounded-lg border border-dashed border-border p-12 text-center bg-card">
             <Bell className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-30" />
             <h3 className="text-sm font-semibold text-foreground">Nenhuma notificação por aqui</h3>
             <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
@@ -306,7 +306,7 @@ export default function WorkspaceNotificationsPage() {
                 if (notif.linkUrl) navigate({ to: notif.linkUrl as any });
               }}
               className={cn(
-                "group relative bg-card border rounded-2xl p-4.5 transition-all cursor-pointer flex items-start gap-4",
+                "group relative bg-card border rounded-lg p-4.5 transition-all cursor-pointer flex items-start gap-4",
                 !notif.isRead
                   ? "border-primary/40 bg-primary/2 hover:border-primary/60 shadow-2xs"
                   : "border-border/60 hover:border-border hover:bg-muted/20"
@@ -315,7 +315,7 @@ export default function WorkspaceNotificationsPage() {
               {/* Ícone por Tipo */}
               <div
                 className={cn(
-                  "p-2.5 rounded-xl shrink-0 mt-0.5",
+                  "p-3 rounded-lg shrink-0 mt-1",
                   notif.type === "order"
                     ? "bg-emerald-500/10 text-emerald-600"
                     : notif.type === "interaction"

@@ -105,7 +105,7 @@ function SkillsCatalogPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/40">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/40">
           <Info className="size-4 text-primary shrink-0" />
           <span>Nenhuma skill chama provedor direto. Zero chaves expostas.</span>
         </div>
@@ -119,16 +119,16 @@ function SkillsCatalogPage() {
             placeholder="Buscar skill por nome ou gatilho..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10 text-xs rounded-xl bg-card border-border/60"
+            className="pl-9 h-10 text-xs rounded-lg bg-card border-border/60"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+              className={`px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 selectedCategory === cat.id
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground border border-border/40"
@@ -147,7 +147,7 @@ function SkillsCatalogPage() {
           <p className="text-xs">Carregando catálogo de skills...</p>
         </div>
       ) : skills.length === 0 ? (
-        <div className="py-16 text-center bg-card border border-border/60 rounded-2xl p-8 space-y-3">
+        <div className="py-16 text-center bg-card border border-border/60 rounded-lg p-8 space-y-3">
           <Sparkles className="size-8 mx-auto text-muted-foreground/40" />
           <p className="text-sm font-semibold text-foreground">Nenhuma skill encontrada</p>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -161,11 +161,11 @@ function SkillsCatalogPage() {
             return (
               <div
                 key={skill.id}
-                className="bg-card border border-border/60 rounded-2xl p-5 hover:border-border transition-all flex flex-col justify-between space-y-4 shadow-sm"
+                className="bg-card border border-border/60 rounded-lg p-5 hover:border-border transition-all flex flex-col justify-between space-y-4 shadow-sm"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                       <IconComp className="size-5" />
                     </div>
                     <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ function SkillsCatalogPage() {
                     </p>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-muted/20 border border-border/40 text-xs text-muted-foreground space-y-1">
+                  <div className="p-3 rounded-lg bg-muted/20 border border-border/40 text-xs text-muted-foreground space-y-1">
                     <span className="font-semibold text-foreground block">Gatilho:</span>
                     <p className="line-clamp-2 italic">{skill.trigger_explicit}</p>
                   </div>
@@ -201,11 +201,11 @@ function SkillsCatalogPage() {
                     Custo est.: ~${skill.estimated_cost_usd.toFixed(4)}
                   </span>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 text-xs px-2.5 rounded-lg"
+                      className="h-8 text-xs px-3 rounded-lg"
                       onClick={() => {
                         setSelectedSkill(skill);
                         setTestPrompt("");
@@ -225,7 +225,7 @@ function SkillsCatalogPage() {
 
       {/* Modal de Detalhes e Teste da Skill */}
       <Dialog open={testModalOpen} onOpenChange={setTestModalOpen}>
-        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl">
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Sparkles className="size-4 text-primary" />
@@ -238,7 +238,7 @@ function SkillsCatalogPage() {
 
           {selectedSkill && CANONICAL_SKILLS_DEFINITIONS[selectedSkill.slug] && (
             <div className="space-y-4 pt-2 text-xs">
-              <div className="space-y-1.5 p-3 rounded-xl bg-muted/20 border border-border/40">
+              <div className="space-y-2 p-3 rounded-lg bg-muted/20 border border-border/40">
                 <span className="font-bold text-foreground block">Procedimento Determinístico:</span>
                 <ul className="space-y-1 list-none pl-0 text-muted-foreground">
                   {CANONICAL_SKILLS_DEFINITIONS[selectedSkill.slug].numberedProcedure.map((step, idx) => (
@@ -250,7 +250,7 @@ function SkillsCatalogPage() {
               <div className="space-y-2">
                 <label className="font-bold text-foreground block">Entrada de Teste:</label>
                 <textarea
-                  className="w-full p-3 rounded-xl bg-muted/20 border border-border/60 text-xs min-h-[80px] focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full p-3 rounded-lg bg-muted/20 border border-border/60 text-xs min-h-[80px] focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="Insira dados de teste para a skill..."
                   value={testPrompt}
                   onChange={(e) => setTestPrompt(e.target.value)}
@@ -261,14 +261,14 @@ function SkillsCatalogPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-xl"
+                  className="rounded-lg"
                   onClick={() => setTestModalOpen(false)}
                 >
                   Fechar
                 </Button>
                 <Button
                   size="sm"
-                  className="rounded-xl"
+                  className="rounded-lg"
                   disabled={!testPrompt.trim() || executeMutation.isPending}
                   onClick={() => {
                     executeMutation.mutate({
@@ -281,18 +281,18 @@ function SkillsCatalogPage() {
                 >
                   {executeMutation.isPending ? (
                     <>
-                      <Loader2 className="size-3.5 mr-1.5 animate-spin" /> Processando...
+                      <Loader2 className="size-3.5 mr-2 animate-spin" /> Processando...
                     </>
                   ) : (
                     <>
-                      <Play className="size-3.5 mr-1.5" /> Executar Skill
+                      <Play className="size-3.5 mr-2" /> Executar Skill
                     </>
                   )}
                 </Button>
               </div>
 
               {testResult && (
-                <div className="p-3.5 rounded-xl bg-card border border-border/60 space-y-2 mt-3">
+                <div className="p-4 rounded-lg bg-card border border-border/60 space-y-2 mt-3">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-foreground">Resultado da Execução:</span>
                     <Badge variant="outline" className="text-xs text-emerald-500 border-emerald-500/20">

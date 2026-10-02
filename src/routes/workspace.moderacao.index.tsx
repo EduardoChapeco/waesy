@@ -93,14 +93,14 @@ function ModerationQueuePage() {
  <ShieldAlert className="size-5 text-destructive" />
  <span>Moderação</span>
  </h1>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Gerencie denúncias de usuários, faça curadoria de conteúdo e aplique sanções a violações
  de diretrizes.
  </p>
  </div>
 
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-xs font-semibold py-1 px-3 gap-1.5">
+ <Badge variant="outline" className="text-xs font-semibold py-1 px-3 gap-2">
  <Flag className="size-3.5 text-destructive" />
  <span>{pendingCount} denúncias pendentes</span>
  </Badge>
@@ -108,14 +108,14 @@ function ModerationQueuePage() {
  </div>
 
  {/* ── Barra de Filtros ────────────────────────────────────── */}
- <div className="flex flex-wrap items-center gap-3 bg-muted/20 p-3 rounded-2xl ">
+ <div className="flex flex-wrap items-center gap-3 bg-muted/20 p-3 rounded-lg ">
  <div className="flex items-center gap-2">
  <Filter className="size-4 text-muted-foreground" />
  <span className="text-xs font-semibold text-foreground">Filtrar:</span>
  </div>
 
  <Select value={statusFilter} onValueChange={setStatusFilter}>
- <SelectTrigger className="h-9 w-40 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 w-40 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Status" />
  </SelectTrigger>
  <SelectContent>
@@ -128,7 +128,7 @@ function ModerationQueuePage() {
  </Select>
 
  <Select value={entityFilter} onValueChange={setEntityFilter}>
- <SelectTrigger className="h-9 w-40 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 w-40 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Tipo de Conteúdo" />
  </SelectTrigger>
  <SelectContent>
@@ -159,9 +159,9 @@ function ModerationQueuePage() {
  return (
  <div
  key={rep.id}
- className="bg-card rounded-2xl p-5 border border-border/60 space-y-3 hover:border-border/80 transition-colors"
+ className="bg-card rounded-lg p-5 border border-border/60 space-y-3 hover:border-border/80 transition-colors"
  >
- <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2.5 border-b border-border/40">
+ <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-border/40">
  <div className="flex items-center gap-2 flex-wrap">
  <Badge
  variant={reasonInfo.variant}
@@ -204,7 +204,7 @@ function ModerationQueuePage() {
  <span className="text-muted-foreground block text-xs uppercase font-bold tracking-wider">
  Conteúdo Alvo
  </span>
- <div className="flex items-center gap-2 mt-0.5">
+ <div className="flex items-center gap-2 mt-1">
  <strong className="text-sm font-bold text-foreground">
  {rep.entity_title || `ID: ${rep.entity_id}`}
  </strong>
@@ -229,7 +229,7 @@ function ModerationQueuePage() {
  </div>
 
  {rep.description && (
- <p className="text-foreground/90 bg-muted/20 p-3 rounded-xl leading-relaxed">
+ <p className="text-foreground/90 bg-muted/20 p-3 rounded-lg leading-relaxed">
  <strong className="text-foreground">
  Motivo informado pelo denunciante:
  </strong>{" "}
@@ -270,7 +270,7 @@ function ModerationQueuePage() {
  onClick={() => {
  setSelectedReport(rep);
  }}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Avaliar e Aplicar Ação
  </Button>
@@ -281,8 +281,8 @@ function ModerationQueuePage() {
  })}
  </div>
  ) : (
- <div className="border-0 bg-card/60 rounded-2xl p-12 text-center space-y-3">
- <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+ <div className="border-0 bg-card/60 rounded-lg p-12 text-center space-y-3">
+ <div className="size-12 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
  <ShieldCheck className="size-6" />
  </div>
  <h2 className="text-base font-bold text-foreground">Fila de Moderação Limpa</h2>
@@ -296,7 +296,7 @@ function ModerationQueuePage() {
  {/* Modal de Ação do Moderador */}
  {selectedReport && (
  <Dialog open={!!selectedReport} onOpenChange={() => setSelectedReport(null)}>
- <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6 p-5">
+ <DialogContent className="sm:max-w-md sm:rounded-lg sm:p-6 p-5">
  <DialogHeader className="space-y-1">
  <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
  <ShieldAlert className="size-5 text-destructive" />
@@ -309,7 +309,7 @@ function ModerationQueuePage() {
  </DialogHeader>
 
  <div className="space-y-4 py-2 text-xs">
- <div className="bg-muted/20 p-3 rounded-xl space-y-1">
+ <div className="bg-muted/20 p-3 rounded-lg space-y-1">
  <p>
  <strong>Item:</strong> {selectedReport.entity_title || selectedReport.entity_id}
  </p>
@@ -324,7 +324,7 @@ function ModerationQueuePage() {
  )}
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="font-semibold text-foreground">
  Parecer do Moderador (opcional)
  </label>
@@ -333,7 +333,7 @@ function ModerationQueuePage() {
  onChange={(e) => setModeratorNotes(e.target.value)}
  placeholder="Justifique a ação tomada para fins de auditoria interna..."
  rows={3}
- className="rounded-xl text-xs bg-background resize-none"
+ className="rounded-lg text-xs bg-background resize-none"
  />
  </div>
 
@@ -341,7 +341,7 @@ function ModerationQueuePage() {
  <Button
  onClick={() => handleAction("remove_content")}
  disabled={resolveMutation.isPending}
- className="w-full sm:flex-1 rounded-xl text-xs font-bold gap-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+ className="w-full sm:flex-1 rounded-lg text-xs font-bold gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90"
  >
  <Trash2 className="size-3.5" />
  <span>Remover Conteúdo</span>
@@ -351,7 +351,7 @@ function ModerationQueuePage() {
  onClick={() => handleAction("dismiss")}
  disabled={resolveMutation.isPending}
  variant="outline"
- className="w-full sm:flex-1 rounded-xl text-xs font-semibold gap-1.5"
+ className="w-full sm:flex-1 rounded-lg text-xs font-semibold gap-2"
  >
  <CheckCircle2 className="size-3.5 text-emerald-500" />
  <span>Descartar Denúncia</span>

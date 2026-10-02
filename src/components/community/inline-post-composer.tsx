@@ -86,19 +86,19 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
 
   if (!isAuthenticated) {
     return (
-      <div className="w-full p-4 sm:p-5 rounded-2xl bg-card border border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+      <div className="w-full p-4 sm:p-5 rounded-lg bg-card border border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
         <div className="flex items-center gap-3 text-left">
-          <div className="size-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <ChatCircleText className="size-6" weight="bold" />
           </div>
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <h3 className="text-sm font-bold text-foreground">Participe da Comunidade</h3>
             <p className="text-xs text-muted-foreground">
               Entre na sua conta para publicar fotos, viagens, histórias e dicas locais.
             </p>
           </div>
         </div>
-        <Button asChild className="h-11 px-6 rounded-xl font-bold text-xs gap-2 shrink-0 w-full sm:w-auto">
+        <Button asChild className="h-11 px-6 rounded-lg font-bold text-xs gap-2 shrink-0 w-full sm:w-auto">
           <Link to="/entrar" search={{ returnUrl: "/feed" }}>
             <SignIn className="size-4" weight="bold" />
             <span>Entrar ou Cadastrar</span>
@@ -402,16 +402,16 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
           setIsExpanded(true);
           setTimeout(() => textareaRef.current?.focus(), 80);
         }}
-        className="w-full bg-card rounded-2xl p-2.5 sm:p-3 flex items-center gap-3 border border-border/60 shadow-xs cursor-pointer hover:border-border transition-all active:scale-[0.99] select-none"
+        className="w-full bg-card rounded-lg p-3 sm:p-3 flex items-center gap-3 border border-border/60 shadow-xs cursor-pointer hover:border-border transition-all active:scale-[0.99] select-none"
       >
-        <Avatar className="size-9 sm:size-10 rounded-xl border border-border/50 shrink-0 overflow-hidden bg-muted">
+        <Avatar className="size-9 sm:size-10 rounded-lg border border-border/50 shrink-0 overflow-hidden bg-muted">
           {userAvatar && <AvatarImage src={userAvatar} alt={userName} className="size-full object-cover" />}
           <AvatarFallback className="text-xs font-bold text-primary bg-primary/10 size-full flex items-center justify-center">
             {userInitial}
           </AvatarFallback>
         </Avatar>
 
-        <div className="flex-1 min-w-0 bg-muted/40 hover:bg-muted/60 transition-colors h-10 rounded-xl px-3.5 flex items-center text-xs text-muted-foreground">
+        <div className="flex-1 min-w-0 bg-muted/40 hover:bg-muted/60 transition-colors h-10 rounded-lg px-4 flex items-center text-xs text-muted-foreground">
           <span className="truncate">Compartilhe uma história, foto ou dica...</span>
         </div>
 
@@ -423,7 +423,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               setIsExpanded(true);
               setTimeout(() => fileInputRef.current?.click(), 120);
             }}
-            className="size-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
+            className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
             title="Adicionar foto"
           >
             <ImageSquare size={18} />
@@ -435,7 +435,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               setSelectedTemplate("travel");
               setIsExpanded(true);
             }}
-            className="size-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors hidden xs:flex cursor-pointer"
+            className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors hidden xs:flex cursor-pointer"
             title="Roteiro de Viagem"
           >
             <AirplaneTilt size={18} />
@@ -448,12 +448,12 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
   return (
     <div
       onPaste={handleClipboardPaste}
-      className="w-full bg-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 relative border border-border/60 shadow-xs animate-in fade-in zoom-in-95 duration-200"
+      className="w-full bg-card rounded-lg p-4 sm:p-5 flex flex-col gap-4 relative border border-border/60 shadow-xs animate-in fade-in zoom-in-95 duration-200"
     >
       {/* ── 1. Topo: Identificação do Autor + Seletor de Identidade + Botão Fechar ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
         <div className="flex items-center gap-3">
-          <Avatar className="size-10 rounded-xl border border-border/50 shrink-0 overflow-hidden bg-muted">
+          <Avatar className="size-10 rounded-lg border border-border/50 shrink-0 overflow-hidden bg-muted">
             {userAvatar && (
               <AvatarImage
                 src={userAvatar}
@@ -479,12 +479,12 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
         <div className="flex items-center gap-2 self-end sm:self-auto">
           {/* Seletor Multi-Identidade (Pessoal vs. Criador/Marca) */}
           {hasCreatorProfile && (
-            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
+            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/40">
               <button
                 type="button"
                 onClick={() => setPostAsCreator(false)}
                 className={cn(
-                  "h-7 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                  "h-7 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
                   !postAsCreator
                     ? "bg-background text-foreground shadow-2xs font-bold"
                     : "text-muted-foreground hover:text-foreground"
@@ -496,7 +496,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 type="button"
                 onClick={() => setPostAsCreator(true)}
                 className={cn(
-                  "h-7 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1",
+                  "h-7 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1",
                   postAsCreator
                     ? "bg-background text-foreground shadow-2xs font-bold"
                     : "text-muted-foreground hover:text-foreground"
@@ -516,7 +516,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 setIsExpanded(false);
               }
             }}
-            className="size-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
+            className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
             title="Fechar editor"
           >
             <X size={16} />
@@ -525,7 +525,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
       </div>
 
       {/* ── 2. Seletor de Formato Social (Chips Apple HIG) ────────────────── */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
         {TEMPLATE_OPTIONS.map((opt) => {
           const Icon = opt.icon;
           const isActive = selectedTemplate === opt.id;
@@ -535,7 +535,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               type="button"
               onClick={() => setSelectedTemplate(opt.id)}
               className={cn(
-                "h-8 px-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 select-none",
+                "h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 select-none",
                 isActive
                   ? "bg-foreground text-background font-bold shadow-2xs"
                   : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -550,14 +550,14 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
 
       {/* ── 3. Campos Específicos por Template ─────────────────────────────── */}
       {selectedTemplate === "travel" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 rounded-2xl bg-muted/30 border border-border/60">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/60">
           <div className="space-y-1">
             <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Origem</label>
             <Input
               value={travelOrigin}
               onChange={(e) => setTravelOrigin(e.target.value)}
               placeholder="Ex: Chapecó - SC"
-              className="h-11 text-xs bg-background rounded-xl border-border/80"
+              className="h-11 text-xs bg-background rounded-lg border-border/80"
             />
           </div>
           <div className="space-y-1">
@@ -566,49 +566,49 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               value={travelDestination}
               onChange={(e) => setTravelDestination(e.target.value)}
               placeholder="Ex: Serra Gaúcha / Gramado"
-              className="h-11 text-xs bg-background rounded-xl border-border/80"
+              className="h-11 text-xs bg-background rounded-lg border-border/80"
             />
           </div>
         </div>
       )}
 
       {selectedTemplate === "news" && (
-        <div className="space-y-2.5 p-3 rounded-2xl bg-muted/30 border border-border/60">
+        <div className="space-y-3 p-3 rounded-lg bg-muted/30 border border-border/60">
           <Input
             value={newsTitle}
             onChange={(e) => setNewsTitle(e.target.value)}
             placeholder="Título da Manchete..."
-            className="h-11 text-xs font-bold bg-background rounded-xl border-border/80"
+            className="h-11 text-xs font-bold bg-background rounded-lg border-border/80"
           />
           <Input
             value={newsSource}
             onChange={(e) => setNewsSource(e.target.value)}
             placeholder="Fonte / Veículo de Imprensa (Ex: Folha Regional)..."
-            className="h-11 text-xs bg-background rounded-xl border-border/80"
+            className="h-11 text-xs bg-background rounded-lg border-border/80"
           />
         </div>
       )}
 
       {selectedTemplate === "duo_badge" && (
-        <div className="space-y-2.5 p-3 rounded-2xl bg-muted/30 border border-border/60">
+        <div className="space-y-3 p-3 rounded-lg bg-muted/30 border border-border/60">
           <Input
             value={badgeTitle}
             onChange={(e) => setBadgeTitle(e.target.value)}
             placeholder="Título da Conexão / Equipe (Ex: Dupla de Inovação)..."
-            className="h-11 text-xs font-bold bg-background rounded-xl border-border/80"
+            className="h-11 text-xs font-bold bg-background rounded-lg border-border/80"
           />
           <div className="grid grid-cols-2 gap-2">
             <Input
               value={member1Name}
               onChange={(e) => setMember1Name(e.target.value)}
               placeholder="Nome Membro 1"
-              className="h-10 text-xs bg-background rounded-xl border-border/80"
+              className="h-10 text-xs bg-background rounded-lg border-border/80"
             />
             <Input
               value={member1Role}
               onChange={(e) => setMember1Role(e.target.value)}
               placeholder="Função 1"
-              className="h-10 text-xs bg-background rounded-xl border-border/80"
+              className="h-10 text-xs bg-background rounded-lg border-border/80"
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -616,13 +616,13 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               value={member2Name}
               onChange={(e) => setMember2Name(e.target.value)}
               placeholder="Nome Membro 2"
-              className="h-10 text-xs bg-background rounded-xl border-border/80"
+              className="h-10 text-xs bg-background rounded-lg border-border/80"
             />
             <Input
               value={member2Role}
               onChange={(e) => setMember2Role(e.target.value)}
               placeholder="Função 2"
-              className="h-10 text-xs bg-background rounded-xl border-border/80"
+              className="h-10 text-xs bg-background rounded-lg border-border/80"
             />
           </div>
         </div>
@@ -643,16 +643,16 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
         value={content}
         onChange={(e) => setContent(e.target.value)}
         onPaste={handleClipboardPaste}
-        className="min-h-24 text-sm sm:text-base border border-border/40 rounded-2xl bg-muted/20 focus:bg-background focus:border-primary/40 p-3.5 text-foreground transition-all resize-none focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-muted-foreground/70"
+        className="min-h-24 text-sm sm:text-base border border-border/40 rounded-lg bg-muted/20 focus:bg-background focus:border-primary/40 p-4 text-foreground transition-all resize-none focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-muted-foreground/70"
       />
 
       {/* ── 5. Previews de Mídia com Upload Múltiplo (Até 10) ────────────────── */}
       {mediaPreviews.length > 0 && (
-        <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
           {mediaPreviews.map((preview, index) => (
             <div
               key={index}
-              className="relative overflow-hidden rounded-2xl bg-black inline-block size-24 shrink-0 border border-border/50"
+              className="relative overflow-hidden rounded-lg bg-black inline-block size-24 shrink-0 border border-border/50"
             >
               {isUploadingMedia && index >= mediaUrls.length && (
                 <div className="absolute inset-0 bg-black/70 backdrop-blur-xs flex flex-col items-center justify-center z-20 gap-1 text-white">
@@ -679,7 +679,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               )}
 
               {preview.type === "video" && (
-                <div className="absolute bottom-1.5 left-1.5 bg-black/70 text-white px-1.5 py-0.5 rounded-md text-[9px] flex items-center gap-1 font-bold">
+                <div className="absolute bottom-1.5 left-1.5 bg-black/70 text-white px-2 py-1 rounded-md text-[9px] flex items-center gap-1 font-bold">
                   <FilmStrip size={10} weight="bold" />
                   <span>Vídeo</span>
                 </div>
@@ -700,9 +700,9 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
 
       {/* ── 5.5 Painel de Opções Avançadas (Parceria Paga, Cidade, Colaborador, Tags) ── */}
       {showAdvanced && (
-        <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/50 space-y-3 animate-in fade-in duration-200">
+        <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3 animate-in fade-in duration-200">
           {/* Parceria Comercial / Collab */}
-          <div className="p-3 rounded-xl bg-card border border-border/40 space-y-2">
+          <div className="p-3 rounded-lg bg-card border border-border/40 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Storefront size={16} weight="bold" className="text-primary" />
@@ -713,7 +713,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 variant={isPaidPartnership ? "default" : "outline"}
                 size="sm"
                 onClick={() => setIsPaidPartnership(!isPaidPartnership)}
-                className="h-7 px-2.5 rounded-lg text-[11px] font-semibold"
+                className="h-7 px-3 rounded-lg text-[11px] font-semibold"
               >
                 {isPaidPartnership ? "Parceria Paga Ativa" : "Marcar Parceria"}
               </Button>
@@ -725,13 +725,13 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                   value={partnerStoreName}
                   onChange={(e) => setPartnerStoreName(e.target.value)}
                   placeholder="Nome da Loja Parceira (Ex: Chapecó Modas)"
-                  className="h-10 text-xs rounded-xl"
+                  className="h-10 text-xs rounded-lg"
                 />
                 <Input
                   value={partnerCouponCode}
                   onChange={(e) => setPartnerCouponCode(e.target.value.toUpperCase())}
                   placeholder="Cupom de Desconto Opcional (Ex: EDU10)"
-                  className="h-10 text-xs font-mono uppercase rounded-xl"
+                  className="h-10 text-xs font-mono uppercase rounded-lg"
                 />
               </div>
             )}
@@ -745,7 +745,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 value={locationCity}
                 onChange={(e) => setLocationCity(e.target.value)}
                 placeholder="Cidade (Ex: Chapecó)"
-                className="h-10 pl-8 text-xs rounded-xl"
+                className="h-10 pl-8 text-xs rounded-lg"
               />
             </div>
 
@@ -755,7 +755,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 value={collaboratorHandle}
                 onChange={(e) => setCollaboratorHandle(e.target.value)}
                 placeholder="Colaborador / Co-autor (@handle)"
-                className="h-10 pl-8 text-xs rounded-xl"
+                className="h-10 pl-8 text-xs rounded-lg"
               />
             </div>
           </div>
@@ -767,7 +767,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="Tags e Tópicos (Ex: #gastronomia #dicas #compras)"
-              className="h-10 pl-8 text-xs rounded-xl"
+              className="h-10 pl-8 text-xs rounded-lg"
             />
           </div>
         </div>
@@ -781,7 +781,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingMedia || mediaUrls.length >= 10}
-            className="h-11 px-4 rounded-xl text-xs font-bold gap-2 border-border/60 hover:bg-muted cursor-pointer"
+            className="h-11 px-4 rounded-lg text-xs font-bold gap-2 border-border/60 hover:bg-muted cursor-pointer"
           >
             <ImageSquare size={18} weight="bold" className="text-primary" />
             <span>
@@ -793,7 +793,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             type="button"
             variant="outline"
             onClick={handleInsertHighlight}
-            className="h-11 px-3.5 rounded-xl text-xs font-bold gap-1.5 border-border/60 hover:bg-muted text-foreground transition-colors cursor-pointer"
+            className="h-11 px-4 rounded-lg text-xs font-bold gap-2 border-border/60 hover:bg-muted text-foreground transition-colors cursor-pointer"
             title="Destacar Texto"
           >
             <Highlighter className="size-4 text-amber-500" />
@@ -804,7 +804,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             type="button"
             variant={showAdvanced ? "secondary" : "ghost"}
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="h-11 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer text-muted-foreground hover:text-foreground"
+            className="h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer text-muted-foreground hover:text-foreground"
           >
             <SlidersHorizontal size={16} weight="bold" />
             <span className="hidden sm:inline">Opções Avançadas</span>
@@ -828,11 +828,11 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             isUploadingMedia ||
             (!content.trim() && mediaUrls.length === 0 && !newsTitle.trim() && !travelDestination.trim())
           }
-          className="h-11 px-7 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
+          className="h-11 px-7 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
         >
           {isSubmitting ? (
             <>
-              <CircleNotch size={14} className="animate-spin mr-1.5" />
+              <CircleNotch size={14} className="animate-spin mr-2" />
               Publicando...
             </>
           ) : (

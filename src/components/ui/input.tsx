@@ -14,7 +14,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
  type={type}
  className={cn(
  // Base — layout e tipografia
- "flex h-12 w-full rounded-xl px-4 py-2 text-base md:text-sm",
+ "flex h-12 w-full rounded-lg px-4 py-2 text-base md:text-sm",
  // Aparência — usa tokens do design system
  "bg-input text-foreground",
  "",

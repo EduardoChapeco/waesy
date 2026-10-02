@@ -74,7 +74,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
           <div className="lg:col-span-7 flex flex-col items-start text-left z-10 animate-in fade-in duration-300 key={currentIndex}">
             {/* Badge de Contexto do Slide */}
             {currentSlide.badgeText && (
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-4 sm:mb-6 shadow-xs">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-4 sm:mb-6 shadow-xs">
                 <Sparkles className="size-3.5 text-primary" />
                 <span>{currentSlide.badgeText}</span>
               </div>
@@ -97,7 +97,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
               {currentSlide.primaryCta && (
                 <Button
                   size="lg"
-                  className="h-11 sm:h-12 px-6 sm:px-7 text-xs sm:text-sm font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group shadow-xs cursor-pointer"
+                  className="h-11 sm:h-12 px-6 sm:px-7 text-xs sm:text-sm font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group shadow-xs cursor-pointer"
                   asChild
                 >
                   <a href={currentSlide.primaryCta.href} className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-11 sm:h-12 px-5 sm:px-6 text-xs sm:text-sm font-semibold rounded-xl border-border bg-card/60 backdrop-blur-xs hover:bg-muted text-foreground transition-all cursor-pointer"
+                  className="h-11 sm:h-12 px-5 sm:px-6 text-xs sm:text-sm font-semibold rounded-lg border-border bg-card/60 backdrop-blur-xs hover:bg-muted text-foreground transition-all cursor-pointer"
                   asChild
                 >
                   <a href={currentSlide.secondaryCta.href}>
@@ -124,7 +124,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
 
           {/* Lado Direito: Visual Imersivo & Card Flutuante */}
           <div className="lg:col-span-5 relative w-full flex items-center justify-center">
-            <div className="relative w-full aspect-4/3 sm:aspect-16/10 lg:aspect-4/3 rounded-2xl sm:rounded-3xl overflow-hidden border border-border/60 bg-muted/30 shadow-lg">
+            <div className="relative w-full aspect-4/3 sm:aspect-16/10 lg:aspect-4/3 rounded-lg sm:rounded-lg overflow-hidden border border-border/60 bg-muted/30 shadow-lg">
               {currentSlide.imageUrl ? (
                 <img
                   src={currentSlide.imageUrl}
@@ -145,14 +145,14 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
 
               {/* Tag Superior */}
               {currentSlide.highlightTag && (
-                <div className="absolute top-3 left-3 px-3 py-1 rounded-xl bg-background/80 backdrop-blur-md border border-border/60 text-[10px] font-bold text-foreground uppercase tracking-wider">
+                <div className="absolute top-3 left-3 px-3 py-1 rounded-lg bg-background/80 backdrop-blur-md border border-border/60 text-[10px] font-bold text-foreground uppercase tracking-wider">
                   {currentSlide.highlightTag}
                 </div>
               )}
 
               {/* Card Flutuante de Indicador */}
               {currentSlide.floatingStat && (
-                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 px-3.5 py-2.5 rounded-2xl bg-card/90 backdrop-blur-md border border-border/60 shadow-md flex items-center gap-2.5">
+                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 px-4 py-3 rounded-lg bg-card/90 backdrop-blur-md border border-border/60 shadow-md flex items-center gap-3">
                   {currentSlide.floatingStat.statusDot && (
                     <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                   )}
@@ -174,12 +174,12 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
         {slides.length > 1 && (
           <div className="flex items-center justify-between pt-6 sm:pt-8 border-t border-border/30 mt-6 sm:mt-8">
             {/* Controles de Próximo / Anterior */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={prevSlide}
                 aria-label="Slide anterior"
-                className="size-9 rounded-xl border border-border bg-card/60 hover:bg-muted flex items-center justify-center text-foreground transition-all cursor-pointer"
+                className="size-9 rounded-lg border border-border bg-card/60 hover:bg-muted flex items-center justify-center text-foreground transition-all cursor-pointer"
               >
                 <ChevronLeft className="size-4" />
               </button>
@@ -187,7 +187,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
                 type="button"
                 onClick={nextSlide}
                 aria-label="Próximo slide"
-                className="size-9 rounded-xl border border-border bg-card/60 hover:bg-muted flex items-center justify-center text-foreground transition-all cursor-pointer"
+                className="size-9 rounded-lg border border-border bg-card/60 hover:bg-muted flex items-center justify-center text-foreground transition-all cursor-pointer"
               >
                 <ChevronRight className="size-4" />
               </button>

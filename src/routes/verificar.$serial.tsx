@@ -48,10 +48,10 @@ export default function VerifySerialPage() {
 
  return (
  <div className="min-h-[100dvh] bg-slate-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-4">
- <div className="max-w-md w-full bg-white dark:bg-zinc-900 rounded-2xl shadow-xs border border-border p-6 sm:p-8 flex flex-col gap-6">
+ <div className="max-w-md w-full bg-white dark:bg-zinc-900 rounded-lg shadow-xs border border-border p-6 sm:p-8 flex flex-col gap-6">
  {/* Header Badge */}
  <div className="flex flex-col items-center text-center gap-3">
- <div className="size-16 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shadow-inner">
+ <div className="size-16 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shadow-inner">
  <ShieldCheck className="size-10" />
  </div>
  <div>
@@ -61,7 +61,7 @@ export default function VerifySerialPage() {
  <h1 className="text-xl font-bold tracking-tight text-foreground mt-2">
  Autenticidade Confirmada
  </h1>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Conformidade com MP 2.200-2/2001 e Código Civil Brasileiro
  </p>
  </div>
@@ -73,7 +73,7 @@ export default function VerifySerialPage() {
  Validando integridade na cadeia de custódia...
  </div>
  ) : error ? (
- <div className="p-4 rounded-xl bg-destructive/10 text-destructive text-sm text-center">
+ <div className="p-4 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
  {error}
  </div>
  ) : data ? (

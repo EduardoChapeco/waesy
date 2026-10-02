@@ -142,8 +142,8 @@ function DeliveryCourierPage() {
   if (!delivery) {
     return (
       <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full border border-border/80 bg-card rounded-2xl p-6 text-center space-y-4 shadow-sm">
-          <div className="size-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+        <div className="max-w-md w-full border border-border/80 bg-card rounded-lg p-6 text-center space-y-4 shadow-sm">
+          <div className="size-12 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
             <Truck className="size-6" />
           </div>
           <h1 className="text-lg font-bold text-foreground">Entrega Não Encontrada</h1>
@@ -255,7 +255,7 @@ function DeliveryCourierPage() {
  <div className="min-h-[100dvh] bg-muted/20 flex flex-col justify-between p-4 max-w-lg mx-auto">
  <div className="space-y-4">
  {/* Header da Corrida */}
- <div className="bg-card rounded-2xl p-4 flex items-center justify-between border border-border/60 shadow-2xs">
+ <div className="bg-card rounded-lg p-4 flex items-center justify-between border border-border/60 shadow-2xs">
         <div className="flex items-center gap-3">
           <div>
             <p className="text-xs text-muted-foreground font-semibold">Painel do Entregador</p>
@@ -276,7 +276,7 @@ function DeliveryCourierPage() {
  </div>
 
  {/* Taxa da Corrida */}
- <div className="bg-card rounded-2xl p-4 flex items-center justify-between border border-border/60 shadow-2xs">
+ <div className="bg-card rounded-lg p-4 flex items-center justify-between border border-border/60 shadow-2xs">
  <div>
  <span className="text-xs text-muted-foreground">Sua Taxa de Entrega</span>
  <p className="text-xl font-black text-primary">
@@ -285,9 +285,9 @@ function DeliveryCourierPage() {
  </div>
 
       {/* ── V139 Waesy Go: Tipo de Entrega (Portaria vs Apartamento) ── */}
-      <div className="bg-card rounded-2xl p-4 space-y-2 border border-border/60 shadow-2xs">
+      <div className="bg-card rounded-lg p-4 space-y-2 border border-border/60 shadow-2xs">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+          <span className="text-xs font-bold text-foreground flex items-center gap-2">
             {delivery.delivery_to_door ? (
               <Building2 className="size-4 text-amber-600 dark:text-amber-400" />
             ) : (
@@ -310,14 +310,14 @@ function DeliveryCourierPage() {
 
       {/* ── V139 Waesy Go: Registro de Chegada & Tolerância de 15 Minutos ── */}
       {pickupStarted && !isDelivered && (
-        <div className="bg-card rounded-2xl p-4 space-y-3 border border-border/60 shadow-2xs">
+        <div className="bg-card rounded-lg p-4 space-y-3 border border-border/60 shadow-2xs">
           {!arrivedAt ? (
             <div className="space-y-2 text-center">
               <Button
                 type="button"
                 onClick={handleRecordArrival}
                 disabled={isRecordingArrival}
-                className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98 transition-all"
+                className="w-full h-11 rounded-lg font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98 transition-all"
               >
                 {isRecordingArrival ? (
                   <>
@@ -338,7 +338,7 @@ function DeliveryCourierPage() {
           ) : (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Clock className="size-4 text-primary" />
                   Tempo de Espera no Local
                 </span>
@@ -351,12 +351,12 @@ function DeliveryCourierPage() {
               </div>
 
               {elapsedMinutes <= 15 ? (
-                <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-xs text-muted-foreground">
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/40 text-xs text-muted-foreground">
                   Aguardando cliente. Faltam <span className="font-bold text-foreground">{15 - elapsedMinutes} minutos</span> de tolerância contratual.
                 </div>
               ) : (
-                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-xs space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-destructive">
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-xs space-y-1">
+                  <div className="flex items-center gap-2 font-bold text-destructive">
                     <AlertTriangle className="size-4 shrink-0" />
                     <span>Tolerância de 15 minutos excedida</span>
                   </div>
@@ -372,13 +372,13 @@ function DeliveryCourierPage() {
           )}
         </div>
       )}
- <span className="text-xs bg-muted px-2.5 py-1 rounded-lg font-medium text-foreground">
+ <span className="text-xs bg-muted px-3 py-1 rounded-lg font-medium text-foreground">
  {delivery.courier_name}
  </span>
  </div>
 
  {/* Dados do Destinatário & Endereço */}
- <div className="bg-card rounded-2xl p-4 space-y-4 border border-border/60 shadow-2xs">
+ <div className="bg-card rounded-lg p-4 space-y-4 border border-border/60 shadow-2xs">
  <div className="space-y-1">
  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
  Cliente / Destinatário
@@ -399,13 +399,13 @@ function DeliveryCourierPage() {
  </div>
 
  {/* Ações Rápidas de Navegação & Contato */}
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
  <Button
  type="button"
  variant="outline"
  size="sm"
  onClick={handleOpenMaps}
- className="rounded-xl text-xs font-semibold gap-1.5 h-9"
+ className="rounded-lg text-xs font-semibold gap-2 h-9"
  >
  <Navigation className="size-3.5 text-primary" />
  Maps
@@ -415,7 +415,7 @@ function DeliveryCourierPage() {
  variant="outline"
  size="sm"
  onClick={handleOpenWaze}
- className="rounded-xl text-xs font-semibold gap-1.5 h-9"
+ className="rounded-lg text-xs font-semibold gap-2 h-9"
  >
  <Navigation className="size-3.5 text-info" />
  Waze
@@ -426,7 +426,7 @@ function DeliveryCourierPage() {
  variant="outline"
  size="sm"
  onClick={handleCallRecipient}
- className="rounded-xl text-xs font-semibold gap-1.5 h-9"
+ className="rounded-lg text-xs font-semibold gap-2 h-9"
  >
  <Phone className="size-3.5 text-emerald-600" />
  Ligar
@@ -437,7 +437,7 @@ function DeliveryCourierPage() {
 
  {/* ── Itens do Pedido ── */}
  {(delivery as any).items && (delivery as any).items.length > 0 && (
- <div className="bg-card rounded-2xl p-4 border border-border/60 shadow-2xs space-y-2.5">
+ <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground">Itens da Entrega ({(delivery as any).items.length})</span>
  {(delivery as any).total_cents > 0 && (
@@ -446,9 +446,9 @@ function DeliveryCourierPage() {
  </span>
  )}
  </div>
- <div className="space-y-1.5 divide-y divide-border/40 text-xs">
+ <div className="space-y-2 divide-y divide-border/40 text-xs">
  {(delivery as any).items.map((it: any, idx: number) => (
- <div key={idx} className="pt-1.5 first:pt-0 flex items-center justify-between">
+ <div key={idx} className="pt-2 first:pt-0 flex items-center justify-between">
  <span className="font-medium text-foreground">
  {it.qty}x {it.product_title}
  </span>
@@ -463,7 +463,7 @@ function DeliveryCourierPage() {
 
  {/* ── Status de Coleta na Loja ── */}
  {!isDelivered && (
- <div className="bg-card rounded-2xl p-4 border border-border/60 shadow-2xs space-y-2">
+ <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-2">
  <div className="flex items-center justify-between">
  <div>
  <p className="text-xs font-bold text-foreground">Status da Coleta</p>
@@ -477,7 +477,7 @@ function DeliveryCourierPage() {
  variant={pickupStarted ? "secondary" : "default"}
  disabled={isStartingPickup || pickupStarted}
  onClick={handleStartPickup}
- className="rounded-xl text-xs font-bold h-9"
+ className="rounded-lg text-xs font-bold h-9"
  >
  {pickupStarted ? "✓ Coletado" : isStartingPickup ? "Registrando..." : "Confirmar Coleta"}
  </Button>
@@ -487,7 +487,7 @@ function DeliveryCourierPage() {
 
  {/* ── Alterar Forma de Pagamento no Ato da Entrega ── */}
  {!isDelivered && (
- <div className="bg-card rounded-2xl p-4 border border-border/60 shadow-2xs space-y-2">
+ <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground">Forma de Pagamento</span>
  <span className="text-[10px] text-muted-foreground font-mono">Sincronização em tempo real</span>
@@ -498,10 +498,10 @@ function DeliveryCourierPage() {
  onValueChange={(val: any) => handleUpdatePayment(val)}
  disabled={isUpdatingPayment}
  >
- <SelectTrigger className="h-9 text-xs rounded-xl flex-1 bg-background">
+ <SelectTrigger className="h-9 text-xs rounded-lg flex-1 bg-background">
  <SelectValue placeholder="Selecione a forma..." />
  </SelectTrigger>
- <SelectContent className="rounded-xl text-xs">
+ <SelectContent className="rounded-lg text-xs">
  <SelectItem value="cash">Dinheiro na Entrega</SelectItem>
  <SelectItem value="pix">PIX na Maquininha / QR Code</SelectItem>
  <SelectItem value="card">Cartão Débito / Crédito (Maquininha)</SelectItem>
@@ -513,7 +513,7 @@ function DeliveryCourierPage() {
  )}
 
  {/* Confirmação de Entrega por PIN & Foto de Prova */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/60 shadow-2xs">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/60 shadow-2xs">
  {isDelivered ? (
  <div className="text-center py-4 space-y-2">
  <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
@@ -526,8 +526,8 @@ function DeliveryCourierPage() {
  </div>
  ) : (
  <form onSubmit={handleConfirmDelivery} className="space-y-4">
- <div className="space-y-1.5 text-center">
- <div className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground">
+ <div className="space-y-2 text-center">
+ <div className="inline-flex items-center gap-2 text-xs font-bold text-foreground">
  <KeyRound className="size-4 text-primary" />
  Código PIN de Confirmação
  </div>
@@ -544,13 +544,13 @@ function DeliveryCourierPage() {
  value={pin}
  onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
  placeholder="Ex: 8492"
- className="h-12 text-center text-xl font-mono font-bold tracking-widest rounded-xl"
+ className="h-12 text-center text-xl font-mono font-bold tracking-widest rounded-lg"
  required
  />
 
  {/* Foto de Comprovante Opcional */}
- <div className="space-y-1.5 text-left pt-2 border-t border-border/40">
- <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+ <div className="space-y-2 text-left pt-2 border-t border-border/40">
+ <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
  <Camera className="size-3.5 text-muted-foreground" />
  Foto do Pacote / Destinatário (Opcional)
  </div>
@@ -566,7 +566,7 @@ function DeliveryCourierPage() {
  <Button
  type="submit"
  disabled={isConfirming || pin.length !== 4}
- className="w-full h-11 rounded-xl font-bold gap-2 text-sm"
+ className="w-full h-11 rounded-lg font-bold gap-2 text-sm"
  >
  {isConfirming ? (
  <>

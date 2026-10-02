@@ -87,7 +87,7 @@ function AbandonedCartsPage() {
  eyebrow="Marketing"
  title="Carrinhos Abandonados"
  actions={
- <Button onClick={handleScan} disabled={isScanning} size="sm" variant="outline" className="rounded-xl font-semibold text-xs h-9">
+ <Button onClick={handleScan} disabled={isScanning} size="sm" variant="outline" className="rounded-lg font-semibold text-xs h-9">
  <RefreshCw className={`mr-2 size-3.5 ${isScanning ? "animate-spin" : ""}`} />
  Atualizar
  </Button>
@@ -97,7 +97,7 @@ function AbandonedCartsPage() {
  {carts.length === 0 ? (
  <EmptyState title="Nenhum carrinho abandonado" />
  ) : (
- <div className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+ <div className="bg-card rounded-lg border border-border/60 overflow-hidden">
  <Table>
  <TableHeader>
  <TableRow>
@@ -155,7 +155,7 @@ function AbandonedCartsPage() {
  onClick={() => handleMarkAttempt(c.id, c.customerPhone)}
  disabled={c.status === "recovered"}
  >
- <Send className="mr-1.5 size-3.5 text-primary" />
+ <Send className="mr-2 size-3.5 text-primary" />
  Recuperar
  </Button>
  </TableCell>

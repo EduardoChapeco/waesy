@@ -69,20 +69,20 @@ function CustomerTripsPage() {
             Viagens
           </h1>
           {totalBookingsCount > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {totalBookingsCount}
             </Badge>
           )}
         </div>
 
-        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
+        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer">
           <Link to="/turismo">Explorar</Link>
         </Button>
       </div>
 
   {/* ── Summary KPI Cards ── */}
   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-    <div className="p-4 rounded-2xl bg-card border border-border/60">
+    <div className="p-4 rounded-lg bg-card border border-border/60">
       <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
         <Ticket size={16} weight="bold" className="text-primary" />
         <span>Viagens</span>
@@ -90,7 +90,7 @@ function CustomerTripsPage() {
       <p className="text-2xl font-black text-foreground mt-2">{totalBookingsCount}</p>
     </div>
 
-    <div className="p-4 rounded-2xl bg-card border border-border/60">
+    <div className="p-4 rounded-lg bg-card border border-border/60">
       <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
         <CheckCircle size={16} weight="bold" className="text-primary" />
         <span>Confirmadas</span>
@@ -98,7 +98,7 @@ function CustomerTripsPage() {
       <p className="text-2xl font-black text-foreground mt-2">{confirmedCount}</p>
     </div>
 
-    <div className="p-4 rounded-2xl bg-card border border-border/60 col-span-2 sm:col-span-1">
+    <div className="p-4 rounded-lg bg-card border border-border/60 col-span-2 sm:col-span-1">
       <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
         <ShieldCheck size={16} weight="bold" className="text-primary" />
         <span>Suporte</span>
@@ -132,7 +132,7 @@ function CustomerTripsPage() {
  return (
  <div
  key={agencyTrip.id}
- className="p-5 sm:p-6 rounded-2xl bg-card border border-border/70 flex flex-col md:flex-row gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-all"
+ className="p-5 sm:p-6 rounded-lg bg-card border border-border/70 flex flex-col md:flex-row gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-all"
  >
  <div className="space-y-2 flex-1">
  <div className="flex flex-wrap items-center gap-2">
@@ -159,7 +159,7 @@ function CustomerTripsPage() {
  {/* Resumo de Serviços (Voos & Hospedagem) */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground pt-1">
  {hasFlights && (
- <div className="flex items-center gap-1.5 font-medium">
+ <div className="flex items-center gap-2 font-medium">
  <Airplane size={14} className="text-primary shrink-0" />
  <span className="truncate">
  {agencyTrip.flights[0].origin} ➔ {agencyTrip.flights[0].destination} ({agencyTrip.flights[0].airline || "Voo"})
@@ -167,7 +167,7 @@ function CustomerTripsPage() {
  </div>
  )}
  {hasHotels && (
- <div className="flex items-center gap-1.5 font-medium">
+ <div className="flex items-center gap-2 font-medium">
  <Buildings size={14} className="text-primary shrink-0" />
  <span className="truncate">
  {agencyTrip.hotels[0].name} ({agencyTrip.hotels[0].city || "Hotel"})
@@ -175,7 +175,7 @@ function CustomerTripsPage() {
  </div>
  )}
  {(agencyTrip.travel_start_date || agencyTrip.travel_end_date) && (
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <CalendarDots size={14} className="text-muted-foreground shrink-0" />
  <span>
  {agencyTrip.travel_start_date || "—"} até {agencyTrip.travel_end_date || "—"}
@@ -183,7 +183,7 @@ function CustomerTripsPage() {
  </div>
  )}
  {agencyTrip.adults_count > 0 && (
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Users size={14} className="text-muted-foreground shrink-0" />
  <span>{agencyTrip.adults_count} Adulto(s)</span>
  </div>
@@ -195,7 +195,7 @@ function CustomerTripsPage() {
  {voucherUrl ? (
  <Button
  asChild
- className="flex-1 md:flex-initial rounded-xl font-bold text-xs gap-1.5 h-10 bg-primary text-primary-foreground hover:bg-primary/90"
+ className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-10 bg-primary text-primary-foreground hover:bg-primary/90"
  >
  <a href={voucherUrl} target="_blank" rel="noopener noreferrer">
  <QrCode size={16} weight="bold" />
@@ -206,7 +206,7 @@ function CustomerTripsPage() {
  <Button
  disabled
  variant="outline"
- className="flex-1 md:flex-initial rounded-xl font-bold text-xs gap-1.5 h-10"
+ className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-10"
  >
  <span>Voucher em Emissão</span>
  </Button>
@@ -221,8 +221,8 @@ function CustomerTripsPage() {
 
  {/* ── 2. Lista de Passeios do Marketplace ── */}
   {trips.length === 0 && agencyTrips.length === 0 ? (
-  <div className="text-center py-16 px-4 rounded-2xl bg-card space-y-4 border border-border/70">
-  <div className="size-16 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mx-auto">
+  <div className="text-center py-16 px-4 rounded-lg bg-card space-y-4 border border-border/70">
+  <div className="size-16 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
   <Compass size={32} weight="bold" className="text-primary" />
   </div>
   <div className="space-y-1">
@@ -231,9 +231,9 @@ function CustomerTripsPage() {
   Você ainda não possui vouchers de viagens ou experiências emitidos para sua conta.
   </p>
   </div>
-  <Button asChild className="rounded-xl font-bold text-xs bg-foreground text-background">
+  <Button asChild className="rounded-lg font-bold text-xs bg-foreground text-background">
   <Link to="/turismo">
-  <Compass size={16} weight="bold" className="mr-1.5" />
+  <Compass size={16} weight="bold" className="mr-2" />
   <span>Explorar</span>
   </Link>
   </Button>
@@ -262,22 +262,22 @@ function CustomerTripsPage() {
   return (
   <div
   key={booking.id}
-  className="p-5 sm:p-6 rounded-2xl bg-card flex flex-col md:flex-row gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-all"
+  className="p-5 sm:p-6 rounded-lg bg-card flex flex-col md:flex-row gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-all"
   >
   <div className="flex gap-4 items-start">
   {exp?.image_url ? (
   <img
   src={exp.image_url}
   alt={exp.title}
-  className="size-20 sm:size-24 rounded-2xl object-cover shrink-0"
+  className="size-20 sm:size-24 rounded-lg object-cover shrink-0"
   />
   ) : (
-  <div className="size-20 sm:size-24 rounded-2xl bg-muted flex items-center justify-center shrink-0 ">
+  <div className="size-20 sm:size-24 rounded-lg bg-muted flex items-center justify-center shrink-0 ">
   <Compass size={28} className="text-muted-foreground" />
   </div>
   )}
 
-  <div className="space-y-1.5">
+  <div className="space-y-2">
   <div className="flex flex-wrap items-center gap-2">
   <Badge variant="outline" className="text-[10px] font-mono font-bold bg-muted/60">
   {booking.voucher_code}
@@ -322,7 +322,7 @@ function CustomerTripsPage() {
   <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-border">
   <Button
   onClick={() => handleOpenVoucher(booking)}
-  className="flex-1 md:flex-initial rounded-xl font-bold text-xs gap-1.5 h-10 bg-foreground text-background "
+  className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-10 bg-foreground text-background "
   >
   <QrCode size={16} weight="bold" />
   <span>Voucher Digital</span>
@@ -343,7 +343,7 @@ function CustomerTripsPage() {
   customMessage: `Olá! Tenho uma reserva confirmada com o voucher *${booking.voucher_code}* para *${exp?.title}*. Queria confirmar os detalhes.`,
   })
   }
-  className="flex-1 md:flex-initial rounded-xl font-bold text-xs gap-1.5 h-10 border-border cursor-pointer"
+  className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-10 border-border cursor-pointer"
   >
   <WhatsappLogo size={16} weight="bold" className="text-foreground" />
   <span>Falar com Guia</span>
@@ -359,7 +359,7 @@ function CustomerTripsPage() {
 
  {/* ── Modal Canônico de Voucher Digital (Padrão TravelAgencias / Waesy) ── */}
  <Dialog open={isVoucherOpen} onOpenChange={setIsVoucherOpen}>
- <DialogContent className="sm:max-w-lg sm:rounded-2xl p-5 sm:p-8 bg-card border-border">
+ <DialogContent className="sm:max-w-lg sm:rounded-lg p-5 sm:p-8 bg-card border-border">
  {selectedBooking && (
  <div className="space-y-6">
   {/* Header do Voucher */}
@@ -372,14 +372,14 @@ function CustomerTripsPage() {
   </h2>
   <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground font-mono">
   <span>CÓDIGO:</span>
-  <span className="font-black text-foreground text-sm bg-muted px-2 py-0.5 rounded-md border border-border/60">
+  <span className="font-black text-foreground text-sm bg-muted px-2 py-1 rounded-md border border-border/60">
   {selectedBooking.voucher_code}
   </span>
   </div>
   </div>
 
   {/* QR Code de Validação de Embarque */}
-  <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-border/40 shadow-xs">
+  <div className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border border-border/40 shadow-xs">
     <img
       src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=${encodeURIComponent(selectedBooking.voucher_code)}`}
       alt={`QR Code ${selectedBooking.voucher_code}`}
@@ -393,7 +393,7 @@ function CustomerTripsPage() {
 
   {/* Detalhes do Roteiro */}
   <div className="grid grid-cols-2 gap-3 text-xs">
-  <div className="p-3 rounded-2xl bg-muted/40 space-y-1">
+  <div className="p-3 rounded-lg bg-muted/40 space-y-1">
   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
   Data do Passeio
   </span>
@@ -404,14 +404,14 @@ function CustomerTripsPage() {
   </p>
   </div>
 
-  <div className="p-3 rounded-2xl bg-muted/40 space-y-1">
+  <div className="p-3 rounded-lg bg-muted/40 space-y-1">
   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
   Passageiros
   </span>
   <p className="font-bold text-foreground">{selectedBooking.guests_count} pessoa(s)</p>
   </div>
 
-  <div className="p-3 rounded-2xl bg-muted/40 space-y-1 col-span-2">
+  <div className="p-3 rounded-lg bg-muted/40 space-y-1 col-span-2">
   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
   Ponto de Encontro / Local
   </span>
@@ -420,7 +420,7 @@ function CustomerTripsPage() {
   </p>
   </div>
 
-  <div className="p-3 rounded-2xl bg-muted/40 space-y-1 col-span-2">
+  <div className="p-3 rounded-lg bg-muted/40 space-y-1 col-span-2">
   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
   Titular da Reserva
   </span>
@@ -431,7 +431,7 @@ function CustomerTripsPage() {
   </div>
 
   {/* Informações de Embarque & Validação */}
-  <div className="p-4 rounded-2xl bg-muted/20 space-y-2 text-xs">
+  <div className="p-4 rounded-lg bg-muted/20 space-y-2 text-xs">
   <div className="flex items-center gap-2 font-bold text-foreground">
   <Info size={16} weight="bold" className="text-primary" />
   <span>Instruções de Embarque</span>
@@ -446,7 +446,7 @@ function CustomerTripsPage() {
   <Button
   onClick={handlePrint}
   variant="outline"
-  className="flex-1 rounded-xl font-bold text-xs gap-2 h-11"
+  className="flex-1 rounded-lg font-bold text-xs gap-2 h-11"
   >
   <Printer size={16} weight="bold" />
   <span>Imprimir Voucher</span>
@@ -454,7 +454,7 @@ function CustomerTripsPage() {
 
   <Button
   onClick={() => handleShare(selectedBooking.voucher_code)}
-  className="flex-1 rounded-xl font-bold text-xs gap-2 h-11 bg-foreground text-background"
+  className="flex-1 rounded-lg font-bold text-xs gap-2 h-11 bg-foreground text-background"
   >
   <ShareNetwork size={16} weight="bold" />
   <span>Copiar Código</span>

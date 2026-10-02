@@ -75,7 +75,7 @@ export function SlimActionBanner({
  return (
  <div
  className={cn(
- "relative w-full rounded-2xl overflow-hidden min-h-[110px] p-5 sm:p-6 transition-all",
+ "relative w-full rounded-lg overflow-hidden min-h-[110px] p-5 sm:p-6 transition-all",
  !hasMedia && bgClass,
  className,
  )}
@@ -109,11 +109,11 @@ export function SlimActionBanner({
 
  {/* ── Conteúdo do Banner Fino ── */}
  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 text-white">
- <div className="space-y-1.5 max-w-2xl">
+ <div className="space-y-2 max-w-2xl">
  {/* Badge Opcional */}
  {isBadgeVisible && effectiveBadge && (
  <div className="flex items-center gap-2">
- <span className="text-[10px] font-mono font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur-md text-white border border-white/20">
+ <span className="text-[10px] font-mono font-black uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full backdrop-blur-md text-white border border-white/20">
  {effectiveBadge}
  </span>
  </div>
@@ -140,29 +140,29 @@ export function SlimActionBanner({
  {onCtaClick ? (
  <Button
  onClick={onCtaClick}
- className="h-11 px-6 rounded-xl font-bold text-xs bg-white text-zinc-950 hover:bg-white/90 cursor-pointer transition-all active:scale-95"
+ className="h-11 px-6 rounded-lg font-bold text-xs bg-white text-zinc-950 hover:bg-white/90 cursor-pointer transition-all active:scale-95"
  >
  <span>{effectiveCtaLabel}</span>
- <ArrowRight className="size-3.5 ml-1.5" />
+ <ArrowRight className="size-3.5 ml-2" />
  </Button>
  ) : effectiveTargetUrl.startsWith("http") ? (
  <Button
  asChild
- className="h-11 px-6 rounded-xl font-bold text-xs bg-white text-zinc-950 hover:bg-white/90 cursor-pointer transition-all active:scale-95"
+ className="h-11 px-6 rounded-lg font-bold text-xs bg-white text-zinc-950 hover:bg-white/90 cursor-pointer transition-all active:scale-95"
  >
  <a href={effectiveTargetUrl} target="_blank" rel="noopener noreferrer">
  <span>{effectiveCtaLabel}</span>
- <ExternalLink className="size-3.5 ml-1.5" />
+ <ExternalLink className="size-3.5 ml-2" />
  </a>
  </Button>
  ) : (
  <Button
  asChild
- className="h-11 px-6 rounded-xl font-bold text-xs bg-white text-zinc-950 hover:bg-white/90 cursor-pointer transition-all active:scale-95"
+ className="h-11 px-6 rounded-lg font-bold text-xs bg-white text-zinc-950 hover:bg-white/90 cursor-pointer transition-all active:scale-95"
  >
  <Link to={effectiveTargetUrl as any || "/mercado"}>
  <span>{effectiveCtaLabel}</span>
- <ArrowRight className="size-3.5 ml-1.5" />
+ <ArrowRight className="size-3.5 ml-2" />
  </Link>
  </Button>
  )}

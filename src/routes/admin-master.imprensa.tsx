@@ -88,7 +88,7 @@ function AdminMasterImprensaPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+            <span className="px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
               Governança de Conteúdo
             </span>
             <span className="text-xs text-muted-foreground font-mono">Consórcio de Imprensa</span>
@@ -96,20 +96,20 @@ function AdminMasterImprensaPage() {
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-1">
             Credenciamento de Jornais e Mídias
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Apenas veículos de comunicação e jornalistas homologados pela administração master podem publicar notícias e operar campanhas da Rede Display.
           </p>
         </div>
       </div>
 
       {/* ── Grid de Métricas de Credenciamento ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-card border space-y-1">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-4 rounded-lg bg-card border space-y-1">
           <span className="text-xs font-bold text-muted-foreground">Total de Lojas/Veículos</span>
           <p className="text-2xl font-black text-foreground font-mono">{totalCount}</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border space-y-1">
+        <div className="p-4 rounded-lg bg-card border space-y-1">
           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
             Credenciados Oficiais
           </span>
@@ -118,7 +118,7 @@ function AdminMasterImprensaPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border space-y-1">
+        <div className="p-4 rounded-lg bg-card border space-y-1">
           <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
             Aguardando Aprovação
           </span>
@@ -127,7 +127,7 @@ function AdminMasterImprensaPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border space-y-1">
+        <div className="p-4 rounded-lg bg-card border space-y-1">
           <span className="text-xs font-bold text-destructive">Acessos Revogados</span>
           <p className="text-2xl font-black text-destructive font-mono">{revokedCount}</p>
         </div>
@@ -136,10 +136,10 @@ function AdminMasterImprensaPage() {
       {/* ── Barra de Controles e Busca ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Tabs de Filtro */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/50 border self-start">
+        <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/50 border self-start">
           <button
             onClick={() => setFilterTab("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
               filterTab === "all" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
             }`}
           >
@@ -147,7 +147,7 @@ function AdminMasterImprensaPage() {
           </button>
           <button
             onClick={() => setFilterTab("approved")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
               filterTab === "approved" ? "bg-background text-emerald-600 shadow-xs" : "text-muted-foreground"
             }`}
           >
@@ -155,7 +155,7 @@ function AdminMasterImprensaPage() {
           </button>
           <button
             onClick={() => setFilterTab("pending")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
               filterTab === "pending" ? "bg-background text-amber-600 shadow-xs" : "text-muted-foreground"
             }`}
           >
@@ -163,7 +163,7 @@ function AdminMasterImprensaPage() {
           </button>
           <button
             onClick={() => setFilterTab("revoked")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
               filterTab === "revoked" ? "bg-background text-destructive shadow-xs" : "text-muted-foreground"
             }`}
           >
@@ -178,14 +178,14 @@ function AdminMasterImprensaPage() {
             placeholder="Buscar por nome ou cidade..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 rounded-xl h-9 text-xs"
+            className="pl-9 rounded-lg h-9 text-xs"
           />
         </div>
       </div>
 
       {/* ── Tabela / Cards de Veículos ── */}
       {filteredStores.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border bg-card/40 space-y-3">
+        <div className="p-12 text-center rounded-lg border bg-card/40 space-y-3">
           <Newspaper className="size-10 text-muted-foreground/40 mx-auto" />
           <h3 className="text-sm font-bold text-foreground">Nenhum veículo encontrado</h3>
           <p className="text-xs text-muted-foreground">
@@ -203,12 +203,12 @@ function AdminMasterImprensaPage() {
             return (
               <div
                 key={st.id}
-                className="p-5 rounded-2xl bg-card border space-y-4 flex flex-col justify-between hover-elevate transition-all"
+                className="p-5 rounded-lg bg-card border space-y-4 flex flex-col justify-between hover-elevate transition-all"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                      className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
                         isApproved
                           ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                           : isPending
@@ -233,12 +233,12 @@ function AdminMasterImprensaPage() {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="size-12 rounded-2xl bg-muted p-1 flex items-center justify-center shrink-0 overflow-hidden border">
+                    <div className="size-12 rounded-lg bg-muted p-1 flex items-center justify-center shrink-0 overflow-hidden border">
                       {st.logo_url ? (
                         <img
                           src={st.logo_url}
                           alt={st.name}
-                          className="size-full object-cover rounded-xl"
+                          className="size-full object-cover rounded-lg"
                         />
                       ) : (
                         <Building2 className="size-5 text-muted-foreground/50" />
@@ -256,14 +256,14 @@ function AdminMasterImprensaPage() {
 
                 {/* Ações de Credenciamento */}
                 <div className="pt-3 border-t flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     {isApproved ? (
                       <Button
                         variant="ghost"
                         size="sm"
                         disabled={isUpdating}
                         onClick={() => handleUpdateStatus(st.id, "revoked")}
-                        className="h-8 rounded-xl text-xs font-bold text-destructive hover:bg-destructive/10"
+                        className="h-8 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10"
                       >
                         {isUpdating ? <Loader2 className="size-3.5 animate-spin mr-1" /> : <XCircle className="size-3.5 mr-1" />}
                         <span>Revogar</span>
@@ -274,7 +274,7 @@ function AdminMasterImprensaPage() {
                         size="sm"
                         disabled={isUpdating}
                         onClick={() => handleUpdateStatus(st.id, "approved")}
-                        className="h-8 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                        className="h-8 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
                       >
                         {isUpdating ? (
                           <Loader2 className="size-3.5 animate-spin mr-1" />
@@ -291,14 +291,14 @@ function AdminMasterImprensaPage() {
                         size="sm"
                         disabled={isUpdating}
                         onClick={() => handleUpdateStatus(st.id, "pending")}
-                        className="h-8 rounded-xl text-xs font-bold"
+                        className="h-8 rounded-lg text-xs font-bold"
                       >
                         <span>Analisar</span>
                       </Button>
                     )}
                   </div>
 
-                  <Button asChild variant="ghost" size="icon" className="size-8 rounded-xl">
+                  <Button asChild variant="ghost" size="icon" className="size-8 rounded-lg">
                     <Link to="/c/$storeSlug" params={{ storeSlug: st.slug }} target="_blank">
                       <ExternalLink className="size-3.5" />
                     </Link>

@@ -73,7 +73,7 @@ export function GenerateMagicLinkModal({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-md rounded-2xl border-border/70 bg-card p-5 space-y-4">
+ <DialogContent className="sm:max-w-md rounded-lg border-border/70 bg-card p-5 space-y-4">
  <DialogHeader>
  <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
  <Link2 className="size-4 text-primary" />
@@ -92,7 +92,7 @@ export function GenerateMagicLinkModal({
  Gere um link seguro para o passageiro preencher CPF, RG, data de nascimento, contato de emergência e aceitar o contrato em 3 toques no próprio celular.
  </p>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">
  Nome do Passageiro (opcional)
  </label>
@@ -100,11 +100,11 @@ export function GenerateMagicLinkModal({
  value={passengerName}
  onChange={(e) => setPassengerName(e.target.value)}
  placeholder="Ex: João da Silva"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">
  WhatsApp / Celular (opcional)
  </label>
@@ -112,7 +112,7 @@ export function GenerateMagicLinkModal({
  value={passengerPhone}
  onChange={(e) => setPassengerPhone(e.target.value)}
  placeholder="Ex: 49999999999"
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-xs rounded-lg font-mono"
  />
  </div>
 
@@ -121,7 +121,7 @@ export function GenerateMagicLinkModal({
  type="button"
  onClick={handleGenerate}
  disabled={loading}
- className="w-full h-10 rounded-xl text-xs font-bold gap-2 cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold gap-2 cursor-pointer"
  >
  <Link2 className="size-3.5" />
  {loading ? "Gerando link..." : "Gerar Link de Preenchimento"}
@@ -130,7 +130,7 @@ export function GenerateMagicLinkModal({
  </div>
  ) : (
  <div className="space-y-4">
- <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 space-y-2">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-2">
  <span className="text-[11px] font-mono text-muted-foreground">
  Link de Acesso Único
  </span>
@@ -146,7 +146,7 @@ export function GenerateMagicLinkModal({
  type="button"
  variant="outline"
  onClick={handleCopy}
- className="w-full sm:w-1/2 h-10 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+ className="w-full sm:w-1/2 h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
  >
  {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
  {copied ? "Copiado!" : "Copiar Link"}
@@ -155,7 +155,7 @@ export function GenerateMagicLinkModal({
  <Button
  type="button"
  onClick={handleWhatsApp}
- className="w-full sm:w-1/2 h-10 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white"
+ className="w-full sm:w-1/2 h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white"
  >
  <Share2 className="size-3.5" /> Enviar no WhatsApp
  </Button>

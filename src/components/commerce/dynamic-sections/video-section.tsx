@@ -70,7 +70,7 @@ export function VideoSection({ content, design_tokens }: VideoSectionProps) {
       return (
         <iframe
           src={embedUrl}
-          className="absolute inset-0 w-full h-full border-0 rounded-2xl"
+          className="absolute inset-0 w-full h-full border-0 rounded-lg"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           title={title || "YouTube Video"}
@@ -83,7 +83,7 @@ export function VideoSection({ content, design_tokens }: VideoSectionProps) {
       return (
         <iframe
           src={embedUrl}
-          className="absolute inset-0 w-full h-full border-0 rounded-2xl"
+          className="absolute inset-0 w-full h-full border-0 rounded-lg"
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
           title={title || "Vimeo Video"}
@@ -100,14 +100,14 @@ export function VideoSection({ content, design_tokens }: VideoSectionProps) {
           muted={autoPlay}
           playsInline
           controls
-          className="absolute inset-0 w-full h-full object-cover rounded-2xl"
+          className="absolute inset-0 w-full h-full object-cover rounded-lg"
         />
       );
     }
 
     // Fallback if URL is empty or invalid
     return (
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/30 border border-border/40 text-muted-foreground p-6 text-center rounded-2xl">
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/30 border border-border/40 text-muted-foreground p-6 text-center rounded-lg">
         <Play className="size-10 mb-2 text-primary/70" />
         <p className="text-xs font-semibold text-foreground">
           Nenhum vídeo configurado
@@ -132,7 +132,7 @@ export function VideoSection({ content, design_tokens }: VideoSectionProps) {
           <div className="space-y-3 max-w-2xl mx-auto">
             {badge && (
               <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                   <Star className="size-3" />
                   {badge}
                 </span>
@@ -151,7 +151,7 @@ export function VideoSection({ content, design_tokens }: VideoSectionProps) {
           </div>
         )}
 
-        <div className={cn("relative overflow-hidden bg-black/90 rounded-2xl shadow-xs border border-border/40", aspectClass)}>
+        <div className={cn("relative overflow-hidden bg-black/90 rounded-lg shadow-xs border border-border/40", aspectClass)}>
           {renderVideoPlayer()}
         </div>
 
@@ -163,7 +163,7 @@ export function VideoSection({ content, design_tokens }: VideoSectionProps) {
 
         {buttonText && (
           <div className="pt-2">
-            <Button asChild size="lg" className="rounded-xl h-11 px-6 font-bold text-xs gap-2">
+            <Button asChild size="lg" className="rounded-lg h-11 px-6 font-bold text-xs gap-2">
               <Link to={buttonLink || "/explorar"}>
                 <span>{buttonText}</span>
                 <ArrowRight className="size-4" />

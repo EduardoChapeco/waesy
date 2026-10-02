@@ -40,9 +40,9 @@ export function BuilderDockingMatrix({
  <span className="text-[10px] text-muted-foreground font-mono uppercase">{value}</span>
  </div>
 
- <div className="p-3 rounded-2xl bg-muted/30 border border-border/60 flex items-center justify-center">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/60 flex items-center justify-center">
  {/* Matriz 3x3 de Ancoragem (Editor X Standard — Imagem 4) */}
- <div className="grid grid-cols-3 gap-2 p-2 rounded-xl bg-card border border-border/70 shadow-2xs">
+ <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-card border border-border/70 shadow-2xs">
  {POSITIONS.map((pos) => {
  const isSelected = value === pos.id;
 

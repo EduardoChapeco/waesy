@@ -91,13 +91,13 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
           {brand.logoUrl ? (
             <img
               src={brand.logoUrl}
-              className="h-12 w-12 rounded-xl object-contain bg-white/10 p-1 border border-white/20"
+              className="h-12 w-12 rounded-lg object-contain bg-white/10 p-1 border border-white/20"
               alt="Logo"
               crossOrigin="anonymous"
             />
           ) : (
             <div
-              className="h-12 w-12 rounded-xl flex items-center justify-center font-black text-2xl text-black border border-white/20 shadow-lg"
+              className="h-12 w-12 rounded-lg flex items-center justify-center font-black text-2xl text-black border border-white/20 shadow-lg"
               style={{ backgroundColor: brand.secondaryColor || "#38bdf8" }}
             >
               {brand.logoLetter || "W"}
@@ -168,7 +168,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
                   crossOrigin="anonymous"
                 />
               ) : (
-                <div className="w-full h-32 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-white/50 text-xs font-mono uppercase">
+                <div className="w-full h-32 rounded-lg bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-white/50 text-xs font-mono uppercase">
                   {layer.type}
                 </div>
               )}
@@ -222,7 +222,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
         {slide.text_content.cta_text && (
           <div className="mt-12 flex items-center gap-4">
             <div
-              className="px-8 py-4 rounded-2xl text-slate-950 font-black text-2xl flex items-center gap-3 shadow-2xl tracking-wide uppercase pointer-events-auto"
+              className="px-8 py-4 rounded-lg text-slate-950 font-black text-2xl flex items-center gap-3 shadow-2xl tracking-wide uppercase pointer-events-auto"
               style={{ backgroundColor: brand.secondaryColor || "#38bdf8" }}
             >
               <span>{slide.text_content.cta_text}</span>

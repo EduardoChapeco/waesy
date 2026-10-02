@@ -89,7 +89,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
   return (
     <div className="space-y-6">
       {/* ── HEADER EXECUTIVO COM INDICADORES CONSOLIDADOS ── */}
-      <div className="p-4 rounded-2xl bg-card border border-border/70 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 rounded-lg bg-card border border-border/70 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">DRE Operacional</h3>
@@ -97,7 +97,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
               Margem Líquida: {summary.margemPercentual}%
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Demonstrativo de resultado do exercício, ponto de equilíbrio e centro de custos.
           </p>
         </div>
@@ -117,7 +117,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
 
       {/* ── CARDS DE FLUXO CONSOLIDADO APPLE HIG ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <Card className="rounded-lg border border-border/80 bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
             <span>Faturamento Bruto</span>
             <TrendingUp className="size-4 text-emerald-500" />
@@ -128,7 +128,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
           <p className="text-[11px] text-muted-foreground mt-1">Bilheteria + patrocínios + consumo</p>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <Card className="rounded-lg border border-border/80 bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
             <span>Custo Total de Produção</span>
             <TrendingDown className="size-4 text-rose-500" />
@@ -139,7 +139,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
           <p className="text-[11px] text-muted-foreground mt-1">Fornecedores, equipe, estrutura e taxas</p>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <Card className="rounded-lg border border-border/80 bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
             <span>Lucro Líquido Projetado</span>
             <Target className="size-4 text-primary" />
@@ -158,11 +158,11 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
       </div>
 
       {/* ── CENTRO DE CUSTOS POR CATEGORIA COM BARRAS DE DISTRIBUIÇÃO ── */}
-      <Card className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs space-y-4">
+      <Card className="rounded-lg border border-border/80 bg-card p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h4 className="text-sm font-bold text-foreground">Distribuição do Custo de Produção</h4>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Participação de cada categoria de despesa no orçamento global
             </p>
           </div>
@@ -176,14 +176,14 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
         ) : (
           <div className="space-y-4 pt-2">
             {breakdown.map((item, idx) => (
-              <div key={idx} className="space-y-1.5">
+              <div key={idx} className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-foreground">{item.categoria}</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-muted-foreground">
                       {item.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                     </span>
-                    <Badge variant="secondary" className="text-[10px] font-mono py-0 px-1.5">
+                    <Badge variant="secondary" className="text-[10px] font-mono py-0 px-2">
                       {item.percentual}%
                     </Badge>
                   </div>

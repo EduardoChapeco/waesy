@@ -184,7 +184,7 @@ function TourismDetailPage() {
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
           Este roteiro ou hospedagem pode ter sido desativado pelo anfitrião.
         </p>
-        <Button asChild className="rounded-xl font-bold">
+        <Button asChild className="rounded-lg font-bold">
           <Link to="/turismo">
             <ArrowLeft size={16} weight="bold" className="mr-2" />
             Explorar todas as experiências
@@ -210,7 +210,7 @@ function TourismDetailPage() {
   const renderBookingDialog = (triggerElement?: React.ReactNode) => (
     <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
       {triggerElement && <DialogTrigger asChild>{triggerElement}</DialogTrigger>}
-      <DialogContent className="sm:max-w-lg sm:rounded-2xl p-5 sm:p-8 bg-card border-border">
+      <DialogContent className="sm:max-w-lg sm:rounded-lg p-5 sm:p-8 bg-card border-border">
         <DialogHeader className="space-y-2">
           <DialogTitle className="text-lg font-black text-foreground">
             Reservar {experience.title}
@@ -222,7 +222,7 @@ function TourismDetailPage() {
 
         {issuedVoucher ? (
           <div className="py-6 text-center space-y-4">
-            <div className="size-12 rounded-2xl bg-muted text-foreground flex items-center justify-center mx-auto border border-border/60">
+            <div className="size-12 rounded-lg bg-muted text-foreground flex items-center justify-center mx-auto border border-border/60">
               <CheckCircle size={28} weight="bold" />
             </div>
             <div className="space-y-1">
@@ -230,15 +230,15 @@ function TourismDetailPage() {
               <p className="text-xs text-muted-foreground">
                 Sua reserva está confirmada. Você pode consultar seu voucher em "Minhas Viagens".
               </p>
-              <div className="pt-2 font-mono font-bold text-sm text-foreground bg-muted p-2 rounded-xl border border-border/60">
+              <div className="pt-2 font-mono font-bold text-sm text-foreground bg-muted p-2 rounded-lg border border-border/60">
                 Código: {issuedVoucher.voucherCode}
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 pt-2">
-              <Button asChild className="flex-1 rounded-xl font-bold text-xs bg-foreground text-background h-11">
+              <Button asChild className="flex-1 rounded-lg font-bold text-xs bg-foreground text-background h-11">
                 <Link to="/conta/viagens">
-                  <Compass size={16} weight="bold" className="mr-1.5" />
+                  <Compass size={16} weight="bold" className="mr-2" />
                   <span>Ver Minhas Viagens</span>
                 </Link>
               </Button>
@@ -248,7 +248,7 @@ function TourismDetailPage() {
                   setIsBookingOpen(false);
                   setIssuedVoucher(null);
                 }}
-                className="rounded-xl font-bold text-xs h-11"
+                className="rounded-lg font-bold text-xs h-11"
               >
                 Fechar
               </Button>
@@ -263,8 +263,8 @@ function TourismDetailPage() {
             className="space-y-4 pt-2"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-foreground flex items-center gap-2">
                   <CalendarDots size={14} weight="bold" />
                   <span>Data do Passeio *</span>
                 </label>
@@ -273,11 +273,11 @@ function TourismDetailPage() {
                   type="date"
                   value={desiredDate}
                   onChange={(e) => setDesiredDate(e.target.value)}
-                  className="rounded-xl h-10 text-xs bg-background"
+                  className="rounded-lg h-10 text-xs bg-background"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Users size={14} weight="bold" />
                   <span>Nº Passageiros *</span>
                 </label>
@@ -287,19 +287,19 @@ function TourismDetailPage() {
                   pattern="[0-9]*"
                   value={guestsCount}
                   onChange={(e) => handleGuestsCountChange(parseInt(e.target.value.replace(/\D/g, "")) || 1)}
-                  className="rounded-xl h-10 text-xs bg-background font-mono"
+                  className="rounded-lg h-10 text-xs bg-background font-mono"
                 />
               </div>
             </div>
 
             <div className="space-y-2 pt-1">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <IdentificationCard size={14} weight="bold" />
                 <span>Dados dos Participantes</span>
               </span>
               <div className="space-y-2 max-h-44 overflow-y-auto no-scrollbar pr-1">
                 {passengers.map((p, idx) => (
-                  <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-2xl bg-muted/40">
+                  <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 rounded-lg bg-muted/40">
                     <Input
                       required
                       placeholder={`Nome do participante ${idx + 1}`}
@@ -320,8 +320,8 @@ function TourismDetailPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Phone size={14} weight="bold" />
                   <span>WhatsApp para contato *</span>
                 </label>
@@ -332,11 +332,11 @@ function TourismDetailPage() {
                   placeholder="(49) 99999-9999"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(formatPhone(e.target.value))}
-                  className="rounded-xl h-10 text-xs bg-background font-mono"
+                  className="rounded-lg h-10 text-xs bg-background font-mono"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-foreground flex items-center gap-2">
                   <EnvelopeSimple size={14} weight="bold" />
                   <span>E-mail para o voucher *</span>
                 </label>
@@ -346,13 +346,13 @@ function TourismDetailPage() {
                   placeholder="seu.email@exemplo.com"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="rounded-xl h-10 text-xs bg-background"
+                  className="rounded-lg h-10 text-xs bg-background"
                 />
               </div>
             </div>
 
             {totalPriceCents > 0 && (
-              <div className="p-3.5 rounded-2xl bg-muted/50 flex items-center justify-between text-xs font-bold">
+              <div className="p-4 rounded-lg bg-muted/50 flex items-center justify-between text-xs font-bold">
                 <span className="text-muted-foreground">
                   Total ({guestsCount}x {formatMoney(unitPriceCents)}):
                 </span>
@@ -363,7 +363,7 @@ function TourismDetailPage() {
             <Button
               type="submit"
               disabled={bookingMutation.isPending}
-              className="w-full rounded-xl font-bold h-11 text-xs bg-foreground text-background mt-2"
+              className="w-full rounded-lg font-bold h-11 text-xs bg-foreground text-background mt-2"
             >
               {bookingMutation.isPending ? (
                 <>
@@ -399,14 +399,14 @@ function TourismDetailPage() {
         <div className="max-w-6xl mx-auto px-0 sm:px-4 pt-3 flex items-center justify-between">
           <Link
             to="/turismo"
-            className="size-11 sm:size-auto rounded-full sm:rounded-none flex items-center justify-center text-xs font-semibold text-muted-foreground hover:text-foreground group gap-1.5 hover:bg-muted/80 sm:hover:bg-transparent transition-all"
+            className="size-11 sm:size-auto rounded-full sm:rounded-none flex items-center justify-center text-xs font-semibold text-muted-foreground hover:text-foreground group gap-2 hover:bg-muted/80 sm:hover:bg-transparent transition-all"
             aria-label="Voltar para Turismo"
           >
             <ArrowLeft size={18} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
             <span className="hidden sm:inline">Voltar para Turismo</span>
           </Link>
 
-          <div className="flex items-center gap-1 p-0.5 rounded-xl bg-muted/50 border border-border/60">
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50 border border-border/60">
             <button
               type="button"
               onClick={() => setViewMode("instagram_editorial")}
@@ -467,7 +467,7 @@ function TourismDetailPage() {
 
         {/* ── Rule 23: Owner Edit Mode Banner no Modo Standard ── */}
         {isOwner && (
-          <div className="bg-muted/60 border border-border/80 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs text-foreground">
+          <div className="bg-muted/60 border border-border/80 rounded-lg px-4 py-3 flex items-center justify-between text-xs text-foreground">
             <div className="flex items-center gap-2">
               <span className="inline-block size-2 rounded-full bg-primary" />
               <span className="font-medium">Modo Proprietário: Você administra esta experiência.</span>
@@ -476,10 +476,10 @@ function TourismDetailPage() {
               asChild
               size="sm"
               variant="outline"
-              className="h-7 text-[11px] font-semibold rounded-xl border-border/80"
+              className="h-7 text-[11px] font-semibold rounded-lg border-border/80"
             >
               <Link to={`/workspace/turismo` as any}>
-                <PencilSimple size={14} className="mr-1.5" />
+                <PencilSimple size={14} className="mr-2" />
                 Painel de Turismo
               </Link>
             </Button>
@@ -503,7 +503,7 @@ function TourismDetailPage() {
                 asChild
                 variant="outline"
                 size="sm"
-                className="rounded-xl font-bold text-xs gap-1.5 h-9"
+                className="rounded-lg font-bold text-xs gap-2 h-9"
               >
                 <Link to={`/workspace/turismo` as any}>
                   <PencilSimple size={14} weight="bold" />
@@ -512,18 +512,18 @@ function TourismDetailPage() {
               </Button>
             )}
 
-            <div className="flex items-center gap-1 p-0.5 rounded-xl bg-muted/50 border border-border/60">
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50 border border-border/60">
               <button
                 type="button"
                 onClick={() => setViewMode("instagram_editorial")}
-                className="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all text-muted-foreground hover:text-foreground cursor-pointer"
+                className="px-3 py-1 text-[11px] font-bold rounded-lg transition-all text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 Instagram Editorial
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode("standard")}
-                className="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all bg-background text-foreground cursor-pointer"
+                className="px-3 py-1 text-[11px] font-bold rounded-lg transition-all bg-background text-foreground cursor-pointer"
               >
                 Página Padrão
               </button>
@@ -533,7 +533,7 @@ function TourismDetailPage() {
               variant="outline"
               size="sm"
               onClick={handleShare}
-              className="rounded-xl font-semibold text-xs gap-1.5 h-9"
+              className="rounded-lg font-semibold text-xs gap-2 h-9"
             >
               <ShareNetwork size={16} weight="bold" />
               <span>Compartilhar</span>
@@ -548,7 +548,7 @@ function TourismDetailPage() {
               {experience.badge_label || "Experiência"}
             </Badge>
             {(experience.rating ?? 0) > 0 && (
-              <div className="flex items-center gap-1 text-xs font-medium text-foreground bg-muted/60 px-2 py-0.5 rounded-md border border-border/40">
+              <div className="flex items-center gap-1 text-xs font-medium text-foreground bg-muted/60 px-2 py-1 rounded-md border border-border/40">
                 <Star size={13} weight="fill" className="text-foreground" />
                 <span>{(experience.rating ?? 0).toFixed(1)}</span>
               </div>
@@ -564,15 +564,15 @@ function TourismDetailPage() {
           )}
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm text-muted-foreground font-medium pt-1">
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-2">
               <MapPin size={16} weight="bold" className="text-foreground shrink-0" />
               <span>{experience.location}</span>
             </span>
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-2">
               <Clock size={16} weight="bold" className="text-foreground shrink-0" />
               <span>Duração: {experience.duration}</span>
             </span>
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-2">
               <Compass size={16} weight="bold" className="text-foreground shrink-0" />
               <span>Anfitrião: {experience.provider_name}</span>
             </span>
@@ -581,7 +581,7 @@ function TourismDetailPage() {
 
         {/* ── 3. Visual Gallery ── */}
         <div className="space-y-3">
-          <div className="relative w-full aspect-video sm:aspect-[21/9] rounded-2xl border border-border/60 overflow-hidden bg-muted">
+          <div className="relative w-full aspect-video sm:aspect-[21/9] rounded-lg border border-border/60 overflow-hidden bg-muted">
             <img
               src={images[activeImage] || experience.image_url}
               alt={experience.title}
@@ -595,7 +595,7 @@ function TourismDetailPage() {
                 <button
                   key={idx}
                   onClick={() => setActiveImage(idx)}
-                  className={`relative w-20 sm:w-24 aspect-video rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                  className={`relative w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
                     activeImage === idx ? "border-foreground" : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                 >
@@ -661,11 +661,11 @@ function TourismDetailPage() {
                   <CheckCircle size={18} weight="bold" className="text-emerald-600 dark:text-emerald-400" />
                   <span>O que está incluso no pacote</span>
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {experience.included_items.map((item: string, idx: number) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-2.5 p-3 rounded-2xl border border-border/60 bg-card text-xs font-medium text-foreground"
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card text-xs font-medium text-foreground"
                     >
                       <CheckCircle size={14} weight="bold" className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <span>{item}</span>
@@ -677,20 +677,20 @@ function TourismDetailPage() {
 
             {/* Documentação — Regra 19: só renderiza se campos reais existirem no banco */}
             {(experience.documentation_notes || experience.hotel_policies) && (
-              <section className="p-5 rounded-2xl bg-muted/20 border border-border/60 space-y-4">
+              <section className="p-5 rounded-lg bg-muted/20 border border-border/60 space-y-4">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <ShieldCheck size={18} weight="bold" className="text-primary" />
                   <span>Informações Importantes e Documentação</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   {experience.documentation_notes && (
-                    <div className="p-3 rounded-xl bg-card border border-border/40 space-y-1">
+                    <div className="p-3 rounded-lg bg-card border border-border/40 space-y-1">
                       <span className="font-bold text-foreground block">🛂 Documentação de Viagem:</span>
                       <p className="text-muted-foreground leading-relaxed">{experience.documentation_notes}</p>
                     </div>
                   )}
                   {experience.hotel_policies && (
-                    <div className="p-3 rounded-xl bg-card border border-border/40 space-y-1">
+                    <div className="p-3 rounded-lg bg-card border border-border/40 space-y-1">
                       <span className="font-bold text-foreground block">🏨 Políticas de Hotelaria & Bagagem:</span>
                       <p className="text-muted-foreground leading-relaxed">{experience.hotel_policies}</p>
                     </div>
@@ -706,11 +706,11 @@ function TourismDetailPage() {
                   <SuitcaseRolling size={18} weight="bold" className="text-primary" />
                   <span>Recomendações / O que levar</span>
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {experience.what_to_bring.map((item: string, idx: number) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-2.5 p-3 rounded-2xl border border-border/60 bg-card text-xs font-medium text-foreground"
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card text-xs font-medium text-foreground"
                     >
                       <span className="size-1.5 rounded-full bg-primary shrink-0" />
                       <span>{item}</span>
@@ -723,14 +723,14 @@ function TourismDetailPage() {
 
           {/* Right Column: Pricing */}
           <aside className="space-y-4">
-            <div className="p-6 rounded-2xl border border-border/60 bg-card space-y-5 sticky top-20">
+            <div className="p-6 rounded-lg border border-border/60 bg-card space-y-5 sticky top-20">
               <div>
                 <span className="text-xs text-muted-foreground font-medium block">Valor da Experiência</span>
-                <div className="text-2xl font-black text-foreground mt-0.5">{experience.price_display}</div>
+                <div className="text-2xl font-black text-foreground mt-1">{experience.price_display}</div>
               </div>
 
               {renderBookingDialog(
-                <Button className="w-full rounded-xl font-bold h-12 text-sm bg-foreground text-background gap-2">
+                <Button className="w-full rounded-lg font-bold h-12 text-sm bg-foreground text-background gap-2">
                   <Ticket size={18} weight="bold" />
                   <span>Reservar</span>
                 </Button>
@@ -740,7 +740,7 @@ function TourismDetailPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsTravelQuoteOpen(true)}
-                className="w-full rounded-xl font-bold h-11 text-xs border-border gap-2 cursor-pointer bg-card hover:bg-muted/50"
+                className="w-full rounded-lg font-bold h-11 text-xs border-border gap-2 cursor-pointer bg-card hover:bg-muted/50"
               >
                 <SlidersHorizontal size={16} weight="bold" className="text-primary" />
                 <span>Personalizar Viagem / Cotar Outras Datas</span>
@@ -757,7 +757,7 @@ function TourismDetailPage() {
                   variant="outline"
                   size="lg"
                   label="Conversar no WhatsApp"
-                  className="w-full rounded-xl font-bold h-11 text-xs border-border gap-2"
+                  className="w-full rounded-lg font-bold h-11 text-xs border-border gap-2"
                 />
               )}
 
@@ -798,17 +798,17 @@ function TourismDetailPage() {
             size="sm"
             variant="outline"
             onClick={() => setIsTravelQuoteOpen(true)}
-            className="rounded-xl font-bold text-xs h-11 px-4 border-border"
+            className="rounded-lg font-bold text-xs h-11 px-4 border-border"
           >
-            <SlidersHorizontal size={15} weight="bold" className="mr-1.5" />
+            <SlidersHorizontal size={15} weight="bold" className="mr-2" />
             Cotar
           </Button>
           <Button
             size="sm"
             onClick={() => setIsBookingOpen(true)}
-            className="rounded-xl font-bold text-xs h-11 px-5 bg-foreground text-background"
+            className="rounded-lg font-bold text-xs h-11 px-5 bg-foreground text-background"
           >
-            <Ticket size={15} weight="bold" className="mr-1.5" />
+            <Ticket size={15} weight="bold" className="mr-2" />
             Reservar
           </Button>
         </div>

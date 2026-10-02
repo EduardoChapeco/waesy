@@ -249,7 +249,7 @@ function CaixaLancamentosPage() {
               variant="outline"
               size="sm"
               onClick={handleExportCsv}
-              className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+              className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
             >
               <FileSpreadsheet className="size-3.5 text-emerald-600" />
               <span>Exportar CSV</span>
@@ -257,12 +257,12 @@ function CaixaLancamentosPage() {
 
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button size="sm" className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer bg-primary text-primary-foreground">
+                <Button size="sm" className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer bg-primary text-primary-foreground">
                   <Plus className="size-4" />
                   <span>Novo Lançamento</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent className="rounded-l-2xl">
+              <SheetContent className="rounded-l-lg">
                 <SheetHeader>
                   <SheetTitle className="text-base font-bold">Registrar Movimentação Manual</SheetTitle>
                 </SheetHeader>
@@ -272,13 +272,13 @@ function CaixaLancamentosPage() {
                   <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
                     Atalhos Rápidos de Operação
                   </span>
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className="grid grid-cols-2 gap-2">
                     {COMMON_PRESETS.map((p) => (
                       <button
                         key={p.label}
                         type="button"
                         onClick={() => applyPreset(p)}
-                        className="text-left p-2 rounded-xl border border-border/60 bg-muted/30 hover:bg-muted/60 text-xs font-medium transition-colors cursor-pointer"
+                        className="text-left p-2 rounded-lg border border-border/60 bg-muted/30 hover:bg-muted/60 text-xs font-medium transition-colors cursor-pointer"
                       >
                         <span className={p.type === "in" ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>
                           {p.type === "in" ? "(+) " : "(-) "}
@@ -291,32 +291,32 @@ function CaixaLancamentosPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-4 mt-6">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="entry-type" className="text-xs font-bold">Tipo</Label>
                       <Select
                         value={form.type}
                         onValueChange={(v) => setForm((f) => ({ ...f, type: v as "in" | "out" }))}
                       >
-                        <SelectTrigger id="entry-type" className="rounded-xl text-xs h-10">
+                        <SelectTrigger id="entry-type" className="rounded-lg text-xs h-10">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl">
+                        <SelectContent className="rounded-lg">
                           <SelectItem value="in">Entrada / Suprimento (+)</SelectItem>
                           <SelectItem value="out">Saída / Sangria (-)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="entry-method" className="text-xs font-bold">Forma</Label>
                       <Select
                         value={form.method}
                         onValueChange={(v) => setForm((f) => ({ ...f, method: v as typeof form.method }))}
                       >
-                        <SelectTrigger id="entry-method" className="rounded-xl text-xs h-10">
+                        <SelectTrigger id="entry-method" className="rounded-lg text-xs h-10">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl">
+                        <SelectContent className="rounded-lg">
                           <SelectItem value="cash">Dinheiro em Espécie</SelectItem>
                           <SelectItem value="pix">Pix Instantâneo</SelectItem>
                           <SelectItem value="credit">Cartão de Crédito</SelectItem>
@@ -327,7 +327,7 @@ function CaixaLancamentosPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="entry-amount" className="text-xs font-bold">Valor (R$)</Label>
                     <CurrencyField
                       id="entry-amount"
@@ -338,14 +338,14 @@ function CaixaLancamentosPage() {
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="entry-desc" className="text-xs font-bold">Descrição / Motivo</Label>
                     <Input
                       id="entry-desc"
                       placeholder="Ex: Retirada para motoboy, troco..."
                       value={form.description}
                       onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                      className="rounded-xl text-xs h-10"
+                      className="rounded-lg text-xs h-10"
                       required
                       minLength={3}
                     />
@@ -355,7 +355,7 @@ function CaixaLancamentosPage() {
                     <Button
                       type="submit"
                       disabled={isSaving}
-                      className={`w-full rounded-xl text-xs font-bold h-10 ${
+                      className={`w-full rounded-lg text-xs font-bold h-10 ${
                         form.type === "in" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
                       }`}
                     >
@@ -371,8 +371,8 @@ function CaixaLancamentosPage() {
 
       {/* ── KPIS DO TURNO ATUAL ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Wallet className="size-3.5 text-foreground" />
             Fundo de Abertura
           </span>
@@ -384,8 +384,8 @@ function CaixaLancamentosPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ArrowDownLeft className="size-3.5 text-emerald-600" />
             Entradas no Turno (+)
           </span>
@@ -397,8 +397,8 @@ function CaixaLancamentosPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ArrowUpRight className="size-3.5 text-rose-600" />
             Saídas no Turno (-)
           </span>
@@ -410,8 +410,8 @@ function CaixaLancamentosPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="size-3.5 text-primary" />
             Saldo Atual Estimado
           </span>
@@ -425,22 +425,22 @@ function CaixaLancamentosPage() {
       </div>
 
       {/* ── BARRA DE CONTROLE & FILTROS ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por descrição ou método..."
-            className="pl-10 h-10 rounded-xl text-xs bg-background"
+            className="pl-10 h-10 rounded-lg text-xs bg-background"
           />
         </div>
 
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60 self-start sm:self-auto">
+        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setTypeFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               typeFilter === "all"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -451,7 +451,7 @@ function CaixaLancamentosPage() {
           <button
             type="button"
             onClick={() => setTypeFilter("in")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               typeFilter === "in"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -462,7 +462,7 @@ function CaixaLancamentosPage() {
           <button
             type="button"
             onClick={() => setTypeFilter("out")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               typeFilter === "out"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -489,7 +489,7 @@ function CaixaLancamentosPage() {
               return (
                 <div
                   key={entry.id}
-                  className="rounded-2xl border border-border/70 bg-card p-4 space-y-2.5 shadow-2xs"
+                  className="rounded-lg border border-border/70 bg-card p-4 space-y-3 shadow-2xs"
                 >
                   {/* Topo do Card: Data/Hora, Canal e Forma */}
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -497,7 +497,7 @@ function CaixaLancamentosPage() {
                       {formatDateTime(entry.created_at)}
                     </span>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {renderChannelBadge(entry.channel_source || entry.channel)}
                       <Badge variant="outline" className="capitalize text-xs font-medium">
                         {translateMethod(entry.method)}
@@ -538,7 +538,7 @@ function CaixaLancamentosPage() {
           </div>
 
           {/* ── VISUALIZAÇÃO DESKTOP: TABELA (hidden md:block) ── */}
-          <div className="hidden md:block bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+          <div className="hidden md:block bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">

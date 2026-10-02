@@ -142,11 +142,11 @@ export function SignaturePositionerCanvas({
   const visibleFields = fields.filter((f) => f.page === currentPage);
 
   return (
-    <div className="flex flex-col h-full w-full bg-background rounded-2xl border border-border/80 overflow-hidden select-none">
+    <div className="flex flex-col h-full w-full bg-background rounded-lg border border-border/80 overflow-hidden select-none">
       {/* Topo do Posicionador */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/70 bg-card">
         <div className="flex items-center gap-3">
-          <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+          <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <PenTool className="size-4" />
           </div>
           <div>
@@ -163,7 +163,7 @@ export function SignaturePositionerCanvas({
             type="button"
             variant="outline"
             size="sm"
-            className="h-8 px-2.5 rounded-lg text-xs"
+            className="h-8 px-3 rounded-lg text-xs"
             disabled={currentPage <= 1}
             onClick={() => onPageChange(currentPage - 1)}
           >
@@ -176,7 +176,7 @@ export function SignaturePositionerCanvas({
             type="button"
             variant="outline"
             size="sm"
-            className="h-8 px-2.5 rounded-lg text-xs"
+            className="h-8 px-3 rounded-lg text-xs"
             disabled={currentPage >= pageCount}
             onClick={() => onPageChange(currentPage + 1)}
           >
@@ -190,7 +190,7 @@ export function SignaturePositionerCanvas({
         {/* Barra Lateral de Signatários & Tags */}
         <aside className="w-full md:w-80 border-b md:border-b-0 md:border-r border-border/70 bg-muted/20 p-4 space-y-5 overflow-y-auto">
           <div>
-            <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground mb-2.5 block">
+            <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground mb-3 block">
               1. Escolha quem vai assinar
             </Label>
             <div className="space-y-2">
@@ -201,13 +201,13 @@ export function SignaturePositionerCanvas({
                     key={idx}
                     type="button"
                     onClick={() => setActiveSignerIndex(idx)}
-                    className={`w-full text-left p-3 rounded-xl border transition-all text-xs sm:text-sm flex items-center justify-between min-h-[44px] cursor-pointer ${
+                    className={`w-full text-left p-3 rounded-lg border transition-all text-xs sm:text-sm flex items-center justify-between min-h-11 cursor-pointer ${
                       isSelected
                         ? "bg-card border-primary/50 shadow-xs ring-1 ring-primary/20 font-semibold"
                         : "bg-background/70 border-border/70 hover:border-border hover:bg-background"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div
                         className="size-3.5 rounded-full shrink-0"
                         style={{ backgroundColor: s.colorCode || "#2563eb" }}
@@ -227,7 +227,7 @@ export function SignaturePositionerCanvas({
           </div>
 
           <div>
-            <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground mb-2.5 block">
+            <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground mb-3 block">
               2. Toque para Adicionar o Campo
             </Label>
             <div className="grid grid-cols-2 gap-2">
@@ -239,7 +239,7 @@ export function SignaturePositionerCanvas({
                     type="button"
                     disabled={readOnly}
                     onClick={() => handleAddTag(tag.type)}
-                    className="flex items-center gap-2.5 p-3 rounded-xl border border-border/80 bg-card hover:bg-muted/60 transition-all text-left text-xs sm:text-sm font-semibold text-foreground hover:border-primary/40 active:scale-[0.98] min-h-[44px] cursor-pointer shadow-2xs"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border/80 bg-card hover:bg-muted/60 transition-all text-left text-xs sm:text-sm font-semibold text-foreground hover:border-primary/40 active:scale-[0.98] min-h-11 cursor-pointer shadow-2xs"
                   >
                     <Icon className="size-4 text-primary shrink-0" />
                     <span className="truncate">{tag.label}</span>
@@ -249,8 +249,8 @@ export function SignaturePositionerCanvas({
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-card border border-border/70 space-y-2 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5 font-bold text-foreground">
+          <div className="p-4 rounded-lg bg-card border border-border/70 space-y-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 font-bold text-foreground">
               <Info className="size-4 text-primary shrink-0" />
               <span>Dica de Posicionamento</span>
             </div>
@@ -265,7 +265,7 @@ export function SignaturePositionerCanvas({
           {/* Folha A4 Representativa */}
           <div
             ref={containerRef}
-            className="relative w-full max-w-[700px] aspect-[1/1.414] bg-card text-card-foreground rounded-xl shadow-md border border-border/80 p-8 flex flex-col justify-between overflow-hidden"
+            className="relative w-full max-w-[700px] aspect-[1/1.414] bg-card text-card-foreground rounded-lg shadow-md border border-border/80 p-8 flex flex-col justify-between overflow-hidden"
           >
             {/* Header Simulado da Página */}
             <div className="border-b border-border/40 pb-3 flex items-center justify-between text-[11px] text-muted-foreground">
@@ -308,7 +308,7 @@ export function SignaturePositionerCanvas({
                     isSelected ? "ring-2 ring-primary/40 shadow-md" : "hover:border-primary"
                   }`}
                 >
-                  <div className="flex items-center gap-1.5 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <span
                       className="size-2 rounded-full shrink-0"
                       style={{ backgroundColor: signer.colorCode }}
@@ -325,7 +325,7 @@ export function SignaturePositionerCanvas({
                         e.stopPropagation();
                         handleDeleteField(field.id);
                       }}
-                      className="text-muted-foreground hover:text-destructive p-0.5"
+                      className="text-muted-foreground hover:text-destructive p-1"
                     >
                       <Trash2 className="size-3" />
                     </button>
@@ -352,9 +352,9 @@ export function SignaturePositionerCanvas({
               variant="outline"
               size="sm"
               onClick={onChangeFile}
-              className="h-10 px-3.5 rounded-xl text-xs"
+              className="h-10 px-4 rounded-lg text-xs"
             >
-              <RefreshCw className="size-3.5 mr-1.5" />
+              <RefreshCw className="size-3.5 mr-2" />
               Trocar arquivo
             </Button>
           )}
@@ -364,9 +364,9 @@ export function SignaturePositionerCanvas({
               variant="outline"
               size="sm"
               onClick={onMergeFile}
-              className="h-10 px-3.5 rounded-xl text-xs"
+              className="h-10 px-4 rounded-lg text-xs"
             >
-              <Layers className="size-3.5 mr-1.5" />
+              <Layers className="size-3.5 mr-2" />
               Mesclar arquivo
             </Button>
           )}
@@ -377,7 +377,7 @@ export function SignaturePositionerCanvas({
             type="button"
             size="sm"
             onClick={onAdvance}
-            className="h-11 px-6 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] gap-2 shadow-xs cursor-pointer"
+            className="h-11 px-6 rounded-lg text-xs sm:text-sm font-bold min-h-11 gap-2 shadow-xs cursor-pointer"
           >
             <span>Avançar para Envio</span>
             <ArrowRight className="size-4" />
@@ -387,7 +387,7 @@ export function SignaturePositionerCanvas({
 
       {/* Modal Canônico de Repetição de Campo */}
       <Dialog open={repeatModalOpen} onOpenChange={setRepeatModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl p-6">
+        <DialogContent className="sm:max-w-md rounded-lg p-6">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">Repetir campo</DialogTitle>
           </DialogHeader>
@@ -397,21 +397,21 @@ export function SignaturePositionerCanvas({
             onValueChange={(v: any) => setRepeatOption(v)}
             className="space-y-3 py-3"
           >
-            <div className="flex items-center space-x-3 p-3 rounded-xl border border-border/70 hover:bg-muted/40 cursor-pointer">
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border/70 hover:bg-muted/40 cursor-pointer">
               <RadioGroupItem value="page" id="r1" />
               <Label htmlFor="r1" className="text-xs font-medium cursor-pointer text-foreground">
                 Apenas nesta página
               </Label>
             </div>
 
-            <div className="flex items-center space-x-3 p-3 rounded-xl border border-border/70 hover:bg-muted/40 cursor-pointer">
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border/70 hover:bg-muted/40 cursor-pointer">
               <RadioGroupItem value="all" id="r2" />
               <Label htmlFor="r2" className="text-xs font-medium cursor-pointer text-foreground">
                 Repetir em todas as páginas
               </Label>
             </div>
 
-            <div className="flex items-center space-x-3 p-3 rounded-xl border border-border/70 hover:bg-muted/40 cursor-pointer">
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border/70 hover:bg-muted/40 cursor-pointer">
               <RadioGroupItem value="all_except_last" id="r3" />
               <Label htmlFor="r3" className="text-xs font-medium cursor-pointer text-foreground">
                 Repetir em todas as páginas exceto a última
@@ -425,7 +425,7 @@ export function SignaturePositionerCanvas({
               variant="outline"
               size="sm"
               onClick={() => setRepeatModalOpen(false)}
-              className="rounded-xl text-xs h-10"
+              className="rounded-lg text-xs h-10"
             >
               Cancelar
             </Button>
@@ -433,7 +433,7 @@ export function SignaturePositionerCanvas({
               type="button"
               size="sm"
               onClick={applyRepeatModal}
-              className="rounded-xl text-xs h-10 font-semibold"
+              className="rounded-lg text-xs h-10 font-semibold"
             >
               Aplicar
             </Button>

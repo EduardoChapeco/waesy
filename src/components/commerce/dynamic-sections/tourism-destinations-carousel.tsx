@@ -64,7 +64,7 @@ export function TourismDestinationsCarouselSection({
  <section className="py-12 bg-background w-full">
  <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
  Roteiros Curados
  </Badge>
@@ -77,7 +77,7 @@ export function TourismDestinationsCarouselSection({
  {effectiveDestinations.map((dest) => (
  <div
  key={dest.id}
- className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-2xs group hover:border-primary/40 transition-all flex flex-col justify-between"
+ className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs group hover:border-primary/40 transition-all flex flex-col justify-between"
  >
  <div className="aspect-4/3 overflow-hidden bg-muted relative">
  {dest.imageUrl && (
@@ -98,7 +98,7 @@ export function TourismDestinationsCarouselSection({
 
  <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
  <div className="space-y-1">
- <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-semibold">
+ <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-semibold">
  <MapPin className="size-3 text-primary" />
  <span>{dest.country}</span>
  </div>
@@ -125,7 +125,7 @@ export function TourismDestinationsCarouselSection({
  size="sm"
  variant="outline"
  onClick={() => onSelectDestination?.(dest)}
- className="h-8 rounded-xl text-[11px] font-bold border-border/80 bg-background hover:bg-muted"
+ className="h-8 rounded-lg text-[11px] font-bold border-border/80 bg-background hover:bg-muted"
  >
  Cotar
  </Button>

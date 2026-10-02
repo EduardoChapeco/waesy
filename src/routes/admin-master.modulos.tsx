@@ -176,11 +176,11 @@ function AdminMasterModulosPage() {
 
       {/* ─── Barra de Filtros & Abas ─────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
           <button
             type="button"
             onClick={() => setCategoryTab("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
               categoryTab === "all"
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground bg-muted/40"
@@ -191,7 +191,7 @@ function AdminMasterModulosPage() {
           <button
             type="button"
             onClick={() => setCategoryTab("store_operation")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
               categoryTab === "store_operation"
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground bg-muted/40"
@@ -202,7 +202,7 @@ function AdminMasterModulosPage() {
           <button
             type="button"
             onClick={() => setCategoryTab("public_discovery")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
               categoryTab === "public_discovery"
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground bg-muted/40"
@@ -213,7 +213,7 @@ function AdminMasterModulosPage() {
           <button
             type="button"
             onClick={() => setCategoryTab("ai_intelligence")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
               categoryTab === "ai_intelligence"
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground bg-muted/40"
@@ -228,7 +228,7 @@ function AdminMasterModulosPage() {
             placeholder="Buscar módulo por nome, chave ou badge..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9 text-xs rounded-xl bg-card"
+            className="h-9 text-xs rounded-lg bg-card"
           />
         </div>
       </div>
@@ -241,14 +241,14 @@ function AdminMasterModulosPage() {
           return (
             <div
               key={module.module_key}
-              className={`rounded-2xl border p-5 transition-all bg-card ${
+              className={`rounded-lg border p-5 transition-all bg-card ${
                 module.enabled
                   ? "border-border/80 shadow-xs"
                   : "border-border/40 opacity-70 bg-muted/20"
               }`}
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1.5 flex-1 min-w-0">
+                <div className="space-y-2 flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-base font-bold text-foreground truncate">
                       {module.name}
@@ -268,11 +268,11 @@ function AdminMasterModulosPage() {
                   </p>
 
                   <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-muted-foreground flex-wrap">
-                    <span className="px-1.5 py-0.5 rounded bg-muted">
+                    <span className="px-2 py-1 rounded bg-muted">
                       key: {module.module_key}
                     </span>
                     <span>•</span>
-                    <Badge variant="secondary" className="text-[9px] py-0 px-1.5 font-normal">
+                    <Badge variant="secondary" className="text-[9px] py-0 px-2 font-normal">
                       {module.category === "store_operation"
                         ? "Workspace"
                         : module.category === "ai_intelligence"
@@ -286,7 +286,7 @@ function AdminMasterModulosPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-2.5 shrink-0 ml-2">
+                <div className="flex flex-col items-end gap-3 shrink-0 ml-2">
                   <div className="flex items-center gap-2">
                     {isToggling && <Loader2 className="size-3.5 animate-spin text-primary" />}
                     <Switch
@@ -301,7 +301,7 @@ function AdminMasterModulosPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => openEditModal(module)}
-                    className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground gap-1.5 rounded-lg"
+                    className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-2 rounded-lg"
                   >
                     <Edit2 className="size-3.5" />
                     <span>Editar</span>
@@ -315,7 +315,7 @@ function AdminMasterModulosPage() {
 
       {/* ─── Modal de Edição de Módulo ────────────────────────────────────────── */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-md sm:rounded-2xl">
+        <DialogContent className="sm:max-w-md sm:rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Sliders className="size-4 text-primary" />
@@ -325,52 +325,52 @@ function AdminMasterModulosPage() {
 
           {editingModule && (
             <form onSubmit={handleSaveEdit} className="space-y-4 py-2">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Identificador Técnico</Label>
                 <Input
                   value={editingModule.module_key}
                   disabled
-                  className="h-9 rounded-xl text-xs bg-muted font-mono opacity-80"
+                  className="h-9 rounded-lg text-xs bg-muted font-mono opacity-80"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Nome de Exibição</Label>
                 <Input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="h-9 rounded-xl text-xs bg-background"
+                  className="h-9 rounded-lg text-xs bg-background"
                   required
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Descrição</Label>
                 <Textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  className="rounded-xl text-xs bg-background resize-none min-h-[70px]"
+                  className="rounded-lg text-xs bg-background resize-none min-h-[70px]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-foreground">Badge Promocional</Label>
                   <Input
                     value={editBadge}
                     onChange={(e) => setEditBadge(e.target.value)}
                     placeholder="Ex: Novo, Ativo"
-                    className="h-9 rounded-xl text-xs bg-background"
+                    className="h-9 rounded-lg text-xs bg-background"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-foreground">Ordem de Exibição</Label>
                   <Input
                     type="number"
                     value={editOrderIndex}
                     onChange={(e) => setEditOrderIndex(parseInt(e.target.value) || 0)}
-                    className="h-9 rounded-xl text-xs bg-background font-mono"
+                    className="h-9 rounded-lg text-xs bg-background font-mono"
                   />
                 </div>
               </div>
@@ -381,7 +381,7 @@ function AdminMasterModulosPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setEditDialogOpen(false)}
-                  className="rounded-xl text-xs"
+                  className="rounded-lg text-xs"
                 >
                   Cancelar
                 </Button>
@@ -389,7 +389,7 @@ function AdminMasterModulosPage() {
                   type="submit"
                   disabled={isSaving}
                   size="sm"
-                  className="rounded-xl text-xs font-bold gap-1.5"
+                  className="rounded-lg text-xs font-bold gap-2"
                 >
                   {isSaving && <Loader2 className="size-3.5 animate-spin" />}
                   <span>Salvar Alterações</span>

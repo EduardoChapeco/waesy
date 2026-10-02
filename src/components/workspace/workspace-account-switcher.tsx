@@ -75,7 +75,7 @@ export function WorkspaceAccountSwitcher({
  <button
  type="button"
  disabled={isSwitching}
- className="flex w-full items-center justify-between h-10 px-2.5 rounded-xl border border-border/60 bg-card hover:bg-muted/70 hover:border-foreground/20 transition-all text-left group cursor-pointer shadow-2xs"
+ className="flex w-full items-center justify-between h-10 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/70 hover:border-foreground/20 transition-all text-left group cursor-pointer shadow-2xs"
  >
  <div className="flex items-center gap-2 min-w-0">
  {activeStore?.logo_url ? (
@@ -102,7 +102,7 @@ export function WorkspaceAccountSwitcher({
  <PopoverContent
  align="start"
  sideOffset={8}
- className="w-[360px] sm:w-[540px] p-0 rounded-2xl border border-border/80 bg-background/98 backdrop-blur-xl shadow-2xl overflow-hidden"
+ className="w-[360px] sm:w-[540px] p-0 rounded-lg border border-border/80 bg-background/98 backdrop-blur-xl shadow-2xl overflow-hidden"
  >
  {/* ── 1. Topo: Busca Instantânea de Ativos ── */}
  <div className="p-3 border-b border-border/60 bg-muted/20">
@@ -112,7 +112,7 @@ export function WorkspaceAccountSwitcher({
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Procurar um ativo de negócios..."
- className="h-10 pl-9 pr-3 text-base sm:text-xs rounded-xl bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary"
+ className="h-10 pl-9 pr-3 text-base sm:text-xs rounded-lg bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary"
  />
  </div>
  </div>
@@ -120,7 +120,7 @@ export function WorkspaceAccountSwitcher({
  {/* ── 2. Grid Split de 2 Colunas: Portfólios vs Ativos (Padrão Meta Studio) ── */}
  <div className="grid grid-cols-1 sm:grid-cols-12 min-h-[300px] max-h-[420px]">
  {/* Coluna da Esquerda (Portfólios Empresariais - 5 cols) */}
- <div className="sm:col-span-5 border-r border-border/60 bg-muted/10 p-2.5 flex flex-col justify-between overflow-y-auto no-scrollbar">
+ <div className="sm:col-span-5 border-r border-border/60 bg-muted/10 p-3 flex flex-col justify-between overflow-y-auto no-scrollbar">
  <div className="space-y-1">
  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground px-2 py-1 block">
  Portfólios Empresariais
@@ -134,7 +134,7 @@ export function WorkspaceAccountSwitcher({
  type="button"
  onClick={() => setSelectedPortfolioId(portfolio.id)}
  className={cn(
- "w-full flex items-center justify-between p-2 rounded-xl text-left transition-all cursor-pointer",
+ "w-full flex items-center justify-between p-2 rounded-lg text-left transition-all cursor-pointer",
  isSelected
  ? "bg-primary/10 border border-primary/20 text-foreground"
  : "hover:bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -181,7 +181,7 @@ export function WorkspaceAccountSwitcher({
  asChild
  variant="outline"
  size="sm"
- className="w-full text-xs font-bold rounded-xl h-8 gap-1.5 justify-center border-border/60 bg-card hover:bg-muted"
+ className="w-full text-xs font-bold rounded-lg h-8 gap-2 justify-center border-border/60 bg-card hover:bg-muted"
  onClick={() => setOpen(false)}
  >
  <Link to="/criar-negocio">
@@ -211,26 +211,26 @@ export function WorkspaceAccountSwitcher({
 
  {selectedPortfolioId === "personal_account" ? (
  <div className="py-8 text-center space-y-3">
- <div className="size-10 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mx-auto">
+ <div className="size-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
  <User className="size-5" />
  </div>
  <div className="space-y-1">
  <p className="text-xs font-bold text-foreground">Perfil Pessoal do Usuário</p>
- <p className="text-[10px] text-muted-foreground max-w-[200px] mx-auto">
+ <p className="text-[10px] text-muted-foreground max-w-52 mx-auto">
  Acesse seus pedidos, favoritos e endereços no marketplace.
  </p>
  </div>
  <Button
  asChild
  size="sm"
- className="rounded-xl text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8"
  onClick={() => setOpen(false)}
  >
  <Link to="/conta">Acessar Minha Conta</Link>
  </Button>
  </div>
  ) : (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  {filteredStores.length === 0 ? (
  <div className="py-6 text-center text-xs text-muted-foreground">
  Nenhum ativo encontrado para &quot;{searchQuery}&quot;.
@@ -242,7 +242,7 @@ export function WorkspaceAccountSwitcher({
  <div
  key={m.store_id}
  className={cn(
- "group flex items-center justify-between p-2.5 rounded-2xl border transition-all cursor-pointer",
+ "group flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer",
  isCurrent
  ? "bg-primary/5 border-primary/40 shadow-xs"
  : "bg-card border-border/60 hover:border-foreground/20 hover:bg-muted/40"
@@ -254,7 +254,7 @@ export function WorkspaceAccountSwitcher({
  }
  }}
  >
- <div className="flex items-center gap-2.5 min-w-0">
+ <div className="flex items-center gap-3 min-w-0">
  {/* Radio indicator */}
  <div
  className={cn(
@@ -272,16 +272,16 @@ export function WorkspaceAccountSwitcher({
  <img
  src={m.logo_url}
  alt=""
- className="size-8 rounded-xl object-cover shrink-0 border border-border/60 bg-muted"
+ className="size-8 rounded-lg object-cover shrink-0 border border-border/60 bg-muted"
  />
  ) : (
- <div className="size-8 rounded-xl bg-muted flex items-center justify-center font-bold text-xs shrink-0 text-foreground border border-border/60">
+ <div className="size-8 rounded-lg bg-muted flex items-center justify-center font-bold text-xs shrink-0 text-foreground border border-border/60">
  {m.name ? m.name.slice(0, 2).toUpperCase() : "LJ"}
  </div>
  )}
 
  <div className="min-w-0">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <h3
  className={cn(
  "text-xs truncate font-bold",

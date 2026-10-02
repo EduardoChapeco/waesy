@@ -36,7 +36,7 @@ export function LoadingState({
 export function ProductCardSkeleton() {
  return (
  <div className="flex flex-col gap-3">
- <Skeleton className="aspect-square rounded-2xl w-full" />
+ <Skeleton className="aspect-square rounded-lg w-full" />
  <Skeleton className="h-4 w-3/4" />
  <Skeleton className="h-4 w-1/3" />
  </div>

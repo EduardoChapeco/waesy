@@ -59,11 +59,11 @@ function MuralPage() {
       {/* ─── Topo / Filtros Rápidos ────────────────────────────────── */}
       <div className="border-b border-border/40 bg-background sticky top-14 z-20">
         <div className="max-w-2xl mx-auto px-0 sm:px-4 py-3 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setActiveFilter("all")}
-              className={`h-8 px-3.5 rounded-full text-xs font-semibold transition-all ${
+              className={`h-8 px-4 rounded-full text-xs font-semibold transition-all ${
                 activeFilter === "all"
                   ? "bg-primary/10 text-primary border border-primary/25 font-bold"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
@@ -75,7 +75,7 @@ function MuralPage() {
             <button
               type="button"
               onClick={() => setActiveFilter("simple")}
-              className={`h-8 px-3.5 rounded-full text-xs font-semibold transition-all ${
+              className={`h-8 px-4 rounded-full text-xs font-semibold transition-all ${
                 activeFilter === "simple"
                   ? "bg-primary/10 text-primary border border-primary/25 font-bold"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
@@ -87,7 +87,7 @@ function MuralPage() {
             <button
               type="button"
               onClick={() => setActiveFilter("news")}
-              className={`h-8 px-3.5 rounded-full text-xs font-semibold transition-all ${
+              className={`h-8 px-4 rounded-full text-xs font-semibold transition-all ${
                 activeFilter === "news"
                   ? "bg-primary/10 text-primary border border-primary/25 font-bold"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
@@ -99,7 +99,7 @@ function MuralPage() {
             <button
               type="button"
               onClick={() => setActiveFilter("travel")}
-              className={`h-8 px-3.5 rounded-full text-xs font-semibold transition-all ${
+              className={`h-8 px-4 rounded-full text-xs font-semibold transition-all ${
                 activeFilter === "travel"
                   ? "bg-primary/10 text-primary border border-primary/25 font-bold"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
@@ -114,7 +114,7 @@ function MuralPage() {
       {/* ─── Feed Container Central ─────────────────────────────────── */}
       <div className="max-w-2xl mx-auto px-0 sm:px-4 py-6 space-y-6">
         {/* Composer de Postagem no topo do feed */}
-        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden p-4 sm:p-5">
+        <div className="rounded-lg border border-border/60 bg-card overflow-hidden p-4 sm:p-5">
           <InlinePostComposer session={session || (profile ? { user: profile } : undefined)} />
         </div>
 
@@ -125,7 +125,7 @@ function MuralPage() {
             <span className="text-xs">Carregando feed...</span>
           </div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center rounded-2xl border border-border/60 bg-card space-y-3">
+          <div className="p-8 text-center rounded-lg border border-border/60 bg-card space-y-3">
             <div className="size-10 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
               <MessageSquare className="size-5" />
             </div>
@@ -139,7 +139,7 @@ function MuralPage() {
         ) : (
           <div className="space-y-4">
             {items.map((post: any) => (
-              <div key={post.id} className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+              <div key={post.id} className="rounded-lg border border-border/60 bg-card overflow-hidden">
                 <PostCard
                   item={post}
                   session={session || (profile ? { user: profile } : undefined)}

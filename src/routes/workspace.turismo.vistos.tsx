@@ -193,7 +193,7 @@ function WorkspaceVisasPage() {
                 onClick={handleExportCSV}
                 variant="outline"
                 size="sm"
-                className="font-bold text-xs gap-1.5 h-10 px-3.5 rounded-xl cursor-pointer"
+                className="font-bold text-xs gap-2 h-10 px-4 rounded-lg cursor-pointer"
               >
                 <FileSpreadsheet className="size-4 text-emerald-600" />
                 <span>Exportar Relatório (CSV)</span>
@@ -202,7 +202,7 @@ function WorkspaceVisasPage() {
                 type="button"
                 onClick={() => setWizardOpen(true)}
                 size="sm"
-                className="rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1.5 h-10 px-4 cursor-pointer shadow-2xs"
+                className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 h-10 px-4 cursor-pointer shadow-2xs"
               >
                 <Plus className="size-4" />
                 <span>Novo Processo</span>
@@ -213,8 +213,8 @@ function WorkspaceVisasPage() {
 
         {/* ── 4 KPIS NO PARADIGMA CLEAN ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <Clock className="size-3.5 text-amber-600" />
               Processos em Andamento
             </span>
@@ -226,8 +226,8 @@ function WorkspaceVisasPage() {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <Calendar className="size-3.5 text-purple-600" />
               Entrevistas Agendadas
             </span>
@@ -239,8 +239,8 @@ function WorkspaceVisasPage() {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <CheckCircle2 className="size-3.5 text-emerald-600" />
               Vistos Aprovados
             </span>
@@ -252,8 +252,8 @@ function WorkspaceVisasPage() {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <Percent className="size-3.5 text-primary" />
               Taxa de Aprovação
             </span>
@@ -267,18 +267,18 @@ function WorkspaceVisasPage() {
         </div>
 
         {/* ── BARRA DE BUSCA E TABS ── */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/70 shadow-2xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/70 shadow-2xs">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por passageiro, país ou nº do passaporte..."
-              className="pl-9 h-10 rounded-xl bg-background border-border/80 text-xs font-mono"
+              className="pl-9 h-10 rounded-lg bg-background border-border/80 text-xs font-mono"
             />
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
             {[
               { id: "all", label: "Todos", count: kpis.total },
               { id: "in_progress", label: "Em Andamento", count: kpis.inProgress },
@@ -290,7 +290,7 @@ function WorkspaceVisasPage() {
                 variant={selectedStatus === tab.id ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedStatus(tab.id)}
-                className="h-9 rounded-xl text-xs font-bold cursor-pointer whitespace-nowrap"
+                className="h-9 rounded-lg text-xs font-bold cursor-pointer whitespace-nowrap"
               >
                 {tab.label} ({tab.count})
               </Button>
@@ -304,8 +304,8 @@ function WorkspaceVisasPage() {
             Carregando processos consulares...
           </div>
         ) : filtered.length === 0 ? (
-          <div className="p-16 text-center space-y-4 rounded-2xl bg-card border border-border/70 shadow-2xs">
-            <div className="size-12 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto text-muted-foreground">
+          <div className="p-16 text-center space-y-4 rounded-lg bg-card border border-border/70 shadow-2xs">
+            <div className="size-12 rounded-lg bg-muted/50 flex items-center justify-center mx-auto text-muted-foreground">
               <Globe className="size-6" />
             </div>
             <div className="space-y-1 max-w-sm mx-auto">
@@ -318,7 +318,7 @@ function WorkspaceVisasPage() {
               type="button"
               onClick={() => setWizardOpen(true)}
               size="sm"
-              className="rounded-xl font-bold bg-primary text-primary-foreground text-xs shadow-2xs cursor-pointer"
+              className="rounded-lg font-bold bg-primary text-primary-foreground text-xs shadow-2xs cursor-pointer"
             >
               Novo Processo Consular
             </Button>
@@ -331,15 +331,15 @@ function WorkspaceVisasPage() {
               return (
                 <div
                   key={v.id}
-                  className="p-5 rounded-2xl bg-card border border-border/70 hover:border-primary/40 transition-colors shadow-2xs flex flex-col justify-between gap-4"
+                  className="p-5 rounded-lg bg-card border border-border/70 hover:border-primary/40 transition-colors shadow-2xs flex flex-col justify-between gap-4"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <h3 className="text-sm font-bold text-foreground line-clamp-1">
                           {v.client_name}
                         </h3>
-                        <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                        <p className="text-xs text-muted-foreground font-medium flex items-center gap-2">
                           <Compass className="size-3 text-primary" />
                           <span>{v.country}</span>
                           <span>•</span>
@@ -362,7 +362,7 @@ function WorkspaceVisasPage() {
                         value={v.status}
                         onChange={(e) => handleStatusChange(v.id, e.target.value as VisaStatus)}
                         className={
-                          "w-full h-8 px-2.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer " +
+                          "w-full h-8 px-3 rounded-lg text-xs font-bold border transition-colors cursor-pointer " +
                           statusMeta.color
                         }
                       >
@@ -376,7 +376,7 @@ function WorkspaceVisasPage() {
 
                     {/* Entrevista agendada */}
                     {v.interview_date && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1.5 bg-muted/30 p-2.5 rounded-xl border border-border/50">
+                      <div className="text-xs text-muted-foreground flex items-center gap-2 bg-muted/30 p-3 rounded-lg border border-border/50">
                         <Calendar className="size-3.5 text-purple-600 shrink-0" />
                         <span>
                           Entrevista:{" "}
@@ -388,7 +388,7 @@ function WorkspaceVisasPage() {
                     )}
 
                     {v.notes && (
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 italic bg-muted/20 p-2 rounded-xl">
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 italic bg-muted/20 p-2 rounded-lg">
                         "{v.notes}"
                       </p>
                     )}

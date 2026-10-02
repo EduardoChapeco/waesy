@@ -60,15 +60,15 @@ function ClaimReputacaoPage() {
  <div className="min-h-[100dvh] bg-background text-foreground py-10 px-4 sm:px-6">
  <div className="max-w-5xl mx-auto space-y-6">
  {/* Header com Visual Apple HIG */}
- <div className="p-6 sm:p-8 rounded-2xl border border-border bg-card/60 backdrop-blur-xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+ <div className="p-6 sm:p-8 rounded-lg border border-border bg-card/60 backdrop-blur-xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
  <div className="flex items-center gap-4">
- <div className="size-16 rounded-2xl bg-gradient-to-tr from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-black text-2xl shadow-xs shadow-primary/20">
+ <div className="size-16 rounded-lg bg-gradient-to-tr from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-black text-2xl shadow-xs shadow-primary/20">
  {initials}
  </div>
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-2xl font-bold tracking-tight">{intel.entity_name}</h1>
- <Badge variant="outline" className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs py-0.5">
+ <Badge variant="outline" className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs py-1">
  <ShieldCheck className="size-3.5" /> Perfil Verificado
  </Badge>
  </div>
@@ -79,7 +79,7 @@ function ClaimReputacaoPage() {
  </div>
 
  <div className="flex items-center gap-2">
- <Button variant="outline" className="rounded-xl gap-1.5 text-xs h-10 min-h-[44px]" onClick={() => {
+ <Button variant="outline" className="rounded-lg gap-2 text-xs h-10 min-h-11" onClick={() => {
                 if (typeof navigator !== "undefined" && navigator.clipboard) {
                   navigator.clipboard.writeText(window.location.href);
                 }
@@ -87,7 +87,7 @@ function ClaimReputacaoPage() {
               }}>
  <Share2 className="size-3.5" /> Compartilhar
  </Button>
- <Button asChild className="rounded-xl gap-1.5 text-xs h-10 min-h-[44px]">
+ <Button asChild className="rounded-lg gap-2 text-xs h-10 min-h-11">
  <Link to="/reclamar/novo" search={{ target: intel.entity_name } as any}>
  Registrar Reclamação
  </Link>
@@ -97,8 +97,8 @@ function ClaimReputacaoPage() {
 
  {/* KPIs de Reputação */}
  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
- <div className="p-5 rounded-2xl border border-border bg-card flex flex-col gap-1">
- <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+ <div className="p-5 rounded-lg border border-border bg-card flex flex-col gap-1">
+ <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
  <Award className="size-4 text-amber-500" /> Score de Reputação
  </span>
  <div className="flex items-baseline gap-2 mt-2">
@@ -108,8 +108,8 @@ function ClaimReputacaoPage() {
  <Progress value={intel.reputation_score} className="h-1.5 mt-2 bg-muted/40" />
  </div>
 
- <div className="p-5 rounded-2xl border border-border bg-card flex flex-col gap-1">
- <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+ <div className="p-5 rounded-lg border border-border bg-card flex flex-col gap-1">
+ <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
  <TrendingUp className="size-4 text-emerald-500" /> Visibilidade de Marca
  </span>
  <div className="flex items-baseline gap-2 mt-2">
@@ -119,8 +119,8 @@ function ClaimReputacaoPage() {
  <Progress value={intel.visibility_score} className="h-1.5 mt-2 bg-muted/40" />
  </div>
 
- <div className="p-5 rounded-2xl border border-border bg-card flex flex-col gap-1">
- <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+ <div className="p-5 rounded-lg border border-border bg-card flex flex-col gap-1">
+ <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
  <CheckCircle2 className="size-4 text-blue-500" /> Taxa de Resolução
  </span>
  <div className="flex items-baseline gap-2 mt-2">
@@ -130,8 +130,8 @@ function ClaimReputacaoPage() {
  <Progress value={intel.solved_rate} className="h-1.5 mt-2 bg-muted/40" />
  </div>
 
- <div className="p-5 rounded-2xl border border-border bg-card flex flex-col gap-1">
- <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+ <div className="p-5 rounded-lg border border-border bg-card flex flex-col gap-1">
+ <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
  <BarChart3 className="size-4 text-purple-500" /> Market Share Regional
  </span>
  <div className="flex items-baseline gap-2 mt-2">
@@ -144,14 +144,14 @@ function ClaimReputacaoPage() {
 
  {/* Conteúdo em Abas */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
- <TabsList className="bg-muted/40 p-1 rounded-2xl border border-border">
- <TabsTrigger value="overview" className="rounded-xl text-xs font-bold py-2 min-h-[44px]">Visão Geral e Métricas</TabsTrigger>
- <TabsTrigger value="competitors" className="rounded-xl text-xs font-bold py-2 min-h-[44px]">Benchmarking de Concorrência</TabsTrigger>
- <TabsTrigger value="claims" className="rounded-xl text-xs font-bold py-2 min-h-[44px]">Atendimento e Resoluções</TabsTrigger>
+ <TabsList className="bg-muted/40 p-1 rounded-lg border border-border">
+ <TabsTrigger value="overview" className="rounded-lg text-xs font-bold py-2 min-h-11">Visão Geral e Métricas</TabsTrigger>
+ <TabsTrigger value="competitors" className="rounded-lg text-xs font-bold py-2 min-h-11">Benchmarking de Concorrência</TabsTrigger>
+ <TabsTrigger value="claims" className="rounded-lg text-xs font-bold py-2 min-h-11">Atendimento e Resoluções</TabsTrigger>
  </TabsList>
 
  <TabsContent value="overview" className="space-y-4">
- <div className="p-6 rounded-2xl border border-border bg-card space-y-4">
+ <div className="p-6 rounded-lg border border-border bg-card space-y-4">
  <h2 className="text-base font-bold flex items-center gap-2">
  <Star className="size-4 text-amber-500" /> Distribuição de Sentimento do Consumidor
  </h2>
@@ -171,7 +171,7 @@ function ClaimReputacaoPage() {
  </TabsContent>
 
  <TabsContent value="competitors" className="space-y-4">
- <div className="p-6 rounded-2xl border border-border bg-card space-y-4">
+ <div className="p-6 rounded-lg border border-border bg-card space-y-4">
  <h2 className="text-base font-bold flex items-center gap-2">
  <BarChart3 className="size-4 text-primary" /> Concorrentes Diretos no Nicho
  </h2>
@@ -194,7 +194,7 @@ function ClaimReputacaoPage() {
             </TabsContent>
 
             <TabsContent value="claims" className="space-y-4">
-              <div className="p-6 rounded-2xl border border-border bg-card text-center py-10">
+              <div className="p-6 rounded-lg border border-border bg-card text-center py-10">
                 <CheckCircle2 className="size-10 text-emerald-500 mx-auto mb-2" />
                 <h3 className="font-bold text-foreground">
                   {intel.verified_claims > 0 ? `${intel.verified_claims} Atendimentos Registrados` : "Nenhum Atendimento Registrado"}

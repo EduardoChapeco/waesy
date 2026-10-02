@@ -35,7 +35,7 @@ export function NicheOperationalGuard({
     if (dismissed && effectiveNiches.length > 0 && !effectiveNiches.includes(semantics.nicheId)) {
       return (
         <div className="space-y-4">
-          <div className="p-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3">
+          <div className="p-3 px-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <ShieldAlert className="size-4 shrink-0" />
               <span>
@@ -136,7 +136,7 @@ export function NicheOperationalGuard({
 
  return (
  <div className="max-w-3xl mx-auto py-12 px-4 space-y-6 animate-in fade-in duration-200">
- <Card className="p-6 sm:p-8 rounded-2xl border border-border/80 bg-card shadow-xs space-y-6">
+ <Card className="p-6 sm:p-8 rounded-lg border border-border/80 bg-card shadow-xs space-y-6">
  <div className="space-y-2 text-left">
  <div className="flex items-center gap-2">
  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary uppercase">
@@ -164,9 +164,9 @@ export function NicheOperationalGuard({
  <Link
  key={idx}
  to={item.path as any}
- className="p-4 rounded-2xl border border-border/70 bg-muted/20 hover:bg-muted/40 hover:border-primary/40 transition-all flex flex-col justify-between group space-y-3"
+ className="p-4 rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/40 hover:border-primary/40 transition-all flex flex-col justify-between group space-y-3"
  >
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
  <Icon className="size-4" />
  </div>
  <div>
@@ -193,7 +193,7 @@ export function NicheOperationalGuard({
  variant="ghost"
  size="sm"
  onClick={() => setDismissed(true)}
- className="text-xs font-semibold hover:text-foreground h-9 px-3 rounded-xl cursor-pointer"
+ className="text-xs font-semibold hover:text-foreground h-9 px-3 rounded-lg cursor-pointer"
  >
  Acessar esta ferramenta mesmo assim
  </Button>

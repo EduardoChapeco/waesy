@@ -32,7 +32,7 @@ export function EmptyState({
         "flex flex-col items-center justify-center text-center",
         minimal
           ? "py-10 px-4 min-h-[220px] bg-transparent"
-          : "p-8 md:p-12 min-h-[300px] border border-dashed rounded-xl bg-muted/30",
+          : "p-8 md:p-12 min-h-[300px] border border-dashed rounded-lg bg-muted/30",
         className,
       )}
       {...props}
@@ -50,11 +50,11 @@ export function EmptyState({
         (React.isValidElement(action) ? (
           action
         ) : (action as any).href ? (
-          <Button asChild className="rounded-xl h-10 px-5 text-xs font-semibold">
+          <Button asChild className="rounded-lg h-10 px-5 text-xs font-semibold">
             <a href={(action as any).href}>{(action as any).label}</a>
           </Button>
         ) : (
-          <Button onClick={(action as any).onClick} className="rounded-xl h-10 px-5 text-xs font-semibold">
+          <Button onClick={(action as any).onClick} className="rounded-lg h-10 px-5 text-xs font-semibold">
             {(action as any).label}
           </Button>
         ))}

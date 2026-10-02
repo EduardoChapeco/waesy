@@ -132,7 +132,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <>
  <div
  className={`flex items-center gap-1 sm:gap-2 shrink-0 ${
- embedded ? "" : "h-10 px-2 rounded-2xl bg-card"
+ embedded ? "" : "h-10 px-2 rounded-lg bg-card"
  }`}
  >
  {/* 1. Conversas / Chat Direto (Desktop >= 768px) */}
@@ -141,7 +141,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  asChild
  variant="ghost"
  size="icon"
- className="hidden md:inline-flex size-8 rounded-xl relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer"
+ className="hidden md:inline-flex size-8 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer"
  title="Atendimento & Suporte"
  >
  <Link to="/conta/suporte">
@@ -155,7 +155,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  variant="ghost"
  size="icon"
  onClick={() => setIsCartOpen(true)}
- className="hidden md:inline-flex size-8 rounded-xl relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer"
+ className="hidden md:inline-flex size-8 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer"
  title="Sacola de Compras"
  >
  <ShoppingBag className="size-4" />
@@ -170,9 +170,9 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <NotificationsPopover session={session} />
 
  {/* 4. Alternador de Tema Dark/Light (Desktop >= 768px) */}
- <ThemeToggle className="hidden md:inline-flex size-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer" />
+ <ThemeToggle className="hidden md:inline-flex size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer" />
 
- <div className="hidden md:block h-4 w-px bg-border/60 mx-0.5" />
+ <div className="hidden md:block h-4 w-px bg-border/60 mx-1" />
 
  {/* 6. Perfil / Auth Menu (Oculto no mobile pois já existe na MobileNav com suporte a gestos) */}
  {session ? (
@@ -181,7 +181,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <DropdownMenuTrigger asChild>
  <button
  type="button"
- className="size-8 shrink-0 rounded-xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+ className="size-8 shrink-0 rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
  aria-label="Menu de Perfil e Conta"
  >
  <Avatar className="size-full rounded-none">
@@ -195,12 +195,12 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
 
  <DropdownMenuContent
  align="end"
- className="w-72 rounded-2xl p-2 bg-card space-y-1"
+ className="w-72 rounded-lg p-2 bg-card space-y-1"
  >
  {/* Header — Identidade Pessoal do Usuário */}
- <DropdownMenuLabel className="font-normal p-2.5 pb-2">
+ <DropdownMenuLabel className="font-normal p-3 pb-2">
  <div className="flex items-center gap-3">
- <div className="size-10 rounded-2xl overflow-hidden bg-muted shrink-0 flex items-center justify-center">
+ <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
  {userAvatar ? (
  <img src={userAvatar} alt={userName} className="size-full object-cover" />
  ) : (
@@ -220,9 +220,9 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  </DropdownMenuLabel>
 
  {/* Pill de Contexto Ativo (Civil, Criador ou Empresa) */}
- <div className="px-2 pb-1.5">
- <div className="p-1.5 rounded-xl bg-muted/60 border border-border/60 flex items-center justify-between text-xs">
- <div className="flex items-center gap-1.5 px-1 min-w-0">
+ <div className="px-2 pb-2">
+ <div className="p-2 rounded-lg bg-muted/60 border border-border/60 flex items-center justify-between text-xs">
+ <div className="flex items-center gap-2 px-1 min-w-0">
  {activeContext === "creator" ? (
  <Award className="size-3.5 text-amber-500 shrink-0" />
  ) : activeContext === "store" ? (
@@ -242,7 +242,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <button
  type="button"
  onClick={handleSwitchCivil}
- className="text-[10px] font-bold text-primary hover:underline px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+ className="text-[10px] font-bold text-primary hover:underline px-2 py-1 rounded cursor-pointer shrink-0"
  >
  Mudar p/ Civil
  </button>
@@ -253,52 +253,52 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <DropdownMenuSeparator className="my-1" />
 
  {/* Ações da Conta Pessoal (1 Palavra / Rótulo Direto) */}
- <div className="space-y-0.5">
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-bold text-foreground px-3 py-2 hover:bg-muted/60">
+ <div className="space-y-1">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-bold text-foreground px-3 py-2 hover:bg-muted/60">
  <Link to="/conta">Conta</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/conta/perfil">Perfil</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/conta/salvos">Salvos</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/conta/pedidos">Pedidos</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/conta/ingressos">Ingressos</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/conta/agendamentos">Agenda</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/conta/classificados">Classificados</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/conta/concursos">Sorteios</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/convite">Convites</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/conta/criadores">Criadores</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/conta/seguranca">Ajustes</Link>
  </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
  <Link to="/conta/suporte">Suporte</Link>
  </DropdownMenuItem>
  </div>
@@ -307,7 +307,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <DropdownMenuSeparator className="my-1" />
  <div className="p-1 space-y-1">
  {isPlatformAdmin && (
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 flex items-center justify-between border border-primary/20">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 flex items-center justify-between border border-primary/20">
  <Link to="/admin-master">
  <div className="flex items-center gap-2">
  <Shield className="size-3.5" />
@@ -319,7 +319,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  )}
 
  {memberships.length > 0 || isPlatformAdmin ? (
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-bold bg-foreground text-background hover:bg-foreground/90 px-3 py-2 flex items-center justify-between">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-bold bg-foreground text-background hover:bg-foreground/90 px-3 py-2 flex items-center justify-between">
  <Link to="/workspace">
  <div className="flex items-center gap-2">
  <LayoutDashboard className="size-3.5" />
@@ -329,7 +329,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  </Link>
  </DropdownMenuItem>
  ) : (
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-2 flex items-center justify-between shadow-xs">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-2 flex items-center justify-between shadow-xs">
  <Link to="/criar-negocio">
  <div className="flex items-center gap-2">
  <Plus className="size-3.5" />
@@ -344,20 +344,20 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  {/* ── Gestão de Personas de Criador ── */}
  {creatorProfiles.length > 0 && (
  <div className="py-1 border-t border-border/40">
- <div className="px-3 py-1.5 flex items-center justify-between">
+ <div className="px-3 py-2 flex items-center justify-between">
  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
  Criadores ({creatorProfiles.length})
  </span>
  <Link
  to="/conta/criadores"
- className="text-[10px] font-bold text-primary hover:underline flex items-center gap-0.5"
+ className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
  >
  <span>Gerenciar</span>
  <ArrowUpRight className="size-2.5" />
  </Link>
  </div>
 
- <div className="space-y-0.5 px-1">
+ <div className="space-y-1 px-1">
  {creatorProfiles.slice(0, 3).map((cp: any) => {
  const isCurrent = activeCreatorId === cp.id || activeCreatorId === cp.handle;
  return (
@@ -366,7 +366,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  type="button"
  onClick={() => handleSwitchCreator(cp)}
  className={cn(
- "w-full px-2.5 py-1.5 rounded-xl text-left flex items-center justify-between transition-colors cursor-pointer",
+ "w-full px-3 py-2 rounded-lg text-left flex items-center justify-between transition-colors cursor-pointer",
  isCurrent
  ? "bg-amber-500/10 text-amber-600 font-bold"
  : "hover:bg-muted/60 text-foreground/90 font-medium"
@@ -383,7 +383,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <p className="text-xs truncate leading-tight">@{cp.handle}</p>
  </div>
  {isCurrent ? (
- <span className="text-[9px] font-bold text-amber-600 px-1.5 py-0.5 rounded-md bg-amber-500/20 shrink-0">
+ <span className="text-[9px] font-bold text-amber-600 px-2 py-1 rounded-md bg-amber-500/20 shrink-0">
  Ativo
  </span>
  ) : (
@@ -399,20 +399,20 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  {/* ── Gestão de Negócios & Espaços (Multiloja Transparente) ── */}
  {memberships.length > 0 && (
  <div className="py-1">
- <div className="px-3 py-1.5 flex items-center justify-between">
+ <div className="px-3 py-2 flex items-center justify-between">
  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
  Minhas Lojas ({memberships.length})
  </span>
  <Link
  to="/conta/lojas"
- className="text-[10px] font-bold text-primary hover:underline flex items-center gap-0.5"
+ className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
  >
  <span>Ver Todas</span>
  <ArrowUpRight className="size-2.5" />
  </Link>
  </div>
 
- <div className="space-y-0.5 px-1">
+ <div className="space-y-1 px-1">
  {memberships.slice(0, 3).map((m: any) => {
  const isCurrent = m.store_id === activeStoreId;
  return (
@@ -422,7 +422,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  disabled={isSwitching}
  onClick={() => handleSwitchStore(m.store_id)}
  className={cn(
- "w-full px-2.5 py-1.5 rounded-xl text-left flex items-center justify-between transition-colors cursor-pointer",
+ "w-full px-3 py-2 rounded-lg text-left flex items-center justify-between transition-colors cursor-pointer",
  isCurrent
  ? "bg-primary/10 text-primary font-bold"
  : "hover:bg-muted/60 text-foreground/90 font-medium"
@@ -441,7 +441,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  </div>
  </div>
  {isCurrent ? (
- <span className="text-[9px] font-bold text-primary px-1.5 py-0.5 rounded-md bg-primary/20 shrink-0">
+ <span className="text-[9px] font-bold text-primary px-2 py-1 rounded-md bg-primary/20 shrink-0">
  Ativo
  </span>
  ) : (
@@ -451,7 +451,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  );
  })}
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold text-muted-foreground hover:text-foreground px-2.5 py-1.5 flex items-center gap-1.5 mt-1">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold text-muted-foreground hover:text-foreground px-3 py-2 flex items-center gap-2 mt-1">
  <Link to="/criar-negocio">
  <Plus className="size-3.5" />
  <span>Cadastrar Outro Negócio</span>
@@ -466,7 +466,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <>
  <DropdownMenuSeparator className="my-1" />
  <div className="p-1">
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-black bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-3 py-2 flex items-center justify-between">
+ <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-black bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-3 py-2 flex items-center justify-between">
  <Link to="/admin-master">
  <div className="flex items-center gap-2">
  <ShieldAlert className="size-3.5" />
@@ -483,7 +483,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
 
  <DropdownMenuItem
  onClick={handleLogout}
- className="rounded-xl cursor-pointer text-xs font-semibold text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive px-3 py-2"
+ className="rounded-lg cursor-pointer text-xs font-semibold text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive px-3 py-2"
  >
  Encerrar Sessão
  </DropdownMenuItem>
@@ -494,7 +494,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <Button
  asChild
  size="sm"
- className="hidden md:inline-flex h-8 rounded-xl px-3 text-xs font-bold bg-primary text-primary-foreground"
+ className="hidden md:inline-flex h-8 rounded-lg px-3 text-xs font-bold bg-primary text-primary-foreground"
  >
  <Link to="/entrar">Entrar</Link>
  </Button>
@@ -503,7 +503,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
 
  {/* Modal de Busca Rápida */}
  <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
- <DialogContent className="sm:max-w-lg sm:rounded-2xl p-4 sm:top-[20%] sm:translate-y-0">
+ <DialogContent className="sm:max-w-lg sm:rounded-lg p-4 sm:top-[20%] sm:translate-y-0">
  <DialogHeader className="sr-only">
  <DialogTitle>Buscar no Waesy</DialogTitle>
  </DialogHeader>
@@ -514,7 +514,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Buscar posts, produtos, classificados, eventos ou membros..."
- className="h-12 pl-10 pr-4 text-sm bg-muted/30 rounded-xl border-border focus-visible:ring-primary"
+ className="h-12 pl-10 pr-4 text-sm bg-muted/30 rounded-lg border-border focus-visible:ring-primary"
  />
  </form>
  </DialogContent>

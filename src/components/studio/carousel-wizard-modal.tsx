@@ -78,11 +78,11 @@ export function CarouselWizardModal({
 
  return (
  <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
- <div className="w-full max-w-5xl h-[85vh] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+ <div className="w-full max-w-5xl h-[85vh] bg-card border border-border rounded-lg shadow-2xl flex flex-col overflow-hidden">
  {/* Header */}
  <div className="p-4 border-b border-border flex items-center justify-between bg-muted/20">
- <div className="flex items-center gap-2.5">
- <div className="p-2 rounded-xl bg-primary/10 text-primary">
+ <div className="flex items-center gap-3">
+ <div className="p-2 rounded-lg bg-primary/10 text-primary">
  <Wand2 className="w-5 h-5" />
  </div>
  <div>
@@ -96,7 +96,7 @@ export function CarouselWizardModal({
  </div>
 
  <div className="flex items-center gap-2">
- <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+ <span className="text-xs font-semibold px-3 py-1 rounded-full bg-muted text-muted-foreground">
  Passo {step} de 3
  </span>
  {onClose && (
@@ -129,17 +129,17 @@ export function CarouselWizardModal({
  <button
  type="button"
  onClick={() => setGenerationEngine('escamas')}
- className={'p-5 rounded-2xl border-2 text-left transition-all ' + (
+ className={'p-5 rounded-lg border-2 text-left transition-all ' + (
  generationEngine === 'escamas'
  ? 'border-primary bg-primary/5 shadow-md'
  : 'border-border bg-card hover:border-border/80'
  )}
  >
- <div className="p-3 rounded-xl bg-primary/10 text-primary w-fit mb-3">
+ <div className="p-3 rounded-lg bg-primary/10 text-primary w-fit mb-3">
  <Layers className="w-6 h-6" />
  </div>
  <div className="font-bold text-sm text-foreground">Motor Escamas Pro</div>
- <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+ <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
  Artes multi-camadas editáveis individualmente (títulos, badges, texturas e botões em camadas tipo Canva Pro).
  </p>
  </button>
@@ -147,17 +147,17 @@ export function CarouselWizardModal({
  <button
  type="button"
  onClick={() => setGenerationEngine('classic')}
- className={'p-5 rounded-2xl border-2 text-left transition-all ' + (
+ className={'p-5 rounded-lg border-2 text-left transition-all ' + (
  generationEngine === 'classic'
  ? 'border-primary bg-primary/5 shadow-md'
  : 'border-border bg-card hover:border-border/80'
  )}
  >
- <div className="p-3 rounded-xl bg-purple-500/10 text-purple-500 w-fit mb-3">
+ <div className="p-3 rounded-lg bg-purple-500/10 text-purple-500 w-fit mb-3">
  <Sliders className="w-6 h-6" />
  </div>
  <div className="font-bold text-sm text-foreground">IA Classic Rápido</div>
- <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+ <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
  Flyer unificado de alta densidade visual otimizado para conversão rápida de feed e stories.
  </p>
  </button>
@@ -169,7 +169,7 @@ export function CarouselWizardModal({
  value={topic}
  onChange={(e) => setTopic(e.target.value)}
  placeholder="Ex: 3 Razões para assinar o plano premium hoje..."
- className="h-11 rounded-xl bg-muted/20 text-xs"
+ className="h-11 rounded-lg bg-muted/20 text-xs"
  />
  </div>
 
@@ -179,7 +179,7 @@ export function CarouselWizardModal({
  value={targetAudience}
  onChange={(e) => setTargetAudience(e.target.value)}
  placeholder="Ex: Clientes corporativos, noivas, estudantes..."
- className="h-11 rounded-xl bg-muted/20 text-xs"
+ className="h-11 rounded-lg bg-muted/20 text-xs"
  />
  </div>
  </div>
@@ -208,7 +208,7 @@ export function CarouselWizardModal({
  key={d.id}
  type="button"
  onClick={() => setDensity(d.id as any)}
- className={'p-4 rounded-xl border text-left transition-all ' + (
+ className={'p-4 rounded-lg border text-left transition-all ' + (
  density === d.id
  ? 'border-primary bg-primary/10 shadow-sm'
  : 'border-border bg-card'
@@ -229,7 +229,7 @@ export function CarouselWizardModal({
  key={count}
  type="button"
  onClick={() => setSlideCount(count)}
- className={'h-10 px-5 rounded-xl border text-xs font-bold transition-all ' + (
+ className={'h-10 px-5 rounded-lg border text-xs font-bold transition-all ' + (
  slideCount === count
  ? 'border-primary bg-primary text-primary-foreground'
  : 'border-border bg-card text-muted-foreground'
@@ -259,7 +259,7 @@ export function CarouselWizardModal({
  type="button"
  size="sm"
  onClick={() => onApplyToBanner(generatedSlides[activeSlideIndex])}
- className="min-h-[40px] px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md"
+ className="min-h-10 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-2 shadow-md"
  >
  <Send className="w-3.5 h-3.5" />
  Aplicar ao Hero Banner
@@ -292,7 +292,7 @@ export function CarouselWizardModal({
  </div>
  </div>
 
- <div className="space-y-3 bg-muted/20 p-4 rounded-2xl border border-border">
+ <div className="space-y-3 bg-muted/20 p-4 rounded-lg border border-border">
  <h4 className="text-xs font-bold text-foreground">Camadas do Slide {activeSlideIndex + 1}</h4>
  <div className="space-y-2 text-xs">
  <div>
@@ -305,7 +305,7 @@ export function CarouselWizardModal({
  prev.map((s, idx) => (idx === activeSlideIndex ? { ...s, title: val } : s))
  );
  }}
- className="h-8 text-xs rounded-lg mt-0.5"
+ className="h-8 text-xs rounded-lg mt-1"
  />
  </div>
  <div>
@@ -318,7 +318,7 @@ export function CarouselWizardModal({
  prev.map((s, idx) => (idx === activeSlideIndex ? { ...s, subtitle: val } : s))
  );
  }}
- className="h-8 text-xs rounded-lg mt-0.5"
+ className="h-8 text-xs rounded-lg mt-1"
  />
  </div>
  <div>
@@ -331,7 +331,7 @@ export function CarouselWizardModal({
  prev.map((s, idx) => (idx === activeSlideIndex ? { ...s, ctaText: val } : s))
  );
  }}
- className="h-8 text-xs rounded-lg mt-0.5"
+ className="h-8 text-xs rounded-lg mt-1"
  />
  </div>
  </div>
@@ -348,7 +348,7 @@ export function CarouselWizardModal({
  variant="outline"
  disabled={step === 1}
  onClick={() => setStep(step - 1)}
- className="min-h-[40px] px-4 rounded-xl text-xs"
+ className="min-h-10 px-4 rounded-lg text-xs"
  >
  <ChevronLeft className="w-4 h-4 mr-1" />
  Voltar
@@ -358,7 +358,7 @@ export function CarouselWizardModal({
  <Button
  type="button"
  onClick={() => setStep(step + 1)}
- className="min-h-[40px] px-6 rounded-xl bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-1.5"
+ className="min-h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2"
  >
  Avançar
  <ChevronRight className="w-4 h-4" />
@@ -367,7 +367,7 @@ export function CarouselWizardModal({
  <Button
  type="button"
  onClick={onClose}
- className="min-h-[40px] px-6 rounded-xl bg-primary text-primary-foreground font-semibold text-xs"
+ className="min-h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs"
  >
  Concluir e Fechar
  </Button>

@@ -162,7 +162,7 @@ function ProductTypesPage() {
  <Button
  onClick={handleOpenNew}
  size="sm"
- className="rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shrink-0"
+ className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shrink-0"
  >
  <Plus className="size-3.5" aria-hidden />
  <span>Novo Tipo</span>
@@ -178,19 +178,19 @@ function ProductTypesPage() {
  }}
  >
  <SheetContent side="right" className="max-w-2xl overflow-y-auto no-scrollbar p-6 bg-card">
- <SheetHeader className="space-y-1.5 pb-4">
+ <SheetHeader className="space-y-2 pb-4">
  <SheetTitle className="text-lg font-bold text-foreground">
  {editingType ? "Editar tipo de produto" : "Criar tipo de produto"}
  </SheetTitle>
  </SheetHeader>
  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-5">
  <div className="grid grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="name" className="text-xs font-bold text-foreground">Nome do Tipo *</Label>
  <Input
  id="name"
  placeholder="Ex: Tênis ou Vestuário"
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  {...form.register("name")}
  onChange={(e) => {
  form.register("name").onChange(e);
@@ -209,9 +209,9 @@ function ProductTypesPage() {
  </p>
  )}
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="slug" className="text-xs font-bold text-foreground">Identificador / Slug *</Label>
- <Input id="slug" placeholder="ex: tenis" className="rounded-xl text-xs h-9" {...form.register("slug")} />
+ <Input id="slug" placeholder="ex: tenis" className="rounded-lg text-xs h-9" {...form.register("slug")} />
  {form.formState.errors.slug && (
  <p className="text-xs text-destructive">
  {form.formState.errors.slug.message}
@@ -230,7 +230,7 @@ function ProductTypesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs font-bold gap-1"
+ className="rounded-lg text-xs font-bold gap-1"
  onClick={() => append({ name: "", kind: "text", required: false })}
  >
  <Plus className="size-3" />
@@ -239,7 +239,7 @@ function ProductTypesPage() {
  </div>
 
  {fields.length === 0 ? (
- <p className="text-xs text-muted-foreground text-center py-6 border-0 rounded-2xl bg-muted/20">
+ <p className="text-xs text-muted-foreground text-center py-6 border-0 rounded-lg bg-muted/20">
  Nenhum campo dinâmico adicionado ainda.
  </p>
  ) : (
@@ -247,7 +247,7 @@ function ProductTypesPage() {
  {fields.map((field, index) => (
  <div
  key={field.id}
- className="flex items-start gap-4 p-4 bg-muted/20 rounded-2xl relative"
+ className="flex items-start gap-4 p-4 bg-muted/20 rounded-lg relative"
  >
  <Button
  type="button"
@@ -263,7 +263,7 @@ function ProductTypesPage() {
  <Label className="text-xs font-bold">Nome do campo</Label>
  <Input
  placeholder="Ex: Material ou Voltagem"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  {...form.register(`fields.${index}.name`)}
  />
  </div>
@@ -283,10 +283,10 @@ function ProductTypesPage() {
  }
  defaultValue={field.kind}
  >
- <SelectTrigger className="rounded-xl text-xs h-8">
+ <SelectTrigger className="rounded-lg text-xs h-8">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="text" className="text-xs">Texto livre</SelectItem>
  <SelectItem value="number" className="text-xs">Número</SelectItem>
  <SelectItem value="boolean" className="text-xs">Verdadeiro/Falso</SelectItem>
@@ -317,7 +317,7 @@ function ProductTypesPage() {
  </Label>
  <Input
  placeholder="Ex: 34, 35, 36, Preto, Branco"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onChange={(e) => {
  const opts = e.target.value
  .split(",")
@@ -336,10 +336,10 @@ function ProductTypesPage() {
  </div>
 
  <SheetFooter className="pt-4 flex justify-end gap-2">
- <Button type="button" variant="outline" size="sm" className="rounded-xl text-xs font-bold" onClick={() => setOpen(false)}>
+ <Button type="button" variant="outline" size="sm" className="rounded-lg text-xs font-bold" onClick={() => setOpen(false)}>
  Cancelar
  </Button>
- <Button type="submit" size="sm" disabled={isSubmitting} className="rounded-xl text-xs font-bold bg-primary text-primary-foreground">
+ <Button type="submit" size="sm" disabled={isSubmitting} className="rounded-lg text-xs font-bold bg-primary text-primary-foreground">
  {isSubmitting ? "Salvando..." : "Salvar Tipo"}
  </Button>
  </SheetFooter>
@@ -354,7 +354,7 @@ function ProductTypesPage() {
  <Input
  type="search"
  placeholder="Buscar por nome ou identificador..."
- className="pl-8 text-xs h-9 rounded-xl w-full"
+ className="pl-8 text-xs h-9 rounded-lg w-full"
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  />
@@ -364,7 +364,7 @@ function ProductTypesPage() {
  {filteredTypes.length === 0 ? (
  <EmptyState title="Nenhum tipo de produto cadastrado" />
  ) : (
- <div className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+ <div className="bg-card rounded-lg border border-border/60 overflow-hidden">
  <div className="overflow-x-auto no-scrollbar">
  <Table>
  <TableHeader>

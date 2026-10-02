@@ -59,23 +59,23 @@ export function MotionStudioPropsPanel({
   return (
     <div className="w-80 border-l border-border/80 bg-card flex flex-col shrink-0 overflow-y-auto no-scrollbar select-none divide-y divide-border/60">
       {/* Smart Command Bar */}
-      <div className="p-3.5 space-y-2 bg-muted/20">
+      <div className="p-4 space-y-2 bg-muted/20">
         <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-foreground">
+          <div className="flex items-center gap-2 font-bold text-foreground">
             <Wand2 className="size-3.5 text-primary" />
             <span>Comando Rápido</span>
           </div>
           <span className="text-[10px] text-muted-foreground font-mono">IA Assist</span>
         </div>
 
-        <form onSubmit={handleRunCommand} className="flex gap-1.5">
+        <form onSubmit={handleRunCommand} className="flex gap-2">
           <Input
             value={commandInput}
             onChange={(e) => setCommandInput(e.target.value)}
             placeholder="ex: mais rapido, verde, headline: ..."
-            className="h-8 text-xs rounded-xl bg-background border-border/80"
+            className="h-8 text-xs rounded-lg bg-background border-border/80"
           />
-          <Button type="submit" size="sm" variant="secondary" className="h-8 px-2.5 rounded-xl text-xs shrink-0">
+          <Button type="submit" size="sm" variant="secondary" className="h-8 px-3 rounded-lg text-xs shrink-0">
             Aplicar
           </Button>
         </form>
@@ -96,7 +96,7 @@ export function MotionStudioPropsPanel({
               key={tab.id}
               type="button"
               onClick={() => setActiveGroup(tab.id as any)}
-              className={`flex-1 py-1 px-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1 transition-all ${
+              className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1 transition-all ${
                 isActive
                   ? "bg-card text-foreground shadow-xs border border-border/80"
                   : "text-muted-foreground hover:text-foreground"
@@ -116,7 +116,7 @@ export function MotionStudioPropsPanel({
 
           if (field.kind === "textarea") {
             return (
-              <div key={field.id} className="space-y-1.5">
+              <div key={field.id} className="space-y-2">
                 <div className="flex justify-between items-center text-xs">
                   <Label className="font-bold text-foreground">{field.label}</Label>
                   {field.required && (
@@ -127,7 +127,7 @@ export function MotionStudioPropsPanel({
                   value={(val as string) || ""}
                   onChange={(e) => onChangeValue(field.id, e.target.value)}
                   placeholder={field.placeholder}
-                  className="min-h-[72px] text-xs rounded-xl bg-background resize-none"
+                  className="min-h-[72px] text-xs rounded-lg bg-background resize-none"
                 />
               </div>
             );
@@ -135,13 +135,13 @@ export function MotionStudioPropsPanel({
 
           if (field.kind === "text") {
             return (
-              <div key={field.id} className="space-y-1.5">
+              <div key={field.id} className="space-y-2">
                 <Label className="text-xs font-bold text-foreground">{field.label}</Label>
                 <Input
                   value={(val as string) || ""}
                   onChange={(e) => onChangeValue(field.id, e.target.value)}
                   placeholder={field.placeholder}
-                  className="h-8 text-xs rounded-xl bg-background"
+                  className="h-8 text-xs rounded-lg bg-background"
                 />
               </div>
             );
@@ -154,7 +154,7 @@ export function MotionStudioPropsPanel({
             const currentNum = Number(val) || min;
 
             return (
-              <div key={field.id} className="space-y-1.5">
+              <div key={field.id} className="space-y-2">
                 <div className="flex justify-between items-center text-xs">
                   <Label className="font-bold text-foreground">{field.label}</Label>
                   <span className="font-mono text-muted-foreground text-[11px]">
@@ -174,7 +174,7 @@ export function MotionStudioPropsPanel({
 
           if (field.kind === "color") {
             return (
-              <div key={field.id} className="space-y-1.5">
+              <div key={field.id} className="space-y-2">
                 <Label className="text-xs font-bold text-foreground">{field.label}</Label>
                 <div className="flex items-center gap-2">
                   <input
@@ -186,7 +186,7 @@ export function MotionStudioPropsPanel({
                   <Input
                     value={(val as string) || template.accentColor}
                     onChange={(e) => onChangeValue(field.id, e.target.value)}
-                    className="h-8 text-xs font-mono rounded-xl bg-background flex-1 uppercase"
+                    className="h-8 text-xs font-mono rounded-lg bg-background flex-1 uppercase"
                   />
                 </div>
               </div>
@@ -212,13 +212,13 @@ export function MotionStudioPropsPanel({
 
           if (field.kind === "select" && field.options) {
             return (
-              <div key={field.id} className="space-y-1.5">
+              <div key={field.id} className="space-y-2">
                 <Label className="text-xs font-bold text-foreground">{field.label}</Label>
                 <Select
                   value={(val as string) || field.options[0]?.value}
                   onValueChange={(nxt) => onChangeValue(field.id, nxt)}
                 >
-                  <SelectTrigger className="h-8 text-xs rounded-xl bg-background">
+                  <SelectTrigger className="h-8 text-xs rounded-lg bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -238,9 +238,9 @@ export function MotionStudioPropsPanel({
       </div>
 
       {/* Guardrails / Quality Check */}
-      <div className="p-3.5 space-y-2 bg-muted/20 shrink-0">
+      <div className="p-4 space-y-2 bg-muted/20 shrink-0">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-bold text-foreground flex items-center gap-1.5">
+          <span className="font-bold text-foreground flex items-center gap-2">
             {errorCount === 0 ? (
               <CheckCircle2 className="size-3.5 text-emerald-500" />
             ) : (
@@ -261,7 +261,7 @@ export function MotionStudioPropsPanel({
             {issues.map((issue, idx) => (
               <div
                 key={idx}
-                className={`text-[10px] p-1.5 rounded-lg border flex items-start gap-1.5 ${
+                className={`text-[10px] p-2 rounded-lg border flex items-start gap-2 ${
                   issue.level === "error"
                     ? "bg-rose-500/10 border-rose-500/20 text-rose-600"
                     : "bg-amber-500/10 border-amber-500/20 text-amber-600"

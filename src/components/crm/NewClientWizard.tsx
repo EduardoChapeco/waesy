@@ -257,13 +257,13 @@ export function NewClientWizard({
  <button
  type="button"
  onClick={() => setKind("individual")}
- className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+ className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all cursor-pointer ${
  kind === "individual"
  ? "border-primary bg-primary/5 text-primary shadow-xs"
  : "border-border hover:border-primary/40 bg-card text-muted-foreground"
  }`}
  >
- <User className="size-7 mb-1.5" />
+ <User className="size-7 mb-2" />
  <span className="font-bold text-sm">Pessoa Física (B2C)</span>
  <span className="text-[11px] text-muted-foreground">Passageiro, cliente individual</span>
  </button>
@@ -271,13 +271,13 @@ export function NewClientWizard({
  <button
  type="button"
  onClick={() => setKind("company")}
- className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+ className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all cursor-pointer ${
  kind === "company"
  ? "border-primary bg-primary/5 text-primary shadow-xs"
  : "border-border hover:border-primary/40 bg-card text-muted-foreground"
  }`}
  >
- <Building2 className="size-7 mb-1.5" />
+ <Building2 className="size-7 mb-2" />
  <span className="font-bold text-sm">Empresa (PJ / B2B)</span>
  <span className="text-[11px] text-muted-foreground">Conta corporativa, agência parceira</span>
  </button>
@@ -285,7 +285,7 @@ export function NewClientWizard({
 
  {/* Campos Principais */}
  <div className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">
  {kind === "company" ? "Nome Fantasia ou Apelido da Empresa *" : "Nome Completo *"}
  </Label>
@@ -293,24 +293,24 @@ export function NewClientWizard({
  value={fullName}
  onChange={(e) => setFullName(e.target.value)}
  placeholder={kind === "company" ? "Ex: Tech Solutions Brasil" : "Ex: Mariana Silva Ramos"}
- className="h-10 rounded-xl text-xs bg-background"
+ className="h-10 rounded-lg text-xs bg-background"
  />
  </div>
 
  {kind === "company" && (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">Razão Social Oficial</Label>
  <Input
  value={legalName}
  onChange={(e) => setLegalName(e.target.value)}
  placeholder="Ex: Tech Solutions Serviços de Informática LTDA"
- className="h-10 rounded-xl text-xs bg-background"
+ className="h-10 rounded-lg text-xs bg-background"
  />
  </div>
  )}
 
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">
  {kind === "company" ? "CNPJ" : "CPF"}
  </Label>
@@ -318,11 +318,11 @@ export function NewClientWizard({
  value={document}
  onChange={(e) => setDocument(formatCpfCnpj(e.target.value))}
  placeholder={kind === "company" ? "00.000.000/0000-00" : "000.000.000-00"}
- className="h-10 rounded-xl text-xs bg-background font-mono"
+ className="h-10 rounded-lg text-xs bg-background font-mono"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">
  {kind === "company" ? "Inscrição Estadual" : "RG / Órgão Emissor"}
  </Label>
@@ -330,12 +330,12 @@ export function NewClientWizard({
  value={rg}
  onChange={(e) => setRg(e.target.value)}
  placeholder={kind === "company" ? "Isento ou Nº" : "Ex: 4.888.777 SSP/SC"}
- className="h-10 rounded-xl text-xs bg-background font-mono"
+ className="h-10 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">
  {kind === "company" ? "Data de Fundação" : "Data de Nascimento"}
  </Label>
@@ -343,7 +343,7 @@ export function NewClientWizard({
  type="date"
  value={birthDate}
  onChange={(e) => setBirthDate(e.target.value)}
- className="h-10 rounded-xl text-xs bg-background"
+ className="h-10 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -354,8 +354,8 @@ export function NewClientWizard({
  {step === 1 && (
  <div className="space-y-5 animate-in fade-in duration-200">
  <div className="space-y-4">
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Phone className="size-3.5 text-primary" />
  Telefone Principal / WhatsApp
  </Label>
@@ -363,15 +363,15 @@ export function NewClientWizard({
  value={phone}
  onChange={(e) => setPhone(formatPhone(e.target.value))}
  placeholder="(49) 99999-9999"
- className="h-10 rounded-xl text-xs bg-background font-mono"
+ className="h-10 rounded-lg text-xs bg-background font-mono"
  />
  <span className="text-[10px] text-muted-foreground">
  Utilizado para envio de orçamentos, itinerários e contratos com 1-clique.
  </span>
  </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Mail className="size-3.5 text-primary" />
  E-mail de Contato
  </Label>
@@ -380,17 +380,17 @@ export function NewClientWizard({
  value={email}
  onChange={(e) => setEmail(e.target.value)}
  placeholder="cliente@exemplo.com.br"
- className="h-10 rounded-xl text-xs bg-background"
+ className="h-10 rounded-lg text-xs bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
  <User className="size-3.5 text-primary" />
  Consultor / Vendedor Responsável (Conta Carteirizada)
  </Label>
  <Select value={assignedTo} onValueChange={setAssignedTo}>
- <SelectTrigger className="h-10 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Selecione um responsável..." />
  </SelectTrigger>
  <SelectContent>
@@ -416,7 +416,7 @@ export function NewClientWizard({
  {/* Endereço */}
  <div className="space-y-3">
  <div className="grid grid-cols-3 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
  <MapPin className="size-3 text-primary" />
  CEP
@@ -430,7 +430,7 @@ export function NewClientWizard({
  handleCepSearch(val);
  }}
  placeholder="89900-000"
- className="h-10 rounded-xl text-xs bg-background font-mono"
+ className="h-10 rounded-lg text-xs bg-background font-mono"
  />
  {loadingCep && (
  <Loader2 className="size-3.5 animate-spin absolute right-3 top-3 text-primary" />
@@ -438,35 +438,35 @@ export function NewClientWizard({
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">Cidade</Label>
  <Input
  value={city}
  onChange={(e) => setCity(e.target.value)}
  placeholder="São Miguel do Oeste"
- className="h-10 rounded-xl text-xs bg-background"
+ className="h-10 rounded-lg text-xs bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">Estado (UF)</Label>
  <Input
  value={state}
  onChange={(e) => setState(e.target.value.toUpperCase())}
  placeholder="SC"
  maxLength={2}
- className="h-10 rounded-xl text-xs bg-background uppercase text-center"
+ className="h-10 rounded-lg text-xs bg-background uppercase text-center"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">Logradouro / Bairro / Complemento</Label>
  <Input
  value={addressLine}
  onChange={(e) => setAddressLine(e.target.value)}
  placeholder="Ex: Rua Almirante Barroso, 450, Apto 201 - Centro"
- className="h-10 rounded-xl text-xs bg-background"
+ className="h-10 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -474,10 +474,10 @@ export function NewClientWizard({
  {/* Classificação & Segmento */}
  <div className="space-y-3 pt-2 border-t border-border">
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">Canal de Origem / Aquisição</Label>
  <Select value={channel} onValueChange={setChannel}>
- <SelectTrigger className="h-10 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -490,7 +490,7 @@ export function NewClientWizard({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
  <DollarSign className="size-3 text-primary" />
  Limite de Crédito em Loja (R$)
@@ -499,14 +499,14 @@ export function NewClientWizard({
  value={creditLimitReais}
  onChange={(e) => setCreditLimitReais(e.target.value)}
  placeholder="0,00"
- className="h-10 rounded-xl text-xs bg-background font-mono"
+ className="h-10 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
 
  {/* Tags */}
  <div className="space-y-2">
- <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Tag className="size-3 text-primary" />
  Tags de Segmentação
  </Label>
@@ -521,25 +521,25 @@ export function NewClientWizard({
  }
  }}
  placeholder="Adicione uma tag e pressione Enter..."
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  <Button
  type="button"
  size="sm"
  onClick={() => handleAddTag(tagInput)}
- className="h-9 rounded-xl text-xs"
+ className="h-9 rounded-lg text-xs"
  >
  Adicionar
  </Button>
  </div>
 
  {tags.length > 0 && (
- <div className="flex flex-wrap gap-1.5 pt-1">
+ <div className="flex flex-wrap gap-2 pt-1">
  {tags.map((t) => (
  <Badge
  key={t}
  variant="secondary"
- className="text-xs font-semibold px-2.5 py-1 rounded-lg gap-1.5 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+ className="text-xs font-semibold px-3 py-1 rounded-lg gap-2 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
  onClick={() => handleRemoveTag(t)}
  >
  <span>{t}</span>
@@ -556,7 +556,7 @@ export function NewClientWizard({
  key={st}
  type="button"
  onClick={() => handleAddTag(st)}
- className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+ className="text-[10px] px-2 py-1 rounded-full bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
  >
  + {st}
  </button>
@@ -565,13 +565,13 @@ export function NewClientWizard({
  </div>
 
  {/* Observações */}
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <Label className="text-xs font-semibold text-foreground">Observações Internas</Label>
  <Textarea
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
  placeholder="Preferências de assento, restrições alimentares, perfil de compra..."
- className="h-20 rounded-xl text-xs bg-background resize-none"
+ className="h-20 rounded-lg text-xs bg-background resize-none"
  />
  </div>
  </div>
@@ -581,9 +581,9 @@ export function NewClientWizard({
  {/* PASSO 3: REVISÃO & CONFIRMAÇÃO */}
  {step === 3 && (
  <div className="space-y-4 animate-in fade-in duration-200">
- <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5 space-y-3">
+ <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
  <div className="flex items-center gap-3">
- <div className="size-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-base shadow-sm">
+ <div className="size-12 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-base shadow-sm">
  {fullName[0]?.toUpperCase() || "C"}
  </div>
  <div>
@@ -656,7 +656,7 @@ export function NewClientWizard({
  <Button
  type="button"
  onClick={handleNext}
- className="text-xs font-bold gap-1.5 px-5 h-9 rounded-xl"
+ className="text-xs font-bold gap-2 px-5 h-9 rounded-lg"
  >
  <span>Avançar</span>
  <ChevronRight className="size-3.5" />
@@ -666,7 +666,7 @@ export function NewClientWizard({
  type="button"
  disabled={submitting}
  onClick={handleSubmit}
- className="text-xs font-bold gap-1.5 px-6 h-9 rounded-xl bg-primary text-primary-foreground shadow-sm"
+ className="text-xs font-bold gap-2 px-6 h-9 rounded-lg bg-primary text-primary-foreground shadow-sm"
  >
  {submitting ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
  <span>Salvar Cliente na Carteira</span>

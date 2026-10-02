@@ -126,7 +126,7 @@ function RunHistoryItem({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full text-left p-3 rounded-xl border transition-all group cursor-pointer",
+        "w-full text-left p-3 rounded-lg border transition-all group cursor-pointer",
         isSelected
           ? "bg-primary/10 border-primary/40 shadow-xs"
           : "bg-card border-border/70 hover:bg-muted/50 hover:border-primary/30",
@@ -141,14 +141,14 @@ function RunHistoryItem({
           className={cn(status.color, isActive && "animate-spin")}
         />
       </div>
-      <div className="flex items-center gap-2 mt-1.5">
+      <div className="flex items-center gap-2 mt-2">
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono">
           {(run.module_type || "pesquisa").replace("_", " ")}
         </span>
         {run.verdict && VERDICT_CONFIG[run.verdict] && (
           <span
             className={cn(
-              "text-[10px] px-1.5 py-0.5 rounded border font-semibold",
+              "text-[10px] px-2 py-1 rounded border font-semibold",
               VERDICT_CONFIG[run.verdict].color,
             )}
           >
@@ -237,7 +237,7 @@ function InsightPanel({ run }: { run: SimResearchRun | null }) {
         <div className="flex items-center gap-3">
           <div
             className={cn(
-              "p-3 rounded-xl border",
+              "p-3 rounded-lg border",
               avgScore > 65
                 ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
                 : "bg-amber-500/15 text-amber-600 border-amber-500/30",
@@ -279,7 +279,7 @@ function InsightPanel({ run }: { run: SimResearchRun | null }) {
           <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold flex items-center gap-1">
             <BrainCircuit size={12} className="text-primary" /> Análise Executiva
           </p>
-          <p className="text-xs text-foreground/90 leading-relaxed bg-muted/40 rounded-xl p-3.5 border border-border/60">
+          <p className="text-xs text-foreground/90 leading-relaxed bg-muted/40 rounded-lg p-4 border border-border/60">
             {run.summary_insight}
           </p>
         </div>
@@ -295,7 +295,7 @@ function InsightPanel({ run }: { run: SimResearchRun | null }) {
             {run.execution_results.map((res, idx) => (
               <div
                 key={idx}
-                className="flex flex-col gap-1 p-2.5 bg-background rounded-xl border border-border/60"
+                className="flex flex-col gap-1 p-3 bg-background rounded-lg border border-border/60"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-foreground">
@@ -460,7 +460,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
       {/* Sub-Header com Indicadores */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-primary/10 border border-primary/20 rounded-full mb-1">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full mb-1">
             <BrainCircuit size={12} className="text-primary" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-foreground">
               SimLab Research Engine
@@ -496,7 +496,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
       </div>
 
       {/* Tabs de Seleção do Estímulo */}
-      <div className="flex flex-wrap gap-1.5 p-1 bg-muted/40 rounded-xl border border-border/60 w-fit">
+      <div className="flex flex-wrap gap-2 p-1 bg-muted/40 rounded-lg border border-border/60 w-fit">
         {TAB_CONFIG.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -506,7 +506,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
               type="button"
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer",
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer",
                 isActive
                   ? "bg-background text-foreground shadow-xs border border-border/80"
                   : "text-muted-foreground hover:text-foreground",
@@ -530,12 +530,12 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
           </div>
 
           {isLoading ? (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground p-4 bg-card rounded-xl border border-border/60">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground p-4 bg-card rounded-lg border border-border/60">
               <Loader2 size={14} className="animate-spin text-primary" />{" "}
               Carregando histórico...
             </div>
           ) : runs.length === 0 ? (
-            <div className="p-5 rounded-xl bg-card border border-border/60 text-center space-y-1">
+            <div className="p-5 rounded-lg bg-card border border-border/60 text-center space-y-1">
               <p className="text-xs font-medium text-foreground">
                 Nenhuma pesquisa registrada
               </p>
@@ -558,7 +558,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
         </div>
 
         {/* Coluna Centro: Formulação */}
-        <div className="lg:col-span-4 space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+        <div className="lg:col-span-4 space-y-4 rounded-lg border border-border/80 bg-card p-5 shadow-xs">
           <div className="space-y-1">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
               {activeTab === "market" && (
@@ -586,7 +586,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
           </div>
 
           <textarea
-            className="w-full bg-background border border-input rounded-xl p-3 text-xs text-foreground
+            className="w-full bg-background border border-input rounded-lg p-3 text-xs text-foreground
                        placeholder-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/40
                        outline-none min-h-[220px] resize-none transition-colors leading-relaxed"
             placeholder={currentTab.placeholder}
@@ -606,7 +606,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
               type="button"
               disabled={isDispatching || !prompt.trim()}
               onClick={() => void handleSimulate()}
-              className="rounded-xl font-bold gap-2 h-11 min-h-[44px] px-5 cursor-pointer"
+              className="rounded-lg font-bold gap-2 h-11 min-h-11 px-5 cursor-pointer"
             >
               {isDispatching ? (
                 <>
@@ -622,7 +622,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
         </div>
 
         {/* Coluna Direita: Resultado */}
-        <div className="lg:col-span-4 rounded-2xl border border-border/80 bg-card p-5 shadow-xs min-h-[380px] overflow-y-auto">
+        <div className="lg:col-span-4 rounded-lg border border-border/80 bg-card p-5 shadow-xs min-h-[380px] overflow-y-auto">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60">
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
               Diagnóstico do Modelo

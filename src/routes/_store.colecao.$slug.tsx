@@ -38,7 +38,7 @@ function CollectionPage() {
         <EmptyState
           title="Coleção não encontrada"
           action={
-            <Button asChild className="rounded-xl h-11 px-6 text-sm font-semibold shadow-xs">
+            <Button asChild className="rounded-lg h-11 px-6 text-sm font-semibold shadow-xs">
               <Link to="/mercado">Ver todos os produtos</Link>
             </Button>
           }
@@ -66,7 +66,7 @@ function CollectionPage() {
       </nav>
 
       {/* Header do Título */}
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           {collection.name}
         </h1>
@@ -79,7 +79,7 @@ function CollectionPage() {
 
       {/* Cover */}
       {collection.cover_url && (
-        <div className="w-full aspect-[21/9] rounded-2xl overflow-hidden bg-muted shadow-xs">
+        <div className="w-full aspect-[21/9] rounded-lg overflow-hidden bg-muted shadow-xs">
           <img
             src={collection.cover_url}
             alt={collection.name}
@@ -94,7 +94,7 @@ function CollectionPage() {
           title="Coleção ainda sem produtos"
           description="Esta coleção está sendo abastecida com novas peças e itens exclusivos."
           action={
-            <Button asChild className="rounded-xl h-11 px-6 text-sm font-semibold shadow-xs">
+            <Button asChild className="rounded-lg h-11 px-6 text-sm font-semibold shadow-xs">
               <Link to="/mercado">Explorar Catálogo</Link>
             </Button>
           }

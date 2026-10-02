@@ -63,7 +63,7 @@ export function MotoLinkTrackingWidget({
   const waLink = `https://wa.me/55${courierPhone.replace(/\D/g, "")}?text=Ol%C3%A1%20${encodeURIComponent(courierName)}%2C%20estou%20acompanhando%20o%20pedido%20%23${orderId.slice(0, 6)}`;
 
   return (
-    <div className="bg-surface-paper border border-border rounded-xl p-4 sm:p-6 shadow-sm space-y-5">
+    <div className="bg-surface-paper border border-border rounded-lg p-4 sm:p-6 shadow-sm space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -71,9 +71,9 @@ export function MotoLinkTrackingWidget({
             <Motorcycle className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm sm:text-base text-foreground flex items-center gap-1.5">
+            <h3 className="font-semibold text-sm sm:text-base text-foreground flex items-center gap-2">
               MotoLink — Entrega Local Expressa
-              <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
+              <span className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
                 <Star className="w-3 h-3" /> Ao Vivo
               </span>
             </h3>
@@ -87,7 +87,7 @@ export function MotoLinkTrackingWidget({
         {stages.map((stage) => {
           const Icon = stage.icon;
           return (
-            <div key={stage.key} className="flex flex-col items-center text-center space-y-1.5">
+            <div key={stage.key} className="flex flex-col items-center text-center space-y-2">
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
                   stage.active
@@ -107,7 +107,7 @@ export function MotoLinkTrackingWidget({
       </div>
 
       {/* Courier & Vehicle Info Box */}
-      <div className="bg-muted/40 border border-border/80 rounded-lg p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="bg-muted/40 border border-border/80 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
             {courierName.charAt(0)}
@@ -126,14 +126,14 @@ export function MotoLinkTrackingWidget({
             href={waLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium transition-colors cursor-pointer"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium transition-colors cursor-pointer"
           >
             <WhatsappLogo className="w-4 h-4" />
             WhatsApp
           </a>
           <a
             href={`tel:${courierPhone.replace(/\D/g, "")}`}
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-lg border border-border bg-background hover:bg-muted text-foreground text-xs font-medium transition-colors cursor-pointer"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg border border-border bg-background hover:bg-muted text-foreground text-xs font-medium transition-colors cursor-pointer"
           >
             <Phone className="w-4 h-4" />
             Ligar

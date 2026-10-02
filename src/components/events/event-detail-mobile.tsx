@@ -127,7 +127,7 @@ export function EventDetailMobile({
         <div className="flex flex-wrap gap-2">
           <Badge
             variant="secondary"
-            className="px-2.5 py-1 text-xs font-semibold rounded-lg gap-1.5"
+            className="px-3 py-1 text-xs font-semibold rounded-lg gap-2"
           >
             <CalendarBlank size={13} weight="bold" />
             {new Date(event.event_date).toLocaleString("pt-BR", {
@@ -138,10 +138,10 @@ export function EventDetailMobile({
           {(event.venue || event.location || event.location_name) && (
             <Badge
               variant="outline"
-              className="px-2.5 py-1 text-xs font-semibold rounded-lg gap-1.5"
+              className="px-3 py-1 text-xs font-semibold rounded-lg gap-2"
             >
               <MapPin size={13} weight="bold" className="text-foreground" />
-              <span className="line-clamp-1 max-w-[200px]">
+              <span className="line-clamp-1 max-w-52">
                 {event.venue || event.location || event.location_name}
               </span>
             </Badge>
@@ -167,7 +167,7 @@ export function EventDetailMobile({
         )}
 
         {/* ── 4. RSVP: Confirmação de Presença ── */}
-        <div className="p-4 rounded-xl border border-border/70 bg-card space-y-3">
+        <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-border/40">
             <div className="flex items-center gap-2">
               <Users size={16} weight="bold" className="text-primary" />
@@ -183,7 +183,7 @@ export function EventDetailMobile({
               type="button"
               onClick={() => handleToggleRsvp("going")}
               disabled={isSubmittingRsvp}
-              className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all min-h-[54px] active:scale-95 ${
+              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[54px] active:scale-95 ${
                 userRsvp === "going"
                   ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
@@ -202,7 +202,7 @@ export function EventDetailMobile({
               type="button"
               onClick={() => handleToggleRsvp("interested")}
               disabled={isSubmittingRsvp}
-              className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all min-h-[54px] active:scale-95 ${
+              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[54px] active:scale-95 ${
                 userRsvp === "interested"
                   ? "bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400 font-bold shadow-sm"
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
@@ -221,7 +221,7 @@ export function EventDetailMobile({
               type="button"
               onClick={() => handleToggleRsvp("not_going")}
               disabled={isSubmittingRsvp}
-              className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all min-h-[54px] active:scale-95 ${
+              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[54px] active:scale-95 ${
                 userRsvp === "not_going"
                   ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold shadow-sm"
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
@@ -253,7 +253,7 @@ export function EventDetailMobile({
           </div>
 
           {(event.is_external || event.is_external_ticket) && event.external_ticket_url ? (
-            <div className="p-4 rounded-xl border border-border/70 bg-card space-y-3">
+            <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Os ingressos para este evento são comercializados diretamente pela plataforma oficial{" "}
                 <span className="font-semibold text-foreground capitalize">{event.external_source || "do organizador"}</span>.
@@ -262,7 +262,7 @@ export function EventDetailMobile({
                 href={event.external_ticket_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors"
               >
                 <Ticket size={16} weight="bold" />
                 Comprar no Site Oficial
@@ -270,13 +270,13 @@ export function EventDetailMobile({
               </a>
             </div>
           ) : activeLots.length === 0 ? (
-            <div className="p-4 text-center rounded-xl bg-muted/30 border border-border/40">
+            <div className="p-4 text-center rounded-lg bg-muted/30 border border-border/40">
               <p className="text-xs font-medium text-muted-foreground">
                 Nenhum lote de ingressos disponível no momento.
               </p>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {activeLots.map((lot: any) => {
                 const available = lot.capacity - (lot.sold_count + lot.reserved_count);
                 const isSoldOut = available <= 0;
@@ -284,16 +284,16 @@ export function EventDetailMobile({
                 return (
                   <div
                     key={lot.id}
-                    className={`p-3.5 rounded-xl border transition-all ${
+                    className={`p-4 rounded-lg border transition-all ${
                       isSoldOut
                         ? "border-border/40 bg-muted/20 opacity-70"
                         : "border-border/70 bg-card"
                     }`}
                   >
-                    <div className="flex justify-between items-start mb-2.5 gap-2">
+                    <div className="flex justify-between items-start mb-3 gap-2">
                       <div>
                         <h3 className="font-bold text-sm text-foreground">{lot.name}</h3>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                        <p className="text-[11px] text-muted-foreground mt-1">
                           {isSoldOut ? "Esgotado" : `Restam ${available} ingressos`}
                         </p>
                       </div>
@@ -305,7 +305,7 @@ export function EventDetailMobile({
                     </div>
 
                     <Button
-                      className="w-full font-bold h-10 text-xs rounded-xl"
+                      className="w-full font-bold h-10 text-xs rounded-lg"
                       variant={isSoldOut ? "secondary" : "default"}
                       disabled={isSoldOut}
                       onClick={() => handleBuyTicket(lot)}
@@ -331,7 +331,7 @@ export function EventDetailMobile({
 
         {/* ── 7. Cobertura Jornalística Oficial Vinculada ── */}
         {linkedNews && (
-          <div className="pt-3 border-t border-border/40 space-y-2.5">
+          <div className="pt-3 border-t border-border/40 space-y-3">
             <div className="flex items-center gap-2">
               <Newspaper size={16} weight="bold" className="text-primary" />
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -342,7 +342,7 @@ export function EventDetailMobile({
             <Link
               to="/noticias/$slug"
               params={{ slug: linkedNews.slug }}
-              className="block group p-3.5 rounded-xl border border-border/70 bg-card active:scale-[0.99] transition-all"
+              className="block group p-4 rounded-lg border border-border/70 bg-card active:scale-[0.99] transition-all"
             >
               <div className="flex gap-3 items-center">
                 {linkedNews.cover_media_url && (
@@ -408,7 +408,7 @@ export function EventDetailMobile({
             href={event.external_ticket_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-1.5 h-12 px-5 rounded-xl bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors shadow-sm shrink-0"
+            className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors shadow-sm shrink-0"
           >
             <span>Comprar</span>
             <ArrowSquareOut size={14} weight="bold" />
@@ -416,18 +416,18 @@ export function EventDetailMobile({
         ) : activeLots.length > 0 ? (
           <Button
             onClick={scrollToTickets}
-            className="h-12 px-5 rounded-xl font-bold text-xs shadow-sm shrink-0"
+            className="h-12 px-5 rounded-lg font-bold text-xs shadow-sm shrink-0"
           >
-            <Ticket size={16} weight="bold" className="mr-1.5" />
+            <Ticket size={16} weight="bold" className="mr-2" />
             <span>Ver Ingressos</span>
           </Button>
         ) : (
           <Button
             onClick={() => handleToggleRsvp("going")}
-            className="h-12 px-5 rounded-xl font-bold text-xs shadow-sm shrink-0"
+            className="h-12 px-5 rounded-lg font-bold text-xs shadow-sm shrink-0"
             variant={userRsvp === "going" ? "secondary" : "default"}
           >
-            <CheckCircle size={16} weight="bold" className="mr-1.5" />
+            <CheckCircle size={16} weight="bold" className="mr-2" />
             <span>{userRsvp === "going" ? "Confirmado" : "Confirmar Presença"}</span>
           </Button>
         )}

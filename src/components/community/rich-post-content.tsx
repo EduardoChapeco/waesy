@@ -43,7 +43,7 @@ export function RichPostContent({
           return (
             <span
               key={index}
-              className="relative inline-block px-1.5 py-0.5 mx-0.5 text-neutral-950 dark:text-neutral-950 font-bold leading-tight select-text rounded-xs"
+              className="relative inline-block px-2 py-1 mx-1 text-neutral-950 dark:text-neutral-950 font-bold leading-tight select-text rounded-xs"
             >
               <span
                 className="absolute inset-x-0 bottom-0.5 top-0.5 bg-amber-300/90 dark:bg-amber-300/95 -rotate-1 rounded-xs -z-10 shadow-2xs transition-transform"

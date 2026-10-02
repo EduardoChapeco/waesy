@@ -249,7 +249,7 @@ function CustomerDetailPage() {
               asChild
               variant="outline"
               size="sm"
-              className="gap-1.5 font-bold text-xs min-h-11"
+              className="gap-2 font-bold text-xs min-h-11"
             >
               <Link
                 to="/workspace/turismo/cotacoes"
@@ -269,7 +269,7 @@ function CustomerDetailPage() {
               size="sm"
               onClick={handleSharePortalLink}
               title="Compartilhar Central do Passageiro"
-              className="gap-1.5 font-bold text-xs min-h-11 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+              className="gap-2 font-bold text-xs min-h-11 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
             >
               <Smartphone className="size-3.5" />
               Central do Passageiro
@@ -278,7 +278,7 @@ function CustomerDetailPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsTravelerModalOpen(true)}
-              className="gap-1.5 font-bold text-xs min-h-11 cursor-pointer"
+              className="gap-2 font-bold text-xs min-h-11 cursor-pointer"
             >
               <Luggage className="size-3.5 text-primary" />
               Preferências de Viagem
@@ -287,7 +287,7 @@ function CustomerDetailPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsCreditModalOpen(true)}
-              className="gap-1.5 font-bold text-xs min-h-11"
+              className="gap-2 font-bold text-xs min-h-11"
             >
               <Gift className="size-3.5" />
               Conceder Crédito
@@ -295,7 +295,7 @@ function CustomerDetailPage() {
             <Button
               size="sm"
               onClick={() => setIsClinicalModalOpen(true)}
-              className="gap-1.5 font-bold text-xs min-h-11"
+              className="gap-2 font-bold text-xs min-h-11"
             >
               <HeartPulse className="size-3.5" />
               Novo Atendimento
@@ -307,16 +307,16 @@ function CustomerDetailPage() {
       {/* ── 1. Topo da Ficha: Perfil & KPIs 360° ── */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Card de Identificação */}
-        <div className="md:col-span-4 bg-card rounded-2xl border border-border/60 p-5 space-y-4">
-          <div className="flex items-center gap-3.5">
-            <div className="size-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground overflow-hidden font-bold text-lg shrink-0">
+        <div className="md:col-span-4 bg-card rounded-lg border border-border/60 p-5 space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="size-14 rounded-lg bg-muted flex items-center justify-center text-muted-foreground overflow-hidden font-bold text-lg shrink-0">
               {data.profile.avatarUrl ? (
                 <img src={data.profile.avatarUrl} alt={data.profile.name} className="size-full object-cover" />
               ) : (
                 <User className="size-7" />
               )}
             </div>
-            <div className="min-w-0 space-y-0.5">
+            <div className="min-w-0 space-y-1">
               <h2 className="text-base font-bold text-foreground truncate">{data.profile.name}</h2>
               {data.profile.taxId ? (
                 <span className="text-xs font-mono text-muted-foreground block">
@@ -365,24 +365,24 @@ function CustomerDetailPage() {
 
         {/* Grid de KPIs 360° */}
         <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
+          <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">LTV Total</span>
             <div className="text-lg sm:text-xl font-black text-foreground">{formatMoney(data.totalLtvCents || 0)}</div>
             <span className="text-xs text-muted-foreground font-mono">{data.totalOrdersCount || 0} compras</span>
           </div>
-          <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
+          <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Ticket Médio</span>
             <div className="text-lg sm:text-xl font-black text-foreground">{formatMoney(data.averageTicketCents || 0)}</div>
             <span className="text-xs text-muted-foreground">Por compra</span>
           </div>
-          <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
+          <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Créditos</span>
             <div className="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400">
               {formatMoney(data.totalCreditCents || 0)}
             </div>
             <span className="text-xs text-muted-foreground">Disponível</span>
           </div>
-          <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
+          <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Recência</span>
             <div className="text-lg sm:text-xl font-black text-foreground">{data.daysSinceLastOrder || 0}d</div>
             <span className="text-xs text-muted-foreground">
@@ -394,47 +394,47 @@ function CustomerDetailPage() {
 
       {/* ── 2. Abas de Detalhamento 360° ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex items-center justify-start h-11 w-full gap-1.5 mb-6 p-1 bg-muted/50 rounded-2xl overflow-x-auto no-scrollbar whitespace-nowrap">
-          <TabsTrigger value="timeline" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
+        <TabsList className="flex items-center justify-start h-11 w-full gap-2 mb-6 p-1 bg-muted/50 rounded-lg overflow-x-auto no-scrollbar whitespace-nowrap">
+          <TabsTrigger value="timeline" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <History className="size-3.5" />
             <span>Timeline</span>
           </TabsTrigger>
-          <TabsTrigger value="viagens" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
+          <TabsTrigger value="viagens" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Plane className="size-3.5 text-primary" />
             <span>Viagens & Propostas ({(data.confirmedTrips?.length || 0) + (data.commercialLeads?.length || 0) + (data.proposals?.length || 0) + (data.contracts?.length || 0)})</span>
           </TabsTrigger>
-          <TabsTrigger value="preferencias" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
+          <TabsTrigger value="preferencias" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Compass className="size-3.5 text-sky-500" />
             <span>Preferências</span>
           </TabsTrigger>
-          <TabsTrigger value="passes" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
+          <TabsTrigger value="passes" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <QrCode className="size-3.5 text-primary" />
             <span>Documentos Digitais ({data.walletPasses?.length || 0})</span>
           </TabsTrigger>
-          <TabsTrigger value="acompanhantes" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
+          <TabsTrigger value="acompanhantes" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Users2 className="size-3.5 text-violet-500" />
             <span>Família / Pax ({allPax.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="documents" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
+          <TabsTrigger value="documents" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <FileText className="size-3.5 text-primary" />
             <span>Docs ({data.documents?.length || 0})</span>
             {data.documents?.some((d: any) => d.expiryStatus === "expired") && (
               <span className="size-2 rounded-full bg-rose-500 animate-pulse" />
             )}
           </TabsTrigger>
-          <TabsTrigger value="addresses" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
+          <TabsTrigger value="addresses" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <MapPin className="size-3.5" />
             <span>Endereços ({data.addresses?.length || 0})</span>
           </TabsTrigger>
-          <TabsTrigger value="credits" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
+          <TabsTrigger value="credits" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Gift className="size-3.5" />
             <span>Créditos</span>
           </TabsTrigger>
-          <TabsTrigger value="clinical" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
+          <TabsTrigger value="clinical" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <HeartPulse className="size-3.5 text-rose-500" />
             <span>Prontuário ({data.clinicalRecords?.length || 0})</span>
           </TabsTrigger>
-          <TabsTrigger value="crm" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
+          <TabsTrigger value="crm" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Tag className="size-3.5" />
             <span>Notas e Tags</span>
           </TabsTrigger>
@@ -452,10 +452,10 @@ function CustomerDetailPage() {
               {(data.timeline || []).map((event: any) => (
                 <div
                   key={event.id}
-                  className="p-4 rounded-2xl bg-card border border-border/60 flex items-center justify-between gap-4"
+                  className="p-4 rounded-lg bg-card border border-border/60 flex items-center justify-between gap-4"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="size-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                    <div className="size-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
                       {event.type === "order" ? (
                         <CreditCard className="size-5 text-primary" />
                       ) : event.type === "trip" ? (
@@ -502,7 +502,7 @@ function CustomerDetailPage() {
               {/* Viagens Confirmadas em Operação */}
               {(data.confirmedTrips?.length || 0) > 0 && (
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Luggage className="size-3.5 text-primary" />
                     Viagens Confirmadas ({data.confirmedTrips.length})
                   </h3>
@@ -510,11 +510,11 @@ function CustomerDetailPage() {
                     {data.confirmedTrips.map((trip: any) => (
                       <div
                         key={trip.id}
-                        className="p-4 rounded-2xl bg-card border border-border/60 hover:border-border transition-colors flex flex-col justify-between gap-3"
+                        className="p-4 rounded-lg bg-card border border-border/60 hover:border-border transition-colors flex flex-col justify-between gap-3"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                               <Plane className="size-5" />
                             </div>
                             <div className="min-w-0">
@@ -531,7 +531,7 @@ function CustomerDetailPage() {
                           </Badge>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 text-xs bg-muted/30 p-2.5 rounded-xl">
+                        <div className="grid grid-cols-2 gap-2 text-xs bg-muted/30 p-3 rounded-lg">
                           <div>
                             <span className="text-muted-foreground block text-xs">Período</span>
                             <span className="font-semibold text-foreground">
@@ -556,7 +556,7 @@ function CustomerDetailPage() {
                         </div>
 
                         <div className="flex items-center justify-end gap-2 pt-1">
-                          <Button asChild size="sm" variant="outline" className="text-xs gap-1.5 h-8 font-semibold">
+                          <Button asChild size="sm" variant="outline" className="text-xs gap-2 h-8 font-semibold">
                             <Link to="/workspace/turismo/viagens/$id" params={{ id: trip.id }}>
                               <span>Abrir Roteiro Completo</span>
                               <ChevronRight className="size-3.5" />
@@ -572,7 +572,7 @@ function CustomerDetailPage() {
               {/* Propostas Comerciais Digitais */}
               {(data.proposals || []).length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 pt-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 pt-2">
                     <FileText className="size-3.5 text-primary" />
                     Propostas Comerciais Digitais ({data.proposals.length})
                   </h3>
@@ -582,11 +582,11 @@ function CustomerDetailPage() {
                       return (
                         <div
                           key={prop.id}
-                          className="p-4 rounded-2xl bg-card border border-border/60 hover:border-border transition-colors flex flex-col justify-between gap-3"
+                          className="p-4 rounded-lg bg-card border border-border/60 hover:border-border transition-colors flex flex-col justify-between gap-3"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-3">
-                              <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                              <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                                 <FileText className="size-5" />
                               </div>
                               <div className="min-w-0">
@@ -604,7 +604,7 @@ function CustomerDetailPage() {
                           </div>
 
                           {totalCents > 0 && (
-                            <div className="bg-muted/30 p-2.5 rounded-xl flex items-center justify-between text-xs">
+                            <div className="bg-muted/30 p-3 rounded-lg flex items-center justify-between text-xs">
                               <span className="text-muted-foreground text-xs">Total da Proposta</span>
                               <span className="font-mono font-bold text-foreground">
                                 {formatMoney(totalCents)}
@@ -621,7 +621,7 @@ function CustomerDetailPage() {
                                 </a>
                               </Button>
                             )}
-                            <Button asChild size="sm" variant="outline" className="text-xs gap-1.5 h-8 font-semibold">
+                            <Button asChild size="sm" variant="outline" className="text-xs gap-2 h-8 font-semibold">
                               <Link to="/workspace/turismo/propostas/$id" params={{ id: prop.id }}>
                                 <span>Gerenciar</span>
                                 <ChevronRight className="size-3.5" />
@@ -638,7 +638,7 @@ function CustomerDetailPage() {
               {/* Contratos Digitais */}
               {(data.contracts || []).length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 pt-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 pt-2">
                     <ShieldCheck className="size-3.5 text-emerald-500" />
                     Contratos Digitais Emitidos ({data.contracts.length})
                   </h3>
@@ -648,11 +648,11 @@ function CustomerDetailPage() {
                       return (
                         <div
                           key={contract.id}
-                          className="p-4 rounded-2xl bg-card border border-border/60 hover:border-border transition-colors flex flex-col justify-between gap-3"
+                          className="p-4 rounded-lg bg-card border border-border/60 hover:border-border transition-colors flex flex-col justify-between gap-3"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-3">
-                              <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                              <div className="size-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
                                 <ShieldCheck className="size-5" />
                               </div>
                               <div className="min-w-0">
@@ -670,7 +670,7 @@ function CustomerDetailPage() {
                           </div>
 
                           {totalCents > 0 && (
-                            <div className="bg-muted/30 p-2.5 rounded-xl flex items-center justify-between text-xs">
+                            <div className="bg-muted/30 p-3 rounded-lg flex items-center justify-between text-xs">
                               <span className="text-muted-foreground text-xs">Valor Contratual</span>
                               <span className="font-mono font-bold text-foreground">
                                 {formatMoney(totalCents)}
@@ -687,7 +687,7 @@ function CustomerDetailPage() {
                                 </a>
                               </Button>
                             )}
-                            <Button asChild size="sm" variant="outline" className="text-xs gap-1.5 h-8 font-semibold">
+                            <Button asChild size="sm" variant="outline" className="text-xs gap-2 h-8 font-semibold">
                               <Link to="/workspace/turismo/contratos">
                                 <span>Painel</span>
                                 <ChevronRight className="size-3.5" />
@@ -704,7 +704,7 @@ function CustomerDetailPage() {
               {/* Propostas e Oportunidades do CRM Comercial */}
               {(data.commercialLeads || []).length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 pt-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 pt-2">
                     <TrendingUp className="size-3.5 text-emerald-500" />
                     Propostas & Oportunidades no Funil ({data.commercialLeads.length})
                   </h3>
@@ -712,18 +712,18 @@ function CustomerDetailPage() {
                     {data.commercialLeads.map((lead: any) => (
                       <div
                         key={lead.id}
-                        className="p-4 rounded-2xl bg-card border border-border/60 flex items-center justify-between gap-4"
+                        className="p-4 rounded-lg bg-card border border-border/60 flex items-center justify-between gap-4"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                             <Plane className="size-5 text-primary" />
                           </div>
                           <div className="min-w-0">
                             <h4 className="font-bold text-sm text-foreground truncate">
                               {lead.title || lead.full_name || "Oportunidade"}
                             </h4>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <Badge variant="outline" className="text-xs px-1.5 py-0">
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs px-2 py-0">
                                 {lead.status}
                               </Badge>
                               {lead.estimated_value_cents > 0 && (
@@ -761,7 +761,7 @@ function CustomerDetailPage() {
               onClick={() => setIsTravelerModalOpen(true)}
               variant="outline"
               size="sm"
-              className="text-xs gap-1.5 min-h-[36px] font-semibold"
+              className="text-xs gap-2 min-h-9 font-semibold"
             >
               <Compass className="size-3.5 text-primary" />
               Editar Preferências
@@ -770,7 +770,7 @@ function CustomerDetailPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* 1. Voo & Cabine */}
-            <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-3">
+            <div className="bg-card rounded-lg border border-border/60 p-4 space-y-3">
               <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                 <Armchair className="size-4 text-sky-500" />
                 <span>Assento e Cabine</span>
@@ -790,7 +790,7 @@ function CustomerDetailPage() {
             </div>
 
             {/* 2. Documentos Internacionais */}
-            <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-3">
+            <div className="bg-card rounded-lg border border-border/60 p-4 space-y-3">
               <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                 <FileText className="size-4 text-primary" />
                 <span>Passaporte e Vistos</span>
@@ -818,14 +818,14 @@ function CustomerDetailPage() {
             </div>
 
             {/* 3. Programas de Fidelidade */}
-            <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-3">
+            <div className="bg-card rounded-lg border border-border/60 p-4 space-y-3">
               <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                 <Award className="size-4 text-amber-500" />
                 <span>Programas e Milhas</span>
               </div>
               <div className="space-y-2 text-xs">
                 {airlineMiles ? (
-                  <div className="p-2.5 rounded-xl bg-muted/40 font-mono text-xs space-y-1">
+                  <div className="p-3 rounded-lg bg-muted/40 font-mono text-xs space-y-1">
                     {airlineMiles.split(",").map((m: string, idx: number) => (
                       <div key={idx} className="flex items-center justify-between">
                         <span>{m.trim()}</span>
@@ -840,7 +840,7 @@ function CustomerDetailPage() {
             </div>
 
             {/* 4. Acessibilidade & Saúde em Viagem */}
-            <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-3 md:col-span-2 lg:col-span-3">
+            <div className="bg-card rounded-lg border border-border/60 p-4 space-y-3 md:col-span-2 lg:col-span-3">
               <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                 <HeartPulse className="size-4 text-rose-500" />
                 <span>Acessibilidade, PCD e Cuidados Especiais</span>
@@ -865,8 +865,8 @@ function CustomerDetailPage() {
         {/* ── Aba: Documentos Digitais ── */}
         <TabsContent value="passes" className="space-y-4">
           {(data.walletPasses?.length || 0) === 0 ? (
-            <div className="bg-card rounded-2xl border border-border/60 p-8 text-center space-y-3">
-              <div className="size-12 rounded-2xl bg-muted mx-auto flex items-center justify-center">
+            <div className="bg-card rounded-lg border border-border/60 p-8 text-center space-y-3">
+              <div className="size-12 rounded-lg bg-muted mx-auto flex items-center justify-center">
                 <QrCode className="size-6 text-muted-foreground" />
               </div>
               <h3 className="text-sm font-bold text-foreground">Nenhum documento digital ativo</h3>
@@ -879,7 +879,7 @@ function CustomerDetailPage() {
               {data.walletPasses.map((pass: any) => (
                 <div
                   key={pass.id}
-                  className="rounded-2xl border border-border/60 bg-gradient-to-br from-card to-muted/30 p-5 space-y-3 relative overflow-hidden"
+                  className="rounded-lg border border-border/60 bg-gradient-to-br from-card to-muted/30 p-5 space-y-3 relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between">
                     <Badge variant="secondary" className="text-xs uppercase font-bold">
@@ -893,7 +893,7 @@ function CustomerDetailPage() {
                     <h4 className="font-bold text-sm text-foreground">{pass.title || "Passe Digital"}</h4>
                     <p className="text-xs text-muted-foreground">{pass.description || "Documento Digital"}</p>
                   </div>
-                  <div className="p-3 bg-card/80 border border-border/40 rounded-xl flex items-center justify-between font-mono text-xs">
+                  <div className="p-3 bg-card/80 border border-border/40 rounded-lg flex items-center justify-between font-mono text-xs">
                     <span className="text-muted-foreground">Serial:</span>
                     <span className="font-bold text-foreground truncate max-w-[120px]">{pass.serial_number || pass.id.slice(0, 8)}</span>
                   </div>
@@ -916,20 +916,20 @@ function CustomerDetailPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {allPax.map((pax: any, idx: number) => (
-                <div key={idx} className="p-4 rounded-2xl bg-card border border-border/60 space-y-2">
+                <div key={idx} className="p-4 rounded-lg bg-card border border-border/60 space-y-2">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                       <Users2 className="size-4 text-primary" />
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-bold text-sm text-foreground truncate">{pax.full_name}</h4>
-                      <Badge variant="secondary" className="text-xs uppercase px-1.5">
+                      <Badge variant="secondary" className="text-xs uppercase px-2">
                         {pax.relationship || "Outro"}
                       </Badge>
                     </div>
                   </div>
                   {(pax.document || pax.birth_date || pax.phone) && (
-                    <div className="space-y-0.5 text-xs text-muted-foreground border-t border-border/40 pt-2">
+                    <div className="space-y-1 text-xs text-muted-foreground border-t border-border/40 pt-2">
                       {pax.birth_date && (
                         <p>Nasc: {new Date(pax.birth_date).toLocaleDateString("pt-BR")}</p>
                       )}
@@ -959,9 +959,9 @@ function CustomerDetailPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {(data.addresses || []).map((addr: any) => (
-                <div key={addr.id} className="p-4 rounded-2xl bg-card border border-border/60 space-y-2">
+                <div key={addr.id} className="p-4 rounded-lg bg-card border border-border/60 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                    <span className="font-bold text-sm text-foreground flex items-center gap-2">
                       <MapPin className="size-4 text-primary" />
                       {addr.street}{addr.number ? `, ${addr.number}` : ""}
                     </span>
@@ -993,7 +993,7 @@ function CustomerDetailPage() {
               {(data.credits || []).map((cr: any, idx: number) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl bg-card border border-border/60 flex items-center justify-between"
+                  className="p-4 rounded-lg bg-card border border-border/60 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <Gift className="size-5 text-emerald-500 shrink-0" />
@@ -1025,7 +1025,7 @@ function CustomerDetailPage() {
           ) : (
             <div className="space-y-3">
               {(data.clinicalRecords || []).map((rec: any) => (
-                <div key={rec.id} className="p-5 rounded-2xl bg-card border border-border/60 space-y-3">
+                <div key={rec.id} className="p-5 rounded-lg bg-card border border-border/60 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <HeartPulse className="size-4 text-rose-500" />
@@ -1041,7 +1041,7 @@ function CustomerDetailPage() {
                   </div>
                   <p className="text-xs text-foreground whitespace-pre-line leading-relaxed">{rec.notes}</p>
                   {rec.allergies && (
-                    <div className="p-2.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2">
+                    <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2">
                       <AlertTriangle className="size-3.5" />
                       <span>Alergias / Contraindicações: {rec.allergies}</span>
                     </div>
@@ -1059,8 +1059,8 @@ function CustomerDetailPage() {
 
         {/* ── Aba 8: Notas & Tags de Segmentação ── */}
         <TabsContent value="crm" className="space-y-4">
-          <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
-            <div className="space-y-1.5">
+          <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
+            <div className="space-y-2">
               <Label className="text-xs">Tags de Segmentação (separadas por vírgula)</Label>
               <Input
                 value={tags}
@@ -1069,7 +1069,7 @@ function CustomerDetailPage() {
                 className="text-xs"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs">Observações Internas Confidenciais</Label>
               <Textarea
                 value={notes}
@@ -1079,7 +1079,7 @@ function CustomerDetailPage() {
                 className="text-xs"
               />
             </div>
-            <Button onClick={handleSaveCrm} disabled={isSavingCrm} className="gap-1.5 font-bold text-xs min-h-11">
+            <Button onClick={handleSaveCrm} disabled={isSavingCrm} className="gap-2 font-bold text-xs min-h-11">
               <Save className="size-3.5" />
               {isSavingCrm ? "Salvando..." : "Salvar Ficha"}
             </Button>
@@ -1098,7 +1098,7 @@ function CustomerDetailPage() {
               </SheetDescription>
             </SheetHeader>
             <form id="grant-credit-form" onSubmit={handleGrantCredit} className="space-y-4 py-2">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Valor do Crédito (R$)</Label>
                 <Input
                   type="number"
@@ -1110,7 +1110,7 @@ function CustomerDetailPage() {
                   required
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Motivo / Descrição</Label>
                 <Input
                   value={creditDescription}
@@ -1147,7 +1147,7 @@ function CustomerDetailPage() {
               </SheetDescription>
             </SheetHeader>
             <form id="clinical-form" onSubmit={handleSaveClinical} className="space-y-4 py-2">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Procedimento / Serviço Realizado</Label>
                 <Input
                   value={serviceTitle}
@@ -1157,7 +1157,7 @@ function CustomerDetailPage() {
                   required
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Alergias / Restrições (se houver)</Label>
                 <Input
                   value={allergies}
@@ -1166,7 +1166,7 @@ function CustomerDetailPage() {
                   className="text-xs text-destructive"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Observações do Atendimento e Evolução</Label>
                 <Textarea
                   value={clinicalNotes}
@@ -1211,17 +1211,17 @@ function CustomerDetailPage() {
             <form id="traveler-pref-form" onSubmit={handleSaveTraveler} className="space-y-6 py-2">
               {/* Seção 1: Assento e Alimentação */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Armchair className="size-3.5 text-sky-500" />
                   Assento e Refeições a Bordo
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">Assento Preferido</Label>
                     <select
                       value={seatPref}
                       onChange={(e) => setSeatPref(e.target.value)}
-                      className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs focus:ring-2 focus:ring-primary/20 outline-none"
+                      className="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs focus:ring-2 focus:ring-primary/20 outline-none"
                     >
                       <option value="window">Janela (Window)</option>
                       <option value="aisle">Corredor (Aisle)</option>
@@ -1230,7 +1230,7 @@ function CustomerDetailPage() {
                       <option value="any">Sem preferência</option>
                     </select>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">Refeição Especial / Dieta</Label>
                     <Input
                       value={mealPref}
@@ -1244,12 +1244,12 @@ function CustomerDetailPage() {
 
               {/* Seção 2: Documentos Internacionais */}
               <div className="space-y-3 border-t border-border/40 pt-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <FileText className="size-3.5 text-primary" />
                   Documentos de Viagem Internacional
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">Número do Passaporte</Label>
                     <Input
                       value={passportNum}
@@ -1258,7 +1258,7 @@ function CustomerDetailPage() {
                       className="text-xs font-mono font-bold"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">País Emissor</Label>
                     <Input
                       value={passportCountry}
@@ -1267,7 +1267,7 @@ function CustomerDetailPage() {
                       className="text-xs"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">Data de Validade</Label>
                     <Input
                       type="date"
@@ -1277,7 +1277,7 @@ function CustomerDetailPage() {
                     />
                   </div>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs">Vistos Vigentes (separados por vírgula)</Label>
                   <Input
                     value={visasInput}
@@ -1290,11 +1290,11 @@ function CustomerDetailPage() {
 
               {/* Seção 3: Programas de Milhagem */}
               <div className="space-y-3 border-t border-border/40 pt-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Award className="size-3.5 text-amber-500" />
                   Programas de Fidelidade e Milhas
                 </h4>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs">Contas de Milhagem (formato: Cia: Número, separadas por vírgula)</Label>
                   <Input
                     value={airlineMiles}
@@ -1307,12 +1307,12 @@ function CustomerDetailPage() {
 
               {/* Seção 4: Acessibilidade e Restrições de Saúde */}
               <div className="space-y-3 border-t border-border/40 pt-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <HeartPulse className="size-3.5 text-rose-500" />
                   Acessibilidade e Cuidados de Saúde
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className="flex items-center gap-2 p-3 rounded-xl border border-border/60 bg-muted/20 cursor-pointer hover:bg-muted/40 transition-colors">
+                  <label className="flex items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20 cursor-pointer hover:bg-muted/40 transition-colors">
                     <input
                       type="checkbox"
                       checked={isPcd}
@@ -1325,7 +1325,7 @@ function CustomerDetailPage() {
                     </div>
                   </label>
 
-                  <label className="flex items-center gap-2 p-3 rounded-xl border border-border/60 bg-muted/20 cursor-pointer hover:bg-muted/40 transition-colors">
+                  <label className="flex items-center gap-2 p-3 rounded-lg border border-border/60 bg-muted/20 cursor-pointer hover:bg-muted/40 transition-colors">
                     <input
                       type="checkbox"
                       checked={isWheelchair}
@@ -1339,7 +1339,7 @@ function CustomerDetailPage() {
                   </label>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs">Alergias Alimentares / Restrições Médicas Severas</Label>
                   <Input
                     value={dietaryAllergies}
@@ -1360,7 +1360,7 @@ function CustomerDetailPage() {
               type="submit"
               form="traveler-pref-form"
               disabled={isSavingTraveler}
-              className="text-xs font-bold min-h-[40px] px-6"
+              className="text-xs font-bold min-h-10 px-6"
             >
               {isSavingTraveler ? "Salvando..." : "Salvar Preferências"}
             </Button>

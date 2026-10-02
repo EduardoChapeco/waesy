@@ -267,7 +267,7 @@ export default function WorkspaceTeamPage() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-xl font-semibold text-xs gap-1.5"
+ className="h-9 rounded-lg font-semibold text-xs gap-2"
  >
  <Link to="/workspace/financeiro/funcionarios">
  <Wallet className="size-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -278,7 +278,7 @@ export default function WorkspaceTeamPage() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-xl font-semibold text-xs gap-1.5"
+ className="h-9 rounded-lg font-semibold text-xs gap-2"
  >
  <Link to="/workspace/empregos/candidatos">
  <Briefcase className="size-3.5 text-primary" />
@@ -289,7 +289,7 @@ export default function WorkspaceTeamPage() {
  <Button
  onClick={() => setIsInviteOpen(true)}
  size="sm"
- className="h-9 rounded-xl font-bold text-xs gap-1.5 shadow-xs cursor-pointer bg-primary text-primary-foreground"
+ className="h-9 rounded-lg font-bold text-xs gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground"
  >
  <UserPlus className="size-3.5" />
  <span>Convidar</span>
@@ -313,7 +313,7 @@ export default function WorkspaceTeamPage() {
  setIsContractorOpen(true);
  }}
  size="sm"
- className="h-9 rounded-xl font-bold text-xs gap-1.5 shadow-xs cursor-pointer bg-primary text-primary-foreground"
+ className="h-9 rounded-lg font-bold text-xs gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground"
  >
  <Plus className="size-3.5" />
  <span>Novo Prestador</span>
@@ -322,7 +322,7 @@ export default function WorkspaceTeamPage() {
  <Button
  onClick={() => setIsJobOpen(true)}
  size="sm"
- className="h-9 rounded-xl font-bold text-xs gap-1.5 shadow-xs cursor-pointer bg-primary text-primary-foreground"
+ className="h-9 rounded-lg font-bold text-xs gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground"
  >
  <Plus className="size-3.5" />
  <span>Publicar Vaga</span>
@@ -334,16 +334,16 @@ export default function WorkspaceTeamPage() {
 
  {/* ── Tabs de Navegação ── */}
  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full">
- <TabsList className="grid grid-cols-3 max-w-lg h-11 p-1 bg-muted/60 rounded-2xl">
- <TabsTrigger value="members" className="rounded-xl font-bold text-xs gap-1.5">
+ <TabsList className="grid grid-cols-3 max-w-lg h-11 p-1 bg-muted/60 rounded-lg">
+ <TabsTrigger value="members" className="rounded-lg font-bold text-xs gap-2">
  <Users className="size-3.5" />
  <span>Colaboradores ({members.length})</span>
  </TabsTrigger>
- <TabsTrigger value="contractors" className="rounded-xl font-bold text-xs gap-1.5">
+ <TabsTrigger value="contractors" className="rounded-lg font-bold text-xs gap-2">
  <Briefcase className="size-3.5" />
  <span>Terceirizados ({contractorsList.length})</span>
  </TabsTrigger>
- <TabsTrigger value="jobs" className="rounded-xl font-bold text-xs gap-1.5">
+ <TabsTrigger value="jobs" className="rounded-lg font-bold text-xs gap-2">
  <Layers className="size-3.5" />
  <span>Vagas ({jobs.length})</span>
  </TabsTrigger>
@@ -351,14 +351,14 @@ export default function WorkspaceTeamPage() {
 
  <TabsContent value="members" className="space-y-6 pt-4">
  {/* ── Banner de Isolamento Multi-Tenant & Zero-Trust ── */}
- <div className="p-4 sm:p-5 rounded-2xl bg-muted/40 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center gap-3.5">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+ <div className="p-4 sm:p-5 rounded-lg bg-muted/40 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
  <ShieldCheck className="size-5" />
  </div>
- <div className="space-y-0.5 flex-1 min-w-0">
+ <div className="space-y-1 flex-1 min-w-0">
  <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
  <span>Privacidade e Isolamento Estrito de Workspace</span>
- <Badge variant="outline" className="text-xs px-1.5 py-0 border-primary/30 text-primary font-bold">
+ <Badge variant="outline" className="text-xs px-2 py-0 border-primary/30 text-primary font-bold">
  Zero-Trust RLS
  </Badge>
  </h3>
@@ -370,7 +370,7 @@ export default function WorkspaceTeamPage() {
  </div>
 
  {/* ── Tabela de Colaboradores ── */}
- <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-xs">
+ <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs">
  <div className="p-4 border-b border-border/60 flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold text-foreground">
  <span>Membros Ativos</span>
@@ -391,7 +391,7 @@ export default function WorkspaceTeamPage() {
 
  {members.length === 0 ? (
  <div className="p-12 text-center space-y-3">
- <div className="size-12 rounded-2xl bg-muted text-muted-foreground mx-auto flex items-center justify-center">
+ <div className="size-12 rounded-lg bg-muted text-muted-foreground mx-auto flex items-center justify-center">
  <Users className="size-6" />
  </div>
  <p className="text-sm font-semibold text-foreground">Nenhum colaborador encontrado</p>
@@ -415,21 +415,21 @@ export default function WorkspaceTeamPage() {
  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
  >
  <div className="flex items-center gap-3 min-w-0">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden border border-primary/20">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden border border-primary/20">
  {m.avatar_url ? (
  <img src={m.avatar_url} alt={m.full_name} className="size-full object-cover" />
  ) : (
  <span>{(m.full_name || "C").charAt(0).toUpperCase()}</span>
  )}
  </div>
- <div className="min-w-0 space-y-0.5">
+ <div className="min-w-0 space-y-1">
  <div className="flex items-center gap-2">
  <p className="text-xs font-bold text-foreground truncate">
  {m.full_name || "Colaborador sem nome"}
  </p>
  <Badge
  variant="outline"
- className={`text-xs px-2 py-0.5 font-bold rounded-lg border ${roleInfo.color}`}
+ className={`text-xs px-2 py-1 font-bold rounded-lg border ${roleInfo.color}`}
  >
  {roleInfo.label}
  </Badge>
@@ -447,10 +447,10 @@ export default function WorkspaceTeamPage() {
  defaultValue={m.role}
  onValueChange={(newVal) => handleRoleChange(m.id, newVal)}
  >
- <SelectTrigger className="h-8 text-xs font-semibold rounded-xl w-36 bg-background">
+ <SelectTrigger className="h-8 text-xs font-semibold rounded-lg w-36 bg-background">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  {Object.entries(ROLE_DEFINITIONS)
  .filter(([k]) => k !== "owner")
  .map(([key, item]) => (
@@ -465,7 +465,7 @@ export default function WorkspaceTeamPage() {
  variant="ghost"
  size="icon"
  onClick={() => setMemberToRemove(m)}
- className="size-8 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+ className="size-8 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
  title="Revogar Acesso"
  >
  <Trash2 className="size-4" />
@@ -487,7 +487,7 @@ export default function WorkspaceTeamPage() {
 
   {/* ── ABA 2: PRESTADORES TERCEIRIZADOS & FREELANCERS (PERSONA NEXUS PORT) ── */}
   <TabsContent value="contractors" className="space-y-6 pt-4">
-    <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-xs">
+    <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs">
       <div className="p-4 border-b border-border/60 flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-bold text-foreground">
           <span>Prestadores Terceirizados e Freelancers</span>
@@ -514,7 +514,7 @@ export default function WorkspaceTeamPage() {
             });
             setIsContractorOpen(true);
           }}
-          className="h-8 text-xs font-bold gap-1.5 rounded-xl cursor-pointer"
+          className="h-8 text-xs font-bold gap-2 rounded-lg cursor-pointer"
         >
           <Plus className="size-3.5" />
           <span>Cadastrar Parceiro</span>
@@ -523,7 +523,7 @@ export default function WorkspaceTeamPage() {
 
       {contractorsList.length === 0 ? (
         <div className="p-12 text-center space-y-3">
-          <div className="size-12 rounded-2xl bg-muted text-muted-foreground mx-auto flex items-center justify-center">
+          <div className="size-12 rounded-lg bg-muted text-muted-foreground mx-auto flex items-center justify-center">
             <Briefcase className="size-6" />
           </div>
           <p className="text-sm font-semibold text-foreground">Nenhum prestador terceirizado cadastrado</p>
@@ -547,7 +547,7 @@ export default function WorkspaceTeamPage() {
               });
               setIsContractorOpen(true);
             }}
-            className="rounded-xl text-xs font-bold h-9 bg-primary text-primary-foreground gap-1.5"
+            className="rounded-lg text-xs font-bold h-9 bg-primary text-primary-foreground gap-2"
           >
             <Plus className="size-3.5" />
             <span>Cadastrar Primeiro Terceirizado</span>
@@ -561,10 +561,10 @@ export default function WorkspaceTeamPage() {
               className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="size-10 rounded-xl bg-muted text-foreground flex items-center justify-center font-bold text-sm shrink-0 border border-border/40">
+                <div className="size-10 rounded-lg bg-muted text-foreground flex items-center justify-center font-bold text-sm shrink-0 border border-border/40">
                   <Briefcase className="size-5 text-muted-foreground" />
                 </div>
-                <div className="space-y-0.5 min-w-0">
+                <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-bold text-foreground leading-tight truncate">
                       {c.name}
@@ -588,7 +588,7 @@ export default function WorkspaceTeamPage() {
                     asChild
                     variant="outline"
                     size="sm"
-                    className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1"
+                    className="h-8 px-3 rounded-lg text-xs font-semibold gap-1"
                   >
                     <a
                       href={`https://wa.me/55${c.contact_phone.replace(/\D/g, "")}`}
@@ -619,7 +619,7 @@ export default function WorkspaceTeamPage() {
                     });
                     setIsContractorOpen(true);
                   }}
-                  className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+                  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
                 >
                   <Edit3 className="size-3.5" />
                 </Button>
@@ -636,7 +636,7 @@ export default function WorkspaceTeamPage() {
                       toast.error(err?.message || "Erro ao excluir prestador.");
                     }
                   }}
-                  className="size-8 p-0 rounded-xl text-destructive hover:bg-destructive/10"
+                  className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="size-3.5" />
                 </Button>
@@ -650,7 +650,7 @@ export default function WorkspaceTeamPage() {
 
   {/* ── ABA 3: VAGAS & RECRUTAMENTO (ATS) ── */}
   <TabsContent value="jobs" className="space-y-6 pt-4">
- <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-xs">
+ <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs">
  <div className="p-4 border-b border-border/60 flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold text-foreground">
  <span>Vagas de Emprego Publicadas</span>
@@ -671,7 +671,7 @@ export default function WorkspaceTeamPage() {
 
  {jobs.length === 0 ? (
  <div className="p-12 text-center space-y-3">
- <div className="size-12 rounded-2xl bg-muted text-muted-foreground mx-auto flex items-center justify-center">
+ <div className="size-12 rounded-lg bg-muted text-muted-foreground mx-auto flex items-center justify-center">
  <Briefcase className="size-6" />
  </div>
  <p className="text-sm font-semibold text-foreground">Nenhuma vaga aberta no momento</p>
@@ -680,7 +680,7 @@ export default function WorkspaceTeamPage() {
  </p>
  <Button
  onClick={() => setIsJobOpen(true)}
- className="rounded-xl text-xs font-bold h-9 bg-primary text-primary-foreground gap-1.5"
+ className="rounded-lg text-xs font-bold h-9 bg-primary text-primary-foreground gap-2"
  >
  <Plus className="size-3.5" />
  <span>Publicar Primeira Vaga</span>
@@ -694,10 +694,10 @@ export default function WorkspaceTeamPage() {
  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 transition-colors"
  >
  <div className="flex items-center gap-3 min-w-0">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
  <Briefcase className="size-5" />
  </div>
- <div className="min-w-0 space-y-0.5">
+ <div className="min-w-0 space-y-1">
  <div className="flex items-center gap-2">
  <p className="text-xs font-bold text-foreground truncate">{job.title}</p>
  <Badge variant="outline" className="text-xs uppercase font-mono font-bold">
@@ -718,7 +718,7 @@ export default function WorkspaceTeamPage() {
  asChild
  variant="outline"
  size="sm"
- className="rounded-xl text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8"
  >
  <Link to="/workspace/empregos/candidatos">
  <span>Ver Currículos</span>
@@ -746,14 +746,14 @@ export default function WorkspaceTeamPage() {
  variant="outline"
  onClick={() => setIsJobOpen(false)}
  disabled={isCreatingJob}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
  <Button
  onClick={handleCreateJobSubmit}
  disabled={isCreatingJob}
- className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+ className="rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  {isCreatingJob ? "Publicando..." : "Publicar Vaga de Emprego"}
  </Button>
@@ -762,38 +762,38 @@ export default function WorkspaceTeamPage() {
  >
  <div className="space-y-4 py-2">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Título da Vaga / Cargo</Label>
  <Input
  value={jobForm.title}
  onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
  placeholder="Ex: Atendente de Balcão & Caixa"
- className="h-10 rounded-xl text-xs font-bold"
+ className="h-10 rounded-lg text-xs font-bold"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Nome da Empresa / Estabelecimento</Label>
  <Input
  value={jobForm.company_name}
  onChange={(e) => setJobForm({ ...jobForm, company_name: e.target.value })}
  placeholder="Ex: Café & Bistrô Central"
- className="h-10 rounded-xl text-xs font-bold"
+ className="h-10 rounded-lg text-xs font-bold"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Tipo de Contrato</Label>
  <Select
  value={jobForm.contract_type}
  onValueChange={(v: any) => setJobForm({ ...jobForm, contract_type: v })}
  >
- <SelectTrigger className="h-10 rounded-xl text-xs font-semibold">
+ <SelectTrigger className="h-10 rounded-lg text-xs font-semibold">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="CLT">CLT (Efetivo)</SelectItem>
  <SelectItem value="PJ">PJ (Prestador)</SelectItem>
  <SelectItem value="Estágio">Estágio</SelectItem>
@@ -803,16 +803,16 @@ export default function WorkspaceTeamPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Modelo de Trabalho</Label>
  <Select
  value={jobForm.workplace_type}
  onValueChange={(v: any) => setJobForm({ ...jobForm, workplace_type: v })}
  >
- <SelectTrigger className="h-10 rounded-xl text-xs font-semibold">
+ <SelectTrigger className="h-10 rounded-lg text-xs font-semibold">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="Presencial">Presencial</SelectItem>
  <SelectItem value="Híbrido">Híbrido</SelectItem>
  <SelectItem value="Remoto">Remoto</SelectItem>
@@ -820,53 +820,53 @@ export default function WorkspaceTeamPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Faixa Salarial / Remuneração</Label>
  <Input
  value={jobForm.salary_display}
  onChange={(e) => setJobForm({ ...jobForm, salary_display: e.target.value })}
  placeholder="Ex: R$ 2.500 - R$ 3.200"
- className="h-10 rounded-xl text-xs font-mono font-bold"
+ className="h-10 rounded-lg text-xs font-mono font-bold"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Localização / Cidade</Label>
  <Input
  value={jobForm.location}
  onChange={(e) => setJobForm({ ...jobForm, location: e.target.value })}
  placeholder="Ex: Centro - Chapecó / SC"
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Descrição das Atividades e Responsabilidades</Label>
  <Textarea
  value={jobForm.description}
  onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })}
  placeholder="Descreva as principais funções, ambiente de trabalho e rotina..."
- className="h-28 rounded-2xl text-xs resize-none"
+ className="h-28 rounded-lg text-xs resize-none"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Requisitos (1 por linha)</Label>
  <Textarea
  value={jobForm.requirements}
  onChange={(e) => setJobForm({ ...jobForm, requirements: e.target.value })}
- className="h-24 rounded-2xl text-xs resize-none font-mono"
+ className="h-24 rounded-lg text-xs resize-none font-mono"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Benefícios (1 por linha)</Label>
  <Textarea
  value={jobForm.benefits}
  onChange={(e) => setJobForm({ ...jobForm, benefits: e.target.value })}
- className="h-24 rounded-2xl text-xs resize-none font-mono"
+ className="h-24 rounded-lg text-xs resize-none font-mono"
  />
  </div>
  </div>
@@ -875,9 +875,9 @@ export default function WorkspaceTeamPage() {
 
  {/* ── Modal de Convite de Colaborador ── */}
  <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
- <DialogContent className="sm:max-w-md rounded-2xl p-6">
+ <DialogContent className="sm:max-w-md rounded-lg p-6">
  <DialogHeader className="space-y-1 text-left">
- <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-2">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2">
  <UserPlus className="size-5" />
  </div>
  <DialogTitle className="text-lg font-bold text-foreground">Convidar Colaborador</DialogTitle>
@@ -887,7 +887,7 @@ export default function WorkspaceTeamPage() {
  </DialogHeader>
 
  <form onSubmit={handleInviteSubmit} className="space-y-4 py-2">
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <Label className="text-xs font-bold text-foreground">Nome Completo</Label>
  <div className="relative">
  <User className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -896,12 +896,12 @@ export default function WorkspaceTeamPage() {
  placeholder="Ex: João da Silva"
  value={inviteName}
  onChange={(e) => setInviteName(e.target.value)}
- className="pl-9 h-10 rounded-xl text-xs bg-muted/30"
+ className="pl-9 h-10 rounded-lg text-xs bg-muted/30"
  />
  </div>
  </div>
 
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <Label className="text-xs font-bold text-foreground">E-mail de Acesso</Label>
  <div className="relative">
  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -911,26 +911,26 @@ export default function WorkspaceTeamPage() {
  placeholder="colaborador@empresa.com"
  value={inviteEmail}
  onChange={(e) => setInviteEmail(e.target.value)}
- className="pl-9 h-10 rounded-xl text-xs bg-muted/30"
+ className="pl-9 h-10 rounded-lg text-xs bg-muted/30"
  />
  </div>
  </div>
 
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <Label className="text-xs font-bold text-foreground">Cargo e Nível de Permissão</Label>
  <Select
  value={inviteRole}
  onValueChange={(v: any) => setInviteRole(v)}
  >
- <SelectTrigger className="h-10 rounded-xl text-xs bg-muted/30 font-semibold">
+ <SelectTrigger className="h-10 rounded-lg text-xs bg-muted/30 font-semibold">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-2xl max-h-64">
+ <SelectContent className="rounded-lg max-h-64">
  {Object.entries(ROLE_DEFINITIONS)
  .filter(([k]) => k !== "owner")
  .map(([key, item]) => (
  <SelectItem key={key} value={key} className="text-xs py-2">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <p className="font-bold text-foreground">{item.label}</p>
  <p className="text-xs text-muted-foreground">{item.description}</p>
  </div>
@@ -940,8 +940,8 @@ export default function WorkspaceTeamPage() {
  </Select>
  </div>
 
- <div className="p-3 rounded-xl bg-muted/40 border border-border/50 text-xs text-muted-foreground flex items-start gap-2">
- <Info className="size-4 text-primary shrink-0 mt-0.5" />
+ <div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-xs text-muted-foreground flex items-start gap-2">
+ <Info className="size-4 text-primary shrink-0 mt-1" />
  <span>O colaborador receberá acesso imediato e restrito única e exclusivamente à sua loja.</span>
  </div>
 
@@ -950,14 +950,14 @@ export default function WorkspaceTeamPage() {
  type="button"
  variant="outline"
  onClick={() => setIsInviteOpen(false)}
- className="h-10 rounded-xl text-xs font-semibold"
+ className="h-10 rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isInviting}
- className="h-10 rounded-xl text-xs font-bold bg-foreground text-background hover:opacity-90"
+ className="h-10 rounded-lg text-xs font-bold bg-foreground text-background hover:opacity-90"
  >
  {isInviting ? "Vinculando..." : "Convidar para a Equipe"}
  </Button>
@@ -971,9 +971,9 @@ export default function WorkspaceTeamPage() {
  open={Boolean(memberToRemove)}
  onOpenChange={(open) => !open && setMemberToRemove(null)}
  >
- <AlertDialogContent className="rounded-2xl p-6 sm:max-w-md">
+ <AlertDialogContent className="rounded-lg p-6 sm:max-w-md">
  <AlertDialogHeader className="space-y-2 text-left">
- <div className="size-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mb-1">
+ <div className="size-12 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mb-1">
  <ShieldAlert className="size-6" />
  </div>
  <AlertDialogTitle className="text-base font-bold text-foreground">
@@ -984,13 +984,13 @@ export default function WorkspaceTeamPage() {
  </AlertDialogDescription>
  </AlertDialogHeader>
  <AlertDialogFooter className="pt-4 gap-2">
- <AlertDialogCancel className="h-10 rounded-xl text-xs font-semibold">
+ <AlertDialogCancel className="h-10 rounded-lg text-xs font-semibold">
  Cancelar
  </AlertDialogCancel>
  <AlertDialogAction
  onClick={handleConfirmRemove}
  disabled={isRemoving}
- className="h-10 rounded-xl text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
+ className="h-10 rounded-lg text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
  >
  {isRemoving ? "Revogando..." : "Revogar Acesso"}
  </AlertDialogAction>
@@ -1000,7 +1000,7 @@ export default function WorkspaceTeamPage() {
 
       {/* ── Modal de Cadastro / Edição de Terceirizado ── */}
       <Dialog open={isContractorOpen} onOpenChange={setIsContractorOpen}>
-        <DialogContent className="sm:max-w-md p-6 rounded-3xl">
+        <DialogContent className="sm:max-w-md p-6 rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               {contractorForm.id ? "Editar Terceirizado" : "Cadastrar Prestador Terceirizado"}
@@ -1036,28 +1036,28 @@ export default function WorkspaceTeamPage() {
             }}
             className="space-y-4 pt-2 text-xs"
           >
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Nome Completo / Razão Social *</Label>
               <Input
                 value={contractorForm.name}
                 onChange={(e) => setContractorForm({ ...contractorForm, name: e.target.value })}
                 placeholder="Ex: João Silva Segurança Eireli"
-                className="h-9 rounded-xl text-xs"
+                className="h-9 rounded-lg text-xs"
                 required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Especialidade / Categoria</Label>
                 <Select
                   value={contractorForm.serviceCategory}
                   onValueChange={(val: any) => setContractorForm({ ...contractorForm, serviceCategory: val })}
                 >
-                  <SelectTrigger className="h-9 rounded-xl text-xs">
+                  <SelectTrigger className="h-9 rounded-lg text-xs">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="seguranca">Segurança</SelectItem>
                     <SelectItem value="limpeza">Limpeza</SelectItem>
                     <SelectItem value="buffet">Buffet</SelectItem>
@@ -1071,41 +1071,41 @@ export default function WorkspaceTeamPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">CPF / CNPJ</Label>
                 <Input
                   value={contractorForm.documentNumber}
                   onChange={(e) => setContractorForm({ ...contractorForm, documentNumber: e.target.value })}
                   placeholder="000.000.000-00"
-                  className="h-9 rounded-xl text-xs font-mono"
+                  className="h-9 rounded-lg text-xs font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Telefone / WhatsApp</Label>
                 <Input
                   value={contractorForm.contactPhone}
                   onChange={(e) => setContractorForm({ ...contractorForm, contactPhone: e.target.value })}
                   placeholder="(00) 00000-0000"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-9 rounded-lg text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Chave Pix</Label>
                 <Input
                   value={contractorForm.pixKey}
                   onChange={(e) => setContractorForm({ ...contractorForm, pixKey: e.target.value })}
                   placeholder="CPF, CNPJ, E-mail..."
-                  className="h-9 rounded-xl text-xs font-mono"
+                  className="h-9 rounded-lg text-xs font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Valor Hora (R$)</Label>
                 <Input
                   type="number"
@@ -1113,11 +1113,11 @@ export default function WorkspaceTeamPage() {
                   value={contractorForm.hourlyRateCents ? contractorForm.hourlyRateCents / 100 : ""}
                   onChange={(e) => setContractorForm({ ...contractorForm, hourlyRateCents: Math.round(parseFloat(e.target.value || "0") * 100) })}
                   placeholder="Ex: 50.00"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-9 rounded-lg text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Valor Diária / Fixo (R$)</Label>
                 <Input
                   type="number"
@@ -1125,7 +1125,7 @@ export default function WorkspaceTeamPage() {
                   value={contractorForm.fixedFeeCents ? contractorForm.fixedFeeCents / 100 : ""}
                   onChange={(e) => setContractorForm({ ...contractorForm, fixedFeeCents: Math.round(parseFloat(e.target.value || "0") * 100) })}
                   placeholder="Ex: 350.00"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-9 rounded-lg text-xs"
                 />
               </div>
             </div>
@@ -1136,7 +1136,7 @@ export default function WorkspaceTeamPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsContractorOpen(false)}
-                className="rounded-xl text-xs"
+                className="rounded-lg text-xs"
               >
                 Cancelar
               </Button>
@@ -1144,7 +1144,7 @@ export default function WorkspaceTeamPage() {
                 type="submit"
                 size="sm"
                 disabled={isSavingContractor}
-                className="rounded-xl text-xs font-bold"
+                className="rounded-lg text-xs font-bold"
               >
                 {isSavingContractor ? "Salvando..." : contractorForm.id ? "Atualizar" : "Cadastrar Prestador"}
               </Button>

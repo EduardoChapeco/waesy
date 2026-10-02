@@ -45,7 +45,7 @@ function LeadLandingPage() {
   if (!form) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-muted/60 flex items-center justify-center mb-4 text-muted-foreground">
+        <div className="w-16 h-16 rounded-lg bg-muted/60 flex items-center justify-center mb-4 text-muted-foreground">
           <Building2 className="w-8 h-8 opacity-40" />
         </div>
         <h1 className="text-xl font-semibold tracking-tight text-foreground mb-2">
@@ -54,7 +54,7 @@ function LeadLandingPage() {
         <p className="text-sm text-muted-foreground max-w-sm mb-6 leading-relaxed">
           Esta campanha não está mais ativa ou o link informado está incorreto.
         </p>
-        <Button asChild variant="outline" className="rounded-xl h-11 px-6">
+        <Button asChild variant="outline" className="rounded-lg h-11 px-6">
           <Link to="/">Voltar ao Início</Link>
         </Button>
       </div>
@@ -73,15 +73,15 @@ function LeadLandingPage() {
               <img
                 src={store.logo_url || store.avatar_url!}
                 alt={store.name}
-                className="w-10 h-10 rounded-xl object-cover border border-border/60 bg-muted/40"
+                className="w-10 h-10 rounded-lg object-cover border border-border/60 bg-muted/40"
               />
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                 {(store?.name || "W")[0].toUpperCase()}
               </div>
             )}
             <div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-foreground tracking-tight">
                   {store?.name || "Atendimento Oficial"}
                 </span>
@@ -91,7 +91,7 @@ function LeadLandingPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full font-medium">
+          <div className="flex items-center gap-1 text-[11px] text-emerald-600 bg-emerald-500/10 px-3 py-1 rounded-full font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>Online</span>
           </div>
@@ -99,7 +99,7 @@ function LeadLandingPage() {
 
         {/* Imagem de Capa Opcional */}
         {form.cover_image_url && (
-          <div className="w-full aspect-[21/9] sm:aspect-[2.5/1] rounded-2xl overflow-hidden border border-border/50 bg-muted/20 relative shadow-sm">
+          <div className="w-full aspect-[21/9] sm:aspect-[2.5/1] rounded-lg overflow-hidden border border-border/50 bg-muted/20 relative shadow-sm">
             <img
               src={form.cover_image_url}
               alt={form.title}
@@ -121,7 +121,7 @@ function LeadLandingPage() {
         </div>
 
         {/* Card do Formulário */}
-        <div className="bg-card rounded-2xl border border-border/60 p-5 sm:p-7 shadow-sm">
+        <div className="bg-card rounded-lg border border-border/60 p-5 sm:p-7 shadow-sm">
           <LeadFormRenderer
             form={form}
             fields={form.fields}
@@ -131,11 +131,11 @@ function LeadLandingPage() {
 
         {/* Badges de Confiança e Segurança */}
         <div className="grid grid-cols-2 gap-3 pt-2">
-          <div className="flex items-center gap-2 p-3 rounded-xl border border-border/40 bg-muted/20">
+          <div className="flex items-center gap-2 p-3 rounded-lg border border-border/40 bg-muted/20">
             <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
             <span className="text-xs text-muted-foreground">Privacidade e Dados 100% Protegidos</span>
           </div>
-          <div className="flex items-center gap-2 p-3 rounded-xl border border-border/40 bg-muted/20">
+          <div className="flex items-center gap-2 p-3 rounded-lg border border-border/40 bg-muted/20">
             <Star className="w-4 h-4 text-amber-500 shrink-0" />
             <span className="text-xs text-muted-foreground">Atendimento Prioritário e Ágil</span>
           </div>

@@ -23,10 +23,10 @@ export function AiCurationUpgradeModal({
 }: AiCurationUpgradeModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md rounded-2xl bg-card border border-border/60 p-5 sm:p-6 space-y-4">
+      <DialogContent className="sm:max-w-md rounded-lg bg-card border border-border/60 p-5 sm:p-6 space-y-4">
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-primary/10 text-primary">
+            <span className="p-2 rounded-lg bg-primary/10 text-primary">
               <Star className="size-5" />
             </span>
             <Badge variant="outline" className="text-[10px] font-mono border-primary/40 text-primary">
@@ -42,20 +42,20 @@ export function AiCurationUpgradeModal({
         </DialogHeader>
 
         {/* 2 Opções de Desbloqueio */}
-        <div className="space-y-2.5 pt-1">
+        <div className="space-y-3 pt-1">
           {/* Opção 1: BYOK (Gratuita) */}
           <Link
             to="/workspace/configuracoes/inteligencia-artificial"
             onClick={onClose}
-            className="flex items-start gap-3 p-3.5 rounded-xl border border-border/70 hover:border-primary/50 bg-muted/20 hover:bg-muted/40 transition-all cursor-pointer group"
+            className="flex items-start gap-3 p-4 rounded-lg border border-border/70 hover:border-primary/50 bg-muted/20 hover:bg-muted/40 transition-all cursor-pointer group"
           >
-            <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mt-1">
               <Key className="size-4" />
             </div>
-            <div className="space-y-0.5 min-w-0 flex-1">
+            <div className="space-y-1 min-w-0 flex-1">
               <div className="text-xs font-bold text-foreground flex items-center justify-between">
                 <span>Inserir Minha Chave de API (BYOK)</span>
-                <span className="text-[10px] text-emerald-500 font-mono font-bold bg-emerald-500/10 px-1.5 py-0.2 rounded">
+                <span className="text-[10px] text-emerald-500 font-mono font-bold bg-emerald-500/10 px-2 py-0.2 rounded">
                   Grátis
                 </span>
               </div>
@@ -69,12 +69,12 @@ export function AiCurationUpgradeModal({
           <Link
             to="/workspace/configuracoes"
             onClick={onClose}
-            className="flex items-start gap-3 p-3.5 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group"
+            className="flex items-start gap-3 p-4 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group"
           >
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
               <Zap className="size-4" />
             </div>
-            <div className="space-y-0.5 min-w-0 flex-1">
+            <div className="space-y-1 min-w-0 flex-1">
               <div className="text-xs font-bold text-foreground flex items-center justify-between">
                 <span>Assinar Plano Comercial Premium</span>
                 <ArrowRight className="size-3.5 text-primary group-hover:translate-x-0.5 transition-transform" />
@@ -91,7 +91,7 @@ export function AiCurationUpgradeModal({
             type="button"
             variant="ghost"
             onClick={onClose}
-            className="rounded-xl text-xs h-9 w-full cursor-pointer text-muted-foreground hover:text-foreground"
+            className="rounded-lg text-xs h-9 w-full cursor-pointer text-muted-foreground hover:text-foreground"
           >
             Continuar com Extração Mecânica (Sem IA)
           </Button>

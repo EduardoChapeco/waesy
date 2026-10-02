@@ -110,7 +110,7 @@ export function LeadCard({
     <div
       onClick={() => onOpenDetails?.(lead)}
       className={cn(
-        'p-3.5 rounded-2xl border bg-card hover:border-primary/50 transition-all shadow-xs hover:shadow-md space-y-2.5 text-xs group cursor-pointer relative',
+        'p-4 rounded-lg border bg-card hover:border-primary/50 transition-all shadow-xs hover:shadow-md space-y-3 text-xs group cursor-pointer relative',
         staleness.isCold
           ? 'border-rose-500/40 bg-rose-500/[0.02]'
           : staleness.isStale
@@ -121,7 +121,7 @@ export function LeadCard({
       {/* Header do Card */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Avatar className="size-7 rounded-xl shrink-0 border border-border/60">
+          <Avatar className="size-7 rounded-lg shrink-0 border border-border/60">
             <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary">
               {initials}
             </AvatarFallback>
@@ -130,7 +130,7 @@ export function LeadCard({
             <h4 className="font-bold text-foreground text-xs truncate group-hover:text-primary transition-colors">
               {lead.full_name}
             </h4>
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground truncate">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground truncate">
               {lead.phone && <span>{lead.phone}</span>}
               {lead.lead_source_detail && (
                 <>
@@ -168,7 +168,7 @@ export function LeadCard({
                 <MoreVertical className="size-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="text-xs w-52 p-1.5 rounded-2xl">
+            <DropdownMenuContent align="end" className="text-xs w-52 p-2 rounded-lg">
               <DropdownMenuItem onClick={() => onOpenDetails?.(lead)} className="cursor-pointer font-medium">
                 <Edit3 className="size-3.5 mr-2" />
                 Abrir Ficha 360°
@@ -243,7 +243,7 @@ export function LeadCard({
       {staleness.isStale && (
         <div
           className={cn(
-            'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md inline-flex items-center gap-1 border',
+            'text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-md inline-flex items-center gap-1 border',
             staleness.isCold
               ? 'bg-rose-500/10 text-rose-600 border-rose-500/30'
               : 'bg-amber-500/10 text-amber-600 border-amber-500/30'
@@ -257,7 +257,7 @@ export function LeadCard({
       )}
 
       {/* Bloco de Destino, Período & Passageiros */}
-      <div className="p-2 rounded-xl bg-muted/40 border border-border/40 space-y-1 text-[11px]">
+      <div className="p-2 rounded-lg bg-muted/40 border border-border/40 space-y-1 text-[11px]">
         <div className="flex items-center justify-between gap-1">
           <div className="flex items-center gap-1 text-foreground font-semibold truncate">
             <MapPin className="size-3 text-primary shrink-0" />
@@ -269,7 +269,7 @@ export function LeadCard({
             </span>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-x-1.5 text-[10px] text-muted-foreground pl-4">
+        <div className="flex flex-wrap items-center gap-x-2 text-[10px] text-muted-foreground pl-4">
           {travelPeriod && <span>{travelPeriod}</span>}
           {travelPeriod && <span>•</span>}
           <span className="font-medium text-foreground/80">{paxBreakdown.total}</span>
@@ -284,7 +284,7 @@ export function LeadCard({
             return (
               <span
                 key={tag}
-                className="px-1.5 py-0.5 rounded-md text-[9px] font-semibold border"
+                className="px-2 py-1 rounded-md text-[9px] font-semibold border"
                 style={{
                   backgroundColor: color ? `${color}15` : 'var(--muted)',
                   borderColor: color ? `${color}40` : 'var(--border)',

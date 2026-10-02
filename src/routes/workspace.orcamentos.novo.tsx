@@ -57,9 +57,9 @@ function NovoOrcamentoRouterPage() {
  return (
  <div className="space-y-6 w-full max-w-7xl mx-auto px-0 sm:px-0">
  {isTourism && (
- <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 rounded-2xl bg-card border border-border/70 gap-3 shadow-xs">
- <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-3 shadow-xs">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <Compass className="size-4" />
  </div>
  <div>
@@ -67,12 +67,12 @@ function NovoOrcamentoRouterPage() {
  <p className="text-xs text-muted-foreground/75 text-muted-foreground">Escolha o formato comercial ideal para este atendimento</p>
  </div>
  </div>
- <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/50 text-xs w-full sm:w-auto justify-center">
+ <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 text-xs w-full sm:w-auto justify-center">
  <button
  type="button"
  onClick={() => setActiveMode("commercial")}
  className={cn(
- "px-3.5 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer",
+ "px-4 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer",
  activeMode === "commercial"
  ? "bg-background text-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground",
@@ -84,7 +84,7 @@ function NovoOrcamentoRouterPage() {
  type="button"
  onClick={() => setActiveMode("travelos")}
  className={cn(
- "px-3.5 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5",
+ "px-4 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer flex items-center gap-2",
  activeMode === "travelos"
  ? "bg-primary text-primary-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground",
@@ -407,14 +407,14 @@ function NovoOrcamentoTravelosPage() {
  {/* Topo / Breadcrumb & Ações */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="flex items-center gap-3">
- <Button asChild variant="ghost" size="icon" className="rounded-xl size-9">
+ <Button asChild variant="ghost" size="icon" className="rounded-lg size-9">
  <Link to="/workspace/orcamentos">
  <ArrowLeft className="size-4" />
  </Link>
  </Button>
  <div>
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-xs px-2 py-0.5 rounded-lg border-primary/30 text-primary bg-primary/10 font-bold">
+ <Badge variant="outline" className="text-xs px-2 py-1 rounded-lg border-primary/30 text-primary bg-primary/10 font-bold">
  Travelos e TravelAgências Standard
  </Badge>
  <span className="text-xs text-muted-foreground font-mono">
@@ -432,14 +432,14 @@ function NovoOrcamentoTravelosPage() {
  onClick={() => handleSaveProposal(false)}
  disabled={isSubmitting}
  variant="outline"
- className="h-10 rounded-xl text-xs font-bold gap-1.5"
+ className="h-10 rounded-lg text-xs font-bold gap-2"
  >
  <span>Salvar Rascunho</span>
  </Button>
  <Button
  onClick={() => handleSaveProposal(true)}
  disabled={isSubmitting}
- className="h-10 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm cursor-pointer"
+ className="h-10 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm cursor-pointer"
  >
  <FileSpreadsheet className="size-4" />
  <span>Salvar e Abrir Lâmina Visual</span>
@@ -450,24 +450,24 @@ function NovoOrcamentoTravelosPage() {
 
  {/* Abas do Construtor Travelos */}
  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full space-y-6">
- <TabsList className="flex items-center gap-1.5 w-full overflow-x-auto no-scrollbar p-1 bg-muted/60 rounded-2xl h-12">
- <TabsTrigger value="geral" className="rounded-xl font-bold text-xs gap-1.5 whitespace-nowrap shrink-0 px-3.5 h-10">
+ <TabsList className="flex items-center gap-2 w-full overflow-x-auto no-scrollbar p-1 bg-muted/60 rounded-lg h-12">
+ <TabsTrigger value="geral" className="rounded-lg font-bold text-xs gap-2 whitespace-nowrap shrink-0 px-4 h-10">
  <User className="size-3.5" />
  <span>1. Cliente e Destino</span>
  </TabsTrigger>
- <TabsTrigger value="voos" className="rounded-xl font-bold text-xs gap-1.5 whitespace-nowrap shrink-0 px-3.5 h-10">
+ <TabsTrigger value="voos" className="rounded-lg font-bold text-xs gap-2 whitespace-nowrap shrink-0 px-4 h-10">
  <Plane className="size-3.5" />
  <span>2. Aéreo & Voos ({flights.length})</span>
  </TabsTrigger>
- <TabsTrigger value="hospedagem" className="rounded-xl font-bold text-xs gap-1.5 whitespace-nowrap shrink-0 px-3.5 h-10">
+ <TabsTrigger value="hospedagem" className="rounded-lg font-bold text-xs gap-2 whitespace-nowrap shrink-0 px-4 h-10">
  <Building2 className="size-3.5" />
  <span>3. Hotéis ({hotels.length})</span>
  </TabsTrigger>
- <TabsTrigger value="roteiro" className="rounded-xl font-bold text-xs gap-1.5 whitespace-nowrap shrink-0 px-3.5 h-10">
+ <TabsTrigger value="roteiro" className="rounded-lg font-bold text-xs gap-2 whitespace-nowrap shrink-0 px-4 h-10">
  <Compass className="size-3.5" />
  <span>4. Roteiro Dia a Dia ({itinerary.length})</span>
  </TabsTrigger>
- <TabsTrigger value="financeiro" className="rounded-xl font-bold text-xs gap-1.5 whitespace-nowrap shrink-0 px-3.5 h-10">
+ <TabsTrigger value="financeiro" className="rounded-lg font-bold text-xs gap-2 whitespace-nowrap shrink-0 px-4 h-10">
  <DollarSign className="size-3.5" />
  <span>5. Financeiro e Lâmina</span>
  </TabsTrigger>
@@ -477,24 +477,24 @@ function NovoOrcamentoTravelosPage() {
  <TabsContent value="geral" className="space-y-6">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {/* Bloco Cliente */}
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <User className="size-4 text-primary" />
  <span>Passageiro Principal / Contratante</span>
  </h3>
  <div className="space-y-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Nome Completo *</Label>
  <Input
  value={proposalData.clientName}
  onChange={(e) => setProposalData({ ...proposalData, clientName: e.target.value })}
  placeholder="Ex: Carlos Eduardo Silva"
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  required
  />
  </div>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">WhatsApp / Celular *</Label>
  <Input
  type="tel"
@@ -502,18 +502,18 @@ function NovoOrcamentoTravelosPage() {
                       value={proposalData.clientWhatsapp}
                       onChange={(e) => setProposalData({ ...proposalData, clientWhatsapp: formatPhone(e.target.value) })}
                       placeholder="Ex: (11) 99999-8888"
-                      className="h-10 rounded-xl text-xs font-mono"
+                      className="h-10 rounded-lg text-xs font-mono"
                       required
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">E-mail (Opcional)</Label>
  <Input
  type="email"
  value={proposalData.clientEmail}
  onChange={(e) => setProposalData({ ...proposalData, clientEmail: e.target.value })}
  placeholder="cliente@email.com"
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  />
  </div>
  </div>
@@ -521,22 +521,22 @@ function NovoOrcamentoTravelosPage() {
  </div>
 
  {/* Bloco Destino e Datas */}
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <MapPin className="size-4 text-primary" />
  <span>Destino e Configuração da Viagem</span>
  </h3>
  <div className="space-y-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Título da Proposta *</Label>
  <Input
  value={proposalData.title}
  onChange={(e) => setProposalData({ ...proposalData, title: e.target.value })}
  placeholder="Ex: Férias em Cancún & Riviera Maya All-Inclusive"
- className="h-10 rounded-xl text-xs font-bold"
+ className="h-10 rounded-lg text-xs font-bold"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold">Cidade / Destino Principal *</Label>
  {destinationIata && (
@@ -556,7 +556,7 @@ function NovoOrcamentoTravelosPage() {
  if (match) handleSelectCanonicalDestination(match);
  }}
  placeholder="Ex: Maceió & Maragogi, AL ou Cancún"
- className="h-10 rounded-xl text-xs font-bold"
+ className="h-10 rounded-lg text-xs font-bold"
  required
  />
 
@@ -565,14 +565,14 @@ function NovoOrcamentoTravelosPage() {
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
  Destinos Populares (1 Toque com Voos & Roteiro):
  </span>
- <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto no-scrollbar pr-1">
+ <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto no-scrollbar pr-1">
  {CANONICAL_DESTINATIONS.slice(0, 12).map((dest) => (
  <button
  key={dest.id}
  type="button"
  onClick={() => handleSelectCanonicalDestination(dest)}
  className={cn(
- "text-xs font-medium px-2.5 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5",
+ "text-xs font-medium px-3 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-2",
  destinationIata === dest.iata || proposalData.destinationCity === dest.name
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
  : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60"
@@ -596,15 +596,15 @@ function NovoOrcamentoTravelosPage() {
 
  {/* Card Inteligente do Destino */}
  {selectedCanonicalDest && (
- <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 space-y-1.5 mt-2 animate-in fade-in duration-150">
- <div className="flex items-center gap-2.5">
+ <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2 mt-2 animate-in fade-in duration-150">
+ <div className="flex items-center gap-3">
  <img
  src={selectedCanonicalDest.coverImage}
  alt={selectedCanonicalDest.name}
  className="size-10 rounded-lg object-cover border border-border/60 shrink-0"
  />
  <div className="min-w-0 flex-1">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <h4 className="text-xs font-bold text-foreground truncate">{selectedCanonicalDest.name}</h4>
  <Badge variant="secondary" className="text-xs font-mono font-bold bg-primary/10 text-primary">
  {selectedCanonicalDest.iata} • {selectedCanonicalDest.state}
@@ -621,7 +621,7 @@ function NovoOrcamentoTravelosPage() {
  </div>
  )}
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Foto de Capa da Proposta de Viagem</Label>
  <ImageUpload
  value={proposalData.coverImageUrl}
@@ -633,44 +633,44 @@ function NovoOrcamentoTravelosPage() {
  />
  </div>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Data de Ida</Label>
  <Input
  type="date"
  value={proposalData.travelStartDate}
  onChange={(e) => setProposalData({ ...proposalData, travelStartDate: e.target.value })}
- className="h-10 rounded-xl text-xs font-mono"
+ className="h-10 rounded-lg text-xs font-mono"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Data de Retorno</Label>
  <Input
  type="date"
  value={proposalData.travelEndDate}
  onChange={(e) => setProposalData({ ...proposalData, travelEndDate: e.target.value })}
- className="h-10 rounded-xl text-xs font-mono"
+ className="h-10 rounded-lg text-xs font-mono"
  />
  </div>
  </div>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Adultos (Pagantes)</Label>
  <Input
  type="number"
  min={1}
  value={proposalData.adultsCount}
  onChange={(e) => setProposalData({ ...proposalData, adultsCount: Number(e.target.value) || 1 })}
- className="h-10 rounded-xl text-xs font-mono"
+ className="h-10 rounded-lg text-xs font-mono"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Crianças (CHD)</Label>
  <Input
  type="number"
  min={0}
  value={proposalData.childrenCount}
  onChange={(e) => setProposalData({ ...proposalData, childrenCount: Number(e.target.value) || 0 })}
- className="h-10 rounded-xl text-xs font-mono"
+ className="h-10 rounded-lg text-xs font-mono"
  />
  </div>
  </div>
@@ -686,17 +686,17 @@ function NovoOrcamentoTravelosPage() {
  <h3 className="text-base font-bold text-foreground">Malha Aérea e Trechos de Voo</h3>
  <p className="text-xs text-muted-foreground">Adicione voos de ida, volta e conexões com horários e bagagem inclusa.</p>
  </div>
- <Button onClick={handleAddFlight} variant="outline" size="sm" className="rounded-xl text-xs font-bold gap-1.5">
+ <Button onClick={handleAddFlight} variant="outline" size="sm" className="rounded-lg text-xs font-bold gap-2">
  <Plus className="size-3.5" />
  <span>Adicionar Trecho</span>
  </Button>
  </div>
 
  {flights.map((flight, idx) => (
- <div key={flight.id} className="p-5 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div key={flight.id} className="p-5 rounded-lg bg-card border border-border/80 space-y-4">
  <div className="flex items-center justify-between border-b border-border/60 pb-3">
  <div className="flex items-center gap-2">
- <Badge variant="secondary" className="text-xs font-bold px-2 py-0.5 rounded-lg">
+ <Badge variant="secondary" className="text-xs font-bold px-2 py-1 rounded-lg">
  Trecho {idx + 1}: {flight.type === "outbound" ? "Ida" : flight.type === "return" ? "Volta" : "Interno"}
  </Badge>
  <span className="text-xs font-bold text-foreground">{flight.airline_name}</span>
@@ -723,7 +723,7 @@ function NovoOrcamentoTravelosPage() {
  setFlights((prev) => prev.map((f) => (f.id === flight.id ? { ...f, airline_name: val } : f)));
  }}
  placeholder="LATAM / Gol / Azul / TAP"
- className="h-9 rounded-xl text-xs"
+ className="h-9 rounded-lg text-xs"
  />
  </div>
  <div className="space-y-1">
@@ -735,7 +735,7 @@ function NovoOrcamentoTravelosPage() {
  setFlights((prev) => prev.map((f) => (f.id === flight.id ? { ...f, flight_number: val } : f)));
  }}
  placeholder="LA8100"
- className="h-9 rounded-xl text-xs font-mono"
+ className="h-9 rounded-lg text-xs font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -751,7 +751,7 @@ function NovoOrcamentoTravelosPage() {
  );
  }}
  placeholder="GRU - São Paulo"
- className="h-9 rounded-xl text-xs"
+ className="h-9 rounded-lg text-xs"
  />
  </div>
  <div className="space-y-1">
@@ -767,7 +767,7 @@ function NovoOrcamentoTravelosPage() {
  );
  }}
  placeholder="CUN - Cancún"
- className="h-9 rounded-xl text-xs"
+ className="h-9 rounded-lg text-xs"
  />
  </div>
  </div>
@@ -783,7 +783,7 @@ function NovoOrcamentoTravelosPage() {
  setFlights((prev) => prev.map((f) => (f.id === flight.id ? { ...f, departure_time: val } : f)));
  }}
  placeholder="08:30"
- className="h-9 rounded-xl text-xs font-mono"
+ className="h-9 rounded-lg text-xs font-mono"
  />
  <span></span>
  <Input
@@ -793,7 +793,7 @@ function NovoOrcamentoTravelosPage() {
  setFlights((prev) => prev.map((f) => (f.id === flight.id ? { ...f, arrival_time: val } : f)));
  }}
  placeholder="14:45"
- className="h-9 rounded-xl text-xs font-mono"
+ className="h-9 rounded-lg text-xs font-mono"
  />
  </div>
  </div>
@@ -806,7 +806,7 @@ function NovoOrcamentoTravelosPage() {
  setFlights((prev) => prev.map((f) => (f.id === flight.id ? { ...f, baggage_included: val } : f)));
  }}
  placeholder="1x 23kg despachada + 10kg mão"
- className="h-9 rounded-xl text-xs"
+ className="h-9 rounded-lg text-xs"
  />
  </div>
  <div className="space-y-1">
@@ -817,7 +817,7 @@ function NovoOrcamentoTravelosPage() {
  setFlights((prev) => prev.map((f) => (f.id === flight.id ? { ...f, cabin_class: val } : f)))
  }
  >
- <SelectTrigger className="h-9 rounded-xl text-xs">
+ <SelectTrigger className="h-9 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -840,17 +840,17 @@ function NovoOrcamentoTravelosPage() {
  <h3 className="text-base font-bold text-foreground">Hospedagem, Resorts e Hotéis</h3>
  <p className="text-xs text-muted-foreground">Cadastre as opções de hotel com regime de alimentação e noites.</p>
  </div>
- <Button onClick={handleAddHotel} variant="outline" size="sm" className="rounded-xl text-xs font-bold gap-1.5">
+ <Button onClick={handleAddHotel} variant="outline" size="sm" className="rounded-lg text-xs font-bold gap-2">
  <Plus className="size-3.5" />
  <span>Adicionar Hotel</span>
  </Button>
  </div>
 
  {hotels.map((hotel, idx) => (
- <div key={hotel.id} className="p-5 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div key={hotel.id} className="p-5 rounded-lg bg-card border border-border/80 space-y-4">
  <div className="flex items-center justify-between border-b border-border/60 pb-3">
  <div className="flex items-center gap-2">
- <Badge variant="secondary" className="text-xs font-bold px-2 py-0.5 rounded-lg">
+ <Badge variant="secondary" className="text-xs font-bold px-2 py-1 rounded-lg">
  Opção {idx + 1}
  </Badge>
  <span className="text-xs font-bold text-foreground">{hotel.hotel_name}</span>
@@ -878,7 +878,7 @@ function NovoOrcamentoTravelosPage() {
  setHotels((prev) => prev.map((h) => (h.id === hotel.id ? { ...h, hotel_name: val } : h)));
  }}
  placeholder="Ex: Hard Rock Hotel Cancún"
- className="h-9 rounded-xl text-xs font-bold"
+ className="h-9 rounded-lg text-xs font-bold"
  />
  </div>
  <div className="space-y-1">
@@ -890,7 +890,7 @@ function NovoOrcamentoTravelosPage() {
  setHotels((prev) => prev.map((h) => (h.id === hotel.id ? { ...h, room_type: val } : h)));
  }}
  placeholder="Ex: Deluxe Vista Mar King"
- className="h-9 rounded-xl text-xs"
+ className="h-9 rounded-lg text-xs"
  />
  </div>
  <div className="space-y-1">
@@ -901,7 +901,7 @@ function NovoOrcamentoTravelosPage() {
  setHotels((prev) => prev.map((h) => (h.id === hotel.id ? { ...h, board_basis: val } : h)))
  }
  >
- <SelectTrigger className="h-9 rounded-xl text-xs">
+ <SelectTrigger className="h-9 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -936,7 +936,7 @@ function NovoOrcamentoTravelosPage() {
  const val = Number(e.target.value) || 1;
  setHotels((prev) => prev.map((h) => (h.id === hotel.id ? { ...h, nights_count: val } : h)));
  }}
- className="h-9 rounded-xl text-xs font-mono"
+ className="h-9 rounded-lg text-xs font-mono"
  />
  </div>
  </div>
@@ -957,13 +957,13 @@ function NovoOrcamentoTravelosPage() {
  type="button"
  onClick={() => handleGenerateItineraryFromDestination()}
  size="sm"
- className="rounded-xl text-xs font-bold gap-1.5 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 cursor-pointer"
  >
  <Compass className="size-3.5" />
  <span>Gerar Roteiro Sugerido ({selectedCanonicalDest.name})</span>
  </Button>
  )}
- <Button onClick={handleAddItineraryDay} variant="outline" size="sm" className="rounded-xl text-xs font-bold gap-1.5">
+ <Button onClick={handleAddItineraryDay} variant="outline" size="sm" className="rounded-lg text-xs font-bold gap-2">
  <Plus className="size-3.5" />
  <span>Adicionar Dia</span>
  </Button>
@@ -972,9 +972,9 @@ function NovoOrcamentoTravelosPage() {
 
  <div className="space-y-3">
  {itinerary.map((day, idx) => (
- <div key={day.id} className="p-5 rounded-2xl bg-card border border-border/80 space-y-3">
- <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
- <Badge variant="outline" className="text-xs font-bold px-2 py-0.5 rounded-lg border-primary/30 text-primary bg-primary/10">
+ <div key={day.id} className="p-5 rounded-lg bg-card border border-border/80 space-y-3">
+ <div className="flex items-center justify-between border-b border-border/60 pb-3">
+ <Badge variant="outline" className="text-xs font-bold px-2 py-1 rounded-lg border-primary/30 text-primary bg-primary/10">
  Dia {idx + 1}
  </Badge>
  {itinerary.length > 1 && (
@@ -999,7 +999,7 @@ function NovoOrcamentoTravelosPage() {
  setItinerary((prev) => prev.map((d) => (d.id === day.id ? { ...d, title: val } : d)));
  }}
  placeholder="Ex: Passeio em Chichén Itzá & Cenotes Sagrados"
- className="h-9 rounded-xl text-xs font-bold"
+ className="h-9 rounded-lg text-xs font-bold"
  />
  </div>
  <div className="space-y-1">
@@ -1023,7 +1023,7 @@ function NovoOrcamentoTravelosPage() {
  setItinerary((prev) => prev.map((d) => (d.id === day.id ? { ...d, description: val } : d)));
  }}
  placeholder="Descreva as atividades, horários de saída, paradas e dicas..."
- className="rounded-xl text-xs min-h-16"
+ className="rounded-lg text-xs min-h-16"
  />
  </div>
  </div>
@@ -1035,7 +1035,7 @@ function NovoOrcamentoTravelosPage() {
  <TabsContent value="financeiro" className="space-y-6">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {/* Bloco de Valores e Margem */}
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <DollarSign className="size-4 text-emerald-600" />
  <span>Composição de Custos e Margem de Lucro</span>
@@ -1043,10 +1043,10 @@ function NovoOrcamentoTravelosPage() {
 
  <div className="space-y-3">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Moeda Base</Label>
  <Select value={currency} onValueChange={(val: any) => setCurrency(val)}>
- <SelectTrigger className="h-10 rounded-xl text-xs font-bold">
+ <SelectTrigger className="h-10 rounded-lg text-xs font-bold">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1057,62 +1057,62 @@ function NovoOrcamentoTravelosPage() {
  </Select>
  </div>
  {currency !== "BRL" && (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Câmbio Travado</Label>
  <Input
  type="number"
  step="0.01"
  value={exchangeRate}
  onChange={(e) => setExchangeRate(Number(e.target.value) || 1)}
- className="h-10 rounded-xl text-xs font-mono"
+ className="h-10 rounded-lg text-xs font-mono"
  />
  </div>
  )}
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Custo / Pessoa (R$)</Label>
  <Input
  type="number"
  value={costPerPersonCents / 100}
  onChange={(e) => setCostPerPersonCents(Math.round(Number(e.target.value) * 100) || 0)}
- className="h-10 rounded-xl text-xs font-mono font-bold"
+ className="h-10 rounded-lg text-xs font-mono font-bold"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Margem / Markup (%)</Label>
  <Input
  type="number"
  value={markupPercent}
  onChange={(e) => setMarkupPercent(Number(e.target.value) || 0)}
- className="h-10 rounded-xl text-xs font-mono font-bold text-emerald-600"
+ className="h-10 rounded-lg text-xs font-mono font-bold text-emerald-600"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Taxas de Embarque / Pessoa</Label>
  <Input
  type="number"
  value={boardingTaxCents / 100}
  onChange={(e) => setBoardingTaxCents(Math.round(Number(e.target.value) * 100) || 0)}
- className="h-10 rounded-xl text-xs font-mono"
+ className="h-10 rounded-lg text-xs font-mono"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Desconto Geral (R$)</Label>
  <Input
  type="number"
  value={discountCents / 100}
  onChange={(e) => setDiscountCents(Math.round(Number(e.target.value) * 100) || 0)}
- className="h-10 rounded-xl text-xs font-mono text-destructive"
+ className="h-10 rounded-lg text-xs font-mono text-destructive"
  />
  </div>
  </div>
 
- <div className="p-4 rounded-2xl bg-muted/50 border border-border/50 space-y-2 text-xs">
+ <div className="p-4 rounded-lg bg-muted/50 border border-border/50 space-y-2 text-xs">
  <div className="flex justify-between">
  <span className="text-muted-foreground">Passageiros:</span>
  <span className="font-bold">{totalPax} pessoa(s)</span>
@@ -1134,30 +1134,30 @@ function NovoOrcamentoTravelosPage() {
  </div>
 
  {/* Inclusos e Condições */}
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <FileCheck2 className="size-4 text-primary" />
  <span>Itens Inclusos e Termos</span>
  </h3>
 
  <div className="space-y-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Itens Inclusos no Pacote</Label>
  <Textarea
  value={includesText}
  onChange={(e) => setIncludesText(e.target.value)}
- className="rounded-xl text-xs min-h-24 font-mono leading-relaxed"
+ className="rounded-lg text-xs min-h-24 font-mono leading-relaxed"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Itens Não Inclusos</Label>
  <Textarea
  value={excludesText}
  onChange={(e) => setExcludesText(e.target.value)}
- className="rounded-xl text-xs min-h-16 font-mono leading-relaxed"
+ className="rounded-lg text-xs min-h-16 font-mono leading-relaxed"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Validade da Cotação (Dias)</Label>
  <Input
  type="number"
@@ -1165,16 +1165,16 @@ function NovoOrcamentoTravelosPage() {
  max={30}
  value={validUntilDays}
  onChange={(e) => setValidUntilDays(Number(e.target.value) || 3)}
- className="h-10 rounded-xl text-xs font-mono"
+ className="h-10 rounded-lg text-xs font-mono"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Distribuição de Quartos (Acomodação)</Label>
  <Input
  value={roomDistribution}
  onChange={(e) => setRoomDistribution(e.target.value)}
  placeholder="Ex: 1 Quarto Duplo + 1 Quarto Triplo (Família)"
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  />
  <p className="text-xs text-muted-foreground/75 text-muted-foreground">Detalhamento de quartos para o template do WhatsApp</p>
  </div>
@@ -1183,7 +1183,7 @@ function NovoOrcamentoTravelosPage() {
  </div>
 
  {/* ─── AÇÃO DE SHARE WHATSAPP ─── */}
- <div className="p-5 rounded-2xl bg-card border border-border/80 space-y-3">
+ <div className="p-5 rounded-lg bg-card border border-border/80 space-y-3">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <span className="size-4 text-emerald-600 flex items-center justify-center text-sm"></span>
  <span>Compartilhar Cotação via WhatsApp</span>
@@ -1253,7 +1253,7 @@ function NovoOrcamentoTravelosPage() {
  window.open(`https://wa.me/?text=${msg}`, '_blank');
  }
  }}
- className="h-10 px-5 rounded-xl text-xs font-bold flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors cursor-pointer shadow-xs"
+ className="h-10 px-5 rounded-lg text-xs font-bold flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors cursor-pointer shadow-xs"
  >
  <span></span>
  <span>Enviar Proposta via WhatsApp</span>
@@ -1279,7 +1279,7 @@ function NovoOrcamentoTravelosPage() {
  navigator.clipboard?.writeText(text);
  toast.success('Texto copiado! Cole no WhatsApp, e-mail ou onde quiser.');
  }}
- className="h-10 px-4 rounded-xl text-xs font-bold flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground border border-border/60 transition-colors cursor-pointer"
+ className="h-10 px-4 rounded-lg text-xs font-bold flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground border border-border/60 transition-colors cursor-pointer"
  >
  <span></span>
  <span>Copiar Resumo</span>
@@ -1615,7 +1615,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  onClick={handleSubmit}
  disabled={isSubmitting}
  size="sm"
- className="rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1.5 cursor-pointer shadow-xs"
+ className="rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
  >
  {isSubmitting ? (
  <>
@@ -1637,7 +1637,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  {/* Coluna Esquerda: Dados do Cliente + Tabela de Itens (8 Cols) */}
  <div className="lg:col-span-8 space-y-6">
  {/* Card 1: Identificação do Cliente & CRM */}
- <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-4 shadow-xs">
+ <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <User className="size-4 text-primary" />
@@ -1663,7 +1663,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  if (clientSearch.trim().length >= 1) setIsClientDropdownOpen(true);
  }}
  placeholder=" Buscar cliente no CRM (Nome, CPF/CNPJ, WhatsApp ou E-mail)..."
- className="h-10 rounded-xl text-xs bg-muted/30 pl-3 pr-8 border-border/70"
+ className="h-10 rounded-lg text-xs bg-muted/30 pl-3 pr-8 border-border/70"
  />
  {isLoadingCustomers && (
  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 animate-spin text-muted-foreground" />
@@ -1672,7 +1672,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  {/* Dropdown de Resultados CRM */}
  {isClientDropdownOpen && clientSearch.trim().length >= 1 && (
- <div className="absolute left-0 right-0 top-11 z-50 rounded-xl bg-card border border-border/80 shadow-xs overflow-hidden animate-in fade-in-50 zoom-in-95">
+ <div className="absolute left-0 right-0 top-11 z-50 rounded-lg bg-card border border-border/80 shadow-xs overflow-hidden animate-in fade-in-50 zoom-in-95">
  <div className="p-2 border-b border-border/60 bg-muted/40 flex items-center justify-between text-xs text-muted-foreground/75 text-muted-foreground font-bold">
  <span>Resultados da Carteira de Clientes ({crmCustomers.length})</span>
  <button
@@ -1694,9 +1694,9 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  key={c.id}
  type="button"
  onClick={() => handleSelectCustomer(c)}
- className="w-full text-left p-2.5 rounded-lg hover:bg-muted/60 transition-colors flex items-center justify-between gap-3 cursor-pointer group"
+ className="w-full text-left p-3 rounded-lg hover:bg-muted/60 transition-colors flex items-center justify-between gap-3 cursor-pointer group"
  >
- <div className="space-y-0.5 min-w-0">
+ <div className="space-y-1 min-w-0">
  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
  {c.full_name || c.legal_name}
  </p>
@@ -1719,7 +1719,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  {/* Banner de Cliente Selecionado */}
  {selectedCustomer && (
- <div className="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs">
  <div className="flex items-center gap-2">
  <ShieldCheck className="size-4 text-primary shrink-0" />
  <span>
@@ -1747,7 +1747,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  value={customerData.name}
  onChange={(e) => setCustomerData((p) => ({ ...p, name: e.target.value }))}
  placeholder="Ex: Ana Clara ou Empresa LTDA"
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  required
  />
  </div>
@@ -1757,7 +1757,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  value={customerData.document}
  onChange={(e) => setCustomerData((p) => ({ ...p, document: e.target.value }))}
  placeholder="000.000.000-00"
- className="h-10 rounded-xl text-xs font-mono"
+ className="h-10 rounded-lg text-xs font-mono"
  />
  </div>
  <div className="space-y-1 sm:col-span-3">
@@ -1767,7 +1767,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  value={customerData.email}
  onChange={(e) => setCustomerData((p) => ({ ...p, email: e.target.value }))}
  placeholder="contato@cliente.com"
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  />
  </div>
  <div className="space-y-1 sm:col-span-2">
@@ -1776,14 +1776,14 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  value={customerData.phone}
  onChange={(e) => setCustomerData((p) => ({ ...p, phone: e.target.value }))}
  placeholder="(49) 99999-0000"
- className="h-10 rounded-xl text-xs font-mono"
+ className="h-10 rounded-lg text-xs font-mono"
  />
  </div>
  </div>
  </div>
 
  {/* Card 2: Itens, Produtos & Serviços do Catálogo */}
- <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-4 shadow-xs">
+ <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Package className="size-4 text-primary" />
@@ -1794,7 +1794,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
               type="button"
               size="sm"
               onClick={handleOpenCatalogForNewItem}
-              className="rounded-xl text-xs font-bold gap-1.5 h-8 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-8 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 cursor-pointer"
             >
               <Package className="size-3.5" />
               <span>+ Produto da Loja</span>
@@ -1804,7 +1804,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
               size="sm"
               variant="outline"
               onClick={() => setIsMasterCatalogOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer"
             >
               <Boxes className="size-3.5 text-primary" />
               <span>+ Catálogo Mestre</span>
@@ -1814,7 +1814,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
               size="sm"
               variant="outline"
               onClick={() => setIsServiceCatalogOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer"
             >
               <Wrench className="size-3.5 text-primary" />
               <span>+ Serviços</span>
@@ -1824,7 +1824,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
               variant="outline"
               size="sm"
               onClick={handleAddItem}
-              className="rounded-xl text-xs font-bold gap-1.5 h-8 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-8 cursor-pointer"
             >
               <Plus className="size-3.5" />
               <span>Item Avulso</span>
@@ -1839,11 +1839,11 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  return (
  <div
  key={item.id}
- className="p-4 rounded-2xl bg-muted/20 border border-border/70 space-y-3 relative group transition-all hover:border-border"
+ className="p-4 rounded-lg bg-muted/20 border border-border/70 space-y-3 relative group transition-all hover:border-border"
  >
  <div className="flex items-center justify-between gap-2">
  <div className="flex items-center gap-2">
- <Badge variant="secondary" className="text-xs font-mono px-2 py-0.5">
+ <Badge variant="secondary" className="text-xs font-mono px-2 py-1">
  #{idx + 1}
  </Badge>
  <Select
@@ -1908,7 +1908,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  value={item.name}
  onChange={(e) => handleUpdateItem(item.id, { name: e.target.value })}
  placeholder="Ex: Consultoria Técnica, Vestido de Noiva, Pacote Gramado"
- className="h-9 text-xs rounded-xl bg-background flex-1"
+ className="h-9 text-xs rounded-lg bg-background flex-1"
  required
  />
  </div>
@@ -1923,7 +1923,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  onChange={(e) =>
  handleUpdateItem(item.id, { quantity: Math.max(1, Number(e.target.value) || 1) })
  }
- className="h-9 text-xs rounded-xl font-mono text-center bg-background"
+ className="h-9 text-xs rounded-lg font-mono text-center bg-background"
  />
  </div>
 
@@ -1932,13 +1932,13 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <CurrencyField
  value={item.unit_price_cents}
  onChange={(val) => handleUpdateItem(item.id, { unit_price_cents: val })}
- className="h-9 text-xs rounded-xl font-mono bg-background"
+ className="h-9 text-xs rounded-lg font-mono bg-background"
  />
  </div>
 
  <div className="sm:col-span-3 space-y-1">
  <Label className="text-xs text-muted-foreground/75 font-medium text-muted-foreground">Total da Linha</Label>
- <div className="h-9 px-3 rounded-xl bg-muted/40 border border-border/50 flex items-center justify-end font-mono font-bold text-xs text-foreground">
+ <div className="h-9 px-3 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-end font-mono font-bold text-xs text-foreground">
  {formatMoney(Math.max(0, lineTotal))}
  </div>
  </div>
@@ -1950,16 +1950,16 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  </div>
 
  {/* Card 3: Condições Comerciais & Presets */}
- <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-4 shadow-xs">
+ <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <FileCheck2 className="size-4 text-primary" />
  <span>Condições Comerciais e Termos de Pagamento</span>
  </div>
 
  {/* Presets Rápidos de Condição */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground">Modelos de Pagamento Rápidos:</span>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {[
  { label: " Pix à Vista (5% OFF)", text: "Pagamento à vista via Pix com 5% de desconto. Chave PIX informada após aprovação." },
  { label: " 10x sem Juros", text: "Parcelamento em até 10x sem juros no cartão de crédito." },
@@ -1971,7 +1971,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  key={preset.label}
  type="button"
  onClick={() => applyConditionPreset(preset.text)}
- className="text-xs font-medium px-2.5 py-1 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors border border-border/50"
+ className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors border border-border/50"
  >
  {preset.label}
  </button>
@@ -1986,7 +1986,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  value={conditions}
  onChange={(e) => setConditions(e.target.value)}
  placeholder="Ex: Pagamento 50% de entrada e 50% na entrega. Prazo de execução: 15 dias úteis."
- className="rounded-xl text-xs min-h-20"
+ className="rounded-lg text-xs min-h-20"
  />
  </div>
 
@@ -1996,7 +1996,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  value={internalNotes}
  onChange={(e) => setInternalNotes(e.target.value)}
  placeholder="Ex: Negociação aprovada pelo gerente com 5% de margem extra."
- className="rounded-xl text-xs min-h-12"
+ className="rounded-lg text-xs min-h-12"
  />
  </div>
  </div>
@@ -2005,7 +2005,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  {/* Coluna Direita: Resumo Financeiro & Validade (4 Cols Sticky) */}
  <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-20">
- <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-4 shadow-xs">
+ <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <DollarSign className="size-4 text-primary" />
  <span>Balanço da Proposta</span>
@@ -2030,7 +2030,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  </div>
  </div>
 
- <div className="pt-3 border-t border-border/60 space-y-1.5">
+ <div className="pt-3 border-t border-border/60 space-y-2">
  <Label className="text-xs font-bold">Validade da Proposta (Dias)</Label>
  <Input
  type="number"
@@ -2038,7 +2038,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  max={90}
  value={validUntilDays}
  onChange={(e) => setValidUntilDays(Number(e.target.value) || 7)}
- className="h-10 rounded-xl text-xs font-mono"
+ className="h-10 rounded-lg text-xs font-mono"
  />
  <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-tight">
  Após este período, a proposta será marcada como expirada automaticamente.
@@ -2048,7 +2048,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <Button
  type="submit"
  disabled={isSubmitting}
- className="w-full h-11 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-2 mt-4 cursor-pointer shadow-xs"
+ className="w-full h-11 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 mt-4 cursor-pointer shadow-xs"
  >
  {isSubmitting ? (
  <>
@@ -2067,7 +2067,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  {customerData.phone && totalCents > 0 && (
  <button
  type="button"
- className="w-full h-11 mt-2 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
+ className="w-full h-11 mt-2 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
  onClick={() => {
    let msg = `*Orçamento Comercial*\n\n`;
    items.forEach(item => {
@@ -2091,7 +2091,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  {/* Modal de Conexão com Catálogo de Produtos */}
  <Dialog open={isCatalogModalOpen} onOpenChange={setIsCatalogModalOpen}>
- <DialogContent className="sm:max-w-2xl rounded-2xl p-0 overflow-hidden bg-card border-border">
+ <DialogContent className="sm:max-w-2xl rounded-lg p-0 overflow-hidden bg-card border-border">
  <DialogHeader className="p-5 border-b border-border/60 bg-muted/20">
  <DialogTitle className="text-base font-bold flex items-center gap-2">
  <Package className="size-4 text-primary" />
@@ -2107,17 +2107,17 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  value={catalogSearch}
  onChange={(e) => setCatalogSearch(e.target.value)}
  placeholder="Buscar por título, marca ou SKU..."
- className="h-9 text-xs rounded-xl bg-background"
+ className="h-9 text-xs rounded-lg bg-background"
  autoFocus
  />
 
  {catalogCategories.length > 0 && (
- <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+ <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
  <button
  type="button"
  onClick={() => setCatalogCategory("all")}
  className={cn(
- "px-2.5 py-1 rounded-lg font-bold text-xs text-muted-foreground/75 whitespace-nowrap transition-colors cursor-pointer",
+ "px-3 py-1 rounded-lg font-bold text-xs text-muted-foreground/75 whitespace-nowrap transition-colors cursor-pointer",
  catalogCategory === "all"
  ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground hover:text-foreground",
@@ -2131,7 +2131,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  type="button"
  onClick={() => setCatalogCategory(cat)}
  className={cn(
- "px-2.5 py-1 rounded-lg font-bold text-xs text-muted-foreground/75 whitespace-nowrap transition-colors cursor-pointer",
+ "px-3 py-1 rounded-lg font-bold text-xs text-muted-foreground/75 whitespace-nowrap transition-colors cursor-pointer",
  catalogCategory === cat
  ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground hover:text-foreground",
@@ -2156,7 +2156,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  Nenhum produto ativo encontrado no catálogo.
  </div>
  ) : (
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  {filteredCatalog.map((product: any) => {
  const variant = product.product_variants?.[0];
  const price = variant?.price_override_cents ?? product.price_cents ?? 0;
@@ -2166,7 +2166,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <div
  key={product.id}
  onClick={() => handleSelectProduct(product, variant)}
- className="p-3 rounded-xl border border-border/70 hover:border-primary/50 bg-card hover:bg-muted/30 transition-all flex items-center gap-3 cursor-pointer group"
+ className="p-3 rounded-lg border border-border/70 hover:border-primary/50 bg-card hover:bg-muted/30 transition-all flex items-center gap-3 cursor-pointer group"
  >
  {img ? (
  <img
@@ -2180,11 +2180,11 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  </div>
  )}
 
- <div className="min-w-0 flex-1 space-y-0.5">
+ <div className="min-w-0 flex-1 space-y-1">
  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
  {product.title}
  </p>
- <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground">
  {variant?.sku && (
  <span className="font-mono bg-muted px-1 rounded">
  {variant.sku}
@@ -2202,7 +2202,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <Button
  type="button"
  size="sm"
- className="rounded-lg text-xs font-bold h-7 px-2.5 shrink-0"
+ className="rounded-lg text-xs font-bold h-7 px-3 shrink-0"
  >
  Inserir
  </Button>

@@ -32,16 +32,16 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  return (
  <div className={cn("w-full py-10 px-4 bg-muted/20 border-b border-border/40", design_tokens?.className)}>
  <div className="max-w-5xl mx-auto space-y-6">
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card p-6 sm:p-8 rounded-2xl border border-border/70 shadow-sm">
+ <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card p-6 sm:p-8 rounded-lg border border-border/70 shadow-sm">
  <div className="flex items-center gap-5">
- <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/30 flex flex-col items-center justify-center p-2 text-center">
+ <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-emerald-500/10 border-2 border-emerald-500/30 flex flex-col items-center justify-center p-2 text-center">
  <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
  {score.toFixed(1)}
  </span>
  <span className="text-[10px] uppercase font-bold text-emerald-600/80 tracking-wider">de 10.0</span>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center gap-2 flex-wrap">
  <h1 className="text-xl sm:text-2xl font-bold text-foreground">
  {content?.company_name || "Reputação da Empresa"}
@@ -59,7 +59,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
 
  <Button
  size="lg"
- className="min-h-[44px] gap-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-sm w-full md:w-auto"
+ className="min-h-11 gap-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-sm w-full md:w-auto"
  onClick={() => setIsComplaintModalOpen(true)}
  >
  <AlertCircle className="w-4 h-4" />
@@ -68,9 +68,9 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  </div>
 
  {/* 4 Cards de Métricas Estilo Reclame Aqui */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
- <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
- <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+ <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground">
  <ThumbsUp className="w-3.5 h-3.5 text-emerald-600" />
  <span>Índice de Solução</span>
  </div>
@@ -78,8 +78,8 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  <div className="text-[10px] text-muted-foreground">Problemas resolvidos</div>
  </div>
 
- <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
- <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+ <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground">
  <Star className="w-3.5 h-3.5 text-amber-500" />
  <span>Voltariam a Fazer Negócio</span>
  </div>
@@ -87,8 +87,8 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  <div className="text-[10px] text-muted-foreground">Comprariam novamente</div>
  </div>
 
- <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
- <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+ <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground">
  <Clock className="w-3.5 h-3.5 text-blue-500" />
  <span>Tempo de Resposta</span>
  </div>
@@ -96,8 +96,8 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  <div className="text-[10px] text-muted-foreground">Média de atendimento</div>
  </div>
 
- <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
- <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+ <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground">
  <MessageSquare className="w-3.5 h-3.5 text-primary" />
  <span>Total Reclamações</span>
  </div>

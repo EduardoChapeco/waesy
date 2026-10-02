@@ -25,7 +25,7 @@ export function SectionMap({ draft, save }: SectionMapProps) {
         {!showMap && (
           <div className="space-y-2">
             {draft.map_image_url && (
-              <div className="relative h-24 w-full overflow-hidden rounded-2xl border border-border">
+              <div className="relative h-24 w-full overflow-hidden rounded-lg border border-border">
                 <img
                   src={draft.map_image_url}
                   alt="Mapa do Roteiro"
@@ -34,7 +34,7 @@ export function SectionMap({ draft, save }: SectionMapProps) {
                 <Button
                   type="button"
                   onClick={() => save({ map_image_url: null })}
-                  className="absolute right-1 top-1 rounded bg-destructive/80 px-1.5 py-0.5 text-[9px] text-white hover:bg-destructive"
+                  className="absolute right-1 top-1 rounded bg-destructive/80 px-2 py-1 text-[9px] text-white hover:bg-destructive"
                 >
                   Remover
                 </Button>
@@ -43,7 +43,7 @@ export function SectionMap({ draft, save }: SectionMapProps) {
             <Button
               type="button"
               onClick={() => setShowMap(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-3 text-xs text-muted-foreground hover:bg-surface-alt transition-colors"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-3 text-xs text-muted-foreground hover:bg-surface-alt transition-colors"
             >
               <Map className="h-3.5 w-3.5" />
               {draft.map_image_url ? "Editar Mapa Interativo" : "Abrir Mapa Interativo"}

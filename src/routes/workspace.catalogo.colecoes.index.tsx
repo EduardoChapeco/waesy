@@ -83,11 +83,11 @@ function AdminCollectionsPage() {
  />
 
       {filteredCollections.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl border border-border/40 bg-card/60 space-y-4 px-4">
-          <div className="size-14 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="py-16 text-center rounded-lg border border-border/40 bg-card/60 space-y-4 px-4">
+          <div className="size-14 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Plus className="size-6" />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <h3 className="text-base sm:text-lg font-bold text-foreground">
               {statusFilter === "active"
                 ? "Nenhuma coleção cadastrada"
@@ -100,7 +100,7 @@ function AdminCollectionsPage() {
           {statusFilter === "active" && (
             <Button
               asChild
-              className="h-11 px-6 rounded-xl font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+              className="h-11 px-6 rounded-lg font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
             >
               <Link to="/workspace/catalogo/colecoes/novo">
                 <Plus className="size-4" />
@@ -116,11 +116,11 @@ function AdminCollectionsPage() {
             {filteredCollections.map((col: any) => (
               <div
                 key={col.id}
-                className="p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-3.5 transition-all"
+                className="p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-4 transition-all"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="size-12 rounded-xl bg-muted/60 border border-border/40 overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="size-12 rounded-lg bg-muted/60 border border-border/40 overflow-hidden flex items-center justify-center shrink-0">
                       {col.cover_url || col.image_url ? (
                         <img
                           src={col.cover_url || col.image_url}
@@ -137,7 +137,7 @@ function AdminCollectionsPage() {
                       <h4 className="text-base font-bold text-foreground truncate">
                         {col.name}
                       </h4>
-                      <p className="text-xs font-mono text-muted-foreground truncate mt-0.5">
+                      <p className="text-xs font-mono text-muted-foreground truncate mt-1">
                         /{col.slug}
                       </p>
                     </div>
@@ -151,7 +151,7 @@ function AdminCollectionsPage() {
                         ? "outline"
                         : "secondary"
                     }
-                    className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
+                    className="text-xs font-semibold px-3 py-1 rounded-full shrink-0"
                   >
                     {col.status === "active"
                       ? "Ativa"
@@ -166,7 +166,7 @@ function AdminCollectionsPage() {
                   <Button
                     asChild
                     variant="outline"
-                    className="flex-1 h-11 rounded-xl text-sm font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
+                    className="flex-1 h-11 rounded-lg text-sm font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
                   >
                     <Link to={`/workspace/catalogo/colecoes/${col.id}` as any}>
                       <Edit className="size-4 text-muted-foreground" />
@@ -178,13 +178,13 @@ function AdminCollectionsPage() {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        className="h-11 px-4 rounded-xl border-border/60 hover:bg-muted cursor-pointer"
+                        className="h-11 px-4 rounded-lg border-border/60 hover:bg-muted cursor-pointer"
                         aria-label="Mais opções"
                       >
                         <MoreHorizontal className="size-5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-xl">
+                    <DropdownMenuContent align="end" className="w-48 p-2 rounded-lg">
                       {col.status !== "archived" ? (
                         <>
                           {col.status === "active" ? (
@@ -229,19 +229,19 @@ function AdminCollectionsPage() {
           </div>
 
           {/* ── 2. Desktop High-Density Table Layout ── */}
-          <div className="hidden md:block rounded-2xl overflow-hidden bg-card border border-border/40 shadow-2xs">
+          <div className="hidden md:block rounded-lg overflow-hidden bg-card border border-border/40 shadow-2xs">
             <div className="overflow-x-auto no-scrollbar">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40">
-                    <TableHead className="w-16 py-3.5"></TableHead>
-                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    <TableHead className="w-16 py-4"></TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                       Coleção e Slug
                     </TableHead>
-                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                       Status
                     </TableHead>
-                    <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                       Ações
                     </TableHead>
                   </TableRow>
@@ -249,8 +249,8 @@ function AdminCollectionsPage() {
                 <TableBody>
                   {filteredCollections.map((col: any) => (
                     <TableRow key={col.id} className="hover:bg-muted/30 transition-colors">
-                      <TableCell className="pl-4 pr-0 py-3.5">
-                        <div className="size-10 rounded-xl bg-muted/60 border border-border/50 overflow-hidden flex items-center justify-center shrink-0">
+                      <TableCell className="pl-4 pr-0 py-4">
+                        <div className="size-10 rounded-lg bg-muted/60 border border-border/50 overflow-hidden flex items-center justify-center shrink-0">
                           {col.cover_url || col.image_url ? (
                             <img
                               src={col.cover_url || col.image_url}
@@ -264,8 +264,8 @@ function AdminCollectionsPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="py-3.5">
-                        <div className="space-y-0.5">
+                      <TableCell className="py-4">
+                        <div className="space-y-1">
                           <Link
                             to={`/workspace/catalogo/colecoes/${col.id}` as any}
                             className="font-bold text-sm text-foreground hover:text-primary transition-colors block"
@@ -277,7 +277,7 @@ function AdminCollectionsPage() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3.5">
+                      <TableCell className="py-4">
                         <Badge
                           variant={
                             col.status === "active"
@@ -286,7 +286,7 @@ function AdminCollectionsPage() {
                               ? "outline"
                               : "secondary"
                           }
-                          className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                          className="text-xs font-semibold px-3 py-1 rounded-full"
                         >
                           {col.status === "active"
                             ? "Ativa"
@@ -295,7 +295,7 @@ function AdminCollectionsPage() {
                             : "Arquivada"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right py-3.5">
+                      <TableCell className="text-right py-4">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
@@ -307,7 +307,7 @@ function AdminCollectionsPage() {
                               <MoreHorizontal className="size-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-xl">
+                          <DropdownMenuContent align="end" className="w-48 p-2 rounded-lg">
                             {col.status !== "archived" ? (
                               <>
                                 <DropdownMenuItem asChild className="h-9 rounded-lg text-sm cursor-pointer">

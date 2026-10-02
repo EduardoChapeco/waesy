@@ -224,17 +224,17 @@ function AdminStockPage() {
 
       {/* Grid de KPIs de Estoque */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="bg-card rounded-2xl p-4 border border-border/60">
+        <div className="bg-card rounded-lg p-4 border border-border/60">
           <span className="text-xs font-semibold text-muted-foreground">Total de SKUs</span>
           <div className="text-2xl font-bold text-foreground mt-1">{metrics.totalSKUs}</div>
         </div>
 
-        <div className="bg-card rounded-2xl p-4 border border-border/60">
+        <div className="bg-card rounded-lg p-4 border border-border/60">
           <span className="text-xs font-semibold text-muted-foreground">Estoque em Mãos</span>
           <div className="text-2xl font-bold text-foreground mt-1">{metrics.totalOnHand} un.</div>
         </div>
 
-        <div className="bg-card rounded-2xl p-4 border border-border/60">
+        <div className="bg-card rounded-lg p-4 border border-border/60">
           <span className="text-xs font-semibold text-muted-foreground">Estoque Crítico</span>
           <div className="text-2xl font-bold text-warning-foreground mt-1">{metrics.criticalCount}</div>
         </div>
@@ -242,15 +242,15 @@ function AdminStockPage() {
 
       {/* Seletor de Armazém / Local de Estoque (Omni-Hub ERP V122) */}
       {locations.length > 0 && (
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-          <span className="text-xs font-semibold text-muted-foreground shrink-0 flex items-center gap-1.5">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <span className="text-xs font-semibold text-muted-foreground shrink-0 flex items-center gap-2">
             <Box className="size-3.5 text-primary" /> Armazém:
           </span>
           <button
             type="button"
             onClick={() => handleSelectLocation("all")}
             className={cn(
-              "px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer shrink-0",
+              "px-3 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer shrink-0",
               selectedLocationId === "all"
                 ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                 : "border-border/60 bg-card hover:bg-muted/40 text-muted-foreground"
@@ -264,7 +264,7 @@ function AdminStockPage() {
               type="button"
               onClick={() => handleSelectLocation(loc.id)}
               className={cn(
-                "px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-1.5",
+                "px-3 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-2",
                 selectedLocationId === loc.id
                   ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                   : "border-border/60 bg-card hover:bg-muted/40 text-muted-foreground"
@@ -319,7 +319,7 @@ function AdminStockPage() {
           {/* Visualização Mobile: Cards Verticais Independentes (block md:hidden) */}
           <div className="block md:hidden space-y-3 mb-6">
             {filteredStock.length === 0 ? (
-              <div className="rounded-2xl border border-border/60 bg-card p-6 text-center text-sm text-muted-foreground">
+              <div className="rounded-lg border border-border/60 bg-card p-6 text-center text-sm text-muted-foreground">
                 Nenhum SKU encontrado para os filtros aplicados.
               </div>
             ) : (
@@ -330,24 +330,24 @@ function AdminStockPage() {
                 return (
                   <div
                     key={variant.id}
-                    className="rounded-2xl border border-border/60 bg-card p-4 space-y-3.5 shadow-2xs"
+                    className="rounded-lg border border-border/60 bg-card p-4 space-y-4 shadow-2xs"
                   >
                     {/* Topo do Card: SKU e Nível */}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-muted/60 text-foreground border border-border/40">
+                      <span className="font-mono text-xs font-semibold px-2 py-1 rounded-md bg-muted/60 text-foreground border border-border/40">
                         {variant.sku}
                       </span>
                       <div>
                         {available <= 0 ? (
-                          <Badge variant="destructive" className="text-xs font-semibold px-2 py-0.5">
+                          <Badge variant="destructive" className="text-xs font-semibold px-2 py-1">
                             Esgotado
                           </Badge>
                         ) : available <= 5 ? (
-                          <Badge variant="warning" className="text-xs font-semibold px-2 py-0.5">
+                          <Badge variant="warning" className="text-xs font-semibold px-2 py-1">
                             Crítico
                           </Badge>
                         ) : (
-                          <Badge variant="default" className="text-xs font-semibold px-2 py-0.5">
+                          <Badge variant="default" className="text-xs font-semibold px-2 py-1">
                             Regular
                           </Badge>
                         )}
@@ -381,7 +381,7 @@ function AdminStockPage() {
                         type="button"
                         variant="outline"
                         onClick={() => handleOpenMovementModal(variant, "purchase")}
-                        className="h-11 flex-1 rounded-xl text-xs font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                        className="h-11 flex-1 rounded-lg text-xs font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
                       >
                         <Plus className="size-4 mr-1" /> Entrada
                       </Button>
@@ -390,14 +390,14 @@ function AdminStockPage() {
                         type="button"
                         variant="outline"
                         onClick={() => handleOpenMovementModal(variant, "damage")}
-                        className="h-11 flex-1 rounded-xl text-xs font-semibold text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer"
+                        className="h-11 flex-1 rounded-lg text-xs font-semibold text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer"
                       >
                         <Minus className="size-4 mr-1" /> Avaria
                       </Button>
 
                       <StockAuditDialog
                         variant={variant}
-                        className="h-11 px-3.5 rounded-xl text-xs font-semibold border-border/60 hover:bg-muted/40 cursor-pointer"
+                        className="h-11 px-4 rounded-lg text-xs font-semibold border-border/60 hover:bg-muted/40 cursor-pointer"
                       />
                     </div>
                   </div>
@@ -407,7 +407,7 @@ function AdminStockPage() {
           </div>
 
           {/* Visualização Desktop: Tabela de Alta Densidade (hidden md:block) */}
-          <div className="hidden md:block bg-card rounded-2xl border border-border/60 overflow-hidden mb-6">
+          <div className="hidden md:block bg-card rounded-lg border border-border/60 overflow-hidden mb-6">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40">
@@ -459,7 +459,7 @@ function AdminStockPage() {
                       </TableCell>
 
                       <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1.5">
+                        <div className="flex items-center justify-center gap-2">
                           <Button
                             variant="outline"
                             size="sm"
@@ -510,7 +510,7 @@ function AdminStockPage() {
  variant="outline"
  onClick={() => setSelectedVariant(null)}
  disabled={isUpdating}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
@@ -518,7 +518,7 @@ function AdminStockPage() {
  type="button"
  onClick={handleExecuteMovement}
  disabled={isUpdating}
- className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+ className="rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  {isUpdating ? "Gravando..." : "Confirmar Movimentação"}
  </Button>
@@ -527,16 +527,16 @@ function AdminStockPage() {
  >
  <form onSubmit={handleExecuteMovement} className="space-y-4 py-2">
   {locations.length > 0 && movementType !== "transfer" && (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <Label className="text-xs font-bold">Armazém / Local de Estoque</Label>
       <Select
         value={selectedLocationId === "all" ? (locations.find((l) => l.is_default)?.id || locations[0]?.id || "") : selectedLocationId}
         onValueChange={setSelectedLocationId}
       >
-        <SelectTrigger className="h-10 rounded-xl text-xs">
+        <SelectTrigger className="h-10 rounded-lg text-xs">
           <SelectValue placeholder="Selecione o local" />
         </SelectTrigger>
-        <SelectContent className="rounded-xl">
+        <SelectContent className="rounded-lg">
           {locations.map((loc) => (
             <SelectItem key={loc.id} value={loc.id} className="text-xs">
               {loc.name} {loc.is_default ? "(Principal)" : `(${loc.type})`}
@@ -548,17 +548,17 @@ function AdminStockPage() {
   )}
 
   {locations.length > 0 && movementType === "transfer" && (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-muted/30 border border-border/50">
-      <div className="space-y-1.5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+      <div className="space-y-2">
         <Label className="text-xs font-bold text-foreground">Origem (Saída)</Label>
         <Select
           value={selectedLocationId === "all" ? (locations.find((l) => l.is_default)?.id || locations[0]?.id || "") : selectedLocationId}
           onValueChange={setSelectedLocationId}
         >
-          <SelectTrigger className="h-10 rounded-xl text-xs">
+          <SelectTrigger className="h-10 rounded-lg text-xs">
             <SelectValue placeholder="Armazém de Origem" />
           </SelectTrigger>
-          <SelectContent className="rounded-xl">
+          <SelectContent className="rounded-lg">
             {locations.map((loc) => (
               <SelectItem key={loc.id} value={loc.id} className="text-xs">
                 {loc.name} {loc.is_default ? "(Principal)" : ""}
@@ -568,13 +568,13 @@ function AdminStockPage() {
         </Select>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <Label className="text-xs font-bold text-foreground">Destino (Entrada)</Label>
         <Select value={destLocationId} onValueChange={setDestLocationId}>
-          <SelectTrigger className="h-10 rounded-xl text-xs">
+          <SelectTrigger className="h-10 rounded-lg text-xs">
             <SelectValue placeholder="Armazém de Destino" />
           </SelectTrigger>
-          <SelectContent className="rounded-xl">
+          <SelectContent className="rounded-lg">
             {locations
               .filter((loc) => loc.id !== (selectedLocationId === "all" ? (locations.find((l) => l.is_default)?.id || locations[0]?.id || "") : selectedLocationId))
               .map((loc) => (
@@ -588,13 +588,13 @@ function AdminStockPage() {
     </div>
   )}
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Tipo de Movimentação</Label>
  <Select value={movementType} onValueChange={(val: any) => setMovementType(val)}>
- <SelectTrigger className="h-10 rounded-xl text-xs">
+ <SelectTrigger className="h-10 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="purchase">Entrada por Compra (Fornecedor)</SelectItem>
  <SelectItem value="adjustment">Ajuste Manual de Inventário</SelectItem>
  <SelectItem value="damage">Perda / Avaria (Saída Físico)</SelectItem>
@@ -604,7 +604,7 @@ function AdminStockPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Quantidade *</Label>
  <Input
  type="number"
@@ -612,7 +612,7 @@ function AdminStockPage() {
  value={qtyInput}
  onChange={(e) => setQtyInput(e.target.value)}
  required
- className="h-10 rounded-xl text-xs font-mono font-bold"
+ className="h-10 rounded-lg text-xs font-mono font-bold"
  />
  <p className="text-xs text-muted-foreground">
  {movementType === "damage"
@@ -621,7 +621,7 @@ function AdminStockPage() {
  </p>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">
  Justificativa / Observação{" "}
  {(movementType === "damage" || movementType === "transfer") && "*"}
@@ -631,7 +631,7 @@ function AdminStockPage() {
  value={noteInput}
  onChange={(e) => setNoteInput(e.target.value)}
  required={movementType === "damage" || movementType === "transfer"}
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  />
  </div>
  </form>

@@ -163,7 +163,7 @@ export function WorkspaceCanonicalToolbar({
       {hasTabs && (
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
           {/* LADO ESQUERDO: Abas Segmentadas */}
-          <div className="flex items-center p-1 rounded-2xl bg-muted/40 border border-border/60 shrink-0 gap-0.5 overflow-x-auto no-scrollbar max-w-full snap-x snap-mandatory">
+          <div className="flex items-center p-1 rounded-lg bg-muted/40 border border-border/60 shrink-0 gap-1 overflow-x-auto no-scrollbar max-w-full snap-x snap-mandatory">
             {effectiveTabs.map((item) => {
               const Icon = item.icon;
               const isActive = currentActive === item.id;
@@ -175,7 +175,7 @@ export function WorkspaceCanonicalToolbar({
                   type="button"
                   onClick={() => handleTabSelect?.(item.id)}
                   className={cn(
-                    "flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 snap-start min-h-[34px]",
+                    "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 snap-start min-h-[34px]",
                     isActive
                       ? "bg-background text-foreground shadow-2xs font-bold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -194,7 +194,7 @@ export function WorkspaceCanonicalToolbar({
                     <Badge
                       variant="secondary"
                       className={cn(
-                        "ml-1 text-[10px] px-1.5 py-0 h-4 font-mono leading-none border-border/40",
+                        "ml-1 text-[10px] px-2 py-0 h-4 font-mono leading-none border-border/40",
                         isActive ? "bg-muted text-foreground" : "bg-muted/60 text-muted-foreground"
                       )}
                     >
@@ -215,7 +215,7 @@ export function WorkspaceCanonicalToolbar({
                   variant="outline"
                   size="sm"
                   onClick={handleColumns}
-                  className="h-9 px-3 rounded-xl text-xs font-semibold border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none"
+                  className="h-9 px-3 rounded-lg text-xs font-semibold border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none"
                   title="Personalizar Colunas do Kanban"
                 >
                   <Settings2 className="size-3.5 text-muted-foreground" />
@@ -229,12 +229,12 @@ export function WorkspaceCanonicalToolbar({
                   variant="outline"
                   size="sm"
                   onClick={handleDashboard}
-                  className="h-9 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none relative"
+                  className="h-9 px-4 rounded-lg text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none relative"
                 >
                   <BarChart3 className="size-3.5 text-primary" />
                   <span>{effectiveDashboardLabel}</span>
                   {metricsBadge ? (
-                    <span className="text-[10px] font-mono font-bold bg-muted px-1.5 py-0.5 rounded-md border border-border/50 text-foreground">
+                    <span className="text-[10px] font-mono font-bold bg-muted px-2 py-1 rounded-md border border-border/50 text-foreground">
                       {metricsBadge}
                     </span>
                   ) : hasActiveMetrics ? (
@@ -260,13 +260,13 @@ export function WorkspaceCanonicalToolbar({
                   value={effectiveSearch || ""}
                   onChange={(e) => onSearchChange(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="h-10 pl-9 pr-8 text-base sm:text-xs rounded-xl bg-card border-border/60 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/40 w-full shadow-none"
+                  className="h-10 pl-9 pr-8 text-base sm:text-xs rounded-lg bg-card border-border/60 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/40 w-full shadow-none"
                 />
                 {effectiveSearch && (
                   <button
                     type="button"
                     onClick={() => onSearchChange("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
                     title="Limpar busca"
                   >
                     <X className="size-3.5" />
@@ -290,10 +290,10 @@ export function WorkspaceCanonicalToolbar({
               <div className="hidden sm:flex items-center gap-2 shrink-0">
                 {filters.map((f) => (
                   <Select key={f.id} value={f.value} onValueChange={f.onChange}>
-                    <SelectTrigger className="h-10 px-3 text-xs rounded-xl bg-card border-border/60 font-medium min-w-[130px] shadow-none">
+                    <SelectTrigger className="h-10 px-3 text-xs rounded-lg bg-card border-border/60 font-medium min-w-[130px] shadow-none">
                       <SelectValue placeholder={f.label} />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl">
+                    <SelectContent className="rounded-lg">
                       {f.options.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value} className="text-xs rounded-lg">
                           {opt.label}
@@ -306,7 +306,7 @@ export function WorkspaceCanonicalToolbar({
             )}
 
             {/* Slot Contextual no Desktop */}
-            {filterSlot && <div className="hidden sm:flex items-center gap-1.5 shrink-0">{filterSlot}</div>}
+            {filterSlot && <div className="hidden sm:flex items-center gap-2 shrink-0">{filterSlot}</div>}
           </div>
 
           {/* LADO DIREITO: Ações Secundárias, Métricas e CTA Primário */}
@@ -318,7 +318,7 @@ export function WorkspaceCanonicalToolbar({
                 variant="outline"
                 size="sm"
                 onClick={handleColumns}
-                className="h-10 px-3 rounded-xl text-xs font-semibold border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none hidden sm:inline-flex"
+                className="h-10 px-3 rounded-lg text-xs font-semibold border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none hidden sm:inline-flex"
                 title="Personalizar Colunas do Kanban"
               >
                 <Settings2 className="size-3.5 text-muted-foreground" />
@@ -332,12 +332,12 @@ export function WorkspaceCanonicalToolbar({
                 variant="outline"
                 size="sm"
                 onClick={handleDashboard}
-                className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none relative hidden sm:inline-flex"
+                className="h-10 px-4 rounded-lg text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none relative hidden sm:inline-flex"
               >
                 <BarChart3 className="size-3.5 text-primary" />
                 <span>{effectiveDashboardLabel}</span>
                 {metricsBadge ? (
-                  <span className="text-[10px] font-mono font-bold bg-muted px-1.5 py-0.5 rounded-md border border-border/50 text-foreground">
+                  <span className="text-[10px] font-mono font-bold bg-muted px-2 py-1 rounded-md border border-border/50 text-foreground">
                     {metricsBadge}
                   </span>
                 ) : hasActiveMetrics ? (
@@ -354,7 +354,7 @@ export function WorkspaceCanonicalToolbar({
                 size="sm"
                 disabled={secondaryAction.disabled}
                 onClick={secondaryAction.onClick}
-                className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none hidden sm:inline-flex"
+                className="h-10 px-4 rounded-lg text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none hidden sm:inline-flex"
               >
                 {secondaryAction.icon && <secondaryAction.icon className="size-3.5" />}
                 <span>{secondaryAction.label}</span>
@@ -370,7 +370,7 @@ export function WorkspaceCanonicalToolbar({
                   size="sm"
                   disabled={act.disabled}
                   onClick={act.onClick}
-                  className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none hidden sm:inline-flex"
+                  className="h-10 px-4 rounded-lg text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none hidden sm:inline-flex"
                 >
                   {act.icon && <act.icon className="size-3.5" />}
                   <span>{act.label}</span>
@@ -385,13 +385,13 @@ export function WorkspaceCanonicalToolbar({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-10 w-10 p-0 rounded-xl border-border/70 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                      className="h-10 w-10 p-0 rounded-lg border-border/70 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
                       title="Mais opções"
                     >
                       <MoreHorizontal className="size-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-xl min-w-[170px]">
+                  <DropdownMenuContent align="end" className="rounded-lg min-w-[170px]">
                     {secondaryAction && (
                       <DropdownMenuItem
                         onClick={secondaryAction.onClick}
@@ -445,7 +445,7 @@ export function WorkspaceCanonicalToolbar({
                 size="sm"
                 disabled={(primaryAction as WorkspaceCanonicalAction).disabled}
                 onClick={(primaryAction as WorkspaceCanonicalAction).onClick}
-                className="h-10 px-3 sm:px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer shadow-none shrink-0"
+                className="h-10 px-3 sm:px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer shadow-none shrink-0"
               >
                 {(primaryAction as WorkspaceCanonicalAction).icon &&
                   React.createElement((primaryAction as WorkspaceCanonicalAction).icon!, { className: "size-3.5" })}

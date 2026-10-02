@@ -99,7 +99,7 @@ export function ContactForm({ storeId, content }: ContactFormProps) {
  </div>
  ) : (
  <form onSubmit={handleSubmit} className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground">Nome Completo *</label>
  <Input
  placeholder="Seu nome"
@@ -111,7 +111,7 @@ export function ContactForm({ storeId, content }: ContactFormProps) {
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground">E-mail de Contato *</label>
  <div className="relative">
  <Input
@@ -128,7 +128,7 @@ export function ContactForm({ storeId, content }: ContactFormProps) {
  </div>
 
  {showPhone && (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground">
  Telefone / WhatsApp
  </label>
@@ -146,7 +146,7 @@ export function ContactForm({ storeId, content }: ContactFormProps) {
  </div>
  )}
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground">Mensagem *</label>
  <div className="relative">
  <Textarea
@@ -156,7 +156,7 @@ export function ContactForm({ storeId, content }: ContactFormProps) {
  required
  disabled={isSubmitting}
  rows={4}
- className="text-sm pl-9 pt-2.5 resize-none"
+ className="text-sm pl-9 pt-3 resize-none"
  />
  <MessageSquare className="absolute left-3 top-3 size-4 text-muted-foreground/60" />
  </div>

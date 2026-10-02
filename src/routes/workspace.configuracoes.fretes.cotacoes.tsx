@@ -98,7 +98,7 @@ function FretesCotacoesPage() {
  <PageHeader title="Cotações" />
 
  {/* Solicitações Pendentes */}
- <div className="bg-surface-paper rounded-xl p-6">
+ <div className="bg-surface-paper rounded-lg p-6">
  <div className="flex items-center justify-between mb-4">
  <h3 className="font-semibold text-lg flex items-center gap-2">
  Solicitações Pendentes
@@ -115,7 +115,7 @@ function FretesCotacoesPage() {
  </p>
  </div>
  ) : (
- <div className="rounded-xl bg-surface-paper overflow-hidden">
+ <div className="rounded-lg bg-surface-paper overflow-hidden">
  <Table>
  <TableHeader>
  <TableRow>
@@ -137,7 +137,7 @@ function FretesCotacoesPage() {
  <TableCell className="font-medium">
  <div className="flex flex-col">
  <span>#{order.public_token}</span>
- <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 font-normal">
+ <span className="text-xs text-muted-foreground flex items-center gap-1 mt-1 font-normal">
  <Calendar className="size-3" />
  {formatDate(order.created_at)}
  </span>
@@ -154,7 +154,7 @@ function FretesCotacoesPage() {
  href={`https://wa.me/55${client.phone.replace(/\D/g, "")}`}
  target="_blank"
  rel="noopener noreferrer"
- className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5"
+ className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
  >
  <Phone className="size-3" />
  {client.phone}
@@ -162,7 +162,7 @@ function FretesCotacoesPage() {
  )}
  </div>
  </TableCell>
- <TableCell className="max-w-[280px]">
+ <TableCell className="max-w-72">
  <div className="flex flex-col text-xs font-normal text-muted-foreground">
  <span className="font-medium text-foreground">
  {addr.neighborhood || "-"}, {addr.city || "-"} - {addr.state || "-"}
@@ -220,7 +220,7 @@ function FretesCotacoesPage() {
  </div>
 
  {/* Simulador de Cotações */}
- <div className="bg-surface-paper rounded-xl p-6">
+ <div className="bg-surface-paper rounded-lg p-6">
  <h3 className="font-semibold mb-4 text-lg">Simular Frete por CEP</h3>
  <form onSubmit={handleSimulate} className="flex gap-3 max-w-sm">
  <Input
@@ -286,7 +286,7 @@ function FretesCotacoesPage() {
  </div>
 
  {/* Zonas Ativas */}
- <div className="bg-surface-paper rounded-xl p-6">
+ <div className="bg-surface-paper rounded-lg p-6">
  <h3 className="font-semibold mb-4 text-lg">Zonas Ativas ({zones.length})</h3>
  {zones.length === 0 ? (
  <EmptyState title="Nenhuma zona configurada" />
@@ -295,7 +295,7 @@ function FretesCotacoesPage() {
  {zones.map((z: any) => (
  <div
  key={z.id}
- className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm bg-muted/15"
+ className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm bg-muted/15"
  >
  <span className="font-medium">{z.name}</span>
  <span className="text-muted-foreground font-normal">

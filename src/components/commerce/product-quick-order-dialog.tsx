@@ -137,7 +137,7 @@ export function ProductQuickOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-5 sm:p-6 rounded-2xl bg-card border-border/60 shadow-xl overflow-hidden">
+      <DialogContent className="max-w-md p-5 sm:p-6 rounded-lg bg-card border-border/60 shadow-xl overflow-hidden">
         <DialogHeader className="text-left space-y-1">
           <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
             <ShoppingBag className="size-5 text-primary" />
@@ -149,7 +149,7 @@ export function ProductQuickOrderDialog({
         </DialogHeader>
 
         {/* Resumo do Produto Selecionado */}
-        <div className="p-3 rounded-xl bg-muted/40 border border-border/40 flex items-center gap-3">
+        <div className="p-3 rounded-lg bg-muted/40 border border-border/40 flex items-center gap-3">
           {product.image ? (
             <img
               src={product.image}
@@ -161,7 +161,7 @@ export function ProductQuickOrderDialog({
               <Store className="size-6 text-muted-foreground" />
             </div>
           )}
-          <div className="flex-1 min-w-0 space-y-0.5">
+          <div className="flex-1 min-w-0 space-y-1">
             <h4 className="text-xs font-bold text-foreground truncate">{product.title}</h4>
             {variantSummary && (
               <p className="text-[11px] text-muted-foreground truncate">{variantSummary}</p>
@@ -177,14 +177,14 @@ export function ProductQuickOrderDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-1">
           {/* Dados Pessoais */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-[11px] font-semibold text-foreground">Seu Nome</label>
               <Input
                 placeholder="Ex: Ana Silva"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="h-10 text-xs rounded-xl bg-background border-border/60"
+                className="h-10 text-xs rounded-lg bg-background border-border/60"
                 required
               />
             </div>
@@ -194,21 +194,21 @@ export function ProductQuickOrderDialog({
                 placeholder="(00) 00000-0000"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                className="h-10 text-xs rounded-xl bg-background border-border/60"
+                className="h-10 text-xs rounded-lg bg-background border-border/60"
                 required
               />
             </div>
           </div>
 
           {/* Modo de Recebimento */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="text-[11px] font-semibold text-foreground">Como deseja receber?</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setDeliveryMode("pickup")}
                 className={cn(
-                  "p-2.5 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer",
+                  "p-3 rounded-lg border text-left flex flex-col gap-1 transition-all cursor-pointer",
                   deliveryMode === "pickup"
                     ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/30"
                     : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
@@ -225,7 +225,7 @@ export function ProductQuickOrderDialog({
                 type="button"
                 onClick={() => setDeliveryMode("immediate")}
                 className={cn(
-                  "p-2.5 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer",
+                  "p-3 rounded-lg border text-left flex flex-col gap-1 transition-all cursor-pointer",
                   deliveryMode === "immediate"
                     ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/30"
                     : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
@@ -248,21 +248,21 @@ export function ProductQuickOrderDialog({
                 placeholder="Rua, Número, Bairro e Ponto de Referência"
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
-                className="h-10 text-xs rounded-xl bg-background border-border/60"
+                className="h-10 text-xs rounded-lg bg-background border-border/60"
                 required
               />
             </div>
           )}
 
           {/* Forma de Pagamento */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="text-[11px] font-semibold text-foreground">Forma de Pagamento</label>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setPaymentMethod("pix")}
                 className={cn(
-                  "p-2 rounded-xl border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
+                  "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
                   paymentMethod === "pix"
                     ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold"
                     : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
@@ -276,7 +276,7 @@ export function ProductQuickOrderDialog({
                 type="button"
                 onClick={() => setPaymentMethod("card")}
                 className={cn(
-                  "p-2 rounded-xl border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
+                  "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
                   paymentMethod === "card"
                     ? "border-primary bg-primary/10 text-foreground font-bold"
                     : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
@@ -290,7 +290,7 @@ export function ProductQuickOrderDialog({
                 type="button"
                 onClick={() => setPaymentMethod("cash")}
                 className={cn(
-                  "p-2 rounded-xl border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
+                  "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
                   paymentMethod === "cash"
                     ? "border-primary bg-primary/10 text-foreground font-bold"
                     : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
@@ -310,7 +310,7 @@ export function ProductQuickOrderDialog({
                 placeholder="Ex: 50,00 ou Não preciso"
                 value={cashChangeFor}
                 onChange={(e) => setCashChangeFor(e.target.value)}
-                className="h-10 text-xs rounded-xl bg-background border-border/60"
+                className="h-10 text-xs rounded-lg bg-background border-border/60"
               />
             </div>
           )}
@@ -327,7 +327,7 @@ export function ProductQuickOrderDialog({
           <Button
             type="submit"
             size="lg"
-            className="w-full h-11 rounded-xl text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer active:scale-95 transition-all shadow-md"
+            className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer active:scale-95 transition-all shadow-md"
             disabled={isSubmitting}
           >
             {isSubmitting ? (

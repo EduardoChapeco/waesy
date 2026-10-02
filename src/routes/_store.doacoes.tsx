@@ -295,7 +295,7 @@ function DoacoesPage() {
       {/* Desktop Header (hidden on Mobile) */}
       <header className="hidden md:flex items-center justify-between gap-4 pt-2">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <Heart size={20} weight="fill" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -305,7 +305,7 @@ function DoacoesPage() {
 
         <Button
           onClick={() => setIsDonationSheetOpen(true)}
-          className="h-11 px-5 rounded-xl font-semibold text-sm gap-2 shadow-none"
+          className="h-11 px-5 rounded-lg font-semibold text-sm gap-2 shadow-none"
         >
           <Plus size={18} weight="bold" />
           <span>Anunciar Doação</span>
@@ -325,7 +325,7 @@ function DoacoesPage() {
             value={searchInput}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Buscar móveis, roupas, livros ou campanhas..."
-            className="w-full h-11 pl-10 pr-10 rounded-xl bg-muted/50 dark:bg-muted/30 border border-border/60 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all truncate"
+            className="w-full h-11 pl-10 pr-10 rounded-lg bg-muted/50 dark:bg-muted/30 border border-border/60 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all truncate"
           />
           {searchInput && (
             <button
@@ -366,7 +366,7 @@ function DoacoesPage() {
                 aria-selected={isActive}
                 onClick={() => handleCategoryChange(cat.id)}
                 className={cn(
-                  "snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 transition-all whitespace-nowrap select-none",
+                  "snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 transition-all whitespace-nowrap select-none",
                   isActive
                     ? "bg-foreground text-background shadow-xs"
                     : "bg-card text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"
@@ -408,7 +408,7 @@ function DoacoesPage() {
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div
                     className={cn(
-                      "size-9 rounded-xl flex items-center justify-center shrink-0",
+                      "size-9 rounded-lg flex items-center justify-center shrink-0",
                       cat.accentClass
                     )}
                   >
@@ -476,7 +476,7 @@ function DoacoesPage() {
               <FrostedCardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-2">
                 <div
                   className={cn(
-                    "size-10 rounded-xl flex items-center justify-center backdrop-blur-md",
+                    "size-10 rounded-lg flex items-center justify-center backdrop-blur-md",
                     cat.accentClass
                   )}
                 >
@@ -495,7 +495,7 @@ function DoacoesPage() {
                   <FrostedCardTitle className="text-base sm:text-lg">
                     {cat.label}
                   </FrostedCardTitle>
-                  <FrostedCardDescription className="text-xs mt-0.5">
+                  <FrostedCardDescription className="text-xs mt-1">
                     {cat.shortSubtitle}
                   </FrostedCardDescription>
                 </div>
@@ -534,20 +534,20 @@ function DoacoesPage() {
                           src={thumb}
                           alt={item.title}
                           loading="lazy"
-                          className="size-12 rounded-xl object-cover shrink-0 bg-muted"
+                          className="size-12 rounded-lg object-cover shrink-0 bg-muted"
                         />
                       ) : (
-                        <div className="size-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                        <div className="size-12 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
                           <Package size={20} weight="duotone" />
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-foreground truncate">
                             {item.title}
                           </span>
                         </div>
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">
+                        <p className="text-xs text-muted-foreground truncate mt-1">
                           {item.location_name || "Retirada combinada"} • Doação Gratuita
                         </p>
                       </div>
@@ -659,10 +659,10 @@ function DoacoesPage() {
           aria-label="Anunciar Doação"
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
         >
-          <div className="w-full h-[100dvh] sm:h-auto sm:max-h-[90dvh] sm:max-w-lg bg-background sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl">
+          <div className="w-full h-[100dvh] sm:h-auto sm:max-h-[90dvh] sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden shadow-2xl">
             {/* Sheet Top Bar */}
             <div className="px-4 h-14 border-b border-border/60 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                   <Heart size={17} weight="fill" />
                 </div>
@@ -686,7 +686,7 @@ function DoacoesPage() {
               className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4"
             >
               {/* Categoria Rápida em Chips */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground">
                   Categoria do Item
                 </label>
@@ -700,7 +700,7 @@ function DoacoesPage() {
                           type="button"
                           onClick={() => setSubCategory(cat.id)}
                           className={cn(
-                            "shrink-0 h-9 px-3.5 rounded-full text-xs font-semibold transition-all",
+                            "shrink-0 h-9 px-4 rounded-full text-xs font-semibold transition-all",
                             active
                               ? "bg-primary text-primary-foreground"
                               : "bg-muted text-muted-foreground"
@@ -715,7 +715,7 @@ function DoacoesPage() {
               </div>
 
               {/* Título do Item */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label
                   htmlFor="donation-title"
                   className="text-xs font-semibold text-muted-foreground"
@@ -730,7 +730,7 @@ function DoacoesPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Ex: Sofá 3 lugares em bom estado"
-                  className="h-12 text-base rounded-xl"
+                  className="h-12 text-base rounded-lg"
                 />
               </div>
 
@@ -740,7 +740,7 @@ function DoacoesPage() {
                   type="button"
                   onClick={() => setCondition("used")}
                   className={cn(
-                    "h-11 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all",
+                    "h-11 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all",
                     condition === "used"
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border/60 text-muted-foreground"
@@ -757,7 +757,7 @@ function DoacoesPage() {
                   type="button"
                   onClick={() => setCondition("new")}
                   className={cn(
-                    "h-11 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all",
+                    "h-11 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all",
                     condition === "new"
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border/60 text-muted-foreground"
@@ -774,7 +774,7 @@ function DoacoesPage() {
 
               {/* Bairro / Cidade e WhatsApp */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label
                     htmlFor="donation-location"
                     className="text-xs font-semibold text-muted-foreground"
@@ -793,12 +793,12 @@ function DoacoesPage() {
                       value={locationName}
                       onChange={(e) => setLocationName(e.target.value)}
                       placeholder="Ex: Centro"
-                      className="h-12 pl-9 text-base rounded-xl"
+                      className="h-12 pl-9 text-base rounded-lg"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label
                     htmlFor="donation-whatsapp"
                     className="text-xs font-semibold text-muted-foreground"
@@ -817,19 +817,19 @@ function DoacoesPage() {
                       value={whatsapp}
                       onChange={(e) => setWhatsapp(e.target.value)}
                       placeholder="(49) 99999-9999"
-                      className="h-12 pl-9 text-base rounded-xl"
+                      className="h-12 pl-9 text-base rounded-lg"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Fotos do Item */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground">
                   Fotos do Item (Opcional)
                 </label>
-                <div className="flex items-center gap-2.5 overflow-x-auto py-1">
-                  <label className="size-16 rounded-xl border border-dashed border-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary text-muted-foreground hover:text-primary shrink-0">
+                <div className="flex items-center gap-3 overflow-x-auto py-1">
+                  <label className="size-16 rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary text-muted-foreground hover:text-primary shrink-0">
                     {isUploadingPhoto ? (
                       <SpinnerGap size={18} className="animate-spin" />
                     ) : (
@@ -846,7 +846,7 @@ function DoacoesPage() {
                   {uploadedImages.map((imgUrl, idx) => (
                     <div
                       key={imgUrl + idx}
-                      className="relative size-16 rounded-xl overflow-hidden border border-border shrink-0"
+                      className="relative size-16 rounded-lg overflow-hidden border border-border shrink-0"
                     >
                       <img
                         src={imgUrl}
@@ -870,7 +870,7 @@ function DoacoesPage() {
               </div>
 
               {/* Observações de Retirada */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label
                   htmlFor="donation-desc"
                   className="text-xs font-semibold text-muted-foreground"
@@ -884,7 +884,7 @@ function DoacoesPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Informe dimensões aproximadas, condições e melhor horário para busca..."
-                  className="text-base rounded-xl resize-none"
+                  className="text-base rounded-lg resize-none"
                 />
               </div>
 
@@ -893,7 +893,7 @@ function DoacoesPage() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-12 rounded-xl font-bold text-sm gap-2"
+                  className="w-full h-12 rounded-lg font-bold text-sm gap-2"
                 >
                   {isSubmitting ? (
                     <>

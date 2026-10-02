@@ -29,7 +29,7 @@ export function PresentationRenderer({
  const containerClasses =
  aspectRatio === "9:16"
  ? "aspect-[9/16] w-full max-w-[360px]"
- : "aspect-square w-full max-w-[400px]";
+ : "aspect-square w-full max-w-md";
 
  // Base colors mapping
  const colors = {

@@ -101,7 +101,7 @@ function OfertasPage() {
    mobileOnly
    badge={
      maxDiscount > 0 ? (
-       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary">
+       <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-primary/10 text-primary">
          Até {maxDiscount}% OFF
        </span>
      ) : undefined
@@ -115,7 +115,7 @@ function OfertasPage() {
  ) : (
  <header className="hidden md:flex items-center justify-between gap-4 pt-2">
    <div className="flex items-center gap-3">
-     <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+     <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
        <Lightning size={20} weight="fill" />
      </div>
      <div>
@@ -154,7 +154,7 @@ function OfertasPage() {
          type="button"
          id={`chip-ofertas-${chip.id}`}
          onClick={() => handleNicheChange(chip.id)}
-         className={`snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer select-none ${
+         className={`snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer select-none ${
            activeNiche === chip.id
              ? "bg-foreground text-background shadow-xs"
              : "bg-card text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"
@@ -189,7 +189,7 @@ function OfertasPage() {
  <div className="flex items-center justify-between gap-2">
  <div className="flex items-center gap-2">
  <div
- className={`size-8 rounded-xl bg-linear-to-br ${section.color} flex items-center justify-center text-white shrink-0 `}
+ className={`size-8 rounded-lg bg-linear-to-br ${section.color} flex items-center justify-center text-white shrink-0 `}
  >
  <span className="text-base leading-none">{section.emoji}</span>
  </div>
@@ -215,7 +215,7 @@ function OfertasPage() {
  {/* Rail de Ofertas */}
  <div className="flex items-start gap-3 overflow-x-auto no-scrollbar pb-2">
  {section.items.map((offer) => (
- <div key={offer.id} className="min-w-[160px] sm:min-w-[180px] shrink-0">
+ <div key={offer.id} className="min-w-40 sm:min-w-[180px] shrink-0">
  <OfferCard
  id={offer.id}
  title={offer.title}
@@ -237,13 +237,13 @@ function OfertasPage() {
 
  {/* Lojas do nicho (compactas) */}
  {section.stores.length > 0 && (
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 pt-0.5">
+ <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 pt-1">
  {section.stores.map((store) => (
  <Link
  key={store.id}
  to="/mercado"
  search={{ niche: section.nicho } as any}
- className="flex items-center gap-2 px-3 py-2 rounded-xl bg-card hover:border-foreground/30 transition-all shrink-0"
+ className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card hover:border-foreground/30 transition-all shrink-0"
  >
  {store.avatar_url ? (
  <img
@@ -273,8 +273,8 @@ function OfertasPage() {
  ))}
 
  {/* CTA Final */}
- <section className="rounded-2xl border-0 bg-card/60 p-6 text-center space-y-3">
- <div className="size-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mx-auto">
+ <section className="rounded-lg border-0 bg-card/60 p-6 text-center space-y-3">
+ <div className="size-12 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
  <ShoppingCart size={24} />
  </div>
  <h3 className="text-sm font-bold text-foreground">Você é lojista?</h3>
@@ -282,7 +282,7 @@ function OfertasPage() {
  Publique suas promoções e apareça aqui para milhares de consumidores na região.
  Configure descontos no Workspace.
  </p>
- <Button asChild size="sm" variant="outline" className="rounded-xl font-bold text-xs">
+ <Button asChild size="sm" variant="outline" className="rounded-lg font-bold text-xs">
  <Link to="/workspace/marketing/promocoes">Criar Promoção</Link>
  </Button>
  </section>

@@ -271,20 +271,20 @@ function ProfileCivilPage() {
         title="Perfil"
         fallbackHref="/conta"
         rightActions={
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-2 sm:gap-2">
             {!formData.isAnonymous && (
               <Button
                 asChild
                 size="sm"
                 variant="outline"
-                className="rounded-xl text-xs font-semibold h-8.5 px-3 cursor-pointer shadow-none"
+                className="rounded-lg text-xs font-semibold h-8.5 px-3 cursor-pointer shadow-none"
               >
                 <Link
                   to="/membro/$id"
                   params={{ id: formData.username || profile.username || profile.id }}
                   target="_blank"
                 >
-                  <ExternalLink className="size-3.5 mr-1.5 text-primary" />
+                  <ExternalLink className="size-3.5 mr-2 text-primary" />
                   <span className="hidden sm:inline">Ver Perfil Público</span>
                   <span className="sm:hidden">Público</span>
                 </Link>
@@ -295,7 +295,7 @@ function ProfileCivilPage() {
               type="button"
               variant="outline"
               size="sm"
-              className="rounded-xl text-xs font-semibold h-8.5 px-2.5 sm:px-3 cursor-pointer shadow-none"
+              className="rounded-lg text-xs font-semibold h-8.5 px-3 sm:px-3 cursor-pointer shadow-none"
               onClick={() => {
                 if (typeof navigator !== "undefined" && navigator.clipboard) {
                   const handle = formData.username || profile.username;
@@ -307,7 +307,7 @@ function ProfileCivilPage() {
                 }
               }}
             >
-              <LinkIcon className="size-3.5 sm:mr-1.5" />
+              <LinkIcon className="size-3.5 sm:mr-2" />
               <span className="hidden sm:inline">Copiar Link</span>
             </Button>
           </div>
@@ -315,8 +315,8 @@ function ProfileCivilPage() {
       />
 
       {/* ── 2. Banner de Claridade de Identidade (The Root Entity Callout) ── */}
-      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5 flex items-start gap-3.5 text-xs text-foreground">
-        <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 sm:p-5 flex items-start gap-4 text-xs text-foreground">
+        <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
           <ShieldCheck className="size-5" />
         </div>
         <div className="space-y-1 min-w-0">
@@ -342,24 +342,24 @@ function ProfileCivilPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex items-center overflow-x-auto no-scrollbar pb-1">
-            <TabsList className="bg-transparent p-0 gap-1.5 h-auto flex flex-nowrap">
+            <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap">
               <TabsTrigger
                 value="dados"
-                className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <User className="size-3.5" strokeWidth={1.75} />
                 <span>Identidade</span>
               </TabsTrigger>
               <TabsTrigger
                 value="profissional"
-                className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <Briefcase className="size-3.5" strokeWidth={1.75} />
                 <span>Currículo</span>
               </TabsTrigger>
               <TabsTrigger
                 value="privacidade"
-                className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <Lock className="size-3.5" strokeWidth={1.75} />
                 <span>Privacidade</span>
@@ -372,8 +372,8 @@ function ProfileCivilPage() {
           ══════════════════════════════════════════════════════════════ */}
           <TabsContent value="dados" className="space-y-5">
             {/* Card 1: Fotos Pessoais (Avatar 1:1 e Capa 3:1) */}
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                 <Camera className="size-4 text-primary shrink-0" />
                 <span>Fotos</span>
               </div>
@@ -394,7 +394,7 @@ function ProfileCivilPage() {
                     </button>
                   )}
                 </div>
-                <div className="w-full aspect-[3/1] max-h-52 rounded-2xl bg-muted/30 overflow-hidden flex items-center justify-center border border-border/40 relative group">
+                <div className="w-full aspect-[3/1] max-h-52 rounded-lg bg-muted/30 overflow-hidden flex items-center justify-center border border-border/40 relative group">
                   {formData.coverUrl ? (
                     <img
                       src={formData.coverUrl}
@@ -402,7 +402,7 @@ function ProfileCivilPage() {
                       className="size-full object-cover select-none"
                     />
                   ) : (
-                    <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex flex-col items-center justify-center gap-1.5 p-4 text-center">
+                    <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex flex-col items-center justify-center gap-2 p-4 text-center">
                       <ImageIcon className="size-6 text-primary/40" />
                       <span className="text-xs text-muted-foreground font-medium">
                         Nenhuma capa adicionada (Formato Panorâmico 3:1 — 1200x400)
@@ -423,7 +423,7 @@ function ProfileCivilPage() {
                       type="button"
                       size="sm"
                       variant="secondary"
-                      className="rounded-xl text-xs font-bold gap-1.5 bg-background/95 backdrop-blur-md hover:bg-background cursor-pointer min-h-[44px]"
+                      className="rounded-lg text-xs font-bold gap-2 bg-background/95 backdrop-blur-md hover:bg-background cursor-pointer min-h-11"
                       onClick={() => coverInputRef.current?.click()}
                       disabled={isUploadingMedia}
                     >
@@ -436,7 +436,7 @@ function ProfileCivilPage() {
                     type="button"
                     size="sm"
                     variant="secondary"
-                    className="absolute bottom-2.5 right-2.5 sm:hidden rounded-xl text-xs font-bold gap-1.5 bg-background/90 backdrop-blur-md min-h-[40px]"
+                    className="absolute bottom-2.5 right-2.5 sm:hidden rounded-lg text-xs font-bold gap-2 bg-background/90 backdrop-blur-md min-h-10"
                     onClick={() => coverInputRef.current?.click()}
                     disabled={isUploadingMedia}
                   >
@@ -449,7 +449,7 @@ function ProfileCivilPage() {
               {/* Avatar Circular 1:1 */}
               <div className="flex items-center gap-4 pt-2 border-t border-border/40">
                 <div className="relative">
-                  <div className="size-20 sm:size-24 rounded-2xl overflow-hidden bg-muted flex items-center justify-center border border-border/50">
+                  <div className="size-20 sm:size-24 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border/50">
                     {formData.avatarUrl ? (
                       <img src={formData.avatarUrl} alt="Avatar" className="size-full object-cover" />
                     ) : (
@@ -465,14 +465,14 @@ function ProfileCivilPage() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-foreground">Foto de Perfil (1:1)</Label>
                   <div>
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
-                      className="rounded-xl text-xs font-bold gap-1.5 border-border min-h-[44px]"
+                      className="rounded-lg text-xs font-bold gap-2 border-border min-h-11"
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={isUploadingMedia}
                     >
@@ -485,25 +485,25 @@ function ProfileCivilPage() {
             </div>
 
             {/* Card 2: Dados Básicos & Documentos Civis (CPF, Nome, Nascimento) */}
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                 <User className="size-4 text-primary shrink-0" />
                 <span>Documentos</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-foreground">Nome Completo (Civil) *</Label>
                   <Input
                     required
                     value={formData.fullName}
                     onChange={(e) => set("fullName", e.target.value)}
                     placeholder="Seu nome civil completo"
-                    className="h-11 rounded-xl text-base sm:text-xs bg-background"
+                    className="h-11 rounded-lg text-base sm:text-xs bg-background"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-foreground">Nome de Usuário (@) *</Label>
                   <div className="relative flex items-center">
                     <span className="absolute left-3 text-xs font-mono font-bold text-primary select-none">@</span>
@@ -512,7 +512,7 @@ function ProfileCivilPage() {
                       value={formData.username}
                       onChange={(e) => set("username", e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                       placeholder="seunome"
-                      className="h-11 rounded-xl text-base sm:text-xs pl-7 font-mono font-semibold bg-background"
+                      className="h-11 rounded-lg text-base sm:text-xs pl-7 font-mono font-semibold bg-background"
                     />
                   </div>
                   <p className="text-[10px] text-muted-foreground">
@@ -523,7 +523,7 @@ function ProfileCivilPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 {/* CPF com Máscara e Validação */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
                     <span>CPF (Pessoa Física)</span>
                     <span className="text-[10px] text-muted-foreground font-mono">Documento Soberano</span>
@@ -533,7 +533,7 @@ function ProfileCivilPage() {
                     onChange={(e) => set("cpf", maskCpf(e.target.value))}
                     placeholder="000.000.000-00"
                     maxLength={14}
-                    className="h-11 rounded-xl text-base sm:text-xs font-mono bg-background"
+                    className="h-11 rounded-lg text-base sm:text-xs font-mono bg-background"
                   />
                   <p className="text-[10px] text-muted-foreground">
                     Necessário para emissão de notas fiscais, ingressos nominais e assinatura de contratos.
@@ -541,8 +541,8 @@ function ProfileCivilPage() {
                 </div>
 
                 {/* Telefone / WhatsApp */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                     <Phone className="size-3 text-primary" />
                     <span>Telefone / WhatsApp</span>
                   </Label>
@@ -551,7 +551,7 @@ function ProfileCivilPage() {
                     onChange={(e) => set("phone", maskPhone(e.target.value))}
                     placeholder="(00) 00000-0000"
                     maxLength={15}
-                    className="h-11 rounded-xl text-base sm:text-xs font-mono bg-background"
+                    className="h-11 rounded-lg text-base sm:text-xs font-mono bg-background"
                   />
                   <p className="text-[10px] text-muted-foreground">
                     Para confirmação de entregas e códigos de verificação em dois fatores.
@@ -561,8 +561,8 @@ function ProfileCivilPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 {/* Data de Nascimento */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                     <Calendar className="size-3 text-primary" />
                     <span>Data de Nascimento</span>
                   </Label>
@@ -570,18 +570,18 @@ function ProfileCivilPage() {
                     type="date"
                     value={formData.birthDate}
                     onChange={(e) => set("birthDate", e.target.value)}
-                    className="h-11 rounded-xl text-base sm:text-xs bg-background"
+                    className="h-11 rounded-lg text-base sm:text-xs bg-background"
                   />
                 </div>
 
                 {/* Gênero */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-foreground">Gênero</Label>
                   <Select value={formData.gender} onValueChange={(val) => set("gender", val)}>
-                    <SelectTrigger className="h-11 rounded-xl text-base sm:text-xs bg-background">
+                    <SelectTrigger className="h-11 rounded-lg text-base sm:text-xs bg-background">
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl">
+                    <SelectContent className="rounded-lg">
                       <SelectItem value="female">Feminino</SelectItem>
                       <SelectItem value="male">Masculino</SelectItem>
                       <SelectItem value="non_binary">Não-binário</SelectItem>
@@ -592,17 +592,17 @@ function ProfileCivilPage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5 pt-1">
+              <div className="space-y-2 pt-1">
                 <Label className="text-xs font-semibold text-foreground">Ocupação / Cargo</Label>
                 <Input
                   value={formData.occupation}
                   onChange={(e) => set("occupation", e.target.value)}
                   placeholder="Ex: Arquiteto, Fotógrafo, Motorista, Desenvolvedor..."
-                  className="h-11 rounded-xl text-base sm:text-xs bg-background"
+                  className="h-11 rounded-lg text-base sm:text-xs bg-background"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold text-foreground">Biografia Pessoal</Label>
                   <span
@@ -619,14 +619,14 @@ function ProfileCivilPage() {
                   maxLength={280}
                   onChange={(e) => set("bio", e.target.value)}
                   placeholder="Apresente-se à comunidade civil..."
-                  className="rounded-xl text-base sm:text-xs min-h-[80px] resize-none bg-background"
+                  className="rounded-lg text-base sm:text-xs min-h-[80px] resize-none bg-background"
                 />
               </div>
             </div>
 
             {/* Card 3: Localização & Redes Pessoais */}
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                 <LinkIcon className="size-4 text-primary shrink-0" />
                 <span>Endereço e Contato</span>
               </div>
@@ -641,23 +641,23 @@ function ProfileCivilPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-foreground">Instagram Pessoal</Label>
                   <Input
                     value={formData.instagram}
                     onChange={(e) => set("instagram", e.target.value)}
                     placeholder="usuario"
-                    className="h-11 rounded-xl text-base sm:text-xs bg-background"
+                    className="h-11 rounded-lg text-base sm:text-xs bg-background"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-foreground">Site / Portfólio Pessoal</Label>
                   <Input
                     value={formData.website}
                     onChange={(e) => set("website", e.target.value)}
                     placeholder="https://..."
-                    className="h-11 rounded-xl text-base sm:text-xs bg-background"
+                    className="h-11 rounded-lg text-base sm:text-xs bg-background"
                   />
                 </div>
               </div>
@@ -668,9 +668,9 @@ function ProfileCivilPage() {
               ABA 2: PERFIL PROFISSIONAL & RECURSOS HUMANOS (RH)
           ══════════════════════════════════════════════════════════════ */}
           <TabsContent value="profissional" className="space-y-6">
-            <div className="p-4 rounded-2xl bg-muted/30 border border-border/60 flex items-start gap-3 text-xs text-foreground">
-              <Briefcase className="size-4 text-primary shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/60 flex items-start gap-3 text-xs text-foreground">
+              <Briefcase className="size-4 text-primary shrink-0 mt-1" />
+              <div className="space-y-1">
                 <p className="font-semibold text-foreground">Vínculo Profissional e Candidaturas</p>
                 <p className="text-[11px] text-muted-foreground">
                   Seu currículo profissional é utilizado para candidaturas a vagas locais, prestação de serviços e
@@ -692,8 +692,8 @@ function ProfileCivilPage() {
           ══════════════════════════════════════════════════════════════ */}
           <TabsContent value="privacidade" className="space-y-5">
             {/* Card 1: Visibilidade & Anonimato */}
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
-              <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center justify-between pb-3 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                   <ShieldCheck className="size-4 text-primary shrink-0" />
                   <span>Visibilidade</span>
@@ -703,12 +703,12 @@ function ProfileCivilPage() {
                 </Badge>
               </div>
 
-              <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-4">
+              <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <Label
                       htmlFor="anonymous-switch"
-                      className="text-xs font-bold text-foreground flex items-center gap-1.5 cursor-pointer"
+                      className="text-xs font-bold text-foreground flex items-center gap-2 cursor-pointer"
                     >
                       {formData.isAnonymous ? (
                         <EyeOff className="size-3.5 text-amber-500" />
@@ -752,13 +752,13 @@ function ProfileCivilPage() {
             </div>
 
             {/* Card 2: Preferências de Notificações */}
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                 <Lock className="size-4 text-primary shrink-0" />
                 <span>Comunicação</span>
               </div>
 
-              <div className="p-4 rounded-xl bg-muted/20 border border-border/40 flex items-start justify-between gap-4">
+              <div className="p-4 rounded-lg bg-muted/20 border border-border/40 flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <Label htmlFor="newsletter-switch" className="text-xs font-bold text-foreground cursor-pointer">
                     Comunicados e Atualizações Legais
@@ -779,8 +779,8 @@ function ProfileCivilPage() {
             </div>
 
             {/* Card 3: Zona de Perigo — Direito ao Esquecimento LGPD */}
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-destructive/30 bg-destructive/5">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-destructive pb-2.5 border-b border-destructive/20">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-destructive/30 bg-destructive/5">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-destructive pb-3 border-b border-destructive/20">
                 <ShieldAlert className="size-4 text-destructive shrink-0" />
                 <span>Exclusão de Conta</span>
               </div>
@@ -801,13 +801,13 @@ function ProfileCivilPage() {
                       type="button"
                       variant="destructive"
                       size="sm"
-                      className="rounded-xl text-xs font-bold gap-1.5 h-10 px-4 cursor-pointer"
+                      className="rounded-lg text-xs font-bold gap-2 h-10 px-4 cursor-pointer"
                     >
                       <Trash2 className="size-3.5" />
                       <span>Solicitar Exclusão da Conta</span>
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-2xl max-w-md">
+                  <AlertDialogContent className="rounded-lg max-w-md">
                     <AlertDialogHeader>
                       <AlertDialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
                         <ShieldAlert className="size-5 shrink-0" />
@@ -834,13 +834,13 @@ function ProfileCivilPage() {
                     </div>
 
                     <AlertDialogFooter className="gap-2">
-                      <AlertDialogCancel className="rounded-xl text-xs font-semibold h-10">
+                      <AlertDialogCancel className="rounded-lg text-xs font-semibold h-10">
                         Cancelar
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleDeleteAccount}
                         disabled={deleteConfirm !== "EXCLUIR" || isDeleting}
-                        className="rounded-xl text-xs font-bold h-10 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        className="rounded-lg text-xs font-bold h-10 bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
                         {isDeleting ? "Excluindo..." : "Confirmar Exclusão Definitiva"}
                       </AlertDialogAction>
@@ -857,7 +857,7 @@ function ProfileCivilPage() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto rounded-xl px-6 h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98"
+            className="w-full sm:w-auto rounded-lg px-6 h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98"
           >
             {isSubmitting ? (
               <>
@@ -878,7 +878,7 @@ function ProfileCivilPage() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-xl h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-95"
+            className="w-full rounded-lg h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-95"
           >
             {isSubmitting ? (
               <>

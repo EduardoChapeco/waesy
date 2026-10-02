@@ -119,18 +119,18 @@ export function FounderSignupSheet({
     <Sheet open={effectiveOpen} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-3xl max-w-lg mx-auto p-6 space-y-5 border-t border-border/80 shadow-md max-h-screen overflow-y-auto"
+        className="rounded-t-lg max-w-lg mx-auto p-6 space-y-5 border-t border-border/80 shadow-md max-h-screen overflow-y-auto"
       >
         <SheetHeader className="text-left space-y-2">
           <div className="flex items-center justify-between">
             <Badge
               variant="outline"
-              className="bg-muted text-muted-foreground border-border text-xs font-medium gap-1 px-2.5 py-0.5"
+              className="bg-muted text-muted-foreground border-border text-xs font-medium gap-1 px-3 py-1"
             >
               <Star className="size-3" />
               <span>Membro Fundador 2027</span>
             </Badge>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <div className="size-1.5 rounded-full bg-emerald-500" />
               <span className="text-xs text-muted-foreground/75 text-muted-foreground font-mono font-medium">
                 Vagas Abertas
@@ -147,8 +147,8 @@ export function FounderSignupSheet({
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-1">
           {/* Campo Nome */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+          <div className="space-y-2">
+            <Label className="text-xs font-bold flex items-center gap-2 text-foreground">
               <User className="size-3.5 text-primary" />
               <span>Seu Nome</span>
             </Label>
@@ -158,13 +158,13 @@ export function FounderSignupSheet({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: João da Silva"
-              className="h-11 rounded-xl text-xs bg-muted/20 border-border"
+              className="h-11 rounded-lg text-xs bg-muted/20 border-border"
             />
           </div>
 
           {/* Campo WhatsApp */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+          <div className="space-y-2">
+            <Label className="text-xs font-bold flex items-center gap-2 text-foreground">
               <Phone className="size-3.5 text-primary" />
               <span>WhatsApp para Contato</span>
             </Label>
@@ -174,14 +174,14 @@ export function FounderSignupSheet({
               value={whatsapp}
               onChange={(e) => handleWhatsappChange(e.target.value)}
               placeholder="(49) 99999-9999"
-              className="h-11 rounded-xl text-xs bg-muted/20 border-border font-mono"
+              className="h-11 rounded-lg text-xs bg-muted/20 border-border font-mono"
             />
           </div>
 
           {/* Campo Empresa / CNPJ / Instagram */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+              <Label className="text-xs font-bold flex items-center gap-2 text-foreground">
                 <Building2 className="size-3.5 text-primary" />
                 <span>Minha Empresa (CNPJ, @ ou Nome)</span>
               </Label>
@@ -192,7 +192,7 @@ export function FounderSignupSheet({
               value={businessIdentifier}
               onChange={(e) => setBusinessIdentifier(e.target.value)}
               placeholder="Ex: 00.000.000/0001-00 ou @sualoja"
-              className="h-11 rounded-xl text-xs bg-muted/20 border-border"
+              className="h-11 rounded-lg text-xs bg-muted/20 border-border"
             />
             <p className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1">
               <CheckCircle2 className="size-3 text-emerald-500 shrink-0" />
@@ -201,8 +201,8 @@ export function FounderSignupSheet({
           </div>
 
           {/* Campo Cidade — chips rápidos */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+          <div className="space-y-2">
+            <Label className="text-xs font-bold flex items-center gap-2 text-foreground">
               <MapPin className="size-3.5 text-primary" />
               <span>Cidade de Atuação</span>
             </Label>
@@ -212,7 +212,7 @@ export function FounderSignupSheet({
                   key={c}
                   type="button"
                   onClick={() => setCity(c === "Outra cidade" ? "" : c)}
-                  className={`text-xs text-muted-foreground/75 font-semibold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                  className={`text-xs text-muted-foreground/75 font-semibold px-3 py-2 rounded-lg border transition-all cursor-pointer ${
                     city === c
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-muted/30 text-muted-foreground border-border/60 hover:border-primary/40"
@@ -228,13 +228,13 @@ export function FounderSignupSheet({
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="Ex: Pinhalzinho - SC"
-                className="h-10 rounded-xl text-xs bg-muted/20 border-border mt-1.5"
+                className="h-10 rounded-lg text-xs bg-muted/20 border-border mt-2"
               />
             )}
           </div>
 
           {/* Benefício em Destaque */}
-          <div className="rounded-xl bg-muted/40 border border-border/60 p-3.5 space-y-2">
+          <div className="rounded-lg bg-muted/40 border border-border/60 p-4 space-y-2">
             <div className="flex items-center gap-2">
               <Ticket className="size-4 text-primary shrink-0" />
               <strong className="text-xs text-foreground font-bold">
@@ -248,8 +248,8 @@ export function FounderSignupSheet({
                 "Acesso antecipado aos workshops e conexões regionais",
                 "Chances duplicadas nos sorteios mensais",
               ].map((b, i) => (
-                <li key={i} className="flex items-start gap-1.5">
-                  <CheckCircle2 className="size-3 text-emerald-500 shrink-0 mt-0.5" />
+                <li key={i} className="flex items-start gap-2">
+                  <CheckCircle2 className="size-3 text-emerald-500 shrink-0 mt-1" />
                   <span>{b}</span>
                 </li>
               ))}
@@ -260,7 +260,7 @@ export function FounderSignupSheet({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-12 rounded-xl text-sm font-bold gap-2 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
+            className="w-full h-12 rounded-lg text-sm font-bold gap-2 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
           >
             {isSubmitting ? (
               <>

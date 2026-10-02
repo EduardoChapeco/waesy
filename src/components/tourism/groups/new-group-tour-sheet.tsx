@@ -334,7 +334,7 @@ export function NewGroupTourSheet({
  <SheetHeader className="p-5 pb-4 border-b border-border/80 bg-muted/20">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Bus className="size-5" />
  </div>
  <div>
@@ -361,20 +361,20 @@ export function NewGroupTourSheet({
  className="flex-1 flex flex-col overflow-hidden"
  >
  <div className="px-5 pt-3 pb-2 border-b border-border/60 bg-card">
- <TabsList className="grid grid-cols-4 w-full h-9 rounded-xl p-1 bg-muted/50">
- <TabsTrigger value="roteiro" className="text-xs font-bold rounded-lg gap-1.5 py-1">
+ <TabsList className="grid grid-cols-4 w-full h-9 rounded-lg p-1 bg-muted/50">
+ <TabsTrigger value="roteiro" className="text-xs font-bold rounded-lg gap-2 py-1">
  <Compass className="size-3.5" />
  <span>1. Roteiro</span>
  </TabsTrigger>
- <TabsTrigger value="frota" className="text-xs font-bold rounded-lg gap-1.5 py-1">
+ <TabsTrigger value="frota" className="text-xs font-bold rounded-lg gap-2 py-1">
  <Bus className="size-3.5" />
  <span>2. Frota</span>
  </TabsTrigger>
- <TabsTrigger value="embarque" className="text-xs font-bold rounded-lg gap-1.5 py-1">
+ <TabsTrigger value="embarque" className="text-xs font-bold rounded-lg gap-2 py-1">
  <MapPin className="size-3.5" />
  <span>3. Embarque</span>
  </TabsTrigger>
- <TabsTrigger value="tarifario" className="text-xs font-bold rounded-lg gap-1.5 py-1">
+ <TabsTrigger value="tarifario" className="text-xs font-bold rounded-lg gap-2 py-1">
  <DollarSign className="size-3.5" />
  <span>4. Tarifário</span>
  </TabsTrigger>
@@ -387,7 +387,7 @@ export function NewGroupTourSheet({
  {/* Presets de 1 Clique */}
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+ <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <FolderPlus className="size-3.5 text-primary" />
  Modelos Prontos de Excursão (1 Clique)
  </span>
@@ -399,7 +399,7 @@ export function NewGroupTourSheet({
  <div
  key={preset.id}
  onClick={() => applyPreset(preset)}
- className="p-3 rounded-xl border border-border/70 bg-card hover:bg-muted/40 hover:border-primary/40 transition-all cursor-pointer space-y-1 text-left"
+ className="p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/40 hover:border-primary/40 transition-all cursor-pointer space-y-1 text-left"
  >
  <div className="flex items-center justify-between">
  <span className="font-bold text-foreground text-xs">{preset.title}</span>
@@ -426,7 +426,7 @@ export function NewGroupTourSheet({
  placeholder="Ex: Excursão Beto Carrero & Praias de Santa Catarina"
  value={title}
  onChange={(e) => setTitle(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
@@ -437,7 +437,7 @@ export function NewGroupTourSheet({
  <Input
  value={departureCity}
  onChange={(e) => setDepartureCity(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
@@ -447,7 +447,7 @@ export function NewGroupTourSheet({
  placeholder="Ex: Penha / Balneário Camboriú, SC"
  value={destination}
  onChange={(e) => setDestination(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
@@ -461,14 +461,14 @@ export function NewGroupTourSheet({
  type="date"
  value={departureDate}
  onChange={(e) => setDepartureDate(e.target.value)}
- className="h-10 text-xs rounded-xl font-mono flex-1"
+ className="h-10 text-xs rounded-lg font-mono flex-1"
  required
  />
  <Input
  type="time"
  value={departureTime}
  onChange={(e) => setDepartureTime(e.target.value)}
- className="h-10 text-xs rounded-xl font-mono w-24"
+ className="h-10 text-xs rounded-lg font-mono w-24"
  required
  />
  </div>
@@ -481,21 +481,21 @@ export function NewGroupTourSheet({
  type="date"
  value={returnDate}
  onChange={(e) => setReturnDate(e.target.value)}
- className="h-10 text-xs rounded-xl font-mono flex-1"
+ className="h-10 text-xs rounded-lg font-mono flex-1"
  required
  />
  <Input
  type="time"
  value={returnTime}
  onChange={(e) => setReturnTime(e.target.value)}
- className="h-10 text-xs rounded-xl font-mono w-24"
+ className="h-10 text-xs rounded-lg font-mono w-24"
  required
  />
  </div>
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold flex items-center justify-between">
  <span>Foto de Capa da Excursão (Panorâmica 16:9)</span>
  <span className="text-[10px] text-muted-foreground font-normal">
@@ -526,14 +526,14 @@ export function NewGroupTourSheet({
  </div>
 
  {layouts.length > 0 ? (
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  {layouts.map((layout) => {
  const isSelected = selectedLayoutId === layout.id;
  return (
  <div
  key={layout.id}
  onClick={() => setSelectedLayoutId(layout.id)}
- className={`p-3.5 rounded-2xl border transition-all cursor-pointer space-y-2 ${
+ className={`p-4 rounded-lg border transition-all cursor-pointer space-y-2 ${
  isSelected
  ? "bg-primary/5 border-primary shadow-xs"
  : "bg-card border-border/70 hover:border-primary/40"
@@ -560,7 +560,7 @@ export function NewGroupTourSheet({
  })}
  </div>
  ) : (
- <div className="p-4 rounded-xl bg-muted/30 border border-dashed border-border text-center space-y-1.5">
+ <div className="p-4 rounded-lg bg-muted/30 border border-dashed border-border text-center space-y-2">
  <Bus className="size-6 mx-auto text-muted-foreground/60" />
  <p className="text-xs font-bold text-foreground">Nenhum veículo cadastrado na frota</p>
  <p className="text-[11px] text-muted-foreground">
@@ -576,7 +576,7 @@ export function NewGroupTourSheet({
  <select
  value={fallbackCapacity}
  onChange={(e) => setFallbackCapacity(Number(e.target.value))}
- className="w-full h-10 rounded-xl bg-background border border-border px-3 text-xs"
+ className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs"
  >
  <option value={42}>42 Lugares — Leito Turismo (Piso Único)</option>
  <option value={46}>46 Lugares — Semi-Leito Executivo (Padrão)</option>
@@ -602,7 +602,7 @@ export function NewGroupTourSheet({
  placeholder="Ex: Viação Catarinense / Frota Própria"
  value={busCompany}
  onChange={(e) => setBusCompany(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1">
@@ -611,7 +611,7 @@ export function NewGroupTourSheet({
  placeholder="Ex: ABC-1D23"
  value={busPlate}
  onChange={(e) => setBusPlate(e.target.value.toUpperCase())}
- className="h-10 text-xs rounded-xl font-mono uppercase"
+ className="h-10 text-xs rounded-lg font-mono uppercase"
  />
  </div>
  </div>
@@ -623,7 +623,7 @@ export function NewGroupTourSheet({
  placeholder="Ex: Valdir Pereira"
  value={driverName}
  onChange={(e) => setDriverName(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1">
@@ -632,7 +632,7 @@ export function NewGroupTourSheet({
  placeholder="(49) 99999-9999"
  value={driverPhone}
  onChange={(e) => setDriverPhone(e.target.value)}
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-xs rounded-lg font-mono"
  />
  </div>
  </div>
@@ -644,7 +644,7 @@ export function NewGroupTourSheet({
  {/* Pontos de Embarque Dinâmicos */}
  <div className="space-y-3">
  <div className="flex items-center justify-between">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <Label className="text-xs font-bold">Pontos de Embarque no Trajeto</Label>
  <p className="text-[11px] text-muted-foreground">
  Locais e horários onde o ônibus fará paradas para embarcar passageiros.
@@ -655,7 +655,7 @@ export function NewGroupTourSheet({
  size="sm"
  variant="outline"
  onClick={addBoardingPoint}
- className="rounded-xl text-xs font-bold h-8 gap-1"
+ className="rounded-lg text-xs font-bold h-8 gap-1"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Ponto</span>
@@ -666,7 +666,7 @@ export function NewGroupTourSheet({
  {boardingPoints.map((bp, idx) => (
  <div
  key={idx}
- className="p-3 rounded-xl border border-border/70 bg-card space-y-2"
+ className="p-3 rounded-lg border border-border/70 bg-card space-y-2"
  >
  <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground">
  <span>Ponto #{idx + 1}</span>
@@ -721,7 +721,7 @@ export function NewGroupTourSheet({
 
  {/* Itens Inclusos */}
  <div className="space-y-3">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <Label className="text-xs font-bold">O Que Está Incluso no Pacote</Label>
  <p className="text-[11px] text-muted-foreground">
  Clique para ativar ou desativar os benefícios inclusos nesta excursão.
@@ -736,7 +736,7 @@ export function NewGroupTourSheet({
  key={item}
  variant={isSelected ? "default" : "outline"}
  onClick={() => toggleInclusion(item)}
- className={`cursor-pointer text-xs py-1.5 px-3 rounded-xl transition-all ${
+ className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all ${
  isSelected ? "bg-primary text-primary-foreground" : "hover:bg-muted"
  }`}
  >
@@ -761,7 +761,7 @@ export function NewGroupTourSheet({
  <Input
  value={priceBrl}
  onChange={handlePriceChange}
- className="h-11 pl-9 text-base font-mono font-bold rounded-xl"
+ className="h-11 pl-9 text-base font-mono font-bold rounded-lg"
  placeholder="0,00"
  required
  />
@@ -780,7 +780,7 @@ export function NewGroupTourSheet({
  placeholder="Ex: Entrada de 20% + até 10x sem juros no cartão ou 4x no carnê"
  value={paymentConditions}
  onChange={(e) => setPaymentConditions(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
@@ -790,7 +790,7 @@ export function NewGroupTourSheet({
  placeholder="Ex: Saída pontual com tolerância de 15 minutos. Levar documento com foto original."
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
- className="rounded-xl text-xs resize-none"
+ className="rounded-lg text-xs resize-none"
  rows={4}
  />
  </div>
@@ -806,7 +806,7 @@ export function NewGroupTourSheet({
  variant="outline"
  size="sm"
  onClick={() => onOpenChange(false)}
- className="rounded-xl text-xs h-10 px-4"
+ className="rounded-lg text-xs h-10 px-4"
  >
  Cancelar
  </Button>
@@ -816,7 +816,7 @@ export function NewGroupTourSheet({
  size="sm"
  disabled={createMutation.isPending || !title || !destination || !departureDate || !returnDate}
  onClick={() => createMutation.mutate()}
- className="rounded-xl text-xs font-bold h-10 px-6 bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
+ className="rounded-lg text-xs font-bold h-10 px-6 bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
  >
  <CheckCircle2 className="size-4 text-emerald-500" />
  <span>{createMutation.isPending ? "Cadastrando Excursão..." : "Cadastrar e Abrir Mapa 2D"}</span>

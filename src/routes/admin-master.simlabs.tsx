@@ -97,7 +97,7 @@ function AdminSimLabsPage() {
         {/* Header Apple HIG */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
               <Brain className="size-6" />
             </div>
             <div>
@@ -110,38 +110,38 @@ function AdminSimLabsPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-full pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1">
             <button
               onClick={() => setActiveTab("sessions")}
-              className={`rounded-xl px-3.5 h-11 text-xs font-semibold shrink-0 transition-all cursor-pointer ${
+              className={`rounded-lg px-4 h-11 text-xs font-semibold shrink-0 transition-all cursor-pointer ${
                 activeTab === "sessions"
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
               }`}
             >
-              <ChartBar className="mr-1.5 inline size-4" />
+              <ChartBar className="mr-2 inline size-4" />
               Pesquisas ({sessions?.length || 0})
             </button>
             <button
               onClick={() => setActiveTab("personas")}
-              className={`rounded-xl px-3.5 h-11 text-xs font-semibold shrink-0 transition-all cursor-pointer ${
+              className={`rounded-lg px-4 h-11 text-xs font-semibold shrink-0 transition-all cursor-pointer ${
                 activeTab === "personas"
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
               }`}
             >
-              <Users className="mr-1.5 inline size-4" />
+              <Users className="mr-2 inline size-4" />
               Personas ({personas?.length || 0})
             </button>
             <button
               onClick={() => setActiveTab("new_sim")}
-              className={`rounded-xl px-3.5 h-11 text-xs font-semibold shrink-0 transition-all cursor-pointer ${
+              className={`rounded-lg px-4 h-11 text-xs font-semibold shrink-0 transition-all cursor-pointer ${
                 activeTab === "new_sim"
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
               }`}
             >
-              <Play className="mr-1.5 inline size-4" />
+              <Play className="mr-2 inline size-4" />
               Nova Simulação
             </button>
           </div>
@@ -151,31 +151,31 @@ function AdminSimLabsPage() {
         {activeTab === "sessions" && (
           <div className="space-y-4">
             {(!sessions || sessions.length === 0) ? (
-              <div className="rounded-2xl border border-border/80 bg-card p-8 sm:p-12 text-center">
+              <div className="rounded-lg border border-border/80 bg-card p-8 sm:p-12 text-center">
                 <Brain className="mx-auto size-8 text-muted-foreground" />
                 <p className="mt-3 text-sm font-bold text-foreground">Nenhuma pesquisa simulada executada</p>
                 <p className="mt-1 text-xs text-muted-foreground">Inicie uma nova simulação para testar propostas com o conselho sintético.</p>
               </div>
             ) : (
               sessions.map((session: any) => (
-                <div key={session.id} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 space-y-4">
+                <div key={session.id} className="rounded-lg border border-border/80 bg-card p-5 sm:p-6 space-y-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <span className="rounded-md font-medium text-[11px] px-2 py-0.5 bg-primary/10 text-primary border border-primary/20">
+                      <span className="rounded-md font-medium text-[11px] px-2 py-1 bg-primary/10 text-primary border border-primary/20">
                         Sessão Preditiva
                       </span>
-                      <h2 className="mt-1.5 text-base sm:text-lg font-bold text-foreground">{session.title}</h2>
+                      <h2 className="mt-2 text-base sm:text-lg font-bold text-foreground">{session.title}</h2>
                       <p className="text-xs text-muted-foreground">{session.objective}</p>
                     </div>
 
-                    <span className="rounded-md font-medium text-[11px] px-2.5 py-1 border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 self-start sm:self-auto">
+                    <span className="rounded-md font-medium text-[11px] px-3 py-1 border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 self-start sm:self-auto">
                       Concluída
                     </span>
                   </div>
 
                   {/* Summary Box */}
-                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-xs text-foreground">
-                    <div className="flex items-center gap-1.5 font-bold text-primary mb-1">
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-xs text-foreground">
+                    <div className="flex items-center gap-2 font-bold text-primary mb-1">
                       <Lightbulb className="size-4" />
                       Síntese Preditiva da População Sintética
                     </div>
@@ -186,10 +186,10 @@ function AdminSimLabsPage() {
                   {session.execution_results && session.execution_results.length > 0 && (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {session.execution_results.map((res: any, idx: number) => (
-                        <div key={idx} className="rounded-xl border border-border/80 bg-background p-3.5 space-y-1">
+                        <div key={idx} className="rounded-lg border border-border/80 bg-background p-4 space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">{res.persona_name}</span>
-                            <span className="rounded-md font-medium text-[10px] px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            <span className="rounded-md font-medium text-[10px] px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                               {res.purchase_intent}% intenção
                             </span>
                           </div>
@@ -208,10 +208,10 @@ function AdminSimLabsPage() {
         {activeTab === "personas" && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {(personas || []).map((persona: any) => (
-              <div key={persona.id} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 flex flex-col justify-between">
+              <div key={persona.id} className="rounded-lg border border-border/80 bg-card p-4 sm:p-5 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
                       <Users className="size-5" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -220,14 +220,14 @@ function AdminSimLabsPage() {
                     </div>
                   </div>
 
-                  <div className="mt-3.5 space-y-1 border-t border-border/60 pt-2.5 text-xs text-muted-foreground">
+                  <div className="mt-4 space-y-1 border-t border-border/60 pt-3 text-xs text-muted-foreground">
                     <div className="flex justify-between"><span>Região:</span> <span className="font-medium text-foreground">{persona.neighborhood}</span></div>
                     <div className="flex justify-between"><span>Idade:</span> <span className="font-medium text-foreground">{persona.age_range} anos</span></div>
                     <div className="flex justify-between"><span>Estrato Social:</span> <span className="font-medium text-foreground">Classe {persona.income_level}</span></div>
                   </div>
                 </div>
 
-                <p className="mt-3 rounded-xl bg-muted/40 p-2.5 text-[11px] text-muted-foreground line-clamp-3 italic border border-border/40">
+                <p className="mt-3 rounded-lg bg-muted/40 p-3 text-[11px] text-muted-foreground line-clamp-3 italic border border-border/40">
                   "{persona.prompt_persona}"
                 </p>
               </div>
@@ -237,43 +237,43 @@ function AdminSimLabsPage() {
 
         {/* Tab 3: Nova Simulação */}
         {activeTab === "new_sim" && (
-          <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6">
+          <div className="rounded-lg border border-border/80 bg-card p-5 sm:p-6">
             <h2 className="text-base font-bold text-foreground">Nova Simulação de Mercado</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               O esquadrão de personas sintéticas avaliará o apelo da oferta, barreiras de fricção e intenção de compra.
             </p>
 
             <form onSubmit={handleRunSimulation} className="mt-5 space-y-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-semibold text-foreground">Título do Experimento</label>
                 <input
                   type="text"
                   placeholder="Ex: Lançamento de Combo Noturno com Frete Grátis"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full h-11 rounded-xl border border-input bg-background px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  className="w-full h-11 rounded-lg border border-input bg-background px-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                   required
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-semibold text-foreground">Hipótese / Objetivo do Teste</label>
                 <textarea
                   rows={3}
                   placeholder="Ex: Validar se consumidores das classes C e D aceitariam pagar R$ 89,90 pelo combo com entrega garantida..."
                   value={objective}
                   onChange={(e) => setObjective(e.target.value)}
-                  className="w-full rounded-xl border border-input bg-background p-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  className="w-full rounded-lg border border-input bg-background p-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                   required
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-semibold text-foreground">Amostragem Demográfica</label>
                 <select
                   value={personasCount}
                   onChange={(e) => setPersonasCount(e.target.value)}
-                  className="w-full h-11 rounded-xl border border-input bg-background px-3.5 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                  className="w-full h-11 rounded-lg border border-input bg-background px-4 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
                 >
                   <option value="3">3 Personas (Sonda Rápida)</option>
                   <option value="5">5 Personas (Padrão Calibrado)</option>
@@ -285,7 +285,7 @@ function AdminSimLabsPage() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 h-11 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 h-11 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
                 >
                   <Play className="size-4" />
                   {isPending ? "Simulando Amostra..." : "Executar Experimento IA"}

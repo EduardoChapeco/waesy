@@ -72,7 +72,7 @@ export function EventRail({ content, resolvedEvents, isEditing }: any) {
  </div>
  )}
  {/* Date Badge overlay */}
- <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-xl text-center leading-tight">
+ <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm px-3 py-2 rounded-lg text-center leading-tight">
  <span className="block text-xs font-bold text-muted-foreground uppercase">
  {formatDate(evt.event_date)}
  </span>
@@ -86,7 +86,7 @@ export function EventRail({ content, resolvedEvents, isEditing }: any) {
  <div className="p-5 flex flex-col flex-grow">
  <h3 className="font-bold text-xl leading-tight mb-2 line-clamp-2">{evt.title}</h3>
 
- <div className="space-y-1.5 mb-4">
+ <div className="space-y-2 mb-4">
  <div className="flex items-center text-sm text-muted-foreground">
  <Calendar className="h-3.5 w-3.5 mr-2 shrink-0" />
  <span className="truncate">{formatDate(evt.event_date)}</span>
@@ -101,7 +101,7 @@ export function EventRail({ content, resolvedEvents, isEditing }: any) {
 
  <div className="mt-auto pt-4 border-t border-dashed flex items-center justify-between">
  <div>
- <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-0.5">
+ <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">
  A partir de
  </p>
  <p className="font-black text-lg">

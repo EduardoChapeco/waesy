@@ -83,7 +83,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
   const renderMedia = () => {
     if (!mediaUrl) {
       return (
-        <div className="w-full min-h-[320px] h-full flex flex-col items-center justify-center p-8 text-center bg-muted/30 border border-border/40 rounded-2xl">
+        <div className="w-full min-h-[320px] h-full flex flex-col items-center justify-center p-8 text-center bg-muted/30 border border-border/40 rounded-lg">
           <Star className="size-8 text-muted-foreground/40 mb-2" />
           <span className="text-xs font-semibold text-muted-foreground">
             Mídia não configurada
@@ -97,7 +97,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
 
     if (ytId) {
       return (
-        <div className="relative w-full h-full min-h-[340px] rounded-2xl overflow-hidden shadow-2xs">
+        <div className="relative w-full h-full min-h-[340px] rounded-lg overflow-hidden shadow-2xs">
           <iframe
             src={`https://www.youtube.com/embed/${ytId}?autoplay=${autoPlay ? 1 : 0}&loop=${loop ? 1 : 0}&playlist=${ytId}&mute=1`}
             className="absolute inset-0 w-full h-full border-0"
@@ -111,7 +111,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
 
     if (vimeoId) {
       return (
-        <div className="relative w-full h-full min-h-[340px] rounded-2xl overflow-hidden shadow-2xs">
+        <div className="relative w-full h-full min-h-[340px] rounded-lg overflow-hidden shadow-2xs">
           <iframe
             src={`https://player.vimeo.com/video/${vimeoId}?autoplay=${autoPlay ? 1 : 0}&loop=${loop ? 1 : 0}&muted=1`}
             className="absolute inset-0 w-full h-full border-0"
@@ -125,7 +125,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
 
     if (isVideoFile) {
       return (
-        <div className="relative w-full h-full min-h-[340px] rounded-2xl overflow-hidden bg-black/90 shadow-2xs group">
+        <div className="relative w-full h-full min-h-[340px] rounded-lg overflow-hidden bg-black/90 shadow-2xs group">
           <video
             src={mediaUrl}
             autoPlay={autoPlay}
@@ -141,7 +141,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
 
     // Default: Imagem de alta resolução ou GIF animado
     return (
-      <div className="relative w-full h-full min-h-[220px] sm:min-h-[340px] aspect-[16/10] sm:aspect-auto rounded-2xl overflow-hidden bg-muted/20 shadow-2xs flex items-center justify-center">
+      <div className="relative w-full h-full min-h-[220px] sm:min-h-[340px] aspect-[16/10] sm:aspect-auto rounded-lg overflow-hidden bg-muted/20 shadow-2xs flex items-center justify-center">
         {/* Camada Ambiente Desfocada para Preenchimento Limpo */}
         <img
           src={mediaUrl}
@@ -188,7 +188,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
           >
             {badge && (
               <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                   <Star className="size-3" />
                   {badge}
                 </span>
@@ -219,7 +219,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
                   <Button
                     asChild
                     size="lg"
-                    className="h-11 sm:h-12 px-6 rounded-xl font-bold text-xs sm:text-sm bg-foreground text-background hover:bg-foreground/90 gap-2 shadow-xs cursor-pointer"
+                    className="h-11 sm:h-12 px-6 rounded-lg font-bold text-xs sm:text-sm bg-foreground text-background hover:bg-foreground/90 gap-2 shadow-xs cursor-pointer"
                   >
                     <Link to={primaryBtnLink || "/explorar"}>
                       <span>{primaryBtnText}</span>
@@ -233,7 +233,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
                     asChild
                     variant="outline"
                     size="lg"
-                    className="h-11 sm:h-12 px-6 rounded-xl font-semibold text-xs sm:text-sm border-border/80 hover:bg-muted text-foreground cursor-pointer"
+                    className="h-11 sm:h-12 px-6 rounded-lg font-semibold text-xs sm:text-sm border-border/80 hover:bg-muted text-foreground cursor-pointer"
                   >
                     <Link to={secondaryBtnLink || "/produtos"}>
                       <span>{secondaryBtnText}</span>

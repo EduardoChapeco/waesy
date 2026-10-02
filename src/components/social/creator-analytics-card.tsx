@@ -31,17 +31,17 @@ export function CreatorAnalyticsCard({
  : 0;
 
  return (
- <div className="rounded-2xl bg-card border border-border/60 p-5 sm:p-6 space-y-5  select-none">
+ <div className="rounded-lg bg-card border border-border/60 p-5 sm:p-6 space-y-5  select-none">
  {/* Header do Card Privado */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-3">
- <div className="flex items-center gap-2.5">
- <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+ <div className="flex items-center gap-3">
+ <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
  <Activity className="size-4" />
  </div>
  <div>
- <h3 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-1.5 line-clamp-1 truncate">
+ <h3 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-2 line-clamp-1 truncate">
  <span>Desempenho e Métricas do Criador</span>
- <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-semibold">
+ <span className="text-[10px] px-2 py-1 rounded-md bg-muted text-muted-foreground font-semibold">
  Privado
  </span>
  </h3>
@@ -52,7 +52,7 @@ export function CreatorAnalyticsCard({
  </div>
 
  <div className="flex items-center gap-2">
- <div className="flex items-center gap-1 text-emerald-600 text-xs font-bold bg-emerald-500/10 px-2.5 py-1 rounded-xl">
+ <div className="flex items-center gap-1 text-emerald-600 text-xs font-bold bg-emerald-500/10 px-3 py-1 rounded-lg">
  <TrendingUp className="size-3.5" />
  <span>{engagementRate}% Engajamento</span>
  </div>
@@ -61,7 +61,7 @@ export function CreatorAnalyticsCard({
  asChild
  size="sm"
  variant="outline"
- className="h-8 px-3 rounded-xl text-xs font-bold gap-1 cursor-pointer"
+ className="h-8 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer"
  >
  <Link to="/conta/metricas">
  <span>Painel Completo</span>
@@ -74,7 +74,7 @@ export function CreatorAnalyticsCard({
  {/* Grid de Métricas Principais */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
  {/* Alcance Total */}
- <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-[11px] font-semibold">Alcance Estimado</span>
  <Eye className="size-3.5 text-primary" />
@@ -86,7 +86,7 @@ export function CreatorAnalyticsCard({
  </div>
 
  {/* Total de Curtidas Reais */}
- <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-[11px] font-semibold">Curtidas Reais</span>
  <Heart className="size-3.5 text-rose-500" />
@@ -98,7 +98,7 @@ export function CreatorAnalyticsCard({
  </div>
 
  {/* Novos Seguidores */}
- <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-[11px] font-semibold">Comunidade Ativa</span>
  <Users className="size-3.5 text-info" />
@@ -110,7 +110,7 @@ export function CreatorAnalyticsCard({
  </div>
 
  {/* Taxa de Conversão */}
- <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-[11px] font-semibold">Taxa de Interação</span>
  <ArrowUpRight className="size-3.5 text-emerald-500" />

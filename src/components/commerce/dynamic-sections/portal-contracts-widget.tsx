@@ -109,7 +109,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  {content?.subtitle || "Gerencie suas minutas jurídicas, termos assinados e vias em PDF."}
  </p>
  </div>
- <Badge variant="outline" className="w-fit text-xs px-3 py-1 flex items-center gap-1.5 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+ <Badge variant="outline" className="w-fit text-xs px-3 py-1 flex items-center gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
  <Shield className="w-3.5 h-3.5" />
  Conformidade Jurídica MP 2.200-2/2001
  </Badge>
@@ -119,10 +119,10 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
         {contractsList.map((ct) => (
  <div
  key={ct.id}
- className="p-5 rounded-2xl border border-border/60 bg-card hover:border-border transition-all duration-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+ className="p-5 rounded-lg border border-border/60 bg-card hover:border-border transition-all duration-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
  >
- <div className="space-y-1.5 flex-1">
- <div className="flex items-center gap-2.5 flex-wrap">
+ <div className="space-y-2 flex-1">
+ <div className="flex items-center gap-3 flex-wrap">
  <span className="font-semibold text-base text-foreground">{ct.title}</span>
  {ct.status === "signed" ? (
  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs flex items-center gap-1">
@@ -154,7 +154,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  {ct.status === "pending_signature" ? (
  <Button
  size="sm"
- className="min-h-[44px] flex-1 md:flex-none gap-2 bg-primary text-primary-foreground shadow-sm"
+ className="min-h-11 flex-1 md:flex-none gap-2 bg-primary text-primary-foreground shadow-sm"
  onClick={() => {
  setSelectedContract(ct);
  setIsSigningModalOpen(true);
@@ -167,7 +167,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
                 <Button
                   size="sm"
                   variant="outline"
-                  className="min-h-[44px] flex-1 md:flex-none gap-2"
+                  className="min-h-11 flex-1 md:flex-none gap-2"
                   onClick={() => handleDownloadPdf(ct)}
                 >
                   <Download className="w-4 h-4" />
@@ -181,7 +181,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
 
  {/* Modal de Assinatura Digital */}
  <Dialog open={isSigningModalOpen} onOpenChange={setIsSigningModalOpen}>
- <DialogContent className="max-w-md rounded-2xl">
+ <DialogContent className="max-w-md rounded-lg">
  <DialogHeader>
  <DialogTitle className="flex items-center gap-2">
  <PenTool className="w-5 h-5 text-primary" />
@@ -193,7 +193,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  </DialogHeader>
 
  <div className="space-y-4 py-3">
- <div className="p-3 bg-muted/40 rounded-xl text-xs space-y-1 text-muted-foreground border border-border/40">
+ <div className="p-3 bg-muted/40 rounded-lg text-xs space-y-1 text-muted-foreground border border-border/40">
  <p>• Validade jurídica garantida pela MP nº 2.200-2/2001 e Lei 14.063/2020.</p>
  <p>• Registro criptográfico de IP, timestamp e hash SHA-256 do documento.</p>
  </div>
@@ -205,11 +205,11 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  placeholder="Ex: João da Silva Sauro"
  value={signatureName}
  onChange={(e) => setSignatureName(e.target.value)}
- className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary min-h-[44px]"
+ className="w-full px-4 py-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary min-h-11"
  />
  </div>
 
- <div className="p-4 rounded-xl border-2 border-dashed border-border/80 bg-card text-center">
+ <div className="p-4 rounded-lg border-2 border-dashed border-border/80 bg-card text-center">
  <span className="text-xs text-muted-foreground block mb-1">Prévia da Rubrica Gerada:</span>
  <span className="text-xl font-serif italic text-primary font-bold">
  {signatureName || "Sua Assinatura Aqui"}
@@ -218,10 +218,10 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  </div>
 
  <DialogFooter className="gap-2 sm:gap-0">
- <Button variant="ghost" onClick={() => setIsSigningModalOpen(false)} className="min-h-[44px]">
+ <Button variant="ghost" onClick={() => setIsSigningModalOpen(false)} className="min-h-11">
  Cancelar
  </Button>
- <Button onClick={handleSign} disabled={isSubmitting} className="min-h-[44px] gap-2">
+ <Button onClick={handleSign} disabled={isSubmitting} className="min-h-11 gap-2">
  {isSubmitting ? "Gerando Assinatura..." : "Confirmar Assinatura Digital"}
  </Button>
  </DialogFooter>

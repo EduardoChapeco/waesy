@@ -184,15 +184,15 @@ export function LinkedInProfileImportModal({
         onOpenChange(v);
       }}
     >
-      <DialogContent className="sm:max-w-xl sm:rounded-2xl p-0 overflow-hidden bg-background border border-border">
+      <DialogContent className="sm:max-w-xl sm:rounded-lg p-0 overflow-hidden bg-background border border-border">
         <DialogHeader className="p-6 pb-4 border-b border-border/40">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-[#0A66C2] text-white flex items-center justify-center shrink-0 shadow-xs">
+            <div className="size-10 rounded-lg bg-[#0A66C2] text-white flex items-center justify-center shrink-0 shadow-xs">
               <Linkedin className="size-5 fill-current" />
             </div>
             <div>
               <DialogTitle className="text-base font-bold text-foreground">Importar do LinkedIn</DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">Sincronize experiências e formação diretamente para o seu currículo.</DialogDescription>
+              <DialogDescription className="text-xs text-muted-foreground mt-1">Sincronize experiências e formação diretamente para o seu currículo.</DialogDescription>
             </div>
           </div>
         </DialogHeader>
@@ -202,7 +202,7 @@ export function LinkedInProfileImportModal({
           <button
             type="button"
             onClick={() => setActiveTab("oauth")}
-            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+            className={`px-4 py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
               activeTab === "oauth"
                 ? "border-[#0A66C2] text-[#0A66C2]"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -213,7 +213,7 @@ export function LinkedInProfileImportModal({
           <button
             type="button"
             onClick={() => setActiveTab("json")}
-            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+            className={`px-4 py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
               activeTab === "json"
                 ? "border-[#0A66C2] text-[#0A66C2]"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -226,10 +226,10 @@ export function LinkedInProfileImportModal({
         <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar">
           {activeTab === "oauth" ? (
             <div className="space-y-4 text-center py-4">
-              <div className="size-16 rounded-3xl bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center mx-auto border border-[#0A66C2]/20">
+              <div className="size-16 rounded-lg bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center mx-auto border border-[#0A66C2]/20">
                 <Linkedin className="size-8 fill-current" />
               </div>
-              <div className="space-y-1.5 max-w-sm mx-auto">
+              <div className="space-y-2 max-w-sm mx-auto">
                 <h4 className="text-sm font-semibold text-foreground">Conectar Perfil</h4>
               <p className="text-xs text-muted-foreground">Importe seus dados profissionais com 1 clique via LinkedIn.</p>
               </div>
@@ -240,7 +240,7 @@ export function LinkedInProfileImportModal({
                 type="button"
                 onClick={handleStartOAuth}
                 disabled={isConnecting}
-                className="w-full h-11 rounded-xl font-bold text-xs gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+                className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
               >
                 {isConnecting ? (
                   <>
@@ -275,7 +275,7 @@ export function LinkedInProfileImportModal({
                   setParsedResult(null);
                 }}
                 placeholder="Cole o JSON exportado do LinkedIn..."
-                className="h-32 text-xs font-mono rounded-xl bg-background border-border resize-none"
+                className="h-32 text-xs font-mono rounded-lg bg-background border-border resize-none"
               />
 
               {!parsedResult ? (
@@ -283,7 +283,7 @@ export function LinkedInProfileImportModal({
                   type="button"
                   onClick={handleProcessJson}
                   disabled={isProcessing || !jsonText.trim()}
-                  className="w-full h-10 rounded-xl font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                  className="w-full h-10 rounded-lg font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                 >
                   {isProcessing ? (
                     <>
@@ -298,7 +298,7 @@ export function LinkedInProfileImportModal({
                   )}
                 </Button>
               ) : (
-                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
+                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Check className="size-4 text-emerald-600" />
@@ -320,7 +320,7 @@ export function LinkedInProfileImportModal({
                   <Button
                     type="button"
                     onClick={handleApply}
-                    className="w-full h-10 rounded-xl font-bold text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+                    className="w-full h-10 rounded-lg font-bold text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
                   >
                     <ArrowRight className="size-4" />
                     <span>Aplicar ao Meu Currículo</span>
@@ -337,7 +337,7 @@ export function LinkedInProfileImportModal({
             variant="outline"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="rounded-xl text-xs h-9"
+            className="rounded-lg text-xs h-9"
           >
             Fechar
           </Button>

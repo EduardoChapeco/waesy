@@ -98,10 +98,10 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
 ];
 
 const BUTTON_STYLES = [
-  { id: "rounded", label: "Arredondado Suave", desc: "Bordas rounded-xl clean", classSample: "rounded-xl" },
+  { id: "rounded", label: "Arredondado Suave", desc: "Bordas rounded-lg clean", classSample: "rounded-lg" },
   { id: "pill", label: "Cápsula (Pill)", desc: "Totalmente arredondado rounded-full", classSample: "rounded-full" },
-  { id: "outline", label: "Minimal Outline", desc: "Borda fina com fundo transparente", classSample: "rounded-xl border border-current bg-transparent" },
-  { id: "glass", label: "Vidro Translúcido", desc: "Efeito glass com desfoque de fundo", classSample: "rounded-xl bg-white/10 backdrop-blur-md border border-white/20" },
+  { id: "outline", label: "Minimal Outline", desc: "Borda fina com fundo transparente", classSample: "rounded-lg border border-current bg-transparent" },
+  { id: "glass", label: "Vidro Translúcido", desc: "Efeito glass com desfoque de fundo", classSample: "rounded-lg bg-white/10 backdrop-blur-md border border-white/20" },
 ];
 
 interface BiolinkThemesSelectorProps {
@@ -141,7 +141,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
               type="button"
               onClick={() => onChange({ ...value, themeKey: theme.key })}
               className={cn(
-                "group relative rounded-2xl border text-left p-3.5 transition-all cursor-pointer overflow-hidden flex flex-col justify-between h-44 shadow-2xs",
+                "group relative rounded-lg border text-left p-4 transition-all cursor-pointer overflow-hidden flex flex-col justify-between h-44 shadow-2xs",
                 isSelected
                   ? "border-primary ring-2 ring-primary/20 bg-muted/40 shadow-xs"
                   : "border-border/60 hover:border-border hover:bg-muted/20"
@@ -149,13 +149,13 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
             >
               {/* Miniatura do Canvas */}
               <div
-                className="w-full h-20 rounded-xl p-2.5 flex flex-col justify-between relative overflow-hidden border border-black/10 transition-transform group-hover:scale-[1.02]"
+                className="w-full h-20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden border border-black/10 transition-transform group-hover:scale-[1.02]"
                 style={{ background: theme.previewGradient }}
               >
                 <div className="flex items-center justify-between">
                   <div className="size-4 rounded-full bg-white/40 backdrop-blur-xs border border-white/30" />
                   {theme.badgeText && (
-                    <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-black/40 text-white backdrop-blur-xs">
+                    <span className="text-[8px] font-bold px-2 py-1 rounded-full bg-black/40 text-white backdrop-blur-xs">
                       {theme.badgeText}
                     </span>
                   )}
@@ -169,7 +169,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
               </div>
 
               {/* Informações do Tema */}
-              <div className="mt-2.5">
+              <div className="mt-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground truncate">{theme.label}</span>
                   {isSelected && (
@@ -178,7 +178,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
                     </div>
                   )}
                 </div>
-                <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
+                <p className="text-[10px] text-muted-foreground line-clamp-1 mt-1">
                   {theme.description}
                 </p>
               </div>
@@ -190,7 +190,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
       {/* Seletor de Formato de Botões */}
       <div className="pt-4 border-t border-border/40 space-y-3">
         <div>
-          <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+          <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
             <Layers className="size-3.5 text-muted-foreground" />
             <span>Formato dos Botões de Ação</span>
           </h4>
@@ -199,7 +199,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {BUTTON_STYLES.map((style) => {
             const isStyleSelected = currentButtonStyle === style.id;
 
@@ -214,7 +214,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
                   })
                 }
                 className={cn(
-                  "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between",
                   isStyleSelected
                     ? "border-primary bg-primary/5 shadow-2xs font-semibold text-primary"
                     : "border-border/60 hover:bg-muted/30 text-foreground"

@@ -34,7 +34,7 @@ export function BiolinkProfileSection({
  </div>
 
  <div className="space-y-1">
- <h1 className="text-lg font-bold text-foreground flex items-center justify-center gap-1.5">
+ <h1 className="text-lg font-bold text-foreground flex items-center justify-center gap-2">
  <span>{name}</span>
  </h1>
  <span className="text-xs font-mono text-muted-foreground block">{handle}</span>
@@ -88,7 +88,7 @@ export function BiolinkActionButtonsSection({
  }, [links, intlStorePhone]);
 
  return (
- <section className="py-2 max-w-md mx-auto px-4 w-full space-y-2.5">
+ <section className="py-2 max-w-md mx-auto px-4 w-full space-y-3">
  {resolvedLinks.map((link) => (
  <a
  key={link.id}
@@ -96,7 +96,7 @@ export function BiolinkActionButtonsSection({
  target="_blank"
  rel="noreferrer"
  className={cn(
- "w-full h-12 px-5 rounded-2xl flex items-center justify-between text-xs font-bold transition-all shadow-2xs group cursor-pointer border",
+ "w-full h-12 px-5 rounded-lg flex items-center justify-between text-xs font-bold transition-all shadow-2xs group cursor-pointer border",
  link.isHighlight
  ? "bg-primary text-primary-foreground border-primary hover:opacity-90"
  : "bg-card text-foreground border-border/80 hover:bg-muted/60 hover:border-primary/40"
@@ -146,7 +146,7 @@ export function BiolinkPixCardSection({
 
  return (
  <section className="py-4 max-w-md mx-auto px-4 w-full">
- <div className="p-5 rounded-2xl border border-border/80 bg-card space-y-4 shadow-2xs text-center">
+ <div className="p-5 rounded-lg border border-border/80 bg-card space-y-4 shadow-2xs text-center">
  <div className="flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground uppercase">
  <QrCode className="size-4 text-primary" />
  <span>Pagamento Instantâneo Pix</span>
@@ -157,7 +157,7 @@ export function BiolinkPixCardSection({
  <span className="text-[11px] text-muted-foreground">{bankName}</span>
  </div>
 
- <div className="p-3 rounded-2xl bg-muted/50 border border-border/60 flex items-center justify-between gap-2">
+ <div className="p-3 rounded-lg bg-muted/50 border border-border/60 flex items-center justify-between gap-2">
  <div className="text-left min-w-0 flex-1">
  <span className="text-[10px] text-muted-foreground block font-mono">{pixKeyType}</span>
  <span className="text-xs font-mono font-bold text-foreground truncate block">{pixKey}</span>
@@ -167,7 +167,7 @@ export function BiolinkPixCardSection({
  type="button"
  size="sm"
  onClick={handleCopy}
- className="h-8 rounded-xl font-bold text-[11px] gap-1.5 bg-primary text-primary-foreground cursor-pointer shrink-0"
+ className="h-8 rounded-lg font-bold text-[11px] gap-2 bg-primary text-primary-foreground cursor-pointer shrink-0"
  >
  {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
  <span>{copied ? "Copiado!" : "Copiar"}</span>

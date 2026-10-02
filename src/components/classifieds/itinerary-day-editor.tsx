@@ -130,7 +130,7 @@ export function ItineraryDayEditor({
         return (
           <div
             key={index}
-            className="rounded-2xl border border-border/50 bg-card overflow-hidden"
+            className="rounded-lg border border-border/50 bg-card overflow-hidden"
           >
             {/* Cabeçalho clicável */}
             <button
@@ -143,7 +143,7 @@ export function ItineraryDayEditor({
                   {day.day_number}
                 </div>
                 <div className="text-left">
-                  <p className="text-xs font-bold text-foreground truncate max-w-[200px]">
+                  <p className="text-xs font-bold text-foreground truncate max-w-52">
                     {day.title || `Dia ${day.day_number} — sem título`}
                   </p>
                   <p className="text-[10.5px] text-muted-foreground">
@@ -189,7 +189,7 @@ export function ItineraryDayEditor({
                       onChange={(e) => updateDay(index, { date: e.target.value })}
                       readOnly={readOnly}
                       placeholder="22/01 ou Dia 1"
-                      className="w-full h-9 px-3 rounded-xl border border-border/60 bg-background text-xs font-medium focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full h-9 px-3 rounded-lg border border-border/60 bg-background text-xs font-medium focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                   <div className="space-y-1">
@@ -202,7 +202,7 @@ export function ItineraryDayEditor({
                       onChange={(e) => updateDay(index, { title: e.target.value })}
                       readOnly={readOnly}
                       placeholder="Chegada e Relaxamento"
-                      className="w-full h-9 px-3 rounded-xl border border-border/60 bg-background text-xs font-medium focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full h-9 px-3 rounded-lg border border-border/60 bg-background text-xs font-medium focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                 </div>
@@ -218,12 +218,12 @@ export function ItineraryDayEditor({
                     readOnly={readOnly}
                     placeholder="Descreva o programa do dia: passeios, horários, pontos de interesse..."
                     rows={3}
-                    className="w-full px-3 py-2 rounded-xl border border-border/60 bg-background text-xs leading-relaxed resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-3 py-2 rounded-lg border border-border/60 bg-background text-xs leading-relaxed resize-none focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
 
                 {/* Refeições incluídas */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-[11px] font-bold text-foreground uppercase tracking-wide flex items-center gap-1">
                     <ForkKnife className="size-3.5" weight="bold" />
                     Refeições Incluídas
@@ -238,7 +238,7 @@ export function ItineraryDayEditor({
                           disabled={readOnly}
                           onClick={() => toggleMeal(index, meal)}
                           className={cn(
-                            "px-3 py-1.5 rounded-xl text-[11px] font-semibold border transition-all",
+                            "px-3 py-2 rounded-lg text-[11px] font-semibold border transition-all",
                             included
                               ? "bg-primary/10 border-primary/40 text-primary"
                               : "bg-muted/30 border-border/40 text-muted-foreground hover:bg-muted/60"
@@ -264,7 +264,7 @@ export function ItineraryDayEditor({
                       onChange={(e) => updateDay(index, { transport: e.target.value })}
                       readOnly={readOnly}
                       placeholder="Ônibus fretado, Avião..."
-                      className="w-full h-9 px-3 rounded-xl border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full h-9 px-3 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                   <div className="space-y-1">
@@ -278,14 +278,14 @@ export function ItineraryDayEditor({
                       onChange={(e) => updateDay(index, { hotel_name: e.target.value })}
                       readOnly={readOnly}
                       placeholder="Pousada do Sol"
-                      className="w-full h-9 px-3 rounded-xl border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full h-9 px-3 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                 </div>
 
                 {/* Atividades (tags) */}
                 {!readOnly && (
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <label className="text-[11px] font-bold text-foreground uppercase tracking-wide">
                       Atividades / Tags
                     </label>
@@ -303,22 +303,22 @@ export function ItineraryDayEditor({
                           }
                         }}
                         placeholder="ex: Snorkeling, Trilha, Museu..."
-                        className="flex-1 h-9 px-3 rounded-xl border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="flex-1 h-9 px-3 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                       <button
                         type="button"
                         onClick={() => addActivity(index)}
-                        className="h-9 px-3 rounded-xl bg-primary/10 text-primary border border-primary/30 text-xs font-semibold hover:bg-primary/20 transition-colors"
+                        className="h-9 px-3 rounded-lg bg-primary/10 text-primary border border-primary/30 text-xs font-semibold hover:bg-primary/20 transition-colors"
                       >
                         + Adicionar
                       </button>
                     </div>
                     {(day.activities?.length ?? 0) > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
+                      <div className="flex flex-wrap gap-2 pt-1">
                         {day.activities?.map((act) => (
                           <span
                             key={act}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-medium text-foreground"
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-medium text-foreground"
                           >
                             {act}
                             <button
@@ -336,7 +336,7 @@ export function ItineraryDayEditor({
                 )}
 
                 {/* Fotos do dia */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-[11px] font-bold text-foreground uppercase tracking-wide flex items-center gap-1">
                     <Camera className="size-3.5" weight="bold" />
                     Fotos do Dia
@@ -347,7 +347,7 @@ export function ItineraryDayEditor({
                         <img
                           src={img}
                           alt={`Dia ${day.day_number} foto ${imgIdx + 1}`}
-                          className="size-full object-cover rounded-xl border border-border/40"
+                          className="size-full object-cover rounded-lg border border-border/40"
                         />
                         {!readOnly && (
                           <button
@@ -375,7 +375,7 @@ export function ItineraryDayEditor({
                           type="button"
                           onClick={() => fileRefs.current[index]?.click()}
                           disabled={uploadingDayIndex === index}
-                          className="size-16 sm:size-20 rounded-xl border-2 border-dashed border-border/50 hover:border-primary/60 bg-muted/20 flex items-center justify-center transition-all active:scale-95"
+                          className="size-16 sm:size-20 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/60 bg-muted/20 flex items-center justify-center transition-all active:scale-95"
                           aria-label="Adicionar foto ao dia"
                         >
                           {uploadingDayIndex === index ? (
@@ -399,7 +399,7 @@ export function ItineraryDayEditor({
         <button
           type="button"
           onClick={addDay}
-          className="w-full h-11 rounded-2xl border-2 border-dashed border-border/50 hover:border-primary/60 bg-transparent hover:bg-muted/20 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground hover:text-primary transition-all active:scale-[0.99]"
+          className="w-full h-11 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/60 bg-transparent hover:bg-muted/20 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground hover:text-primary transition-all active:scale-[0.99]"
         >
           <Plus className="size-4" weight="bold" />
           Adicionar Dia

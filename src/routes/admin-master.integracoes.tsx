@@ -398,7 +398,7 @@ function AdminMasterIntegracoesPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
  <div>
  <div className="flex items-center gap-2">
- <div className="size-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Zap className="size-5" />
  </div>
  <h1 className="text-2xl font-black tracking-tight text-foreground">
@@ -411,7 +411,7 @@ function AdminMasterIntegracoesPage() {
  </div>
 
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="gap-1.5 px-3 py-1 font-mono text-[11px]">
+ <Badge variant="outline" className="gap-2 px-3 py-1 font-mono text-[11px]">
  <ShieldCheck className="size-3.5 text-emerald-500" />
  <span>Vault Seguro Server-Side</span>
  </Badge>
@@ -423,7 +423,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("pools")}
- className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
  activeTab === "pools"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -436,7 +436,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("prompts")}
- className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
  activeTab === "prompts"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -449,7 +449,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("maps")}
- className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
  activeTab === "maps"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -462,7 +462,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("payments")}
- className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
  activeTab === "payments"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -475,7 +475,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("comms")}
- className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
  activeTab === "comms"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -488,7 +488,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("webhooks")}
- className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
  activeTab === "webhooks"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -501,7 +501,7 @@ function AdminMasterIntegracoesPage() {
   <button
     type="button"
     onClick={() => setActiveTab("linkedin")}
-    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
       activeTab === "linkedin"
         ? "bg-foreground text-background shadow-xs"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -509,7 +509,7 @@ function AdminMasterIntegracoesPage() {
   >
     <Linkedin className="size-4 text-[#0A66C2]" />
     <span>LinkedIn Omni-Bridge</span>
-    <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-blue-500/40 text-blue-500 bg-blue-500/10">OAuth 2.0</Badge>
+    <Badge variant="outline" className="text-[9px] px-2 py-0 border-blue-500/40 text-blue-500 bg-blue-500/10">OAuth 2.0</Badge>
   </button>
  </div>
 
@@ -525,7 +525,7 @@ function AdminMasterIntegracoesPage() {
  </div>
  <Button
  onClick={() => setIsNewKeyModalOpen(true)}
- className="rounded-xl font-bold text-xs h-9 gap-1.5"
+ className="rounded-lg font-bold text-xs h-9 gap-2"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Chave à Pool</span>
@@ -533,7 +533,7 @@ function AdminMasterIntegracoesPage() {
  </div>
 
  {pools.length === 0 ? (
- <div className="p-12 text-center border border-dashed border-border rounded-2xl space-y-3 bg-muted/10">
+ <div className="p-12 text-center border border-dashed border-border rounded-lg space-y-3 bg-muted/10">
  <Zap className="size-8 text-muted-foreground mx-auto" />
  <p className="text-sm font-bold text-foreground">Nenhuma chave cadastrada na pool</p>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -545,7 +545,7 @@ function AdminMasterIntegracoesPage() {
  {pools.map((key) => (
  <div
  key={key.id}
- className="p-5 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs group"
+ className="p-5 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs group"
  >
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
@@ -584,7 +584,7 @@ function AdminMasterIntegracoesPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs font-mono bg-muted/40 p-2.5 rounded-xl">
+            <div className="flex items-center justify-between text-xs font-mono bg-muted/40 p-3 rounded-lg">
               <span className="text-muted-foreground">{key.masked_key}</span>
               <span className="text-[11px] text-foreground font-bold">
                 {key.daily_request_count} reqs hoje
@@ -599,7 +599,7 @@ function AdminMasterIntegracoesPage() {
                     : "text-rose-500 bg-rose-500/10"
                 }`}
               >
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   {testedKeyStatus[key.id].success ? (
                     <CheckCircle2 className="size-3 shrink-0" />
                   ) : (
@@ -615,7 +615,7 @@ function AdminMasterIntegracoesPage() {
             )}
 
             {key.last_error_message && !testedKeyStatus[key.id] && (
-              <div className="text-[11px] text-rose-500 bg-rose-500/10 p-2 rounded-lg flex items-center gap-1.5">
+              <div className="text-[11px] text-rose-500 bg-rose-500/10 p-2 rounded-lg flex items-center gap-2">
                 <AlertCircle className="size-3 shrink-0" />
                 <span className="truncate">{key.last_error_message}</span>
               </div>
@@ -639,7 +639,7 @@ function AdminMasterIntegracoesPage() {
  </div>
  <Button
  onClick={() => handleOpenEditPrompt()}
- className="rounded-xl font-bold text-xs h-9 gap-1.5"
+ className="rounded-lg font-bold text-xs h-9 gap-2"
  >
  <Plus className="size-3.5" />
  <span>Novo Prompt Master</span>
@@ -650,7 +650,7 @@ function AdminMasterIntegracoesPage() {
  {prompts.map((prompt) => (
  <div
  key={prompt.id}
- className="p-5 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs"
+ className="p-5 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs"
  >
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
@@ -664,7 +664,7 @@ function AdminMasterIntegracoesPage() {
  <Button
  variant="outline"
  size="sm"
- className="rounded-xl font-bold text-xs h-8"
+ className="rounded-lg font-bold text-xs h-8"
  onClick={() => handleOpenEditPrompt(prompt)}
  >
  Editar Prompt
@@ -675,7 +675,7 @@ function AdminMasterIntegracoesPage() {
  {prompt.description || "Sem descrição"}
  </p>
 
- <div className="p-3 bg-muted/40 rounded-2xl font-mono text-[11px] space-y-1 text-muted-foreground">
+ <div className="p-3 bg-muted/40 rounded-lg font-mono text-[11px] space-y-1 text-muted-foreground">
  <div className="font-bold text-foreground">Instrução de Sistema:</div>
  <div className="line-clamp-2">{prompt.system_instruction}</div>
  </div>
@@ -689,7 +689,7 @@ function AdminMasterIntegracoesPage() {
  {activeTab === "maps" && (
         <div className="space-y-6">
           {/* Header & Status Canônico */}
-          <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-4 shadow-2xs">
+          <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -753,7 +753,7 @@ function AdminMasterIntegracoesPage() {
                           defaultMapProvider: style.id as any,
                         }))
                       }
-                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer select-none space-y-1.5 ${
+                      className={`p-4 rounded-lg border text-left transition-all cursor-pointer select-none space-y-2 ${
                         isSelected
                           ? "bg-primary/5 border-primary ring-1 ring-primary shadow-2xs"
                           : "bg-muted/20 border-border/70 hover:border-foreground/30 hover:bg-muted/40"
@@ -778,7 +778,7 @@ function AdminMasterIntegracoesPage() {
 
             {/* Chaves Opcionais de Terceiros */}
             <div className="pt-2 border-t border-border/40 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="google_maps_api_key" className="text-xs font-bold text-foreground">
                   Chave Google Maps API (Opcional)
                 </Label>
@@ -789,7 +789,7 @@ function AdminMasterIntegracoesPage() {
                     value={formData.google_maps_api_key || ""}
                     onChange={(e) => handleInputChange("google_maps_api_key", e.target.value)}
                     placeholder="AIzaSy..."
-                    className="h-10 text-xs font-mono pr-10 rounded-xl"
+                    className="h-10 text-xs font-mono pr-10 rounded-lg"
                   />
                   <button
                     type="button"
@@ -804,7 +804,7 @@ function AdminMasterIntegracoesPage() {
                 </span>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="mapbox_token" className="text-xs font-bold text-foreground">
                   Token Mapbox GL (Opcional)
                 </Label>
@@ -815,7 +815,7 @@ function AdminMasterIntegracoesPage() {
                     value={formData.mapbox_token || ""}
                     onChange={(e) => handleInputChange("mapbox_token", e.target.value)}
                     placeholder="pk.eyJ1..."
-                    className="h-10 text-xs font-mono pr-10 rounded-xl"
+                    className="h-10 text-xs font-mono pr-10 rounded-lg"
                   />
                   <button
                     type="button"
@@ -833,13 +833,13 @@ function AdminMasterIntegracoesPage() {
           </div>
 
           {/* ── SEÇÃO 2: MATRIZ DE GOVERNANÇA (TOGGLES LIGA/DESLIGA) ── */}
-          <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-5 shadow-2xs">
+          <div className="p-6 rounded-lg bg-card border border-border/70 space-y-5 shadow-2xs">
             <div className="flex items-center justify-between pb-3 border-b border-border/40">
               <div>
                 <h3 className="text-sm font-bold text-foreground">
                   Governança de IA
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Ative ou desative cada integração individualmente de acordo com a política da sua rede.
                 </p>
               </div>
@@ -847,7 +847,7 @@ function AdminMasterIntegracoesPage() {
                 type="button"
                 onClick={handleSaveGov}
                 disabled={isSavingGov}
-                className="rounded-xl font-bold text-xs h-9 gap-1.5"
+                className="rounded-lg font-bold text-xs h-9 gap-2"
               >
                 {isSavingGov ? <RefreshCw className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
                 <span>Salvar Governança</span>
@@ -918,7 +918,7 @@ function AdminMasterIntegracoesPage() {
               ].map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 rounded-2xl bg-muted/20 border border-border/70 flex items-start justify-between gap-3"
+                  className="p-4 rounded-lg bg-muted/20 border border-border/70 flex items-start justify-between gap-3"
                 >
                   <div className="space-y-1 min-w-0">
                     <span className="text-xs font-bold text-foreground block">
@@ -928,21 +928,21 @@ function AdminMasterIntegracoesPage() {
                       {item.desc}
                     </p>
                   </div>
-                  <Switch checked={item.checked} onCheckedChange={item.onChange} className="shrink-0 mt-0.5" />
+                  <Switch checked={item.checked} onCheckedChange={item.onChange} className="shrink-0 mt-1" />
                 </div>
               ))}
             </div>
           </div>
 
           {/* ── SEÇÃO 3: MONITOR DE LATÊNCIA & PING TEST EM TEMPO REAL ── */}
-          <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-4 shadow-2xs">
+          <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
               <div>
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <Activity className="size-4 text-primary" />
                   Monitor de Latência em Tempo Real (Ping Test)
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Mede a disponibilidade e o tempo de resposta das APIs públicas em milissegundos.
                 </p>
               </div>
@@ -952,7 +952,7 @@ function AdminMasterIntegracoesPage() {
                 variant="outline"
                 onClick={handleRunPingTest}
                 disabled={isPinging}
-                className="rounded-xl font-bold text-xs h-9 gap-1.5 shrink-0"
+                className="rounded-lg font-bold text-xs h-9 gap-2 shrink-0"
               >
                 <RefreshCw className={`size-3.5 ${isPinging ? "animate-spin" : ""}`} />
                 <span>{isPinging ? "Testando Endpoints..." : "Testar Conectividade Agora"}</span>
@@ -960,7 +960,7 @@ function AdminMasterIntegracoesPage() {
             </div>
 
             {pingResults.length === 0 ? (
-              <div className="p-6 text-center border border-dashed border-border rounded-xl bg-muted/10 space-y-2">
+              <div className="p-6 text-center border border-dashed border-border rounded-lg bg-muted/10 space-y-2">
                 <Clock className="size-6 text-muted-foreground mx-auto" />
                 <p className="text-xs font-semibold text-foreground">Nenhum teste executado nesta sessão</p>
                 <p className="text-[11px] text-muted-foreground max-w-md mx-auto">
@@ -972,7 +972,7 @@ function AdminMasterIntegracoesPage() {
                 {pingResults.map((ping: any) => (
                   <div
                     key={ping.id}
-                    className="p-3.5 rounded-xl bg-muted/30 border border-border/70 space-y-2"
+                    className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-foreground truncate pr-2">
@@ -1001,22 +1001,22 @@ function AdminMasterIntegracoesPage() {
           </div>
 
           {/* ── SEÇÃO 4: SANDBOX & LABORATÓRIO INTERATIVO AO VIVO ── */}
-          <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-6 shadow-2xs">
+          <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6 shadow-2xs">
             <div>
               <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <Cpu className="size-4 text-primary" />
                 Laboratório de Teste Interativo (Live Sandbox)
               </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1">
                 Simule consultas ao vivo de CEP, CNPJ e decomposição inteligente de endereço com retorno em tempo real.
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Testador 1: CEP com visualização no mapa */}
-              <div className="p-4 rounded-2xl bg-muted/20 border border-border/70 space-y-3">
+              <div className="p-4 rounded-lg bg-muted/20 border border-border/70 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-2">
                     <MapPin className="size-3.5 text-primary" />
                     Teste de Autopreenchimento de CEP
                   </span>
@@ -1033,14 +1033,14 @@ function AdminMasterIntegracoesPage() {
                     onChange={(e) => setSandboxCep(e.target.value)}
                     placeholder="89800000"
                     maxLength={9}
-                    className="h-9 text-xs font-mono bg-card rounded-xl"
+                    className="h-9 text-xs font-mono bg-card rounded-lg"
                   />
                   <Button
                     type="button"
                     size="sm"
                     onClick={handleTestCepLookup}
                     disabled={isSearchingCep}
-                    className="h-9 rounded-xl font-bold text-xs shrink-0"
+                    className="h-9 rounded-lg font-bold text-xs shrink-0"
                   >
                     {isSearchingCep ? <RefreshCw className="size-3.5 animate-spin" /> : <Search className="size-3.5" />}
                     <span>Consultar</span>
@@ -1049,7 +1049,7 @@ function AdminMasterIntegracoesPage() {
 
                 {cepResult && (
                   <div className="space-y-3 pt-2">
-                    <div className="p-3 bg-card rounded-xl border border-border/70 text-xs space-y-1 font-mono">
+                    <div className="p-3 bg-card rounded-lg border border-border/70 text-xs space-y-1 font-mono">
                       <div className="font-bold text-foreground">{cepResult.street || "(Logradouro Geral)"}</div>
                       <div className="text-muted-foreground">
                         {cepResult.neighborhood && `${cepResult.neighborhood}, `}
@@ -1063,7 +1063,7 @@ function AdminMasterIntegracoesPage() {
                     </div>
 
                     {cepResult.latitude && cepResult.longitude && (
-                      <div className="h-[180px] w-full rounded-xl overflow-hidden border border-border/70">
+                      <div className="h-[180px] w-full rounded-lg overflow-hidden border border-border/70">
                         <MapLibreCanvas
                           provider={govSettings.defaultMapProvider}
                           center={{ lat: cepResult.latitude, lng: cepResult.longitude }}
@@ -1084,9 +1084,9 @@ function AdminMasterIntegracoesPage() {
               </div>
 
               {/* Testador 2: CNPJ Oficial da Receita */}
-              <div className="p-4 rounded-2xl bg-muted/20 border border-border/70 space-y-3">
+              <div className="p-4 rounded-lg bg-muted/20 border border-border/70 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-2">
                     <Building2 className="size-3.5 text-primary" />
                     Teste de Consulta Oficial de CNPJ
                   </span>
@@ -1103,14 +1103,14 @@ function AdminMasterIntegracoesPage() {
                     onChange={(e) => setSandboxCnpj(e.target.value)}
                     placeholder="00000000000191"
                     maxLength={18}
-                    className="h-9 text-xs font-mono bg-card rounded-xl"
+                    className="h-9 text-xs font-mono bg-card rounded-lg"
                   />
                   <Button
                     type="button"
                     size="sm"
                     onClick={handleTestCnpjLookup}
                     disabled={isSearchingCnpj}
-                    className="h-9 rounded-xl font-bold text-xs shrink-0"
+                    className="h-9 rounded-lg font-bold text-xs shrink-0"
                   >
                     {isSearchingCnpj ? <RefreshCw className="size-3.5 animate-spin" /> : <Search className="size-3.5" />}
                     <span>Consultar</span>
@@ -1118,7 +1118,7 @@ function AdminMasterIntegracoesPage() {
                 </div>
 
                 {cnpjResult && (
-                  <div className="p-3 bg-card rounded-xl border border-border/70 text-xs space-y-1.5 font-mono">
+                  <div className="p-3 bg-card rounded-lg border border-border/70 text-xs space-y-2 font-mono">
                     <div className="font-bold text-foreground">{cnpjResult.corporateName}</div>
                     {cnpjResult.tradeName && cnpjResult.tradeName !== cnpjResult.corporateName && (
                       <div className="text-[11px] text-muted-foreground">Fantasia: {cnpjResult.tradeName}</div>
@@ -1136,8 +1136,8 @@ function AdminMasterIntegracoesPage() {
             </div>
 
             {/* Testador 3: Parser de Endereço Livre com IA / NLP */}
-            <div className="p-4 rounded-2xl bg-muted/20 border border-border/70 space-y-3">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/70 space-y-3">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Cpu className="size-3.5 text-primary" />
                 Teste de Parser de Endereço Inteligente (Colar Texto Livre)
               </span>
@@ -1147,14 +1147,14 @@ function AdminMasterIntegracoesPage() {
                   value={sandboxNlp}
                   onChange={(e) => setSandboxNlp(e.target.value)}
                   placeholder="Cole um endereço completo..."
-                  className="h-9 text-xs bg-card rounded-xl flex-1"
+                  className="h-9 text-xs bg-card rounded-lg flex-1"
                 />
                 <Button
                   type="button"
                   size="sm"
                   onClick={handleTestNlpLookup}
                   disabled={isParsingNlp}
-                  className="h-9 rounded-xl font-bold text-xs shrink-0"
+                  className="h-9 rounded-lg font-bold text-xs shrink-0"
                 >
                   {isParsingNlp ? <RefreshCw className="size-3.5 animate-spin" /> : <Cpu className="size-3.5" />}
                   <span>Decompor com Precisão</span>
@@ -1162,7 +1162,7 @@ function AdminMasterIntegracoesPage() {
               </div>
 
               {nlpResult && (
-                <div className="p-3 bg-card rounded-xl border border-border/70 text-xs grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono">
+                <div className="p-3 bg-card rounded-lg border border-border/70 text-xs grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono">
                   <div>
                     <span className="text-[10px] text-muted-foreground block">Rua:</span>
                     <span className="font-bold text-foreground truncate block">{nlpResult.street || "-"}</span>
@@ -1189,16 +1189,16 @@ function AdminMasterIntegracoesPage() {
       {/* ── ABA 4: PAGAMENTOS (ASAAS, STRIPE, ABACATEPAY, MERCADO PAGO) ── */}
  {activeTab === "payments" && (
  <form onSubmit={handleSave} className="space-y-6">
- <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-6">
+ <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
  <div>
  <h3 className="text-sm font-bold text-foreground">Gateways de Pagamento</h3>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
    Configure as credenciais de liquidação central dos gateways de pagamento. Taxas da plataforma sempre usam as chaves Master.
  </p>
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="asaas_api_key" className="text-xs font-bold">Asaas API Key (PIX Nacional)</Label>
  <Input
  id="asaas_api_key"
@@ -1206,11 +1206,11 @@ function AdminMasterIntegracoesPage() {
  value={formData.asaas_api_key || ""}
  onChange={(e) => handleInputChange("asaas_api_key", e.target.value)}
  placeholder="$aact_..."
- className="h-10 text-xs font-mono rounded-xl"
+ className="h-10 text-xs font-mono rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="stripe_secret_key" className="text-xs font-bold">Stripe Secret Key</Label>
  <Input
  id="stripe_secret_key"
@@ -1218,16 +1218,16 @@ function AdminMasterIntegracoesPage() {
  value={formData.stripe_secret_key || ""}
  onChange={(e) => handleInputChange("stripe_secret_key", e.target.value)}
  placeholder="sk_live_..."
- className="h-10 text-xs font-mono rounded-xl"
+ className="h-10 text-xs font-mono rounded-lg"
  />
  </div>
 
  {/* AbacatePay */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
    <div className="flex items-center justify-between">
-     <Label htmlFor="abacatepay_api_key" className="text-xs font-bold flex items-center gap-1.5">
+     <Label htmlFor="abacatepay_api_key" className="text-xs font-bold flex items-center gap-2">
        <span>AbacatePay API Key</span>
-       <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider border-green-500/40 text-green-700 dark:text-green-400 bg-green-500/10 px-1.5">PIX</Badge>
+       <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider border-green-500/40 text-green-700 dark:text-green-400 bg-green-500/10 px-2">PIX</Badge>
      </Label>
      {formData.abacatepay_api_key ? (
        <Badge variant="outline" className="text-[9px] font-bold border-green-500/40 text-green-600 bg-green-500/10">✓ Ativo</Badge>
@@ -1242,7 +1242,7 @@ function AdminMasterIntegracoesPage() {
        value={formData.abacatepay_api_key || ""}
        onChange={(e) => handleInputChange("abacatepay_api_key", e.target.value)}
        placeholder="sk_live_abct_..."
-       className="h-10 text-xs font-mono rounded-xl pr-10"
+       className="h-10 text-xs font-mono rounded-lg pr-10"
      />
      <button
        type="button"
@@ -1256,11 +1256,11 @@ function AdminMasterIntegracoesPage() {
  </div>
 
  {/* Mercado Pago */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
    <div className="flex items-center justify-between">
-     <Label htmlFor="mercadopago_access_token" className="text-xs font-bold flex items-center gap-1.5">
+     <Label htmlFor="mercadopago_access_token" className="text-xs font-bold flex items-center gap-2">
        <span>Mercado Pago Access Token</span>
-       <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider border-blue-500/40 text-blue-700 dark:text-blue-400 bg-blue-500/10 px-1.5">PIX+Cartão</Badge>
+       <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider border-blue-500/40 text-blue-700 dark:text-blue-400 bg-blue-500/10 px-2">PIX+Cartão</Badge>
      </Label>
      {formData.mercadopago_access_token ? (
        <Badge variant="outline" className="text-[9px] font-bold border-green-500/40 text-green-600 bg-green-500/10">✓ Ativo</Badge>
@@ -1275,7 +1275,7 @@ function AdminMasterIntegracoesPage() {
        value={formData.mercadopago_access_token || ""}
        onChange={(e) => handleInputChange("mercadopago_access_token", e.target.value)}
        placeholder="APP_USR-..."
-       className="h-10 text-xs font-mono rounded-xl pr-10"
+       className="h-10 text-xs font-mono rounded-lg pr-10"
      />
      <button
        type="button"
@@ -1290,7 +1290,7 @@ function AdminMasterIntegracoesPage() {
  </div>
 
  <div className="flex justify-end pt-4">
- <Button type="submit" disabled={isSubmitting} className="rounded-xl font-bold text-xs h-9 gap-1.5">
+ <Button type="submit" disabled={isSubmitting} className="rounded-lg font-bold text-xs h-9 gap-2">
  <Save className="size-3.5" />
  <span>Salvar Gateways de Pagamento</span>
  </Button>
@@ -1303,15 +1303,15 @@ function AdminMasterIntegracoesPage() {
  {/* ── ABA 5: E-MAIL & WHATSAPP ── */}
  {activeTab === "comms" && (
  <form onSubmit={handleSave} className="space-y-6">
- <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-6">
+ <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
  <div>
  <h3 className="text-sm font-bold text-foreground">Mensageria</h3>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Envio transacional de comprovantes e alertas por E-mail (Resend) e WhatsApp.
  </p>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="resend_api_key" className="text-xs font-bold">Resend API Key (E-mail Transacional)</Label>
  <Input
  id="resend_api_key"
@@ -1319,12 +1319,12 @@ function AdminMasterIntegracoesPage() {
  value={formData.resend_api_key || ""}
  onChange={(e) => handleInputChange("resend_api_key", e.target.value)}
  placeholder="re_..."
- className="h-10 text-xs font-mono rounded-xl"
+ className="h-10 text-xs font-mono rounded-lg"
  />
  </div>
 
  <div className="flex justify-end pt-4">
- <Button type="submit" disabled={isSubmitting} className="rounded-xl font-bold text-xs h-9 gap-1.5">
+ <Button type="submit" disabled={isSubmitting} className="rounded-lg font-bold text-xs h-9 gap-2">
  <Save className="size-3.5" />
  <span>Salvar Mensageria</span>
  </Button>
@@ -1336,15 +1336,15 @@ function AdminMasterIntegracoesPage() {
  {/* ── ABA 6: WEBHOOKS ── */}
  {activeTab === "webhooks" && (
  <form onSubmit={handleSave} className="space-y-6">
- <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-6">
+ <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
  <div>
  <h3 className="text-sm font-bold text-foreground">Segurança de Webhooks (HMAC SHA-256)</h3>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Segredo criptográfico compartilhado para validação de webhooks de pagamento e entregas.
  </p>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="webhook_secret" className="text-xs font-bold">Webhook Secret</Label>
  <Input
  id="webhook_secret"
@@ -1352,12 +1352,12 @@ function AdminMasterIntegracoesPage() {
  value={formData.webhook_secret || ""}
  onChange={(e) => handleInputChange("webhook_secret", e.target.value)}
  placeholder="whsec_..."
- className="h-10 text-xs font-mono rounded-xl"
+ className="h-10 text-xs font-mono rounded-lg"
  />
  </div>
 
  <div className="flex justify-end pt-4">
- <Button type="submit" disabled={isSubmitting} className="rounded-xl font-bold text-xs h-9 gap-1.5">
+ <Button type="submit" disabled={isSubmitting} className="rounded-lg font-bold text-xs h-9 gap-2">
  <Save className="size-3.5" />
  <span>Salvar Segredo de Webhook</span>
  </Button>
@@ -1370,10 +1370,10 @@ function AdminMasterIntegracoesPage() {
   {activeTab === "linkedin" && (
     <div className="space-y-6">
       {/* Frosted Header Card */}
-      <div className="p-6 rounded-2xl bg-background/80 backdrop-blur-md border border-border/70 shadow-xs space-y-4">
+      <div className="p-6 rounded-lg bg-background/80 backdrop-blur-md border border-border/70 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="size-11 rounded-2xl bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center border border-[#0A66C2]/20">
+            <div className="size-11 rounded-lg bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center border border-[#0A66C2]/20">
               <Linkedin className="size-6" />
             </div>
             <div>
@@ -1383,14 +1383,14 @@ function AdminMasterIntegracoesPage() {
                   OAuth 2.0 Master
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1">
                 Chaves mestres do App LinkedIn Developer. Habilita importação de currículos para candidatos e sindicação B2B de vagas para empresas.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 text-emerald-600 text-xs font-semibold">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 text-emerald-600 text-xs font-semibold">
               <ShieldCheck className="size-4" />
               <span>AES-256-GCM Server Vault</span>
             </div>
@@ -1398,7 +1398,7 @@ function AdminMasterIntegracoesPage() {
         </div>
 
         {/* Informações de Arquitetura & Diretrizes */}
-        <div className="p-4 rounded-xl bg-muted/30 border border-border/40 text-xs text-muted-foreground flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="p-4 rounded-lg bg-muted/30 border border-border/40 text-xs text-muted-foreground flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Lock className="size-4 text-primary shrink-0" />
             <span>O Client Secret é armazenado com criptografia simétrica de 256 bits (NIST SP 800-38D). Nunca exposto no front-end.</span>
@@ -1407,7 +1407,7 @@ function AdminMasterIntegracoesPage() {
             href="https://www.linkedin.com/developers/apps"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline shrink-0"
+            className="flex items-center gap-2 text-xs font-semibold text-primary hover:underline shrink-0"
           >
             <span>LinkedIn Developer Portal</span>
             <ExternalLink className="size-3" />
@@ -1445,7 +1445,7 @@ function AdminMasterIntegracoesPage() {
         }}
         className="space-y-6"
       >
-        <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-6">
+        <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Client ID */}
             <div className="space-y-2">
@@ -1460,7 +1460,7 @@ function AdminMasterIntegracoesPage() {
                 value={liClientId}
                 onChange={(e) => setLiClientId(e.target.value)}
                 placeholder="Ex: 77a0bcde123456"
-                className="h-10 text-xs font-mono rounded-xl bg-background"
+                className="h-10 text-xs font-mono rounded-lg bg-background"
                 required
               />
               <p className="text-[11px] text-muted-foreground">
@@ -1485,7 +1485,7 @@ function AdminMasterIntegracoesPage() {
                   value={liClientSecret}
                   onChange={(e) => setLiClientSecret(e.target.value)}
                   placeholder="••••••••••••••••"
-                  className="h-10 text-xs font-mono rounded-xl pr-10 bg-background"
+                  className="h-10 text-xs font-mono rounded-lg pr-10 bg-background"
                 />
                 <button
                   type="button"
@@ -1523,7 +1523,7 @@ function AdminMasterIntegracoesPage() {
                 value={liRedirectUri}
                 onChange={(e) => setLiRedirectUri(e.target.value)}
                 placeholder="https://waesy.com.br/api/auth/linkedin/callback"
-                className="h-10 text-xs font-mono rounded-xl bg-background"
+                className="h-10 text-xs font-mono rounded-lg bg-background"
                 required
               />
               <p className="text-[11px] text-muted-foreground">
@@ -1544,7 +1544,7 @@ function AdminMasterIntegracoesPage() {
                 value={liCompanyId}
                 onChange={(e) => setLiCompanyId(e.target.value)}
                 placeholder="Ex: 104523912 ou waesy-brasil"
-                className="h-10 text-xs font-mono rounded-xl bg-background"
+                className="h-10 text-xs font-mono rounded-lg bg-background"
               />
               <p className="text-[11px] text-muted-foreground">
                 ID da Company Page do Waesy para postagens institucionais de vagas sindicadas.
@@ -1556,19 +1556,19 @@ function AdminMasterIntegracoesPage() {
           <div className="space-y-3 pt-4 border-t border-border/50">
             <Label className="text-xs font-bold text-foreground">Escopos de Permissão OAuth 2.0 Ativos</Label>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="px-2.5 py-1 text-xs font-mono bg-muted/40 border-border/60">
+              <Badge variant="outline" className="px-3 py-1 text-xs font-mono bg-muted/40 border-border/60">
                 openid (Autenticação OIDC)
               </Badge>
-              <Badge variant="outline" className="px-2.5 py-1 text-xs font-mono bg-muted/40 border-border/60">
+              <Badge variant="outline" className="px-3 py-1 text-xs font-mono bg-muted/40 border-border/60">
                 profile (Nome, foto, headline do candidato)
               </Badge>
-              <Badge variant="outline" className="px-2.5 py-1 text-xs font-mono bg-muted/40 border-border/60">
+              <Badge variant="outline" className="px-3 py-1 text-xs font-mono bg-muted/40 border-border/60">
                 email (Validação cadastral segura)
               </Badge>
-              <Badge variant="outline" className="px-2.5 py-1 text-xs font-mono bg-muted/40 border-border/60">
+              <Badge variant="outline" className="px-3 py-1 text-xs font-mono bg-muted/40 border-border/60">
                 w_member_social (Publicação de vagas pelo membro)
               </Badge>
-              <Badge variant="outline" className="px-2.5 py-1 text-xs font-mono bg-muted/40 border-border/60">
+              <Badge variant="outline" className="px-3 py-1 text-xs font-mono bg-muted/40 border-border/60">
                 w_organization_social (Sindicação de vagas na Company Page)
               </Badge>
             </div>
@@ -1593,7 +1593,7 @@ function AdminMasterIntegracoesPage() {
             <Button
               type="submit"
               disabled={isSavingLinkedIn}
-              className="rounded-xl font-bold text-xs h-9 gap-1.5 bg-[#0A66C2] hover:bg-[#084e96] text-white"
+              className="rounded-lg font-bold text-xs h-9 gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white"
             >
               <Save className="size-3.5" />
               <span>{isSavingLinkedIn ? "Criptografando..." : "Salvar Credenciais no Cofre"}</span>
@@ -1606,7 +1606,7 @@ function AdminMasterIntegracoesPage() {
 
   {/* Modal: Adicionar Chave à Pool */}
  <Dialog open={isNewKeyModalOpen} onOpenChange={setIsNewKeyModalOpen}>
- <DialogContent className="sm:max-w-md sm:rounded-2xl">
+ <DialogContent className="sm:max-w-md sm:rounded-lg">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold">Adicionar Chave à Pool</DialogTitle>
  <DialogDescription className="text-xs">
@@ -1615,13 +1615,13 @@ function AdminMasterIntegracoesPage() {
  </DialogHeader>
 
  <div className="space-y-4 py-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Provedor do Serviço</Label>
  <Select value={newKeyProvider} onValueChange={(v: any) => setNewKeyProvider(v)}>
- <SelectTrigger className="h-10 text-xs rounded-xl">
+ <SelectTrigger className="h-10 text-xs rounded-lg">
  <SelectValue placeholder="Selecione o provedor" />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="openrouter">OpenRouter (Multi-Modelo: Llama 3.3, Claude, DeepSeek)</SelectItem>
  <SelectItem value="groq">Groq LPU (Inferência Ultra-rápida Llama 3.3)</SelectItem>
  <SelectItem value="gemini">Google Gemini (Flash e Pro)</SelectItem>
@@ -1636,29 +1636,29 @@ function AdminMasterIntegracoesPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Rótulo / Identificação</Label>
  <Input
  value={newKeyLabel}
  onChange={(e) => setNewKeyLabel(e.target.value)}
  placeholder="Ex: Firecrawl Chave 01 (Plano Pro)"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Chave Secreta de API (Secret Key)</Label>
  <Input
  type="password"
  value={newKeySecret}
  onChange={(e) => setNewKeySecret(e.target.value)}
  placeholder="sk_... ou AIza..."
- className="h-10 text-xs font-mono rounded-xl"
+ className="h-10 text-xs font-mono rounded-lg"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Prioridade (1 = Alta)</Label>
  <Input
  type="number"
@@ -1666,27 +1666,27 @@ function AdminMasterIntegracoesPage() {
  max={10}
  value={newKeyPriority}
  onChange={(e) => setNewKeyPriority(Number(e.target.value))}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Limite / Minuto</Label>
  <Input
  type="number"
  min={1}
  value={newKeyRateLimit}
  onChange={(e) => setNewKeyRateLimit(Number(e.target.value))}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  </div>
  </div>
 
  <DialogFooter>
- <Button variant="outline" onClick={() => setIsNewKeyModalOpen(false)} className="rounded-xl text-xs">
+ <Button variant="outline" onClick={() => setIsNewKeyModalOpen(false)} className="rounded-lg text-xs">
  Cancelar
  </Button>
- <Button onClick={handleSaveKeyToPool} className="rounded-xl font-bold text-xs">
+ <Button onClick={handleSaveKeyToPool} className="rounded-lg font-bold text-xs">
  Salvar Chave no Pool
  </Button>
  </DialogFooter>
@@ -1695,7 +1695,7 @@ function AdminMasterIntegracoesPage() {
 
  {/* Modal: Editar Prompt Master */}
  <Dialog open={isPromptModalOpen} onOpenChange={setIsPromptModalOpen}>
- <DialogContent className="sm:max-w-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-2xl sm:rounded-lg max-h-[85vh] overflow-y-auto no-scrollbar">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold">
  {editingPrompt ? "Editar Prompt" : "Novo Prompt"}
@@ -1707,68 +1707,68 @@ function AdminMasterIntegracoesPage() {
 
  <div className="space-y-4 py-2">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Slug Identificador</Label>
  <Input
  value={promptSlug}
  onChange={(e) => setPromptSlug(e.target.value)}
  placeholder="product_importer_custom"
- className="h-9 text-xs font-mono rounded-xl"
+ className="h-9 text-xs font-mono rounded-lg"
  disabled={editingPrompt?.is_default}
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Título do Prompt</Label>
  <Input
  value={promptTitle}
  onChange={(e) => setPromptTitle(e.target.value)}
  placeholder="Importador Gastronômico"
- className="h-9 text-xs rounded-xl font-bold"
+ className="h-9 text-xs rounded-lg font-bold"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Descrição</Label>
  <Input
  value={promptDescription}
  onChange={(e) => setPromptDescription(e.target.value)}
  placeholder="Explique o propósito deste prompt..."
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Instruções de Sistema (System Prompt)</Label>
  <Textarea
  value={promptSystemInstruction}
  onChange={(e) => setPromptSystemInstruction(e.target.value)}
  placeholder="Você é um assistente sênior..."
- className="text-xs h-24 rounded-xl leading-relaxed"
+ className="text-xs h-24 rounded-lg leading-relaxed"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Template com Variáveis ({`{{raw_content}}`})</Label>
  <Textarea
  value={promptTemplate}
  onChange={(e) => setPromptTemplate(e.target.value)}
  placeholder="Analise o conteúdo abaixo: {{raw_content}}..."
- className="text-xs font-mono h-32 rounded-xl leading-relaxed"
+ className="text-xs font-mono h-32 rounded-lg leading-relaxed"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Modelo LLM</Label>
  <Input
  value={promptModel}
  onChange={(e) => setPromptModel(e.target.value)}
  placeholder="gemini-1.5-flash ou llama-3.1-70b"
- className="h-9 text-xs font-mono rounded-xl"
+ className="h-9 text-xs font-mono rounded-lg"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Temperatura (Criatividade: 0.0 - 1.0)</Label>
  <Input
  type="number"
@@ -1777,17 +1777,17 @@ function AdminMasterIntegracoesPage() {
  max={1}
  value={promptTemperature}
  onChange={(e) => setPromptTemperature(Number(e.target.value))}
- className="h-9 text-xs rounded-xl font-mono"
+ className="h-9 text-xs rounded-lg font-mono"
  />
  </div>
  </div>
  </div>
 
  <DialogFooter>
- <Button variant="outline" onClick={() => setIsPromptModalOpen(false)} className="rounded-xl text-xs">
+ <Button variant="outline" onClick={() => setIsPromptModalOpen(false)} className="rounded-lg text-xs">
  Cancelar
  </Button>
- <Button onClick={handleSavePrompt} className="rounded-xl font-bold text-xs">
+ <Button onClick={handleSavePrompt} className="rounded-lg font-bold text-xs">
  Salvar Prompt Master
  </Button>
  </DialogFooter>

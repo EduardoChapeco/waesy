@@ -408,7 +408,7 @@ function AfiliadosPage() {
         backTo="/conta"
         rightAction={
           partner ? (
-            <Button asChild variant="outline" size="sm" className="h-8 px-2.5 rounded-xl text-xs gap-1">
+            <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs gap-1">
               <Link to="/u/$username" params={{ username: referralHandle }}>
                 <Globe className="size-3.5" />
                 <span>Vitrine</span>
@@ -419,7 +419,7 @@ function AfiliadosPage() {
       />
 
       {/* ─── Top Bar Desktop Apple HIG (Direta, Comercial e Silenciosa) ─── */}
-      <div className="hidden lg:block border-b border-border/40 bg-card/70 backdrop-blur-md px-6 py-3.5 sticky top-0 z-20">
+      <div className="hidden lg:block border-b border-border/40 bg-card/70 backdrop-blur-md px-6 py-4 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="text-base font-bold tracking-tight text-foreground truncate">
@@ -434,14 +434,14 @@ function AfiliadosPage() {
 
           {partner && (
             <div className="flex items-center gap-2 shrink-0">
-              <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-xl text-xs gap-1.5">
+              <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-lg text-xs gap-2">
                 <Link to="/u/$username" params={{ username: referralHandle }}>
                   <Globe className="size-3.5" />
                   <span>Minha Vitrine</span>
                 </Link>
               </Button>
 
-              <Button asChild size="sm" className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5">
+              <Button asChild size="sm" className="h-9 px-3 rounded-lg text-xs font-semibold gap-2">
                 <Link to="/feed">
                   <PenSquare className="size-3.5" />
                   <span>Publicar</span>
@@ -456,7 +456,7 @@ function AfiliadosPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-5 md:px-6 py-3 sm:py-6">
         {isLoading && !partner ? (
           <div className="max-w-md mx-auto py-20 text-center space-y-4">
-            <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto animate-pulse">
+            <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto animate-pulse">
               <Star className="size-6" />
             </div>
             <p className="text-sm font-semibold text-foreground">Carregando painel...</p>
@@ -467,29 +467,29 @@ function AfiliadosPage() {
             {/* Navegação em Tabs (Snap & Fade Physics no Mobile) */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
               <TabsList
-                className="h-10 sm:h-11 p-1 bg-muted/40 rounded-xl border border-border/40 flex items-center gap-1 overflow-x-auto no-scrollbar snap-x snap-mandatory w-full sm:grid sm:grid-cols-5 pr-6 sm:pr-1"
+                className="h-10 sm:h-11 p-1 bg-muted/40 rounded-lg border border-border/40 flex items-center gap-1 overflow-x-auto no-scrollbar snap-x snap-mandatory w-full sm:grid sm:grid-cols-5 pr-6 sm:pr-1"
                 style={{
                   maskImage: "linear-gradient(to right, black 90%, transparent 100%)",
                   WebkitMaskImage: "linear-gradient(to right, black 90%, transparent 100%)",
                 }}
               >
-                <TabsTrigger value="dashboard" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
+                <TabsTrigger value="dashboard" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
                   <TrendingUp className="size-3.5" />
                   <span>Visão Geral</span>
                 </TabsTrigger>
-                <TabsTrigger value="showcase" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
+                <TabsTrigger value="showcase" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
                   <Layers className="size-3.5" />
                   <span>Vitrine (Opcional)</span>
                 </TabsTrigger>
-                <TabsTrigger value="stores" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
+                <TabsTrigger value="stores" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
                   <Store className="size-3.5" />
                   <span>Lojas</span>
                 </TabsTrigger>
-                <TabsTrigger value="referrals" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
+                <TabsTrigger value="referrals" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
                   <Coins className="size-3.5" />
                   <span>Ganhos</span>
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
+                <TabsTrigger value="settings" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
                   <SlidersHorizontal className="size-3.5" />
                   <span>Configurações</span>
                 </TabsTrigger>
@@ -499,7 +499,7 @@ function AfiliadosPage() {
               <TabsContent value="dashboard" className="space-y-3 sm:space-y-5 mt-0">
                 {/* 4 Cards de Métricas Comerciais */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                  <div className="p-3.5 sm:p-4 rounded-2xl border border-border/60 bg-card space-y-1">
+                  <div className="p-4 sm:p-4 rounded-lg border border-border/60 bg-card space-y-1">
                     <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                       Cliques no Link
                     </span>
@@ -509,7 +509,7 @@ function AfiliadosPage() {
                     <span className="text-[10px] text-muted-foreground">Acessos à sua vitrine</span>
                   </div>
 
-                  <div className="p-3.5 sm:p-4 rounded-2xl border border-border/60 bg-card space-y-1">
+                  <div className="p-4 sm:p-4 rounded-lg border border-border/60 bg-card space-y-1">
                     <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                       Vendas Realizadas
                     </span>
@@ -519,7 +519,7 @@ function AfiliadosPage() {
                     <span className="text-[10px] text-emerald-600 font-medium">Pedidos convertidos</span>
                   </div>
 
-                  <div className="p-3.5 sm:p-4 rounded-2xl border border-border/60 bg-card space-y-1">
+                  <div className="p-4 sm:p-4 rounded-lg border border-border/60 bg-card space-y-1">
                     <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                       Volume Gerado
                     </span>
@@ -529,7 +529,7 @@ function AfiliadosPage() {
                     <span className="text-[10px] text-muted-foreground">Total faturado em lojas</span>
                   </div>
 
-                  <div className="p-3.5 sm:p-4 rounded-2xl border border-primary/30 bg-primary/5 space-y-1">
+                  <div className="p-4 sm:p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-1">
                     <span className="text-[11px] font-medium text-primary uppercase tracking-wider flex items-center gap-1">
                       <Coins className="size-3" /> Saldo de Ganhos
                     </span>
@@ -543,8 +543,8 @@ function AfiliadosPage() {
                 </div>
 
                 {/* Link de Divulgação com Compartilhamento Direto */}
-                <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                         <span>Seu Link de Divulgação</span>
@@ -552,7 +552,7 @@ function AfiliadosPage() {
                           Validade 30 dias
                         </Badge>
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Compartilhe seu link exclusivo e receba comissões automáticas em cada compra realizada.
                       </p>
                     </div>
@@ -562,7 +562,7 @@ function AfiliadosPage() {
                         type="button"
                         size="sm"
                         onClick={() => handleCopy(generalAffiliateUrl, "Link de divulgação")}
-                        className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5"
+                        className="h-9 px-4 rounded-lg text-xs font-semibold gap-2"
                       >
                         {copiedLink === generalAffiliateUrl ? (
                           <CheckCircle2 className="size-3.5 text-emerald-400" />
@@ -582,7 +582,7 @@ function AfiliadosPage() {
                             generalAffiliateUrl
                           )
                         }
-                        className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
+                        className="h-9 px-4 rounded-lg text-xs font-semibold gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
                       >
                         <Send className="size-3.5" />
                         <span>WhatsApp</span>
@@ -593,12 +593,12 @@ function AfiliadosPage() {
                   <Input
                     readOnly
                     value={generalAffiliateUrl}
-                    className="h-10 rounded-xl bg-muted/30 font-mono text-xs border-border/50 select-all"
+                    className="h-10 rounded-lg bg-muted/30 font-mono text-xs border-border/50 select-all"
                   />
                 </div>
 
                 {/* Desempenho de Vendas */}
-                <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-3">
+                <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -610,12 +610,12 @@ function AfiliadosPage() {
                           {analytics?.summary?.conversionRate || 0}% conversão
                         </Badge>
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Acompanhamento diário de acessos à sua vitrine e pedidos gerados.
                       </p>
                     </div>
 
-                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-xl text-xs gap-1.5 self-start sm:self-auto">
+                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs gap-2 self-start sm:self-auto">
                       <Link to="/u/$username" params={{ username: referralHandle }}>
                         <Globe className="size-3.5" />
                         <span>Abrir Vitrine Pública</span>
@@ -629,11 +629,11 @@ function AfiliadosPage() {
                         <span>Histórico recente</span>
                         <span>Acessos vs Vendas</span>
                       </div>
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
                         {analytics.clicksHistory.slice(-7).map((item) => (
                           <div
                             key={item.date}
-                            className="flex items-center justify-between p-2.5 rounded-xl bg-muted/20 border border-border/40 text-xs"
+                            className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/40 text-xs"
                           >
                             <span className="font-mono text-muted-foreground">{item.date}</span>
                             <div className="flex items-center gap-3">
@@ -649,16 +649,16 @@ function AfiliadosPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40 text-center text-xs text-muted-foreground">
+                    <div className="p-4 rounded-lg bg-muted/20 border border-border/40 text-center text-xs text-muted-foreground">
                       Compartilhe seu link de vitrine ou produtos comissionados para acompanhar métricas de acessos diários aqui.
                     </div>
                   )}
                 </div>
 
                 {/* Resumo Comercial de Formas de Ganho */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
-                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5">
-                    <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3">
+                  <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
+                    <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                       <ShoppingBag className="size-4" />
                     </div>
                     <h4 className="text-xs font-bold text-foreground">Comissões por Venda</h4>
@@ -667,8 +667,8 @@ function AfiliadosPage() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5">
-                    <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                  <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
+                    <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
                       <Ticket className="size-4" />
                     </div>
                     <h4 className="text-xs font-bold text-foreground">Cupons de Desconto</h4>
@@ -677,8 +677,8 @@ function AfiliadosPage() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5">
-                    <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                  <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
+                    <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
                       <Coins className="size-4" />
                     </div>
                     <h4 className="text-xs font-bold text-foreground">Bônus por Indicação</h4>
@@ -692,8 +692,8 @@ function AfiliadosPage() {
               {/* ─── TAB 2: MINHA VITRINE (CMS VISUAL ESTILO WIX MOBILE APP) ─ */}
               <TabsContent value="showcase" className="space-y-6 mt-0">
                 {/* Header de Gestão da Vitrine */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20 p-5 rounded-2xl border border-border/60">
-                  <div className="space-y-0.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20 p-5 rounded-lg border border-border/60">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-bold text-foreground">
                         Editor Visual da Vitrine Pública
@@ -708,7 +708,7 @@ function AfiliadosPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Button asChild variant="outline" size="sm" className="h-10 px-3.5 rounded-xl text-xs gap-1.5">
+                    <Button asChild variant="outline" size="sm" className="h-10 px-4 rounded-lg text-xs gap-2">
                       <Link to="/u/$username" params={{ username: referralHandle }} target="_blank">
                         <Globe className="size-3.5" />
                         <span>Pré-visualizar Vitrine</span>
@@ -720,7 +720,7 @@ function AfiliadosPage() {
                       size="sm"
                       disabled={isSavingShowcase}
                       onClick={handleSaveShowcase}
-                      className="h-10 px-4 rounded-xl text-xs font-semibold gap-1.5"
+                      className="h-10 px-4 rounded-lg text-xs font-semibold gap-2"
                     >
                       {isSavingShowcase ? (
                         <span>Salvando...</span>
@@ -735,10 +735,10 @@ function AfiliadosPage() {
                 </div>
 
                 {/* 1. Controle de Camadas da Vitrine (Wix Style Reordering) */}
-                <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                         <Layers className="size-3.5 text-primary" />
                         <span>Ordem das Camadas na Vitrine Pública</span>
                       </h4>
@@ -760,7 +760,7 @@ function AfiliadosPage() {
                       return (
                         <div
                           key={sectionKey}
-                          className="flex items-center justify-between p-3.5 rounded-xl bg-muted/20 border border-border/40"
+                          className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/40"
                         >
                           <div className="flex items-center gap-3">
                             <span className="size-6 rounded-full bg-muted flex items-center justify-center text-xs font-mono font-bold text-muted-foreground">
@@ -807,10 +807,10 @@ function AfiliadosPage() {
                 </div>
 
                 {/* 2. Editor de Banner Promocional 16:9 */}
-                <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                         <ImageIcon className="size-3.5 text-primary" />
                         <span>Banner Promocional da Marca (16:9)</span>
                       </h4>
@@ -821,7 +821,7 @@ function AfiliadosPage() {
                   </div>
 
                   {/* Preview Visual em Tempo Real */}
-                  <div className="aspect-video sm:aspect-[21/9] w-full rounded-2xl bg-muted/40 border border-border/60 overflow-hidden relative flex flex-col justify-end p-4 sm:p-6">
+                  <div className="aspect-video sm:aspect-[21/9] w-full rounded-lg bg-muted/40 border border-border/60 overflow-hidden relative flex flex-col justify-end p-4 sm:p-6">
                     {bannerUrl ? (
                       <img
                         src={bannerUrl}
@@ -853,7 +853,7 @@ function AfiliadosPage() {
 
                   {/* Campos do Banner */}
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 pt-2 items-start">
-                    <div className="sm:col-span-4 space-y-1.5">
+                    <div className="sm:col-span-4 space-y-2">
                       <Label className="text-xs font-semibold text-foreground">Upload da Imagem (16:9)</Label>
                       <ImageUpload
                         value={bannerUrl}
@@ -866,23 +866,23 @@ function AfiliadosPage() {
                     </div>
 
                     <div className="sm:col-span-8 space-y-3">
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs font-medium">Título de Chamada no Banner</Label>
                         <Input
                           value={bannerTitle}
                           onChange={(e) => setBannerTitle(e.target.value)}
                           placeholder="Ex: Cupons e Indicações da Semana"
-                          className="h-11 rounded-xl text-xs bg-background"
+                          className="h-11 rounded-lg text-xs bg-background"
                         />
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs font-medium">Link de Destino ao Clicar (Opcional)</Label>
                         <Input
                           value={bannerLink}
                           onChange={(e) => setBannerLink(e.target.value)}
                           placeholder="Ex: /c/loja-exemplo ou https://..."
-                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                          className="h-11 rounded-lg text-xs bg-background font-mono"
                         />
                       </div>
                     </div>
@@ -890,10 +890,10 @@ function AfiliadosPage() {
                 </div>
 
                 {/* 3. Lojas Parceiras Conectadas à Vitrine */}
-                <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                         <Store className="size-3.5 text-primary" />
                         <span>Lojas Parceiras Conectadas ({connectedStoreIds.length})</span>
                       </h4>
@@ -906,7 +906,7 @@ function AfiliadosPage() {
                       type="button"
                       size="sm"
                       onClick={() => setIsStorePickerOpen(true)}
-                      className="h-10 px-4 rounded-xl text-xs font-semibold gap-1.5 self-start sm:self-auto"
+                      className="h-10 px-4 rounded-lg text-xs font-semibold gap-2 self-start sm:self-auto"
                     >
                       <Plus className="size-3.5" />
                       <span>Conectar Nova Loja</span>
@@ -914,7 +914,7 @@ function AfiliadosPage() {
                   </div>
 
                   {connectedStoresList.length === 0 ? (
-                    <div className="p-6 text-center rounded-xl bg-muted/20 border border-border/40 space-y-2">
+                    <div className="p-6 text-center rounded-lg bg-muted/20 border border-border/40 space-y-2">
                       <Store className="size-6 text-muted-foreground mx-auto" />
                       <p className="text-xs font-semibold text-foreground">Nenhuma loja conectada ainda</p>
                       <p className="text-[11px] text-muted-foreground">
@@ -926,10 +926,10 @@ function AfiliadosPage() {
                       {connectedStoresList.map((s: any) => (
                         <div
                           key={s.id}
-                          className="p-4 rounded-xl border border-border/60 bg-muted/10 flex items-center justify-between gap-3"
+                          className="p-4 rounded-lg border border-border/60 bg-muted/10 flex items-center justify-between gap-3"
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="size-11 rounded-xl bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
+                            <div className="size-11 rounded-lg bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
                               {s.logoUrl ? (
                                 <img src={s.logoUrl} alt={s.name} className="size-full object-cover" />
                               ) : (
@@ -961,10 +961,10 @@ function AfiliadosPage() {
                 </div>
 
                 {/* 4. Produtos Recomendados */}
-                <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                         <ShoppingBag className="size-3.5 text-primary" />
                         <span>Produtos Comissionados do Catálogo ({showcaseProducts.length})</span>
                       </h4>
@@ -975,7 +975,7 @@ function AfiliadosPage() {
                   </div>
 
                   {showcaseProducts.length === 0 ? (
-                    <div className="p-6 text-center rounded-xl bg-muted/20 border border-border/40 space-y-2">
+                    <div className="p-6 text-center rounded-lg bg-muted/20 border border-border/40 space-y-2">
                       <ShoppingBag className="size-6 text-muted-foreground mx-auto" />
                       <p className="text-xs text-muted-foreground">
                         Nenhum produto cadastrado no momento. Assim que as lojas ativarem itens no catálogo público, eles aparecerão aqui.
@@ -989,7 +989,7 @@ function AfiliadosPage() {
                         return (
                           <div
                             key={p.id}
-                            className="p-3.5 rounded-xl border border-border/60 bg-muted/10 flex flex-col justify-between gap-2.5"
+                            className="p-4 rounded-lg border border-border/60 bg-muted/10 flex flex-col justify-between gap-3"
                           >
                             <div className="space-y-2">
                               <div className="aspect-video w-full rounded-lg bg-muted/40 overflow-hidden relative">
@@ -1020,7 +1020,7 @@ function AfiliadosPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleCopy(productAffiliateUrl, "Link do produto")}
-                                className="flex-1 h-9 rounded-xl text-[11px] font-semibold gap-1"
+                                className="flex-1 h-9 rounded-lg text-[11px] font-semibold gap-1"
                               >
                                 {copiedLink === productAffiliateUrl ? (
                                   <Check className="size-3 text-emerald-500" />
@@ -1038,10 +1038,10 @@ function AfiliadosPage() {
                 </div>
 
                 {/* 5. Próximos Eventos & Shows da Marca */}
-                <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                         <Calendar className="size-3.5 text-primary" />
                         <span>Próximos Eventos & Shows da Marca ({creatorEvents.length})</span>
                       </h4>
@@ -1050,7 +1050,7 @@ function AfiliadosPage() {
                       </p>
                     </div>
 
-                    <Button asChild variant="outline" size="sm" className="h-10 px-3.5 rounded-xl text-xs gap-1.5 self-start sm:self-auto">
+                    <Button asChild variant="outline" size="sm" className="h-10 px-4 rounded-lg text-xs gap-2 self-start sm:self-auto">
                       <Link to="/eventos">
                         <Plus className="size-3.5" />
                         <span>Cadastrar Evento</span>
@@ -1059,7 +1059,7 @@ function AfiliadosPage() {
                   </div>
 
                   {creatorEvents.length === 0 ? (
-                    <div className="p-6 text-center rounded-xl bg-muted/20 border border-border/40 space-y-2">
+                    <div className="p-6 text-center rounded-lg bg-muted/20 border border-border/40 space-y-2">
                       <Calendar className="size-6 text-muted-foreground mx-auto" />
                       <p className="text-xs font-semibold text-foreground">Nenhum evento agendado</p>
                       <p className="text-[11px] text-muted-foreground">
@@ -1071,9 +1071,9 @@ function AfiliadosPage() {
                       {creatorEvents.map((evt: any) => (
                         <div
                           key={evt.id}
-                          className="p-4 rounded-xl border border-border/60 bg-muted/10 flex items-start gap-3"
+                          className="p-4 rounded-lg border border-border/60 bg-muted/10 flex items-start gap-3"
                         >
-                          <div className="size-12 rounded-xl bg-muted/60 overflow-hidden shrink-0 border border-border/40">
+                          <div className="size-12 rounded-lg bg-muted/60 overflow-hidden shrink-0 border border-border/40">
                             {evt.cover_image ? (
                               <img src={evt.cover_image} alt={evt.title} className="size-full object-cover" />
                             ) : (
@@ -1101,7 +1101,7 @@ function AfiliadosPage() {
 
               {/* ─── TAB 3: LOJAS & CUPONS PARCEIROS ────────────────── */}
               <TabsContent value="stores" className="space-y-4 sm:space-y-6 mt-0">
-                <div className="bg-muted/20 p-3.5 sm:p-5 rounded-2xl border border-border/60">
+                <div className="bg-muted/20 p-4 sm:p-5 rounded-lg border border-border/60">
                   <h3 className="text-sm font-bold text-foreground">Lojas Parceiras com Cupons Ativos</h3>
                   <p className="text-xs text-muted-foreground">
                     Divulgue os cupons exclusivos das lojas locais. O cliente ganha 10% de desconto e a venda é atribuída à sua conta.
@@ -1117,10 +1117,10 @@ function AfiliadosPage() {
                     return (
                       <div
                         key={s.id}
-                        className="p-3.5 sm:p-5 rounded-2xl border border-border/60 bg-card flex flex-col justify-between gap-4"
+                        className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card flex flex-col justify-between gap-4"
                       >
                         <div className="flex items-start gap-3">
-                          <div className="size-12 rounded-xl bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
+                          <div className="size-12 rounded-lg bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
                             {s.logoUrl ? (
                               <img src={s.logoUrl} alt={s.name} className="w-full h-full object-cover" />
                             ) : (
@@ -1141,7 +1141,7 @@ function AfiliadosPage() {
                           </div>
                         </div>
 
-                        <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
+                        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between">
                           <div>
                             <span className="text-[10px] text-muted-foreground uppercase font-medium">
                               Cupom Exclusivo
@@ -1159,7 +1159,7 @@ function AfiliadosPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleCopy(couponCode, "Cupom")}
-                            className="flex-1 h-10 rounded-xl text-xs font-semibold gap-1.5"
+                            className="flex-1 h-10 rounded-lg text-xs font-semibold gap-2"
                           >
                             <Copy className="size-3.5" />
                             <span>Copiar Cupom</span>
@@ -1175,7 +1175,7 @@ function AfiliadosPage() {
                                 storeUrl
                               )
                             }
-                            className="h-10 px-3 rounded-xl text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
+                            className="h-10 px-3 rounded-lg text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
                             title="Enviar no WhatsApp"
                           >
                             <Send className="size-3.5" />
@@ -1186,7 +1186,7 @@ function AfiliadosPage() {
                             size="sm"
                             variant={isConnected ? "secondary" : "default"}
                             onClick={() => handleToggleStoreConnection(s.id)}
-                            className="h-10 px-3.5 rounded-xl text-xs font-semibold gap-1.5"
+                            className="h-10 px-4 rounded-lg text-xs font-semibold gap-2"
                           >
                             {isConnected ? (
                               <>
@@ -1210,9 +1210,9 @@ function AfiliadosPage() {
               {/* ─── TAB 4: INDICAÇÕES & SALDO ────────────────────── */}
               <TabsContent value="referrals" className="space-y-4 sm:space-y-6 mt-0">
                 {/* Bloco de Saldo e Saques */}
-                <div className="p-4 sm:p-5 rounded-2xl border border-primary/30 bg-primary/5 space-y-2.5">
-                  <div className="flex items-center gap-2.5">
-                    <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <div className="p-4 sm:p-5 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                       <ShieldCheck className="size-4" />
                     </div>
                     <div>
@@ -1233,11 +1233,11 @@ function AfiliadosPage() {
 
                 {/* Regras Ativas de Tokens */}
                 {rules.length > 0 && (
-                  <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-3">
+                  <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-3">
                     <h3 className="text-sm font-bold text-foreground">Regras de Bônus por Indicação</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3">
                       {rules.map((r: any) => (
-                        <div key={r.id} className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1">
+                        <div key={r.id} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-semibold text-foreground">{r.title}</span>
                             <Badge variant="secondary" className="text-[10px]">
@@ -1255,7 +1255,7 @@ function AfiliadosPage() {
                 )}
 
                 {/* Histórico */}
-                <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-3">
+                <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-3">
                   <h3 className="text-sm font-bold text-foreground">Histórico de Indicações Recentes</h3>
                   {referrals.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-6">
@@ -1264,15 +1264,15 @@ function AfiliadosPage() {
                   ) : (
                     <div className="divide-y divide-border/40">
                       {referrals.map((ref: any) => (
-                        <div key={ref.id} className="py-2.5 flex items-center justify-between gap-2">
-                          <div className="space-y-0.5">
+                        <div key={ref.id} className="py-3 flex items-center justify-between gap-2">
+                          <div className="space-y-1">
                             <p className="text-xs font-semibold text-foreground">
                               {ref.referral_type === "store" ? "Loja / Empresa" : "Membro"} indicado
                             </p>
                             <span className="text-[10px] text-muted-foreground">{formatDate(ref.created_at)}</span>
                           </div>
 
-                          <div className="text-right space-y-0.5">
+                          <div className="text-right space-y-1">
                             <p className="text-xs font-bold text-primary">
                               +{(ref.tokens_awarded || 0).toLocaleString("pt-BR")} tokens
                             </p>
@@ -1294,7 +1294,7 @@ function AfiliadosPage() {
               <TabsContent value="settings" className="space-y-4 sm:space-y-6 mt-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Edição do Perfil de Criador */}
-                  <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-3 sm:space-y-4">
+                  <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-3 sm:space-y-4">
                     <div>
                       <h3 className="text-sm font-bold text-foreground">Perfil Público da Marca</h3>
                       <p className="text-xs text-muted-foreground">
@@ -1305,7 +1305,7 @@ function AfiliadosPage() {
                     <form onSubmit={handleSaveCreator} className="space-y-3 sm:space-y-4">
                       {/* Avatar e Capa da Marca */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2 border-b border-border/40">
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-semibold text-foreground">Foto do Perfil / Logo (1:1)</Label>
                           <ImageUpload
                             value={creatorAvatarUrl}
@@ -1317,7 +1317,7 @@ function AfiliadosPage() {
                           />
                         </div>
 
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs font-semibold text-foreground">Capa da Marca (Panorâmica)</Label>
                           <ImageUpload
                             value={creatorCoverUrl}
@@ -1335,7 +1335,7 @@ function AfiliadosPage() {
                         <Input
                           value={creatorStageName}
                           onChange={(e) => setCreatorStageName(e.target.value)}
-                          className="h-10 sm:h-11 rounded-xl text-xs"
+                          className="h-10 sm:h-11 rounded-lg text-xs"
                           required
                         />
                       </div>
@@ -1346,7 +1346,7 @@ function AfiliadosPage() {
                           value={creatorBio}
                           onChange={(e) => setCreatorBio(e.target.value)}
                           placeholder="Foco de conteúdo, atuação regional..."
-                          className="h-10 sm:h-11 rounded-xl text-xs"
+                          className="h-10 sm:h-11 rounded-lg text-xs"
                         />
                       </div>
 
@@ -1356,14 +1356,14 @@ function AfiliadosPage() {
                           value={creatorCategory}
                           onChange={(e) => setCreatorCategory(e.target.value)}
                           placeholder="Ex: Geral, Gastronomia, Viagens, Moda"
-                          className="h-10 sm:h-11 rounded-xl text-xs"
+                          className="h-10 sm:h-11 rounded-lg text-xs"
                         />
                       </div>
 
                       <Button
                         type="submit"
                         disabled={isSavingCreator}
-                        className="w-full h-10 sm:h-11 rounded-xl text-xs font-semibold mt-2"
+                        className="w-full h-10 sm:h-11 rounded-lg text-xs font-semibold mt-2"
                       >
                         {isSavingCreator ? "Salvando..." : "Salvar Alterações"}
                       </Button>
@@ -1371,9 +1371,9 @@ function AfiliadosPage() {
                   </div>
 
                   {/* Privacidade do Perfil */}
-                  <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-3 sm:space-y-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-3 sm:space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                         <ShieldCheck className="size-4" />
                       </div>
                       <div>
@@ -1384,7 +1384,7 @@ function AfiliadosPage() {
                       </div>
                     </div>
 
-                    <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40 space-y-3 text-xs">
+                    <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3 text-xs">
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-foreground">Visibilidade nas Buscas:</span>
                         <Badge
@@ -1405,7 +1405,7 @@ function AfiliadosPage() {
                         variant={isAnonymous ? "outline" : "default"}
                         disabled={isUpdatingPrivacy}
                         onClick={() => handleTogglePrivacy(!isAnonymous, isAnonymous ? "public" : "unlisted")}
-                        className="w-full h-10 sm:h-11 rounded-xl text-xs font-semibold gap-2"
+                        className="w-full h-10 sm:h-11 rounded-lg text-xs font-semibold gap-2"
                       >
                         {isAnonymous ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
                         <span>
@@ -1439,7 +1439,7 @@ function AfiliadosPage() {
                       return (
                         <div
                           key={s.id}
-                          className="p-3 rounded-xl border border-border/60 bg-card flex items-center justify-between gap-3"
+                          className="p-3 rounded-lg border border-border/60 bg-card flex items-center justify-between gap-3"
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <div className="size-10 rounded-lg bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
@@ -1462,7 +1462,7 @@ function AfiliadosPage() {
                             size="sm"
                             variant={isConnected ? "secondary" : "default"}
                             onClick={() => handleToggleStoreConnection(s.id)}
-                            className="h-9 px-3 rounded-xl text-xs font-semibold gap-1 shrink-0"
+                            className="h-9 px-3 rounded-lg text-xs font-semibold gap-1 shrink-0"
                           >
                             {isConnected ? (
                               <>
@@ -1484,7 +1484,7 @@ function AfiliadosPage() {
                   <Button
                     type="button"
                     onClick={() => setIsStorePickerOpen(false)}
-                    className="w-full h-11 rounded-xl text-xs font-semibold"
+                    className="w-full h-11 rounded-lg text-xs font-semibold"
                   >
                     Concluir Seleção
                   </Button>
@@ -1494,7 +1494,7 @@ function AfiliadosPage() {
           </div>
         ) : (
           /* ─── ONBOARDING EM 4 PASSOS ESTILO CRIAÇÃO DE EMPRESA ───── */
-          <div className="w-full max-w-xl mx-auto p-3.5 sm:p-8 rounded-2xl sm:rounded-3xl border border-border/60 bg-card shadow-xs space-y-6">
+          <div className="w-full max-w-xl mx-auto p-4 sm:p-8 rounded-lg sm:rounded-lg border border-border/60 bg-card shadow-xs space-y-6">
             {/* Stepper no Topo */}
             <div className="flex items-center justify-between border-b border-border/40 pb-4">
               {[
@@ -1503,7 +1503,7 @@ function AfiliadosPage() {
                 { num: 3, label: "Monetização" },
                 { num: 4, label: "Conclusão" },
               ].map((step) => (
-                <div key={step.num} className="flex items-center gap-1.5">
+                <div key={step.num} className="flex items-center gap-2">
                   <div
                     className={`size-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                       onboardingStep === step.num
@@ -1530,9 +1530,9 @@ function AfiliadosPage() {
             {onboardingStep === 1 && (
               <div className="space-y-4">
                 {/* ── CARD EXPRESS: APENAS LINKS & COMISSÕES (SEM VITRINE) ── */}
-                <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-3">
+                <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-3">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Coins className="size-4 text-emerald-600" />
                       <h3 className="text-xs font-bold text-foreground">Ativação Rápida: Apenas Links e Comissões</h3>
                     </div>
@@ -1548,14 +1548,14 @@ function AfiliadosPage() {
                         value={onboardingHandle}
                         onChange={(e) => setOnboardingHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
                         placeholder="seu_codigo_indicacao"
-                        className="h-10 pl-7 text-xs font-mono rounded-xl bg-background"
+                        className="h-10 pl-7 text-xs font-mono rounded-lg bg-background"
                       />
                     </div>
                     <Button
                       type="button"
                       disabled={isSubmitting || !onboardingHandle}
                       onClick={handleFastAffiliateActivation}
-                      className="w-full sm:w-auto h-10 px-4 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shrink-0"
+                      className="w-full sm:w-auto h-10 px-4 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shrink-0"
                     >
                       {isSubmitting ? "Ativando..." : "Ativar Links Imediatamente"}
                     </Button>
@@ -1570,7 +1570,7 @@ function AfiliadosPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <h2 className="text-base font-bold text-foreground">Defina sua Identidade de Criador</h2>
                     <p className="text-xs text-muted-foreground">
                       Escolha o identificador exclusivo (@handle) que representará sua marca ou nome artístico.
@@ -1588,7 +1588,7 @@ function AfiliadosPage() {
                         toast.info("Nenhum cadastro prévio detectado. Complete as etapas abaixo.");
                       }
                     }}
-                    className="h-8 px-3 rounded-xl text-xs gap-1.5 shrink-0 self-start sm:self-auto font-medium"
+                    className="h-8 px-3 rounded-lg text-xs gap-2 shrink-0 self-start sm:self-auto font-medium"
                   >
                     <Star className="size-3.5 text-primary" />
                     <span>Sincronizar meu perfil</span>
@@ -1596,7 +1596,7 @@ function AfiliadosPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium">Identificador Único (@handle)</Label>
                     <div className="relative">
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-muted-foreground">
@@ -1608,24 +1608,24 @@ function AfiliadosPage() {
                           setOnboardingHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))
                         }
                         placeholder="seu_nome_ou_marca"
-                        className="h-11 pl-8 rounded-xl text-xs font-mono"
+                        className="h-11 pl-8 rounded-lg text-xs font-mono"
                         required
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium">Nome Artístico / Apresentação Pública</Label>
                     <Input
                       value={onboardingName}
                       onChange={(e) => setOnboardingName(e.target.value)}
                       placeholder="Como seus seguidores conhecem você"
-                      className="h-11 rounded-xl text-xs"
+                      className="h-11 rounded-lg text-xs"
                       required
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium">Nicho de Atuação (Selecione no catálogo)</Label>
                     <CreatorNicheSelect
                       value={onboardingCategory}
@@ -1643,7 +1643,7 @@ function AfiliadosPage() {
                     }
                     setOnboardingStep(2);
                   }}
-                  className="w-full h-11 rounded-xl text-xs font-semibold gap-1.5 mt-2"
+                  className="w-full h-11 rounded-lg text-xs font-semibold gap-2 mt-2"
                 >
                   <span>Avançar para Privacidade</span>
                   <ArrowRight className="size-4" />
@@ -1661,9 +1661,9 @@ function AfiliadosPage() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-3">
+                <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <span className="text-xs font-bold text-foreground">Manter Perfil Civil Discreto</span>
                       <p className="text-[11px] text-muted-foreground">
                         Seu nome de certidão e histórico de compras não aparecem nas buscas públicas.
@@ -1675,7 +1675,7 @@ function AfiliadosPage() {
                       size="sm"
                       variant={onboardingAnonymize ? "default" : "outline"}
                       onClick={() => setOnboardingAnonymize(!onboardingAnonymize)}
-                      className="h-9 px-3 rounded-xl text-xs font-semibold"
+                      className="h-9 px-3 rounded-lg text-xs font-semibold"
                     >
                       {onboardingAnonymize ? "Discreto" : "Público"}
                     </Button>
@@ -1687,14 +1687,14 @@ function AfiliadosPage() {
                     type="button"
                     variant="outline"
                     onClick={() => setOnboardingStep(1)}
-                    className="flex-1 h-11 rounded-xl text-xs font-semibold"
+                    className="flex-1 h-11 rounded-lg text-xs font-semibold"
                   >
                     Voltar
                   </Button>
                   <Button
                     type="button"
                     onClick={() => setOnboardingStep(3)}
-                    className="flex-1 h-11 rounded-xl text-xs font-semibold gap-1.5"
+                    className="flex-1 h-11 rounded-lg text-xs font-semibold gap-2"
                   >
                     <span>Ver Modelo de Ganhos</span>
                     <ArrowRight className="size-4" />
@@ -1713,12 +1713,12 @@ function AfiliadosPage() {
                   </p>
                 </div>
 
-                <div className="space-y-2.5">
-                  <div className="p-3.5 rounded-xl border border-border/60 bg-card flex items-start gap-3">
+                <div className="space-y-3">
+                  <div className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-3">
                     <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
                       <Percent className="size-4" />
                     </div>
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <h4 className="text-xs font-bold text-foreground">Vendas Comissionadas das Lojas</h4>
                       <p className="text-[11px] text-muted-foreground">
                         Lojas cadastradas pagam comissões em dinheiro por cada pedido convertido via seu link.
@@ -1726,11 +1726,11 @@ function AfiliadosPage() {
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl border border-border/60 bg-card flex items-start gap-3">
+                  <div className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-3">
                     <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                       <ShoppingBag className="size-4" />
                     </div>
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <h4 className="text-xs font-bold text-foreground">Vitrine Digital Pessoal</h4>
                       <p className="text-[11px] text-muted-foreground">
                         Cure produtos, banners e cupons favoritos em uma página pública que leva sua marca.
@@ -1738,11 +1738,11 @@ function AfiliadosPage() {
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl border border-border/60 bg-card flex items-start gap-3">
+                  <div className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-3">
                     <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
                       <Coins className="size-4" />
                     </div>
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <h4 className="text-xs font-bold text-foreground">Bônus por Indicação</h4>
                       <p className="text-[11px] text-muted-foreground">
                         Receba 50.000 tokens por membro e 500.000 tokens por empresa cadastrada pelo seu link.
@@ -1756,14 +1756,14 @@ function AfiliadosPage() {
                     type="button"
                     variant="outline"
                     onClick={() => setOnboardingStep(2)}
-                    className="flex-1 h-11 rounded-xl text-xs font-semibold"
+                    className="flex-1 h-11 rounded-lg text-xs font-semibold"
                   >
                     Voltar
                   </Button>
                   <Button
                     type="button"
                     onClick={() => setOnboardingStep(4)}
-                    className="flex-1 h-11 rounded-xl text-xs font-semibold gap-1.5"
+                    className="flex-1 h-11 rounded-lg text-xs font-semibold gap-2"
                   >
                     <span>Revisar e Ativar</span>
                     <ArrowRight className="size-4" />
@@ -1776,7 +1776,7 @@ function AfiliadosPage() {
             {onboardingStep === 4 && (
               <div className="space-y-4">
                 <div className="space-y-1 text-center">
-                  <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+                  <div className="size-12 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto mb-2">
                     <CheckCircle2 className="size-6" />
                   </div>
                   <h2 className="text-base font-bold text-foreground">Tudo Pronto para a Ativação!</h2>
@@ -1785,7 +1785,7 @@ function AfiliadosPage() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-2 text-xs">
+                <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Identificador:</span>
                     <span className="font-mono font-bold text-foreground">@{onboardingHandle}</span>
@@ -1811,7 +1811,7 @@ function AfiliadosPage() {
                     type="button"
                     variant="outline"
                     onClick={() => setOnboardingStep(3)}
-                    className="flex-1 h-11 rounded-xl text-xs font-semibold"
+                    className="flex-1 h-11 rounded-lg text-xs font-semibold"
                   >
                     Voltar
                   </Button>
@@ -1819,7 +1819,7 @@ function AfiliadosPage() {
                     type="button"
                     disabled={isSubmitting}
                     onClick={handleOnboardingSubmit}
-                    className="flex-1 h-11 rounded-xl text-xs font-semibold gap-1.5"
+                    className="flex-1 h-11 rounded-lg text-xs font-semibold gap-2"
                   >
                     {isSubmitting ? "Ativando Perfil..." : "Confirmar & Ativar Perfil"}
                   </Button>

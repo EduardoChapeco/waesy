@@ -69,10 +69,10 @@ function ResetPasswordPage() {
         fallbackHref="/entrar"
       />
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-8 md:py-12">
- <div className="w-full max-w-md bg-card border border-border/60 rounded-2xl p-6 sm:p-8 shadow-xs">
+ <div className="w-full max-w-md bg-card border border-border/60 rounded-lg p-6 sm:p-8 shadow-xs">
  {success ? (
  <div className="text-center space-y-4 py-2">
- <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center">
+ <div className="size-12 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center">
  <CheckCircle2 className="size-6" />
  </div>
  <div className="space-y-1">
@@ -83,14 +83,14 @@ function ResetPasswordPage() {
  </div>
  <Button
  asChild
- className="w-full h-11 rounded-xl bg-foreground text-background font-bold text-xs hover:opacity-90"
+ className="w-full h-11 rounded-lg bg-foreground text-background font-bold text-xs hover:opacity-90"
  >
  <Link to="/entrar">Ir para o Login</Link>
  </Button>
  </div>
  ) : !hasActiveSession ? (
  <div className="text-center space-y-4 py-2">
- <div className="size-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
+ <div className="size-12 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
  <ShieldAlert className="size-6" />
  </div>
  <div className="space-y-1">
@@ -103,14 +103,14 @@ function ResetPasswordPage() {
  <div className="pt-2 space-y-2">
  <Button
  asChild
- className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:opacity-90"
+ className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs hover:opacity-90"
  >
  <Link to="/recuperar-senha">Solicitar Novo Link</Link>
  </Button>
  <Button
  asChild
  variant="ghost"
- className="w-full h-10 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground"
+ className="w-full h-10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground"
  >
  <Link to="/entrar">Voltar ao Login</Link>
  </Button>
@@ -133,7 +133,7 @@ function ResetPasswordPage() {
  placeholder="Mínimo 6 caracteres"
  value={password}
  onChange={(e) => setPassword(e.target.value)}
- className="h-11 rounded-xl bg-muted/30 text-xs"
+ className="h-11 rounded-lg bg-muted/30 text-xs"
  required
  />
  </div>
@@ -145,7 +145,7 @@ function ResetPasswordPage() {
  placeholder="Repita a nova senha"
  value={confirmPassword}
  onChange={(e) => setConfirmPassword(e.target.value)}
- className="h-11 rounded-xl bg-muted/30 text-xs"
+ className="h-11 rounded-lg bg-muted/30 text-xs"
  required
  />
  </div>
@@ -154,7 +154,7 @@ function ResetPasswordPage() {
  <Button
  type="submit"
  disabled={isLoading}
- className="w-full h-11 rounded-xl bg-foreground text-background font-bold text-xs hover:opacity-90 transition-opacity mt-2"
+ className="w-full h-11 rounded-lg bg-foreground text-background font-bold text-xs hover:opacity-90 transition-opacity mt-2"
  >
  {isLoading ? "Salvando..." : "Salvar Nova Senha"}
  </Button>

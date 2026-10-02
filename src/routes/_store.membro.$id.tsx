@@ -260,14 +260,14 @@ export function MemberPublicProfileView({
  if (!profile) {
  return (
  <div className="min-h-96 flex flex-col items-center justify-center p-8 text-center space-y-4">
- <div className="size-16 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground">
+ <div className="size-16 rounded-lg bg-muted/40 flex items-center justify-center text-muted-foreground">
  <User className="size-8" />
  </div>
  <h2 className="text-xl font-bold">Perfil não encontrado</h2>
  <p className="text-sm text-muted-foreground max-w-md">
  O membro solicitado não existe ou foi desativado da rede comunitária Waesy.
  </p>
- <Button asChild variant="outline" className="rounded-xl">
+ <Button asChild variant="outline" className="rounded-lg">
  <Link to="/">Voltar ao Início</Link>
  </Button>
  </div>
@@ -349,7 +349,7 @@ export function MemberPublicProfileView({
  >
  <button
  type="button"
- className="absolute top-6 right-6 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+ className="absolute top-6 right-6 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
  onClick={() => setPreviewMediaUrl(null)}
  aria-label="Fechar visualizador"
  >
@@ -358,7 +358,7 @@ export function MemberPublicProfileView({
  <img
  src={previewMediaUrl}
  alt="Mídia ampliada"
- className="max-w-full max-h-screen object-contain rounded-2xl"
+ className="max-w-full max-h-screen object-contain rounded-lg"
  onClick={(e) => e.stopPropagation()}
  />
  </div>
@@ -398,7 +398,7 @@ export function MemberPublicProfileView({
         fallbackHref="/explorar"
         centerTitle={true}
         title={
-          <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
+          <div className="flex items-center gap-2 font-bold text-sm text-foreground">
             <span className="font-mono">@{profile.username || "perfil"}</span>
             {profile.is_verified && (
               <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
@@ -410,7 +410,7 @@ export function MemberPublicProfileView({
             <Button
               size="sm"
               variant="ghost"
-              className="size-9 sm:size-10 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+              className="size-9 sm:size-10 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
               onClick={handleShare}
               aria-label="Compartilhar Perfil"
             >
@@ -423,34 +423,34 @@ export function MemberPublicProfileView({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="size-9 sm:size-10 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="size-9 sm:size-10 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
                     aria-label="Configurações e Atividades"
                   >
                     <Settings className="size-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="rounded-t-3xl p-6 space-y-4 max-h-screen">
+                <SheetContent side="bottom" className="rounded-t-lg p-6 space-y-4 max-h-screen">
                   <SheetHeader className="text-left pb-2 border-b border-border/40">
                     <SheetTitle className="text-base font-bold">Configurações e Gestão</SheetTitle>
                   </SheetHeader>
                   <div className="grid gap-2 text-sm font-medium">
                     <Link
                       to="/conta/perfil"
-                      className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
                     >
                       <Edit3 className="size-4 text-primary" />
                       <span>Editar Dados do Perfil</span>
                     </Link>
                     <Link
                       to="/conta/lojas"
-                      className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
                     >
                       <Store className="size-4 text-primary" />
                       <span>Minhas Lojas e Negócios</span>
                     </Link>
                     <Link
                       to="/conta/pedidos"
-                      className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
                     >
                       <Package className="size-4 text-primary" />
                       <span>Meus Pedidos e Compras</span>
@@ -466,7 +466,7 @@ export function MemberPublicProfileView({
       {/* ── 2. Seletor de Tipo de Perfil & Ação Editar (Abaixo do Top Bar) ── */}
       <div className="flex items-center justify-between gap-2 px-1">
         {/* Switcher de Modos: Social, Profissional, Comercial / Vitrine */}
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/40 text-xs font-semibold">
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/40 text-xs font-semibold">
           {isCreator ? (
             <>
               <Link
@@ -474,7 +474,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "comercial" }}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
                   activeMode === "comercial"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -487,7 +487,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "social" }}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
                   activeMode === "social"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -500,7 +500,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "profissional" }}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
                   activeMode === "profissional"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -516,7 +516,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "social" }}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
                   activeMode === "social"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -529,7 +529,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "profissional" }}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
                   activeMode === "profissional"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -542,7 +542,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "comercial" }}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
                   activeMode === "comercial"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -556,13 +556,13 @@ export function MemberPublicProfileView({
 
         {/* Botão de Edição Rápida */}
         {isOwner && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             {isCreator ? (
               <Button
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-9 min-h-11 px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/70 sm:hidden cursor-pointer"
+                className="h-9 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/70 sm:hidden cursor-pointer"
               >
                 <Link to="/conta/perfil" search={{ tab: "criador" }}>
                   <Layers className="size-3.5 text-primary" />
@@ -574,7 +574,7 @@ export function MemberPublicProfileView({
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-9 min-h-11 px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/70 sm:hidden cursor-pointer"
+                className="h-9 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/70 sm:hidden cursor-pointer"
               >
                 <Link to="/conta/perfil" search={{ tab: "dados" }}>
                   <Edit3 className="size-3.5" />
@@ -587,15 +587,15 @@ export function MemberPublicProfileView({
       </div>
 
       {/* ── Bloco 1: Header do Perfil (Foto de Perfil + Banner ao lado com Scroll Interno + Stats no final) ── */}
-      <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-5">
+      <div className="rounded-lg bg-card border border-border/40 p-4 sm:p-6 space-y-5">
         {/* Linha Superior Panorâmica: Foto + Banner ao lado com Scroll Interno + Stats no Final */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4">
           
           {/* Lado Esquerdo: Foto de Perfil 1:1 + Banner ao Lado com Scroll Interno */}
-          <div className="flex flex-row items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
+          <div className="flex flex-row items-center gap-3 sm:gap-4 flex-1 min-w-0">
             {/* Foto de Perfil em Squircle 1:1 */}
             <div className="relative group shrink-0">
-              <Avatar className="size-20 sm:size-24 md:size-28 lg:size-32 rounded-2xl ring-2 ring-border/60 bg-muted shrink-0 overflow-hidden flex items-center justify-center">
+              <Avatar className="size-20 sm:size-24 md:size-28 lg:size-32 rounded-lg ring-2 ring-border/60 bg-muted shrink-0 overflow-hidden flex items-center justify-center">
                 {avatarSrc ? (
                   <AvatarImage
                     src={avatarSrc}
@@ -603,7 +603,7 @@ export function MemberPublicProfileView({
                     className="object-cover size-full"
                   />
                 ) : null}
-                <AvatarFallback className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-br from-primary/15 via-muted to-muted/80 text-foreground rounded-2xl flex items-center justify-center select-none">
+                <AvatarFallback className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-br from-primary/15 via-muted to-muted/80 text-foreground rounded-lg flex items-center justify-center select-none">
                   {avatarInitials}
                 </AvatarFallback>
               </Avatar>
@@ -611,7 +611,7 @@ export function MemberPublicProfileView({
                 <Link
                   to="/conta/perfil"
                   search={{ tab: isCreator ? "criador" : "dados" }}
-                  className="absolute inset-0 bg-black/40 text-white rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
+                  className="absolute inset-0 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
                   title="Alterar Foto"
                 >
                   <Camera className="size-4 sm:size-5" />
@@ -621,7 +621,7 @@ export function MemberPublicProfileView({
             </div>
 
             {/* Banner AO LADO da Foto de Perfil com Scroll Interno */}
-            <div className="flex-1 min-w-0 h-20 sm:h-24 md:h-28 lg:h-32 rounded-2xl border border-border/40 bg-muted/20 relative overflow-hidden flex items-center">
+            <div className="flex-1 min-w-0 h-20 sm:h-24 md:h-28 lg:h-32 rounded-lg border border-border/40 bg-muted/20 relative overflow-hidden flex items-center">
               <div 
                 tabIndex={0}
                 aria-label="Galeria de banners do perfil"
@@ -631,12 +631,12 @@ export function MemberPublicProfileView({
                   bannerList.map((banner, idx) => (
                     <div
                       key={idx}
-                      className="h-full min-w-full sm:min-w-72 md:min-w-80 lg:min-w-96 rounded-xl overflow-hidden relative shrink-0 snap-center bg-muted/40 group"
+                      className="h-full min-w-full sm:min-w-72 md:min-w-80 lg:min-w-96 rounded-lg overflow-hidden relative shrink-0 snap-center bg-muted/40 group"
                     >
                       <img
                         src={banner.imageUrl}
                         alt={banner.title || "Banner do perfil"}
-                        className="size-full object-cover select-none rounded-xl"
+                        className="size-full object-cover select-none rounded-lg"
                       />
                       {banner.link && (
                         <a
@@ -650,7 +650,7 @@ export function MemberPublicProfileView({
                     </div>
                   ))
                 ) : (
-                  <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center rounded-xl text-muted-foreground/60 gap-2 text-xs font-medium">
+                  <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center rounded-lg text-muted-foreground/60 gap-2 text-xs font-medium">
                     <Layers className="size-5 text-primary/30" />
                     <span>Espaço para banner promocional</span>
                   </div>
@@ -661,7 +661,7 @@ export function MemberPublicProfileView({
                 <Link
                   to="/conta/perfil"
                   search={{ tab: isCreator ? "criador" : "dados" }}
-                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2 sm:px-2.5 py-1 rounded-xl border border-border/60 text-xs sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors z-20"
+                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2 sm:px-3 py-1 rounded-lg border border-border/60 text-xs sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors z-20"
                 >
                   <Camera className="size-3" />
                   <span className="hidden sm:inline">Alterar Capa</span>
@@ -671,7 +671,7 @@ export function MemberPublicProfileView({
           </div>
 
           {/* Stats no Final (Seguidores, Seguindo, Curtidas) */}
-          <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-60 shrink-0 bg-background/90 backdrop-blur-md rounded-2xl border border-border/50 p-2 sm:p-4 flex flex-col justify-center">
+          <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-60 shrink-0 bg-background/90 backdrop-blur-md rounded-lg border border-border/50 p-2 sm:p-4 flex flex-col justify-center">
             <div className="grid grid-cols-3 gap-2 text-center w-full">
               <div>
                 <p className="text-sm sm:text-base md:text-lg font-black text-foreground">{followersCount}</p>
@@ -693,7 +693,7 @@ export function MemberPublicProfileView({
   <div className="pt-2 border-t border-border/30 space-y-3">
   {/* Nome, Username, Avaliação Real de Empresas e Menu */}
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-  <div className="space-y-0.5">
+  <div className="space-y-1">
   <div className="flex items-center gap-2 flex-wrap">
   <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight text-balance line-clamp-2">
   {profile.full_name}
@@ -710,13 +710,13 @@ export function MemberPublicProfileView({
   {/* AVALIAÇÃO REAL AO LADO DO NOME (PARA EMPRESAS / MARCAS / LOJAS — ZERO MOCKS) */}
   {isEnterpriseOrBrand && (
     realStoreReviewsCount > 0 && realStoreRating !== null ? (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs border border-amber-500/20">
+      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs border border-amber-500/20">
         <Star className="size-3.5 fill-amber-500 text-amber-500" />
         <span>{realStoreRating.toFixed(1)}</span>
         <span className="text-xs font-medium text-muted-foreground">({realStoreReviewsCount})</span>
       </span>
     ) : (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted text-muted-foreground text-xs text-muted-foreground/75 font-medium border border-border/50">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs text-muted-foreground/75 font-medium border border-border/50">
         Sem avaliações ainda
       </span>
     )
@@ -724,8 +724,8 @@ export function MemberPublicProfileView({
   </div>
 
  {profile.occupation && (
- <div className="pt-0.5">
- <span className="px-2.5 py-0.5 rounded-lg text-xs text-muted-foreground/75 font-semibold border border-border/50 bg-transparent text-muted-foreground">
+ <div className="pt-1">
+ <span className="px-3 py-1 rounded-lg text-xs text-muted-foreground/75 font-semibold border border-border/50 bg-transparent text-muted-foreground">
  {profile.occupation}
  </span>
  </div>
@@ -733,14 +733,14 @@ export function MemberPublicProfileView({
  </div>
 
           {/* Ações Minimalistas em Linha Compacta (Scroll Horizontal com Snap no Mobile) */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full sm:flex-wrap snap-x snap-mandatory">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full sm:flex-wrap snap-x snap-mandatory">
             {isOwner ? (
               <>
                 <Button
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                  className="h-8 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
                 >
                   <Link to="/conta/metricas">
                     <Activity className="size-3.5 text-muted-foreground" />
@@ -750,7 +750,7 @@ export function MemberPublicProfileView({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                  className="h-8 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
                   onClick={() => setEditingSection("availability")}
                 >
                   <span>Disponibilidade</span>
@@ -760,7 +760,7 @@ export function MemberPublicProfileView({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="hidden sm:inline-flex h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 snap-start cursor-pointer"
+                    className="hidden sm:inline-flex h-8 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start cursor-pointer"
                   >
                     <Link to="/conta/perfil" search={{ tab: "criador" }}>
                       <Layers className="size-3.5 text-primary" />
@@ -772,7 +772,7 @@ export function MemberPublicProfileView({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="hidden sm:inline-flex h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 snap-start cursor-pointer"
+                    className="hidden sm:inline-flex h-8 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start cursor-pointer"
                   >
                     <Link to="/conta/perfil" search={{ tab: "dados" }}>
                       <Edit3 className="size-3.5" />
@@ -786,7 +786,7 @@ export function MemberPublicProfileView({
                 <Button
                   size="sm"
                   className={cn(
-                    "h-8 px-4 rounded-xl font-bold text-xs gap-1.5 shrink-0 snap-start cursor-pointer transition-all",
+                    "h-8 px-4 rounded-lg font-bold text-xs gap-2 shrink-0 snap-start cursor-pointer transition-all",
                     isFollowing ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground" : "bg-primary text-primary-foreground "
                   )}
                   onClick={handleToggleFollow}
@@ -809,7 +809,7 @@ export function MemberPublicProfileView({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                    className="h-8 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
                   >
                     <a
                       href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
@@ -824,7 +824,7 @@ export function MemberPublicProfileView({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 size-8 p-0 rounded-xl shrink-0 text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer"
+                  className="h-8 size-8 p-0 rounded-lg shrink-0 text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer"
                   onClick={handleShare}
                   aria-label="Compartilhar Perfil"
                 >
@@ -850,7 +850,7 @@ export function MemberPublicProfileView({
  <button
  type="button"
  onClick={() => setIsBioExpanded(!isBioExpanded)}
- className="text-xs text-muted-foreground/75 font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-0.5"
+ className="text-xs text-muted-foreground/75 font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-1"
  >
  {isBioExpanded ? "Ver menos" : "...mais"}
  </button>
@@ -859,7 +859,7 @@ export function MemberPublicProfileView({
  )}
 
  {/* Links e Localização Minimalistas */}
- <div className="flex flex-wrap items-center gap-3 pt-0.5 text-xs">
+ <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
  {profile.website && (
  <a
  href={profile.website.startsWith("http") ? profile.website : `https://${profile.website}`}
@@ -905,14 +905,14 @@ export function MemberPublicProfileView({
  href={link.url}
  target="_blank"
  rel="noopener noreferrer"
- className="block w-full aspect-video rounded-2xl overflow-hidden border border-border/60 relative group hover:border-border transition-all select-none"
+ className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60 relative group hover:border-border transition-all select-none"
  >
  <img
  src={link.imageUrl}
  alt={link.label || "Banner"}
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-2.5">
+ <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-3">
  <span className="text-xs font-bold text-white drop- truncate flex items-center justify-between gap-1">
  <span>{link.label || link.title || "Acessar"}</span>
  <ExternalLink className="size-3 text-white/80 shrink-0" />
@@ -925,14 +925,14 @@ export function MemberPublicProfileView({
 
   {/* Botões Normais Clean (sem imagem de fundo, minimalistas padrão Apple/Clean) */}
   {profile.biolinks.some((b: any) => !b.imageUrl) && (
-    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full sm:flex-wrap">
+    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full sm:flex-wrap">
       {profile.biolinks.filter((b: any) => !b.imageUrl).map((link: any, idx: number) => (
         <a
           key={link.id || idx}
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl text-xs font-semibold shrink-0 bg-transparent hover:bg-muted/40 text-foreground border border-border/50 transition-all hover:border-border cursor-pointer"
+          className="inline-flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold shrink-0 bg-transparent hover:bg-muted/40 text-foreground border border-border/50 transition-all hover:border-border cursor-pointer"
         >
           <span>{link.label || link.title || link.url}</span>
           <ExternalLink className="size-3 text-muted-foreground" />
@@ -950,14 +950,14 @@ export function MemberPublicProfileView({
  href={profile.featured_banner_link || "#"}
  target={profile.featured_banner_link ? "_blank" : undefined}
  rel="noopener noreferrer"
- className="block w-full aspect-video rounded-2xl overflow-hidden border border-border/60 relative group select-none hover:border-border transition-all"
+ className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60 relative group select-none hover:border-border transition-all"
  >
  <img
  src={profile.featured_banner_url}
  alt="Destaque"
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+ <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
  <span className="text-xs text-muted-foreground/75 font-bold text-white flex items-center gap-1 drop-">
  <span>Acessar</span>
  <ExternalLink className="size-3" />
@@ -974,9 +974,9 @@ export function MemberPublicProfileView({
  <div
  key={hl.id || idx}
  onClick={() => hl.cover_url && setPreviewMediaUrl(hl.cover_url)}
- className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer"
+ className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer"
  >
- <div className="size-14 sm:size-16 rounded-full p-0.5 ring-2 ring-primary/40 group-hover:ring-primary group-hover:scale-105 transition-all bg-background overflow-hidden flex items-center justify-center">
+ <div className="size-14 sm:size-16 rounded-full p-1 ring-2 ring-primary/40 group-hover:ring-primary group-hover:scale-105 transition-all bg-background overflow-hidden flex items-center justify-center">
  {hl.cover_url ? (
  <img src={hl.cover_url} alt={hl.title} className="size-full object-cover rounded-full" />
  ) : (
@@ -995,7 +995,7 @@ export function MemberPublicProfileView({
 
  {/* ── Bloco 2: Perfil Profissional Corporativo (Quando modo === "profissional") ── */}
  {activeMode === "profissional" && (
- <div className="rounded-2xl bg-card p-6 sm:p-8 space-y-8 divide-y divide-border/40">
+ <div className="rounded-lg bg-card p-6 sm:p-8 space-y-8 divide-y divide-border/40">
  {/* ── 1. Seção Sobre ── */}
  <div className="space-y-4">
  <div className="flex items-center justify-between">
@@ -1004,7 +1004,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => setEditingSection("about")}
  aria-label="Editar Sobre"
  >
@@ -1020,7 +1020,7 @@ export function MemberPublicProfileView({
  <button
  type="button"
  onClick={() => setEditingSection("about")}
- className="text-xs text-muted-foreground hover:text-foreground font-medium py-1 transition-colors flex items-center gap-1.5"
+ className="text-xs text-muted-foreground hover:text-foreground font-medium py-1 transition-colors flex items-center gap-2"
  >
  <Plus className="size-3.5" />
  <span>Adicionar resumo sobre você</span>
@@ -1037,7 +1037,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("experience");
@@ -1059,9 +1059,9 @@ export function MemberPublicProfileView({
  {visibleExperiences.map((exp: any, index: number) => (
  <div key={exp.id || index} className={cn("space-y-3", index > 0 && "pt-6")}>
  <div className="flex items-start justify-between gap-4">
- <div className="flex items-start gap-3.5">
+ <div className="flex items-start gap-4">
  {/* Logo da Loja Waesy ou Ícone Squircle */}
- <div className="size-12 rounded-2xl bg-muted/50 flex-shrink-0 overflow-hidden flex items-center justify-center">
+ <div className="size-12 rounded-lg bg-muted/50 flex-shrink-0 overflow-hidden flex items-center justify-center">
  {exp.store_logo ? (
  <img src={exp.store_logo} alt={exp.company} className="size-full object-cover" />
  ) : (
@@ -1074,10 +1074,10 @@ export function MemberPublicProfileView({
  <h3 className="text-base font-bold text-foreground leading-snug">
  {exp.title}
  </h3>
- <div className="flex flex-wrap items-center gap-1.5 text-xs text-foreground/80 font-medium">
+ <div className="flex flex-wrap items-center gap-2 text-xs text-foreground/80 font-medium">
  <span>{exp.company}</span>
  {exp.store_id && (
- <Badge variant="secondary" className="text-xs px-1.5 py-0 h-4 bg-primary/10 text-primary font-bold">
+ <Badge variant="secondary" className="text-xs px-2 py-0 h-4 bg-primary/10 text-primary font-bold">
  Empresa Waesy
  </Badge>
  )}
@@ -1140,7 +1140,7 @@ export function MemberPublicProfileView({
 
  {/* Competências Associadas */}
  {exp.skills && exp.skills.length > 0 && (
- <div className="flex flex-wrap items-center gap-1.5 pl-15 pt-1 text-xs text-muted-foreground">
+ <div className="flex flex-wrap items-center gap-2 pl-15 pt-1 text-xs text-muted-foreground">
  <Tag className="size-3.5 text-primary" />
  <span className="font-semibold text-foreground">Competências:</span>
  <span>{exp.skills.join(" • ")}</span>
@@ -1154,7 +1154,7 @@ export function MemberPublicProfileView({
  {experiences.length > 3 && (
  <Button
  variant="ghost"
- className="w-full h-10 rounded-2xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+ className="w-full h-10 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllExperiences(!showAllExperiences)}
  >
  <span>{showAllExperiences ? "Recolher experiências" : `Exibir todas as ${experiences.length} experiências `}</span>
@@ -1170,7 +1170,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("education");
@@ -1191,8 +1191,8 @@ export function MemberPublicProfileView({
  {visibleEducations.map((edu: any, index: number) => (
  <div key={edu.id || index} className={cn("space-y-2", index > 0 && "pt-6")}>
  <div className="flex items-start justify-between gap-4">
- <div className="flex items-start gap-3.5">
- <div className="size-12 rounded-2xl bg-muted/50 flex-shrink-0 flex items-center justify-center text-muted-foreground">
+ <div className="flex items-start gap-4">
+ <div className="size-12 rounded-lg bg-muted/50 flex-shrink-0 flex items-center justify-center text-muted-foreground">
  <GraduationCap className="size-6 text-primary" />
  </div>
  <div className="space-y-1">
@@ -1234,7 +1234,7 @@ export function MemberPublicProfileView({
  {edu.media_urls.map((url: string, mIdx: number) => (
  <div
  key={mIdx}
- className="size-16 rounded-xl overflow-hidden bg-muted/40 cursor-pointer hover:opacity-90 transition-opacity"
+ className="size-16 rounded-lg overflow-hidden bg-muted/40 cursor-pointer hover:opacity-90 transition-opacity"
  onClick={() => setPreviewMediaUrl(url)}
  >
  <img src={url} alt="Foto de formatura" className="size-full object-cover" />
@@ -1250,7 +1250,7 @@ export function MemberPublicProfileView({
  {educations.length > 3 && (
  <Button
  variant="ghost"
- className="w-full h-10 rounded-2xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+ className="w-full h-10 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllEducations(!showAllEducations)}
  >
  <span>{showAllEducations ? "Recolher formações" : `Exibir todas as ${educations.length} formações `}</span>
@@ -1266,7 +1266,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("certification");
@@ -1287,8 +1287,8 @@ export function MemberPublicProfileView({
  {visibleCertifications.map((cert: any, index: number) => (
  <div key={cert.id || index} className={cn("space-y-2", index > 0 && "pt-6")}>
  <div className="flex items-start justify-between gap-4">
- <div className="flex items-start gap-3.5">
- <div className="size-12 rounded-2xl bg-muted/50 flex-shrink-0 flex items-center justify-center">
+ <div className="flex items-start gap-4">
+ <div className="size-12 rounded-lg bg-muted/50 flex-shrink-0 flex items-center justify-center">
  <Award className="size-6 text-amber-500" />
  </div>
  <div className="space-y-1">
@@ -1323,7 +1323,7 @@ export function MemberPublicProfileView({
  asChild
  size="sm"
  variant="outline"
- className="h-8 rounded-xl text-xs font-semibold gap-1.5"
+ className="h-8 rounded-lg text-xs font-semibold gap-2"
  >
  <a href={cert.credential_url} target="_blank" rel="noopener noreferrer">
  <span>Exibir credencial</span>
@@ -1340,7 +1340,7 @@ export function MemberPublicProfileView({
  {certifications.length > 4 && (
  <Button
  variant="ghost"
- className="w-full h-10 rounded-2xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+ className="w-full h-10 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllCertifications(!showAllCertifications)}
  >
  <span>{showAllCertifications ? "Recolher certificados" : `Exibir todas as ${certifications.length} licenças `}</span>
@@ -1351,7 +1351,7 @@ export function MemberPublicProfileView({
  {/* ── 4.1 Registros Profissionais & Conselhos de Classe ── */}
  <div className="pt-8 space-y-6">
  <div className="flex items-center justify-between">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <h2 className="text-lg font-bold text-foreground tracking-tight flex items-center gap-2">
  <ShieldCheck className="size-5 text-primary" />
  <span>Registros Profissionais e Conselhos</span>
@@ -1364,7 +1364,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("license");
@@ -1385,10 +1385,10 @@ export function MemberPublicProfileView({
  {licenses.map((lic: any, index: number) => (
  <div
  key={lic.id || index}
- className="p-4 rounded-2xl bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
+ className="p-4 rounded-lg bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
  >
  <div className="flex items-start gap-3 min-w-0">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
  <ShieldCheck className="size-5" />
  </div>
  <div className="space-y-1 min-w-0">
@@ -1405,7 +1405,7 @@ export function MemberPublicProfileView({
  {lic.specialty}
  </p>
  )}
- <div className="flex items-center gap-2 text-xs text-muted-foreground/75 text-muted-foreground pt-0.5">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground/75 text-muted-foreground pt-1">
  <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
  <Check className="size-3" />
  <span>Ativo / Regular</span>
@@ -1456,7 +1456,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("project");
@@ -1512,7 +1512,7 @@ export function MemberPublicProfileView({
  asChild
  size="sm"
  variant="outline"
- className="h-8 rounded-xl text-xs font-semibold gap-1.5"
+ className="h-8 rounded-lg text-xs font-semibold gap-2"
  >
  <a href={proj.project_url} target="_blank" rel="noopener noreferrer">
  <span>Exibir projeto</span>
@@ -1535,7 +1535,7 @@ export function MemberPublicProfileView({
  {projects.length > 3 && (
  <Button
  variant="ghost"
- className="w-full h-10 rounded-2xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+ className="w-full h-10 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllProjects(!showAllProjects)}
  >
  <span>{showAllProjects ? "Recolher projetos" : `Exibir todos os ${projects.length} projetos `}</span>
@@ -1551,7 +1551,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("volunteering");
@@ -1572,8 +1572,8 @@ export function MemberPublicProfileView({
  {visibleVolunteering.map((vol: any, index: number) => (
  <div key={vol.id || index} className={cn("space-y-2", index > 0 && "pt-6")}>
  <div className="flex items-start justify-between gap-4">
- <div className="flex items-start gap-3.5">
- <div className="size-12 rounded-2xl bg-muted/50 flex-shrink-0 flex items-center justify-center text-muted-foreground">
+ <div className="flex items-start gap-4">
+ <div className="size-12 rounded-lg bg-muted/50 flex-shrink-0 flex items-center justify-center text-muted-foreground">
  <HeartHandshake className="size-6 text-rose-500" />
  </div>
  <div className="space-y-1">
@@ -1585,7 +1585,7 @@ export function MemberPublicProfileView({
  {vol.start_date} – {vol.is_current ? "o momento" : vol.end_date}
  </p>
  {vol.cause && (
- <Badge variant="secondary" className="text-xs px-2 py-0.5 rounded-lg bg-muted/60 font-semibold">
+ <Badge variant="secondary" className="text-xs px-2 py-1 rounded-lg bg-muted/60 font-semibold">
  {vol.cause}
  </Badge>
  )}
@@ -1626,7 +1626,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => setEditingSection("causes")}
  aria-label="Editar Causas"
  >
@@ -1654,7 +1654,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => setEditingSection("languages")}
  aria-label="Editar Idiomas"
  >
@@ -1750,7 +1750,7 @@ export function MemberPublicProfileView({
 
  {/* Alternador de Visualização (Grade 3x3 vs Feed Linear) */}
  {socialTab === "posts" && posts.length > 0 && (
- <div className="hidden sm:flex items-center gap-1 bg-muted/40 p-1 rounded-xl mb-1.5 border border-border/40">
+ <div className="hidden sm:flex items-center gap-1 bg-muted/40 p-1 rounded-lg mb-2 border border-border/40">
  <Button
  size="sm"
  variant="ghost"
@@ -1777,7 +1777,7 @@ export function MemberPublicProfileView({
  {socialTab === "posts" && (
  <div className="space-y-6">
  {posts.length === 0 ? (
- <div className="py-16 text-center text-muted-foreground space-y-3 rounded-2xl bg-card border border-border/40">
+ <div className="py-16 text-center text-muted-foreground space-y-3 rounded-lg bg-card border border-border/40">
  <MessageSquare className="size-10 mx-auto text-muted-foreground/30" />
  <p className="text-sm font-medium">Nenhuma publicação compartilhada ainda.</p>
  </div>
@@ -1788,7 +1788,7 @@ export function MemberPublicProfileView({
  return (
  <div
  key={p.id}
- className="aspect-square rounded-xl sm:rounded-2xl bg-muted/30 overflow-hidden relative cursor-pointer group select-none border border-border/40 hover:border-border transition-colors"
+ className="aspect-square rounded-lg sm:rounded-lg bg-muted/30 overflow-hidden relative cursor-pointer group select-none border border-border/40 hover:border-border transition-colors"
  onClick={() => {
  if (media) {
  setSelectedLightboxPost(p);
@@ -1803,7 +1803,7 @@ export function MemberPublicProfileView({
  className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
  />
  ) : (
- <div className="size-full p-2.5 sm:p-4 flex flex-col justify-between bg-gradient-to-br from-muted/40 via-muted/20 to-background">
+ <div className="size-full p-3 sm:p-4 flex flex-col justify-between bg-gradient-to-br from-muted/40 via-muted/20 to-background">
  <p className="line-clamp-3 sm:line-clamp-4 font-medium leading-relaxed text-xs sm:text-xs text-foreground/90">
  {p.content || p.content_text}
  </p>
@@ -1833,7 +1833,7 @@ export function MemberPublicProfileView({
  /* Modo Feed Linear Flat — Zero Grid-in-Grid */
  <div className="space-y-4">
  {posts.map((p: any) => (
- <div key={p.id} className="rounded-2xl bg-card border border-border/60 p-4 sm:p-5">
+ <div key={p.id} className="rounded-lg bg-card border border-border/60 p-4 sm:p-5">
  <UnifiedFeedCard
  post={{
  id: p.id,
@@ -1863,7 +1863,7 @@ export function MemberPublicProfileView({
  {socialTab === "media" && (
  <div className="space-y-6">
  {posts.filter((p: any) => !!p.media_url).length === 0 ? (
- <div className="py-16 text-center text-muted-foreground space-y-3 rounded-2xl bg-card border border-border/40">
+ <div className="py-16 text-center text-muted-foreground space-y-3 rounded-lg bg-card border border-border/40">
  <Grid className="size-10 mx-auto text-muted-foreground/30" />
  <p className="text-sm font-medium">Nenhuma foto ou vídeo compartilhado ainda.</p>
  </div>
@@ -1872,7 +1872,7 @@ export function MemberPublicProfileView({
  {posts.filter((p: any) => !!p.media_url).map((p: any) => (
  <div
  key={p.id}
- className="aspect-square rounded-2xl bg-muted/40 overflow-hidden relative cursor-pointer group"
+ className="aspect-square rounded-lg bg-muted/40 overflow-hidden relative cursor-pointer group"
  onClick={() => setPreviewMediaUrl(p.media_url)}
  >
  <img src={p.media_url} alt="Galeria" className="size-full object-cover group-hover:scale-105 transition-transform" />
@@ -1885,7 +1885,7 @@ export function MemberPublicProfileView({
 
  {/* Conteúdo da Aba: Salvos (Apenas Proprietário) */}
  {isOwner && socialTab === "saved" && (
- <div className="py-16 text-center text-muted-foreground space-y-3 rounded-2xl bg-card border border-border/40">
+ <div className="py-16 text-center text-muted-foreground space-y-3 rounded-lg bg-card border border-border/40">
  <Tag className="size-10 mx-auto text-muted-foreground/30" />
  <p className="text-sm font-medium">Seus itens salvos aparecerão aqui de forma privada.</p>
  </div>
@@ -1893,7 +1893,7 @@ export function MemberPublicProfileView({
 
  {/* Conteúdo da Aba: Curtidos (Apenas Proprietário) */}
  {isOwner && socialTab === "liked" && (
- <div className="py-16 text-center text-muted-foreground space-y-3 rounded-2xl bg-card border border-border/40">
+ <div className="py-16 text-center text-muted-foreground space-y-3 rounded-lg bg-card border border-border/40">
  <Layers className="size-10 mx-auto text-muted-foreground/30" />
  <p className="text-sm font-medium">Publicações que você curtiu na Comunidade Waesy.</p>
  </div>
@@ -1903,7 +1903,7 @@ export function MemberPublicProfileView({
  {socialTab === "events" && (
  <div className="space-y-4">
  {creatorEvents.length === 0 ? (
- <div className="py-16 text-center text-muted-foreground space-y-3 rounded-2xl bg-card border border-border/40">
+ <div className="py-16 text-center text-muted-foreground space-y-3 rounded-lg bg-card border border-border/40">
  <Calendar className="size-10 mx-auto text-muted-foreground/30" />
  <p className="text-sm font-medium">Nenhum evento público agendado no momento.</p>
  </div>
@@ -1912,9 +1912,9 @@ export function MemberPublicProfileView({
  {creatorEvents.map((evt: any) => (
  <div
  key={evt.id}
- className="p-4 rounded-2xl border border-border/60 bg-card flex items-start gap-4"
+ className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-4"
  >
- <div className="size-16 rounded-xl bg-muted/60 overflow-hidden shrink-0 border border-border/40">
+ <div className="size-16 rounded-lg bg-muted/60 overflow-hidden shrink-0 border border-border/40">
  {evt.cover_image ? (
  <img src={evt.cover_image} alt={evt.title} className="size-full object-cover" />
  ) : (
@@ -1951,7 +1951,7 @@ export function MemberPublicProfileView({
  if (sectionKey === "banner" && creatorProfile?.banner_url) {
  return (
  <div key="banner" className="space-y-3">
- <div className="aspect-video sm:aspect-video w-full rounded-2xl overflow-hidden relative border border-border/40">
+ <div className="aspect-video sm:aspect-video w-full rounded-lg overflow-hidden relative border border-border/40">
  <img
  src={creatorProfile.banner_url}
  alt={creatorProfile.banner_title || "Banner da marca"}
@@ -1966,7 +1966,7 @@ export function MemberPublicProfileView({
  </h3>
  {creatorProfile.banner_link && (
  <div className="pt-2">
- <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-semibold gap-1.5 bg-white text-black hover:bg-white/90">
+ <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-semibold gap-2 bg-white text-black hover:bg-white/90">
  <a href={creatorProfile.banner_link} target="_blank" rel="noopener noreferrer">
  <span>Acessar Destaque</span>
  <ExternalLink className="size-3.5" />
@@ -2000,23 +2000,23 @@ export function MemberPublicProfileView({
  return (
  <div
  key={s.id}
- className="p-5 rounded-2xl border border-border/60 bg-card flex flex-col justify-between gap-4"
+ className="p-5 rounded-lg border border-border/60 bg-card flex flex-col justify-between gap-4"
  >
  <div className="flex items-start gap-3">
- <div className="size-12 rounded-xl bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
+ <div className="size-12 rounded-lg bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
  {s.logoUrl || s.logo_url ? (
  <img src={s.logoUrl || s.logo_url} alt={s.name} className="size-full object-cover" />
  ) : (
  <Store className="size-5 text-muted-foreground" />
  )}
  </div>
- <div className="space-y-0.5 min-w-0">
+ <div className="space-y-1 min-w-0">
  <h4 className="text-sm font-bold text-foreground truncate">{s.name}</h4>
  <p className="text-xs text-muted-foreground truncate">{s.city} • {s.segment || "Varejo"}</p>
  </div>
  </div>
 
- <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
+ <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between">
  <div>
  <span className="text-xs text-muted-foreground uppercase font-medium">Cupom 10% OFF</span>
  <p className="text-xs font-mono font-bold text-primary">{couponCode}</p>
@@ -2036,7 +2036,7 @@ export function MemberPublicProfileView({
  </Button>
  </div>
 
- <Button asChild size="sm" className="w-full h-10 rounded-xl text-xs font-semibold gap-1.5">
+ <Button asChild size="sm" className="w-full h-10 rounded-lg text-xs font-semibold gap-2">
  <Link to="/c/$storeSlug" params={{ storeSlug: s.slug }} search={{ ref: creatorProfile?.handle || profile.username, coupon: couponCode }}>
  <span>Visitar Loja com Cupom</span>
  <ArrowRight className="size-3.5" />
@@ -2074,7 +2074,7 @@ export function MemberPublicProfileView({
  to="/produto/$slug"
  params={{ slug: p.slug }}
  search={{ ref: creatorProfile?.handle || profile.username } as any}
- className="group rounded-2xl bg-card border border-border/60 hover:border-primary/40 transition-all overflow-hidden flex flex-col justify-between"
+ className="group rounded-lg bg-card border border-border/60 hover:border-primary/40 transition-all overflow-hidden flex flex-col justify-between"
  >
  <div className="space-y-3">
  <div className="aspect-video bg-muted/40 relative overflow-hidden">
@@ -2089,7 +2089,7 @@ export function MemberPublicProfileView({
  <ShoppingBag className="size-8" />
  </div>
  )}
- <div className="absolute top-2 right-2 px-2.5 py-1 rounded-xl bg-background/90 backdrop-blur-md text-xs font-extrabold text-primary">
+ <div className="absolute top-2 right-2 px-3 py-1 rounded-lg bg-background/90 backdrop-blur-md text-xs font-extrabold text-primary">
  {formatMoney(price)}
  </div>
  </div>
@@ -2108,7 +2108,7 @@ export function MemberPublicProfileView({
  </div>
 
  <div className="p-4 pt-0">
- <div className="w-full h-9 rounded-xl bg-muted/40 hover:bg-muted text-xs font-semibold flex items-center justify-center gap-1.5 text-foreground">
+ <div className="w-full h-9 rounded-lg bg-muted/40 hover:bg-muted text-xs font-semibold flex items-center justify-center gap-2 text-foreground">
  <span>Ver Detalhes do Produto</span>
  <ArrowRight className="size-3.5" />
  </div>
@@ -2138,9 +2138,9 @@ export function MemberPublicProfileView({
  {creatorEvents.map((evt: any) => (
  <div
  key={evt.id}
- className="p-4 rounded-2xl border border-border/60 bg-card flex items-start gap-3.5"
+ className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-4"
  >
- <div className="size-16 rounded-xl bg-muted/60 overflow-hidden shrink-0 border border-border/40">
+ <div className="size-16 rounded-lg bg-muted/60 overflow-hidden shrink-0 border border-border/40">
  {evt.cover_image ? (
  <img src={evt.cover_image} alt={evt.title} className="size-full object-cover" />
  ) : (
@@ -2181,9 +2181,9 @@ export function MemberPublicProfileView({
  key={s.id}
  to="/perfil-da-loja"
  search={{ slug: s.slug }}
- className="p-4 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors flex items-center gap-4 group"
+ className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors flex items-center gap-4 group"
  >
- <div className="size-14 rounded-2xl bg-background flex items-center justify-center overflow-hidden flex-shrink-0">
+ <div className="size-14 rounded-lg bg-background flex items-center justify-center overflow-hidden flex-shrink-0">
  {s.logo_url ? (
  <img src={s.logo_url} alt={s.name} className="size-full object-cover" />
  ) : (
@@ -2216,7 +2216,7 @@ export function MemberPublicProfileView({
  key={item.id}
  to="/classificados/$id"
  params={{ id: item.id }}
- className="group rounded-2xl bg-muted/20 hover:bg-muted/40 transition-all overflow-hidden flex flex-col"
+ className="group rounded-lg bg-muted/20 hover:bg-muted/40 transition-all overflow-hidden flex flex-col"
  >
  <div className="aspect-4/3 bg-muted/40 relative overflow-hidden">
  {item.images?.[0] ? (
@@ -2230,7 +2230,7 @@ export function MemberPublicProfileView({
  <ShoppingBag className="size-8" />
  </div>
  )}
- <div className="absolute top-2 right-2 px-2.5 py-1 rounded-xl bg-background/90 backdrop-blur-md text-xs font-extrabold text-foreground">
+ <div className="absolute top-2 right-2 px-3 py-1 rounded-lg bg-background/90 backdrop-blur-md text-xs font-extrabold text-foreground">
  {formatMoney(item.price)}
  </div>
  </div>
@@ -2554,9 +2554,9 @@ function AvailabilityEditModal({
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
  {/* Opção 1: Open To Work */}
- <div className="p-4 rounded-2xl bg-muted/30 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/30 space-y-3">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <Briefcase className="size-4 text-emerald-500" />
  <div>
  <h4 className="text-sm font-bold text-foreground">Encontrar um novo emprego (#OpenToWork)</h4>
@@ -2571,22 +2571,22 @@ function AvailabilityEditModal({
  />
  </div>
  {openToWork && (
- <div className="space-y-1.5 pt-2">
+ <div className="space-y-2 pt-2">
  <Label className="text-xs font-semibold">Cargos de interesse</Label>
  <Input
  value={rolesStr}
  onChange={(e) => setRolesStr(e.target.value)}
  placeholder="Ex: Gerente de Loja, Vendedora, Desenvolvedor"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  )}
  </div>
 
  {/* Opção 2: Hiring */}
- <div className="p-4 rounded-2xl bg-muted/30 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/30 space-y-3">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <UserPlus className="size-4 text-info" />
  <div>
  <h4 className="text-sm font-bold text-foreground">Contratar talentos (#Hiring)</h4>
@@ -2601,22 +2601,22 @@ function AvailabilityEditModal({
  />
  </div>
  {hiring && (
- <div className="space-y-1.5 pt-2">
+ <div className="space-y-2 pt-2">
  <Label className="text-xs font-semibold">Vagas abertas</Label>
  <Input
  value={hiringRolesStr}
  onChange={(e) => setHiringRolesStr(e.target.value)}
  placeholder="Ex: Barista, Atendente, Entregador"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  )}
  </div>
 
  {/* Opção 3: Prestando Serviços */}
- <div className="p-4 rounded-2xl bg-muted/30 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/30 space-y-3">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <Layers className="size-4 text-violet-500" />
  <div>
  <h4 className="text-sm font-bold text-foreground">Prestar serviços autônomos</h4>
@@ -2631,21 +2631,21 @@ function AvailabilityEditModal({
  />
  </div>
  {providingServices && (
- <div className="space-y-1.5 pt-2">
+ <div className="space-y-2 pt-2">
  <Label className="text-xs font-semibold">Serviços oferecidos</Label>
  <Input
  value={servicesStr}
  onChange={(e) => setServicesStr(e.target.value)}
  placeholder="Ex: Fotografia, Social Media, Reformas"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  )}
  </div>
 
  {/* Opção 4: Voluntariado */}
- <div className="p-4 rounded-2xl bg-muted/30 flex items-center justify-between">
- <div className="flex items-center gap-2.5">
+ <div className="p-4 rounded-lg bg-muted/30 flex items-center justify-between">
+ <div className="flex items-center gap-3">
  <HeartHandshake className="size-4 text-rose-500" />
  <div>
  <h4 className="text-sm font-bold text-foreground">Voluntariado ativo</h4>
@@ -2662,10 +2662,10 @@ function AvailabilityEditModal({
  </div>
 
  <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-end gap-3">
- <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
+ <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
- <Button type="submit" className="rounded-xl font-bold bg-primary text-primary-foreground" disabled={isSaving}>
+ <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
  {isSaving ? "Salvando..." : "Salvar Alterações"}
  </Button>
  </div>
@@ -2707,33 +2707,33 @@ function AboutEditModal({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto p-6 space-y-5 no-scrollbar">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Título / Headline</Label>
  <Input
  value={headline}
  onChange={(e) => setHeadline(e.target.value)}
  placeholder="Ex: Gerente Administrativo • Apaixonado por Comunidade"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Resumo (Sobre)</Label>
  <Textarea
  value={summary}
  onChange={(e) => setSummary(e.target.value)}
  rows={8}
  placeholder="Descreva suas experiências, realizações e projetos..."
- className="rounded-2xl text-xs sm:text-sm"
+ className="rounded-lg text-xs sm:text-sm"
  />
  </div>
  </div>
 
  <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-end gap-3">
- <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
+ <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
- <Button type="submit" className="rounded-xl font-bold bg-primary text-primary-foreground" disabled={isSaving}>
+ <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
  {isSaving ? "Salvando..." : "Salvar Resumo"}
  </Button>
  </div>
@@ -2858,35 +2858,35 @@ function ExperienceEditModal({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Título do Cargo *</Label>
  <Input
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Gerente de Atendimento"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  required
  />
  </div>
 
- <div className="space-y-1.5 relative">
+ <div className="space-y-2 relative">
  <Label className="text-xs font-semibold">Empresa / Loja *</Label>
  <Input
  value={company}
  onChange={(e) => handleCompanyChange(e.target.value)}
  placeholder="Digite para buscar empresas no Waesy..."
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  required
  />
  {companySuggestions.length > 0 && (
- <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-card rounded-2xl border border-border/80 p-2 space-y-1 max-h-48 overflow-y-auto no-scrollbar">
- <p className="text-xs font-bold text-muted-foreground px-2 py-0.5">
+ <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-card rounded-lg border border-border/80 p-2 space-y-1 max-h-48 overflow-y-auto no-scrollbar">
+ <p className="text-xs font-bold text-muted-foreground px-2 py-1">
  Lojas do ecossistema Waesy:
  </p>
  {companySuggestions.map((s) => (
  <div
  key={s.id}
- className="flex items-center gap-2 p-2 rounded-xl hover:bg-muted/50 cursor-pointer"
+ className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
  onClick={() => handleSelectStore(s)}
  >
  <div className="size-6 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -2903,13 +2903,13 @@ function ExperienceEditModal({
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Tipo de Emprego</Label>
  <Select value={employmentType} onValueChange={setEmploymentType}>
- <SelectTrigger className="h-10 rounded-xl">
+ <SelectTrigger className="h-10 rounded-lg">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="Tempo integral">Tempo integral</SelectItem>
  <SelectItem value="Meio período">Meio período</SelectItem>
  <SelectItem value="Autônomo">Autônomo</SelectItem>
@@ -2920,13 +2920,13 @@ function ExperienceEditModal({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Modelo de Trabalho</Label>
  <Select value={locationType} onValueChange={setLocationType}>
- <SelectTrigger className="h-10 rounded-xl">
+ <SelectTrigger className="h-10 rounded-lg">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="No local">Presencial (No local)</SelectItem>
  <SelectItem value="Híbrido">Híbrido</SelectItem>
  <SelectItem value="Remoto">Remoto</SelectItem>
@@ -2935,13 +2935,13 @@ function ExperienceEditModal({
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Localidade</Label>
  <Input
  value={location}
  onChange={(e) => setLocation(e.target.value)}
  placeholder="Ex: Chapecó, Santa Catarina, Brasil"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
 
@@ -2959,46 +2959,46 @@ function ExperienceEditModal({
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Data de Início</Label>
  <Input
  value={startDate}
  onChange={(e) => setStartDate(e.target.value)}
  placeholder="Ex: jan de 2024"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  {!isCurrent && (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Data de Término</Label>
  <Input
  value={endDate}
  onChange={(e) => setEndDate(e.target.value)}
  placeholder="Ex: mai de 2026"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  )}
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Descrição da Função</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  rows={4}
  placeholder="Descreva suas responsabilidades, conquistas e projetos..."
- className="rounded-2xl text-xs sm:text-sm"
+ className="rounded-lg text-xs sm:text-sm"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Competências Utilizadas (separadas por vírgula)</Label>
  <Input
  value={skillsStr}
  onChange={(e) => setSkillsStr(e.target.value)}
  placeholder="Ex: Vendas, Gestão de Equipe, Atendimento"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
 
@@ -3007,7 +3007,7 @@ function ExperienceEditModal({
  <Label className="text-xs font-semibold">Mídias e Anexos (Fotos, Certificados, PDFs)</Label>
  <div className="flex flex-wrap gap-2">
  {mediaUrls.map((url, idx) => (
- <div key={idx} className="relative size-16 rounded-xl overflow-hidden bg-muted group">
+ <div key={idx} className="relative size-16 rounded-lg overflow-hidden bg-muted group">
  <img src={url} className="size-full object-cover" />
  <button
  type="button"
@@ -3018,7 +3018,7 @@ function ExperienceEditModal({
  </button>
  </div>
  ))}
- <label className="size-16 rounded-xl border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/40 cursor-pointer transition-colors">
+ <label className="size-16 rounded-lg border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/40 cursor-pointer transition-colors">
  <Upload className="size-4" />
  <span className="text-xs font-bold mt-1">Subir Mídia</span>
  <input type="file" multiple accept="image/*,.pdf" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
@@ -3032,7 +3032,7 @@ function ExperienceEditModal({
  <Button
  type="button"
  variant="destructive"
- className="rounded-xl"
+ className="rounded-lg"
  onClick={() => onSave(item, true)}
  disabled={isSaving}
  >
@@ -3040,10 +3040,10 @@ function ExperienceEditModal({
  </Button>
  ) : <div />}
  <div className="flex items-center gap-2">
- <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
+ <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
- <Button type="submit" className="rounded-xl font-bold bg-primary text-primary-foreground" disabled={isSaving || isUploading}>
+ <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving || isUploading}>
  {isSaving ? "Salvando..." : "Salvar Experiência"}
  </Button>
  </div>
@@ -3102,66 +3102,66 @@ function EducationEditModal({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Instituição de Ensino *</Label>
  <Input
  value={school}
  onChange={(e) => setSchool(e.target.value)}
  placeholder="Ex: UFFS - Universidade Federal da Fronteira Sul"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Grau / Diploma</Label>
  <Input
  value={degree}
  onChange={(e) => setDegree(e.target.value)}
  placeholder="Ex: Bacharelado, Pós-graduação, Técnico"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Área de Estudo</Label>
  <Input
  value={fieldOfStudy}
  onChange={(e) => setFieldOfStudy(e.target.value)}
  placeholder="Ex: Administração, Ciência da Computação"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Início</Label>
  <Input
  value={startDate}
  onChange={(e) => setStartDate(e.target.value)}
  placeholder="Ex: 2018"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Término (ou previsto)</Label>
  <Input
  value={endDate}
  onChange={(e) => setEndDate(e.target.value)}
  placeholder="Ex: 2022"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Atividades e Sociedades</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  rows={4}
  placeholder="Projetos de extensão, monitorias..."
- className="rounded-2xl text-xs sm:text-sm"
+ className="rounded-lg text-xs sm:text-sm"
  />
  </div>
  </div>
@@ -3171,7 +3171,7 @@ function EducationEditModal({
  <Button
  type="button"
  variant="destructive"
- className="rounded-xl"
+ className="rounded-lg"
  onClick={() => onSave(item, true)}
  disabled={isSaving}
  >
@@ -3179,10 +3179,10 @@ function EducationEditModal({
  </Button>
  ) : <div />}
  <div className="flex items-center gap-2">
- <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
+ <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
- <Button type="submit" className="rounded-xl font-bold bg-primary text-primary-foreground" disabled={isSaving}>
+ <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
  {isSaving ? "Salvando..." : "Salvar Formação"}
  </Button>
  </div>
@@ -3237,45 +3237,45 @@ function CertificationEditModal({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Nome da Certificação *</Label>
  <Input
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Gestão de RH, UX Design"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Organização Emissora *</Label>
  <Input
  value={issuer}
  onChange={(e) => setIssuer(e.target.value)}
  placeholder="Ex: EBAC, SENAC, Google"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Data de Emissão</Label>
  <Input
  value={issueDate}
  onChange={(e) => setIssueDate(e.target.value)}
  placeholder="Ex: fev de 2021"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">URL da Credencial / Certificado</Label>
  <Input
  value={credentialUrl}
  onChange={(e) => setCredentialUrl(e.target.value)}
  placeholder="https://..."
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  </div>
@@ -3285,7 +3285,7 @@ function CertificationEditModal({
  <Button
  type="button"
  variant="destructive"
- className="rounded-xl"
+ className="rounded-lg"
  onClick={() => onSave(item, true)}
  disabled={isSaving}
  >
@@ -3293,10 +3293,10 @@ function CertificationEditModal({
  </Button>
  ) : <div />}
  <div className="flex items-center gap-2">
- <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
+ <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
- <Button type="submit" className="rounded-xl font-bold bg-primary text-primary-foreground" disabled={isSaving}>
+ <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
  {isSaving ? "Salvando..." : "Salvar Certificado"}
  </Button>
  </div>
@@ -3357,68 +3357,68 @@ function ProjectEditModal({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Nome do Projeto *</Label>
  <Input
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Case Ebis"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Associado à Empresa / Cliente</Label>
  <Input
  value={associatedWith}
  onChange={(e) => setAssociatedWith(e.target.value)}
  placeholder="Ex: Decibal Alimentos"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Link do Projeto</Label>
  <Input
  value={projectUrl}
  onChange={(e) => setProjectUrl(e.target.value)}
  placeholder="https://..."
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
 
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Início</Label>
  <Input
  value={startDate}
  onChange={(e) => setStartDate(e.target.value)}
  placeholder="Ex: mai de 2017"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  {!isCurrent && (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Término</Label>
  <Input
  value={endDate}
  onChange={(e) => setEndDate(e.target.value)}
  placeholder="Ex: dez de 2022"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  )}
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Descrição</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  rows={4}
  placeholder="Descreva o objetivo e resultados do projeto..."
- className="rounded-2xl text-xs sm:text-sm"
+ className="rounded-lg text-xs sm:text-sm"
  />
  </div>
  </div>
@@ -3428,7 +3428,7 @@ function ProjectEditModal({
  <Button
  type="button"
  variant="destructive"
- className="rounded-xl"
+ className="rounded-lg"
  onClick={() => onSave(item, true)}
  disabled={isSaving}
  >
@@ -3436,10 +3436,10 @@ function ProjectEditModal({
  </Button>
  ) : <div />}
  <div className="flex items-center gap-2">
- <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
+ <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
- <Button type="submit" className="rounded-xl font-bold bg-primary text-primary-foreground" disabled={isSaving}>
+ <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
  {isSaving ? "Salvando..." : "Salvar Projeto"}
  </Button>
  </div>
@@ -3500,35 +3500,35 @@ function VolunteeringEditModal({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Função / Papel *</Label>
  <Input
  value={role}
  onChange={(e) => setRole(e.target.value)}
  placeholder="Ex: Voluntário de Apoio"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Organização / Entidade *</Label>
  <Input
  value={organization}
  onChange={(e) => setOrganization(e.target.value)}
  placeholder="Ex: ONG Esperança"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Causa Social</Label>
  <Select value={cause} onValueChange={setCause}>
- <SelectTrigger className="h-10 rounded-xl">
+ <SelectTrigger className="h-10 rounded-lg">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-2xl max-h-48 overflow-y-auto no-scrollbar">
+ <SelectContent className="rounded-lg max-h-48 overflow-y-auto no-scrollbar">
  {SOCIAL_CAUSES_LIST.map((c) => (
  <SelectItem key={c} value={c}>
  {c}
@@ -3539,36 +3539,36 @@ function VolunteeringEditModal({
  </div>
 
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Início</Label>
  <Input
  value={startDate}
  onChange={(e) => setStartDate(e.target.value)}
  placeholder="Ex: out de 2018"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  {!isCurrent && (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Término</Label>
  <Input
  value={endDate}
  onChange={(e) => setEndDate(e.target.value)}
  placeholder="Ex: dez de 2023"
- className="h-10 rounded-xl"
+ className="h-10 rounded-lg"
  />
  </div>
  )}
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Descrição</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  rows={4}
  placeholder="Descreva seu impacto e atividades..."
- className="rounded-2xl text-xs sm:text-sm"
+ className="rounded-lg text-xs sm:text-sm"
  />
  </div>
  </div>
@@ -3578,7 +3578,7 @@ function VolunteeringEditModal({
  <Button
  type="button"
  variant="destructive"
- className="rounded-xl"
+ className="rounded-lg"
  onClick={() => onSave(item, true)}
  disabled={isSaving}
  >
@@ -3586,10 +3586,10 @@ function VolunteeringEditModal({
  </Button>
  ) : <div />}
  <div className="flex items-center gap-2">
- <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
+ <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
- <Button type="submit" className="rounded-xl font-bold bg-primary text-primary-foreground" disabled={isSaving}>
+ <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
  {isSaving ? "Salvando..." : "Salvar Voluntariado"}
  </Button>
  </div>
@@ -3646,7 +3646,7 @@ function CausesEditModal({
  key={cause}
  onClick={() => toggleCause(cause)}
  className={cn(
- "px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-left cursor-pointer",
+ "px-4 py-3 rounded-lg text-xs font-semibold transition-all text-left cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground font-bold"
  : "bg-muted/40 text-muted-foreground hover:bg-muted/80 hover:text-foreground"
@@ -3661,10 +3661,10 @@ function CausesEditModal({
  </div>
 
  <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-end gap-3">
- <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
+ <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
- <Button type="submit" className="rounded-xl font-bold bg-primary text-primary-foreground" disabled={isSaving}>
+ <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
  {isSaving ? "Salvando..." : "Salvar Causas"}
  </Button>
  </div>
@@ -3723,7 +3723,7 @@ function LanguagesEditModal({
  <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
  <div className="space-y-3">
  {list.map((item, idx) => (
- <div key={idx} className="p-4 rounded-2xl bg-muted/30 space-y-2 relative">
+ <div key={idx} className="p-4 rounded-lg bg-muted/30 space-y-2 relative">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-muted-foreground">Idioma #{idx + 1}</span>
  {list.length > 1 && (
@@ -3741,16 +3741,16 @@ function LanguagesEditModal({
  value={item.language}
  onChange={(e) => updateItem(idx, "language", e.target.value)}
  placeholder="Ex: Inglês, Espanhol"
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  />
  <Select
  value={item.proficiency}
  onValueChange={(val) => updateItem(idx, "proficiency", val)}
  >
- <SelectTrigger className="h-10 rounded-xl text-xs">
+ <SelectTrigger className="h-10 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="Nativo ou bilíngue">Nativo ou bilíngue</SelectItem>
  <SelectItem value="Fluente / Avançado">Fluente / Avançado</SelectItem>
  <SelectItem value="Intermediário">Intermediário</SelectItem>
@@ -3766,7 +3766,7 @@ function LanguagesEditModal({
  type="button"
  variant="outline"
  size="sm"
- className="w-full rounded-xl text-xs font-semibold gap-1.5"
+ className="w-full rounded-lg text-xs font-semibold gap-2"
  onClick={addLanguage}
  >
  <Plus className="size-3.5" />
@@ -3775,10 +3775,10 @@ function LanguagesEditModal({
  </div>
 
  <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-end gap-3">
- <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
+ <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
- <Button type="submit" className="rounded-xl font-bold bg-primary text-primary-foreground" disabled={isSaving}>
+ <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
  {isSaving ? "Salvando..." : "Salvar Idiomas"}
  </Button>
  </div>

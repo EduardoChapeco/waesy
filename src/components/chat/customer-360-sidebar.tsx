@@ -68,9 +68,9 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  <div className="space-y-5 p-4 text-xs font-sans">
  {/* Perfil Header */}
  <div className="flex items-center gap-3 border-b border-border/50 pb-4">
- <div className="size-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-extrabold text-sm shrink-0 border border-primary/20">
+ <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-extrabold text-sm shrink-0 border border-primary/20">
  {profile?.avatar_url ? (
- <img src={profile.avatar_url} alt="" className="size-full rounded-2xl object-cover" />
+ <img src={profile.avatar_url} alt="" className="size-full rounded-lg object-cover" />
  ) : (
  (profile?.full_name || "C")[0].toUpperCase()
  )}
@@ -94,7 +94,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
  {/* Métricas do Cliente (LTV, Pedidos, Tickets) */}
  <div className="grid grid-cols-2 gap-2">
- <div className="p-3 rounded-xl bg-card border border-border/80 space-y-1">
+ <div className="p-3 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-[10px] text-muted-foreground uppercase font-bold flex items-center gap-1">
  <DollarSign className="size-3 text-success" />
  LTV Total
@@ -104,7 +104,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  </p>
  </div>
 
- <div className="p-3 rounded-xl bg-card border border-border/80 space-y-1">
+ <div className="p-3 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-[10px] text-muted-foreground uppercase font-bold flex items-center gap-1">
  <ShoppingBag className="size-3 text-primary" />
  Pedidos
@@ -119,18 +119,18 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  {tickets.length > 0 && (
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-[11px] font-bold text-foreground flex items-center gap-2">
  <ShieldAlert className="size-3.5 text-destructive" />
  Ocorrências & SAC ({tickets.length})
  </span>
  </div>
 
- <div className="space-y-1.5 max-h-36 overflow-y-auto no-scrollbar pr-1">
+ <div className="space-y-2 max-h-36 overflow-y-auto no-scrollbar pr-1">
  {tickets.map((t: any) => (
- <div key={t.id} className="p-2 rounded-xl bg-muted/40 border border-border/60 text-[11px] space-y-1">
+ <div key={t.id} className="p-2 rounded-lg bg-muted/40 border border-border/60 text-[11px] space-y-1">
  <div className="flex items-center justify-between">
  <span className="font-bold text-foreground truncate max-w-[140px]">{t.title}</span>
- <Badge variant={t.status === "resolved" ? "default" : "destructive"} className="text-[9px] px-1.5 py-0 h-4">
+ <Badge variant={t.status === "resolved" ? "default" : "destructive"} className="text-[9px] px-2 py-0 h-4">
  {t.status}
  </Badge>
  </div>
@@ -144,7 +144,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  {/* Histórico Recente de Compras */}
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-[11px] font-bold text-foreground flex items-center gap-2">
  <ShoppingBag className="size-3.5 text-primary" />
  Últimos Pedidos
  </span>
@@ -153,9 +153,9 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  {orders.length === 0 ? (
  <p className="text-[11px] text-muted-foreground italic">Nenhum pedido anterior na loja.</p>
  ) : (
- <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar pr-1">
+ <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1">
  {orders.map((o: any) => (
- <div key={o.id} className="p-2 rounded-xl bg-card border border-border/80 flex items-center justify-between">
+ <div key={o.id} className="p-2 rounded-lg bg-card border border-border/80 flex items-center justify-between">
  <div>
  <span className="font-bold text-foreground text-xs block">
  #{o.id.slice(0, 8)}

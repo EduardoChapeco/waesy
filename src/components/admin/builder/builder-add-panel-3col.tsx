@@ -272,8 +272,8 @@ export function BuilderAddPanel3Col({
  </span>
  </div>
 
- <ScrollArea className="flex-1 py-1 px-1.5">
- <div className="space-y-0.5">
+ <ScrollArea className="flex-1 py-1 px-2">
+ <div className="space-y-1">
  {CATEGORY_TREE.map((cat) => {
  const Icon = cat.icon;
  const isSelected = selectedCatId === cat.id;
@@ -287,7 +287,7 @@ export function BuilderAddPanel3Col({
  setSelectedSubId(cat.subcategories[0]?.id || "");
  }}
  className={cn(
- "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all cursor-pointer text-left",
+ "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left",
  isSelected
  ? "bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -313,8 +313,8 @@ export function BuilderAddPanel3Col({
  </span>
  </div>
 
- <ScrollArea className="flex-1 py-1 px-1.5">
- <div className="space-y-0.5">
+ <ScrollArea className="flex-1 py-1 px-2">
+ <div className="space-y-1">
  {isBlocosMode
  ? SINGLE_BLOCK_SUBCATEGORIES.map((sub) => (
  <button
@@ -322,7 +322,7 @@ export function BuilderAddPanel3Col({
  type="button"
  onClick={() => setSingleBlockSub(sub.id)}
  className={cn(
- "w-full px-3 py-2 rounded-xl text-xs transition-all cursor-pointer text-left truncate block",
+ "w-full px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left truncate block",
  singleBlockSub === sub.id
  ? "bg-primary text-primary-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -339,7 +339,7 @@ export function BuilderAddPanel3Col({
  type="button"
  onClick={() => setSelectedSubId(sub.id)}
  className={cn(
- "w-full px-3 py-2 rounded-xl text-xs transition-all cursor-pointer text-left truncate block",
+ "w-full px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left truncate block",
  isSelected
  ? "bg-primary text-primary-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -388,9 +388,9 @@ export function BuilderAddPanel3Col({
   onInsertSingleBlock(block.type);
   onClose();
   }}
-  className="group rounded-2xl border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden p-3 flex items-center gap-3 shadow-2xs"
+  className="group rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden p-3 flex items-center gap-3 shadow-2xs"
   >
-  <div className="size-10 rounded-xl bg-background border border-border/50 flex items-center justify-center text-muted-foreground">
+  <div className="size-10 rounded-lg bg-background border border-border/50 flex items-center justify-center text-muted-foreground">
   <block.icon className="size-5" />
   </div>
   <div className="flex-1">
@@ -414,19 +414,19 @@ export function BuilderAddPanel3Col({
  onSelectTemplate(template);
  onClose();
  }}
- className="group rounded-2xl border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden p-3 space-y-2.5 shadow-2xs"
+ className="group rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden p-3 space-y-3 shadow-2xs"
  >
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
  {template.name}
  </span>
- <Badge variant="outline" className="text-[9px] px-1.5 py-0 font-medium">
+ <Badge variant="outline" className="text-[9px] px-2 py-0 font-medium">
  {template.category}
  </Badge>
  </div>
 
  {/* Render Visual / Miniatura Gráfica da Seção */}
- <div className="h-28 rounded-xl bg-background border border-border/60 overflow-hidden relative flex items-center justify-center group-hover:shadow-xs transition-shadow">
+ <div className="h-28 rounded-lg bg-background border border-border/60 overflow-hidden relative flex items-center justify-center group-hover:shadow-xs transition-shadow">
  {template.previewImageUrl ? (
  <img
  src={template.previewImageUrl}

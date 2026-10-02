@@ -42,7 +42,7 @@ export function CareersJobFilters({
  placeholder="Buscar vaga por cargo ou palavra-chave..."
  value={searchQuery}
  onChange={(e) => onSearchChange?.(e.target.value)}
- className="pl-10 min-h-[44px] rounded-xl text-xs bg-card"
+ className="pl-10 min-h-11 rounded-lg text-xs bg-card"
  />
  </div>
 
@@ -55,7 +55,7 @@ export function CareersJobFilters({
  key={dept}
  onClick={() => onSelectDepartment?.(key)}
  className={cn(
- "px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all min-h-[44px] border",
+ "px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all min-h-11 border",
  isSelected
  ? "bg-primary text-primary-foreground border-primary shadow-sm"
  : "bg-card text-muted-foreground border-border/60 hover:border-border hover:text-foreground"

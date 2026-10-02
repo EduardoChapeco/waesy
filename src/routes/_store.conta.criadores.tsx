@@ -150,7 +150,7 @@ function CreatorProfilesManagementPage() {
           <Button
             size="sm"
             onClick={handleOpenNew}
-            className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+            className="h-9 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
           >
             <Plus className="size-3.5" />
             <span>Novo Perfil</span>
@@ -161,8 +161,8 @@ function CreatorProfilesManagementPage() {
       {/* ─── Conteúdo Principal ────────────────────────────────────────── */}
       <div className="max-w-4xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6">
         {creatorProfiles.length === 0 && !isLoading ? (
-          <div className="p-8 sm:p-12 text-center rounded-3xl border border-border/60 bg-card space-y-4 max-w-lg mx-auto shadow-xs">
-            <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+          <div className="p-8 sm:p-12 text-center rounded-lg border border-border/60 bg-card space-y-4 max-w-lg mx-auto shadow-xs">
+            <div className="size-14 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
               <Star className="size-7" />
             </div>
             <div className="space-y-1">
@@ -174,7 +174,7 @@ function CreatorProfilesManagementPage() {
             <Button
               type="button"
               onClick={handleOpenNew}
-              className="h-11 px-6 rounded-xl text-xs font-semibold gap-2 cursor-pointer"
+              className="h-11 px-6 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
             >
               <Plus className="size-4" />
               <span>Criar Meu Primeiro Perfil</span>
@@ -191,12 +191,12 @@ function CreatorProfilesManagementPage() {
               return (
                 <div
                   key={cp.id || handle}
-                  className="p-5 sm:p-6 rounded-3xl border border-border/60 bg-card shadow-xs space-y-5 transition-all hover:border-border"
+                  className="p-5 sm:p-6 rounded-lg border border-border/60 bg-card shadow-xs space-y-5 transition-all hover:border-border"
                 >
                   {/* Cabeçalho do Card */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="size-12 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-base uppercase shrink-0 overflow-hidden">
+                      <div className="size-12 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-base uppercase shrink-0 overflow-hidden">
                         {cp.avatar_url ? (
                           <img src={cp.avatar_url} alt={handle} className="size-full object-cover" />
                         ) : (
@@ -204,7 +204,7 @@ function CreatorProfilesManagementPage() {
                         )}
                       </div>
 
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="text-sm font-bold text-foreground">
                             {cp.stage_name || cp.name || handle}
@@ -222,11 +222,11 @@ function CreatorProfilesManagementPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 self-start sm:self-auto flex-wrap">
+                    <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
                       {activeCreator === (cp.id || handle) || activeCreator === handle ? (
                         <Badge
                           variant="outline"
-                          className="h-9 px-3 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-600 border-amber-500/30 gap-1.5 shrink-0"
+                          className="h-9 px-3 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-600 border-amber-500/30 gap-2 shrink-0"
                         >
                           <CheckCircle2 className="size-3.5 text-amber-600" />
                           <span>Persona Ativa</span>
@@ -237,7 +237,7 @@ function CreatorProfilesManagementPage() {
                           variant="secondary"
                           size="sm"
                           onClick={() => handleActivatePersona(cp)}
-                          className="h-9 px-3 rounded-xl text-xs gap-1.5 font-medium cursor-pointer shrink-0"
+                          className="h-9 px-3 rounded-lg text-xs gap-2 font-medium cursor-pointer shrink-0"
                         >
                           <Star className="size-3.5 text-amber-500" />
                           <span>Ativar Persona</span>
@@ -249,7 +249,7 @@ function CreatorProfilesManagementPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenEdit(cp)}
-                        className="h-9 px-3 rounded-xl text-xs gap-1.5 font-medium cursor-pointer"
+                        className="h-9 px-3 rounded-lg text-xs gap-2 font-medium cursor-pointer"
                       >
                         <Edit3 className="size-3.5" />
                         <span>Editar Perfil</span>
@@ -260,7 +260,7 @@ function CreatorProfilesManagementPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleCopy(showcaseUrl)}
-                        className="h-9 px-3 rounded-xl text-xs gap-1.5 font-medium cursor-pointer"
+                        className="h-9 px-3 rounded-lg text-xs gap-2 font-medium cursor-pointer"
                       >
                         {copiedHandle === showcaseUrl ? (
                           <CheckCircle2 className="size-3.5 text-emerald-500" />
@@ -270,7 +270,7 @@ function CreatorProfilesManagementPage() {
                         <span>{copiedHandle === showcaseUrl ? "Copiado!" : "Copiar Vitrine"}</span>
                       </Button>
 
-                      <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-xl text-xs gap-1.5 font-medium">
+                      <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-lg text-xs gap-2 font-medium">
                         <Link to="/u/$username" params={{ username: handle }}>
                           <Globe className="size-3.5" />
                           <span>Ver Vitrine</span>
@@ -280,8 +280,8 @@ function CreatorProfilesManagementPage() {
                   </div>
 
                   {/* Telemetria Compacta */}
-                  <div className="grid grid-cols-3 gap-2.5 pt-1">
-                    <div className="p-3 rounded-2xl bg-muted/20 border border-border/40 space-y-0.5">
+                  <div className="grid grid-cols-3 gap-3 pt-1">
+                    <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
                       <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
                         Cliques
                       </span>
@@ -290,14 +290,14 @@ function CreatorProfilesManagementPage() {
                       </p>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-muted/20 border border-border/40 space-y-0.5">
+                    <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
                       <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
                         Pedidos
                       </span>
                       <p className="text-base font-bold text-foreground">{cp.total_orders || 0}</p>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-muted/20 border border-border/40 space-y-0.5">
+                    <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
                       <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
                         GMV Gerado
                       </span>
@@ -309,14 +309,14 @@ function CreatorProfilesManagementPage() {
 
                   {/* Ações de Operação */}
                   <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/40">
-                    <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5">
+                    <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-lg text-xs font-semibold gap-2">
                       <Link to="/feed">
                         <PenSquare className="size-3.5" />
                         <span>Publicar como @{handle}</span>
                       </Link>
                     </Button>
 
-                    <Button asChild size="sm" className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5">
+                    <Button asChild size="sm" className="h-9 px-3 rounded-lg text-xs font-semibold gap-2">
                       <Link to="/afiliados">
                         <SlidersHorizontal className="size-3.5" />
                         <span>Gerenciar Vitrine e Cupons</span>

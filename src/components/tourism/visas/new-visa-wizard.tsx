@@ -55,10 +55,10 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
 
  return (
  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
- <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-2xl bg-card border border-border shadow-2xl">
+ <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-2xl">
  <DialogHeader className="p-5 border-b border-border/70 bg-muted/20">
- <div className="flex items-center gap-2.5">
- <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600">
+ <div className="flex items-center gap-3">
+ <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600">
  <Globe className="size-4" />
  </div>
  <div>
@@ -79,7 +79,7 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
  value={clientName}
  onChange={(e) => setClientName(e.target.value)}
  placeholder="Ex: Mariana Souza Santos"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  autoFocus
  />
  </div>
@@ -91,7 +91,7 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
  value={clientPassport}
  onChange={(e) => setClientPassport(e.target.value)}
  placeholder="Ex: FY123456"
- className="h-10 text-xs rounded-xl uppercase font-mono"
+ className="h-10 text-xs rounded-lg uppercase font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -99,7 +99,7 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
  <select
  value={country}
  onChange={(e) => setCountry(e.target.value)}
- className="w-full h-10 px-3 rounded-xl border border-border bg-background text-xs text-foreground"
+ className="w-full h-10 px-3 rounded-lg border border-border bg-background text-xs text-foreground"
  >
  <option value="Estados Unidos (EUA)">Estados Unidos (EUA)</option>
  <option value="Canadá (eTA / Visto)">Canadá (eTA / Visto)</option>
@@ -120,7 +120,7 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
  value={visaCategory}
  onChange={(e) => setVisaCategory(e.target.value)}
  placeholder="Ex: Turismo B1/B2, Estudante F1..."
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1">
@@ -129,7 +129,7 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
  type="date"
  value={interviewDate}
  onChange={(e) => setInterviewDate(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  </div>
@@ -141,20 +141,20 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
  onChange={(e) => setNotes(e.target.value)}
  placeholder="Ex: Primeira solicitação, já viajou para Europa, precisa renovar passaporte antes de agendar..."
  rows={3}
- className="text-xs rounded-2xl bg-muted/10 p-3"
+ className="text-xs rounded-lg bg-muted/10 p-3"
  />
  </div>
  </div>
 
  <DialogFooter className="p-4 border-t border-border/70 bg-muted/10 flex items-center justify-between sm:justify-between">
- <Button type="button" variant="ghost" onClick={onClose} className="rounded-xl text-xs">
+ <Button type="button" variant="ghost" onClick={onClose} className="rounded-lg text-xs">
  Cancelar
  </Button>
  <Button
  type="button"
  disabled={submitting}
  onClick={handleSubmit}
- className="rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1 shadow-md px-5"
+ className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-1 shadow-md px-5"
  >
  <Check className="size-3.5" />
  {submitting ? 'Salvando...' : 'Iniciar Processo'}

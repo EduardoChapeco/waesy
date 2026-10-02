@@ -141,7 +141,7 @@ export default function WorkspaceCrmPage() {
       {/* ── 1. TopBar Direta (Linha 1 no Mobile: Título + Badge + Menu Kebab) ── */}
       <div className="flex flex-row items-center justify-between gap-2 border-b border-border/40 pb-3 pt-1">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="p-1.5 rounded-xl bg-primary/10 text-primary shrink-0">
+          <span className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
             <Users className="size-4 sm:size-5" />
           </span>
           <h1 className="text-base sm:text-2xl font-bold tracking-tight text-foreground truncate">
@@ -154,14 +154,14 @@ export default function WorkspaceCrmPage() {
 
         {/* Ações no Desktop */}
         <div className="hidden sm:flex items-center gap-2 shrink-0">
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold gap-1.5 h-10 px-3.5">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-10 px-4">
             <Link to="/workspace/comercial">
               <Kanban className="size-3.5 text-primary" />
               <span>Funil Comercial</span>
             </Link>
           </Button>
 
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold gap-1.5 h-10 px-3.5">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-10 px-4">
             <Link to="/workspace/clientes">
               <Users className="size-3.5" />
               <span>Base Completa</span>
@@ -170,13 +170,13 @@ export default function WorkspaceCrmPage() {
         </div>
 
         {/* Ações Secundárias no Mobile (Kebab + Toggle de Métricas) */}
-        <div className="flex sm:hidden items-center gap-1.5 shrink-0">
+        <div className="flex sm:hidden items-center gap-2 shrink-0">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={() => setShowMetricsMobile((prev) => !prev)}
-            className="h-9 px-2 text-xs text-muted-foreground font-medium gap-1 rounded-xl"
+            className="h-9 px-2 text-xs text-muted-foreground font-medium gap-1 rounded-lg"
             title="Alternar resumo de métricas"
           >
             <span>Métricas</span>
@@ -188,13 +188,13 @@ export default function WorkspaceCrmPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 w-9 p-0 rounded-xl border-border/70 text-muted-foreground"
+                className="h-9 w-9 p-0 rounded-lg border-border/70 text-muted-foreground"
                 title="Mais opções"
               >
                 <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-xl min-w-[170px]">
+            <DropdownMenuContent align="end" className="rounded-lg min-w-[170px]">
               <DropdownMenuItem asChild className="text-xs gap-2 font-medium">
                 <Link to="/workspace/comercial">
                   <Kanban className="size-3.5 text-primary" />
@@ -217,7 +217,7 @@ export default function WorkspaceCrmPage() {
         <button
           type="button"
           onClick={() => setActiveTab("clientes")}
-          className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+          className={`h-9 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === "clientes"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -230,7 +230,7 @@ export default function WorkspaceCrmPage() {
         <button
           type="button"
           onClick={() => setActiveTab("funil")}
-          className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+          className={`h-9 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === "funil"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -243,7 +243,7 @@ export default function WorkspaceCrmPage() {
         <button
           type="button"
           onClick={() => setActiveTab("personas")}
-          className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+          className={`h-9 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === "personas"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -256,7 +256,7 @@ export default function WorkspaceCrmPage() {
         <button
           type="button"
           onClick={() => setActiveTab("whatsapp")}
-          className={`min-h-9 px-3 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden ${
+          className={`min-h-9 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden ${
             activeTab === "whatsapp"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -287,55 +287,55 @@ export default function WorkspaceCrmPage() {
         <>
           {/* ── 2. Grid de Métricas (Visível sempre no Desktop; Alternável no Mobile) ── */}
           <div className={showMetricsMobile ? "grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" : "hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"}>
-        <Card className="p-4 rounded-2xl bg-card border border-border/60 flex flex-col justify-between">
+        <Card className="p-4 rounded-lg bg-card border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Clientes Cadastrados</span>
-            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
               <Users className="size-4" />
             </div>
           </div>
           <div className="mt-3">
             <p className="text-2xl font-black text-foreground font-mono">{metrics.total}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Base ativa na loja</p>
+            <p className="text-xs text-muted-foreground mt-1">Base ativa na loja</p>
           </div>
         </Card>
 
-        <Card className="p-4 rounded-2xl bg-card border border-border/60 flex flex-col justify-between">
+        <Card className="p-4 rounded-lg bg-card border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Clientes Ativos</span>
-            <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
               <CheckCircle2 className="size-4" />
             </div>
           </div>
           <div className="mt-3">
             <p className="text-2xl font-black text-foreground font-mono">{metrics.active}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Compras regulares</p>
+            <p className="text-xs text-muted-foreground mt-1">Compras regulares</p>
           </div>
         </Card>
 
-        <Card className="p-4 rounded-2xl bg-card border border-border/60 flex flex-col justify-between">
+        <Card className="p-4 rounded-lg bg-card border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Novos no Mês</span>
-            <div className="size-8 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center">
               <TrendingUp className="size-4" />
             </div>
           </div>
           <div className="mt-3">
             <p className="text-2xl font-black text-foreground font-mono">{metrics.newCustomers30d}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Últimos 30 dias</p>
+            <p className="text-xs text-muted-foreground mt-1">Últimos 30 dias</p>
           </div>
         </Card>
 
-        <Card className="p-4 rounded-2xl bg-card border border-border/60 flex flex-col justify-between">
+        <Card className="p-4 rounded-lg bg-card border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">LTV Médio</span>
-            <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
               <DollarSign className="size-4" />
             </div>
           </div>
           <div className="mt-3">
             <p className="text-2xl font-black text-foreground font-mono">{formatMoney(metrics.avgTicketCents)}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Histórico acumulado</p>
+            <p className="text-xs text-muted-foreground mt-1">Histórico acumulado</p>
           </div>
         </Card>
       </div>
@@ -349,13 +349,13 @@ export default function WorkspaceCrmPage() {
             placeholder="Buscar por nome, telefone, email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 pr-8 h-10 rounded-xl text-xs bg-card border-border/60 w-full placeholder:text-muted-foreground/60 shadow-none focus-visible:ring-1 focus-visible:ring-primary/40"
+            className="pl-9 pr-8 h-10 rounded-lg text-xs bg-card border-border/60 w-full placeholder:text-muted-foreground/60 shadow-none focus-visible:ring-1 focus-visible:ring-primary/40"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
               title="Limpar busca"
             >
               <X className="size-3.5" />
@@ -367,13 +367,13 @@ export default function WorkspaceCrmPage() {
         <FilterTriggerButton
           onClick={() => setIsFilterSheetOpen(true)}
           activeCount={activeFiltersCount}
-          className="h-10 px-3 rounded-xl border-border/60 shrink-0 shadow-none text-xs"
+          className="h-10 px-3 rounded-lg border-border/60 shrink-0 shadow-none text-xs"
         />
 
         {/* Botão Primário "+ Novo Cliente" Cravado em h-10 */}
         <Button
           asChild
-          className="h-10 px-3 sm:px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 shrink-0 shadow-none cursor-pointer"
+          className="h-10 px-3 sm:px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shrink-0 shadow-none cursor-pointer"
         >
           <Link to="/workspace/clientes" search={{ novo: true } as any}>
             <Plus className="size-4 shrink-0" />
@@ -437,13 +437,13 @@ export default function WorkspaceCrmPage() {
           onAction={() => router.navigate({ to: "/workspace/clientes", search: { novo: true } as any })}
         />
       ) : (
-        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+        <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
           {/* Visualização Mobile: WhatsApp List Edge-to-Edge (< 640px) */}
           <div className="sm:hidden divide-y divide-border/40">
             {filteredCustomers.map((customer: any) => {
               const phoneDigits = customer.phone ? customer.phone.replace(/\D/g, "") : "";
               return (
-                <div key={customer.id} className="p-3.5 flex items-center justify-between gap-3 hover:bg-muted/10 transition-colors">
+                <div key={customer.id} className="p-4 flex items-center justify-between gap-3 hover:bg-muted/10 transition-colors">
                   <Link
                     to="/workspace/clientes/$id"
                     params={{ id: customer.id }}
@@ -453,7 +453,7 @@ export default function WorkspaceCrmPage() {
                       {(customer.full_name || "C").charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <p className="font-bold text-sm text-foreground truncate">
                           {customer.full_name || "Cliente sem nome"}
                         </p>
@@ -461,7 +461,7 @@ export default function WorkspaceCrmPage() {
                           <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                         <span className="font-mono text-foreground font-semibold">
                           {formatMoney(customer.total_spent_cents || 0)}
                         </span>
@@ -471,7 +471,7 @@ export default function WorkspaceCrmPage() {
                     </div>
                   </Link>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     {phoneDigits && (
                       <Button
                         type="button"
@@ -483,7 +483,7 @@ export default function WorkspaceCrmPage() {
                             `Olá, ${customer.full_name || ""}! Como posso ajudar você hoje?`
                           )
                         }
-                        className="size-11 p-0 rounded-xl text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+                        className="size-11 p-0 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
                         title="WhatsApp"
                       >
                         <MessageCircle className="size-5" />
@@ -493,7 +493,7 @@ export default function WorkspaceCrmPage() {
                       asChild
                       variant="outline"
                       size="sm"
-                      className="size-11 p-0 rounded-xl cursor-pointer"
+                      className="size-11 p-0 rounded-lg cursor-pointer"
                     >
                       <Link to="/workspace/clientes/$id" params={{ id: customer.id }}>
                         <ChevronRight className="size-4" />
@@ -523,13 +523,13 @@ export default function WorkspaceCrmPage() {
                   const phoneDigits = customer.phone ? customer.phone.replace(/\D/g, "") : "";
                   return (
                     <tr key={customer.id} className="hover:bg-muted/20 transition-colors">
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-4">
                         <Link
                           to="/workspace/clientes/$id"
                           params={{ id: customer.id }}
                           className="flex items-center gap-3 group"
                         >
-                          <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                          <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                             {(customer.full_name || "C").charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
@@ -545,8 +545,8 @@ export default function WorkspaceCrmPage() {
                         </Link>
                       </td>
 
-                      <td className="py-3.5 px-4 hidden sm:table-cell">
-                        <div className="space-y-0.5">
+                      <td className="py-4 px-4 hidden sm:table-cell">
+                        <div className="space-y-1">
                           {customer.phone && (
                             <p className="text-xs font-mono text-foreground">{customer.phone}</p>
                           )}
@@ -561,7 +561,7 @@ export default function WorkspaceCrmPage() {
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4 hidden md:table-cell">
+                      <td className="py-4 px-4 hidden md:table-cell">
                         <Badge
                           variant={customer.status === "active" ? "default" : "secondary"}
                           className="text-xs font-mono capitalize"
@@ -570,20 +570,20 @@ export default function WorkspaceCrmPage() {
                         </Badge>
                       </td>
 
-                      <td className="py-3.5 px-4 hidden lg:table-cell">
+                      <td className="py-4 px-4 hidden lg:table-cell">
                         <span className="text-xs text-muted-foreground capitalize">
                           {customer.channel || "Direto"}
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-4 px-4 text-right">
                         <span className="font-mono font-bold text-foreground text-xs">
                           {formatMoney(customer.total_spent_cents || 0)}
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="py-4 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
                           {phoneDigits && (
                             <Button
                               type="button"
@@ -606,7 +606,7 @@ export default function WorkspaceCrmPage() {
                             asChild
                             variant="outline"
                             size="sm"
-                            className="h-8 px-2.5 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
+                            className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
                           >
                             <Link to="/workspace/clientes/$id" params={{ id: customer.id }}>
                               <span>Ficha</span>
@@ -650,19 +650,19 @@ export default function WorkspaceCrmPage() {
             <div className="p-4 border-b border-border/30 bg-muted/20 space-y-3">
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {selectedLead.phone && (
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Phone className="size-3.5 text-primary" />
                     <span>{selectedLead.phone}</span>
                   </div>
                 )}
                 {selectedLead.destination && (
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Globe className="size-3.5 text-primary" />
                     <span>{selectedLead.destination}</span>
                   </div>
                 )}
                 {selectedLead.estimated_value_cents ? (
-                  <div className="flex items-center gap-1.5 text-muted-foreground col-span-2">
+                  <div className="flex items-center gap-2 text-muted-foreground col-span-2">
                     <DollarSign className="size-3.5 text-primary" />
                     <span>Valor Estimado: {formatMoney((selectedLead.estimated_value_cents || 0) / 100)}</span>
                   </div>
@@ -673,7 +673,7 @@ export default function WorkspaceCrmPage() {
                 <Button
                   size="sm"
                   variant="default"
-                  className="flex-1 text-xs h-9 gap-1.5"
+                  className="flex-1 text-xs h-9 gap-2"
                   asChild
                 >
                   <Link
@@ -693,7 +693,7 @@ export default function WorkspaceCrmPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs h-9 gap-1.5"
+                  className="text-xs h-9 gap-2"
                   onClick={async () => {
                     try {
                       await promoteLeadToCustomer({ data: { leadId: selectedLead.id } });

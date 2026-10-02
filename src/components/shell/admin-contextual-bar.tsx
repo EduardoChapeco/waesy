@@ -61,7 +61,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
       <button
         onClick={() => setIsMinimized(false)}
         aria-label="Expandir Barra de Governança"
-        className="fixed bottom-20 right-3.5 lg:bottom-6 lg:right-6 z-50 size-9 sm:size-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center border border-border/40 hover:scale-105 transition-all cursor-pointer shadow-lg"
+        className="fixed bottom-20 right-3.5 lg:bottom-6 lg:right-6 z-50 size-9 sm:size-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center border border-border/40 hover:scale-105 transition-all cursor-pointer shadow-lg"
         title="Admin Master"
       >
         <Shield className="size-4" />
@@ -72,7 +72,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
   return (
     <aside
       aria-label="Barra de Governança Contextual Master"
-      className="fixed bottom-20 right-3.5 lg:bottom-6 lg:right-6 z-50 max-w-[calc(100vw-1.75rem)] sm:max-w-md w-auto bg-card/95 backdrop-blur-2xl border border-border/60 rounded-2xl p-2 px-3 flex items-center justify-between gap-2.5 text-xs animate-in slide-in-from-bottom-3 duration-300 shadow-xl ring-1 ring-black/10 dark:ring-white/10"
+      className="fixed bottom-20 right-3.5 lg:bottom-6 lg:right-6 z-50 max-w-[calc(100vw-1.75rem)] sm:max-w-md w-auto bg-card/95 backdrop-blur-2xl border border-border/60 rounded-lg p-2 px-3 flex items-center justify-between gap-3 text-xs animate-in slide-in-from-bottom-3 duration-300 shadow-xl ring-1 ring-black/10 dark:ring-white/10"
     >
  <div className="flex items-center gap-2">
  <div className="size-6 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-[10px]">
@@ -87,12 +87,12 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
  </div>
  </div>
 
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Button
  asChild
  size="sm"
  variant="outline"
- className="h-7 px-2 rounded-xl text-[11px] font-bold gap-1 cursor-pointer bg-background/80 hover:bg-muted/70 border-border/60"
+ className="h-7 px-2 rounded-lg text-[11px] font-bold gap-1 cursor-pointer bg-background/80 hover:bg-muted/70 border-border/60"
  >
  <Link to="/admin-master/vitrines" search={{ surface: activeNiche.id }}>
  <Sliders className="size-3 text-primary" />
@@ -104,7 +104,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
  asChild
  size="sm"
  variant="outline"
- className="h-7 px-2 rounded-xl text-[11px] font-bold gap-1 cursor-pointer bg-background/80 hover:bg-muted/70 border-border/60"
+ className="h-7 px-2 rounded-lg text-[11px] font-bold gap-1 cursor-pointer bg-background/80 hover:bg-muted/70 border-border/60"
  >
  <Link to="/admin-master/banners" search={{ placement: activeNiche.id }}>
  <ImageIcon className="size-3 text-primary" />
@@ -116,7 +116,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
  asChild
  size="sm"
  variant="outline"
- className="h-7 px-2 rounded-xl text-[11px] font-bold gap-1 cursor-pointer bg-background/80 hover:bg-muted/70 border-border/60"
+ className="h-7 px-2 rounded-lg text-[11px] font-bold gap-1 cursor-pointer bg-background/80 hover:bg-muted/70 border-border/60"
  >
  <Link to="/admin-master/botoes" search={{ module: activeNiche.id }}>
  <Layers className="size-3 text-amber-500" />
@@ -127,7 +127,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
  <Button
  asChild
  size="sm"
- className="h-7 px-2.5 rounded-xl text-[11px] font-bold gap-1 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+ className="h-7 px-3 rounded-lg text-[11px] font-bold gap-1 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
  >
  <Link to="/admin-master">
  <span>Master</span>
@@ -136,7 +136,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
 
  <button
  onClick={() => setIsMinimized(true)}
- className="size-7 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer ml-0.5"
+ className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer ml-1"
  title="Minimizar barra de atalho"
  >
  ✕

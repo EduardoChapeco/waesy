@@ -126,20 +126,20 @@ function EditCollectionPage() {
  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
  <div className="md:col-span-2 space-y-6">
- <div className="bg-card rounded-2xl border border-border/60 p-6 space-y-4">
+ <div className="bg-card rounded-lg border border-border/60 p-6 space-y-4">
  <div className="pb-3 border-b border-border/40">
  <h3 className="text-sm font-bold text-foreground">Dados Básicos da Coleção</h3>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Defina o nome, identificador na URL e descrição.
  </p>
  </div>
 
  <div className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Nome da Coleção *</Label>
  <Input
  {...register("name", { required: "Nome é obrigatório" })}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  {errors.name && (
  <span className="text-xs text-destructive font-medium block">
@@ -149,24 +149,24 @@ function EditCollectionPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Slug da URL *</Label>
  <Input
  {...register("slug", { required: "Slug é obrigatório" })}
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-xs rounded-lg font-mono"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Status de Exibição</Label>
  <Select
  defaultValue={collection.status || "active"}
  onValueChange={(val) => setValue("status", val)}
  >
- <SelectTrigger className="h-10 text-xs rounded-xl">
+ <SelectTrigger className="h-10 text-xs rounded-lg">
  <SelectValue placeholder="Selecione o status" />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="active">● Ativa na Vitrine</SelectItem>
  <SelectItem value="inactive">● Inativa / Oculta</SelectItem>
  </SelectContent>
@@ -174,35 +174,35 @@ function EditCollectionPage() {
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Selo / Badge Promocional</Label>
  <Input
  placeholder="Ex: 20% OFF, LIMITADO, EXCLUSIVO"
  value={badgeText}
  onChange={(e) => setBadgeText(e.target.value.toUpperCase())}
- className="h-10 text-xs rounded-xl font-mono uppercase"
+ className="h-10 text-xs rounded-lg font-mono uppercase"
  />
  <p className="text-xs text-muted-foreground">
  Selo tátil exibido em cima dos cards na vitrine pública.
  </p>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Descrição / Apresentação</Label>
  <Textarea
  placeholder="Conte sobre o conceito desta coleção..."
  rows={3}
  {...register("description")}
- className="text-xs rounded-xl"
+ className="text-xs rounded-lg"
  />
  </div>
  </div>
  </div>
 
- <div className="bg-card rounded-2xl border border-border/60 p-6 space-y-4">
+ <div className="bg-card rounded-lg border border-border/60 p-6 space-y-4">
  <div className="pb-3 border-b border-border/40">
  <h3 className="text-sm font-bold text-foreground">Tipo de Coleção e Regras de Inclusão</h3>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Escolha se os itens são adicionados individualmente ou calculados automaticamente.
  </p>
  </div>
@@ -211,13 +211,13 @@ function EditCollectionPage() {
  <button
  type="button"
  onClick={() => setCollectionType("manual")}
- className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+ className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
  collectionType === "manual"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/60 bg-muted/20 hover:bg-muted/40"
  }`}
  >
- <div className="flex items-center justify-between mb-1.5">
+ <div className="flex items-center justify-between mb-2">
  <span className="text-xs font-bold text-foreground">Curadoria Manual</span>
  {collectionType === "manual" && <Check className="size-4 text-primary" />}
  </div>
@@ -229,14 +229,14 @@ function EditCollectionPage() {
  <button
  type="button"
  onClick={() => setCollectionType("automated")}
- className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+ className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
  collectionType === "automated"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/60 bg-muted/20 hover:bg-muted/40"
  }`}
  >
- <div className="flex items-center justify-between mb-1.5">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="flex items-center justify-between mb-2">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Layers className="size-3.5 text-primary" />
  <span>Coleção Inteligente</span>
  </span>
@@ -249,7 +249,7 @@ function EditCollectionPage() {
  </div>
 
  {collectionType === "automated" && (
- <div className="mt-4 p-4 rounded-xl bg-muted/30 border border-border/60 space-y-4">
+ <div className="mt-4 p-4 rounded-lg bg-muted/30 border border-border/60 space-y-4">
  <div className="flex items-center justify-between">
  <div>
  <span className="text-xs font-bold text-foreground block">
@@ -291,7 +291,7 @@ function EditCollectionPage() {
  </div>
 
  <div className="space-y-6">
- <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+ <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
  <h3 className="text-xs font-bold text-foreground">Capa da Coleção (Banner)</h3>
  <ImageUpload
  value={coverUrl}
@@ -302,12 +302,12 @@ function EditCollectionPage() {
  />
  </div>
 
- <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-3">
+ <div className="bg-card rounded-lg border border-border/60 p-5 space-y-3">
  <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground block">
  Pré-visualização do Selo
  </span>
 
- <div className="relative rounded-xl bg-muted/40 aspect-video overflow-hidden border border-border/60 flex items-center justify-center">
+ <div className="relative rounded-lg bg-muted/40 aspect-video overflow-hidden border border-border/60 flex items-center justify-center">
  {coverUrl ? (
  <img src={coverUrl} alt="Preview" className="size-full object-cover" />
  ) : (
@@ -326,7 +326,7 @@ function EditCollectionPage() {
  )}
  </div>
 
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <span className="text-xs font-bold text-foreground block truncate">
  {watch("name") || "Nome da Coleção"}
  </span>
@@ -339,13 +339,13 @@ function EditCollectionPage() {
  </div>
 
  <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/40">
- <Button asChild variant="outline" className="rounded-xl text-xs font-bold h-11 px-5">
+ <Button asChild variant="outline" className="rounded-lg text-xs font-bold h-11 px-5">
  <Link to="/workspace/catalogo/colecoes">Cancelar</Link>
  </Button>
  <Button
  type="submit"
  disabled={isSubmitting}
- className="rounded-xl text-xs font-bold h-11 px-6 bg-primary text-primary-foreground"
+ className="rounded-lg text-xs font-bold h-11 px-6 bg-primary text-primary-foreground"
  >
  {isSubmitting ? "Salvando Alterações..." : "Salvar Coleção"}
  </Button>

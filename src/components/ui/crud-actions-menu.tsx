@@ -113,7 +113,7 @@ export function CrudActionsMenu({
             size="icon"
             aria-label={triggerAriaLabel || `Ações de ${entityName}`}
             className={cn(
-              "size-9 rounded-xl hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer shrink-0 transition-colors",
+              "size-9 rounded-lg hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer shrink-0 transition-colors",
               triggerClassName
             )}
           >
@@ -123,7 +123,7 @@ export function CrudActionsMenu({
 
         <DropdownMenuContent
           align={align}
-          className={cn("w-52 p-1.5 rounded-2xl bg-card border border-border/60 shadow-2xs", className)}
+          className={cn("w-52 p-2 rounded-lg bg-card border border-border/60 shadow-2xs", className)}
         >
           {entityName && (
             <DropdownMenuLabel className="text-[11px] font-mono uppercase text-muted-foreground px-2 py-1 tracking-wider">
@@ -133,35 +133,35 @@ export function CrudActionsMenu({
 
           {/* 1. Ações Principais: Editar & Ver */}
           {editUrl ? (
-            <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium">
+            <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium">
               <Link to={editUrl as never}>
                 <Edit3 className="size-3.5 mr-2 text-primary" />
                 Editar {entityName}
               </Link>
             </DropdownMenuItem>
           ) : onEdit ? (
-            <DropdownMenuItem onClick={onEdit} className="rounded-xl cursor-pointer text-xs font-medium">
+            <DropdownMenuItem onClick={onEdit} className="rounded-lg cursor-pointer text-xs font-medium">
               <Edit3 className="size-3.5 mr-2 text-primary" />
               Editar {entityName}
             </DropdownMenuItem>
           ) : null}
 
           {viewUrl ? (
-            <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium">
+            <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium">
               <Link to={viewUrl as never} target="_blank" rel="noopener noreferrer">
                 <Eye className="size-3.5 mr-2 text-muted-foreground" />
                 Ver na Vitrine
               </Link>
             </DropdownMenuItem>
           ) : onView ? (
-            <DropdownMenuItem onClick={onView} className="rounded-xl cursor-pointer text-xs font-medium">
+            <DropdownMenuItem onClick={onView} className="rounded-lg cursor-pointer text-xs font-medium">
               <Eye className="size-3.5 mr-2 text-muted-foreground" />
               Ver na Vitrine
             </DropdownMenuItem>
           ) : null}
 
           {onDuplicate && (
-            <DropdownMenuItem onClick={onDuplicate} className="rounded-xl cursor-pointer text-xs font-medium">
+            <DropdownMenuItem onClick={onDuplicate} className="rounded-lg cursor-pointer text-xs font-medium">
               <Copy className="size-3.5 mr-2 text-muted-foreground" />
               Duplicar {entityName}
             </DropdownMenuItem>
@@ -180,7 +180,7 @@ export function CrudActionsMenu({
                       asChild
                       disabled={action.disabled}
                       className={cn(
-                        "rounded-xl cursor-pointer text-xs font-medium",
+                        "rounded-lg cursor-pointer text-xs font-medium",
                         action.variant === "destructive" && "text-destructive hover:bg-destructive/10"
                       )}
                     >
@@ -200,7 +200,7 @@ export function CrudActionsMenu({
                     onClick={action.onClick}
                     disabled={action.disabled}
                     className={cn(
-                      "rounded-xl cursor-pointer text-xs font-medium",
+                      "rounded-lg cursor-pointer text-xs font-medium",
                       action.variant === "destructive" && "text-destructive hover:bg-destructive/10"
                     )}
                   >
@@ -217,7 +217,7 @@ export function CrudActionsMenu({
             <>
               <DropdownMenuSeparator className="my-1 bg-border/50" />
               {onToggleStatus && (
-                <DropdownMenuItem onClick={onToggleStatus} className="rounded-xl cursor-pointer text-xs font-medium">
+                <DropdownMenuItem onClick={onToggleStatus} className="rounded-lg cursor-pointer text-xs font-medium">
                   {StatusIcon ? (
                     <StatusIcon className="size-3.5 mr-2 text-muted-foreground" />
                   ) : (
@@ -227,7 +227,7 @@ export function CrudActionsMenu({
                 </DropdownMenuItem>
               )}
               {onArchive && (
-                <DropdownMenuItem onClick={onArchive} className="rounded-xl cursor-pointer text-xs font-medium">
+                <DropdownMenuItem onClick={onArchive} className="rounded-lg cursor-pointer text-xs font-medium">
                   <Archive className="size-3.5 mr-2 text-muted-foreground" />
                   {archiveLabel || `Arquivar ${entityName}`}
                 </DropdownMenuItem>
@@ -241,7 +241,7 @@ export function CrudActionsMenu({
               <DropdownMenuSeparator className="my-1 bg-border/50" />
               <DropdownMenuItem
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="rounded-xl cursor-pointer text-xs font-medium text-destructive focus:bg-destructive/10 focus:text-destructive"
+                className="rounded-lg cursor-pointer text-xs font-medium text-destructive focus:bg-destructive/10 focus:text-destructive"
               >
                 <Trash2 className="size-3.5 mr-2" />
                 Excluir {entityName}
@@ -254,10 +254,10 @@ export function CrudActionsMenu({
       {/* Diálogo Canônico de Confirmação de Exclusão */}
       {hasDestructiveAction && (
         <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-          <DialogContent className="sm:max-w-md rounded-2xl bg-card border border-border/60">
+          <DialogContent className="sm:max-w-md rounded-lg bg-card border border-border/60">
             <DialogHeader>
               <div className="flex items-center gap-2 mb-1">
-                <span className="p-2 rounded-xl bg-destructive/10 text-destructive">
+                <span className="p-2 rounded-lg bg-destructive/10 text-destructive">
                   <AlertTriangle className="size-5" />
                 </span>
                 <DialogTitle className="text-base sm:text-lg font-bold">
@@ -276,7 +276,7 @@ export function CrudActionsMenu({
                 variant="ghost"
                 onClick={() => setIsDeleteModalOpen(false)}
                 disabled={isDeleting}
-                className="rounded-xl text-xs h-9 cursor-pointer"
+                className="rounded-lg text-xs h-9 cursor-pointer"
               >
                 Cancelar
               </Button>
@@ -285,7 +285,7 @@ export function CrudActionsMenu({
                 variant="destructive"
                 disabled={isDeleting}
                 onClick={handleDeleteConfirm}
-                className="rounded-xl text-xs h-9 font-semibold gap-1.5 cursor-pointer shadow-2xs"
+                className="rounded-lg text-xs h-9 font-semibold gap-2 cursor-pointer shadow-2xs"
               >
                 {isDeleting ? (
                   <Loader2 className="size-3.5 animate-spin" />

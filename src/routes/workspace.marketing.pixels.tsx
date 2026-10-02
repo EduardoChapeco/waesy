@@ -136,7 +136,7 @@ export default function WorkspaceMarketingPixelsPage() {
             asChild
             variant="ghost"
             size="sm"
-            className="size-9 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+            className="size-9 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <Link to="/workspace/marketing/telemetria">
               <ArrowLeft className="size-4" />
@@ -157,7 +157,7 @@ export default function WorkspaceMarketingPixelsPage() {
             asChild
             variant="outline"
             size="sm"
-            className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer"
           >
             <Link to="/workspace/marketing/studio">
               <Star className="size-3.5 text-amber-500" />
@@ -170,7 +170,7 @@ export default function WorkspaceMarketingPixelsPage() {
             size="sm"
             onClick={handleTestCapi}
             disabled={isTestingCapi}
-            className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer"
           >
             <Radio className={cn("size-3.5", isTestingCapi && "animate-pulse text-primary")} />
             <span>{isTestingCapi ? "Testando CAPI..." : "Testar CAPI"}</span>
@@ -180,10 +180,10 @@ export default function WorkspaceMarketingPixelsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* ── Bloco 1: Meta Ads (Facebook & Instagram) ── */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4 shadow-xs">
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-border/40">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="size-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center">
                 <MetaLogo size={20} weight="bold" />
               </div>
               <div>
@@ -201,27 +201,27 @@ export default function WorkspaceMarketingPixelsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">ID do Meta Pixel</Label>
               <Input
                 value={metaPixelId}
                 onChange={(e) => setMetaPixelId(e.target.value)}
                 placeholder="Ex: 123456789012345"
-                className="h-9 rounded-xl text-xs font-mono"
+                className="h-9 rounded-lg text-xs font-mono"
               />
               <span className="text-xs text-muted-foreground block">
                 Localizado no Gerenciador de Eventos da Meta.
               </span>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Token de Acesso da Conversions API (CAPI)</Label>
               <Input
                 type="password"
                 value={metaCapiToken}
                 onChange={(e) => setMetaCapiToken(e.target.value)}
                 placeholder="EAAB..."
-                className="h-9 rounded-xl text-xs font-mono"
+                className="h-9 rounded-lg text-xs font-mono"
               />
               <span className="text-xs text-muted-foreground block">
                 Garante o disparo de conversões pelo servidor, imune a bloqueadores de anúncios.
@@ -231,10 +231,10 @@ export default function WorkspaceMarketingPixelsPage() {
         </div>
 
         {/* ── Bloco 2: Google Ads & Google Analytics ── */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4 shadow-xs">
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-border/40">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <GoogleLogo size={20} weight="bold" />
               </div>
               <div>
@@ -247,40 +247,40 @@ export default function WorkspaceMarketingPixelsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">ID de Conversão do Google Ads</Label>
               <Input
                 value={googleAdsId}
                 onChange={(e) => setGoogleAdsId(e.target.value)}
                 placeholder="Ex: AW-1234567890"
-                className="h-9 rounded-xl text-xs font-mono"
+                className="h-9 rounded-lg text-xs font-mono"
               />
               <span className="text-xs text-muted-foreground block">
                 Encontrado em Google Ads → Ferramentas → Conversões.
               </span>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">ID de Medição do Google Analytics 4</Label>
               <Input
                 value={googleAnalyticsId}
                 onChange={(e) => setGoogleAnalyticsId(e.target.value)}
                 placeholder="Ex: G-XXXXXXXXXX"
-                className="h-9 rounded-xl text-xs font-mono"
+                className="h-9 rounded-lg text-xs font-mono"
               />
               <span className="text-xs text-muted-foreground block">
                 Encontrado em GA4 → Administração → Fluxos de dados.
               </span>
             </div>
 
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-2 sm:col-span-2">
               <Label className="text-xs font-bold">API Secret do GA4 (Measurement Protocol)</Label>
               <Input
                 type="password"
                 value={ga4ApiSecret}
                 onChange={(e) => setGa4ApiSecret(e.target.value)}
                 placeholder="Chave secreta do stream GA4 para Enhanced Conversions server-side"
-                className="h-9 rounded-xl text-xs font-mono"
+                className="h-9 rounded-lg text-xs font-mono"
               />
               <span className="text-xs text-muted-foreground block">
                 GA4 → Administração → Fluxos de dados → Measurement Protocol API secrets.
@@ -291,10 +291,10 @@ export default function WorkspaceMarketingPixelsPage() {
         </div>
 
         {/* ── Bloco 3: TikTok Ads ── */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4 shadow-xs">
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-border/40">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="size-8 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center">
                 <TiktokLogo size={20} weight="bold" />
               </div>
               <div>
@@ -306,22 +306,22 @@ export default function WorkspaceMarketingPixelsPage() {
             </div>
           </div>
 
-          <div className="space-y-1.5 max-w-md">
+          <div className="space-y-2 max-w-md">
             <Label className="text-xs font-bold">ID do TikTok Pixel</Label>
             <Input
               value={tiktokPixelId}
               onChange={(e) => setTiktokPixelId(e.target.value)}
               placeholder="Ex: CXXXXXXXXXXXXXX"
-              className="h-9 rounded-xl text-xs font-mono"
+              className="h-9 rounded-lg text-xs font-mono"
             />
           </div>
         </div>
 
         {/* ── Bloco: Feeds de Catálogo para Anúncios Dinâmicos (DPA & Google Shopping) ── */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4 shadow-xs">
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-border/40">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="size-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center">
                 <Share2 className="size-4" />
               </div>
               <div>
@@ -334,9 +334,9 @@ export default function WorkspaceMarketingPixelsPage() {
           </div>
 
           <div className="space-y-3">
-            <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40 space-y-2">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span className="text-xs font-bold text-foreground flex items-center gap-2">
                   <GoogleLogo size={16} weight="bold" className="text-amber-500" />
                   Google Merchant Center (Feed RSS XML)
                 </span>
@@ -352,7 +352,7 @@ export default function WorkspaceMarketingPixelsPage() {
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="h-8 px-2.5 rounded-lg text-xs shrink-0 cursor-pointer"
+                  className="h-8 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
                   onClick={() => {
                     if (config?.store_id) {
                       const url = `${window.location.origin}/api/feed/xml?store=${config.store_id}`;
@@ -378,9 +378,9 @@ export default function WorkspaceMarketingPixelsPage() {
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40 space-y-2">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span className="text-xs font-bold text-foreground flex items-center gap-2">
                   <MetaLogo size={16} weight="bold" className="text-blue-600" />
                   Meta Commerce Manager (Catálogo DPA CSV)
                 </span>
@@ -396,7 +396,7 @@ export default function WorkspaceMarketingPixelsPage() {
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="h-8 px-2.5 rounded-lg text-xs shrink-0 cursor-pointer"
+                  className="h-8 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
                   onClick={() => {
                     if (config?.store_id) {
                       const url = `${window.location.origin}/api/feed/meta.csv?store=${config.store_id}`;
@@ -425,7 +425,7 @@ export default function WorkspaceMarketingPixelsPage() {
         </div>
 
         {/* ── Bloco 4: Automação e Eventos Disparados ── */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4 shadow-xs">
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4 shadow-xs">
           <div className="pb-3 border-b border-border/40">
             <h2 className="text-sm font-bold text-foreground">Eventos Rastreados Automaticamente</h2>
             <p className="text-xs text-muted-foreground">
@@ -434,79 +434,79 @@ export default function WorkspaceMarketingPixelsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <label className="flex items-start gap-3 p-3 rounded-xl bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
+            <label className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
               <input
                 type="checkbox"
                 checked={trackPageView}
                 onChange={(e) => setTrackPageView(e.target.checked)}
-                className="size-4 rounded-md accent-primary mt-0.5"
+                className="size-4 rounded-md accent-primary mt-1"
               />
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="font-bold text-foreground block">PageView</span>
                 <span className="text-muted-foreground">Dispara ao carregar qualquer página da vitrine.</span>
               </div>
             </label>
 
-            <label className="flex items-start gap-3 p-3 rounded-xl bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
+            <label className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
               <input
                 type="checkbox"
                 checked={trackViewContent}
                 onChange={(e) => setTrackViewContent(e.target.checked)}
-                className="size-4 rounded-md accent-primary mt-0.5"
+                className="size-4 rounded-md accent-primary mt-1"
               />
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="font-bold text-foreground block">ViewContent</span>
                 <span className="text-muted-foreground">Dispara ao visualizar detalhes de um produto ou serviço.</span>
               </div>
             </label>
 
-            <label className="flex items-start gap-3 p-3 rounded-xl bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
+            <label className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
               <input
                 type="checkbox"
                 checked={trackWhatsappClick}
                 onChange={(e) => setTrackWhatsappClick(e.target.checked)}
-                className="size-4 rounded-md accent-primary mt-0.5"
+                className="size-4 rounded-md accent-primary mt-1"
               />
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="font-bold text-foreground block">Contact (WhatsApp)</span>
                 <span className="text-muted-foreground">Dispara quando o visitante clica no botão oficial de WhatsApp.</span>
               </div>
             </label>
 
-            <label className="flex items-start gap-3 p-3 rounded-xl bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
+            <label className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
               <input
                 type="checkbox"
                 checked={trackLead}
                 onChange={(e) => setTrackLead(e.target.checked)}
-                className="size-4 rounded-md accent-primary mt-0.5"
+                className="size-4 rounded-md accent-primary mt-1"
               />
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="font-bold text-foreground block">Lead (Orçamentos)</span>
                 <span className="text-muted-foreground">Dispara ao submeter solicitação de orçamento ou contato.</span>
               </div>
             </label>
 
-            <label className="flex items-start gap-3 p-3 rounded-xl bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
+            <label className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
               <input
                 type="checkbox"
                 checked={trackAddToCart}
                 onChange={(e) => setTrackAddToCart(e.target.checked)}
-                className="size-4 rounded-md accent-primary mt-0.5"
+                className="size-4 rounded-md accent-primary mt-1"
               />
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="font-bold text-foreground block">AddToCart</span>
                 <span className="text-muted-foreground">Dispara ao adicionar item à sacola de compras.</span>
               </div>
             </label>
 
-            <label className="flex items-start gap-3 p-3 rounded-xl bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
+            <label className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border/40 cursor-pointer hover:bg-muted/40 transition-colors">
               <input
                 type="checkbox"
                 checked={trackInitiateCheckout}
                 onChange={(e) => setTrackInitiateCheckout(e.target.checked)}
-                className="size-4 rounded-md accent-primary mt-0.5"
+                className="size-4 rounded-md accent-primary mt-1"
               />
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="font-bold text-foreground block">InitiateCheckout e Purchase</span>
                 <span className="text-muted-foreground">Dispara ao abrir o checkout e concluir o pedido.</span>
               </div>
@@ -515,10 +515,10 @@ export default function WorkspaceMarketingPixelsPage() {
         </div>
 
         {/* ── Bloco 4: Feeds de Catálogo Dinâmico & WebMCP (Meta DPA, Google Shopping & IAs) ── */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4 shadow-xs">
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-border/40">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <Globe className="size-5" />
               </div>
               <div>
@@ -535,7 +535,7 @@ export default function WorkspaceMarketingPixelsPage() {
 
           <div className="space-y-4">
             {/* Meta Catalog Feed (CSV) */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold flex items-center justify-between">
                 <span>Feed Meta Commerce / Instagram Store (CSV DPA)</span>
                 <span className="text-xs font-normal text-muted-foreground">Formato Oficial Meta Catalog</span>
@@ -548,26 +548,26 @@ export default function WorkspaceMarketingPixelsPage() {
                       ? `${window.location.origin}/api/feed/meta.csv?store=${config.store_id}`
                       : "/api/feed/meta.csv"
                   }
-                  className="h-9 rounded-xl text-xs font-mono bg-muted/30 select-all"
+                  className="h-9 rounded-lg text-xs font-mono bg-muted/30 select-all"
                 />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 rounded-xl text-xs shrink-0 cursor-pointer"
+                  className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
                   onClick={() => {
                     const feedUrl = `${window.location.origin}/api/feed/meta.csv?store=${config?.store_id}`;
                     navigator.clipboard.writeText(feedUrl);
                     toast.success("URL do Feed Meta copiada!");
                   }}
                 >
-                  <Copy className="size-3.5 mr-1.5" /> Copiar
+                  <Copy className="size-3.5 mr-2" /> Copiar
                 </Button>
               </div>
             </div>
 
             {/* Google Merchant Center (XML RSS 2.0) */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold flex items-center justify-between">
                 <span>Feed Google Shopping / Merchant Center (XML RSS 2.0)</span>
                 <span className="text-xs font-normal text-muted-foreground">Formato Google Product Feed</span>
@@ -580,26 +580,26 @@ export default function WorkspaceMarketingPixelsPage() {
                       ? `${window.location.origin}/api/feed/xml?store=${config.store_id}`
                       : "/api/feed/xml"
                   }
-                  className="h-9 rounded-xl text-xs font-mono bg-muted/30 select-all"
+                  className="h-9 rounded-lg text-xs font-mono bg-muted/30 select-all"
                 />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 rounded-xl text-xs shrink-0 cursor-pointer"
+                  className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
                   onClick={() => {
                     const feedUrl = `${window.location.origin}/api/feed/xml?store=${config?.store_id}`;
                     navigator.clipboard.writeText(feedUrl);
                     toast.success("URL do Feed Google copiada!");
                   }}
                 >
-                  <Copy className="size-3.5 mr-1.5" /> Copiar
+                  <Copy className="size-3.5 mr-2" /> Copiar
                 </Button>
               </div>
             </div>
 
             {/* WebMCP Manifest */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold flex items-center justify-between">
                 <span>Manifesto WebMCP para Agentes de IA (JSON)</span>
                 <span className="text-xs font-normal text-muted-foreground">Indexação Gemini, Claude e Perplexity</span>
@@ -612,20 +612,20 @@ export default function WorkspaceMarketingPixelsPage() {
                       ? `${window.location.origin}/api/webmcp.json`
                       : "/api/webmcp.json"
                   }
-                  className="h-9 rounded-xl text-xs font-mono bg-muted/30 select-all"
+                  className="h-9 rounded-lg text-xs font-mono bg-muted/30 select-all"
                 />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 rounded-xl text-xs shrink-0 cursor-pointer"
+                  className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
                   onClick={() => {
                     const mcpUrl = `${window.location.origin}/api/webmcp.json`;
                     navigator.clipboard.writeText(mcpUrl);
                     toast.success("URL do Manifesto WebMCP copiada!");
                   }}
                 >
-                  <Copy className="size-3.5 mr-1.5" /> Copiar
+                  <Copy className="size-3.5 mr-2" /> Copiar
                 </Button>
               </div>
             </div>
@@ -637,7 +637,7 @@ export default function WorkspaceMarketingPixelsPage() {
           <Button
             asChild
             variant="outline"
-            className="rounded-xl text-xs h-10 px-4 cursor-pointer"
+            className="rounded-lg text-xs h-10 px-4 cursor-pointer"
           >
             <Link to="/workspace/marketing/telemetria">Voltar</Link>
           </Button>
@@ -645,7 +645,7 @@ export default function WorkspaceMarketingPixelsPage() {
           <Button
             type="submit"
             disabled={isSaving}
-            className="rounded-xl text-xs h-10 px-6 font-bold bg-primary text-primary-foreground cursor-pointer"
+            className="rounded-lg text-xs h-10 px-6 font-bold bg-primary text-primary-foreground cursor-pointer"
           >
             {isSaving ? "Salvando..." : "Salvar Configurações"}
           </Button>

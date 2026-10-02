@@ -103,23 +103,23 @@ export function LeadCommissionCalculatorSheet({
 
         {/* ── Entradas de Valores ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold text-foreground">Preço Total de Venda (R$)</Label>
             <Input
               type="number"
               value={grossSale}
               onChange={(e) => setGrossSale(parseFloat(e.target.value) || 0)}
-              className="h-11 rounded-xl font-mono text-sm font-bold min-h-[44px]"
+              className="h-11 rounded-lg font-mono text-sm font-bold min-h-11"
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold text-foreground">Custo Fornecedor / Operadora (R$)</Label>
             <Input
               type="number"
               value={operatorCost}
               onChange={(e) => setOperatorCost(parseFloat(e.target.value) || 0)}
-              className="h-11 rounded-xl font-mono text-sm min-h-[44px]"
+              className="h-11 rounded-lg font-mono text-sm min-h-11"
             />
           </div>
         </div>
@@ -133,7 +133,7 @@ export function LeadCommissionCalculatorSheet({
                 key={m}
                 type="button"
                 onClick={() => setPaymentMethod(m)}
-                className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all min-h-[44px] ${
+                className={`p-3 rounded-lg border text-xs font-bold text-left transition-all min-h-11 ${
                   paymentMethod === m
                     ? "bg-primary/10 border-primary text-primary"
                     : "bg-muted/40 border-border/80 text-muted-foreground hover:text-foreground"
@@ -147,7 +147,7 @@ export function LeadCommissionCalculatorSheet({
         </div>
 
         {/* ── Regra de Comissão do Consultor/Vendedor ── */}
-        <div className="space-y-2 p-4 rounded-xl bg-muted/30 border border-border">
+        <div className="space-y-2 p-4 rounded-lg bg-muted/30 border border-border">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-bold text-foreground">Comissão do Consultor</Label>
             <div className="flex items-center gap-1 text-[11px]">
@@ -157,7 +157,7 @@ export function LeadCommissionCalculatorSheet({
                   setCommissionType("margin");
                   setCommissionPercent(20);
                 }}
-                className={`px-2 py-0.5 rounded-md font-bold ${
+                className={`px-2 py-1 rounded-md font-bold ${
                   commissionType === "margin" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                 }`}
               >
@@ -169,7 +169,7 @@ export function LeadCommissionCalculatorSheet({
                   setCommissionType("gross");
                   setCommissionPercent(3);
                 }}
-                className={`px-2 py-0.5 rounded-md font-bold ${
+                className={`px-2 py-1 rounded-md font-bold ${
                   commissionType === "gross" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                 }`}
               >
@@ -183,7 +183,7 @@ export function LeadCommissionCalculatorSheet({
               type="number"
               value={commissionPercent}
               onChange={(e) => setCommissionPercent(parseFloat(e.target.value) || 0)}
-              className="h-10 rounded-xl font-mono text-sm font-bold w-24 min-h-[44px]"
+              className="h-10 rounded-lg font-mono text-sm font-bold w-24 min-h-11"
             />
             <span className="text-xs text-muted-foreground">
               {commissionType === "margin"
@@ -195,7 +195,7 @@ export function LeadCommissionCalculatorSheet({
 
         {/* ── Cartões de Resultado Financeiro ── */}
         <div className="grid grid-cols-2 gap-3 pt-2">
-          <div className="p-4 rounded-xl bg-card border border-border/80 space-y-1">
+          <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Margem Bruta</span>
               <Badge variant="outline" className="text-[10px] font-mono">
@@ -207,14 +207,14 @@ export function LeadCommissionCalculatorSheet({
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-card border border-border/80 space-y-1">
+          <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
             <span className="text-xs text-muted-foreground">Taxa do Gateway</span>
             <p className="text-base font-black font-mono text-muted-foreground">
               R$ {calculations.gatewayFee.toFixed(2)}
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-1">
+          <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-1">
             <div className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
               <User className="size-3.5" />
               <span>Comissão Consultor</span>
@@ -224,7 +224,7 @@ export function LeadCommissionCalculatorSheet({
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-1">
+          <div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/20 space-y-1">
             <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
               <Building className="size-3.5" />
               <span>Lucro Líquido Loja</span>
@@ -236,13 +236,13 @@ export function LeadCommissionCalculatorSheet({
         </div>
 
         <SheetFooter className="gap-2 sm:gap-0 pt-4 border-t border-border">
-          <Button variant="outline" onClick={onClose} className="rounded-xl min-h-[44px]">
+          <Button variant="outline" onClick={onClose} className="rounded-lg min-h-11">
             Fechar
           </Button>
           <Button
             onClick={handleSaveToLead}
             disabled={isSaving}
-            className="rounded-xl min-h-[44px] gap-2 bg-primary text-primary-foreground font-bold"
+            className="rounded-lg min-h-11 gap-2 bg-primary text-primary-foreground font-bold"
           >
             <FileCheck className="size-4" />
             {isSaving ? "Gravando..." : "Anexar ao Histórico do Lead"}

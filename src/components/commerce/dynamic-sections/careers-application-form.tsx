@@ -75,7 +75,7 @@ export function CareersApplicationForm({ job, isOpen, onClose }: CareersApplicat
 
  return (
  <Dialog open={isOpen} onOpenChange={onClose}>
- <DialogContent className="max-w-lg rounded-2xl">
+ <DialogContent className="max-w-lg rounded-lg">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold">
  Candidatar-se: {job.title}
@@ -94,7 +94,7 @@ export function CareersApplicationForm({ job, isOpen, onClose }: CareersApplicat
  placeholder="Seu nome"
  value={candidateName}
  onChange={(e) => setCandidateName(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
 
@@ -107,7 +107,7 @@ export function CareersApplicationForm({ job, isOpen, onClose }: CareersApplicat
  placeholder="seu@email.com"
  value={candidateEmail}
  onChange={(e) => setCandidateEmail(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
  <div className="space-y-1">
@@ -118,7 +118,7 @@ export function CareersApplicationForm({ job, isOpen, onClose }: CareersApplicat
  placeholder="(00) 00000-0000"
  value={candidatePhone}
  onChange={(e) => setCandidatePhone(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
  </div>
@@ -131,7 +131,7 @@ export function CareersApplicationForm({ job, isOpen, onClose }: CareersApplicat
  placeholder="https://exemplo.com/perfil..."
  value={linkedinUrl}
  onChange={(e) => setLinkedinUrl(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
  <div className="space-y-1">
@@ -141,14 +141,14 @@ export function CareersApplicationForm({ job, isOpen, onClose }: CareersApplicat
  placeholder="Ex: 5.000,00"
  value={salaryExpectation}
  onChange={(e) => setSalaryExpectation(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Currículo (PDF, DOC ou DOCX)</label>
- <div className="border-2 border-dashed border-border rounded-xl p-4 text-center hover:border-primary/50 transition-colors">
+ <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary/50 transition-colors">
  <input
  type="file"
  id="resume-upload"
@@ -156,7 +156,7 @@ export function CareersApplicationForm({ job, isOpen, onClose }: CareersApplicat
  onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
  className="hidden"
  />
- <label htmlFor="resume-upload" className="cursor-pointer flex flex-col items-center gap-1.5">
+ <label htmlFor="resume-upload" className="cursor-pointer flex flex-col items-center gap-2">
  <Upload className="w-5 h-5 text-muted-foreground" />
  <span className="text-xs font-medium text-primary">
  {resumeFile ? resumeFile.name : "Clique para selecionar seu currículo"}
@@ -167,10 +167,10 @@ export function CareersApplicationForm({ job, isOpen, onClose }: CareersApplicat
  </div>
 
  <DialogFooter className="pt-2 gap-2 sm:gap-0">
- <Button type="button" variant="ghost" onClick={onClose} className="min-h-[44px]">
+ <Button type="button" variant="ghost" onClick={onClose} className="min-h-11">
  Cancelar
  </Button>
- <Button type="submit" disabled={isSubmitting} className="min-h-[44px]">
+ <Button type="submit" disabled={isSubmitting} className="min-h-11">
  {isSubmitting ? "Enviando Candidatura..." : "Confirmar Inscrição"}
  </Button>
  </DialogFooter>

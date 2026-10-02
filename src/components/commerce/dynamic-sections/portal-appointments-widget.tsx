@@ -66,10 +66,10 @@ export function PortalAppointmentsWidget({ content, design_tokens }: PortalAppoi
  {appointments.map((apt) => (
  <div
  key={apt.id}
- className="p-5 rounded-2xl border border-border bg-card shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-primary/40 transition-all"
+ className="p-5 rounded-lg border border-border bg-card shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-primary/40 transition-all"
  >
- <div className="space-y-1.5 flex-1">
- <div className="flex items-center gap-2.5 flex-wrap">
+ <div className="space-y-2 flex-1">
+ <div className="flex items-center gap-3 flex-wrap">
  <span className="font-semibold text-base text-foreground">{apt.service_name}</span>
  {apt.status === "confirmed" && (
  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs flex items-center gap-1">
@@ -111,7 +111,7 @@ export function PortalAppointmentsWidget({ content, design_tokens }: PortalAppoi
  asChild
  size="sm"
  variant="outline"
- className="min-h-[44px] flex-1 md:flex-none gap-2 text-xs"
+ className="min-h-11 flex-1 md:flex-none gap-2 text-xs"
  >
  <Link to="/conta/agendamentos">
  <RefreshCw className="w-3.5 h-3.5" />

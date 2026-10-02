@@ -35,7 +35,7 @@ export const Route = createFileRoute("/workspace/marketing/anuncios/novo")({
 function WorkspaceAnunciosNovoErrorComponent({ error }: { error: any }) {
   return (
     <div className="w-full max-w-lg mx-auto p-4 sm:p-8 text-center space-y-4">
-      <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-1">
         <Megaphone className="size-7" />
       </div>
       <div className="space-y-1">
@@ -45,12 +45,12 @@ function WorkspaceAnunciosNovoErrorComponent({ error }: { error: any }) {
         </p>
       </div>
       {error?.message && (
-        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
           {error.message}
         </pre>
       )}
       <div className="pt-2 flex items-center justify-center gap-3">
-        <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-10 px-5 font-semibold">
+        <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-10 px-5 font-semibold">
           <Link to="/workspace/marketing/anuncios">Voltar às Campanhas</Link>
         </Button>
       </div>
@@ -240,7 +240,7 @@ function NovoAnuncioPage() {
  {/* Topbar Silenciosa */}
  <div className="flex items-center justify-between pb-4 border-b border-border/40">
  <div className="flex items-center gap-3">
- <Button asChild variant="ghost" size="icon" className="rounded-xl size-9">
+ <Button asChild variant="ghost" size="icon" className="rounded-lg size-9">
  <Link to="/workspace/marketing/anuncios">
  <ArrowLeft className="size-4" />
  </Link>
@@ -255,9 +255,9 @@ function NovoAnuncioPage() {
  {/* Coluna Esquerda: Formulário de Configuração (7 colunas) */}
  <div className="lg:col-span-7 space-y-5">
  {/* Card 1: Criativo / Mídia Primeiro (Inversão do Funil V121) */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/40">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/40">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <Label className="text-xs font-semibold flex items-center gap-1.5">
+ <Label className="text-xs font-semibold flex items-center gap-2">
  <ImageIcon className="size-3.5 text-primary" />
  <span>Mídia da Campanha</span>
  </Label>
@@ -280,7 +280,7 @@ function NovoAnuncioPage() {
 
  {/* Omni-Extractor: Preenchimento Rápido com IA */}
  <div className="pt-2 border-t border-border/40 space-y-2">
- <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+ <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
  <Bot className="size-3.5 text-primary" />
  <span>Preenchimento Inteligente</span>
  </div>
@@ -289,7 +289,7 @@ function NovoAnuncioPage() {
  value={aiPrompt}
  onChange={(e) => setAiPrompt(e.target.value)}
  placeholder="Ex: Anunciar pizza grande por R$ 49,90 no centro com entrega grátis via WhatsApp"
- className="h-10 text-xs rounded-xl flex-1 bg-background"
+ className="h-10 text-xs rounded-lg flex-1 bg-background"
  onKeyDown={(e) => {
  if (e.key === "Enter") {
  e.preventDefault();
@@ -302,7 +302,7 @@ function NovoAnuncioPage() {
  variant="outline"
  onClick={handleExtractWithAI}
  disabled={isAiExtracting}
- className="h-10 rounded-xl text-xs font-semibold px-4 cursor-pointer shrink-0"
+ className="h-10 rounded-lg text-xs font-semibold px-4 cursor-pointer shrink-0"
  >
  {isAiExtracting ? <Loader2 className="size-3.5 animate-spin" /> : "Estruturar"}
  </Button>
@@ -311,13 +311,13 @@ function NovoAnuncioPage() {
  </div>
 
  {/* Card 2: Informações da Campanha */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/40">
- <div className="flex items-center gap-1.5 pb-2 border-b border-border/40 text-xs font-semibold text-foreground">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/40">
+ <div className="flex items-center gap-2 pb-2 border-b border-border/40 text-xs font-semibold text-foreground">
  <span>2. Conteúdo da Campanha</span>
  </div>
 
  <div className="space-y-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="ad-headline" className="text-xs font-semibold">
  Chamada Principal (Opcional)
  </Label>
@@ -326,11 +326,11 @@ function NovoAnuncioPage() {
  value={headline}
  onChange={(e) => setHeadline(e.target.value)}
  placeholder="Ex: 20% OFF no Primeiro Pedido • Entrega Grátis"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="ad-title" className="text-xs font-semibold">
  Título Interno da Campanha <span className="text-destructive">*</span>
  </Label>
@@ -339,7 +339,7 @@ function NovoAnuncioPage() {
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Campanha Almoço Executivo — Setembro"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
@@ -363,7 +363,7 @@ function NovoAnuncioPage() {
  if (obj.id === "brand_awareness") setDestinationType("custom_url");
  }}
  className={cn(
- "p-3 rounded-xl border text-left flex flex-col justify-between gap-2 transition-all cursor-pointer",
+ "p-3 rounded-lg border text-left flex flex-col justify-between gap-2 transition-all cursor-pointer",
  isSel
  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
  : "border-border/60 bg-background hover:bg-muted/40",
@@ -382,11 +382,11 @@ function NovoAnuncioPage() {
 
  {/* Destino do Clique */}
  {objective === "direct_sales" && (
- <div className="space-y-1.5 pt-2 border-t border-border/40">
+ <div className="space-y-2 pt-2 border-t border-border/40">
  <Label className="text-xs font-semibold">Selecione o Produto de Destino</Label>
  {safeProducts.length > 0 ? (
  <Select value={selectedProductId} onValueChange={setSelectedProductId}>
- <SelectTrigger className="h-10 text-xs rounded-xl">
+ <SelectTrigger className="h-10 text-xs rounded-lg">
  <SelectValue placeholder="Selecione um produto cadastrado" />
  </SelectTrigger>
  <SelectContent>
@@ -409,7 +409,7 @@ function NovoAnuncioPage() {
  )}
 
  {objective === "brand_awareness" && (
- <div className="space-y-1.5 pt-2 border-t border-border/40">
+ <div className="space-y-2 pt-2 border-t border-border/40">
  <Label htmlFor="ad-dest-url" className="text-xs font-semibold">
  URL de Destino (Opcional - Padrão é sua Vitrine)
  </Label>
@@ -418,7 +418,7 @@ function NovoAnuncioPage() {
  value={customUrl}
  onChange={(e) => setCustomUrl(e.target.value)}
  placeholder={`https://usewaesy.com/loja/${storeSlug || "sua-loja"}`}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  )}
@@ -427,7 +427,7 @@ function NovoAnuncioPage() {
  <div className="space-y-2 pt-2 border-t border-border/40">
  <Label
  htmlFor="ad-location"
- className="text-xs font-semibold flex items-center gap-1.5"
+ className="text-xs font-semibold flex items-center gap-2"
  >
  <MapPin className="size-3.5 text-primary" />
  Localização Alvo e Raio de Alcance
@@ -437,7 +437,7 @@ function NovoAnuncioPage() {
  value={location}
  onChange={(e) => setLocation(e.target.value)}
  placeholder="Ex: Cidade / Região ou Bairro"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
@@ -456,7 +456,7 @@ function NovoAnuncioPage() {
 
  {/* Orçamentos */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/40">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="ad-daily" className="text-xs font-semibold">
  Orçamento Diário (R$)
  </Label>
@@ -465,12 +465,12 @@ function NovoAnuncioPage() {
  value={dailyBudgetCents}
  onChange={setDailyBudgetCents}
  placeholder="0,00"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="ad-total" className="text-xs font-semibold">
  Orçamento Limite Total (R$)
  </Label>
@@ -479,7 +479,7 @@ function NovoAnuncioPage() {
  value={totalBudgetCents}
  onChange={setTotalBudgetCents}
  placeholder="0,00"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
@@ -487,7 +487,7 @@ function NovoAnuncioPage() {
  </div>
 
  {/* Card 3: Formato Visual (Design Silencioso / Collapsible no Fundo - V121) */}
- <div className="bg-card rounded-2xl p-4 border border-border/40">
+ <div className="bg-card rounded-lg p-4 border border-border/40">
  <button
  type="button"
  onClick={() => setIsFormatDrawerOpen(!isFormatDrawerOpen)}
@@ -515,7 +515,7 @@ function NovoAnuncioPage() {
  type="button"
  onClick={() => setFormat(f.id)}
  className={cn(
- "p-3 rounded-xl border text-left flex items-start justify-between transition-all cursor-pointer",
+ "p-3 rounded-lg border text-left flex items-start justify-between transition-all cursor-pointer",
  format === f.id
  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
  : "border-border/60 bg-background hover:bg-muted/40",
@@ -523,7 +523,7 @@ function NovoAnuncioPage() {
  >
  <div>
  <p className="text-xs font-bold text-foreground">{f.title}</p>
- <p className="text-xs text-muted-foreground mt-0.5">{f.desc}</p>
+ <p className="text-xs text-muted-foreground mt-1">{f.desc}</p>
  </div>
  {format === f.id && (
  <CheckCircle2 className="size-4 text-primary shrink-0 ml-2" />
@@ -538,7 +538,7 @@ function NovoAnuncioPage() {
  <Button
  type="submit"
  disabled={isSubmitting}
- className="w-full h-12 rounded-xl text-sm font-bold bg-primary text-primary-foreground gap-2 cursor-pointer"
+ className="w-full h-12 rounded-lg text-sm font-bold bg-primary text-primary-foreground gap-2 cursor-pointer"
  >
  {isSubmitting ? (
  <>
@@ -557,14 +557,14 @@ function NovoAnuncioPage() {
  {/* Coluna Direita: Truthful Mockup Preview & Projeções (5 colunas) */}
  <div className="lg:col-span-5 space-y-4">
  {/* Card de Projeções de Impacto */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/40">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/40">
  <div className="flex items-center gap-2">
  <TrendingUp className="size-4 text-emerald-500" />
  <h3 className="text-xs font-bold text-foreground">Estimativa de Performance</h3>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="p-3 rounded-xl bg-muted/40 space-y-0.5">
+ <div className="p-3 rounded-lg bg-muted/40 space-y-1">
  <span className="text-xs text-muted-foreground uppercase font-bold">
  Alcance Diário
  </span>
@@ -575,7 +575,7 @@ function NovoAnuncioPage() {
  <p className="text-xs text-muted-foreground">pessoas/dia</p>
  </div>
 
- <div className="p-3 rounded-xl bg-muted/40 space-y-0.5">
+ <div className="p-3 rounded-lg bg-muted/40 space-y-1">
  <span className="text-xs text-muted-foreground uppercase font-bold">
  Cliques Estimados
  </span>
@@ -588,9 +588,9 @@ function NovoAnuncioPage() {
  </div>
 
  {/* Truthful Preview Card */}
- <div className="bg-card rounded-2xl overflow-hidden border border-border/40 space-y-3 p-4">
+ <div className="bg-card rounded-lg overflow-hidden border border-border/40 space-y-3 p-4">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Eye className="size-3.5 text-primary" />
  Prévia da Vitrine
  </span>
@@ -600,7 +600,7 @@ function NovoAnuncioPage() {
  </div>
 
  {/* Renderização Fiel do Criativo */}
- <div className="rounded-xl overflow-hidden bg-muted/30 border border-border/40 relative">
+ <div className="rounded-lg overflow-hidden bg-muted/30 border border-border/40 relative">
  {mediaUrls[0] ? (
  <div
  className="w-full relative overflow-hidden bg-black/5 flex items-center justify-center"
@@ -651,7 +651,7 @@ function NovoAnuncioPage() {
  type="button"
  variant="outline"
  size="sm"
- className="w-full rounded-xl text-xs font-bold gap-1.5 h-9"
+ className="w-full rounded-lg text-xs font-bold gap-2 h-9"
  >
  {objective === "whatsapp_leads" && (
  <>

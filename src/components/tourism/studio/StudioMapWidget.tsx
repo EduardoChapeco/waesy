@@ -206,9 +206,9 @@ export function StudioMapWidget({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          className="rounded-xl h-10 text-xs"
+          className="rounded-lg h-10 text-xs"
         />
-        <Button onClick={handleSearch} disabled={searching} variant="secondary" className="rounded-xl h-10 text-xs gap-1.5 shrink-0">
+        <Button onClick={handleSearch} disabled={searching} variant="secondary" className="rounded-lg h-10 text-xs gap-2 shrink-0">
           {searching ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
           <span>Adicionar</span>
         </Button>
@@ -219,7 +219,7 @@ export function StudioMapWidget({
           {localWaypoints.map((wp, i) => (
             <div
               key={wp.id}
-              className="flex items-center gap-1.5 bg-muted/70 text-foreground text-xs px-2.5 py-1 rounded-xl border border-border/60"
+              className="flex items-center gap-2 bg-muted/70 text-foreground text-xs px-3 py-1 rounded-lg border border-border/60"
             >
               <span className="font-bold text-primary">{i + 1}.</span>
               <span className="truncate max-w-[140px]">{wp.label}</span>
@@ -236,12 +236,12 @@ export function StudioMapWidget({
         </div>
       )}
 
-      <div className="relative h-[380px] w-full rounded-2xl border border-border/60 overflow-hidden bg-muted/20">
+      <div className="relative h-[380px] w-full rounded-lg border border-border/60 overflow-hidden bg-muted/20">
         <div ref={mapContainer} className="h-full w-full" />
 
         {capturing && (
           <div className="absolute inset-0 bg-background/70 backdrop-blur-xs flex items-center justify-center z-20">
-            <div className="bg-card p-4 rounded-2xl border border-border flex items-center gap-3 shadow-lg">
+            <div className="bg-card p-4 rounded-lg border border-border flex items-center gap-3 shadow-lg">
               <Loader2 className="size-4 animate-spin text-primary" />
               <span className="text-xs font-semibold">Capturando mapa em alta resolução...</span>
             </div>
@@ -253,7 +253,7 @@ export function StudioMapWidget({
         type="button"
         onClick={captureMap}
         disabled={capturing || localWaypoints.length === 0}
-        className="w-full h-10 rounded-xl text-xs font-semibold gap-2"
+        className="w-full h-10 rounded-lg text-xs font-semibold gap-2"
       >
         <Camera className="size-4" />
         {capturing ? "Processando..." : "Capturar Imagem HD do Mapa"}

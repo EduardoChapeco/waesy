@@ -110,46 +110,46 @@ function SizeGuideSheet({
  <table className="w-full border-collapse text-left text-xs">
  <thead>
  <tr className="bg-muted">
- <th className="p-2.5 font-bold border-b">Tamanho BR</th>
- <th className="p-2.5 font-bold border-b">Comprimento do Pé (cm)</th>
- <th className="p-2.5 font-bold border-b">Tamanho EUA</th>
+ <th className="p-3 font-bold border-b">Tamanho BR</th>
+ <th className="p-3 font-bold border-b">Comprimento do Pé (cm)</th>
+ <th className="p-3 font-bold border-b">Tamanho EUA</th>
  </tr>
  </thead>
  <tbody>
  <tr className="border-b">
- <td className="p-2.5 font-medium">34</td>
- <td className="p-2.5 text-muted-foreground">22.5 cm</td>
- <td className="p-2.5">US 5</td>
+ <td className="p-3 font-medium">34</td>
+ <td className="p-3 text-muted-foreground">22.5 cm</td>
+ <td className="p-3">US 5</td>
  </tr>
  <tr className="border-b bg-muted/20">
- <td className="p-2.5 font-medium">35</td>
- <td className="p-2.5 text-muted-foreground">23.0 cm</td>
- <td className="p-2.5">US 5.5</td>
+ <td className="p-3 font-medium">35</td>
+ <td className="p-3 text-muted-foreground">23.0 cm</td>
+ <td className="p-3">US 5.5</td>
  </tr>
  <tr className="border-b">
- <td className="p-2.5 font-medium">36</td>
- <td className="p-2.5 text-muted-foreground">23.5 cm</td>
- <td className="p-2.5">US 6.5</td>
+ <td className="p-3 font-medium">36</td>
+ <td className="p-3 text-muted-foreground">23.5 cm</td>
+ <td className="p-3">US 6.5</td>
  </tr>
  <tr className="border-b bg-muted/20">
- <td className="p-2.5 font-medium">37</td>
- <td className="p-2.5 text-muted-foreground">24.0 cm</td>
- <td className="p-2.5">US 7</td>
+ <td className="p-3 font-medium">37</td>
+ <td className="p-3 text-muted-foreground">24.0 cm</td>
+ <td className="p-3">US 7</td>
  </tr>
  <tr className="border-b">
- <td className="p-2.5 font-medium">38</td>
- <td className="p-2.5 text-muted-foreground">25.0 cm</td>
- <td className="p-2.5">US 8</td>
+ <td className="p-3 font-medium">38</td>
+ <td className="p-3 text-muted-foreground">25.0 cm</td>
+ <td className="p-3">US 8</td>
  </tr>
  <tr className="border-b bg-muted/20">
- <td className="p-2.5 font-medium">39</td>
- <td className="p-2.5 text-muted-foreground">25.5 cm</td>
- <td className="p-2.5">US 8.5</td>
+ <td className="p-3 font-medium">39</td>
+ <td className="p-3 text-muted-foreground">25.5 cm</td>
+ <td className="p-3">US 8.5</td>
  </tr>
  <tr className="border-b">
- <td className="p-2.5 font-medium">40</td>
- <td className="p-2.5 text-muted-foreground">26.5 cm</td>
- <td className="p-2.5">US 9.5</td>
+ <td className="p-3 font-medium">40</td>
+ <td className="p-3 text-muted-foreground">26.5 cm</td>
+ <td className="p-3">US 9.5</td>
  </tr>
  </tbody>
  </table>

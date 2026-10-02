@@ -55,12 +55,12 @@ export function ContractAuditManifest({
   return (
     <div
       id="contract-audit-manifest-sheet"
-      className={`w-full bg-card text-card-foreground border border-border/80 rounded-2xl p-6 sm:p-8 space-y-6 print:border-none print:shadow-none ${className}`}
+      className={`w-full bg-card text-card-foreground border border-border/80 rounded-lg p-6 sm:p-8 space-y-6 print:border-none print:shadow-none ${className}`}
     >
       {/* Cabeçalho Oficial do Protocolo */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border/70">
-        <div className="flex items-center gap-3.5">
-          <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="size-12 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
             <ShieldCheck className="size-7" />
           </div>
           <div>
@@ -80,7 +80,7 @@ export function ContractAuditManifest({
 
       {/* Selo e Certificado Oficial de Quitação (Se Aplicável) */}
       {isSettled && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/30 space-y-2.5">
+        <div className="p-4 sm:p-5 rounded-lg bg-emerald-500/10 border-2 border-emerald-500/30 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -88,7 +88,7 @@ export function ContractAuditManifest({
                 Termo de Quitação e Extinção de Obrigações Financeiras
               </span>
             </div>
-            <Badge className="bg-emerald-600 text-white font-mono text-[10px] px-2 py-0.5">
+            <Badge className="bg-emerald-600 text-white font-mono text-[10px] px-2 py-1">
               QUITADO · SEM PENDÊNCIAS
             </Badge>
           </div>
@@ -111,8 +111,8 @@ export function ContractAuditManifest({
       )}
 
       {/* Metadados de Autenticidade & Hash SHA-256 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs bg-muted/30 p-4 rounded-xl border border-border/60">
-        <div className="space-y-1.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs bg-muted/30 p-4 rounded-lg border border-border/60">
+        <div className="space-y-2">
           <p className="text-muted-foreground font-medium">Documento:</p>
           <p className="font-semibold text-foreground text-sm truncate">{documentTitle}</p>
           <p className="text-[11px] text-muted-foreground">
@@ -120,8 +120,8 @@ export function ContractAuditManifest({
           </p>
         </div>
 
-        <div className="space-y-1.5">
-          <p className="text-muted-foreground font-medium flex items-center gap-1.5">
+        <div className="space-y-2">
+          <p className="text-muted-foreground font-medium flex items-center gap-2">
             <Hash className="size-3.5 text-primary" />
             Hash Criptográfico do Arquivo (SHA-256):
           </p>
@@ -150,7 +150,7 @@ export function ContractAuditManifest({
             return (
               <div
                 key={idx}
-                className="p-4 rounded-xl border border-border/70 bg-card hover:bg-muted/20 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs"
+                className="p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/20 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs"
               >
                 <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -210,7 +210,7 @@ export function ContractAuditManifest({
           </h4>
           <div className="flex flex-wrap gap-2">
             {observers.map((obs, i) => (
-              <Badge key={i} variant="outline" className="text-[11px] py-1 px-2.5">
+              <Badge key={i} variant="outline" className="text-[11px] py-1 px-3">
                 {obs.name} ({obs.email})
               </Badge>
             ))}
@@ -219,8 +219,8 @@ export function ContractAuditManifest({
       )}
 
       {/* Bloco de Verificação Universal com QR Code */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-muted/40 border border-border/70 flex flex-col sm:flex-row items-center justify-between gap-5">
-        <div className="space-y-1.5 text-left max-w-md">
+      <div className="p-4 sm:p-5 rounded-lg bg-muted/40 border border-border/70 flex flex-col sm:flex-row items-center justify-between gap-5">
+        <div className="space-y-2 text-left max-w-md">
           <div className="flex items-center gap-2 font-bold text-foreground text-sm">
             <QrCode className="size-4 text-primary" />
             Validação Pública Instantânea
@@ -232,14 +232,14 @@ export function ContractAuditManifest({
             href={verifyUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline pt-1"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:underline pt-1"
           >
             {verifyUrl}
             <ExternalLink className="size-3" />
           </a>
         </div>
 
-        <div className="shrink-0 bg-white p-2.5 rounded-xl border border-border/80 shadow-2xs">
+        <div className="shrink-0 bg-white p-3 rounded-lg border border-border/80 shadow-2xs">
           <img
             src={qrImageUrl}
             alt="QR Code para validação pública do contrato"

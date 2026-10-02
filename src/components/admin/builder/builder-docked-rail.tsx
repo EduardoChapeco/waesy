@@ -47,7 +47,7 @@ export function BuilderDockedRail({
  return (
  <aside className="w-12 bg-card border-r border-border/80 flex flex-col items-center justify-between py-3 flex-none select-none z-30 shadow-2xs">
  {/* Grupo Superior: Ferramentas Principais */}
- <div className="flex flex-col items-center gap-2 w-full px-1.5">
+ <div className="flex flex-col items-center gap-2 w-full px-2">
  {tools.map((tool) => {
  const Icon = tool.icon;
  const isActive = activePanel === tool.id;
@@ -59,7 +59,7 @@ export function BuilderDockedRail({
  onClick={() => onTogglePanel(isActive ? null : tool.id)}
  title={tool.label}
  className={cn(
- "size-9 rounded-xl flex items-center justify-center transition-all cursor-pointer relative group",
+ "size-9 rounded-lg flex items-center justify-center transition-all cursor-pointer relative group",
  tool.isPrimary && !isActive
  ? "bg-primary text-primary-foreground hover:opacity-90 shadow-2xs"
  : isActive
@@ -75,7 +75,7 @@ export function BuilderDockedRail({
  )}
 
  {/* Tooltip Hover Lateral */}
- <span className="absolute left-14 px-2.5 py-1 rounded-lg bg-foreground text-background text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-md">
+ <span className="absolute left-14 px-3 py-1 rounded-lg bg-foreground text-background text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-md">
  {tool.label}
  </span>
  </button>
@@ -84,14 +84,14 @@ export function BuilderDockedRail({
  </div>
 
  {/* Grupo Inferior: Ajuda & Suporte */}
- <div className="flex flex-col items-center gap-2 w-full px-1.5 pt-3 border-t border-border/50">
+ <div className="flex flex-col items-center gap-2 w-full px-2 pt-3 border-t border-border/50">
  <button
  type="button"
  title="Atalhos do Construtor"
- className="size-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer group relative"
+ className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer group relative"
  >
  <HelpCircle className="size-4" />
- <span className="absolute left-14 px-2.5 py-1 rounded-lg bg-foreground text-background text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-md">
+ <span className="absolute left-14 px-3 py-1 rounded-lg bg-foreground text-background text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-md">
  Atalhos (Ctrl+Z / Ctrl+Y)
  </span>
  </button>

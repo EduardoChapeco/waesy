@@ -85,7 +85,7 @@ export function ListingScopeSection({
   return (
     <div className={cn("space-y-6", className)}>
       {/* ── Itens Inclusos (Dono Único) ── */}
-      <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4">
+      <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
             <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
@@ -99,12 +99,12 @@ export function ListingScopeSection({
         </div>
 
         {/* Sugestões Rápidas de Nicho */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-2xs text-muted-foreground flex items-center gap-1">
             <Sparkles className="size-3 text-primary" />
             <span>Sugestões rápidas:</span>
           </Label>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {suggestions.inclusions.map((sug) => {
               const alreadyHas = inclusions.includes(sug);
               return (
@@ -114,7 +114,7 @@ export function ListingScopeSection({
                   disabled={alreadyHas}
                   onClick={() => handleAddInclusion(sug)}
                   className={cn(
-                    "text-xs px-2.5 py-1 rounded-lg border transition-colors cursor-pointer text-left",
+                    "text-xs px-3 py-1 rounded-lg border transition-colors cursor-pointer text-left",
                     alreadyHas
                       ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 opacity-60 cursor-default"
                       : "border-border/60 bg-background hover:bg-muted/40 text-foreground"
@@ -139,7 +139,7 @@ export function ListingScopeSection({
               }
             }}
             placeholder="Adicionar item incluso personalizado..."
-            className="h-10 rounded-xl text-xs bg-background flex-1"
+            className="h-10 rounded-lg text-xs bg-background flex-1"
           />
           <Button
             type="button"
@@ -147,7 +147,7 @@ export function ListingScopeSection({
             size="sm"
             onClick={() => handleAddInclusion(newInclusion)}
             disabled={!newInclusion.trim()}
-            className="h-10 rounded-xl text-xs font-semibold gap-1 cursor-pointer"
+            className="h-10 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
           >
             <Plus className="size-3.5" />
             <span>Adicionar</span>
@@ -160,7 +160,7 @@ export function ListingScopeSection({
             {inclusions.map((item, idx) => (
               <div
                 key={`${item}-${idx}`}
-                className="flex items-center justify-between p-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-xs text-foreground"
+                className="flex items-center justify-between p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-xs text-foreground"
               >
                 <div className="flex items-center gap-2 min-w-0 pr-2">
                   <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
@@ -182,7 +182,7 @@ export function ListingScopeSection({
       </div>
 
       {/* ── Itens Não Inclusos / Exclusos ── */}
-      <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4">
+      <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
             <XCircle className="size-4 text-destructive shrink-0" />
@@ -196,12 +196,12 @@ export function ListingScopeSection({
         </div>
 
         {/* Sugestões Rápidas de Exclusão */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-2xs text-muted-foreground flex items-center gap-1">
             <Sparkles className="size-3 text-primary" />
             <span>Sugestões rápidas:</span>
           </Label>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {suggestions.exclusions.map((sug) => {
               const alreadyHas = exclusions.includes(sug);
               return (
@@ -211,7 +211,7 @@ export function ListingScopeSection({
                   disabled={alreadyHas}
                   onClick={() => handleAddExclusion(sug)}
                   className={cn(
-                    "text-xs px-2.5 py-1 rounded-lg border transition-colors cursor-pointer text-left",
+                    "text-xs px-3 py-1 rounded-lg border transition-colors cursor-pointer text-left",
                     alreadyHas
                       ? "border-destructive/30 bg-destructive/10 text-destructive opacity-60 cursor-default"
                       : "border-border/60 bg-background hover:bg-muted/40 text-foreground"
@@ -236,7 +236,7 @@ export function ListingScopeSection({
               }
             }}
             placeholder="Adicionar item não incluso (ex: Alimentação)..."
-            className="h-10 rounded-xl text-xs bg-background flex-1"
+            className="h-10 rounded-lg text-xs bg-background flex-1"
           />
           <Button
             type="button"
@@ -244,7 +244,7 @@ export function ListingScopeSection({
             size="sm"
             onClick={() => handleAddExclusion(newExclusion)}
             disabled={!newExclusion.trim()}
-            className="h-10 rounded-xl text-xs font-semibold gap-1 cursor-pointer"
+            className="h-10 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
           >
             <Plus className="size-3.5" />
             <span>Adicionar</span>
@@ -257,7 +257,7 @@ export function ListingScopeSection({
             {exclusions.map((item, idx) => (
               <div
                 key={`${item}-${idx}`}
-                className="flex items-center justify-between p-2.5 rounded-xl border border-destructive/20 bg-destructive/5 text-xs text-foreground"
+                className="flex items-center justify-between p-3 rounded-lg border border-destructive/20 bg-destructive/5 text-xs text-foreground"
               >
                 <div className="flex items-center gap-2 min-w-0 pr-2">
                   <XCircle className="size-3.5 text-destructive shrink-0" />

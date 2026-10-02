@@ -75,11 +75,11 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
   const hasLiveGps = Boolean(dispatch.currentLat && dispatch.currentLng && dispatch.status === "in_transit");
 
   return (
-    <div className="rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/5 via-background to-primary/5 p-4 sm:p-5 space-y-4 shadow-2xs">
+    <div className="rounded-lg border border-primary/25 bg-gradient-to-br from-primary/5 via-background to-primary/5 p-4 sm:p-5 space-y-4 shadow-2xs">
       {/* Header do Card */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-border/40">
-        <div className="flex items-center gap-2.5">
-          <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
+        <div className="flex items-center gap-3">
+          <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <Truck className="size-5" />
           </div>
           <div>
@@ -91,13 +91,13 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
                 {statusConfig.label}
               </Badge>
               {hasLiveGps && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-1 rounded-full">
                   <span className="size-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
                   GPS Ao Vivo
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
+            <p className="text-[11px] text-muted-foreground mt-1">
               Despachado por <strong className="text-foreground">{dispatch.store?.name || "Lojista"}</strong>
             </p>
           </div>
@@ -105,7 +105,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
 
         {/* PIN de Segurança em Destaque */}
         {dispatch.confirmationPin && dispatch.status !== "delivered" && (
-          <div className="flex items-center gap-2 bg-card border border-primary/20 px-3 py-1.5 rounded-xl self-start sm:self-auto shadow-2xs">
+          <div className="flex items-center gap-2 bg-card border border-primary/20 px-3 py-2 rounded-lg self-start sm:self-auto shadow-2xs">
             <KeyRound className="size-4 text-primary shrink-0" />
             <div className="text-left">
               <span className="text-[9px] uppercase font-bold text-muted-foreground block">
@@ -121,31 +121,31 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
 
       {/* Linha do Tempo Visual de 3 Etapas */}
       <div className="grid grid-cols-3 gap-2 py-1">
-        <div className={`p-2.5 rounded-xl border text-center transition-all ${
+        <div className={`p-3 rounded-lg border text-center transition-all ${
           statusConfig.step >= 1 ? "bg-primary/10 border-primary/30 text-foreground font-semibold" : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
         }`}>
-          <div className="text-[10px] uppercase font-bold mb-0.5">1. Despachado</div>
+          <div className="text-[10px] uppercase font-bold mb-1">1. Despachado</div>
           <span className="text-[11px]">Loja acionou motoboy</span>
         </div>
 
-        <div className={`p-2.5 rounded-xl border text-center transition-all ${
+        <div className={`p-3 rounded-lg border text-center transition-all ${
           statusConfig.step >= 3 ? "bg-primary/10 border-primary/30 text-foreground font-semibold" : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
         }`}>
-          <div className="text-[10px] uppercase font-bold mb-0.5">2. Em Trânsito</div>
+          <div className="text-[10px] uppercase font-bold mb-1">2. Em Trânsito</div>
           <span className="text-[11px]">A caminho do endereço</span>
         </div>
 
-        <div className={`p-2.5 rounded-xl border text-center transition-all ${
+        <div className={`p-3 rounded-lg border text-center transition-all ${
           statusConfig.step >= 4 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-bold" : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
         }`}>
-          <div className="text-[10px] uppercase font-bold mb-0.5">3. Entregue</div>
+          <div className="text-[10px] uppercase font-bold mb-1">3. Entregue</div>
           <span className="text-[11px]">Pacote recebido</span>
         </div>
       </div>
 
       {/* Banner de Telemetria GPS em Tempo Real */}
       {hasLiveGps && (
-        <div className="p-3 bg-card border border-emerald-500/30 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="p-3 bg-card border border-emerald-500/30 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs">
             <Radio className="size-4 text-emerald-600 animate-pulse shrink-0" />
             <div>
@@ -159,7 +159,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
             href={`https://www.google.com/maps/search/?api=1&query=${dispatch.currentLat},${dispatch.currentLng}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline shrink-0"
+            className="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline shrink-0"
           >
             <Navigation className="size-3.5" />
             <span>Ver Localização Atual</span>
@@ -168,9 +168,9 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
       )}
 
       {/* Detalhes de Destino & Entregador */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-card/60 p-3 rounded-xl border border-border/40">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-card/60 p-3 rounded-lg border border-border/40">
         <div className="flex items-start gap-2">
-          <MapPin className="size-4 text-primary shrink-0 mt-0.5" />
+          <MapPin className="size-4 text-primary shrink-0 mt-1" />
           <div className="min-w-0">
             <span className="text-muted-foreground block text-[10px] uppercase font-medium">Endereço de Entrega</span>
             <p className="font-semibold text-foreground truncate">{dispatch.deliveryAddress || "Endereço cadastrado"}</p>
@@ -182,7 +182,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
 
         {dispatch.courierName && (
           <div className="flex items-start gap-2 sm:border-l sm:border-border/40 sm:pl-3">
-            <ShieldCheck className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+            <ShieldCheck className="size-4 text-emerald-600 shrink-0 mt-1" />
             <div className="min-w-0">
               <span className="text-muted-foreground block text-[10px] uppercase font-medium">Entregador Responsável</span>
               <p className="font-semibold text-foreground truncate">{dispatch.courierName}</p>
@@ -199,7 +199,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
 
       {/* Foto de Comprovante de Entrega se Concluída */}
       {dispatch.status === "delivered" && (dispatch as any).proofPhotoUrl && (
-        <div className="p-3 bg-emerald-500/5 rounded-xl border border-emerald-500/20 flex items-center justify-between gap-3">
+        <div className="p-3 bg-emerald-500/5 rounded-lg border border-emerald-500/20 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
             <CheckCircle2 className="size-4" />
             <span>Comprovante de entrega anexado pelo entregador</span>
@@ -223,7 +223,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
         </span>
 
         {dispatch.token && (
-          <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-8 self-end sm:self-auto">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 h-8 self-end sm:self-auto">
             <Link to="/entrega/$token" params={{ token: dispatch.token }}>
               <ExternalLink className="size-3.5" />
               <span>Painel do Entregador</span>

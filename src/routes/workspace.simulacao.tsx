@@ -244,7 +244,7 @@ function SimulacaoPage() {
           <div className="lg:col-span-5 space-y-5">
             <form
               onSubmit={(e) => void handleSimulate(e)}
-              className="rounded-2xl border border-border/80 bg-card p-5 space-y-4 shadow-sm"
+              className="rounded-lg border border-border/80 bg-card p-5 space-y-4 shadow-sm"
             >
               <div className="flex items-center justify-between border-b border-border/60 pb-3">
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -256,7 +256,7 @@ function SimulacaoPage() {
                 </span>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label
                   htmlFor="sim-title"
                   className="text-xs font-semibold text-foreground"
@@ -268,12 +268,12 @@ function SimulacaoPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Ex: Show de Lançamento da Banda X"
-                  className="h-11 min-h-[44px] text-xs rounded-xl bg-background"
+                  className="h-11 min-h-11 text-xs rounded-lg bg-background"
                   required
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label
                   htmlFor="sim-price"
                   className="text-xs font-semibold text-foreground"
@@ -291,13 +291,13 @@ function SimulacaoPage() {
                     value={priceReais}
                     onChange={(e) => setPriceReais(e.target.value)}
                     placeholder="0,00"
-                    className="h-11 min-h-[44px] pl-9 text-xs rounded-xl font-mono font-semibold bg-background"
+                    className="h-11 min-h-11 pl-9 text-xs rounded-lg font-mono font-semibold bg-background"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label
                   htmlFor="sim-desc"
                   className="text-xs font-semibold text-foreground"
@@ -310,7 +310,7 @@ function SimulacaoPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
                   placeholder="Descreva benefícios, garantias, tiragem e diferenciais..."
-                  className="w-full text-xs rounded-xl border border-input bg-background p-3 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  className="w-full text-xs rounded-lg border border-input bg-background p-3 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   required
                 />
               </div>
@@ -318,7 +318,7 @@ function SimulacaoPage() {
               <Button
                 type="submit"
                 disabled={isRunning}
-                className="w-full rounded-xl font-bold gap-2 mt-2 h-11 min-h-[44px] cursor-pointer"
+                className="w-full rounded-lg font-bold gap-2 mt-2 h-11 min-h-11 cursor-pointer"
               >
                 {isRunning ? (
                   <>
@@ -335,8 +335,8 @@ function SimulacaoPage() {
             </form>
 
             {/* Lista Compacta de Personas do Censo IBGE 2022 */}
-            <div className="rounded-2xl border border-border/80 bg-card p-4 space-y-3 shadow-sm">
-              <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3 shadow-sm">
+              <div className="flex items-center justify-between border-b border-border/60 pb-3">
                 <span className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Users className="size-3.5 text-primary" />
                   Bancada Amostral IBGE
@@ -350,7 +350,7 @@ function SimulacaoPage() {
                 {filteredPersonas.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-background text-xs hover:border-primary/40 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-background text-xs hover:border-primary/40 transition-colors"
                   >
                     <div className="min-w-0 pr-2">
                       <p className="font-semibold text-foreground truncate">
@@ -363,7 +363,7 @@ function SimulacaoPage() {
                     </div>
                     <Badge
                       variant="outline"
-                      className="text-xs rounded-md font-medium px-2 py-0.5 shrink-0 bg-muted/40"
+                      className="text-xs rounded-md font-medium px-2 py-1 shrink-0 bg-muted/40"
                     >
                       Classe {p.abep_social_class}
                     </Badge>
@@ -376,8 +376,8 @@ function SimulacaoPage() {
           {/* Coluna Direita: Resultados da Simulação / Veredito Científico */}
           <div className="lg:col-span-7 space-y-5">
             {!synthesis && !isRunning && (
-              <div className="rounded-2xl border border-border/80 bg-card p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-3 min-h-[440px] shadow-sm">
-                <div className="p-4 bg-primary/10 rounded-2xl text-primary">
+              <div className="rounded-lg border border-border/80 bg-card p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-3 min-h-[440px] shadow-sm">
+                <div className="p-4 bg-primary/10 rounded-lg text-primary">
                   <BrainCircuit className="size-8" />
                 </div>
                 <h3 className="text-sm font-bold text-foreground">
@@ -392,7 +392,7 @@ function SimulacaoPage() {
             )}
 
             {isRunning && (
-              <div className="rounded-2xl border border-border/80 bg-card p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-4 min-h-[440px] shadow-sm">
+              <div className="rounded-lg border border-border/80 bg-card p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-4 min-h-[440px] shadow-sm">
                 <Loader2 className="size-10 text-primary animate-spin" />
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-foreground">
@@ -411,7 +411,7 @@ function SimulacaoPage() {
                 {/* Banner de Veredito Científico */}
                 <div
                   className={cn(
-                    "p-4 rounded-2xl border flex items-center justify-between gap-4",
+                    "p-4 rounded-lg border flex items-center justify-between gap-4",
                     synthesis.scientific_verdict === "aprovado_para_veiculacao"
                       ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
                       : synthesis.scientific_verdict === "revisar_com_ajustes"
@@ -431,7 +431,7 @@ function SimulacaoPage() {
                             ? "Revisar com Ajustes Estratégicos"
                             : "Bloqueado por Alto Risco de Mercado"}
                       </p>
-                      <p className="text-xs opacity-90 mt-0.5">
+                      <p className="text-xs opacity-90 mt-1">
                         Aprovação: {synthesis.overall_approval_rate}% • NPS:{" "}
                         {synthesis.synthetic_nps} • Conversão Estimada:{" "}
                         {synthesis.estimated_conversion_range[0]}% a{" "}
@@ -443,7 +443,7 @@ function SimulacaoPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsMetricsOpen(true)}
-                    className="h-9 rounded-xl text-xs font-semibold shrink-0 cursor-pointer"
+                    className="h-9 rounded-lg text-xs font-semibold shrink-0 cursor-pointer"
                   >
                     Ver DRE do Enxame
                   </Button>
@@ -451,14 +451,14 @@ function SimulacaoPage() {
 
                 {/* Gatilhos e Barreiras */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="rounded-2xl border border-border/80 bg-card p-4 space-y-2 shadow-sm">
-                    <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <div className="rounded-lg border border-border/80 bg-card p-4 space-y-2 shadow-sm">
+                    <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                       <CheckCircle2 className="size-3.5 text-emerald-500" />
                       Gatilhos de Compra Principais
                     </h4>
-                    <ul className="space-y-1.5 text-xs text-muted-foreground">
+                    <ul className="space-y-2 text-xs text-muted-foreground">
                       {synthesis.top_3_buying_triggers.map((trigger, i) => (
-                        <li key={i} className="flex items-start gap-1.5">
+                        <li key={i} className="flex items-start gap-2">
                           <span className="text-emerald-500 font-bold">•</span>
                           <span>{trigger}</span>
                         </li>
@@ -466,14 +466,14 @@ function SimulacaoPage() {
                     </ul>
                   </div>
 
-                  <div className="rounded-2xl border border-border/80 bg-card p-4 space-y-2 shadow-sm">
-                    <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <div className="rounded-lg border border-border/80 bg-card p-4 space-y-2 shadow-sm">
+                    <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                       <AlertTriangle className="size-3.5 text-amber-500" />
                       Fricções e Objeções Detectadas
                     </h4>
-                    <ul className="space-y-1.5 text-xs text-muted-foreground">
+                    <ul className="space-y-2 text-xs text-muted-foreground">
                       {synthesis.top_3_friction_barriers.map((barrier, i) => (
-                        <li key={i} className="flex items-start gap-1.5">
+                        <li key={i} className="flex items-start gap-2">
                           <span className="text-amber-500 font-bold">•</span>
                           <span>{barrier}</span>
                         </li>
@@ -483,8 +483,8 @@ function SimulacaoPage() {
                 </div>
 
                 {/* Reações Verbatim das Personas */}
-                <div className="rounded-2xl border border-border/80 bg-card p-4 space-y-3 shadow-sm">
-                  <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
+                <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3 shadow-sm">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-3">
                     <span className="text-xs font-bold text-foreground flex items-center gap-2">
                       <MessageSquare className="size-3.5 text-primary" />
                       Reações Individuais das Personas
@@ -494,11 +494,11 @@ function SimulacaoPage() {
                     </span>
                   </div>
 
-                  <div className="space-y-2.5 max-h-[380px] overflow-y-auto no-scrollbar pr-1">
+                  <div className="space-y-3 max-h-[380px] overflow-y-auto no-scrollbar pr-1">
                     {evaluations.map((ev, idx) => (
                       <div
                         key={idx}
-                        className="p-3 rounded-xl border border-border/60 bg-background text-xs space-y-2"
+                        className="p-3 rounded-lg border border-border/60 bg-background text-xs space-y-2"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
@@ -516,13 +516,13 @@ function SimulacaoPage() {
                                 ? "default"
                                 : "outline"
                             }
-                            className="text-xs rounded-md font-medium px-2 py-0.5"
+                            className="text-xs rounded-md font-medium px-2 py-1"
                           >
                             {ev.purchase_intent_percent}% Intenção
                           </Badge>
                         </div>
 
-                        <p className="text-xs text-muted-foreground italic bg-muted/20 p-2.5 rounded-xl border border-border/40 leading-relaxed">
+                        <p className="text-xs text-muted-foreground italic bg-muted/20 p-3 rounded-lg border border-border/40 leading-relaxed">
                           "{ev.verbatim_reaction}"
                         </p>
 

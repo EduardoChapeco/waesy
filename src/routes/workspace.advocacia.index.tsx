@@ -332,10 +332,10 @@ function WorkspaceAdvocaciaPage() {
  eyebrow="Jurídico"
  title="Processos"
  actions={
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <Button
  onClick={() => setIsDeadlineSheetOpen(true)}
- className="h-10 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1.5 shadow-xs"
+ className="h-10 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 shadow-xs"
  >
  <Plus className="size-4" />
  <span>Novo Prazo Fatal</span>
@@ -343,7 +343,7 @@ function WorkspaceAdvocaciaPage() {
           <Button
             asChild
             variant="outline"
-            className="h-10 px-4 rounded-xl font-bold text-xs gap-1.5"
+            className="h-10 px-4 rounded-lg font-bold text-xs gap-2"
           >
             <Link to="/workspace/contratos/novo">
               <FileText className="size-3.5 text-primary" />
@@ -353,14 +353,14 @@ function WorkspaceAdvocaciaPage() {
  <Button
  variant="outline"
  onClick={() => setIsMonitorSheetOpen(true)}
- className="h-10 px-4 rounded-xl font-bold text-xs gap-1.5"
+ className="h-10 px-4 rounded-lg font-bold text-xs gap-2"
  >
  <Radio className="size-3.5 text-primary" />
  <span>Consulta Histórica</span>
  </Button>
  <Badge
  variant="outline"
- className="border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 gap-1.5 rounded-xl hidden sm:flex"
+ className="border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 gap-2 rounded-lg hidden sm:flex"
  >
  <ShieldCheck className="size-3.5" />
  <span>OAB Verificada</span>
@@ -370,7 +370,7 @@ function WorkspaceAdvocaciaPage() {
  />
 
  {/* ── TERMINAL DE CONSULTA CNJ & FLAGS DE COMPLIANCE (PADRÃO JUDIT) ── */}
- <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 shadow-xs">
+ <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-xs">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary font-mono">
  <Scale className="size-4" />
  <span>Consulta Processual Unificada</span>
@@ -386,13 +386,13 @@ function WorkspaceAdvocaciaPage() {
  value={cnjInput}
  onChange={(e) => setCnjInput(e.target.value)}
  placeholder="Insira o nº do CNJ a ser consultado (ex: 0006795-75.2018.8.01.0070)..."
- className="h-12 pl-10 rounded-xl bg-background font-mono text-xs sm:text-sm font-semibold"
+ className="h-12 pl-10 rounded-lg bg-background font-mono text-xs sm:text-sm font-semibold"
  />
  </div>
  <Button
  type="submit"
  disabled={isSearchingCNJ}
- className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-xs sm:text-sm shrink-0"
+ className="h-12 px-6 rounded-lg bg-primary text-primary-foreground font-bold text-xs sm:text-sm shrink-0"
  >
  {isSearchingCNJ ? "Consultando..." : "Realizar Consulta"}
  </Button>
@@ -433,7 +433,7 @@ function WorkspaceAdvocaciaPage() {
 
  {/* ── CARDS DE KPIS DO ACERVO & PRECLUSÃO ── */}
  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
- <div className="p-4 rounded-2xl bg-card border border-rose-500/30 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-rose-500/30 space-y-1">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 font-mono">
  Fatais (&lt; 48h)
@@ -445,7 +445,7 @@ function WorkspaceAdvocaciaPage() {
  </p>
  </div>
 
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Prazos Pendentes
  </span>
@@ -454,7 +454,7 @@ function WorkspaceAdvocaciaPage() {
  </p>
  </div>
 
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Processos no Acervo
  </span>
@@ -463,7 +463,7 @@ function WorkspaceAdvocaciaPage() {
  </p>
  </div>
 
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Monitoramento Ativo
  </span>
@@ -472,7 +472,7 @@ function WorkspaceAdvocaciaPage() {
  </p>
  </div>
 
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1 col-span-2 sm:col-span-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1 col-span-2 sm:col-span-1">
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Demandas Abertas
  </span>
@@ -488,7 +488,7 @@ function WorkspaceAdvocaciaPage() {
  onValueChange={(v) => setActiveMainTab(v as any)}
  className="space-y-6"
  >
- <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-11 bg-muted/40 p-1 rounded-xl">
+ <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-11 bg-muted/40 p-1 rounded-lg">
  <TabsTrigger value="prazos" className="text-xs font-bold rounded-lg gap-2">
  <Calendar className="size-3.5" />
  <span>
@@ -518,7 +518,7 @@ function WorkspaceAdvocaciaPage() {
  variant={deadlineFilter === "pending" ? "default" : "outline"}
  size="sm"
  onClick={() => setDeadlineFilter("pending")}
- className="h-9 px-3 rounded-xl text-xs font-bold shrink-0 snap-start whitespace-nowrap"
+ className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap"
  >
  Prazos em Aberto
  </Button>
@@ -526,7 +526,7 @@ function WorkspaceAdvocaciaPage() {
  variant={deadlineFilter === "urgent" ? "default" : "outline"}
  size="sm"
  onClick={() => setDeadlineFilter("urgent")}
- className="h-9 px-3 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 gap-1.5 shrink-0 snap-start whitespace-nowrap"
+ className="h-9 px-3 rounded-lg text-xs font-bold text-rose-600 dark:text-rose-400 gap-2 shrink-0 snap-start whitespace-nowrap"
  >
  <AlertTriangle className="size-3.5" />
  <span>Fatais (&lt; 48h)</span>
@@ -535,7 +535,7 @@ function WorkspaceAdvocaciaPage() {
  variant={deadlineFilter === "audiencia" ? "default" : "outline"}
  size="sm"
  onClick={() => setDeadlineFilter("audiencia")}
- className="h-9 px-3 rounded-xl text-xs font-bold shrink-0 snap-start whitespace-nowrap"
+ className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap"
  >
  Audiências
  </Button>
@@ -543,7 +543,7 @@ function WorkspaceAdvocaciaPage() {
  variant={deadlineFilter === "completed" ? "default" : "outline"}
  size="sm"
  onClick={() => setDeadlineFilter("completed")}
- className="h-9 px-3 rounded-xl text-xs font-bold shrink-0 snap-start whitespace-nowrap"
+ className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap"
  >
  Protocolados / Cumpridos
  </Button>
@@ -551,7 +551,7 @@ function WorkspaceAdvocaciaPage() {
  variant={deadlineFilter === "all" ? "default" : "outline"}
  size="sm"
  onClick={() => setDeadlineFilter("all")}
- className="h-9 px-3 rounded-xl text-xs font-bold shrink-0 snap-start whitespace-nowrap"
+ className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap"
  >
  Todos
  </Button>
@@ -559,7 +559,7 @@ function WorkspaceAdvocaciaPage() {
 
  <Button
  onClick={() => setIsDeadlineSheetOpen(true)}
- className="h-9 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1.5 w-full sm:w-auto shadow-xs shrink-0"
+ className="h-9 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 w-full sm:w-auto shadow-xs shrink-0"
  >
  <Plus className="size-4" />
  <span>Novo Prazo</span>
@@ -568,8 +568,8 @@ function WorkspaceAdvocaciaPage() {
 
  {/* Lista / Tabela de Prazos */}
  {filteredDeadlines.length === 0 ? (
- <div className="p-12 text-center rounded-2xl bg-card border border-border space-y-3">
- <div className="size-12 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+ <div className="p-12 text-center rounded-lg bg-card border border-border space-y-3">
+ <div className="size-12 mx-auto rounded-lg bg-primary/10 flex items-center justify-center text-primary">
  <Calendar className="size-6" />
  </div>
  <h3 className="text-sm font-bold text-foreground">Nenhum prazo encontrado</h3>
@@ -580,14 +580,14 @@ function WorkspaceAdvocaciaPage() {
  </p>
  <Button
  onClick={() => setIsDeadlineSheetOpen(true)}
- className="h-10 px-5 rounded-xl font-bold text-xs gap-1.5"
+ className="h-10 px-5 rounded-lg font-bold text-xs gap-2"
  >
  <Plus className="size-4" />
  <span>Cadastrar Primeiro Prazo</span>
  </Button>
  </div>
  ) : (
- <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs">
+ <div className="rounded-lg border border-border bg-card overflow-hidden shadow-xs">
  <Table>
  <TableHeader className="bg-muted/40">
  <TableRow>
@@ -620,7 +620,7 @@ function WorkspaceAdvocaciaPage() {
  <Badge
  variant="outline"
  className={cn(
- "text-xs font-mono px-2.5 py-1 rounded-lg border",
+ "text-xs font-mono px-3 py-1 rounded-lg border",
  statusInfo.className
  )}
  >
@@ -628,7 +628,7 @@ function WorkspaceAdvocaciaPage() {
  </Badge>
  </TableCell>
  <TableCell>
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <p className="font-bold text-xs text-foreground">{dl.title}</p>
  <Badge variant="secondary" className="text-xs font-mono capitalize">
  {dl.deadline_type}
@@ -636,7 +636,7 @@ function WorkspaceAdvocaciaPage() {
  </div>
  </TableCell>
  <TableCell>
- <div className="space-y-0.5 font-mono text-xs">
+ <div className="space-y-1 font-mono text-xs">
  <span className="font-bold text-foreground">
  {dl.process_number || "Avulso / Sem CNJ"}
  </span>
@@ -651,7 +651,7 @@ function WorkspaceAdvocaciaPage() {
  </span>
  </TableCell>
  <TableCell>
- <div className="font-mono text-xs space-y-0.5">
+ <div className="font-mono text-xs space-y-1">
  <span className="font-bold text-foreground">
  {formatDate(dl.due_date)}
  </span>
@@ -661,12 +661,12 @@ function WorkspaceAdvocaciaPage() {
  </div>
  </TableCell>
  <TableCell className="text-right">
- <div className="flex items-center justify-end gap-1.5">
+ <div className="flex items-center justify-end gap-2">
  {dl.status !== "completed" ? (
  <Button
  size="sm"
  onClick={() => setCompletingDeadline(dl)}
- className="min-h-[44px] px-3.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs gap-1.5 shadow-2xs"
+ className="min-h-11 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs gap-2 shadow-2xs"
  >
  <CheckCircle2 className="size-3.5" />
  <span>Protocolar</span>
@@ -709,14 +709,14 @@ function WorkspaceAdvocaciaPage() {
  placeholder="Filtrar por CNJ, Tribunal ou Assunto..."
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
- className="h-10 pl-9 rounded-xl bg-card text-xs font-medium"
+ className="h-10 pl-9 rounded-lg bg-card text-xs font-medium"
  />
  </div>
  </div>
 
  {/* Tabela do Acervo */}
  {filteredLawsuits.length === 0 ? (
- <div className="p-12 text-center rounded-2xl bg-card border border-border space-y-3">
+ <div className="p-12 text-center rounded-lg bg-card border border-border space-y-3">
  <Scale className="size-10 mx-auto text-muted-foreground/40" />
  <h3 className="text-base font-bold text-foreground">Nenhum processo no acervo ativo</h3>
  <p className="text-xs text-muted-foreground max-w-md mx-auto">
@@ -725,14 +725,14 @@ function WorkspaceAdvocaciaPage() {
  <Button
  onClick={() => setIsMonitorSheetOpen(true)}
  variant="outline"
- className="h-10 px-4 rounded-xl text-xs font-bold gap-1.5"
+ className="h-10 px-4 rounded-lg text-xs font-bold gap-2"
  >
  <Plus className="size-3.5" />
  <span>Iniciar Monitoramento</span>
  </Button>
  </div>
  ) : (
- <div className="rounded-2xl border border-border bg-card overflow-hidden">
+ <div className="rounded-lg border border-border bg-card overflow-hidden">
  <Table>
  <TableHeader className="bg-muted/30">
  <TableRow>
@@ -794,7 +794,7 @@ function WorkspaceAdvocaciaPage() {
 
  {/* Última Movimentação */}
  <TableCell>
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <p className="font-mono text-xs text-foreground">
  {lawsuit.last_movement_date ? formatDate(lawsuit.last_movement_date) : "—"}
  </p>
@@ -840,7 +840,7 @@ function WorkspaceAdvocaciaPage() {
  <Button
  onClick={() => setIsMonitorSheetOpen(true)}
  size="sm"
- className="h-9 px-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1.5"
+ className="h-9 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2"
  >
  <Plus className="size-3.5" />
  <span>Novo Monitoramento</span>
@@ -848,7 +848,7 @@ function WorkspaceAdvocaciaPage() {
  </div>
 
  {monitors.length === 0 ? (
- <div className="p-12 text-center rounded-2xl bg-card border border-border space-y-3">
+ <div className="p-12 text-center rounded-lg bg-card border border-border space-y-3">
  <Radio className="size-10 mx-auto text-muted-foreground/40" />
  <h3 className="text-base font-bold text-foreground">Nenhum monitoramento em lote criado</h3>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -860,9 +860,9 @@ function WorkspaceAdvocaciaPage() {
  {monitors.map((mon: any) => (
  <div
  key={mon.id}
- className="rounded-2xl border border-border bg-card p-5 space-y-4 flex flex-col justify-between"
+ className="rounded-lg border border-border bg-card p-5 space-y-4 flex flex-col justify-between"
  >
- <div className="space-y-2.5">
+ <div className="space-y-3">
  <div className="flex items-start justify-between gap-2">
  <h4 className="text-sm font-bold text-foreground leading-snug">{mon.title}</h4>
  <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
@@ -878,7 +878,7 @@ function WorkspaceAdvocaciaPage() {
  {(mon.document_keys || []).slice(0, 4).map((doc: string) => (
  <span
  key={doc}
- className="px-2 py-0.5 rounded-md bg-muted/40 font-mono text-xs text-foreground font-medium"
+ className="px-2 py-1 rounded-md bg-muted/40 font-mono text-xs text-foreground font-medium"
  >
  {doc}
  </span>
@@ -898,7 +898,7 @@ function WorkspaceAdvocaciaPage() {
  </span>
  <div className="flex flex-wrap gap-1">
  {mon.courts.map((court: string) => (
- <Badge key={court} variant="outline" className="text-xs font-mono px-1.5 py-0">
+ <Badge key={court} variant="outline" className="text-xs font-mono px-2 py-0">
  {court}
  </Badge>
  ))}
@@ -932,7 +932,7 @@ function WorkspaceAdvocaciaPage() {
  {/* Coluna Esquerda: Demandas */}
  <div className="space-y-4 lg:col-span-7">
  {/* Filtros de Área */}
- <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3">
+ <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3">
  <Filter className="size-3.5 text-muted-foreground ml-1" />
  {[
  { id: "all", label: "Todas as Áreas" },
@@ -947,7 +947,7 @@ function WorkspaceAdvocaciaPage() {
  key={area.id}
  onClick={() => setSelectedArea(area.id)}
  className={cn(
- "rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer",
+ "rounded-lg px-3 py-2 text-xs font-semibold transition-all cursor-pointer",
  selectedArea === area.id
  ? "bg-primary text-primary-foreground"
  : "bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -959,7 +959,7 @@ function WorkspaceAdvocaciaPage() {
  </div>
 
  {filteredDemands.length === 0 ? (
- <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-card text-xs text-muted-foreground">
+ <div className="p-12 text-center rounded-lg border border-dashed border-border bg-card text-xs text-muted-foreground">
  Nenhuma demanda aberta nesta categoria no momento.
  </div>
  ) : (
@@ -968,7 +968,7 @@ function WorkspaceAdvocaciaPage() {
  key={demand.id}
  onClick={() => setSelectedDemand(demand)}
  className={cn(
- "rounded-2xl border p-5 transition-all cursor-pointer bg-card",
+ "rounded-lg border p-5 transition-all cursor-pointer bg-card",
  selectedDemand?.id === demand.id
  ? "border-primary ring-1 ring-primary shadow-xs"
  : "border-border hover:border-border/80"
@@ -1002,7 +1002,7 @@ function WorkspaceAdvocaciaPage() {
 
  {/* Coluna Direita: Formulário de Proposta */}
  <div className="lg:col-span-5">
- <div className="sticky top-6 rounded-2xl border border-border bg-card p-6 space-y-5 shadow-xs">
+ <div className="sticky top-6 rounded-lg border border-border bg-card p-6 space-y-5 shadow-xs">
  <div className="space-y-1">
  <h3 className="text-sm font-bold text-foreground">Proposta de Honorários</h3>
  <p className="text-xs text-muted-foreground">
@@ -1029,7 +1029,7 @@ function WorkspaceAdvocaciaPage() {
  type="button"
  onClick={() => setFeeType(m.id as any)}
  className={cn(
- "p-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer",
+ "p-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer",
  feeType === m.id
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-background text-muted-foreground border-border"
@@ -1052,7 +1052,7 @@ function WorkspaceAdvocaciaPage() {
  placeholder="Ex: 1500.00"
  value={fixedValue}
  onChange={(e) => setFixedValue(e.target.value)}
- className="h-10 rounded-xl bg-background text-xs"
+ className="h-10 rounded-lg bg-background text-xs"
  />
  </div>
  )}
@@ -1067,7 +1067,7 @@ function WorkspaceAdvocaciaPage() {
  placeholder="Ex: 20"
  value={successPercent}
  onChange={(e) => setSuccessPercent(e.target.value)}
- className="h-10 rounded-xl bg-background text-xs"
+ className="h-10 rounded-lg bg-background text-xs"
  />
  </div>
  )}
@@ -1080,7 +1080,7 @@ function WorkspaceAdvocaciaPage() {
  type="number"
  value={deadlineDays}
  onChange={(e) => setDeadlineDays(e.target.value)}
- className="h-10 rounded-xl bg-background text-xs"
+ className="h-10 rounded-lg bg-background text-xs"
  />
  </div>
 
@@ -1093,21 +1093,21 @@ function WorkspaceAdvocaciaPage() {
  value={details}
  onChange={(e) => setDetails(e.target.value)}
  placeholder="Apresente sua experiência na matéria, estratégia preliminar e o que está contemplado..."
- className="w-full rounded-xl border border-border bg-background p-3 text-xs focus:ring-1 focus:ring-primary outline-none"
+ className="w-full rounded-lg border border-border bg-background p-3 text-xs focus:ring-1 focus:ring-primary outline-none"
  />
  </div>
 
  <Button
  type="submit"
  disabled={isPending}
- className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-2"
+ className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2"
  >
  <Send className="size-3.5" />
  <span>{isPending ? "Enviando..." : "Enviar Proposta ao Cliente"}</span>
  </Button>
  </form>
  ) : (
- <div className="p-8 rounded-2xl border border-dashed border-border/80 bg-muted/20 text-center text-xs text-muted-foreground">
+ <div className="p-8 rounded-lg border border-dashed border-border/80 bg-muted/20 text-center text-xs text-muted-foreground">
  Clique em qualquer demanda aberta no mural para preencher e enviar a proposta formal.
  </div>
  )}

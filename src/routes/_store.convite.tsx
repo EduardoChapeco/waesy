@@ -132,17 +132,17 @@ function ConvitePage() {
     <div className="w-full max-w-5xl mx-auto space-y-10 pb-24 px-0 sm:px-4 md:px-0 pt-4">
       {/* ── 1. HERO & PAINEL DO MEMBRO FUNDADOR / EMBAIXADOR ── */}
       {overview ? (
-        <section className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 space-y-6 shadow-sm relative overflow-hidden">
+        <section className="rounded-lg border border-border/80 bg-card p-6 sm:p-8 space-y-6 shadow-sm relative overflow-hidden">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge className="font-mono text-xs uppercase px-2.5 py-0.5 rounded-lg bg-primary/15 text-primary border border-primary/30 flex items-center gap-1">
+                <Badge className="font-mono text-xs uppercase px-3 py-1 rounded-lg bg-primary/15 text-primary border border-primary/30 flex items-center gap-1">
                   <Star className="size-3" />
                   <span>Membro Fundador</span>
                 </Badge>
 
                 {overview.isAmbassadorActive ? (
-                  <Badge className="font-mono text-xs uppercase px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 flex items-center gap-1">
+                  <Badge className="font-mono text-xs uppercase px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 flex items-center gap-1">
                     <Flame className="size-3" />
                     <span>Embaixador Ativo</span>
                   </Badge>
@@ -162,7 +162,7 @@ function ConvitePage() {
               </h1>
             </div>
 
-            <div className="flex items-baseline gap-2 bg-muted/40 px-4 py-2.5 rounded-2xl border border-border/50">
+            <div className="flex items-baseline gap-2 bg-muted/40 px-4 py-3 rounded-lg border border-border/50">
               <Trophy className="size-5 text-amber-500" />
               <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
                 {overview.totalPoints}
@@ -172,7 +172,7 @@ function ConvitePage() {
           </div>
 
           {/* Manutenção Mensal do Título de Embaixador */}
-          <div className="rounded-2xl border border-border/50 bg-muted/20 p-4 space-y-2">
+          <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold text-foreground">
                 Atividade Mensal de Embaixador: {overview.monthlyConversions} novos membros nos últimos 30 dias
@@ -195,7 +195,7 @@ function ConvitePage() {
               Seu Link de Indicação (Membro Fundador)
             </label>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <div className="flex-1 bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs font-mono text-foreground select-all truncate">
+              <div className="flex-1 bg-background border border-border rounded-lg px-4 py-3 text-xs font-mono text-foreground select-all truncate">
                 {overview.shareUrl}
               </div>
               <div className="flex items-center gap-2">
@@ -203,7 +203,7 @@ function ConvitePage() {
                   type="button"
                   variant="outline"
                   onClick={handleCopyLink}
-                  className="h-11 rounded-xl text-xs font-mono gap-1.5 flex-1 sm:flex-initial"
+                  className="h-11 rounded-lg text-xs font-mono gap-2 flex-1 sm:flex-initial"
                 >
                   {copied ? <Check className="size-4 text-emerald-500" /> : <Copy className="size-4" />}
                   <span>{copied ? "Copiado" : "Copiar"}</span>
@@ -211,7 +211,7 @@ function ConvitePage() {
                 <Button
                   type="button"
                   onClick={handleShareWhatsApp}
-                  className="h-11 rounded-xl text-xs font-mono gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground flex-1 sm:flex-initial"
+                  className="h-11 rounded-lg text-xs font-mono gap-2 bg-primary hover:bg-primary/90 text-primary-foreground flex-1 sm:flex-initial"
                 >
                   <Share2 className="size-4" />
                   <span>WhatsApp</span>
@@ -222,15 +222,15 @@ function ConvitePage() {
 
           {/* Métricas Reais */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-            <div className="rounded-2xl border border-border/60 bg-muted/30 p-3.5 text-center">
+            <div className="rounded-lg border border-border/60 bg-muted/30 p-4 text-center">
               <span className="text-[11px] font-mono text-muted-foreground uppercase block">Cliques no Link</span>
               <span className="text-xl font-bold font-mono text-foreground">{overview.clicks}</span>
             </div>
-            <div className="rounded-2xl border border-border/60 bg-muted/30 p-3.5 text-center">
+            <div className="rounded-lg border border-border/60 bg-muted/30 p-4 text-center">
               <span className="text-[11px] font-mono text-muted-foreground uppercase block">Membros Cadastrados</span>
               <span className="text-xl font-bold font-mono text-foreground">{overview.conversions}</span>
             </div>
-            <div className="col-span-2 sm:col-span-1 rounded-2xl border border-border/60 bg-muted/30 p-3.5 text-center">
+            <div className="col-span-2 sm:col-span-1 rounded-lg border border-border/60 bg-muted/30 p-4 text-center">
               <span className="text-[11px] font-mono text-muted-foreground uppercase block">Pontos por Amigo</span>
               <span className="text-xl font-bold font-mono text-emerald-600">+100 pts</span>
             </div>
@@ -238,8 +238,8 @@ function ConvitePage() {
         </section>
       ) : (
         /* Teaser para não autenticado */
-        <section className="rounded-3xl border border-border/80 bg-card p-6 sm:p-10 space-y-6 text-center shadow-sm">
-          <div className="size-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+        <section className="rounded-lg border border-border/80 bg-card p-6 sm:p-10 space-y-6 text-center shadow-sm">
+          <div className="size-14 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
             <Gift className="size-7" />
           </div>
           <div className="max-w-md mx-auto space-y-2">
@@ -253,7 +253,7 @@ function ConvitePage() {
           <div className="flex justify-center">
             <Link
               to="/entrar"
-              className="h-11 px-8 rounded-xl bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 hover:bg-foreground/90 transition-all shadow-sm"
+              className="h-11 px-8 rounded-lg bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 hover:bg-foreground/90 transition-all shadow-sm"
             >
               <span>Entrar com Meu Perfil</span>
               <ArrowRight className="size-4" />
@@ -291,9 +291,9 @@ function ConvitePage() {
               return (
                 <div
                   key={raffle.id}
-                  className="rounded-3xl border border-border/80 bg-card p-5 sm:p-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 shadow-sm hover:border-foreground/30 transition-all"
+                  className="rounded-lg border border-border/80 bg-card p-5 sm:p-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 shadow-sm hover:border-foreground/30 transition-all"
                 >
-                  <div className="space-y-2.5 max-w-xl">
+                  <div className="space-y-3 max-w-xl">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-mono text-[10px] font-bold uppercase">
                         Concurso Aberto
@@ -337,9 +337,9 @@ function ConvitePage() {
                       type="button"
                       disabled={!overview || hasReachedLimit || (raffle.pointsCost > 0 && !hasPoints)}
                       onClick={() => handleOpenRaffleModal(raffle)}
-                      className="h-11 px-6 rounded-xl font-mono text-xs font-bold w-full md:w-auto"
+                      className="h-11 px-6 rounded-lg font-mono text-xs font-bold w-full md:w-auto"
                     >
-                      <Ticket className="size-4 mr-1.5" />
+                      <Ticket className="size-4 mr-2" />
                       {hasReachedLimit
                         ? "Limite de Cupons Atingido"
                         : !overview
@@ -375,7 +375,7 @@ function ConvitePage() {
               return (
                 <div
                   key={reward.id}
-                  className="rounded-2xl border border-border/70 bg-card overflow-hidden flex flex-col justify-between p-4 space-y-3 hover:border-foreground/30 transition-all shadow-sm"
+                  className="rounded-lg border border-border/70 bg-card overflow-hidden flex flex-col justify-between p-4 space-y-3 hover:border-foreground/30 transition-all shadow-sm"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -399,10 +399,10 @@ function ConvitePage() {
                     variant={canClaim ? "default" : "secondary"}
                     disabled={!canClaim || isOutOfStock || claimingId === reward.id}
                     onClick={() => handleClaim(reward.id)}
-                    className="w-full h-11 rounded-xl text-xs font-mono font-bold"
+                    className="w-full h-11 rounded-lg text-xs font-mono font-bold"
                   >
                     {claimingId === reward.id ? (
-                      <Loader2 className="size-3.5 animate-spin mr-1.5" />
+                      <Loader2 className="size-3.5 animate-spin mr-2" />
                     ) : null}
                     {isOutOfStock
                       ? "Esgotado"
@@ -429,7 +429,7 @@ function ConvitePage() {
           <Trophy className="size-5 text-amber-500" />
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-card overflow-hidden divide-y divide-border/60">
+        <div className="rounded-lg border border-border/70 bg-card overflow-hidden divide-y divide-border/60">
           {leaderboard.length === 0 ? (
             <div className="p-8 text-center text-xs text-muted-foreground">
               Seja o primeiro a convidar amigos e assumir o topo da comunidade!
@@ -441,7 +441,7 @@ function ConvitePage() {
               return (
                 <div
                   key={ambassador.userId}
-                  className="p-3.5 sm:p-4 flex items-center justify-between hover:bg-muted/20 transition-colors"
+                  className="p-4 sm:p-4 flex items-center justify-between hover:bg-muted/20 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-xs font-bold w-6 text-center text-muted-foreground">
@@ -454,9 +454,9 @@ function ConvitePage() {
                         ambassador.displayName[0]
                       )}
                     </div>
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <span className="text-xs font-bold text-foreground block">{ambassador.displayName}</span>
-                      <Badge className={`font-mono text-[9px] uppercase px-1.5 py-0 ${tierBadge.color}`}>
+                      <Badge className={`font-mono text-[9px] uppercase px-2 py-0 ${tierBadge.color}`}>
                         {tierBadge.label}
                       </Badge>
                     </div>
@@ -476,7 +476,7 @@ function ConvitePage() {
 
       {/* ── MODAL CANÔNICO: REGULAMENTO DO SORTEIO ── */}
       <Dialog open={!!selectedRaffle} onOpenChange={(open) => !open && setSelectedRaffle(null)}>
-        <DialogContent className="max-w-md rounded-2xl p-6 space-y-4">
+        <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
           <DialogHeader>
             <div className="flex items-center gap-2 text-primary">
               <FileCheck className="size-5" />
@@ -487,14 +487,14 @@ function ConvitePage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="rounded-xl border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground space-y-2 max-h-48 overflow-y-auto leading-relaxed">
+          <div className="rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground space-y-2 max-h-48 overflow-y-auto leading-relaxed">
             <p className="font-bold text-foreground">Regras de Participação:</p>
             <p>{selectedRaffle?.termsText || "Participe gratuitamente emitindo seu cupom. O sorteio será realizado na data estipulada e o vencedor poderá retirar o prêmio diretamente na loja apresentando o cupom contemplado."}</p>
             <p><strong>Data do Sorteio:</strong> {selectedRaffle ? new Date(selectedRaffle.drawDate).toLocaleDateString("pt-BR") : ""}</p>
             <p><strong>Limite:</strong> Até {selectedRaffle?.maxTicketsPerUser} cupons por participante.</p>
           </div>
 
-          <div className="flex items-start gap-2.5 pt-1">
+          <div className="flex items-start gap-3 pt-1">
             <Checkbox
               id="terms-accept"
               checked={acceptedTerms}
@@ -513,7 +513,7 @@ function ConvitePage() {
               type="button"
               variant="outline"
               onClick={() => setSelectedRaffle(null)}
-              className="h-11 rounded-xl text-xs font-semibold"
+              className="h-11 rounded-lg text-xs font-semibold"
             >
               Cancelar
             </Button>
@@ -521,12 +521,12 @@ function ConvitePage() {
               type="button"
               disabled={!acceptedTerms || isSubmittingTicket}
               onClick={handleConfirmRaffleParticipation}
-              className="h-11 rounded-xl text-xs font-bold"
+              className="h-11 rounded-lg text-xs font-bold"
             >
               {isSubmittingTicket ? (
-                <Loader2 className="size-4 animate-spin mr-1.5" />
+                <Loader2 className="size-4 animate-spin mr-2" />
               ) : (
-                <Ticket className="size-4 mr-1.5" />
+                <Ticket className="size-4 mr-2" />
               )}
               <span>Emitir Cupom da Sorte</span>
             </Button>

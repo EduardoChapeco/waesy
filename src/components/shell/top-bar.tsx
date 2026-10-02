@@ -39,7 +39,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
           <Link
             to="/"
-            className="flex items-center gap-1.5 hover:opacity-90 transition-opacity shrink-0"
+            className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0"
             aria-label="Ir para a página inicial"
           >
             {brandSettings?.show_logo !== false && brandSettings?.logo_url ? (
@@ -61,22 +61,22 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             type="button"
             onClick={() => setBetaModalOpen(true)}
             title="Versão Beta"
-            className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border/50 bg-muted/20 hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
+            className="inline-flex items-center px-2 py-1 rounded-md text-[9px] font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border/50 bg-muted/20 hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
           >
             BETA
           </button>
 
           {/* Location Master Pill — com largura fluida que não estrangula o nome da cidade */}
-          <LocationMasterPill className="max-w-[120px] sm:max-w-[200px]" />
+          <LocationMasterPill className="max-w-[120px] sm:max-w-52" />
         </div>
 
         {/* Centro (Desktop >= 768px): Busca Global Inteligente Silenciosa */}
         <div className="hidden md:flex flex-1 max-w-xl mx-4">
           <Link
             to="/buscar"
-            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground text-xs font-normal transition-all group border border-border/40 hover:border-border/70"
+            className="w-full flex items-center justify-between px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground text-xs font-normal transition-all group border border-border/40 hover:border-border/70"
           >
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
               <MagnifyingGlass
                 size={15}
                 weight="bold"
@@ -84,7 +84,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
               />
               <span className="truncate">Buscar lugares, classificados, vagas ou serviços...</span>
             </div>
-            <kbd className="hidden xl:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-medium text-muted-foreground/80 bg-background rounded-md border border-border/40 shrink-0">
+            <kbd className="hidden xl:inline-flex items-center gap-1 px-2 py-1 text-[10px] font-mono font-medium text-muted-foreground/80 bg-background rounded-md border border-border/40 shrink-0">
               ⌘K
             </kbd>
           </Link>
@@ -95,7 +95,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
           {/* Ação de Busca Rápida Mobile (Touch Target 44px ergonômico) */}
           <Link
             to="/buscar"
-            className="md:hidden flex items-center justify-center size-9 sm:size-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+            className="md:hidden flex items-center justify-center size-9 sm:size-10 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
             aria-label="Abrir busca"
             title="Buscar"
           >

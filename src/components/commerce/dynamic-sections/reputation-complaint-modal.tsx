@@ -43,7 +43,7 @@ export function ReputationComplaintModal({ isOpen, onClose, companyName }: Reput
 
  return (
  <Dialog open={isOpen} onOpenChange={onClose}>
- <DialogContent className="max-w-lg rounded-2xl">
+ <DialogContent className="max-w-lg rounded-lg">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold flex items-center gap-2 text-rose-600">
  <AlertCircle className="w-5 h-5" />
@@ -54,7 +54,7 @@ export function ReputationComplaintModal({ isOpen, onClose, companyName }: Reput
  </DialogDescription>
  </DialogHeader>
 
- <form onSubmit={handleSubmit} className="space-y-3.5 py-2">
+ <form onSubmit={handleSubmit} className="space-y-4 py-2">
  <div className="space-y-1">
  <label className="text-xs font-semibold text-foreground">Seu Nome Completo *</label>
  <Input
@@ -63,7 +63,7 @@ export function ReputationComplaintModal({ isOpen, onClose, companyName }: Reput
  placeholder="Ex: Ana Clara Souza"
  value={name}
  onChange={(e) => setName(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
 
@@ -76,7 +76,7 @@ export function ReputationComplaintModal({ isOpen, onClose, companyName }: Reput
  placeholder="000.000.000-00"
  value={cpf}
  onChange={(e) => setCpf(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
  <div className="space-y-1">
@@ -87,7 +87,7 @@ export function ReputationComplaintModal({ isOpen, onClose, companyName }: Reput
  placeholder="seu@email.com"
  value={email}
  onChange={(e) => setEmail(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
  </div>
@@ -100,7 +100,7 @@ export function ReputationComplaintModal({ isOpen, onClose, companyName }: Reput
  placeholder="Resuma o ocorrido em poucas palavras"
  value={title}
  onChange={(e) => setTitle(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
 
@@ -112,15 +112,15 @@ export function ReputationComplaintModal({ isOpen, onClose, companyName }: Reput
  placeholder="Descreva o que aconteceu, datas e o que você espera como solução..."
  value={description}
  onChange={(e) => setDescription(e.target.value)}
- className="rounded-xl text-xs resize-none"
+ className="rounded-lg text-xs resize-none"
  />
  </div>
 
  <DialogFooter className="gap-2 sm:gap-0 pt-2">
- <Button type="button" variant="ghost" onClick={onClose} className="min-h-[44px]">
+ <Button type="button" variant="ghost" onClick={onClose} className="min-h-11">
  Cancelar
  </Button>
- <Button type="submit" disabled={isSubmitting} className="min-h-[44px] bg-rose-600 hover:bg-rose-700 text-white">
+ <Button type="submit" disabled={isSubmitting} className="min-h-11 bg-rose-600 hover:bg-rose-700 text-white">
  {isSubmitting ? "Registrando Protocolo..." : "Enviar Reclamação"}
  </Button>
  </DialogFooter>

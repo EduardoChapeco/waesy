@@ -38,7 +38,7 @@ const sheetVariants = cva(
       side: {
         top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
-          "inset-x-0 bottom-0 border-t rounded-t-3xl data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom max-h-[92dvh] sm:max-h-[85vh]",
+          "inset-x-0 bottom-0 border-t rounded-t-lg data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom max-h-[92dvh] sm:max-h-[85vh]",
         left: "inset-y-0 left-0 h-full w-full border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
         right:
           "inset-y-0 right-0 h-full w-full border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
@@ -101,7 +101,7 @@ const SheetContent = React.forwardRef<
         {resolvedSide === "bottom" && (
           <div className="mx-auto w-12 h-1.5 rounded-full bg-muted-foreground/20 mb-3 shrink-0" aria-hidden="true" />
         )}
-        <SheetPrimitive.Close className="absolute right-4 top-4 rounded-xl p-2.5 opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-10 touch-manipulation">
+        <SheetPrimitive.Close className="absolute right-4 top-4 rounded-lg p-3 opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-10 touch-manipulation">
           <X className="size-4" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>

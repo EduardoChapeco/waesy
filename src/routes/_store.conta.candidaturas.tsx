@@ -67,20 +67,20 @@ function MinhasCandidaturasPage() {
             Candidaturas
           </h1>
           {applications.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {applications.length}
             </Badge>
           )}
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer gap-1.5">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer gap-2">
             <Link to="/conta/curriculo">
               <FileText className="size-3.5" />
               <span>Currículo</span>
             </Link>
           </Button>
-          <Button asChild size="sm" variant="default" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
+          <Button asChild size="sm" variant="default" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer">
             <Link to="/empregos">Explorar</Link>
           </Button>
         </div>
@@ -96,11 +96,11 @@ function MinhasCandidaturasPage() {
  {applications.map((app) => (
  <div
  key={app.id}
- className="bg-card rounded-2xl p-3.5 sm:p-5 border border-border/60 space-y-4 flex flex-col justify-between"
+ className="bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4 flex flex-col justify-between"
  >
  <div className="flex items-start justify-between gap-4">
- <div className="flex items-start gap-3.5 min-w-0">
- <div className="size-12 rounded-xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
+ <div className="flex items-start gap-4 min-w-0">
+ <div className="size-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
  {app.company_logo_url ? (
  <img
  src={app.company_logo_url}
@@ -145,7 +145,7 @@ function MinhasCandidaturasPage() {
 
  {/* Informações de Entrevista se Agendada */}
  {app.status === "interview_scheduled" && app.interview_at && (
- <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+ <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-semibold">
  <Calendar className="size-4 shrink-0" />
  <span>
@@ -160,7 +160,7 @@ function MinhasCandidaturasPage() {
  </div>
 
  {app.interview_meeting_url && (
- <Button asChild size="sm" className="min-h-[44px] sm:min-h-0 sm:h-9 gap-1.5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground shrink-0">
+ <Button asChild size="sm" className="min-h-11 sm:min-h-0 sm:h-9 gap-2 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground shrink-0">
  <a
  href={app.interview_meeting_url}
  target="_blank"

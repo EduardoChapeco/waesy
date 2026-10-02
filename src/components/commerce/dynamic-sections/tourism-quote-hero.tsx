@@ -96,7 +96,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
  {/* Coluna Esquerda: Headline & Value Props */}
  <div className="space-y-6 lg:col-span-7">
- <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-3.5 py-1 text-xs font-bold text-sky-300 backdrop-blur-md">
+ <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-4 py-1 text-xs font-bold text-sky-300 backdrop-blur-md">
  <Layers className="size-3.5 text-sky-400" />
  <span>{badge}</span>
  </div>
@@ -121,7 +121,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  type="button"
  onClick={() => setDestination(dest)}
  className={cn(
- "rounded-lg border px-2.5 py-1 text-xs font-medium transition-all cursor-pointer",
+ "rounded-lg border px-3 py-1 text-xs font-medium transition-all cursor-pointer",
  destination === dest
  ? "border-sky-400 bg-sky-500/20 text-sky-200 font-bold"
  : "border-slate-700 bg-slate-900/60 text-slate-300 hover:border-slate-500 hover:text-white"
@@ -135,11 +135,11 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
 
  {/* Badges de Confiança */}
  <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-slate-400">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <ShieldCheck className="size-4 text-emerald-400" />
  <span>Atendimento Personalizado</span>
  </div>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <CheckCircle2 className="size-4 text-sky-400" />
  <span>Parcelamento em até 10x</span>
  </div>
@@ -148,7 +148,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
 
  {/* Coluna Direita: Card Flutuante de Cotação Instantânea */}
  <div className="lg:col-span-5">
- <div className="rounded-2xl border border-white/10 bg-slate-900/90 p-5 sm:p-6 shadow-2xl backdrop-blur-xl">
+ <div className="rounded-lg border border-white/10 bg-slate-900/90 p-5 sm:p-6 shadow-2xl backdrop-blur-xl">
  <div className="mb-4 space-y-1">
  <h3 className="text-base font-bold text-white flex items-center gap-2">
  <Plane className="size-4 text-sky-400" />
@@ -160,7 +160,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  </div>
 
  {submitted ? (
- <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-center space-y-3">
+ <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-5 text-center space-y-3">
  <CheckCircle2 className="size-10 text-emerald-400 mx-auto" />
  <h4 className="text-sm font-bold text-emerald-200">Cotação Encaminhada!</h4>
  <p className="text-xs text-slate-300 leading-relaxed">
@@ -185,7 +185,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  placeholder="Ex: Beto Carrero, Gramado, Maceió..."
  value={destination}
  onChange={(e) => setDestination(e.target.value)}
- className="pl-8.5 h-8.5 rounded-xl bg-slate-800/80 border-slate-700 text-xs text-white placeholder:text-slate-500 focus-visible:ring-sky-500"
+ className="pl-8.5 h-8.5 rounded-lg bg-slate-800/80 border-slate-700 text-xs text-white placeholder:text-slate-500 focus-visible:ring-sky-500"
  required
  />
  </div>
@@ -200,7 +200,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  placeholder="Mês ou Data"
  value={departureDate}
  onChange={(e) => setDepartureDate(e.target.value)}
- className="pl-8.5 h-8.5 rounded-xl bg-slate-800/80 border-slate-700 text-xs text-white placeholder:text-slate-500"
+ className="pl-8.5 h-8.5 rounded-lg bg-slate-800/80 border-slate-700 text-xs text-white placeholder:text-slate-500"
  />
  </div>
  </div>
@@ -213,7 +213,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  placeholder="Ex: 2 adultos, 1 criança"
  value={passengers}
  onChange={(e) => setPassengers(e.target.value)}
- className="pl-8.5 h-8.5 rounded-xl bg-slate-800/80 border-slate-700 text-xs text-white placeholder:text-slate-500"
+ className="pl-8.5 h-8.5 rounded-lg bg-slate-800/80 border-slate-700 text-xs text-white placeholder:text-slate-500"
  />
  </div>
  </div>
@@ -226,7 +226,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  placeholder="Nome completo"
  value={clientName}
  onChange={(e) => setClientName(e.target.value)}
- className="h-8.5 rounded-xl bg-slate-800/80 border-slate-700 text-xs text-white placeholder:text-slate-500"
+ className="h-8.5 rounded-lg bg-slate-800/80 border-slate-700 text-xs text-white placeholder:text-slate-500"
  />
  </div>
 
@@ -236,7 +236,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  placeholder="(49) 99999-9999"
  value={clientPhone}
  onChange={(e) => setClientPhone(e.target.value)}
- className="h-8.5 rounded-xl bg-slate-800/80 border-slate-700 text-xs text-white placeholder:text-slate-500"
+ className="h-8.5 rounded-lg bg-slate-800/80 border-slate-700 text-xs text-white placeholder:text-slate-500"
  required
  />
  </div>
@@ -245,7 +245,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  <Button
  type="submit"
  disabled={isSubmitting}
- className="w-full h-9 mt-2 rounded-xl text-xs font-bold gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-md cursor-pointer transition-all"
+ className="w-full h-9 mt-2 rounded-lg text-xs font-bold gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-md cursor-pointer transition-all"
  >
  <Send className="size-3.5" />
  <span>{isSubmitting ? "Enviando..." : "Receber Roteiro & Preços no WhatsApp"}</span>

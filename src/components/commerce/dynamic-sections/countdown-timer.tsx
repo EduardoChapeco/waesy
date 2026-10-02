@@ -43,7 +43,7 @@ export function CountdownTimer(props: CountdownTimerProps) {
  const customText = designTokens.textColor;
  const customBoxColor = designTokens.boxColor;
  const customBoxTextColor = designTokens.boxTextColor;
- const customRadius = designTokens.borderRadius || "rounded-2xl";
+ const customRadius = designTokens.borderRadius || "rounded-lg";
 
  const [timeLeft, setTimeLeft] = useState<{ d: number; h: number; m: number; s: number } | null>(
  () => {
@@ -103,7 +103,7 @@ export function CountdownTimer(props: CountdownTimerProps) {
  return (
  <div
  suppressHydrationWarning
- className="w-full py-8 px-4 flex flex-col items-center justify-center text-center transition-colors rounded-2xl"
+ className="w-full py-8 px-4 flex flex-col items-center justify-center text-center transition-colors rounded-lg"
  style={{
  backgroundColor: customBg || "transparent",
  color: customText || defaultTextColor,
@@ -121,7 +121,7 @@ export function CountdownTimer(props: CountdownTimerProps) {
  {isExpired ? (
  <div className="text-2xl font-black py-2">{expiredMessage}</div>
  ) : (
- <div className="flex items-center gap-2.5 sm:gap-4">
+ <div className="flex items-center gap-3 sm:gap-4">
  <TimeBox
  value={timeLeft.d}
  label="Dias"

@@ -171,7 +171,7 @@ export default function ReaccommodationPage() {
             <ShieldAlert className="size-5 text-amber-500" />
             Casos ANAC 400 e Reacomodação Aérea
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground mt-1">
             Registro e assistência ao passageiro em contingências de voo conforme Resolução ANAC 400/2016.{' '}
             <Link
               to="/workspace/turismo/incidentes"
@@ -184,7 +184,7 @@ export default function ReaccommodationPage() {
 
         <Button
           onClick={() => setIsSheetOpen(true)}
-          className="h-11 px-5 gap-2 text-sm font-medium rounded-xl cursor-pointer"
+          className="h-11 px-5 gap-2 text-sm font-medium rounded-lg cursor-pointer"
         >
           <Plus className="size-4" />
           Registrar Novo Caso
@@ -193,8 +193,8 @@ export default function ReaccommodationPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl border border-border bg-card flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-muted text-foreground">
+        <div className="p-4 rounded-lg border border-border bg-card flex items-center gap-3">
+          <div className="p-3 rounded-lg bg-muted text-foreground">
             <AlertTriangle className="size-4 text-muted-foreground" />
           </div>
           <div>
@@ -205,8 +205,8 @@ export default function ReaccommodationPage() {
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl border border-border bg-card flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-destructive/10 text-destructive">
+        <div className="p-4 rounded-lg border border-border bg-card flex items-center gap-3">
+          <div className="p-3 rounded-lg bg-destructive/10 text-destructive">
             <ShieldAlert className="size-4" />
           </div>
           <div>
@@ -217,8 +217,8 @@ export default function ReaccommodationPage() {
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl border border-border bg-card flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
+        <div className="p-4 rounded-lg border border-border bg-card flex items-center gap-3">
+          <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-500">
             <CheckCircle2 className="size-4" />
           </div>
           <div>
@@ -227,8 +227,8 @@ export default function ReaccommodationPage() {
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl border border-border bg-card flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500">
+        <div className="p-4 rounded-lg border border-border bg-card flex items-center gap-3">
+          <div className="p-3 rounded-lg bg-blue-500/10 text-blue-500">
             <RefreshCw className="size-4" />
           </div>
           <div>
@@ -245,7 +245,7 @@ export default function ReaccommodationPage() {
           placeholder="Buscar por relato, passageiro ou notas do caso..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 h-11 bg-card rounded-xl text-sm"
+          className="pl-10 h-11 bg-card rounded-lg text-sm"
         />
       </div>
 
@@ -255,7 +255,7 @@ export default function ReaccommodationPage() {
           Carregando casos de reacomodação...
         </div>
       ) : filteredCases.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-card">
+        <div className="p-12 text-center rounded-lg border border-dashed border-border bg-card">
           <ShieldAlert className="size-10 text-muted-foreground mx-auto mb-3 opacity-40" />
           <h3 className="text-base font-semibold text-foreground">Nenhum caso registrado</h3>
           <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -263,7 +263,7 @@ export default function ReaccommodationPage() {
           </p>
           <Button
             onClick={() => setIsSheetOpen(true)}
-            className="h-11 px-5 gap-2 text-xs font-medium rounded-xl cursor-pointer"
+            className="h-11 px-5 gap-2 text-xs font-medium rounded-lg cursor-pointer"
           >
             <Plus className="size-4" />
             Registrar Primeiro Caso
@@ -274,21 +274,21 @@ export default function ReaccommodationPage() {
           {filteredCases.map((c) => (
             <div
               key={c.id}
-              className="p-5 rounded-2xl border border-border bg-card shadow-xs flex flex-col gap-4"
+              className="p-5 rounded-lg border border-border bg-card shadow-xs flex flex-col gap-4"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-muted text-foreground">
+                  <div className="p-3 rounded-lg bg-muted text-foreground">
                     <ShieldAlert className="size-5 text-muted-foreground" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-bold text-foreground">{getReasonLabel(c.change_reason)}</h3>
-                      <span className={`px-2 py-0.5 rounded-md text-xs font-bold uppercase border ${getPriorityBadge(c.priority)}`}>
+                      <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase border ${getPriorityBadge(c.priority)}`}>
                         {c.priority}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Aberto em {c.created_at ? new Date(c.created_at).toLocaleString('pt-BR') : 'Recente'}
                     </p>
                   </div>
@@ -296,7 +296,7 @@ export default function ReaccommodationPage() {
 
                 <div className="flex items-center gap-2">
                   <select
-                    className="h-10 sm:h-8 px-3 rounded-xl sm:rounded-lg border border-input bg-background text-xs font-medium focus:outline-none cursor-pointer"
+                    className="h-10 sm:h-8 px-3 rounded-lg sm:rounded-lg border border-input bg-background text-xs font-medium focus:outline-none cursor-pointer"
                     value={c.workflow_status}
                     onChange={(e) =>
                       updateStatusMutation.mutate({
@@ -319,13 +319,13 @@ export default function ReaccommodationPage() {
               {/* Relato e Notas */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                 {c.passenger_notes && (
-                  <div className="p-3 rounded-xl bg-muted/40 border border-border/40">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/40">
                     <span className="font-semibold text-foreground block mb-1">Passageiro / Situação:</span>
                     <p className="text-muted-foreground leading-relaxed">{c.passenger_notes}</p>
                   </div>
                 )}
                 {c.internal_notes && (
-                  <div className="p-3 rounded-xl bg-muted/40 border border-border/40">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/40">
                     <span className="font-semibold text-foreground block mb-1">Anotações da Agência:</span>
                     <p className="text-muted-foreground leading-relaxed">{c.internal_notes}</p>
                   </div>
@@ -334,7 +334,7 @@ export default function ReaccommodationPage() {
 
               {/* Direitos Calculados */}
               {c.anac_rights_summary && (
-                <div className="p-3 rounded-xl bg-muted/40 border border-border/50 flex flex-wrap items-center gap-4 text-xs">
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 flex flex-wrap items-center gap-4 text-xs">
                   <span className="font-semibold text-foreground">
                     Direitos ANAC:
                   </span>
@@ -366,7 +366,7 @@ export default function ReaccommodationPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-11 sm:h-9 px-4 sm:px-3 text-xs font-bold gap-1.5 rounded-xl cursor-pointer w-full sm:w-auto"
+                  className="h-11 sm:h-9 px-4 sm:px-3 text-xs font-bold gap-2 rounded-lg cursor-pointer w-full sm:w-auto"
                   onClick={() => {
                     const text = encodeURIComponent(
                       `Olá! Estamos acompanhando a contingência do seu voo (${getReasonLabel(c.change_reason)}). Conforme a Resolução ANAC 400, você possui direitos de assistência material garantidos. Estamos trabalhando na sua reacomodação agora.`
@@ -387,8 +387,8 @@ export default function ReaccommodationPage() {
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-[70vw] p-0 flex flex-col h-full bg-card overflow-hidden">
           <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-muted text-foreground">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-muted text-foreground">
                 <ShieldAlert className="size-5 text-muted-foreground" />
               </div>
               <div>
@@ -403,10 +403,10 @@ export default function ReaccommodationPage() {
           <div className="flex-1 p-6 space-y-6 overflow-y-auto no-scrollbar">
             {/* Vínculo de Passageiro e Voo */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Passageiro Titular (CRM)</Label>
                 <select
-                  className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none"
+                  className="w-full h-11 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none"
                   value={selectedCustomerId}
                   onChange={(e) => setSelectedCustomerId(e.target.value)}
                 >
@@ -419,10 +419,10 @@ export default function ReaccommodationPage() {
                 </select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Bilhete / Reserva Vinculada (GDS)</Label>
                 <select
-                  className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none"
+                  className="w-full h-11 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none"
                   value={selectedItineraryId}
                   onChange={(e) => setSelectedItineraryId(e.target.value)}
                 >
@@ -439,13 +439,13 @@ export default function ReaccommodationPage() {
               </div>
 
               {!selectedCustomerId && (
-                <div className="space-y-1.5 md:col-span-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label className="text-xs font-semibold">Nome Completo do Passageiro (Manual)</Label>
                   <Input
                     placeholder="Ex: Maria Aparecida Santos"
                     value={passengerManualName}
                     onChange={(e) => setPassengerManualName(e.target.value)}
-                    className="h-11 rounded-xl"
+                    className="h-11 rounded-lg"
                   />
                 </div>
               )}
@@ -453,10 +453,10 @@ export default function ReaccommodationPage() {
 
             {/* Motivo e Horas de Atraso */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-1.5 md:col-span-1">
+              <div className="space-y-2 md:col-span-1">
                 <Label className="text-xs font-semibold">Motivo da Contingência</Label>
                 <select
-                  className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm font-medium focus:outline-none"
+                  className="w-full h-11 px-3 rounded-lg border border-input bg-background text-sm font-medium focus:outline-none"
                   value={changeReason}
                   onChange={(e) => setChangeReason(e.target.value as ChangeReason)}
                 >
@@ -468,10 +468,10 @@ export default function ReaccommodationPage() {
                 </select>
               </div>
 
-              <div className="space-y-1.5 md:col-span-1">
+              <div className="space-y-2 md:col-span-1">
                 <Label className="text-xs font-semibold">Prioridade Operacional</Label>
                 <select
-                  className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none"
+                  className="w-full h-11 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none"
                   value={priority}
                   onChange={(e) => setPriority(e.target.value as ReaccommodationPriority)}
                 >
@@ -482,26 +482,26 @@ export default function ReaccommodationPage() {
                 </select>
               </div>
 
-              <div className="space-y-1.5 md:col-span-1">
+              <div className="space-y-2 md:col-span-1">
                 <Label className="text-xs font-semibold">Atraso Estimado (Horas)</Label>
                 <Input
                   type="number"
                   min={0}
                   value={delayHours}
                   onChange={(e) => setDelayHours(Number(e.target.value))}
-                  className="h-11 rounded-xl"
+                  className="h-11 rounded-lg"
                 />
               </div>
             </div>
 
             {/* ANAC Rights Preview */}
-            <div className="p-4 rounded-2xl border border-border/60 bg-muted/20 flex flex-col gap-2.5">
+            <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex flex-col gap-3">
               <div className="flex items-center gap-2 text-foreground font-semibold text-xs uppercase tracking-wider">
                 <ShieldAlert className="size-4 text-muted-foreground" />
                 Direitos ANAC 400/2016 Calculados para {delayHours}h de atraso
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div className="p-2.5 rounded-xl bg-background/60 border border-border/40 flex items-center gap-2">
+                <div className="p-3 rounded-lg bg-background/60 border border-border/40 flex items-center gap-2">
                   <Utensils className="size-4 text-muted-foreground" />
                   <div>
                     <span className="text-xs text-muted-foreground block">Alimentação</span>
@@ -510,7 +510,7 @@ export default function ReaccommodationPage() {
                     </strong>
                   </div>
                 </div>
-                <div className="p-2.5 rounded-xl bg-background/60 border border-border/40 flex items-center gap-2">
+                <div className="p-3 rounded-lg bg-background/60 border border-border/40 flex items-center gap-2">
                   <Hotel className="size-4 text-muted-foreground" />
                   <div>
                     <span className="text-xs text-muted-foreground block">Hospedagem</span>
@@ -519,7 +519,7 @@ export default function ReaccommodationPage() {
                     </strong>
                   </div>
                 </div>
-                <div className="p-2.5 rounded-xl bg-background/60 border border-border/40 flex items-center gap-2">
+                <div className="p-3 rounded-lg bg-background/60 border border-border/40 flex items-center gap-2">
                   <RefreshCw className="size-4 text-muted-foreground" />
                   <div>
                     <span className="text-xs text-muted-foreground block">Voo Concorrente</span>
@@ -528,7 +528,7 @@ export default function ReaccommodationPage() {
                     </strong>
                   </div>
                 </div>
-                <div className="p-2.5 rounded-xl bg-background/60 border border-border/40 flex items-center gap-2">
+                <div className="p-3 rounded-lg bg-background/60 border border-border/40 flex items-center gap-2">
                   <FileText className="size-4 text-muted-foreground" />
                   <div>
                     <span className="text-xs text-muted-foreground block">Reembolso 100%</span>
@@ -542,36 +542,36 @@ export default function ReaccommodationPage() {
 
             {/* Relato e Notas */}
             <div className="space-y-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Relato do Passageiro / Detalhes da Ocorrência</Label>
                 <Textarea
                   placeholder="Ex: Passageiro está no aeroporto de Guarulhos após cancelamento do voo LA3214 por manutenção. Cia não ofereceu voucher de alimentação..."
                   value={passengerNotes}
                   onChange={(e) => setPassengerNotes(e.target.value)}
-                  className="min-h-[85px] rounded-xl text-xs"
+                  className="min-h-[85px] rounded-lg text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Anotações Internas da Agência (Ações do Plantão)</Label>
                 <Input
                   placeholder="Ex: Acionado plantão da RexturAdvance para emitir reacomodação no voo G3 1450..."
                   value={internalNotes}
                   onChange={(e) => setInternalNotes(e.target.value)}
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                 />
               </div>
             </div>
           </div>
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t border-border bg-muted/20 shrink-0">
-            <Button variant="outline" onClick={() => setIsSheetOpen(false)} className="h-11 px-5 rounded-xl cursor-pointer">
+            <Button variant="outline" onClick={() => setIsSheetOpen(false)} className="h-11 px-5 rounded-lg cursor-pointer">
               Cancelar
             </Button>
             <Button
               onClick={() => createMutation.mutate()}
               disabled={createMutation.isPending}
-              className="h-11 px-6 font-medium rounded-xl cursor-pointer"
+              className="h-11 px-6 font-medium rounded-lg cursor-pointer"
             >
               {createMutation.isPending ? (
                 <><Loader2 className="size-4 animate-spin mr-2" />Registrando...</>

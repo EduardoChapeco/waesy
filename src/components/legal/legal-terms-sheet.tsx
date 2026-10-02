@@ -76,7 +76,7 @@ export function LegalTermsSheet({
  <div className="p-5 pb-3 border-b border-border/40 space-y-3 bg-card">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
  <FileText className="size-4" />
  </div>
  <div>
@@ -97,7 +97,7 @@ export function LegalTermsSheet({
  </div>
 
  {/* Seletor de Documentos (Tabs) */}
- <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+ <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
  {[
  { slug: "termos", label: "Termos Gerais de Uso" },
  { slug: "privacidade", label: "Privacidade e LGPD" },
@@ -118,7 +118,7 @@ export function LegalTermsSheet({
  setHasScrolledToBottom(false);
  if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
  }}
- className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap cursor-pointer text-xs ${
+ className={`px-3 py-2 rounded-lg font-semibold transition-all whitespace-nowrap cursor-pointer text-xs ${
  isSelected
  ? "bg-primary text-primary-foreground shadow-xs"
  : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -162,8 +162,8 @@ export function LegalTermsSheet({
  <div className="space-y-4">
  {/* Card Resumo */}
  {currentDoc.summary && (
- <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 text-xs space-y-1">
- <p className="font-bold flex items-center gap-1.5 text-foreground">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1">
+ <p className="font-bold flex items-center gap-2 text-foreground">
  <ShieldCheck className="size-4 text-primary shrink-0" />
  Resumo do Documento
  </p>
@@ -189,7 +189,7 @@ export function LegalTermsSheet({
 
  if (trimmed.startsWith("## ")) {
  return (
- <h3 key={idx} className="text-sm font-bold text-foreground mt-4 mb-1 flex items-center gap-1.5">
+ <h3 key={idx} className="text-sm font-bold text-foreground mt-4 mb-1 flex items-center gap-2">
  <CheckCircle2 className="size-3.5 text-primary shrink-0" />
  <span>{trimmed.replace("## ", "")}</span>
  </h3>
@@ -221,7 +221,7 @@ export function LegalTermsSheet({
  </div>
 
  {/* Box de Encerramento */}
- <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 text-center space-y-1 mt-6">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/40 text-center space-y-1 mt-6">
  <p className="font-bold text-foreground text-xs">Fim do Documento Oficial</p>
  <p className="text-[11px] text-muted-foreground">
  Registrado e auditado sob a legislação brasileira (LGPD Lei nº 13.709/2018 e Marco Civil Lei nº 12.965/2014).
@@ -255,7 +255,7 @@ export function LegalTermsSheet({
  if (onAccept) onAccept();
  onOpenChange(false);
  }}
- className="text-xs font-bold h-9 px-6 bg-primary text-primary-foreground rounded-xl"
+ className="text-xs font-bold h-9 px-6 bg-primary text-primary-foreground rounded-lg"
  >
  Fechar e Continuar
  </Button>

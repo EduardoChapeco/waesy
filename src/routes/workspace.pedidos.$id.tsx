@@ -401,50 +401,50 @@ function AdminOrderDetailPage() {
     <div className="space-y-6 max-w-6xl mx-auto w-full pb-20">
       <div className="flex justify-between items-start flex-wrap gap-3">
         <div className="space-y-1">
-          <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
             <PageHeader eyebrow="Vendas" title={`Pedido ${order.order_number || "#" + order.public_token}`} />
             <ChannelBadge source={order.origin_channel || order.channel_origin || order.channel_source || order.metadata?.channel} />
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {["draft", "awaiting_payment", "paid"].includes(order.status) && (
-            <Button variant="outline" size="sm" className="rounded-xl text-xs font-semibold" onClick={() => setEditModalOpen(true)}>
+            <Button variant="outline" size="sm" className="rounded-lg text-xs font-semibold" onClick={() => setEditModalOpen(true)}>
               Editar Pedido
             </Button>
           )}
           <Button
             variant="outline"
             size="sm"
-            className="rounded-xl text-xs font-semibold"
+            className="rounded-lg text-xs font-semibold"
             onClick={handlePrintEscPos}
             disabled={isPrintingEscPos}
           >
-            <Printer className="mr-1.5 h-3.5 w-3.5" /> Térmica 80mm
+            <Printer className="mr-2 h-3.5 w-3.5" /> Térmica 80mm
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-xl text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border-primary/20"
+            className="rounded-lg text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border-primary/20"
             onClick={() => setShippingModalOpen(true)}
           >
-            <Truck className="mr-1.5 h-3.5 w-3.5" /> Etiqueta e Despacho
+            <Truck className="mr-2 h-3.5 w-3.5" /> Etiqueta e Despacho
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-xl text-xs font-semibold"
+            className="rounded-lg text-xs font-semibold"
             onClick={handlePrintZpl}
             disabled={isPrintingZpl}
           >
-            <Tag className="mr-1.5 h-3.5 w-3.5" /> Etiqueta ZPL
+            <Tag className="mr-2 h-3.5 w-3.5" /> Etiqueta ZPL
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-xl text-xs font-semibold"
+            className="rounded-lg text-xs font-semibold"
             onClick={() => window.open(`/workspace/pedidos/${order.id}/recibo`, "_blank")}
           >
-            <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Recibo A4
+            <ExternalLink className="mr-2 h-3.5 w-3.5" /> Recibo A4
           </Button>
         </div>
       </div>
@@ -453,7 +453,7 @@ function AdminOrderDetailPage() {
  {/* Left Column: Items, Customer Info, Custom Fields, Notes */}
  <div className="md:col-span-2 space-y-6">
  {/* Itens do Pedido */}
- <div className="p-6 bg-card text-card-foreground rounded-2xl border border-border/80">
+ <div className="p-6 bg-card text-card-foreground rounded-lg border border-border/80">
  <h3 className="font-bold text-base mb-4 text-foreground">Itens do Pedido</h3>
  <div className="space-y-4">
  {(order.order_items ?? []).map((item: any) => {
@@ -469,21 +469,21 @@ function AdminOrderDetailPage() {
  <span className="text-primary font-bold mr-1">{item.qty}x</span>
  {item.product_title}
  {isBackorderItem && (
- <span className="inline-flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 bg-warning/15 text-warning border border-warning/30 rounded-md">
+ <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 bg-warning/15 text-warning border border-warning/30 rounded-md">
  ⏱ Encomenda
  </span>
  )}
  </p>
  {item.notes && (
- <p className="text-xs text-amber-600 dark:text-amber-400 font-medium italic mt-1 bg-amber-500/10 px-2 py-0.5 rounded-md inline-block">
+ <p className="text-xs text-amber-600 dark:text-amber-400 font-medium italic mt-1 bg-amber-500/10 px-2 py-1 rounded-md inline-block">
  Obs: {item.notes}
  </p>
  )}
- <p className="text-xs text-muted-foreground font-mono mt-0.5">
+ <p className="text-xs text-muted-foreground font-mono mt-1">
  SKU: {item.variant_sku || "N/A"}
  </p>
  {options.length > 0 && (
- <div className="mt-2 ml-2 pl-2 space-y-0.5 border-l-2 border-primary/30">
+ <div className="mt-2 ml-2 pl-2 space-y-1 border-l-2 border-primary/30">
  {options.map((opt: any, idx: number) => (
  <div key={idx} className="text-xs text-muted-foreground flex gap-2">
  <span>+ {opt.label}</span>
@@ -497,7 +497,7 @@ function AdminOrderDetailPage() {
  </div>
  <div className="text-right">
  <p className="font-bold text-sm text-foreground">{formatMoney(item.total_cents)}</p>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  {formatMoney(item.unit_price_cents)} / un
  </p>
  </div>
@@ -508,7 +508,7 @@ function AdminOrderDetailPage() {
  </div>
 
  {/* Dados do Cliente & Contato */}
- <div className="p-6 bg-card text-card-foreground rounded-2xl border border-border/80 space-y-4">
+ <div className="p-6 bg-card text-card-foreground rounded-lg border border-border/80 space-y-4">
  <h3 className="font-bold text-base text-foreground flex items-center gap-2">
  <User className="size-4 text-primary" />
  <span>Dados do Cliente</span>
@@ -550,7 +550,7 @@ function AdminOrderDetailPage() {
 
  {/* Diretrizes de Atendimento & Separação do Nicho */}
  {(order.receiver_info?.isOtherPerson || order.substitution_policy || order.checkout_niche_metadata?.utensilsRequested !== undefined) && (
- <div className="p-6 bg-card text-card-foreground rounded-2xl border border-border/80 space-y-4">
+ <div className="p-6 bg-card text-card-foreground rounded-lg border border-border/80 space-y-4">
  <h3 className="font-bold text-base text-foreground flex items-center gap-2">
  <Package className="size-4 text-primary" />
  <span>Diretrizes de Atendimento e Separação</span>
@@ -558,7 +558,7 @@ function AdminOrderDetailPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
  {order.receiver_info?.isOtherPerson && (
- <div className="space-y-1 p-3 rounded-2xl bg-muted/20 border border-border/40">
+ <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/40">
  <span className="text-muted-foreground font-semibold block">Recebedor Autorizado (Terceiro):</span>
  <p className="font-bold text-foreground">
  {order.receiver_info.name} {order.receiver_info.phone ? `(${order.receiver_info.phone})` : ""}
@@ -567,7 +567,7 @@ function AdminOrderDetailPage() {
  )}
 
  {order.substitution_policy && (
- <div className="space-y-1 p-3 rounded-2xl bg-muted/20 border border-border/40">
+ <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/40">
  <span className="text-muted-foreground font-semibold block">Se faltar item (Mercado / Hortifrúti):</span>
  <p className="font-bold text-foreground">
  {order.substitution_policy === "similar"
@@ -580,7 +580,7 @@ function AdminOrderDetailPage() {
  )}
 
  {order.checkout_niche_metadata?.utensilsRequested !== undefined && (
- <div className="space-y-1 p-3 rounded-2xl bg-muted/20 border border-border/40">
+ <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/40">
  <span className="text-muted-foreground font-semibold block">Talheres & Descartáveis:</span>
  <p className="font-bold text-foreground">
  {order.checkout_niche_metadata.utensilsRequested
@@ -595,7 +595,7 @@ function AdminOrderDetailPage() {
 
  {/* Informações Complementares / Campos de Nicho */}
  {hasCustomFields && (
- <div className="p-6 bg-card text-card-foreground rounded-2xl border border-border/80 space-y-4">
+ <div className="p-6 bg-card text-card-foreground rounded-lg border border-border/80 space-y-4">
  <h3 className="font-bold text-base text-foreground flex items-center gap-2">
  <Layers className="size-4 text-primary" />
  <span>Informações do Pedido / Nicho</span>
@@ -603,7 +603,7 @@ function AdminOrderDetailPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
  {Object.entries(customFields).map(([label, value]: [string, any]) => (
- <div key={label} className="space-y-1 p-3 rounded-2xl bg-muted/20 border border-border/40">
+ <div key={label} className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/40">
  <span className="text-muted-foreground font-semibold block">{label}:</span>
  <p className="font-bold text-foreground">{String(value)}</p>
  </div>
@@ -614,12 +614,12 @@ function AdminOrderDetailPage() {
 
  {/* Observações do Pedido */}
  {order.notes && (
- <div className="p-6 bg-card text-card-foreground rounded-2xl border border-border/80 space-y-2">
+ <div className="p-6 bg-card text-card-foreground rounded-lg border border-border/80 space-y-2">
  <h3 className="font-bold text-base text-foreground flex items-center gap-2">
  <MessageSquare className="size-4 text-primary" />
  <span>Observações do Pedido</span>
  </h3>
- <p className="text-xs text-muted-foreground bg-muted/20 p-3 rounded-2xl border border-border/40">
+ <p className="text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/40">
  {order.notes}
  </p>
  </div>
@@ -629,7 +629,7 @@ function AdminOrderDetailPage() {
  {/* Sidebar */}
  <div className="space-y-6">
   {/* Summary */}
-  <div className="p-6 bg-card text-card-foreground rounded-2xl border border-border/80">
+  <div className="p-6 bg-card text-card-foreground rounded-lg border border-border/80">
     <div className="flex items-center justify-between mb-4">
       <h3 className="font-semibold text-base text-foreground">Resumo Financeiro</h3>
       <ChannelBadge source={order.origin_channel || order.channel_origin || order.channel_source || order.metadata?.channel} />
@@ -663,7 +663,7 @@ function AdminOrderDetailPage() {
   </div>
 
   {/* Documento Fiscal NF-e / NFC-e */}
-  <div className="p-6 bg-card text-card-foreground rounded-2xl border border-border/80 space-y-4">
+  <div className="p-6 bg-card text-card-foreground rounded-lg border border-border/80 space-y-4">
     <div className="flex items-center justify-between">
       <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
         <FileText className="size-4 text-primary" />
@@ -682,13 +682,13 @@ function AdminOrderDetailPage() {
 
     {invoice ? (
       <div className="space-y-3 text-xs">
-        <div className="p-3 rounded-xl bg-muted/30 border border-border/60 space-y-1.5 font-mono">
+        <div className="p-3 rounded-lg bg-muted/30 border border-border/60 space-y-2 font-mono">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Número:</span>
             <span className="font-bold text-foreground">#{invoice.nfe_number} (Série {invoice.nfe_serie})</span>
           </div>
           {invoice.nfe_key && (
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               <span className="text-muted-foreground text-xs block">Chave de Acesso:</span>
               <span className="text-xs text-foreground break-all">{invoice.nfe_key}</span>
             </div>
@@ -697,14 +697,14 @@ function AdminOrderDetailPage() {
 
         <div className="flex items-center gap-2 pt-1">
           {invoice.danfe_pdf_url && (
-            <Button asChild variant="outline" size="sm" className="flex-1 rounded-xl text-xs font-bold">
+            <Button asChild variant="outline" size="sm" className="flex-1 rounded-lg text-xs font-bold">
               <a href={invoice.danfe_pdf_url} target="_blank" rel="noopener noreferrer">
-                <Download className="mr-1.5 size-3.5" /> DANFE (PDF)
+                <Download className="mr-2 size-3.5" /> DANFE (PDF)
               </a>
             </Button>
           )}
           {invoice.xml_url && (
-            <Button asChild variant="ghost" size="sm" className="rounded-xl text-xs font-mono">
+            <Button asChild variant="ghost" size="sm" className="rounded-lg text-xs font-mono">
               <a href={invoice.xml_url} target="_blank" rel="noopener noreferrer">
                 XML
               </a>
@@ -719,12 +719,12 @@ function AdminOrderDetailPage() {
         </p>
 
         {order.cpf_on_receipt?.requested && order.cpf_on_receipt?.cpf ? (
-          <div className="p-3 rounded-xl bg-muted/20 border border-border/40 space-y-1 text-xs">
+          <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1 text-xs">
             <span className="text-muted-foreground text-xs block">CPF solicitado no Checkout:</span>
             <span className="font-mono font-bold text-foreground">{order.cpf_on_receipt.cpf}</span>
           </div>
         ) : customer.document || customer.cpf ? (
-          <div className="p-3 rounded-xl bg-muted/20 border border-border/40 space-y-1 text-xs">
+          <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1 text-xs">
             <span className="text-muted-foreground text-xs block">Documento do Cadastro:</span>
             <span className="font-mono font-bold text-foreground">{customer.document || customer.cpf}</span>
           </div>
@@ -738,7 +738,7 @@ function AdminOrderDetailPage() {
           onClick={handleEmitNFe}
           disabled={isEmittingNFe}
           size="sm"
-          className="w-full rounded-xl font-bold text-xs h-10 cursor-pointer"
+          className="w-full rounded-lg font-bold text-xs h-10 cursor-pointer"
         >
           {isEmittingNFe ? "Emitindo NF-e..." : "Emitir NF-e (1-Clique)"}
         </Button>
@@ -754,7 +754,7 @@ function AdminOrderDetailPage() {
           </p>
 
  {order.status === "awaiting_shipping_quote" && (
- <div className="space-y-4 mb-4 p-4 border border-warning/50 bg-warning/10 rounded-xl">
+ <div className="space-y-4 mb-4 p-4 border border-warning/50 bg-warning/10 rounded-lg">
  <h4 className="font-semibold text-warning-foreground text-sm flex items-center gap-2">
  <AlertTriangle className="size-4" />
  Cotação de Frete Pendente
@@ -776,7 +776,7 @@ function AdminOrderDetailPage() {
  placeholder="0,00"
  value={shippingQuoteCents}
  onChange={(e) => setShippingQuoteCents(e.target.value)}
- className="w-full rounded-xl border px-3 py-2 pl-8 text-sm"
+ className="w-full rounded-lg border px-3 py-2 pl-8 text-sm"
  />
  </div>
  <Button type="submit" disabled={isSavingQuote}>
@@ -914,7 +914,7 @@ function AdminOrderDetailPage() {
  {/* Rastreamento & Logística */}
   <div className="border-t pt-4 mt-6 space-y-3">
   <div className="flex items-center justify-between">
-  <span className="font-semibold text-sm flex items-center gap-1.5">
+  <span className="font-semibold text-sm flex items-center gap-2">
   <Truck className="h-4 w-4 text-primary" /> Logística e Rastreio
   </span>
   <div className="flex items-center gap-2">
@@ -932,7 +932,7 @@ function AdminOrderDetailPage() {
         <Button
           variant="outline"
           size="sm"
-          className="font-bold text-xs rounded-xl"
+          className="font-bold text-xs rounded-lg"
         >
           Despachar MotoLink
         </Button>
@@ -947,7 +947,7 @@ function AdminOrderDetailPage() {
 
         {createdDispatchResult ? (
           <div className="space-y-4 py-4">
-            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 space-y-2">
+            <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 space-y-2">
               <p className="font-bold text-sm">Despacho Criado com Sucesso!</p>
               <p className="text-xs">
                 O entregador parceiro deve solicitar o código PIN ao cliente para validar a entrega.
@@ -960,7 +960,7 @@ function AdminOrderDetailPage() {
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 space-y-2 text-xs">
+            <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2 text-xs">
               <p className="text-muted-foreground font-medium">Link do Entregador:</p>
               <p className="font-mono text-xs break-all bg-background p-2 rounded-lg border">
                 {`${window.location.origin}/entrega/${createdDispatchResult.delivery_token}`}
@@ -970,7 +970,7 @@ function AdminOrderDetailPage() {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1 text-xs rounded-xl"
+                className="flex-1 text-xs rounded-lg"
                 onClick={() => {
                   navigator.clipboard.writeText(`${window.location.origin}/entrega/${createdDispatchResult.delivery_token}`);
                   toast.success("Link copiado para a área de transferência!");
@@ -980,7 +980,7 @@ function AdminOrderDetailPage() {
               </Button>
               {motolinkCourierPhone && (
                 <Button
-                  className="flex-1 text-xs font-bold rounded-xl"
+                  className="flex-1 text-xs font-bold rounded-lg"
                   onClick={() => {
                     const cleanPhone = motolinkCourierPhone.replace(/\D/g, "");
                     const linkUrl = `${window.location.origin}/entrega/${createdDispatchResult.delivery_token}`;
@@ -994,7 +994,7 @@ function AdminOrderDetailPage() {
             </div>
             <Button
               variant="secondary"
-              className="w-full text-xs rounded-xl"
+              className="w-full text-xs rounded-lg"
               onClick={() => setMotolinkSheetOpen(false)}
             >
               Concluir
@@ -1002,7 +1002,7 @@ function AdminOrderDetailPage() {
           </div>
         ) : (
           <form onSubmit={handleCreateMotoLinkDispatch} className="space-y-4 py-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground">Nome do Entregador / Parceiro</label>
               <input
                 type="text"
@@ -1010,22 +1010,22 @@ function AdminOrderDetailPage() {
                 placeholder="Ex: Lucas Motoboy, MotoLink Express"
                 value={motolinkCourierName}
                 onChange={(e) => setMotolinkCourierName(e.target.value)}
-                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground">WhatsApp do Entregador (opcional)</label>
               <input
                 type="tel"
                 placeholder="(00) 00000-0000"
                 value={motolinkCourierPhone}
                 onChange={(e) => setMotolinkCourierPhone(e.target.value)}
-                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground">Taxa Repassada ao Entregador (R$)</label>
               <input
                 type="number"
@@ -1033,14 +1033,14 @@ function AdminOrderDetailPage() {
                 min="0"
                 value={motolinkFeeReais}
                 onChange={(e) => setMotolinkFeeReais(e.target.value)}
-                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
               />
               <p className="text-xs text-muted-foreground">
                 Frete pago pelo cliente: {formatMoney(order.shipping_cents || 0)} (imutável)
               </p>
             </div>
 
-            <div className="p-3 rounded-xl bg-muted/30 border border-border/50 text-xs space-y-1">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-xs space-y-1">
               <p className="font-semibold text-foreground">Destinatário:</p>
               <p className="text-muted-foreground">{order.customer_snapshot?.name || "Consumidor Final"}</p>
               <p className="text-muted-foreground truncate">
@@ -1053,7 +1053,7 @@ function AdminOrderDetailPage() {
             <Button
               type="submit"
               disabled={isCreatingDispatch || !motolinkCourierName.trim()}
-              className="w-full font-bold text-xs rounded-xl h-11"
+              className="w-full font-bold text-xs rounded-lg h-11"
             >
               {isCreatingDispatch ? "Gerando Despacho..." : "Gerar Despacho & Link do Entregador"}
             </Button>
@@ -1068,7 +1068,7 @@ function AdminOrderDetailPage() {
   <Button
   variant="outline"
   size="sm"
-  className="font-bold text-xs rounded-xl"
+  className="font-bold text-xs rounded-lg"
   onClick={() =>
   setTrackingForm({
   trackingCode: "",
@@ -1097,7 +1097,7 @@ function AdminOrderDetailPage() {
  onChange={(e) =>
  setTrackingForm((p) => ({ ...p, carrierName: e.target.value }))
  }
- className="w-full rounded-xl border px-3 py-2 text-sm"
+ className="w-full rounded-lg border px-3 py-2 text-sm"
  />
  </div>
  <div className="space-y-2">
@@ -1110,7 +1110,7 @@ function AdminOrderDetailPage() {
  onChange={(e) =>
  setTrackingForm((p) => ({ ...p, trackingCode: e.target.value }))
  }
- className="w-full rounded-xl border px-3 py-2 text-sm"
+ className="w-full rounded-lg border px-3 py-2 text-sm"
  />
  </div>
  <div className="space-y-2">
@@ -1122,7 +1122,7 @@ function AdminOrderDetailPage() {
  onChange={(e) =>
  setTrackingForm((p) => ({ ...p, trackingUrl: e.target.value }))
  }
- className="w-full rounded-xl border px-3 py-2 text-sm"
+ className="w-full rounded-lg border px-3 py-2 text-sm"
  />
  </div>
  <Button type="submit" className="w-full" disabled={isSavingTracking}>
@@ -1164,14 +1164,14 @@ function AdminOrderDetailPage() {
  {/* Comprovantes de Entrega com Foto & GPS */}
  {proofs && proofs.length > 0 && (
  <div className="pt-4 border-t border-border/40 space-y-3">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Package className="size-3.5 text-emerald-600" /> Evidência Fotográfica de Entrega
  </span>
- <div className="grid grid-cols-1 gap-2.5">
+ <div className="grid grid-cols-1 gap-3">
  {proofs.map((pr: any) => (
  <div
  key={pr.id}
- className="rounded-xl overflow-hidden border border-border/60 bg-muted/20 p-2 space-y-2"
+ className="rounded-lg overflow-hidden border border-border/60 bg-muted/20 p-2 space-y-2"
  >
  <a href={pr.storage_path} target="_blank" rel="noopener noreferrer">
  <img

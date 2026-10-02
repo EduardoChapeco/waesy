@@ -75,13 +75,13 @@ export function CitySelect({
  return (
  <div className={cn("grid grid-cols-1 sm:grid-cols-3 gap-3", className)}>
  {/* 1. Seleção de Estado (UF) */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">{labelState}</Label>
  <Select value={stateValue} onValueChange={handleStateSelect} disabled={disabled}>
- <SelectTrigger className="h-10 rounded-xl text-xs font-bold bg-muted/30 border-border">
+ <SelectTrigger className="h-10 rounded-lg text-xs font-bold bg-muted/30 border-border">
  <SelectValue placeholder="UF" />
  </SelectTrigger>
- <SelectContent className="max-h-60 rounded-2xl">
+ <SelectContent className="max-h-60 rounded-lg">
  {BRAZILIAN_STATES.map((st) => (
  <SelectItem key={st.uf} value={st.uf} className="text-xs font-medium">
  <span className="font-bold font-mono mr-2 text-foreground">{st.uf}</span>
@@ -93,7 +93,7 @@ export function CitySelect({
  </div>
 
  {/* 2. Seleção de Cidade Canônica ou Entrada Manual */}
- <div className="space-y-1.5 sm:col-span-2">
+ <div className="space-y-2 sm:col-span-2">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-muted-foreground">{labelCity}</Label>
  <button
@@ -112,21 +112,21 @@ export function CitySelect({
  value={cityValue}
  onChange={(e) => onCityChange(e.target.value)}
  disabled={disabled}
- className="h-10 rounded-xl text-xs bg-muted/30 border-border pl-8 font-medium"
+ className="h-10 rounded-lg text-xs bg-muted/30 border-border pl-8 font-medium"
  />
  <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
  </div>
  ) : (
  <Select value={cityValue} onValueChange={handleCitySelect} disabled={disabled}>
- <SelectTrigger className="h-10 rounded-xl text-xs font-bold bg-muted/30 border-border">
+ <SelectTrigger className="h-10 rounded-lg text-xs font-bold bg-muted/30 border-border">
  <div className="flex items-center gap-2 truncate">
  <MapPin size={13} className="text-primary shrink-0" />
  <SelectValue placeholder="Selecione a Cidade" />
  </div>
  </SelectTrigger>
- <SelectContent className="max-h-64 rounded-2xl">
+ <SelectContent className="max-h-64 rounded-lg">
  <div className="p-2 sticky top-0 bg-popover z-10">
- <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/50 rounded-lg ">
+ <div className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg ">
  <Search size={12} className="text-muted-foreground shrink-0" />
  <input
  placeholder="Filtrar cidade..."

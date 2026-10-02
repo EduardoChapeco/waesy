@@ -79,7 +79,7 @@ function NoticiaDetailPage() {
     return (
       <div className="max-w-2xl mx-auto px-0 sm:px-4 py-20 text-center space-y-4">
         <h2 className="text-xl font-bold text-foreground">Matéria não encontrada</h2>
-        <Button asChild variant="outline" className="rounded-xl font-bold">
+        <Button asChild variant="outline" className="rounded-lg font-bold">
           <Link to="/noticias">
             Voltar para Notícias
           </Link>
@@ -119,7 +119,7 @@ function NoticiaDetailPage() {
 
       <article className="max-w-2xl mx-auto px-0 sm:px-4 space-y-8 pb-20 pt-4">
         {/* Breadcrumb Apple HIG */}
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Link to="/noticias" className="hover:text-foreground transition-colors">
             Notícias
           </Link>
@@ -140,7 +140,7 @@ function NoticiaDetailPage() {
           </h1>
 
           {article.subtitle && (
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-serif italic border-l-2 border-primary/40 pl-4 py-0.5">
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-serif italic border-l-2 border-primary/40 pl-4 py-1">
               {article.subtitle}
             </p>
           )}
@@ -166,12 +166,12 @@ function NoticiaDetailPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 font-mono text-[11px]">
+              <div className="flex items-center gap-2 font-mono text-[11px]">
                 <Calendar className="size-3.5" />
                 <span>{formattedDate}</span>
               </div>
 
-              <div className="flex items-center gap-1.5 font-mono text-[11px]">
+              <div className="flex items-center gap-2 font-mono text-[11px]">
                 <Clock className="size-3.5" />
                 <span>{article.reading_time_minutes} min de leitura</span>
               </div>
@@ -181,7 +181,7 @@ function NoticiaDetailPage() {
               variant="outline"
               size="sm"
               onClick={handleShare}
-              className="rounded-xl font-bold text-xs gap-1.5 h-10 px-3.5 min-h-[44px]"
+              className="rounded-lg font-bold text-xs gap-2 h-10 px-4 min-h-11"
             >
               <Share2 className="size-3.5" />
               <span>Compartilhar</span>
@@ -192,7 +192,7 @@ function NoticiaDetailPage() {
         {/* ── Capa Principal (Imagem ou Vídeo) ── */}
         {article.cover_media_url && (
           <div className="space-y-2">
-            <div className="relative aspect-16/9 rounded-2xl overflow-hidden bg-muted">
+            <div className="relative aspect-16/9 rounded-lg overflow-hidden bg-muted">
               {article.cover_media_type === "video" ? (
                 <video
                   src={article.cover_media_url}
@@ -222,7 +222,7 @@ function NoticiaDetailPage() {
 
         {/* ── Síntese Editorial Curada (Quando distinta do subtítulo) ── */}
         {(article as any).ai_summary && (article as any).ai_summary !== article.subtitle && (
-          <div className="p-4 rounded-xl border border-border/60 bg-card space-y-1">
+          <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
             <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
               Síntese Editorial
             </span>
@@ -258,7 +258,7 @@ function NoticiaDetailPage() {
                   )}
 
                   {section.type === "quote" && (
-                    <blockquote className="my-6 p-5 rounded-2xl bg-muted/30 border-l-4 border-primary text-foreground font-serif italic text-base sm:text-lg flex items-start gap-3">
+                    <blockquote className="my-6 p-5 rounded-lg bg-muted/30 border-l-4 border-primary text-foreground font-serif italic text-base sm:text-lg flex items-start gap-3">
                       <Quote className="size-6 text-primary shrink-0 opacity-40" />
                       <div>
                         <p>{String(section.content)}</p>
@@ -278,7 +278,7 @@ function NoticiaDetailPage() {
                           {section.content.map((imgUrl: string, i: number) => (
                             <div
                               key={i}
-                              className="aspect-16/9 rounded-2xl overflow-hidden bg-muted border border-border/40"
+                              className="aspect-16/9 rounded-lg overflow-hidden bg-muted border border-border/40"
                             >
                               <img
                                 src={imgUrl}
@@ -289,7 +289,7 @@ function NoticiaDetailPage() {
                           ))}
                         </div>
                       ) : section.content ? (
-                        <div className="aspect-16/9 rounded-2xl overflow-hidden bg-muted border border-border/40">
+                        <div className="aspect-16/9 rounded-lg overflow-hidden bg-muted border border-border/40">
                           <img
                             src={String(section.content)}
                             alt={section.caption || "Foto da matéria"}
@@ -330,7 +330,7 @@ function NoticiaDetailPage() {
               href={(article as any).source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-foreground hover:underline inline-flex items-center gap-1 min-h-[44px]"
+              className="font-semibold text-foreground hover:underline inline-flex items-center gap-1 min-h-11"
             >
               <span>Publicação original</span>
               <ArrowRight className="size-3.5" />
@@ -340,7 +340,7 @@ function NoticiaDetailPage() {
 
         {/* ── Evento Vinculado (Cross-Indexação Notícia ↔ Evento) ── */}
         {linkedEvent && (
-          <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5 space-y-3">
+          <div className="p-5 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
               <Ticket className="size-4" />
               <span>Agenda Relacionada</span>
@@ -376,10 +376,10 @@ function NoticiaDetailPage() {
                 </div>
               </div>
 
-              <Button asChild className="rounded-xl font-bold text-xs h-11 px-4 shrink-0">
+              <Button asChild className="rounded-lg font-bold text-xs h-11 px-4 shrink-0">
                 <Link to="/evento/$id" params={{ id: linkedEvent.id }}>
                   <span>Ver Ingressos</span>
-                  <ArrowRight className="size-3.5 ml-1.5" />
+                  <ArrowRight className="size-3.5 ml-2" />
                 </Link>
               </Button>
             </div>
@@ -420,10 +420,10 @@ function NoticiaDetailPage() {
                   key={rel.id}
                   to="/noticias/$slug"
                   params={{ slug: rel.slug }}
-                  className="flex gap-3 p-3 rounded-2xl bg-card hover-elevate transition-all group"
+                  className="flex gap-3 p-3 rounded-lg bg-card hover-elevate transition-all group"
                 >
                   {rel.cover_media_url && (
-                    <div className="size-20 rounded-xl overflow-hidden bg-muted shrink-0">
+                    <div className="size-20 rounded-lg overflow-hidden bg-muted shrink-0">
                       <img
                         src={rel.cover_media_url}
                         alt={rel.title}

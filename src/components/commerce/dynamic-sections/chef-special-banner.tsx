@@ -54,9 +54,9 @@ export function ChefSpecialBannerSection({
  return (
  <section className="py-12 bg-muted/30 w-full">
  <div className="max-w-6xl mx-auto px-4 sm:px-6">
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center rounded-2xl border border-border/80 bg-card p-6 sm:p-10 shadow-2xs overflow-hidden relative">
+ <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center rounded-lg border border-border/80 bg-card p-6 sm:p-10 shadow-2xs overflow-hidden relative">
  {/* Coluna de Mídia */}
- <div className="lg:col-span-6 relative rounded-2xl overflow-hidden aspect-4/3 bg-muted border border-border/60 flex items-center justify-center">
+ <div className="lg:col-span-6 relative rounded-lg overflow-hidden aspect-4/3 bg-muted border border-border/60 flex items-center justify-center">
  {activeImageUrl ? (
  <img
  src={activeImageUrl}
@@ -78,7 +78,7 @@ export function ChefSpecialBannerSection({
 
  {/* Coluna de Informações e Ingredientes */}
  <div className="lg:col-span-6 space-y-5">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
  <Utensils className="size-3.5 text-primary" />
  <span>{title}</span>
@@ -96,12 +96,12 @@ export function ChefSpecialBannerSection({
  {activeIngredients && activeIngredients.length > 0 && (
  <div className="space-y-2">
  <span className="text-xs font-semibold text-foreground">Ingredientes Selecionados:</span>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {activeIngredients.map((ing: string, idx: number) => (
  <Badge
  key={idx}
  variant="secondary"
- className="text-[11px] font-normal px-2.5 py-1 bg-muted/60 text-muted-foreground border border-border/40"
+ className="text-[11px] font-normal px-3 py-1 bg-muted/60 text-muted-foreground border border-border/40"
  >
  <Check className="size-3 mr-1 text-primary" />
  {ing}
@@ -121,7 +121,7 @@ export function ChefSpecialBannerSection({
  </div>
 
  {activePrepTime > 0 && (
- <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-xl border border-border/50">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 px-3 py-2 rounded-lg border border-border/50">
  <Clock className="size-3.5 text-muted-foreground" />
  <span>Preparo: ~{activePrepTime} min</span>
  </div>
@@ -132,7 +132,7 @@ export function ChefSpecialBannerSection({
  type="button"
  size="lg"
  onClick={onOrderClick}
- className="rounded-xl font-bold text-xs bg-primary text-primary-foreground shadow-xs cursor-pointer ml-auto"
+ className="rounded-lg font-bold text-xs bg-primary text-primary-foreground shadow-xs cursor-pointer ml-auto"
  >
  Pedir Agora
  </Button>

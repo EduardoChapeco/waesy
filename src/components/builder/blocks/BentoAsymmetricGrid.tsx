@@ -41,7 +41,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           
           {/* Célula 1: Destaque Dominante (2 Colunas, Linha 1) */}
-          <div className="md:col-span-2 bg-card border border-border/80 rounded-3xl p-8 sm:p-10 flex flex-col justify-between shadow-xs relative overflow-hidden group hover:border-border transition-colors">
+          <div className="md:col-span-2 bg-card border border-border/80 rounded-lg p-8 sm:p-10 flex flex-col justify-between shadow-xs relative overflow-hidden group hover:border-border transition-colors">
             <div className="relative z-10 mb-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-4">
                 <Zap className="size-3.5" />
@@ -56,10 +56,10 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
             </div>
 
             {/* Simulação Visual Técnica de Transação (Anti-AI Clean) */}
-            <div className="bg-muted/40 border border-border/60 rounded-2xl p-4 sm:p-5 flex flex-col gap-2.5">
+            <div className="bg-muted/40 border border-border/60 rounded-lg p-4 sm:p-5 flex flex-col gap-3">
               <div className="flex items-center justify-between text-xs text-muted-foreground pb-2 border-b border-border/40 font-mono">
                 <span>FEED DE OPERAÇÃO EM TEMPO REAL</span>
-                <span className="text-emerald-600 font-semibold flex items-center gap-1.5">
+                <span className="text-emerald-600 font-semibold flex items-center gap-2">
                   <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
                   ONLINE
                 </span>
@@ -76,7 +76,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
           </div>
 
           {/* Célula 2: Métrica de Impacto (1 Coluna, Linha 1) */}
-          <div className="bg-card border border-border/80 rounded-3xl p-8 sm:p-10 flex flex-col justify-between shadow-xs hover:border-border transition-colors text-center md:text-left">
+          <div className="bg-card border border-border/80 rounded-lg p-8 sm:p-10 flex flex-col justify-between shadow-xs hover:border-border transition-colors text-center md:text-left">
             <div>
               <span className="text-xs uppercase font-bold tracking-widest text-muted-foreground block mb-2">
                 VELOCIDADE MÉDIA
@@ -97,9 +97,9 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
           </div>
 
           {/* Célula 3: Omnichannel Integrado (1 Coluna, Linha 2) */}
-          <div className="bg-card border border-border/80 rounded-3xl p-8 sm:p-10 flex flex-col justify-between shadow-xs hover:border-border transition-colors">
+          <div className="bg-card border border-border/80 rounded-lg p-8 sm:p-10 flex flex-col justify-between shadow-xs hover:border-border transition-colors">
             <div>
-              <div className="size-12 rounded-2xl bg-muted/60 border border-border/80 flex items-center justify-center mb-6">
+              <div className="size-12 rounded-lg bg-muted/60 border border-border/80 flex items-center justify-center mb-6">
                 <Globe className="size-6 text-foreground" />
               </div>
               <h4 className="text-xl font-bold text-foreground tracking-tight mb-2">
@@ -118,7 +118,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
           </div>
 
           {/* Célula 4: Segurança & Isolamento Multi-Tenant (2 Colunas, Linha 2) */}
-          <div className="md:col-span-2 bg-card border border-border/80 rounded-3xl p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xs hover:border-border transition-colors">
+          <div className="md:col-span-2 bg-card border border-border/80 rounded-lg p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xs hover:border-border transition-colors">
             <div className="max-w-md">
               <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">
                 <ShieldCheck className="size-4" />
@@ -132,7 +132,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
               </p>
             </div>
 
-            <div className="shrink-0 bg-muted/50 border border-border/80 rounded-2xl px-6 py-4 flex items-center gap-3">
+            <div className="shrink-0 bg-muted/50 border border-border/80 rounded-lg px-6 py-4 flex items-center gap-3">
               <Layers className="size-6 text-primary" />
               <div className="text-left font-mono">
                 <span className="text-[10px] uppercase text-muted-foreground block">POLÍTICA RLS</span>

@@ -48,14 +48,14 @@ function ConcursoDetailPage() {
   if (!raffle) {
     return (
       <div className="w-full max-w-2xl mx-auto py-20 px-4 text-center space-y-4">
-        <div className="size-16 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="size-16 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
           <Ticket className="size-8" />
         </div>
         <h1 className="text-xl font-bold text-foreground">Sorteio não encontrado</h1>
         <p className="text-xs text-muted-foreground">
           Este sorteio pode ter sido encerrado ou o link é inválido.
         </p>
-        <Button asChild variant="outline" className="rounded-xl h-11 px-5 text-xs font-semibold">
+        <Button asChild variant="outline" className="rounded-lg h-11 px-5 text-xs font-semibold">
           <Link to="/concursos">Voltar para Todos os Sorteios</Link>
         </Button>
       </div>
@@ -120,7 +120,7 @@ function ConcursoDetailPage() {
           asChild
           variant="ghost"
           size="sm"
-          className="size-11 sm:size-auto rounded-full sm:rounded-xl p-0 sm:px-3 text-xs font-semibold gap-1.5 h-11 text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all"
+          className="size-11 sm:size-auto rounded-full sm:rounded-lg p-0 sm:px-3 text-xs font-semibold gap-2 h-11 text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all"
           aria-label="Todos os Sorteios"
         >
           <Link to="/concursos">
@@ -134,7 +134,7 @@ function ConcursoDetailPage() {
           variant="outline"
           size="sm"
           onClick={handleShare}
-          className="rounded-xl text-xs font-semibold gap-1.5 h-11 px-3.5"
+          className="rounded-lg text-xs font-semibold gap-2 h-11 px-4"
         >
           <Share2 className="size-4" />
           <span>Compartilhar</span>
@@ -142,7 +142,7 @@ function ConcursoDetailPage() {
       </div>
 
       {/* ── Imagem Principal no Aspecto Exato (16:9) ── */}
-      <div className="relative aspect-video w-full rounded-3xl overflow-hidden bg-muted border border-border/70 shadow-sm">
+      <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted border border-border/70 shadow-sm">
         {raffle.imageUrl ? (
           <img
             src={raffle.imageUrl}
@@ -160,13 +160,13 @@ function ConcursoDetailPage() {
             <Link
               to="/diretorio/$id"
               params={{ id: raffle.storeId }}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 hover:bg-black/90 text-white text-[11px] backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/70 hover:bg-black/90 text-white text-[11px] backdrop-blur-md transition-all active:scale-95 cursor-pointer"
             >
               <Store className="size-3" />
               <span>{raffle.storeName}</span>
             </Link>
           ) : (
-            <Badge className="bg-black/70 text-white text-[11px] backdrop-blur-md border-0 gap-1.5 px-3 py-1">
+            <Badge className="bg-black/70 text-white text-[11px] backdrop-blur-md border-0 gap-2 px-3 py-1">
               <Store className="size-3" />
               <span>{raffle.storeName || "Comunidade Waesy"}</span>
             </Badge>
@@ -201,7 +201,7 @@ function ConcursoDetailPage() {
 
       {/* ── Métricas & Dados Chave ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-[10px] uppercase font-mono text-muted-foreground block">
             Data do Sorteio
           </span>
@@ -210,7 +210,7 @@ function ConcursoDetailPage() {
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-[10px] uppercase font-mono text-muted-foreground block">
             Participação
           </span>
@@ -221,7 +221,7 @@ function ConcursoDetailPage() {
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-[10px] uppercase font-mono text-muted-foreground block">
             Seus Cupons
           </span>
@@ -233,7 +233,7 @@ function ConcursoDetailPage() {
 
       {/* ── Vencedor (Caso Concluído) ── */}
       {isCompleted && raffle.winnerTicketNumber && (
-        <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-4 flex items-center gap-3.5">
+        <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-4 flex items-center gap-4">
           <Trophy className="size-6 text-amber-500 shrink-0" />
           <div className="text-xs">
             <span className="font-bold text-foreground block text-sm">
@@ -247,7 +247,7 @@ function ConcursoDetailPage() {
       )}
 
       {/* ── Regulamento do Sorteio ── */}
-      <div className="rounded-2xl border border-border/70 bg-card p-5 space-y-2">
+      <div className="rounded-lg border border-border/70 bg-card p-5 space-y-2">
         <h3 className="text-xs font-bold text-foreground uppercase tracking-wider font-mono">
           Regulamento do Sorteio
         </h3>
@@ -277,7 +277,7 @@ function ConcursoDetailPage() {
                 type="button"
                 disabled={hasReachedLimit}
                 onClick={() => setIsConfirmModalOpen(true)}
-                className="h-11 px-6 rounded-xl text-xs font-bold w-full sm:w-auto gap-2 bg-primary text-primary-foreground cursor-pointer"
+                className="h-11 px-6 rounded-lg text-xs font-bold w-full sm:w-auto gap-2 bg-primary text-primary-foreground cursor-pointer"
               >
                 <Ticket className="size-4" />
                 <span>
@@ -289,7 +289,7 @@ function ConcursoDetailPage() {
             <Button
               asChild
               variant="outline"
-              className="h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
             >
               <Link to="/conta/concursos">Ver Meus Cupons</Link>
             </Button>
@@ -299,7 +299,7 @@ function ConcursoDetailPage() {
 
       {/* ── MODAL CANÔNICO DE EMISSÃO COM 1 TOQUE ── */}
       <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
-        <DialogContent className="max-w-md rounded-3xl p-6 space-y-4">
+        <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">Emitir Cupom do Sorteio</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -307,7 +307,7 @@ function ConcursoDetailPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 space-y-2 text-xs text-muted-foreground leading-relaxed">
+          <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2 text-xs text-muted-foreground leading-relaxed">
             <p className="font-semibold text-foreground">Termos e Condições:</p>
             <p className="line-clamp-3">{raffle.termsText}</p>
             <p className="text-[11px] font-mono">
@@ -315,7 +315,7 @@ function ConcursoDetailPage() {
             </p>
           </div>
 
-          <div className="flex items-start gap-2.5 pt-1">
+          <div className="flex items-start gap-3 pt-1">
             <Checkbox
               id="accept-terms-concurso"
               checked={acceptedTerms}
@@ -334,7 +334,7 @@ function ConcursoDetailPage() {
               type="button"
               variant="outline"
               onClick={() => setIsConfirmModalOpen(false)}
-              className="h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
@@ -342,7 +342,7 @@ function ConcursoDetailPage() {
               type="button"
               disabled={!acceptedTerms || isSubmitting}
               onClick={handleEmitTicket}
-              className="h-11 px-5 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground cursor-pointer"
+              className="h-11 px-5 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer"
             >
               {isSubmitting ? (
                 <Loader2 className="size-4 animate-spin" />

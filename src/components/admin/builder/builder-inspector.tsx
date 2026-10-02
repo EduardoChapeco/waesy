@@ -90,7 +90,7 @@ function RichTextInspectorField({
   };
 
   return (
-    <div className="space-y-1.5 p-2.5 rounded-xl bg-muted/20 border border-border/60">
+    <div className="space-y-2 p-3 rounded-lg bg-muted/20 border border-border/60">
       <div className="flex items-center justify-between">
         <Label className="text-xs font-bold text-foreground">
           {label || "Texto Formatado (Markdown)"}
@@ -118,12 +118,12 @@ function RichTextInspectorField({
         >
           I
         </button>
-        <div className="w-[1px] h-4 bg-border/60 mx-0.5" />
+        <div className="w-[1px] h-4 bg-border/60 mx-1" />
         <button
           type="button"
           onClick={() => insertFormatting("## ")}
           title="Título Principal (H2)"
-          className="px-1.5 h-6 flex items-center justify-center rounded hover:bg-muted font-bold text-[10px] cursor-pointer text-foreground"
+          className="px-2 h-6 flex items-center justify-center rounded hover:bg-muted font-bold text-[10px] cursor-pointer text-foreground"
         >
           H2
         </button>
@@ -131,11 +131,11 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("### ")}
           title="Subtítulo (H3)"
-          className="px-1.5 h-6 flex items-center justify-center rounded hover:bg-muted font-semibold text-[10px] cursor-pointer text-foreground"
+          className="px-2 h-6 flex items-center justify-center rounded hover:bg-muted font-semibold text-[10px] cursor-pointer text-foreground"
         >
           H3
         </button>
-        <div className="w-[1px] h-4 bg-border/60 mx-0.5" />
+        <div className="w-[1px] h-4 bg-border/60 mx-1" />
         <button
           type="button"
           onClick={() => insertFormatting("- ")}
@@ -209,12 +209,12 @@ export function BuilderInspector({
  return (
  <aside className="w-80 bg-card border-l border-border/80 flex flex-col flex-none overflow-hidden select-none z-20 shadow-2xs">
  <div className="p-8 flex flex-col items-center justify-center flex-1 text-center space-y-3 text-muted-foreground">
- <div className="size-12 rounded-2xl bg-muted/40 flex items-center justify-center border border-border/60">
+ <div className="size-12 rounded-lg bg-muted/40 flex items-center justify-center border border-border/60">
  <Sliders className="size-5 text-muted-foreground" />
  </div>
  <div className="space-y-1">
  <h4 className="text-xs font-bold text-foreground">Nenhum bloco selecionado</h4>
- <p className="text-[11px] text-muted-foreground max-w-[200px] leading-relaxed">
+ <p className="text-[11px] text-muted-foreground max-w-52 leading-relaxed">
  Clique em qualquer seção ou bloco no canvas para editar textos, imagens, layout e dados em tempo real.
  </p>
  </div>
@@ -276,13 +276,13 @@ export function BuilderInspector({
  return (
  <aside className="w-80 bg-card border-l border-border/80 flex flex-col flex-none overflow-hidden select-none z-20 shadow-2xs">
  {/* ── Topo do Inspetor: Identificação Canônica do Bloco ── */}
- <div className="p-3.5 border-b border-border/70 flex items-center justify-between bg-muted/20">
- <div className="space-y-0.5 min-w-0 pr-2">
- <div className="flex items-center gap-1.5">
+ <div className="p-4 border-b border-border/70 flex items-center justify-between bg-muted/20">
+ <div className="space-y-1 min-w-0 pr-2">
+ <div className="flex items-center gap-2">
  <h3 className="text-xs font-bold text-foreground truncate">
  {blockManifest.name}
  </h3>
- <Badge variant="outline" className="text-[9px] px-1.5 py-0 font-mono">
+ <Badge variant="outline" className="text-[9px] px-2 py-0 font-mono">
  {selectedNode.block_type}
  </Badge>
  </div>
@@ -304,7 +304,7 @@ export function BuilderInspector({
 
  {/* ── Breadcrumb de Navegação Hierárquica ── */}
  {ancestors.length > 1 && (
- <div className="flex items-center gap-1 px-3 py-1.5 bg-muted/40 border-b border-border/60 text-[10px] text-muted-foreground overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-1 px-3 py-2 bg-muted/40 border-b border-border/60 text-[10px] text-muted-foreground overflow-x-auto no-scrollbar">
  <Layers className="size-3 shrink-0 text-muted-foreground/80" />
  {ancestors.map((anc, idx) => (
  <React.Fragment key={anc.id}>
@@ -333,7 +333,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => setInspectorTab("content")}
  className={cn(
- "flex-1 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
+ "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
  inspectorTab === "content"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -347,7 +347,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => setInspectorTab("layout")}
  className={cn(
- "flex-1 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
+ "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
  inspectorTab === "layout"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -361,7 +361,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => setInspectorTab("design")}
  className={cn(
- "flex-1 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
+ "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
  inspectorTab === "design"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -375,7 +375,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => setInspectorTab("animation")}
  className={cn(
- "flex-1 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
+ "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
  inspectorTab === "animation"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -389,7 +389,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => setInspectorTab("connection")}
  className={cn(
- "flex-1 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
+ "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
  inspectorTab === "connection"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -407,9 +407,9 @@ export function BuilderInspector({
  <div className="space-y-4 pb-8">
  {/* Atalho Inteligente para Bloco Filho se for Seção ou Container */}
  {primaryContentChild && (
- <div className="p-3 rounded-xl bg-primary/10 border border-primary/25 space-y-2">
+ <div className="p-3 rounded-lg bg-primary/10 border border-primary/25 space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+ <span className="text-xs font-bold text-primary flex items-center gap-2">
  <Sliders className="size-3.5" />
  Conteúdo da Seção
  </span>
@@ -423,7 +423,7 @@ export function BuilderInspector({
  <Button
  type="button"
  size="sm"
- className="w-full h-8 text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer shadow-xs"
+ className="w-full h-8 text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-xs"
  onClick={() => setSelectedNodeId(primaryContentChild.id)}
  >
  <Sliders className="size-3.5" />
@@ -439,9 +439,9 @@ export function BuilderInspector({
  // Campo Especial: Código de Cupom de Desconto
  if (field.name === "couponCode") {
  return (
- <div key={field.name} className="space-y-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+ <div key={field.name} className="space-y-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5 text-amber-500">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2 text-amber-500">
  <Tag className="size-3.5" />
  <span>{field.label || "Código do Cupom"}</span>
  </Label>
@@ -452,17 +452,17 @@ export function BuilderInspector({
  <Input
  value={val}
  onChange={(e) => handleContentChange(field.name, e.target.value.toUpperCase())}
- className="h-9 rounded-xl text-xs font-mono font-bold uppercase tracking-wider bg-background border-amber-500/30"
+ className="h-9 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-background border-amber-500/30"
  placeholder={field.placeholder || "EX: RELAMPAGO50"}
  />
- <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+ <div className="flex items-center gap-2 flex-wrap pt-1">
  <span className="text-[10px] text-muted-foreground">Sugestões:</span>
  {["RELAMPAGO50", "PRIMEIRACOMPRA", "FRETEGRATIS", "VIP10"].map((sug) => (
  <button
  key={sug}
  type="button"
  onClick={() => handleContentChange(field.name, sug)}
- className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-background border border-border/80 hover:border-amber-500 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+ className="text-[10px] font-mono px-2 py-1 rounded-md bg-background border border-border/80 hover:border-amber-500 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
  >
  {sug}
  </button>
@@ -479,9 +479,9 @@ export function BuilderInspector({
  field.name === "link"
  ) {
  return (
- <div key={field.name} className="space-y-2 p-3 rounded-2xl bg-primary/5 border border-primary/20">
+ <div key={field.name} className="space-y-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5 text-primary">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2 text-primary">
  <Link className="size-3.5" />
  <span>{field.label || "Link de Destino / Hotpage"}</span>
  </Label>
@@ -492,13 +492,13 @@ export function BuilderInspector({
  <Input
  value={val}
  onChange={(e) => handleContentChange(field.name, e.target.value)}
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  placeholder={field.placeholder || "#produtos ou /campanhas"}
  />
  {/* Atalhos Rápidos de Destinos Internos e Hotpages */}
  <div className="space-y-1 pt-1">
  <span className="text-[10px] text-muted-foreground font-medium">Vincular a uma página:</span>
- <div className="flex items-center gap-1.5 flex-wrap">
+ <div className="flex items-center gap-2 flex-wrap">
  <button
  type="button"
  onClick={() => handleContentChange(field.name, "#produtos")}
@@ -543,14 +543,14 @@ export function BuilderInspector({
 
  if (field.type === "string" || field.type === "text") {
  return (
- <div key={field.name} className="space-y-1.5">
+ <div key={field.name} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">
  {field.label || humanizeLabel(field.name)}
  </Label>
  <Input
  value={val}
  onChange={(e) => handleContentChange(field.name, e.target.value)}
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  placeholder={field.placeholder || ""}
  />
  </div>
@@ -571,14 +571,14 @@ export function BuilderInspector({
 
 		if (field.type === "textarea") {
  return (
- <div key={field.name} className="space-y-1.5">
+ <div key={field.name} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">
  {field.label || humanizeLabel(field.name)}
  </Label>
  <Textarea
  value={val}
  onChange={(e) => handleContentChange(field.name, e.target.value)}
- className="rounded-xl text-xs min-h-[70px] bg-background"
+ className="rounded-lg text-xs min-h-[70px] bg-background"
  placeholder={field.placeholder || ""}
  />
  </div>
@@ -587,7 +587,7 @@ export function BuilderInspector({
 
  if (field.type === "image" || field.type === "media" || field.type === "video") {
  return (
- <div key={field.name} className="space-y-1.5">
+ <div key={field.name} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">
  {field.label || humanizeLabel(field.name)}
  </Label>
@@ -602,7 +602,7 @@ export function BuilderInspector({
 
  if (field.type === "color") {
  return (
- <div key={field.name} className="space-y-1.5">
+ <div key={field.name} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">
  {field.label || humanizeLabel(field.name)}
  </Label>
@@ -616,7 +616,7 @@ export function BuilderInspector({
 
  if (field.type === "boolean") {
  return (
- <div key={field.name} className="flex items-center justify-between p-2.5 rounded-xl bg-muted/30 border border-border/50">
+ <div key={field.name} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
  <Label className="text-xs font-bold text-foreground cursor-pointer">
  {field.label || humanizeLabel(field.name)}
  </Label>
@@ -630,7 +630,7 @@ export function BuilderInspector({
 
  if (field.type === "number") {
  return (
- <div key={field.name} className="space-y-1.5">
+ <div key={field.name} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">
  {field.label || humanizeLabel(field.name)}
  </Label>
@@ -638,7 +638,7 @@ export function BuilderInspector({
  type="number"
  value={val}
  onChange={(e) => handleContentChange(field.name, Number(e.target.value))}
- className="h-9 rounded-xl text-xs font-mono bg-background"
+ className="h-9 rounded-lg text-xs font-mono bg-background"
  />
  </div>
  );
@@ -646,7 +646,7 @@ export function BuilderInspector({
 
  if (field.type === "select" && field.options) {
  return (
- <div key={field.name} className="space-y-1.5">
+ <div key={field.name} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">
  {field.label || humanizeLabel(field.name)}
  </Label>
@@ -654,7 +654,7 @@ export function BuilderInspector({
  value={val || field.options[0]?.value}
  onValueChange={(newVal) => handleContentChange(field.name, newVal)}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -698,7 +698,7 @@ export function BuilderInspector({
  {Object.entries(content).map(([k, v]) => {
  if (typeof v === "boolean") {
  return (
- <div key={k} className="flex items-center justify-between p-2.5 rounded-xl bg-muted/30 border border-border/50">
+ <div key={k} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
  <Label className="text-xs font-bold text-foreground">{humanizeLabel(k)}</Label>
  <Switch checked={v} onCheckedChange={(c) => handleContentChange(k, c)} />
  </div>
@@ -707,7 +707,7 @@ export function BuilderInspector({
 
  if (typeof v === "string" && (k.toLowerCase().includes("image") || k.toLowerCase().includes("cover") || k.toLowerCase().includes("banner") || k.toLowerCase().includes("video") || k.toLowerCase().includes("media") || k.toLowerCase().includes("gif"))) {
  return (
- <div key={k} className="space-y-1.5">
+ <div key={k} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">{humanizeLabel(k)}</Label>
  <MediaUploader value={v} onChange={(url) => handleContentChange(k, url)} bucket="cms-media" />
  </div>
@@ -716,18 +716,18 @@ export function BuilderInspector({
 
  if (typeof v === "string" && v.length > 60) {
  return (
- <div key={k} className="space-y-1.5">
+ <div key={k} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">{humanizeLabel(k)}</Label>
- <Textarea value={v} onChange={(e) => handleContentChange(k, e.target.value)} className="rounded-xl text-xs min-h-[70px] bg-background" />
+ <Textarea value={v} onChange={(e) => handleContentChange(k, e.target.value)} className="rounded-lg text-xs min-h-[70px] bg-background" />
  </div>
  );
  }
 
  if (typeof v === "string" || typeof v === "number") {
  return (
- <div key={k} className="space-y-1.5">
+ <div key={k} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">{humanizeLabel(k)}</Label>
- <Input value={v} onChange={(e) => handleContentChange(k, e.target.value)} className="h-9 rounded-xl text-xs bg-background" />
+ <Input value={v} onChange={(e) => handleContentChange(k, e.target.value)} className="h-9 rounded-lg text-xs bg-background" />
  </div>
  );
  }
@@ -760,7 +760,7 @@ export function BuilderInspector({
  {/* ── 2. ABA LAYOUT, DIMENSÕES & DOCKING ── */}
  {inspectorTab === "layout" && (
  <div className="space-y-5 pb-8">
- <div className="space-y-3 p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+ <div className="space-y-3 p-4 rounded-lg bg-muted/20 border border-border/60">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground uppercase tracking-wider">
  Dimensões (Size)
@@ -775,7 +775,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => handleLayoutChange("sizingMode", "fluid")}
  className={cn(
- "py-1.5 rounded-lg text-xs font-semibold transition-all border cursor-pointer",
+ "py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer",
  (layout.sizingMode || "fluid") === "fluid"
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground"
@@ -787,7 +787,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => handleLayoutChange("sizingMode", "fixed")}
  className={cn(
- "py-1.5 rounded-lg text-xs font-semibold transition-all border cursor-pointer",
+ "py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer",
  layout.sizingMode === "fixed"
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground"
@@ -797,7 +797,7 @@ export function BuilderInspector({
  </button>
  </div>
 
- <div className="grid grid-cols-2 gap-2.5 pt-1">
+ <div className="grid grid-cols-2 gap-3 pt-1">
  <div className="space-y-1">
  <Label className="text-[11px] font-bold">Largura Máx</Label>
  <Select
@@ -838,9 +838,9 @@ export function BuilderInspector({
  </div>
 
  {/* ── Localidade & Direcionamento Geográfico / Cidade Alvo ── */}
-        <div className="space-y-2 p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+        <div className="space-y-2 p-4 rounded-lg bg-muted/20 border border-border/60">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
               <MapPin className="size-3.5 text-primary" />
               Localidade Alvo
             </span>
@@ -889,7 +889,7 @@ export function BuilderInspector({
  const val = design[df.name] ?? df.default ?? "";
  if (df.type === "color") {
  return (
- <div key={df.name} className="space-y-1.5">
+ <div key={df.name} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">
  {df.label || humanizeLabel(df.name)}
  </Label>
@@ -906,7 +906,7 @@ export function BuilderInspector({
  )}
 
  {/* Controles Universais de Superfície & Cor */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cor de Fundo Principal</Label>
  <ColorPicker
  value={design.backgroundColor || "#ffffff"}
@@ -914,7 +914,7 @@ export function BuilderInspector({
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cor do Texto</Label>
  <ColorPicker
  value={design.textColor || "#09090b"}
@@ -922,7 +922,7 @@ export function BuilderInspector({
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cor de Destaque (Accent)</Label>
  <ColorPicker
  value={design.accentColor || "#f59e0b"}
@@ -935,14 +935,14 @@ export function BuilderInspector({
  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
  Caixas Numéricas e Elementos
  </span>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Fundo das Caixas</Label>
  <ColorPicker
  value={design.boxColor || "#09090b"}
  onChange={(c) => handleDesignChange("boxColor", c)}
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cor dos Números / Dígitos</Label>
  <ColorPicker
  value={design.boxTextColor || "#ffffff"}
@@ -952,27 +952,27 @@ export function BuilderInspector({
  </div>
 
  {/* Raio de Borda (Border Radius) */}
- <div className="space-y-1.5 pt-3 border-t border-border/60">
+ <div className="space-y-2 pt-3 border-t border-border/60">
  <Label className="text-xs font-bold text-foreground">Arredondamento dos Cantos</Label>
  <Select
- value={design.borderRadius || "rounded-2xl"}
+ value={design.borderRadius || "rounded-lg"}
  onValueChange={(val) => handleDesignChange("borderRadius", val)}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
  <SelectItem value="rounded-none">Reto (0px)</SelectItem>
  <SelectItem value="rounded-lg">Suave (8px)</SelectItem>
- <SelectItem value="rounded-2xl">Padrão Recomendado (16px)</SelectItem>
- <SelectItem value="rounded-2xl">Amplo (24px)</SelectItem>
+ <SelectItem value="rounded-lg">Padrão Recomendado (16px)</SelectItem>
+ <SelectItem value="rounded-lg">Amplo (24px)</SelectItem>
  <SelectItem value="rounded-full">Pílula (Pill)</SelectItem>
  </SelectContent>
  </Select>
  </div>
 
  {/* Imagem de Fundo (Cover) */}
- <div className="space-y-1.5 pt-3 border-t border-border/60">
+ <div className="space-y-2 pt-3 border-t border-border/60">
  <Label className="text-xs font-bold text-foreground">Imagem de Fundo (Cover)</Label>
  <MediaUploader
  value={design.backgroundImage || ""}
@@ -982,13 +982,13 @@ export function BuilderInspector({
  </div>
 
  {/* Estilo do Papel */}
- <div className="space-y-1.5 pt-3 border-t border-border/60">
+ <div className="space-y-2 pt-3 border-t border-border/60">
  <Label className="text-xs font-bold text-foreground">Estilo do Papel / Fundo</Label>
  <Select
  value={design.surfaceVariant || "default"}
  onValueChange={(val) => handleDesignChange("surfaceVariant", val)}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1009,7 +1009,7 @@ export function BuilderInspector({
  {inspectorTab === "animation" && (
  <div className="space-y-6">
  <div className="space-y-1">
- <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
  <Sliders className="size-3.5 text-primary" />
  Motor de Animações e Scroll (Wix Studio Standard)
  </h4>
@@ -1019,7 +1019,7 @@ export function BuilderInspector({
  </div>
 
  {/* Gatilho de Entrada */}
- <div className="space-y-2 p-3 rounded-2xl bg-muted/20 border border-border/50">
+ <div className="space-y-2 p-3 rounded-lg bg-muted/20 border border-border/50">
  <Label className="text-xs font-semibold">Gatilho de Entrada (Scroll Trigger)</Label>
  <Select
  value={(selectedNode.design_tokens as any)?.animation?.trigger || "fade_up"}
@@ -1028,7 +1028,7 @@ export function BuilderInspector({
  updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, trigger: val });
  }}
  >
- <SelectTrigger className="h-9 text-xs rounded-xl bg-background">
+ <SelectTrigger className="h-9 text-xs rounded-lg bg-background">
  <SelectValue placeholder="Selecione uma animação" />
  </SelectTrigger>
  <SelectContent>
@@ -1044,7 +1044,7 @@ export function BuilderInspector({
  </div>
 
  {/* Duração & Velocidade */}
- <div className="space-y-2 p-3 rounded-2xl bg-muted/20 border border-border/50">
+ <div className="space-y-2 p-3 rounded-lg bg-muted/20 border border-border/50">
  <Label className="text-xs font-semibold">Velocidade da Transição</Label>
  <div className="grid grid-cols-3 gap-2">
  {[
@@ -1062,7 +1062,7 @@ export function BuilderInspector({
  updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, speed: speed.id });
  }}
  className={cn(
- "py-2 px-2 rounded-xl text-[11px] font-semibold border transition-all",
+ "py-2 px-2 rounded-lg text-[11px] font-semibold border transition-all",
  currentSpeed === speed.id
  ? "border-primary bg-primary/10 text-primary"
  : "border-border bg-background text-muted-foreground"
@@ -1076,7 +1076,7 @@ export function BuilderInspector({
  </div>
 
  {/* Efeitos no Hover */}
- <div className="space-y-2 p-3 rounded-2xl bg-muted/20 border border-border/50">
+ <div className="space-y-2 p-3 rounded-lg bg-muted/20 border border-border/50">
  <Label className="text-xs font-semibold">Microinteração no Hover (Cursor)</Label>
  <div className="grid grid-cols-2 gap-2">
  {[
@@ -1095,7 +1095,7 @@ export function BuilderInspector({
  updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, hover: hov.id });
  }}
  className={cn(
- "py-2 px-3 rounded-xl text-xs font-semibold border text-left transition-all",
+ "py-2 px-3 rounded-lg text-xs font-semibold border text-left transition-all",
  currentHov === hov.id
  ? "border-primary bg-primary/10 text-primary"
  : "border-border bg-background text-muted-foreground"
@@ -1112,7 +1112,7 @@ export function BuilderInspector({
 
  {inspectorTab === "connection" && (
  <div className="space-y-5 pb-8">
- <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-3">
  <div className="flex items-center gap-2">
  <Database className="size-4 text-primary" />
  <span className="text-xs font-bold text-foreground">Fonte de Dados Dinâmica</span>
@@ -1127,7 +1127,7 @@ export function BuilderInspector({
  value={dataBindings.source || "none"}
  onValueChange={(val) => handleBindingChange(val)}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1151,7 +1151,7 @@ export function BuilderInspector({
  {dataBindings.source === "active_coupon" && (
  <div className="space-y-3 pt-3 border-t border-border/50">
  <div className="space-y-1">
- <Label className="text-xs font-bold text-amber-500 flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-amber-500 flex items-center gap-2">
  <Tag className="size-3.5" />
  <span>Cupom Selecionado</span>
  </Label>
@@ -1162,7 +1162,7 @@ export function BuilderInspector({
  handleBindingChange("active_coupon", { coupon_code: code });
  handleContentChange("couponCode", code);
  }}
- className="h-9 rounded-xl text-xs font-mono font-bold uppercase tracking-wider bg-background"
+ className="h-9 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-background"
  placeholder="EX: RELAMPAGO50"
  />
  </div>
@@ -1176,7 +1176,7 @@ export function BuilderInspector({
  {dataBindings.source === "hotpage_campaign" && (
  <div className="space-y-3 pt-3 border-t border-border/50">
  <div className="space-y-1">
- <Label className="text-xs font-bold text-primary flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-primary flex items-center gap-2">
  <FileText className="size-3.5" />
  <span>Selecione a Hotpage ou Página</span>
  </Label>
@@ -1187,7 +1187,7 @@ export function BuilderInspector({
  handleContentChange("targetLink", slug);
  }}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Escolha a página de destino..." />
  </SelectTrigger>
  <SelectContent>
@@ -1227,7 +1227,7 @@ export function BuilderInspector({
  value={dataBindings.collection_slug || ""}
  onValueChange={(slug) => handleBindingChange("product_collection", { collection_slug: slug })}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Selecione uma coleção..." />
  </SelectTrigger>
  <SelectContent>
@@ -1246,7 +1246,7 @@ export function BuilderInspector({
  )}
 
  {dataBindings.source && dataBindings.source !== "none" && (
- <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] flex items-center gap-1.5">
+ <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] flex items-center gap-2">
  <CheckCircle2 className="size-3.5 shrink-0" />
  <span>Conectado em tempo real com o banco de dados.</span>
  </div>

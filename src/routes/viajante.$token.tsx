@@ -107,7 +107,7 @@ function PublicTravelerFormPage() {
 
   return (
     <div className="min-h-[100dvh] bg-slate-950 text-slate-50 flex flex-col items-center justify-center p-4 selection:bg-primary selection:text-primary-foreground font-sans">
-      <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-lg p-6 sm:p-8 shadow-xs space-y-6">
         {/* Header com Identidade da Agência */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div className="flex items-center gap-3">
@@ -118,7 +118,7 @@ function PublicTravelerFormPage() {
                 className="h-8 max-w-[120px] object-contain rounded-md"
               />
             ) : (
-              <div className="size-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+              <div className="size-9 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
                 <Building2 className="size-4" />
               </div>
             )}
@@ -126,12 +126,12 @@ function PublicTravelerFormPage() {
               <span className="text-[10px] font-mono uppercase tracking-widest text-sky-400 font-bold block">
                 {context?.agencyName || 'Agência Credenciada'}
               </span>
-              <p className="text-xs text-slate-300 font-medium truncate max-w-[280px]">
+              <p className="text-xs text-slate-300 font-medium truncate max-w-72">
                 {context?.tripTitle}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
             <ShieldCheck className="size-3" />
             <span>Link Seguro</span>
           </div>
@@ -166,26 +166,26 @@ function PublicTravelerFormPage() {
               <div className="space-y-4">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-300">Nome Completo (Conforme RG/Passaporte) *</label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ex: Lucas Gabriel Oliveira" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" autoFocus />
+                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ex: Lucas Gabriel Oliveira" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg" autoFocus />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">CPF *</label>
-                    <Input type="text" inputMode="numeric" value={cpf} onChange={(e) => setCpf(maskCpfProgressive(e.target.value))} placeholder="000.000.000-00" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
+                    <Input type="text" inputMode="numeric" value={cpf} onChange={(e) => setCpf(maskCpfProgressive(e.target.value))} placeholder="000.000.000-00" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg font-mono" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">RG / Órgão Emissor</label>
-                    <Input value={rg} onChange={(e) => setRg(e.target.value)} placeholder="1234567 SSP/SC" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
+                    <Input value={rg} onChange={(e) => setRg(e.target.value)} placeholder="1234567 SSP/SC" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg font-mono" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Data de Nascimento</label>
-                    <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" />
+                    <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Gênero</label>
-                    <select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-slate-800 bg-slate-950 text-base sm:text-xs text-slate-300">
+                    <select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full h-10 px-3 rounded-lg border border-slate-800 bg-slate-950 text-base sm:text-xs text-slate-300">
                       <option value="Masculino">Masculino</option>
                       <option value="Feminino">Feminino</option>
                       <option value="Outro">Outro</option>
@@ -197,23 +197,23 @@ function PublicTravelerFormPage() {
 
             {step === 2 && (
               <div className="space-y-4">
-                <div className="p-3.5 rounded-2xl bg-sky-950/40 border border-sky-800/40 text-xs text-sky-300 flex items-center gap-2.5">
+                <div className="p-4 rounded-lg bg-sky-950/40 border border-sky-800/40 text-xs text-sky-300 flex items-center gap-3">
                   <Globe className="size-4 shrink-0 text-sky-400" />
                   <span>Para viagens internacionais, informe o passaporte com validade superior a 6 meses.</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Nº do Passaporte</label>
-                    <Input value={passportNumber} onChange={(e) => setPassportNumber(e.target.value)} placeholder="Ex: FY123456" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl uppercase font-mono" />
+                    <Input value={passportNumber} onChange={(e) => setPassportNumber(e.target.value)} placeholder="Ex: FY123456" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg uppercase font-mono" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Validade do Passaporte</label>
-                    <Input type="date" value={passportExpiry} onChange={(e) => setPassportExpiry(e.target.value)} className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" />
+                    <Input type="date" value={passportExpiry} onChange={(e) => setPassportExpiry(e.target.value)} className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg" />
                   </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-300">Preferência de Assento no Voo</label>
-                  <select value={seatPreference} onChange={(e) => setSeatPreference(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-slate-800 bg-slate-950 text-base sm:text-xs text-slate-300">
+                  <select value={seatPreference} onChange={(e) => setSeatPreference(e.target.value)} className="w-full h-10 px-3 rounded-lg border border-slate-800 bg-slate-950 text-base sm:text-xs text-slate-300">
                     <option value="Janela">Janela</option>
                     <option value="Corredor">Corredor</option>
                     <option value="Meio">Meio / Sem Preferência</option>
@@ -227,43 +227,43 @@ function PublicTravelerFormPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">WhatsApp *</label>
-                    <Input type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="(49) 99999-9999" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
+                    <Input type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="(49) 99999-9999" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg font-mono" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">E-mail</label>
-                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" />
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Contato de Emergência (Nome)</label>
-                    <Input value={emergencyName} onChange={(e) => setEmergencyName(e.target.value)} placeholder="Ex: Pai, Mãe, Cônjuge" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" />
+                    <Input value={emergencyName} onChange={(e) => setEmergencyName(e.target.value)} placeholder="Ex: Pai, Mãe, Cônjuge" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Telefone de Emergência</label>
-                    <Input type="tel" inputMode="tel" value={emergencyPhone} onChange={(e) => setEmergencyPhone(formatPhone(e.target.value))} placeholder="(00) 00000-0000" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
+                    <Input type="tel" inputMode="tel" value={emergencyPhone} onChange={(e) => setEmergencyPhone(formatPhone(e.target.value))} placeholder="(00) 00000-0000" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg font-mono" />
                   </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-300">Restrições Alimentares / Saúde</label>
-                  <Textarea value={specialNeeds} onChange={(e) => setSpecialNeeds(e.target.value)} placeholder="Ex: Alergia a frutos do mar, vegetariano, necessidade de cadeira de rodas..." rows={2} className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" />
+                  <Textarea value={specialNeeds} onChange={(e) => setSpecialNeeds(e.target.value)} placeholder="Ex: Alergia a frutos do mar, vegetariano, necessidade de cadeira de rodas..." rows={2} className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-lg" />
                 </div>
               </div>
             )}
 
             <div className="flex items-center justify-between pt-4 border-t border-slate-800">
               {step > 1 ? (
-                <Button type="button" variant="outline" onClick={() => setStep(step - 1)} className="rounded-xl border-slate-800 text-xs">
+                <Button type="button" variant="outline" onClick={() => setStep(step - 1)} className="rounded-lg border-slate-800 text-xs">
                   Voltar
                 </Button>
               ) : <div />}
 
               {step < 3 ? (
-                <Button type="button" onClick={() => setStep(step + 1)} className="rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs px-5">
+                <Button type="button" onClick={() => setStep(step + 1)} className="rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs px-5">
                   Continuar
                 </Button>
               ) : (
-                <Button type="submit" disabled={loading} className="rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-6 shadow-xs">
+                <Button type="submit" disabled={loading} className="rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-6 shadow-xs">
                   {loading ? 'Enviando & Registrando...' : 'Finalizar & Enviar Ficha'}
                 </Button>
               )}

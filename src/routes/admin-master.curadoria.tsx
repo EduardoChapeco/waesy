@@ -148,12 +148,12 @@ function CuradoriaAdminPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
  <div>
  <h1 className="text-xl font-bold tracking-tight">Curadoria</h1>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Inspeções de qualidade, missões anônimas e apoio solidário com impulsos no feed.
  </p>
  </div>
 
- <Button onClick={() => handleOpenCreateMission()} size="sm" className="gap-1.5 text-xs h-8">
+ <Button onClick={() => handleOpenCreateMission()} size="sm" className="gap-2 text-xs h-8">
  <Plus className="size-3.5" />
  Nova Missão
  </Button>
@@ -161,19 +161,19 @@ function CuradoriaAdminPage() {
 
  {/* Grid de Métricas Limpo */}
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Lojas Monitoradas</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">{stores.length}</div>
  <span className="text-[11px] text-muted-foreground">cadastradas no radar</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Missões Realizadas</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">{audits.length}</div>
  <span className="text-[11px] text-muted-foreground">auditorias anônimas</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Boosts Ativos</span>
  <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
  {stores.filter((s: any) => s.boost_active).length}
@@ -181,7 +181,7 @@ function CuradoriaAdminPage() {
  <span className="text-[11px] text-muted-foreground">lojas impulsionadas</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Apoios Pendentes</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {audits.filter((a: any) => a.dispute_status === "pending_review").length}
@@ -192,7 +192,7 @@ function CuradoriaAdminPage() {
 
  {/* Tabs */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
- <TabsList className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-xl h-10">
+ <TabsList className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-lg h-10">
  <TabsTrigger value="lojas" className="text-xs">Lojas ({stores.length})</TabsTrigger>
  <TabsTrigger value="missoes" className="text-xs">Missões ({audits.length})</TabsTrigger>
  <TabsTrigger value="apoio" className="text-xs">Apoio</TabsTrigger>
@@ -210,7 +210,7 @@ function CuradoriaAdminPage() {
  />
  </div>
 
- <div className="rounded-xl border border-border/60 overflow-hidden bg-card">
+ <div className="rounded-lg border border-border/60 overflow-hidden bg-card">
  <Table>
  <TableHeader>
  <TableRow>
@@ -232,20 +232,20 @@ function CuradoriaAdminPage() {
  ) : (
  filteredStores.map((s: any) => (
  <TableRow key={s.id}>
- <TableCell className="font-medium text-xs py-2.5">
+ <TableCell className="font-medium text-xs py-3">
  <span className="font-semibold block text-foreground">{s.name}</span>
  <span className="text-[11px] text-muted-foreground font-mono">{s.slug}</span>
  </TableCell>
- <TableCell className="text-xs text-muted-foreground py-2.5">
+ <TableCell className="text-xs text-muted-foreground py-3">
  {s.city ? `${s.city}/${s.state}` : "—"}
  </TableCell>
- <TableCell className="font-mono text-xs text-muted-foreground py-2.5">
+ <TableCell className="font-mono text-xs text-muted-foreground py-3">
  {s.total_audits}
  </TableCell>
- <TableCell className="text-xs font-semibold py-2.5">
+ <TableCell className="text-xs font-semibold py-3">
  {s.last_rating ? `${s.last_rating}.0` : "—"}
  </TableCell>
- <TableCell className="py-2.5">
+ <TableCell className="py-3">
  {s.boost_active ? (
  <Badge variant="outline" className="text-[10px] text-success border-success/30">
  +{s.boost_multiplier}x Ativo
@@ -254,7 +254,7 @@ function CuradoriaAdminPage() {
  <span className="text-[11px] text-muted-foreground">Normal</span>
  )}
  </TableCell>
- <TableCell className="text-right py-2.5">
+ <TableCell className="text-right py-3">
  <Button
  size="sm"
  variant="ghost"
@@ -274,7 +274,7 @@ function CuradoriaAdminPage() {
 
  {/* Tab 2: Missões */}
  <TabsContent value="missoes" className="space-y-3">
- <div className="rounded-xl border border-border/60 overflow-hidden bg-card">
+ <div className="rounded-lg border border-border/60 overflow-hidden bg-card">
  <Table>
  <TableHeader>
  <TableRow>
@@ -296,21 +296,21 @@ function CuradoriaAdminPage() {
  ) : (
  audits.map((a: any) => (
  <TableRow key={a.id}>
- <TableCell className="text-xs py-2.5">
+ <TableCell className="text-xs py-3">
  <span className="font-mono font-semibold block text-foreground">{a.masked_auditor_code || "AUD"}</span>
  <span className="text-[11px] text-muted-foreground">{a.store_name}</span>
  </TableCell>
- <TableCell className="text-xs font-medium py-2.5">{a.product_name}</TableCell>
- <TableCell className="text-xs text-muted-foreground py-2.5">
+ <TableCell className="text-xs font-medium py-3">{a.product_name}</TableCell>
+ <TableCell className="text-xs text-muted-foreground py-3">
  {a.auditor_name || "Comunitário"}
  </TableCell>
- <TableCell className="font-mono text-xs py-2.5">
+ <TableCell className="font-mono text-xs py-3">
  {((a.cost_cents || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
  </TableCell>
- <TableCell className="text-xs font-semibold py-2.5">
+ <TableCell className="text-xs font-semibold py-3">
  {a.rating_overall ? `${a.rating_overall}/5` : "Pendente"}
  </TableCell>
- <TableCell className="text-right py-2.5">
+ <TableCell className="text-right py-3">
  <Badge variant="outline" className="text-[10px] capitalize">
  {a.status}
  </Badge>
@@ -329,7 +329,7 @@ function CuradoriaAdminPage() {
  {audits
  .filter((a: any) => a.dispute_status && a.dispute_status !== "none")
  .map((a: any) => (
- <div key={a.id} className="p-4 rounded-xl border border-border/60 bg-card space-y-2 text-xs">
+ <div key={a.id} className="p-4 rounded-lg border border-border/60 bg-card space-y-2 text-xs">
  <div className="flex items-center justify-between">
  <span className="font-bold text-foreground">{a.store_name}</span>
  <Badge variant="outline" className="text-[10px]">
@@ -403,7 +403,7 @@ function CuradoriaAdminPage() {
  Cancelar
  </Button>
  <Button type="submit" disabled={isSubmittingMission} className="w-full sm:w-auto text-xs h-9 font-semibold">
- {isSubmittingMission && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
+ {isSubmittingMission && <Loader2 className="size-3.5 animate-spin mr-2" />}
  Disparar Missão
  </Button>
  </DialogFooter>

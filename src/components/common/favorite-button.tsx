@@ -120,7 +120,7 @@ export function FavoriteButton(props: FavoriteButtonProps) {
         onClick={handleClick}
         disabled={mutation.isPending}
         className={cn(
-          "rounded-xl text-xs font-semibold h-8 gap-1.5 transition-all cursor-pointer select-none",
+          "rounded-lg text-xs font-semibold h-8 gap-2 transition-all cursor-pointer select-none",
           isFavorited && "border-primary/30 bg-primary/10 text-primary hover:bg-primary/15",
           className,
         )}
@@ -145,7 +145,7 @@ export function FavoriteButton(props: FavoriteButtonProps) {
       onClick={handleClick}
       disabled={mutation.isPending}
       className={cn(
-        "size-8 rounded-xl flex items-center justify-center transition-all cursor-pointer select-none",
+        "size-8 rounded-lg flex items-center justify-center transition-all cursor-pointer select-none",
         "bg-background/80 hover:bg-background backdrop-blur-md border border-border/50 shadow-xs",
         "hover:scale-105 active:scale-95 active:shadow-none",
         isFavorited && "text-primary border-primary/30 bg-primary/10",

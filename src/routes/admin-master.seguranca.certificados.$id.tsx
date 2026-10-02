@@ -37,8 +37,8 @@ function countryFlag(code: string | null): string {
 // ─── Seção de Card ────────────────────────────────────────────────────────────
 function Section({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
  return (
- <div className="bg-card border border-border/50 rounded-xl overflow-hidden">
- <div className="px-5 py-3.5 border-b border-border/40 flex items-center gap-2">
+ <div className="bg-card border border-border/50 rounded-lg overflow-hidden">
+ <div className="px-5 py-4 border-b border-border/40 flex items-center gap-2">
  <Icon className="size-4 text-muted-foreground" />
  <span className="text-sm font-medium">{title}</span>
  </div>
@@ -50,7 +50,7 @@ function Section({ title, icon: Icon, children }: { title: string; icon: React.E
 function Row({ label, value, mono = false, className }: { label: string; value: React.ReactNode; mono?: boolean; className?: string }) {
  return (
  <div className="flex items-start justify-between gap-4 py-2 border-b border-border/30 last:border-0">
- <span className="text-xs text-muted-foreground shrink-0 pt-0.5 w-36">{label}</span>
+ <span className="text-xs text-muted-foreground shrink-0 pt-1 w-36">{label}</span>
  <span className={cn("text-xs text-right break-all", mono && "font-mono", className)}>{value}</span>
  </div>
  );
@@ -98,7 +98,7 @@ function CertificateDetailPage() {
  {/* Header */}
  <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-10">
  <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
- <div className={cn("size-9 rounded-xl flex items-center justify-center",
+ <div className={cn("size-9 rounded-lg flex items-center justify-center",
  status.auto_flagged ? "bg-destructive/10" : "bg-primary/10"
  )}>
  {status.auto_flagged
@@ -126,7 +126,7 @@ function CertificateDetailPage() {
 
  <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
  {/* Risk + Validity Strip */}
- <div className="bg-card border border-border/50 rounded-xl p-5 space-y-4">
+ <div className="bg-card border border-border/50 rounded-lg p-5 space-y-4">
  <RiskGauge score={status.risk_score} />
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
  <div className="text-center">
@@ -248,7 +248,7 @@ function CertificateDetailPage() {
  : "bg-muted/30 border-border/50"
  )}
  >
- <div className="size-5 shrink-0 rounded flex items-center justify-center mt-0.5">
+ <div className="size-5 shrink-0 rounded flex items-center justify-center mt-1">
  {ev.severity === "critical" || ev.severity === "emergency"
  ? <ShieldAlert className="size-3.5 text-destructive" />
  : ev.severity === "warning"
@@ -261,7 +261,7 @@ function CertificateDetailPage() {
  {ev.risk_score > 0 && (
  <Badge variant="outline" className="ml-2 text-[10px]">{ev.risk_score}pts</Badge>
  )}
- <div className="text-muted-foreground mt-0.5 text-[10px]">
+ <div className="text-muted-foreground mt-1 text-[10px]">
  {new Date(ev.created_at).toLocaleString("pt-BR")}
  </div>
  </div>

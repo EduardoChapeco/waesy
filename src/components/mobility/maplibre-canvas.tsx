@@ -227,7 +227,7 @@ export function MapLibreCanvas({
 
  if (!itemMarkersRef.current.has(m.id)) {
  const el = document.createElement("div");
- el.className = `size-8 rounded-xl bg-card border-2 border-border flex items-center justify-center cursor-pointer transition-transform hover:scale-110 ${
+ el.className = `size-8 rounded-lg bg-card border-2 border-border flex items-center justify-center cursor-pointer transition-transform hover:scale-110 ${
  isSelected ? "scale-125 border-foreground ring-2 ring-foreground/20 z-30" : "z-10"
  }`;
 

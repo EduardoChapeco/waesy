@@ -29,7 +29,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
           {/* Coluna Esquerda (~50% no Desktop) */}
           <div className="lg:col-span-6 flex flex-col justify-center pr-0 lg:pr-3">
             <div
-              className="inline-flex items-center gap-2 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6 w-max"
+              className="inline-flex items-center gap-2 rounded-full px-3 sm:px-4 py-2 sm:py-2 mb-4 sm:mb-6 w-max"
               style={{ backgroundColor: brand, color: brandFg }}
             >
               <Calendar className="w-4 h-4 shrink-0" />
@@ -64,7 +64,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                   src={p.cover_image_url}
                   alt="Galeria 1"
                   crossOrigin="anonymous"
-                  className="w-24 sm:w-36 lg:w-44 h-16 sm:h-24 lg:h-28 object-cover rounded-xl sm:rounded-2xl border-2 sm:border-4 border-slate-50 shadow-sm"
+                  className="w-24 sm:w-36 lg:w-44 h-16 sm:h-24 lg:h-28 object-cover rounded-lg sm:rounded-lg border-2 sm:border-4 border-slate-50 shadow-sm"
                 />
               )}
               {p.map_image_url && (
@@ -72,7 +72,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                   src={p.map_image_url}
                   alt="Galeria 2"
                   crossOrigin="anonymous"
-                  className="w-24 sm:w-36 lg:w-44 h-16 sm:h-24 lg:h-28 object-cover rounded-xl sm:rounded-2xl border-2 sm:border-4 border-slate-50 shadow-sm"
+                  className="w-24 sm:w-36 lg:w-44 h-16 sm:h-24 lg:h-28 object-cover rounded-lg sm:rounded-lg border-2 sm:border-4 border-slate-50 shadow-sm"
                 />
               )}
               {!p.cover_image_url &&
@@ -83,7 +83,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                     src={p.itinerary![0].images[0]}
                     alt="Galeria Roteiro"
                     crossOrigin="anonymous"
-                    className="w-24 sm:w-36 lg:w-44 h-16 sm:h-24 lg:h-28 object-cover rounded-xl sm:rounded-2xl border-2 sm:border-4 border-slate-50 shadow-sm"
+                    className="w-24 sm:w-36 lg:w-44 h-16 sm:h-24 lg:h-28 object-cover rounded-lg sm:rounded-lg border-2 sm:border-4 border-slate-50 shadow-sm"
                   />
                 )}
             </div>
@@ -96,10 +96,10 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                 src={p.cover_image_url}
                 alt="Destino Principal"
                 crossOrigin="anonymous"
-                className="w-full h-auto min-h-[260px] sm:min-h-[400px] lg:min-h-[580px] object-cover rounded-2xl sm:rounded-3xl"
+                className="w-full h-auto min-h-[260px] sm:min-h-[400px] lg:min-h-[580px] object-cover rounded-lg sm:rounded-lg"
               />
             ) : (
-              <div className="w-full h-auto min-h-[260px] sm:min-h-[400px] lg:min-h-[580px] bg-slate-100 rounded-2xl sm:rounded-3xl" />
+              <div className="w-full h-auto min-h-[260px] sm:min-h-[400px] lg:min-h-[580px] bg-slate-100 rounded-lg sm:rounded-lg" />
             )}
 
             {/* Medalhão da Logo */}
@@ -150,7 +150,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
               return (
                 <div
                   key={day.id || idx}
-                  className="bg-white rounded-2xl sm:rounded-3xl border border-blue-100 p-4 sm:p-6 lg:p-8 shadow-sm overflow-visible"
+                  className="bg-white rounded-lg sm:rounded-lg border border-blue-100 p-4 sm:p-6 lg:p-8 shadow-sm overflow-visible"
                 >
                   <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <div
@@ -164,7 +164,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                         {day.title || `Dia ${idx + 1}`}
                       </h3>
                       {(day.day || day.city) && (
-                        <div className="text-xs sm:text-sm text-slate-500 font-semibold uppercase tracking-wide mt-0.5 flex items-center gap-2">
+                        <div className="text-xs sm:text-sm text-slate-500 font-semibold uppercase tracking-wide mt-1 flex items-center gap-2">
                           {day.day && <span>{day.day}</span>}
                           {day.day && day.city && <span className="opacity-50">•</span>}
                           {day.city && <span>{day.city}</span>}
@@ -187,13 +187,13 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                           {day.meals?.map((meal, mIdx) => (
                             <span
                               key={mIdx}
-                              className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-1.5"
+                              className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-2"
                             >
                               • {meal}
                             </span>
                           ))}
                           {day.overnight && (
-                            <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-1.5">
+                            <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-2">
                               <Hotel className="w-4 h-4 shrink-0" /> Pernoite: {day.overnight}
                             </span>
                           )}
@@ -208,7 +208,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                           <img
                             src={dayImages[0]}
                             crossOrigin="anonymous"
-                            className="w-full h-full min-h-[200px] sm:min-h-[260px] object-cover rounded-xl sm:rounded-2xl"
+                            className="w-full h-full min-h-[200px] sm:min-h-[260px] object-cover rounded-lg sm:rounded-lg"
                           />
                         ) : (
                           <div className="flex flex-col gap-3 h-full">
@@ -217,7 +217,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                                 key={imgIdx}
                                 src={imgUrl}
                                 crossOrigin="anonymous"
-                                className="w-full flex-1 min-h-[120px] object-cover rounded-xl sm:rounded-2xl"
+                                className="w-full flex-1 min-h-[120px] object-cover rounded-lg sm:rounded-lg"
                               />
                             ))}
                           </div>
@@ -236,7 +236,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
           <div className="mt-8 sm:mt-14 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
             {vm.hasIncludes && (
               <div
-                className={`${vm.hasExcludes ? "lg:col-span-6" : "col-span-12"} bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-blue-100 shadow-sm`}
+                className={`${vm.hasExcludes ? "lg:col-span-6" : "col-span-12"} bg-white rounded-lg sm:rounded-lg p-6 sm:p-8 border border-blue-100 shadow-sm`}
               >
                 <h2
                   className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6"
@@ -250,7 +250,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                 <ul className="space-y-3">
                   {p.includes!.map((inc, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm sm:text-base text-slate-700">
-                      <div className="bg-emerald-100 p-1 rounded-full shrink-0 mt-0.5">
+                      <div className="bg-emerald-100 p-1 rounded-full shrink-0 mt-1">
                         <Check className="w-4 h-4 text-emerald-600" />
                       </div>
                       <span className="leading-snug">{inc}</span>
@@ -262,7 +262,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
 
             {vm.hasExcludes && (
               <div
-                className={`${vm.hasIncludes ? "lg:col-span-6" : "col-span-12"} bg-slate-50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-200`}
+                className={`${vm.hasIncludes ? "lg:col-span-6" : "col-span-12"} bg-slate-50 rounded-lg sm:rounded-lg p-6 sm:p-8 border border-slate-200`}
               >
                 <h2
                   className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6"
@@ -276,7 +276,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                 <ul className="space-y-3">
                   {p.excludes!.map((exc, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm sm:text-base text-slate-600">
-                      <div className="bg-red-100 p-1 rounded-full shrink-0 mt-0.5">
+                      <div className="bg-red-100 p-1 rounded-full shrink-0 mt-1">
                         <X className="w-4 h-4 text-red-500" />
                       </div>
                       <span className="leading-snug">{exc}</span>
@@ -306,13 +306,13 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                   {p.hotels!.map((h, i) => (
                     <div
                       key={i}
-                      className="bg-white rounded-2xl p-4 sm:p-6 border border-blue-100"
+                      className="bg-white rounded-lg p-4 sm:p-6 border border-blue-100"
                     >
                       <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">{h.name}</h3>
-                      <div className="text-xs sm:text-sm text-slate-600 flex items-center gap-1.5 mb-3">
+                      <div className="text-xs sm:text-sm text-slate-600 flex items-center gap-2 mb-3">
                         <MapPin className="w-4 h-4 text-slate-400 shrink-0" /> {h.city}
                       </div>
-                      <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs">
+                      <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs">
                         <div>
                           <span className="block uppercase font-bold text-slate-400">
                             Check-in
@@ -349,7 +349,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
           >
             Investimento
           </h2>
-          <div className="flex flex-col lg:flex-row bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-blue-100">
+          <div className="flex flex-col lg:flex-row bg-white rounded-lg sm:rounded-lg overflow-hidden shadow-sm border border-blue-100">
             {/* Lado Esquerdo - Destaque */}
             <div
               className="w-full lg:w-1/2 p-6 sm:p-8 lg:p-12 flex flex-col justify-center"
@@ -388,7 +388,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
 
       {/* 13. RODAPÉ E CHAMADA FINAL */}
       <div
-        className="mt-6 mx-4 sm:mx-8 lg:mx-14 rounded-2xl sm:rounded-3xl px-4 sm:px-8 lg:px-12 py-6 sm:py-8 flex flex-col sm:flex-row justify-between items-center gap-4"
+        className="mt-6 mx-4 sm:mx-8 lg:mx-14 rounded-lg sm:rounded-lg px-4 sm:px-8 lg:px-12 py-6 sm:py-8 flex flex-col sm:flex-row justify-between items-center gap-4"
         style={{ backgroundColor: brand, color: brandFg }}
       >
         <div className="flex items-center gap-4 sm:gap-6">
@@ -405,19 +405,19 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
             </div>
           )}
           <div>
-            <div className="font-bold text-base sm:text-xl lg:text-2xl mb-0.5">{p.agent_name || vm.agency.name}</div>
+            <div className="font-bold text-base sm:text-xl lg:text-2xl mb-1">{p.agent_name || vm.agency.name}</div>
             <div className="text-xs uppercase tracking-wider opacity-80 mb-1">
               Consultor Especialista
             </div>
             {p.agent_whatsapp && (
-              <div className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
+              <div className="text-xs sm:text-sm font-medium flex items-center gap-2">
                 <PhoneCall className="w-4 h-4 shrink-0" /> {p.agent_whatsapp}
               </div>
             )}
           </div>
         </div>
         <div className="text-center sm:text-right">
-          <div className="text-xs uppercase tracking-wider opacity-60 mb-0.5">
+          <div className="text-xs uppercase tracking-wider opacity-60 mb-1">
             Ref do Documento
           </div>
           <div className="font-mono text-xs opacity-90">{p.public_token?.slice(0, 12)}</div>

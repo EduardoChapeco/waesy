@@ -227,11 +227,11 @@ function VehicleLayoutsListPage() {
  {filtered.map((layout) => (
  <div
  key={layout.id}
- className="flex flex-col justify-between p-4 sm:p-5 rounded-2xl border border-border/70 bg-card hover:border-primary/40 transition-all space-y-4"
+ className="flex flex-col justify-between p-4 sm:p-5 rounded-lg border border-border/70 bg-card hover:border-primary/40 transition-all space-y-4"
  >
  <div className="space-y-3">
  <div className="flex items-start justify-between gap-2">
- <div className="size-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
+ <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
  {layout.vehicle_type === "bus" && <Bus className="size-5" />}
  {layout.vehicle_type === "van" && <Car className="size-5" />}
  {layout.vehicle_type === "microbus" && <Bus className="size-5" />}
@@ -270,7 +270,7 @@ function VehicleLayoutsListPage() {
 
  {/* Rodapé de Ações */}
  <div className="flex items-center justify-between pt-3 border-t border-border/60">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Button
  type="button"
  variant="ghost"
@@ -278,7 +278,7 @@ function VehicleLayoutsListPage() {
  onClick={() => handleDuplicate(layout)}
  title="Duplicar modelo"
  aria-label="Duplicar modelo"
- className="size-11 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  >
  <Copy className="size-4 sm:size-3.5" />
  </Button>
@@ -289,7 +289,7 @@ function VehicleLayoutsListPage() {
  onClick={() => handleDelete(layout)}
  title="Excluir modelo"
  aria-label="Excluir modelo"
- className="size-11 sm:size-8 rounded-xl text-muted-foreground hover:text-rose-600 cursor-pointer"
+ className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer"
  >
  <Trash2 className="size-4 sm:size-3.5" />
  </Button>
@@ -299,7 +299,7 @@ function VehicleLayoutsListPage() {
  asChild
  variant="outline"
  size="sm"
- className="h-11 sm:h-8.5 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+ className="h-11 sm:h-8.5 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
  >
  <Link to={"/workspace/turismo/frota/$id" as any} params={{ id: layout.id } as any}>
  <Edit3 className="size-3.5" /> Editar Mapa 2D
@@ -334,24 +334,24 @@ function VehicleLayoutsListPage() {
       </SheetHeader>
 
       <form onSubmit={handleCreate} className="space-y-4">
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <label className="text-xs font-semibold text-foreground">Nome do Modelo *</label>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ex: Marcopolo G7 1200 - 46 Lugares Executivo"
-            className="h-11 rounded-xl text-xs"
+            className="h-11 rounded-lg text-xs"
             autoFocus
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="text-xs font-semibold text-foreground">Tipo de Veículo</label>
             <select
               value={vehicleType}
               onChange={(e) => setVehicleType(e.target.value as any)}
-              className="w-full h-11 px-3 rounded-xl border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-lg border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
             >
               <option value="bus">Ônibus</option>
               <option value="microbus">Micro-ônibus</option>
@@ -360,7 +360,7 @@ function VehicleLayoutsListPage() {
             </select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="text-xs font-semibold text-foreground">Fileiras</label>
             <Input
               type="number"
@@ -368,13 +368,13 @@ function VehicleLayoutsListPage() {
               max={30}
               value={rows}
               onChange={(e) => setRows(Number(e.target.value))}
-              className="h-11 rounded-xl text-xs font-mono"
+              className="h-11 rounded-lg text-xs font-mono"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60">
-          <div className="space-y-0.5">
+        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/60">
+          <div className="space-y-1">
             <p className="text-xs font-semibold text-foreground">Ônibus Double-Decker (DD)</p>
             <p className="text-xs text-muted-foreground">Possui dois andares com escada</p>
           </div>
@@ -392,14 +392,14 @@ function VehicleLayoutsListPage() {
             variant="ghost"
             onClick={() => setModalOpen(false)}
             disabled={submitting}
-            className="h-11 sm:h-10 px-4 rounded-xl text-xs cursor-pointer"
+            className="h-11 sm:h-10 px-4 rounded-lg text-xs cursor-pointer"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             disabled={submitting || !name.trim()}
-            className="h-11 sm:h-10 px-5 rounded-xl text-xs font-semibold cursor-pointer"
+            className="h-11 sm:h-10 px-5 rounded-lg text-xs font-semibold cursor-pointer"
           >
             {submitting ? "Criando..." : "Criar Modelo"}
           </Button>
@@ -417,7 +417,7 @@ function VehicleLayoutsListPage() {
 
     {/* Diálogo de Confirmação de Exclusão */}
     <AlertDialog open={Boolean(layoutToDelete)} onOpenChange={(open) => { if (!open) setLayoutToDelete(null); }}>
-      <AlertDialogContent className="max-w-md rounded-2xl p-6 border-border/80">
+      <AlertDialogContent className="max-w-md rounded-lg p-6 border-border/80">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-base font-bold">
             Excluir modelo de veículo?
@@ -430,7 +430,7 @@ function VehicleLayoutsListPage() {
         <AlertDialogFooter className="mt-4 gap-2">
           <AlertDialogCancel
             disabled={isDeleting}
-            className="h-11 sm:h-10 px-4 rounded-xl text-xs font-semibold"
+            className="h-11 sm:h-10 px-4 rounded-lg text-xs font-semibold"
           >
             Cancelar
           </AlertDialogCancel>
@@ -440,7 +440,7 @@ function VehicleLayoutsListPage() {
               confirmDelete();
             }}
             disabled={isDeleting}
-            className="h-11 sm:h-10 px-4 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white"
+            className="h-11 sm:h-10 px-4 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white"
           >
             {isDeleting ? "Excluindo..." : "Excluir Definitivamente"}
           </AlertDialogAction>

@@ -156,7 +156,7 @@ function SignContractPage() {
   if (error || !envelope) {
     return (
       <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full border border-destructive/30 bg-destructive/5 rounded-2xl p-6 text-center space-y-4">
+        <div className="max-w-md w-full border border-destructive/30 bg-destructive/5 rounded-lg p-6 text-center space-y-4">
           <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
             <AlertCircle className="size-6" />
           </div>
@@ -164,7 +164,7 @@ function SignContractPage() {
           <p className="text-xs text-muted-foreground leading-relaxed">
             {error || "O token de assinatura informado não foi encontrado ou expirou."}
           </p>
-          <Button asChild variant="outline" size="sm" className="rounded-xl mt-2">
+          <Button asChild variant="outline" size="sm" className="rounded-lg mt-2">
             <Link to="/">Voltar ao Início</Link>
           </Button>
         </div>
@@ -205,7 +205,7 @@ function SignContractPage() {
     <div className="min-h-[100dvh] bg-background text-foreground py-6 px-0 sm:px-4 md:px-0 flex justify-center animate-in fade-in duration-200">
       <div className="max-w-4xl w-full space-y-6">
         {/* Header da Sessão de Assinatura (Apple HIG) */}
-        <div className="bg-card border border-border/80 rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">
+        <div className="bg-card border border-border/80 rounded-lg p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs font-semibold gap-1 border-primary/30 text-primary">
@@ -238,7 +238,7 @@ function SignContractPage() {
 
         {/* Hash Criptográfico do Documento */}
         {version?.hash_sha256 && (
-          <div className="rounded-xl p-3.5 bg-muted/20 border border-border/70 flex items-center justify-between gap-3 text-xs">
+          <div className="rounded-lg p-4 bg-muted/20 border border-border/70 flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 min-w-0">
               <Hash className="size-4 text-primary shrink-0" />
               <span className="font-mono text-muted-foreground text-[11px] truncate">
@@ -252,12 +252,12 @@ function SignContractPage() {
         )}
 
         {/* Visualizador do Conteúdo do Contrato (Leitura Fluida Mobile/Desktop) */}
-        <div className="bg-card border border-border/80 rounded-2xl p-5 sm:p-8 space-y-4 shadow-2xs">
+        <div className="bg-card border border-border/80 rounded-lg p-5 sm:p-8 space-y-4 shadow-2xs">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-2 border-b border-border/60">
             Termos e Cláusulas Contratuais
           </h2>
 
-          <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed max-h-[550px] overflow-y-auto rounded-xl p-4 sm:p-6 bg-muted/10 font-serif prose prose-sm dark:prose-invert max-w-none">
+          <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed max-h-[550px] overflow-y-auto rounded-lg p-4 sm:p-6 bg-muted/10 font-serif prose prose-sm dark:prose-invert max-w-none">
             <ReactMarkdown>{version?.content_markdown || ""}</ReactMarkdown>
           </div>
         </div>
@@ -265,7 +265,7 @@ function SignContractPage() {
         {/* SE JÁ FOI ASSINADO: EXIBE PROTOCOLO COMPLETO E LINK DE VERIFICAÇÃO */}
         {isSignedLocal ? (
           <div className="space-y-6">
-            <div className="border border-emerald-500/30 bg-emerald-500/5 rounded-2xl p-6 text-center space-y-3">
+            <div className="border border-emerald-500/30 bg-emerald-500/5 rounded-lg p-6 text-center space-y-3">
               <CheckCircle2 className="size-10 text-emerald-600 dark:text-emerald-400 mx-auto" />
               <h2 className="text-base font-bold text-foreground">
                 Assinatura Concluída com Sucesso!
@@ -274,7 +274,7 @@ function SignContractPage() {
                 Sua manifestação de vontade foi registrada e selada na infraestrutura criptográfica com validade jurídica nacional.
               </p>
               {contract?.verification_code && (
-                <Button asChild size="sm" className="rounded-xl text-xs font-bold gap-1.5 mt-2 h-10 px-5">
+                <Button asChild size="sm" className="rounded-lg text-xs font-bold gap-2 mt-2 h-10 px-5">
                   <Link to="/verify/document/$code" params={{ code: contract.verification_code }}>
                     <span>Ver Certificado Público de Autenticidade</span>
                     <ArrowRight className="size-3.5" />
@@ -307,7 +307,7 @@ function SignContractPage() {
           /* ÁREA DE ASSINATURA TÁTIL, BIOMETRIA E CONSENTIMENTO */
           <div className="space-y-6">
             {/* Captura de Biometria Facial Opcional */}
-            <div className="border border-border/70 bg-card rounded-2xl p-5 space-y-3 shadow-2xs">
+            <div className="border border-border/70 bg-card rounded-lg p-5 space-y-3 shadow-2xs">
               <div className="flex items-center gap-2">
                 <Camera className="size-4 text-primary" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
@@ -324,9 +324,9 @@ function SignContractPage() {
               </p>
 
               {isCameraOpen && (
-                <div className="relative rounded-xl overflow-hidden border border-border/60 bg-black">
+                <div className="relative rounded-lg overflow-hidden border border-border/60 bg-black">
                   <video ref={videoRef} autoPlay muted playsInline className="w-full max-h-60 object-cover" />
-                  <div className="absolute inset-0 border-4 border-primary/30 rounded-xl pointer-events-none" />
+                  <div className="absolute inset-0 border-4 border-primary/30 rounded-lg pointer-events-none" />
                   <button
                     type="button"
                     onClick={captureSelfie}
@@ -338,7 +338,7 @@ function SignContractPage() {
               )}
 
               {selfieDataUrl && !isCameraOpen && (
-                <div className="relative rounded-xl overflow-hidden border border-border/60">
+                <div className="relative rounded-lg overflow-hidden border border-border/60">
                   <img src={selfieDataUrl} alt="Selfie biométrica" className="w-full max-h-60 object-cover" />
                   <div className="absolute top-2 right-2 flex gap-2">
                     {!selfieUploaded && (
@@ -367,7 +367,7 @@ function SignContractPage() {
                 <button
                   type="button"
                   onClick={openCamera}
-                  className="w-full h-11 rounded-xl border border-dashed border-border/80 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                  className="w-full h-11 rounded-lg border border-dashed border-border/80 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
                 >
                   <Camera className="size-4" />
                   Abrir câmera e capturar selfie
@@ -378,14 +378,14 @@ function SignContractPage() {
             <canvas ref={canvasRef} className="hidden" />
 
             {/* Pad de Assinatura Tátil & Consentimento Legal */}
-            <div className="border border-primary/30 bg-card rounded-2xl p-5 sm:p-6 space-y-5 shadow-sm">
+            <div className="border border-primary/30 bg-card rounded-lg p-5 sm:p-6 space-y-5 shadow-sm">
               {/* Card de Destaque: Assinatura Oficial GOV.BR (Exibido estritamente quando a API estiver configurada e ativa no Hub) */}
               {govBrConfig?.isGovBrEnabled && govBrConfig?.authUrl && (
                 <>
-                  <div className="p-4 sm:p-5 rounded-2xl border border-blue-500/30 bg-blue-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+                  <div className="p-4 sm:p-5 rounded-lg border border-blue-500/30 bg-blue-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                        <span className="font-bold text-sm text-foreground flex items-center gap-2">
                           <ShieldCheck className="size-4 text-blue-600 dark:text-blue-400" />
                           Assinatura com Conta GOV.BR
                         </span>
@@ -408,7 +408,7 @@ function SignContractPage() {
                         window.location.href = govBrConfig.authUrl;
                       }}
                       disabled={!consent}
-                      className="w-full sm:w-auto rounded-xl text-xs font-bold h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 min-h-[44px] cursor-pointer shadow-xs gap-2"
+                      className="w-full sm:w-auto rounded-lg text-xs font-bold h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 min-h-11 cursor-pointer shadow-xs gap-2"
                     >
                       <ExternalLink className="size-4" />
                       <span>Assinar com GOV.BR</span>
@@ -426,9 +426,9 @@ function SignContractPage() {
 
               {/* 1-Click Signature Card: Assinatura Salva do Perfil */}
               {savedSig?.savedSignature && (
-                <div className="p-4 rounded-2xl border border-primary/30 bg-primary/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
+                    <div className="flex items-center gap-2 font-semibold text-xs text-foreground">
                       <FileSignature className="size-3.5 text-primary" />
                       Assinatura Salva no seu Perfil
                     </div>
@@ -446,7 +446,7 @@ function SignContractPage() {
                       type="button"
                       size="sm"
                       variant="outline"
-                      className="rounded-xl text-xs font-semibold h-9 px-3 cursor-pointer"
+                      className="rounded-lg text-xs font-semibold h-9 px-3 cursor-pointer"
                       onClick={() => {
                         setSignatureImage(savedSig.savedSignature);
                         toast.success("Assinatura do seu perfil carregada com sucesso!");
@@ -478,7 +478,7 @@ function SignContractPage() {
                   id="consent-check"
                   checked={consent}
                   onCheckedChange={(c) => setConsent(Boolean(c))}
-                  className="mt-0.5 size-5 rounded-md"
+                  className="mt-1 size-5 rounded-md"
                 />
                 <label
                   htmlFor="consent-check"
@@ -492,7 +492,7 @@ function SignContractPage() {
 
               {/* Botão de Ação no Terço Inferior (Thumb Zone) */}
               <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border/60">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Lock className="size-4 text-primary shrink-0" />
                   <span>Documento Protegido · Validade Jurídica Nacional</span>
                 </div>
@@ -500,7 +500,7 @@ function SignContractPage() {
                 <Button
                   onClick={handleSign}
                   disabled={!consent || signMutation.isPending}
-                  className="w-full sm:w-auto rounded-xl text-sm font-bold gap-2 h-12 px-8 min-h-[48px] bg-primary text-primary-foreground shadow-sm"
+                  className="w-full sm:w-auto rounded-lg text-sm font-bold gap-2 h-12 px-8 min-h-12 bg-primary text-primary-foreground shadow-sm"
                 >
                   {signMutation.isPending ? (
                     <>

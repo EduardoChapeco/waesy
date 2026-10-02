@@ -204,7 +204,7 @@ function AutomacoesWorkflowsPage() {
         actions={
           <Button
             onClick={() => setIsCreateOpen(true)}
-            className="rounded-2xl min-h-[44px] font-bold gap-1.5"
+            className="rounded-lg min-h-11 font-bold gap-2"
           >
             <Plus className="h-4 w-4" />
             Novo Workflow
@@ -214,23 +214,23 @@ function AutomacoesWorkflowsPage() {
 
       {/* ── KPIs ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
+        <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Total de Workflows
           </span>
           <div className="text-2xl font-black text-foreground">{workflows.length}</div>
         </div>
-        <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
+        <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ativos</span>
           <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{activeCount}</div>
         </div>
-        <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
+        <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rascunhos</span>
           <div className="text-2xl font-black text-amber-500">
             {workflows.filter((w) => w.status === "draft").length}
           </div>
         </div>
-        <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-1">
+        <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Execuções</span>
           <div className="text-2xl font-black text-foreground">
             {workflows.reduce((sum, w) => sum + (w.execution_count || 0), 0)}
@@ -239,15 +239,15 @@ function AutomacoesWorkflowsPage() {
       </div>
 
       {/* ── Preview Visual do Motor de Automação ── */}
-      <div className="bg-card/70 backdrop-blur-xl border border-border/50 p-8 rounded-3xl space-y-6">
+      <div className="bg-card/70 backdrop-blur-xl border border-border/50 p-8 rounded-lg space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-bold text-base text-foreground">Motor de Automação Visual em Nós</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Arraste triggers, condições e ações para criar fluxos inteligentes.
             </p>
           </div>
-          <Badge variant="outline" className="text-xs font-bold uppercase px-2.5 py-1 gap-1 border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+          <Badge variant="outline" className="text-xs font-bold uppercase px-3 py-1 gap-1 border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
             <Zap className="size-3 text-emerald-500" />
             Motor de Disparo Ativo
           </Badge>
@@ -265,13 +265,13 @@ function AutomacoesWorkflowsPage() {
             return (
               <div key={node.id} className="flex flex-col sm:flex-row items-center gap-4">
                 <div
-                  className={`p-4 rounded-2xl border w-52 text-center space-y-2 ${colors[idx]} transition-all hover:scale-105 cursor-default`}
+                  className={`p-4 rounded-lg border w-52 text-center space-y-2 ${colors[idx]} transition-all hover:scale-105 cursor-default`}
                 >
                   <div className="flex items-center justify-center">
                     <Icon className="h-6 w-6" />
                   </div>
                   <h4 className="font-bold text-sm text-foreground">{node.label}</h4>
-                  <Badge variant="outline" className="text-xs uppercase font-bold py-0.5 px-2">
+                  <Badge variant="outline" className="text-xs uppercase font-bold py-1 px-2">
                     {node.type}
                   </Badge>
                 </div>
@@ -304,23 +304,23 @@ function AutomacoesWorkflowsPage() {
               return (
                 <div
                   key={wf.id}
-                  className="bg-card rounded-2xl border border-border/60 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group hover:border-primary/30 transition-all"
+                  className="bg-card rounded-lg border border-border/60 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group hover:border-primary/30 transition-all"
                 >
-                  <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+                  <div className="flex items-center gap-4 sm:gap-4 min-w-0">
                     <div
-                      className={`size-11 rounded-xl border flex items-center justify-center shrink-0 ${meta.color}`}
+                      className={`size-11 rounded-lg border flex items-center justify-center shrink-0 ${meta.color}`}
                     >
                       <Icon className="size-5" />
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-bold text-sm text-foreground truncate">{wf.title}</h4>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge variant="outline" className="text-xs font-semibold px-1.5 py-0">
+                        <Badge variant="outline" className="text-xs font-semibold px-2 py-0">
                           {meta.label}
                         </Badge>
                         <Badge
                           variant={isActive ? "default" : "secondary"}
-                          className={`text-xs font-bold px-1.5 py-0 ${isActive ? "bg-emerald-600 text-white" : ""}`}
+                          className={`text-xs font-bold px-2 py-0 ${isActive ? "bg-emerald-600 text-white" : ""}`}
                         >
                           {isActive ? "Ativo" : wf.status === "draft" ? "Rascunho" : "Inativo"}
                         </Badge>
@@ -347,7 +347,7 @@ function AutomacoesWorkflowsPage() {
                       size="icon"
                       disabled={isLoading || executingId === wf.id}
                       onClick={() => handleRunTest(wf)}
-                      className="size-11 sm:size-9 rounded-xl text-primary hover:bg-primary/10 cursor-pointer"
+                      className="size-11 sm:size-9 rounded-lg text-primary hover:bg-primary/10 cursor-pointer"
                       title="Disparar Teste Manual do Workflow"
                     >
                       {executingId === wf.id ? (
@@ -361,7 +361,7 @@ function AutomacoesWorkflowsPage() {
                       size="icon"
                       disabled={isLoading || executingId === wf.id}
                       onClick={() => handleToggle(wf)}
-                      className={`size-11 sm:size-9 rounded-xl cursor-pointer ${isActive ? "text-emerald-600" : "text-muted-foreground"}`}
+                      className={`size-11 sm:size-9 rounded-lg cursor-pointer ${isActive ? "text-emerald-600" : "text-muted-foreground"}`}
                       title={isActive ? "Desativar" : "Ativar"}
                     >
                       {isActive ? <ToggleRight className="size-5" /> : <ToggleLeft className="size-5" />}
@@ -402,7 +402,7 @@ function AutomacoesWorkflowsPage() {
               </SheetDescription>
             </SheetHeader>
             <form id="create-workflow-form" onSubmit={handleCreate} className="space-y-4 py-2">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Nome do Workflow</Label>
                 <Input
                   value={title}
@@ -412,7 +412,7 @@ function AutomacoesWorkflowsPage() {
                   required
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Gatilho Disparador</Label>
                 <Select value={triggerType} onValueChange={setTriggerType}>
                   <SelectTrigger className="text-xs">
@@ -433,7 +433,7 @@ function AutomacoesWorkflowsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Descrição (opcional)</Label>
                 <Textarea
                   value={description}

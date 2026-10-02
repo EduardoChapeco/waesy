@@ -67,10 +67,10 @@ function StoreRouteError({ error }: { error: Error }) {
 
  return (
  <div className="mx-auto max-w-md px-4 py-20 text-center space-y-5">
- <div className="size-14 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive mx-auto">
+ <div className="size-14 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive mx-auto">
  <span className="text-xl font-bold">!</span>
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <h2 className="text-lg font-bold text-foreground">Não foi possível carregar a página</h2>
  <p className="text-xs text-muted-foreground">
  Ocorreu uma instabilidade temporária ao carregar as informações desta seção.
@@ -79,7 +79,7 @@ function StoreRouteError({ error }: { error: Error }) {
 
  {/* Caixa de Diagnóstico Transparente BigTech */}
  {error?.message && (
- <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/20 text-left text-xs font-mono text-destructive break-all max-h-32 overflow-y-auto">
+ <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/20 text-left text-xs font-mono text-destructive break-all max-h-32 overflow-y-auto">
  <span className="font-bold block mb-1">Diagnóstico Técnico:</span>
  {error.message}
  </div>
@@ -90,19 +90,19 @@ function StoreRouteError({ error }: { error: Error }) {
  onClick={() => {
  if (typeof window !== "undefined") window.location.reload();
  }}
- className="w-full sm:w-auto h-10 px-5 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
+ className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
  >
  Tentar novamente
  </button>
  <a
  href="/"
- className="w-full sm:w-auto h-10 px-5 rounded-xl text-xs font-semibold border border-border hover:bg-muted flex items-center justify-center text-foreground transition-colors"
+ className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-semibold border border-border hover:bg-muted flex items-center justify-center text-foreground transition-colors"
  >
  Voltar ao início
  </a>
  <a
  href="/workspace"
- className="w-full sm:w-auto h-10 px-5 rounded-xl text-xs font-semibold bg-muted hover:bg-muted/80 flex items-center justify-center text-foreground transition-colors"
+ className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-semibold bg-muted hover:bg-muted/80 flex items-center justify-center text-foreground transition-colors"
  >
  Entrar no Workspace
  </a>

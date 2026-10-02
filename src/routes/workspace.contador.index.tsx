@@ -90,7 +90,7 @@ function AccountantPortalPage() {
       {/* Corporate Summary & Share Box */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* CNPJ Info Card */}
-        <div className="bg-surface-paper border border-border rounded-xl p-5 shadow-sm space-y-2">
+        <div className="bg-surface-paper border border-border rounded-lg p-5 shadow-sm space-y-2">
           <div className="flex items-center gap-2 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
             <Building2 className="w-4 h-4 text-primary" /> Regime Tributário
           </div>
@@ -106,7 +106,7 @@ function AccountantPortalPage() {
         </div>
 
         {/* Issued Volume */}
-        <div className="bg-surface-paper border border-border rounded-xl p-5 shadow-sm space-y-2">
+        <div className="bg-surface-paper border border-border rounded-lg p-5 shadow-sm space-y-2">
           <div className="flex items-center gap-2 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
             <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Total Faturado Emitido
           </div>
@@ -120,7 +120,7 @@ function AccountantPortalPage() {
         </div>
 
         {/* 1-Click Export CSV */}
-        <div className="bg-surface-paper border border-border rounded-xl p-5 shadow-sm space-y-3 flex flex-col justify-between">
+        <div className="bg-surface-paper border border-border rounded-lg p-5 shadow-sm space-y-3 flex flex-col justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
               <FileSpreadsheet className="w-4 h-4 text-amber-500" /> Exportação de Lote
@@ -140,7 +140,7 @@ function AccountantPortalPage() {
       </div>
 
       {/* Share 7-Day Token with Accountant */}
-      <div className="bg-surface-paper border border-border rounded-xl p-5 shadow-sm space-y-4">
+      <div className="bg-surface-paper border border-border rounded-lg p-5 shadow-sm space-y-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
             <Share2 className="w-4 h-4" />
@@ -148,7 +148,7 @@ function AccountantPortalPage() {
           <div>
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               Gerar Link de Acesso Seguro para o Contador
-              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
+              <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
                 Expira em 7 dias
               </span>
             </h3>
@@ -183,7 +183,7 @@ function AccountantPortalPage() {
               variant="outline"
               size="sm"
               onClick={handleCopyLink}
-              className="h-8 text-xs gap-1.5 shrink-0"
+              className="h-8 text-xs gap-2 shrink-0"
             >
               <Copy className="w-3.5 h-3.5" />
               {copiedLink ? "Copiado!" : "Copiar Link"}
@@ -193,7 +193,7 @@ function AccountantPortalPage() {
       </div>
 
       {/* Invoices List Table */}
-      <div className="bg-surface-paper border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-surface-paper border border-border rounded-lg shadow-sm overflow-hidden">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Calendar className="w-4 h-4 text-primary" /> Histórico de Notas Fiscais Emitidas
@@ -241,13 +241,13 @@ function AccountantPortalPage() {
                     {formatMoney(inv.valor_total_cents || 0)}
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-1.5">
+                    <div className="flex items-center justify-center gap-2">
                       {inv.danfe_pdf_url && (
                         <a
                           href={inv.danfe_pdf_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs h-7 px-2.5 rounded-lg border border-border bg-background hover:bg-muted font-medium text-foreground transition-colors"
+                          className="inline-flex items-center gap-1 text-xs h-7 px-3 rounded-lg border border-border bg-background hover:bg-muted font-medium text-foreground transition-colors"
                         >
                           DANFE <ExternalLink className="w-3 h-3 text-muted-foreground" />
                         </a>
@@ -257,7 +257,7 @@ function AccountantPortalPage() {
                           href={inv.xml_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs h-7 px-2.5 rounded-lg border border-border bg-background hover:bg-muted font-medium text-foreground transition-colors"
+                          className="inline-flex items-center gap-1 text-xs h-7 px-3 rounded-lg border border-border bg-background hover:bg-muted font-medium text-foreground transition-colors"
                         >
                           XML <Download className="w-3 h-3 text-muted-foreground" />
                         </a>

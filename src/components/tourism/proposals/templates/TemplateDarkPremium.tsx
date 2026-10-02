@@ -42,7 +42,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
               alt="Logo"
-              className="h-10 w-auto max-w-[160px] aspect-[4/1] object-contain brightness-0 invert" width={160} height={40}
+              className="h-10 w-auto max-w-40 aspect-[4/1] object-contain brightness-0 invert" width={160} height={40}
             />
           ) : (
             <div className="text-2xl font-bold tracking-widest text-white uppercase">
@@ -97,7 +97,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
         className="pb-24 pt-4 px-12 relative z-10 break-inside-avoid"
       >
         {/* Resumo Executivo Flutuante */}
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 -mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-slate-100">
+        <div className="bg-white rounded-lg p-8 border border-slate-200 -mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-slate-100">
           <div>
             <div className="ds-label-caps text-slate-400 mb-2">Cliente</div>
             <div className="font-semibold text-slate-900 text-sm">
@@ -141,7 +141,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               {p.flights!.map((f, i) => (
                 <div
                   key={i}
-                  className="border border-slate-200 rounded-3xl overflow-hidden break-inside-avoid"
+                  className="border border-slate-200 rounded-lg overflow-hidden break-inside-avoid"
                 >
                   <div className="bg-blue-50 px-6 py-3 flex justify-between items-center border-b border-blue-100">
                     <span className="ds-label-caps text-blue-600">{f.airline || "Companhia"}</span>
@@ -190,7 +190,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               {p.hotels!.map((h, i) => (
                 <div
                   key={i}
-                  className="border border-slate-200 rounded-3xl overflow-hidden break-inside-avoid"
+                  className="border border-slate-200 rounded-lg overflow-hidden break-inside-avoid"
                 >
                   <div className="bg-amber-50 px-6 py-3 flex justify-between items-center border-b border-amber-100">
                     <span className="ds-label-caps text-amber-700">Hotel e Resort</span>
@@ -221,7 +221,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
 
                     {h.images?.[0] && (
                       <div className="grid grid-cols-3 gap-4 h-48">
-                        <div className="col-span-2 rounded-2xl overflow-hidden">
+                        <div className="col-span-2 rounded-lg overflow-hidden">
                           <img
                             src={h.images[0]}
                             crossOrigin="anonymous"
@@ -229,7 +229,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                           />
                         </div>
                         {h.images[1] && (
-                          <div className="rounded-2xl overflow-hidden">
+                          <div className="rounded-lg overflow-hidden">
                             <img
                               src={h.images[1]}
                               crossOrigin="anonymous"
@@ -248,7 +248,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
 
         {/* FINANCEIRO */}
         <div className="mt-20 break-inside-avoid">
-          <div className="bg-[#1E293B] rounded-3xl p-12 text-white text-center border border-slate-700 relative overflow-hidden">
+          <div className="bg-[#1E293B] rounded-lg p-12 text-white text-center border border-slate-700 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
 
             <h2
@@ -282,12 +282,12 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                   {formatCurrency(vm.totals.valorParcelaCartao, p.currency)}
                 </div>
               </div>
-              <div className="bg-[#D4AF37]/10 rounded-3xl p-6 border border-[#D4AF37]/30 backdrop-blur relative">
+              <div className="bg-[#D4AF37]/10 rounded-lg p-6 border border-[#D4AF37]/30 backdrop-blur relative">
                 <div className="ds-meta uppercase font-bold tracking-widest text-zinc-400 mb-2">
                   À vista (PIX)
                 </div>
                 <div
-                  className="ds-meta font-bold px-2 py-0.5"
+                  className="ds-meta font-bold px-2 py-1"
                   style={{ color: brand, border: `1px solid ${brand}` }}
                 >
                   -{vm.totals.descontoPixPercentual}%
@@ -328,7 +328,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
             src={vm.agency.logo_url}
             crossOrigin="anonymous"
             alt="Logo Agência"
-            className="h-10 w-auto max-w-[160px] aspect-[4/1] object-contain grayscale"
+            className="h-10 w-auto max-w-40 aspect-[4/1] object-contain grayscale"
             width={160}
             height={40}
           />

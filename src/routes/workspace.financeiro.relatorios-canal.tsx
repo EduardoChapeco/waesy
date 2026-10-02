@@ -165,11 +165,11 @@ function ChannelDREPage() {
         actions={
           <div className="flex items-center gap-2">
             <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="h-9 rounded-xl text-xs font-bold w-36 bg-background">
-                <Filter className="size-3.5 mr-1.5 text-muted-foreground" />
+              <SelectTrigger className="h-9 rounded-lg text-xs font-bold w-36 bg-background">
+                <Filter className="size-3.5 mr-2 text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="rounded-xl">
+              <SelectContent className="rounded-lg">
                 <SelectItem value="7d">Últimos 7 dias</SelectItem>
                 <SelectItem value="30d">Últimos 30 dias</SelectItem>
                 <SelectItem value="90d">Últimos 90 dias</SelectItem>
@@ -182,7 +182,7 @@ function ChannelDREPage() {
               size="sm"
               onClick={handleExport}
               disabled={exporting}
-              className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+              className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
             >
               <FileSpreadsheet className="size-3.5 text-emerald-600" />
               <span>{exporting ? "Exportando..." : "Exportar CSV"}</span>
@@ -193,8 +193,8 @@ function ChannelDREPage() {
 
       {/* ── KPIS RESUMO CONSOLIDADOS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ShoppingCart className="size-3.5 text-foreground" />
             Pedidos Totais
           </span>
@@ -206,8 +206,8 @@ function ChannelDREPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <BarChart3 className="size-3.5 text-primary" />
             Receita Bruta
           </span>
@@ -219,8 +219,8 @@ function ChannelDREPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <TrendingDown className="size-3.5 text-rose-600" />
             Taxas Plataformas
           </span>
@@ -232,8 +232,8 @@ function ChannelDREPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="size-3.5 text-emerald-600" />
             Receita Líquida
           </span>
@@ -245,8 +245,8 @@ function ChannelDREPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Star className="size-3.5 text-amber-500" />
             Margem Média
           </span>
@@ -261,9 +261,9 @@ function ChannelDREPage() {
 
       {/* ── MARKET SHARE POR CANAL (BARRA VISUAL) ── */}
       {totals.gross > 0 && (
-        <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs">
+        <div className="p-5 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <span className="text-xs font-bold text-foreground flex items-center gap-2">
               <PieChart className="size-3.5 text-primary" />
               Participação no Faturamento Bruto (Market Share)
             </span>
@@ -293,7 +293,7 @@ function ChannelDREPage() {
             {dreRows.map((row) => {
               const sharePercent = totals.gross > 0 ? (row.gross_revenue_cents / totals.gross) * 100 : 0;
               return (
-                <div key={row.channel} className="flex items-center gap-1.5 text-xs">
+                <div key={row.channel} className="flex items-center gap-2 text-xs">
                   <span className={cn("size-2 rounded-full", CHANNEL_BAR_COLORS[row.channel] || "bg-primary")} />
                   <span className="font-medium text-foreground">{row.channel_label}</span>
                   <span className="text-muted-foreground font-mono">({sharePercent.toFixed(1)}%)</span>
@@ -305,14 +305,14 @@ function ChannelDREPage() {
       )}
 
       {/* ── BARRA DE CONTROLE & BUSCA ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nome do canal..."
-            className="pl-10 h-10 rounded-xl text-xs bg-background"
+            className="pl-10 h-10 rounded-lg text-xs bg-background"
           />
         </div>
 
@@ -321,10 +321,10 @@ function ChannelDREPage() {
             <ArrowUpDown className="size-3.5" /> Ordenar por:
           </span>
           <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-            <SelectTrigger className="h-9 rounded-xl text-xs font-bold w-44 bg-background">
+            <SelectTrigger className="h-9 rounded-lg text-xs font-bold w-44 bg-background">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="rounded-xl">
+            <SelectContent className="rounded-lg">
               <SelectItem value="gross">Maior Faturamento Bruto</SelectItem>
               <SelectItem value="net">Maior Faturamento Líquido</SelectItem>
               <SelectItem value="margin">Maior Margem (%)</SelectItem>
@@ -345,14 +345,14 @@ function ChannelDREPage() {
           description="Nenhum pedido ou transação foi registrado para os canais selecionados. Conecte marketplaces em Integrações para acompanhar."
           action={
             <Link to="/workspace/integracoes/marketplaces">
-              <Button size="sm" className="rounded-xl text-xs font-bold">
+              <Button size="sm" className="rounded-lg text-xs font-bold">
                 Ver Integrações
               </Button>
             </Link>
           }
         />
       ) : (
-        <div className="bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+        <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
           <div className="overflow-x-auto no-scrollbar">
             <Table>
               <TableHeader>
@@ -373,7 +373,7 @@ function ChannelDREPage() {
                       <Badge
                         variant="outline"
                         className={cn(
-                          "text-xs font-bold rounded-lg px-2.5 py-0.5",
+                          "text-xs font-bold rounded-lg px-3 py-1",
                           CHANNEL_COLORS[row.channel] || CHANNEL_COLORS.outros
                         )}
                       >

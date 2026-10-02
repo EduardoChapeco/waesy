@@ -232,12 +232,12 @@ function CustomerOrderDetailPage() {
         subtitle={`Realizado em ${formatDate(order.created_at)}`}
         fallbackHref="/conta/pedidos"
         rightActions={
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-2 sm:gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCompanionOpen(true)}
-              className="rounded-xl text-xs font-semibold gap-1.5 h-8.5 px-3 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10"
+              className="rounded-lg text-xs font-semibold gap-2 h-8.5 px-3 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10"
             >
               <Smartphone className="size-3.5" />
               <span className="hidden sm:inline">Resumo 9:16</span>
@@ -245,7 +245,7 @@ function CustomerOrderDetailPage() {
             </Button>
             <Badge
               variant={getStatusVariant(order.status)}
-              className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-lg"
+              className="text-[11px] font-mono font-semibold px-3 py-1 rounded-lg"
             >
               {translateStatus(order.status)}
             </Badge>
@@ -257,7 +257,7 @@ function CustomerOrderDetailPage() {
         {/* Left: items + shipping */}
         <div className="md:col-span-2 space-y-6">
           {/* Order items */}
-          <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-5 space-y-4">
+          <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-4">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2 pb-2 border-b border-border/40">
               <Package className="size-4 text-primary" strokeWidth={2} />
               Itens do Pedido ({items.length})
@@ -268,13 +268,13 @@ function CustomerOrderDetailPage() {
                 return (
                   <div
                     key={item.id}
-                    className="flex justify-between py-3.5 first:pt-0 last:pb-0 text-xs"
+                    className="flex justify-between py-4 first:pt-0 last:pb-0 text-xs"
                   >
                     <div className="space-y-1 pr-4">
                       <p className="font-semibold text-sm text-foreground flex items-center gap-2 flex-wrap">
                         {item.product_title}
                         {isBackorderItem && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-md">
                             ⏱ Sob Encomenda
                           </span>
                         )}
@@ -297,7 +297,7 @@ function CustomerOrderDetailPage() {
                             return (
                               <span
                                 key={oIdx}
-                                className="text-[10px] font-bold bg-muted/60 text-foreground/80 border border-border/60 px-1.5 py-0.5 rounded-md"
+                                className="text-[10px] font-bold bg-muted/60 text-foreground/80 border border-border/60 px-2 py-1 rounded-md"
                               >
                                 + {label}
                               </span>
@@ -306,7 +306,7 @@ function CustomerOrderDetailPage() {
                         </div>
                       )}
                       {item.notes && (
-                        <p className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md inline-block mt-1">
+                        <p className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md inline-block mt-1">
                           Observação: {item.notes}
                         </p>
                       )}
@@ -320,7 +320,7 @@ function CustomerOrderDetailPage() {
                       <p className="font-bold text-sm font-mono text-foreground">
                         {formatMoney(item.total_cents)}
                       </p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 font-mono">
+                      <p className="text-[11px] text-muted-foreground mt-1 font-mono">
                         {item.qty}x {formatMoney(item.unit_price_cents)}
                       </p>
                       {order.status === "delivered" && (
@@ -336,7 +336,7 @@ function CustomerOrderDetailPage() {
           </div>
 
           {/* Delivery & Shipping Address */}
-          <div className="bg-card rounded-2xl border border-border/60 p-4 sm:p-5 space-y-4">
+          <div className="bg-card rounded-lg border border-border/60 p-4 sm:p-5 space-y-4">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2 pb-2 border-b border-border/40">
               <MapPin className="size-4 text-primary" />
               Entrega / Retirada
@@ -381,8 +381,8 @@ function CustomerOrderDetailPage() {
 
             {/* Delivery Proofs if any */}
             {proofs && proofs.length > 0 && (
-              <div className="pt-3 border-t border-border/40 space-y-2.5">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="pt-3 border-t border-border/40 space-y-3">
+                <span className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Package className="size-3.5 text-emerald-600" />
                   Comprovante de Entrega Confirmada
                 </span>
@@ -390,7 +390,7 @@ function CustomerOrderDetailPage() {
                   {proofs.map((pr: any) => (
                     <div
                       key={pr.id}
-                      className="rounded-xl overflow-hidden border border-border/60 bg-muted/20 p-2 space-y-2"
+                      className="rounded-lg overflow-hidden border border-border/60 bg-muted/20 p-2 space-y-2"
                     >
                       <a href={pr.storage_path} target="_blank" rel="noopener noreferrer">
                         <img
@@ -423,12 +423,12 @@ function CustomerOrderDetailPage() {
         {/* Right: totals + payment */}
         <div className="space-y-6">
           {/* Summary totals */}
-          <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-5 space-y-4 text-foreground">
+          <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-4 text-foreground">
             <h3 className="text-sm font-bold pb-2 border-b border-border/40 flex items-center gap-2">
               <CreditCard className="size-4 text-primary" />
               Resumo Financeiro
             </h3>
-            <div className="space-y-2.5 text-xs">
+            <div className="space-y-3 text-xs">
               <div className="flex justify-between text-muted-foreground">
                 <span>Subtotal</span>
                 <span className="font-mono font-semibold text-foreground">{formatMoney(order.subtotal_cents)}</span>
@@ -440,7 +440,7 @@ function CustomerOrderDetailPage() {
                 </span>
               </div>
               {order.discount_cents > 0 && (
-                <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg">
                   <span>Desconto</span>
                   <span className="font-mono">-{formatMoney(order.discount_cents)}</span>
                 </div>
@@ -456,7 +456,7 @@ function CustomerOrderDetailPage() {
 
           {/* Payment instructions & Upload */}
           {order.status === "awaiting_payment" && (
-            <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-5 space-y-4 text-foreground">
+            <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-4 text-foreground">
               <h3 className="text-sm font-bold flex items-center gap-2 pb-2 border-b border-border/40">
                 <CreditCard className="size-4 text-primary" />
                 Como Pagar
@@ -470,13 +470,13 @@ function CustomerOrderDetailPage() {
                       Copie a chave abaixo e cole no app do seu banco:
                     </p>
                   </div>
-                  <div className="bg-muted/40 p-3 rounded-xl text-xs font-mono break-all select-all font-semibold border border-border/40">
+                  <div className="bg-muted/40 p-3 rounded-lg text-xs font-mono break-all select-all font-semibold border border-border/40">
                     {paymentInstructions.pix_key}
                   </div>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="w-full font-semibold rounded-xl text-xs h-9 cursor-pointer"
+                    className="w-full font-semibold rounded-lg text-xs h-9 cursor-pointer"
                     onClick={handleCopyPix}
                   >
                     <Copy className="size-3.5 mr-2" /> Copiar Chave PIX
@@ -489,14 +489,14 @@ function CustomerOrderDetailPage() {
               )}
 
               {paymentInstructions.payment_instructions && (
-                <div className="bg-muted/40 rounded-xl p-3 text-xs text-foreground border border-border/40">
+                <div className="bg-muted/40 rounded-lg p-3 text-xs text-foreground border border-border/40">
                   <p className="font-bold mb-1">Instruções adicionais:</p>
                   <p className="whitespace-pre-wrap text-muted-foreground">{paymentInstructions.payment_instructions}</p>
                 </div>
               )}
 
               {/* Upload section */}
-              <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 p-4 text-center space-y-2.5">
+              <div className="rounded-lg border border-dashed border-border/70 bg-muted/20 p-4 text-center space-y-3">
                 <Upload className="size-5 mx-auto text-muted-foreground" />
                 <p className="text-xs font-medium text-muted-foreground">
                   Envie o comprovante de pagamento para agilizar a confirmação.
@@ -512,7 +512,7 @@ function CustomerOrderDetailPage() {
                 <Button
                   asChild
                   size="sm"
-                  className="w-full rounded-xl text-xs font-semibold h-9 cursor-pointer"
+                  className="w-full rounded-lg text-xs font-semibold h-9 cursor-pointer"
                   disabled={uploading}
                 >
                   <label htmlFor="receipt-file">
@@ -525,11 +525,11 @@ function CustomerOrderDetailPage() {
 
           {/* Payment status messages */}
           {order.status === "payment_processing" && (
-            <div className="flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs p-3.5 rounded-xl">
-              <Info className="size-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs p-4 rounded-lg">
+              <Info className="size-4 shrink-0 mt-1 text-amber-600 dark:text-amber-400" />
               <div>
                 <p className="font-bold">Comprovante em análise</p>
-                <p className="mt-0.5 opacity-90">
+                <p className="mt-1 opacity-90">
                   A equipe está confirmando seu pagamento. Você será notificado em breve.
                 </p>
               </div>
@@ -537,11 +537,11 @@ function CustomerOrderDetailPage() {
           )}
 
           {payment?.receipt_status === "rejected" && (
-            <div className="flex items-start gap-2.5 bg-destructive/10 border border-destructive/20 text-destructive text-xs p-3.5 rounded-xl">
-              <AlertTriangle className="size-4 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs p-4 rounded-lg">
+              <AlertTriangle className="size-4 shrink-0 mt-1" />
               <div>
                 <p className="font-bold">Comprovante Recusado</p>
-                <p className="mt-0.5 opacity-90">
+                <p className="mt-1 opacity-90">
                   O comprovante não pôde ser validado. Por favor, envie novamente ou contate a loja.
                 </p>
               </div>
@@ -549,11 +549,11 @@ function CustomerOrderDetailPage() {
           )}
 
           {["paid", "processing", "completed"].includes(order.status) && (
-            <div className="flex items-start gap-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-xs p-3.5 rounded-xl">
-              <Info className="size-4 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
+            <div className="flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-xs p-4 rounded-lg">
+              <Info className="size-4 shrink-0 mt-1 text-emerald-600 dark:text-emerald-400" />
               <div>
                 <p className="font-bold">Pagamento Confirmado</p>
-                <p className="mt-0.5 opacity-90">
+                <p className="mt-1 opacity-90">
                   Seu pagamento foi confirmado! O pedido está sendo preparado.
                 </p>
               </div>
@@ -564,7 +564,7 @@ function CustomerOrderDetailPage() {
             <>
               <Button
                 variant="outline"
-                className="w-full mt-4 rounded-xl text-xs font-semibold h-10 cursor-pointer"
+                className="w-full mt-4 rounded-lg text-xs font-semibold h-10 cursor-pointer"
                 onClick={() => setRmaWizardOpen(true)}
               >
                 Solicitar Devolução / Troca
@@ -583,7 +583,7 @@ function CustomerOrderDetailPage() {
 
       {/* Modal do Cartão Digital 9:16 */}
       <Dialog open={companionOpen} onOpenChange={setCompanionOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-card rounded-2xl sm:max-w-lg">
+        <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-card rounded-lg sm:max-w-lg">
           <DialogHeader className="p-4 border-b border-border/70 bg-muted/30">
             <DialogTitle className="text-sm font-bold flex items-center gap-2">
               <Smartphone className="size-4 text-emerald-600" />

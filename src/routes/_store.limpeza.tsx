@@ -220,7 +220,7 @@ function LimpezaVerticalPage() {
  })()}
  </div>
  ) : (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhum produto de limpeza encontrado"
  description="Tente ajustar os termos de busca ou navegue pelos departamentos acima."
@@ -236,7 +236,7 @@ function LimpezaVerticalPage() {
  <Button
  variant="outline"
  onClick={() => handleDepartmentChange("todos")}
- className="rounded-xl border-border"
+ className="rounded-lg border-border"
  >
  Ver todos os produtos
  </Button>

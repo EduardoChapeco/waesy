@@ -70,12 +70,12 @@ function ClinicalRecordDrawer({
  {isLoading ? (
  <p className="text-xs text-muted-foreground">Carregando histórico...</p>
  ) : records.length === 0 ? (
- <div className="p-6 text-center border-0 rounded-xl bg-muted/20">
+ <div className="p-6 text-center border-0 rounded-lg bg-muted/20">
  <p className="text-xs text-muted-foreground">Nenhum registro anterior encontrado.</p>
  </div>
  ) : (
  records.map((r: any) => (
- <div key={r.id} className="bg-muted/40 p-3.5 rounded-xl text-xs space-y-1.5">
+ <div key={r.id} className="bg-muted/40 p-4 rounded-lg text-xs space-y-2">
  <div className="flex justify-between items-center text-xs text-muted-foreground font-mono">
  <span>{format(new Date(r.created_at), "dd/MM/yyyy HH:mm")}</span>
  <span>{r.author?.full_name || r.author?.email || "Profissional"}</span>
@@ -91,10 +91,10 @@ function ClinicalRecordDrawer({
  value={content}
  onChange={(e) => setContent(e.target.value)}
  placeholder="Descreva o procedimento realizado, produtos utilizados, observações..."
- className="h-20 text-xs rounded-xl"
+ className="h-20 text-xs rounded-lg"
  />
  <Button
- className="w-full h-10 rounded-xl text-xs font-bold"
+ className="w-full h-10 rounded-lg text-xs font-bold"
  disabled={!content.trim() || addMutation.isPending}
  onClick={() => addMutation.mutate(content)}
  >
@@ -277,13 +277,13 @@ function AdminAppointmentsPage() {
  title="Agenda"
  actions={
  <div className="flex items-center gap-2">
- <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px]">
+ <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 min-h-11">
  <Link to="/workspace/pacotes">
  <Ticket className="size-3.5 text-primary" />
  <span>Pacotes e Passes</span>
  </Link>
  </Button>
- <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px]">
+ <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 min-h-11">
  <Link to="/workspace/agenda/recursos">
  <Users className="size-3.5" />
  <span>Profissionais e Salas</span>
@@ -293,18 +293,18 @@ function AdminAppointmentsPage() {
  }
  />
 
- <div className="flex items-center justify-between gap-2 p-3 bg-card rounded-2xl ">
+ <div className="flex items-center justify-between gap-2 p-3 bg-card rounded-lg ">
  <Button
  variant="ghost"
  size="icon"
  onClick={() => setSelectedDate((prev) => subDays(prev, 1))}
- className="min-h-[44px] min-w-[44px] rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="min-h-11 min-w-[44px] rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  aria-label="Dia anterior"
  >
  <ChevronLeft className="size-4" />
  </Button>
 
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 justify-center py-0.5">
+ <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 justify-center py-1">
  {weekDays.map((d, idx) => {
  const isSelected = isSameDay(d, selectedDate);
  const isToday = isSameDay(d, new Date());
@@ -314,7 +314,7 @@ function AdminAppointmentsPage() {
  type="button"
  onClick={() => setSelectedDate(d)}
  className={cn(
- "flex flex-col items-center justify-center min-w-14 sm:min-w-16 min-h-[50px] py-1.5 px-1 rounded-xl transition-all cursor-pointer",
+ "flex flex-col items-center justify-center min-w-14 sm:min-w-16 min-h-[50px] py-2 px-1 rounded-lg transition-all cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground font-bold "
  : "hover:bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -323,7 +323,7 @@ function AdminAppointmentsPage() {
  <span className="text-xs uppercase font-bold tracking-wider">
  {format(d, "EEE", { locale: ptBR })}
  </span>
- <span className="text-sm font-black mt-0.5 font-mono">
+ <span className="text-sm font-black mt-1 font-mono">
  {format(d, "dd")}
  </span>
  {isToday && !isSelected && (
@@ -338,7 +338,7 @@ function AdminAppointmentsPage() {
  variant="ghost"
  size="icon"
  onClick={() => setSelectedDate((prev) => addDays(prev, 1))}
- className="min-h-[44px] min-w-[44px] rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="min-h-11 min-w-[44px] rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  aria-label="Próximo dia"
  >
  <ChevronRight className="size-4" />
@@ -346,8 +346,8 @@ function AdminAppointmentsPage() {
  </div>
 
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
- <div className="p-3.5 rounded-2xl bg-card flex items-center gap-3">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="p-4 rounded-lg bg-card flex items-center gap-3">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <CalendarIcon className="size-5" />
  </div>
  <div>
@@ -356,8 +356,8 @@ function AdminAppointmentsPage() {
  </div>
  </div>
 
- <div className="p-3.5 rounded-2xl bg-card flex items-center gap-3">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="p-4 rounded-lg bg-card flex items-center gap-3">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <CheckCircle2 className="size-5" />
  </div>
  <div>
@@ -366,8 +366,8 @@ function AdminAppointmentsPage() {
  </div>
  </div>
 
- <div className="col-span-2 sm:col-span-1 p-3.5 rounded-2xl bg-card flex items-center gap-3">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="col-span-2 sm:col-span-1 p-4 rounded-lg bg-card flex items-center gap-3">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <DollarSign className="size-5" />
  </div>
  <div>
@@ -382,7 +382,7 @@ function AdminAppointmentsPage() {
  {isLoading ? (
  <div className="p-12 text-center text-xs text-muted-foreground">Carregando agendamentos...</div>
  ) : Object.keys(groupedAppointments).length === 0 ? (
- <div className="p-12 text-center border-0 rounded-2xl bg-card space-y-2">
+ <div className="p-12 text-center border-0 rounded-lg bg-card space-y-2">
  <CalendarIcon className="size-8 mx-auto text-muted-foreground opacity-40" />
  <h3 className="text-sm font-bold text-foreground">Nenhum agendamento para este dia</h3>
  <p className="text-xs text-muted-foreground">
@@ -395,7 +395,7 @@ function AdminAppointmentsPage() {
  {Object.keys(groupedAppointments).map((resourceName) => (
  <div
  key={resourceName}
- className="w-80 flex flex-col gap-3 bg-card rounded-2xl p-4 "
+ className="w-80 flex flex-col gap-3 bg-card rounded-lg p-4 "
  >
  <div className="flex items-center justify-between pb-2 ">
  <div className="flex items-center gap-2">
@@ -413,7 +413,7 @@ function AdminAppointmentsPage() {
  {groupedAppointments[resourceName].map((appt: any) => (
  <div
  key={appt.id}
- className="p-3.5 rounded-xl bg-background space-y-2.5 hover:border-primary/40 transition-colors"
+ className="p-4 rounded-lg bg-background space-y-3 hover:border-primary/40 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -421,7 +421,7 @@ function AdminAppointmentsPage() {
  {appt.booking_services?.title || "Atendimento"}
  </h4>
  {appt.pass_id && (
- <span className="inline-flex items-center gap-1 px-1.5 py-0.5 mt-0.5 rounded text-xs font-bold bg-primary/10 text-primary">
+ <span className="inline-flex items-center gap-1 px-2 py-1 mt-1 rounded text-xs font-bold bg-primary/10 text-primary">
  <Ticket size={9} />
  Sessão #{appt.session_number || 1}
  </span>
@@ -463,7 +463,7 @@ function AdminAppointmentsPage() {
  )}`}
  target="_blank"
  rel="noopener noreferrer"
- className="min-h-[38px] min-w-[38px] rounded-xl text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer transition-colors"
+ className="min-h-[38px] min-w-[38px] rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer transition-colors"
  title="Enviar Lembrete"
  >
  <MessageCircle className="size-3.5" />
@@ -472,7 +472,7 @@ function AdminAppointmentsPage() {
  <Button
  variant="ghost"
  size="icon"
- className="min-h-[38px] min-w-[38px] rounded-xl text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer"
+ className="min-h-[38px] min-w-[38px] rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer"
  title="Abrir Cartão Digital 9:16 (WhatsApp)"
  onClick={() => handleOpenCompanion(appt, resourceName)}
  >
@@ -481,7 +481,7 @@ function AdminAppointmentsPage() {
  <Button
  variant="ghost"
  size="icon"
- className="min-h-[38px] min-w-[38px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer"
+ className="min-h-[38px] min-w-[38px] rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer"
  title="Ver Prontuário / Evolução"
  onClick={() =>
  setSelectedAppt({ id: appt.id, name: appt.guest_name || "Cliente" })
@@ -493,12 +493,12 @@ function AdminAppointmentsPage() {
  </div>
 
  {["pending", "confirmed"].includes(appt.status) && (
- <div className="flex flex-col gap-1.5 pt-1">
- <div className="grid grid-cols-2 gap-1.5">
+ <div className="flex flex-col gap-2 pt-1">
+ <div className="grid grid-cols-2 gap-2">
  <Button
  size="sm"
  variant="outline"
- className="min-h-[44px] rounded-xl text-xs font-bold cursor-pointer"
+ className="min-h-11 rounded-lg text-xs font-bold cursor-pointer"
  onClick={() =>
  statusMutation.mutate({ id: appt.id, status: "in_service" })
  }
@@ -508,7 +508,7 @@ function AdminAppointmentsPage() {
  </Button>
  <Button
  size="sm"
- className="min-h-[44px] rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+ className="min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
  onClick={() =>
  statusMutation.mutate({ id: appt.id, status: "completed" })
  }
@@ -521,7 +521,7 @@ function AdminAppointmentsPage() {
  <Button
  size="sm"
  variant="ghost"
- className="min-h-[44px] text-xs text-muted-foreground hover:text-destructive cursor-pointer px-2"
+ className="min-h-11 text-xs text-muted-foreground hover:text-destructive cursor-pointer px-2"
  onClick={() => statusMutation.mutate({ id: appt.id, status: "cancelled" })}
  >
  Cancelar
@@ -529,7 +529,7 @@ function AdminAppointmentsPage() {
  <Button
  size="sm"
  variant="ghost"
- className="min-h-[44px] text-xs text-muted-foreground hover:text-destructive cursor-pointer px-2"
+ className="min-h-11 text-xs text-muted-foreground hover:text-destructive cursor-pointer px-2"
  onClick={() => statusMutation.mutate({ id: appt.id, status: "no_show" })}
  >
  Falta (No-Show)
@@ -555,7 +555,7 @@ function AdminAppointmentsPage() {
 
  {/* Modal do Cartão Digital 9:16 */}
  <Dialog open={companionCardOpen} onOpenChange={setCompanionCardOpen}>
- <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-card rounded-2xl sm:max-w-lg">
+ <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-card rounded-lg sm:max-w-lg">
  <DialogHeader className="p-4 border-b border-border/70 bg-muted/30">
  <DialogTitle className="text-sm font-bold flex items-center gap-2">
  <Smartphone className="size-4 text-emerald-600" />

@@ -44,14 +44,14 @@ function WorkspaceCaptacaoNdasPage() {
           </div>
         </div>
 
-        <Badge variant="outline" className="text-xs font-mono px-3 py-1 gap-1.5 self-start sm:self-auto border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+        <Badge variant="outline" className="text-xs font-mono px-3 py-1 gap-2 self-start sm:self-auto border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
           <ShieldCheck className="size-3.5" />
           <span>{ndas.length} Termos Válidos (LGPD Compliant)</span>
         </Badge>
       </div>
 
       {/* ── LISTAGEM DE ASSINATURAS ── */}
-      <div className="bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+      <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
         <div className="p-4 sm:p-5 border-b border-border/40 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileCheck className="size-4 text-primary" />
@@ -73,7 +73,7 @@ function WorkspaceCaptacaoNdasPage() {
                 Assim que investidores acessarem seus anúncios confidenciais e assinarem o termo digital de sigilo, seus registros auditáveis aparecerão aqui.
               </p>
             </div>
-            <Button asChild variant="outline" size="sm" className="h-9 px-4 rounded-xl text-xs font-semibold">
+            <Button asChild variant="outline" size="sm" className="h-9 px-4 rounded-lg text-xs font-semibold">
               <Link to="/workspace/captacao">
                 <span>Ver Minhas Empresas Listadas</span>
               </Link>
@@ -97,8 +97,8 @@ function WorkspaceCaptacaoNdasPage() {
                 return (
                   <div key={sig.id} className="p-4 space-y-3 hover:bg-muted/10 transition-colors">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-0.5 min-w-0">
-                        <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                      <div className="space-y-1 min-w-0">
+                        <div className="font-bold text-sm text-foreground flex items-center gap-2">
                           <User className="size-3.5 text-primary shrink-0" />
                           <span className="truncate">{sig.signerName}</span>
                         </div>
@@ -112,7 +112,7 @@ function WorkspaceCaptacaoNdasPage() {
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-xs text-foreground bg-muted/30 p-2.5 rounded-xl min-h-[44px]">
+                    <div className="flex items-center gap-2 text-xs text-foreground bg-muted/30 p-3 rounded-lg min-h-11">
                       <Building className="size-4 text-primary shrink-0" />
                       <span className="truncate font-medium">{sig.classifiedTitle}</span>
                     </div>
@@ -159,9 +159,9 @@ function WorkspaceCaptacaoNdasPage() {
 
                     return (
                       <tr key={sig.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="py-3.5 px-4 sm:px-5">
-                          <div className="space-y-0.5">
-                            <div className="font-bold text-foreground flex items-center gap-1.5">
+                        <td className="py-4 px-4 sm:px-5">
+                          <div className="space-y-1">
+                            <div className="font-bold text-foreground flex items-center gap-2">
                               <User className="size-3 text-muted-foreground" />
                               <span>{sig.signerName}</span>
                             </div>
@@ -172,32 +172,32 @@ function WorkspaceCaptacaoNdasPage() {
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground">
+                        <td className="py-4 px-4 sm:px-5 font-mono text-muted-foreground">
                           {sig.signerDocumentMasked}
                         </td>
 
-                        <td className="py-3.5 px-4 sm:px-5">
-                          <div className="flex items-center gap-1.5 font-medium text-foreground">
+                        <td className="py-4 px-4 sm:px-5">
+                          <div className="flex items-center gap-2 font-medium text-foreground">
                             <Building className="size-3.5 text-primary shrink-0" />
-                            <span className="truncate max-w-[200px]">{sig.classifiedTitle}</span>
+                            <span className="truncate max-w-52">{sig.classifiedTitle}</span>
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground text-xs">
+                        <td className="py-4 px-4 sm:px-5 font-mono text-muted-foreground text-xs">
                           <div className="flex items-center gap-1">
                             <Calendar className="size-3 text-muted-foreground" />
                             <span>{dateStr}</span>
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground text-xs">
+                        <td className="py-4 px-4 sm:px-5 font-mono text-muted-foreground text-xs">
                           <div className="flex items-center gap-1">
                             <Globe className="size-3 text-muted-foreground" />
                             <span>{sig.ipAddress}</span>
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-4 sm:px-5 text-right">
+                        <td className="py-4 px-4 sm:px-5 text-right">
                           <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-xs font-bold">
                             Assinado
                           </Badge>

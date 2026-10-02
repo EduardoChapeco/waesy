@@ -89,7 +89,7 @@ function CmsAvaliacoesPage() {
             variant={filterStatus === value ? "default" : "outline"}
             size="sm"
             onClick={() => setFilterStatus(value)}
-            className="rounded-xl text-xs font-bold h-9 gap-1.5"
+            className="rounded-lg text-xs font-bold h-9 gap-2"
           >
             {Icon && <Icon className="size-3.5" />}
             {label}
@@ -100,7 +100,7 @@ function CmsAvaliacoesPage() {
       {filteredReviews.length === 0 ? (
         <EmptyState title="Nenhuma avaliação encontrada" />
       ) : (
-        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+        <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -122,7 +122,7 @@ function CmsAvaliacoesPage() {
                     {review.products?.title || "Produto desconhecido"}
                   </TableCell>
                   <TableCell>
-                    <div className="inline-flex items-center font-mono font-bold text-xs px-2 py-0.5 rounded-md bg-muted text-foreground">
+                    <div className="inline-flex items-center font-mono font-bold text-xs px-2 py-1 rounded-md bg-muted text-foreground">
                       {review.rating ?? "—"} / 5
                     </div>
                   </TableCell>
@@ -136,7 +136,7 @@ function CmsAvaliacoesPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-success border-success/20 hover:bg-success/10 rounded-xl text-xs h-8"
+                          className="text-success border-success/20 hover:bg-success/10 rounded-lg text-xs h-8"
                           onClick={() => handleUpdateStatus(review.id, "approved")}
                         >
                           <CheckCircle className="size-3.5 mr-1" />
@@ -147,7 +147,7 @@ function CmsAvaliacoesPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-destructive border-destructive/20 hover:bg-destructive/10 rounded-xl text-xs h-8"
+                          className="text-destructive border-destructive/20 hover:bg-destructive/10 rounded-lg text-xs h-8"
                           onClick={() => handleUpdateStatus(review.id, "rejected")}
                         >
                           <XCircle className="size-3.5 mr-1" />

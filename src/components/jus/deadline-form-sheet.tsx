@@ -117,7 +117,7 @@ export function DeadlineFormSheet({
 
  <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4">
  {/* Título do Prazo */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono">
  Título do Prazo / Ato Processual *
  </label>
@@ -125,21 +125,21 @@ export function DeadlineFormSheet({
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Contestação com Preliminares, Recurso de Apelação..."
- className="h-11 rounded-xl bg-background font-medium text-xs sm:text-sm"
+ className="h-11 rounded-lg bg-background font-medium text-xs sm:text-sm"
  required
  />
  </div>
 
  {/* Tipo de Prazo e Prioridade */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono">
  Tipo de Ato
  </label>
  <select
  value={deadlineType}
  onChange={(e) => setDeadlineType(e.target.value as any)}
- className="w-full h-11 rounded-xl border border-border bg-background px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none"
+ className="w-full h-11 rounded-lg border border-border bg-background px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none"
  >
  <option value="contestacao">Contestação</option>
  <option value="recurso">Recurso (Apelação / Agravo / Embargos)</option>
@@ -152,14 +152,14 @@ export function DeadlineFormSheet({
  </select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono">
  Gravidade do Prazo
  </label>
  <select
  value={priority}
  onChange={(e) => setPriority(e.target.value as any)}
- className="w-full h-11 rounded-xl border border-border bg-background px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none"
+ className="w-full h-11 rounded-lg border border-border bg-background px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none"
  >
  <option value="normal">Normal (Fluxo regular)</option>
  <option value="high">Alta (Requer atenção)</option>
@@ -170,7 +170,7 @@ export function DeadlineFormSheet({
  </div>
 
  {/* Data Fatal com Hora */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono flex items-center justify-between">
  <span>Data e Hora Fatal *</span>
  <span className="text-[10px] text-amber-600 dark:text-amber-400 font-normal">
@@ -181,14 +181,14 @@ export function DeadlineFormSheet({
  type="datetime-local"
  value={dueDate}
  onChange={(e) => setDueDate(e.target.value)}
- className="h-11 rounded-xl bg-background font-mono text-xs sm:text-sm font-bold"
+ className="h-11 rounded-lg bg-background font-mono text-xs sm:text-sm font-bold"
  required
  />
  </div>
 
  {/* Processo CNJ e Tribunal */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono">
  Nº do Processo (CNJ)
  </label>
@@ -196,11 +196,11 @@ export function DeadlineFormSheet({
  value={processNumber}
  onChange={(e) => setProcessNumber(e.target.value)}
  placeholder="Ex: 5001234-88.2026.8.24.0067"
- className="h-10 rounded-xl bg-background font-mono text-xs"
+ className="h-10 rounded-lg bg-background font-mono text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono">
  Tribunal / Vara
  </label>
@@ -208,13 +208,13 @@ export function DeadlineFormSheet({
  value={courtName}
  onChange={(e) => setCourtName(e.target.value)}
  placeholder="Ex: TJSC - 2ª Vara Cível"
- className="h-10 rounded-xl bg-background text-xs"
+ className="h-10 rounded-lg bg-background text-xs"
  />
  </div>
  </div>
 
  {/* Nome do Cliente */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono">
  Cliente / Assistido
  </label>
@@ -222,12 +222,12 @@ export function DeadlineFormSheet({
  value={clientName}
  onChange={(e) => setClientName(e.target.value)}
  placeholder="Ex: João da Silva ou Razão Social..."
- className="h-10 rounded-xl bg-background text-xs"
+ className="h-10 rounded-lg bg-background text-xs"
  />
  </div>
 
  {/* Observações e Estratégia */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono">
  Orientações e Tese Defensiva
  </label>
@@ -236,7 +236,7 @@ export function DeadlineFormSheet({
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
  placeholder="Descreva argumentos centrais, documentos necessários para anexar ou testemunhas da audiência..."
- className="w-full rounded-xl border border-border bg-background p-3 text-xs focus:ring-1 focus:ring-primary outline-none"
+ className="w-full rounded-lg border border-border bg-background p-3 text-xs focus:ring-1 focus:ring-primary outline-none"
  />
  </div>
  </form>
@@ -246,7 +246,7 @@ export function DeadlineFormSheet({
  type="button"
  variant="outline"
  onClick={() => onOpenChange(false)}
- className="h-11 px-5 rounded-xl text-xs font-bold"
+ className="h-11 px-5 rounded-lg text-xs font-bold"
  >
  Cancelar
  </Button>
@@ -254,7 +254,7 @@ export function DeadlineFormSheet({
  type="submit"
  disabled={isSubmitting}
  onClick={handleSubmit}
- className="h-11 px-6 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs gap-2"
+ className="h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs gap-2"
  >
  <CheckCircle2 className="size-4" />
  <span>{isSubmitting ? "Salvando..." : "Salvar Prazo na Agenda"}</span>

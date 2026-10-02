@@ -18,10 +18,10 @@ export function DeliveryLocationPolicySheet({
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-6 rounded-3xl border border-border/80 bg-background shadow-2xl">
-        <DialogHeader className="space-y-1.5 text-left">
+      <DialogContent className="max-w-lg p-6 rounded-lg border border-border/80 bg-background shadow-2xl">
+        <DialogHeader className="space-y-2 text-left">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
               <ShieldCheck className="size-4" />
             </div>
             <DialogTitle className="text-base font-bold text-foreground">
@@ -33,9 +33,9 @@ export function DeliveryLocationPolicySheet({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3.5 pt-2 text-xs">
+        <div className="space-y-4 pt-2 text-xs">
           {/* Regra 1: Onde a entrega é realizada */}
-          <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1.5">
+          <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-2">
             <div className="flex items-center gap-2 font-bold text-foreground">
               <Building className="size-4 text-primary shrink-0" />
               <span>Portaria vs. Porta do Apartamento</span>
@@ -49,7 +49,7 @@ export function DeliveryLocationPolicySheet({
           </div>
 
           {/* Regra 2: Tolerância de 15 minutos */}
-          <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-1.5">
+          <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-2">
             <div className="flex items-center gap-2 font-bold text-foreground">
               <Clock className="size-4 text-primary shrink-0" />
               <span>Tolerância de Espera (15 Minutos)</span>
@@ -60,7 +60,7 @@ export function DeliveryLocationPolicySheet({
           </div>
 
           {/* Regra 3: Tolerância Zero a Abusos */}
-          <div className="p-3.5 rounded-2xl bg-destructive/5 border border-destructive/20 space-y-1.5">
+          <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20 space-y-2">
             <div className="flex items-center gap-2 font-bold text-destructive">
               <AlertTriangle className="size-4 shrink-0" />
               <span>Tolerância Zero a Fraudes e Abusos</span>
@@ -74,7 +74,7 @@ export function DeliveryLocationPolicySheet({
         <div className="pt-2 flex justify-end">
           <Button
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto h-11 px-6 rounded-xl font-bold text-xs bg-primary text-primary-foreground cursor-pointer"
+            className="w-full sm:w-auto h-11 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer"
           >
             Entendido
           </Button>

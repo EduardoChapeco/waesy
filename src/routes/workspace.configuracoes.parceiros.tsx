@@ -134,8 +134,8 @@ function ConfigParceirosPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-surface-paper rounded-2xl p-5 flex flex-col items-start gap-4 border border-border/70 shadow-xs">
-            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
+          <div className="bg-surface-paper rounded-lg p-5 flex flex-col items-start gap-4 border border-border/70 shadow-xs">
+            <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
               <Link2 className="size-5 text-primary" />
             </div>
             <div>
@@ -148,7 +148,7 @@ function ConfigParceirosPage() {
                   variant="default"
                   onClick={() => generateLink.mutate()}
                   disabled={generateLink.isPending}
-                  className="rounded-xl text-xs font-bold gap-2"
+                  className="rounded-lg text-xs font-bold gap-2"
                 >
                   {generateLink.isPending ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -161,13 +161,13 @@ function ConfigParceirosPage() {
             </div>
           </div>
 
-          <div className="bg-surface-paper rounded-2xl p-5 flex flex-col items-start gap-4 border border-border/70 shadow-xs">
-            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
+          <div className="bg-surface-paper rounded-lg p-5 flex flex-col items-start gap-4 border border-border/70 shadow-xs">
+            <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
               <Users className="size-5 text-primary" />
             </div>
             <div className="w-full">
               <h2 className="font-semibold text-foreground">Minhas Comissões de Afiliado</h2>
-              <div className="mt-4 space-y-2.5 text-xs">
+              <div className="mt-4 space-y-3 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Taxa Base:</span>
                   <span className="font-mono font-medium">{profile?.commissionRate || 10}%</span>
@@ -204,7 +204,7 @@ function ConfigParceirosPage() {
           </div>
           <Button
             onClick={() => setIsAccountantModalOpen(true)}
-            className="rounded-xl text-xs font-bold gap-2 shrink-0 self-start sm:self-auto"
+            className="rounded-lg text-xs font-bold gap-2 shrink-0 self-start sm:self-auto"
           >
             <Plus className="size-4" />
             Convidar Escritório Contábil
@@ -212,7 +212,7 @@ function ConfigParceirosPage() {
         </div>
 
         {accountants.length === 0 ? (
-          <div className="bg-surface-paper rounded-2xl p-6 border border-dashed border-border/80 text-center space-y-2">
+          <div className="bg-surface-paper rounded-lg p-6 border border-dashed border-border/80 text-center space-y-2">
             <FileSpreadsheet className="size-8 text-muted-foreground/60 mx-auto" />
             <h3 className="text-sm font-bold text-foreground">Nenhum escritório contábil vinculado</h3>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
@@ -222,7 +222,7 @@ function ConfigParceirosPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsAccountantModalOpen(true)}
-              className="rounded-xl text-xs mt-2"
+              className="rounded-lg text-xs mt-2"
             >
               Convidar Contador Agora
             </Button>
@@ -234,7 +234,7 @@ function ConfigParceirosPage() {
               return (
                 <div
                   key={acc.id}
-                  className="bg-surface-paper rounded-2xl p-5 border border-border/80 shadow-xs space-y-3"
+                  className="bg-surface-paper rounded-lg p-5 border border-border/80 shadow-xs space-y-3"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -243,7 +243,7 @@ function ConfigParceirosPage() {
                       </h4>
                       <p className="text-xs text-muted-foreground font-mono">{acc.accountant_email}</p>
                       {acc.accountant_crc && (
-                        <span className="text-xs font-mono text-primary font-bold block mt-0.5">
+                        <span className="text-xs font-mono text-primary font-bold block mt-1">
                           CRC: {acc.accountant_crc}
                         </span>
                       )}
@@ -253,7 +253,7 @@ function ConfigParceirosPage() {
                     </Badge>
                   </div>
 
-                  <div className="flex flex-wrap gap-1.5 pt-1">
+                  <div className="flex flex-wrap gap-2 pt-1">
                     {perms.view_dre && (
                       <Badge variant="secondary" className="text-xs">
                         Ver DRE
@@ -283,7 +283,7 @@ function ConfigParceirosPage() {
                       onClick={() => {
                         revokeMutation.mutate(acc.id);
                       }}
-                      className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-xl text-xs gap-1.5 h-8 px-2.5"
+                      className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg text-xs gap-2 h-8 px-3"
                     >
                       <Trash2 className="size-3.5" />
                       Revogar Acesso
@@ -298,13 +298,13 @@ function ConfigParceirosPage() {
 
       {/* ── Dialog Convidar Escritório Contábil ── */}
       <Dialog open={isAccountantModalOpen} onOpenChange={setIsAccountantModalOpen}>
-        <DialogContent className="rounded-2xl max-w-md">
+        <DialogContent className="rounded-lg max-w-md">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold">Convidar Escritório Contábil</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2 text-xs">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="acc-email" className="text-xs font-semibold">
                 E-mail do Contador / Escritório *
               </Label>
@@ -314,12 +314,12 @@ function ConfigParceirosPage() {
                 value={accountantEmail}
                 onChange={(e) => setAccountantEmail(e.target.value)}
                 placeholder="contato@escritoriocontabil.com.br"
-                className="rounded-xl text-xs"
+                className="rounded-lg text-xs"
                 autoFocus
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="acc-crc" className="text-xs font-semibold">
                 Registro CRC (Opcional)
               </Label>
@@ -328,7 +328,7 @@ function ConfigParceirosPage() {
                 value={accountantCrc}
                 onChange={(e) => setAccountantCrc(e.target.value)}
                 placeholder="Ex: CRC-SC 12345/O"
-                className="rounded-xl text-xs font-mono uppercase"
+                className="rounded-lg text-xs font-mono uppercase"
               />
             </div>
 
@@ -380,7 +380,7 @@ function ConfigParceirosPage() {
               type="button"
               variant="outline"
               onClick={() => setIsAccountantModalOpen(false)}
-              className="rounded-xl text-xs"
+              className="rounded-lg text-xs"
             >
               Cancelar
             </Button>
@@ -388,7 +388,7 @@ function ConfigParceirosPage() {
               type="button"
               onClick={() => inviteMutation.mutate()}
               disabled={inviteMutation.isPending}
-              className="rounded-xl text-xs font-bold px-4"
+              className="rounded-lg text-xs font-bold px-4"
             >
               {inviteMutation.isPending ? "Convidando..." : "Enviar Convite"}
             </Button>

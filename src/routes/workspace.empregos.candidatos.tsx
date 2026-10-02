@@ -382,7 +382,7 @@ function WorkspaceCandidatesPage() {
       {/* ── 1. TopBar Silenciosa Apple HIG ── */}
       <div className="flex flex-row items-center justify-between gap-2 border-b border-border/40 pb-3 pt-1">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="p-1.5 rounded-xl bg-primary/10 text-primary shrink-0">
+          <span className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
             <Briefcase className="size-4 sm:size-5" />
           </span>
           <div>
@@ -397,7 +397,7 @@ function WorkspaceCandidatesPage() {
 
         <div className="flex items-center gap-2 shrink-0">
           {isPro ? (
-            <Badge variant="outline" className="text-xs px-2 py-0.5 border-emerald-500/30 text-emerald-600 bg-emerald-500/10 font-medium">
+            <Badge variant="outline" className="text-xs px-2 py-1 border-emerald-500/30 text-emerald-600 bg-emerald-500/10 font-medium">
               Plano PRO 
             </Badge>
           ) : (
@@ -406,23 +406,23 @@ function WorkspaceCandidatesPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsPaywallOpen(true)}
-              className="h-8 rounded-xl text-xs font-semibold gap-1.5 border-border text-foreground hover:bg-muted cursor-pointer"
+              className="h-8 rounded-lg text-xs font-semibold gap-2 border-border text-foreground hover:bg-muted cursor-pointer"
             >
               <Lock className="size-3" />
               <span>Assinar PRO</span>
             </Button>
           )}
 
-          <Button asChild variant="outline" size="sm" className="h-8 rounded-xl text-xs font-semibold">
+          <Button asChild variant="outline" size="sm" className="h-8 rounded-lg text-xs font-semibold">
             <Link to="/workspace">Voltar</Link>
           </Button>
         </div>
       </div>
 
       {/* ── 2. Banner Silencioso do Banco de Talentos ── */}
-      <div className="p-4 rounded-2xl bg-muted/30 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 rounded-lg bg-muted/30 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <Users className="size-5" />
           </div>
           <div>
@@ -449,7 +449,7 @@ function WorkspaceCandidatesPage() {
               size="sm"
               variant="default"
               onClick={() => setIsPaywallOpen(true)}
-              className="rounded-xl text-xs font-semibold h-8 min-h-[36px] sm:min-h-0"
+              className="rounded-lg text-xs font-semibold h-8 min-h-9 sm:min-h-0"
             >
               <Lock className="size-3 mr-1" /> Desbloquear Acesso
             </Button>
@@ -466,13 +466,13 @@ function WorkspaceCandidatesPage() {
                 value={hunterSearchQuery}
                 onChange={(e) => setHunterSearchQuery(e.target.value)}
                 placeholder="Cargo ou competência..."
-                className="h-8 text-xs rounded-xl w-48 sm:w-60 bg-background"
+                className="h-8 text-xs rounded-lg w-48 sm:w-60 bg-background"
               />
               <Button
                 type="submit"
                 size="sm"
                 disabled={isSearchingHunter}
-                className="rounded-xl h-8 text-xs font-semibold gap-1 shrink-0"
+                className="rounded-lg h-8 text-xs font-semibold gap-1 shrink-0"
               >
                 {isSearchingHunter ? <Loader2 className="size-3 animate-spin" /> : <Search className="size-3" />}
                 <span>Buscar</span>
@@ -484,7 +484,7 @@ function WorkspaceCandidatesPage() {
 
       {/* ── 3. Filtros & Barra de Pesquisa ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           {[
             { id: "all", label: "Todos", count: applications.length },
             { id: "pending", label: "Novos", count: applications.filter((a) => a.status === "pending").length },
@@ -496,7 +496,7 @@ function WorkspaceCandidatesPage() {
             <button
               key={tab.id}
               onClick={() => setStatusTab(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 min-h-[36px] cursor-pointer ${
+              className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 flex items-center gap-2 min-h-9 cursor-pointer ${
                 statusTab === tab.id
                   ? "bg-foreground text-background"
                   : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
@@ -514,7 +514,7 @@ function WorkspaceCandidatesPage() {
             placeholder="Buscar por candidato ou vaga..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 rounded-xl text-xs bg-card"
+            className="pl-9 h-9 rounded-lg text-xs bg-card"
           />
         </div>
       </div>
@@ -528,7 +528,7 @@ function WorkspaceCandidatesPage() {
               <p className="text-xs text-muted-foreground font-medium">Consultando perfis profissionais...</p>
             </div>
           ) : hunterResults.length === 0 ? (
-            <div className="py-16 text-center rounded-2xl border border-border/60 bg-card space-y-3">
+            <div className="py-16 text-center rounded-lg border border-border/60 bg-card space-y-3">
               <Users className="size-10 text-muted-foreground/40 mx-auto" />
               <h3 className="text-sm font-bold text-foreground">Nenhum profissional encontrado</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -536,30 +536,30 @@ function WorkspaceCandidatesPage() {
               </p>
             </div>
           ) : (
-            <div className="rounded-2xl border border-border/60 bg-card divide-y divide-border/40 overflow-hidden shadow-none">
+            <div className="rounded-lg border border-border/60 bg-card divide-y divide-border/40 overflow-hidden shadow-none">
               {hunterResults.map((candidate) => (
                 <div
                   key={candidate.id}
                   className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
                 >
-                  <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                  <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
                     {candidate.avatarUrl ? (
                       <img
                         src={candidate.avatarUrl}
                         alt={candidate.fullName}
-                        className="size-11 rounded-xl object-cover border border-border/70 shrink-0"
+                        className="size-11 rounded-lg object-cover border border-border/70 shrink-0"
                       />
                     ) : (
-                      <div className="size-11 rounded-xl bg-muted text-foreground border border-border/70 flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="size-11 rounded-lg bg-muted text-foreground border border-border/70 flex items-center justify-center font-bold text-xs shrink-0">
                         {candidate.fullName.charAt(0).toUpperCase()}
                       </div>
                     )}
 
-                    <div className="min-w-0 flex-1 space-y-0.5">
+                    <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center gap-2">
                         <h4 className="text-xs font-bold text-foreground truncate">{candidate.fullName}</h4>
                         {candidate.openToWork && (
-                          <Badge variant="outline" className="text-xs border-emerald-500/40 text-emerald-600 bg-emerald-500/10 px-1.5 py-0">
+                          <Badge variant="outline" className="text-xs border-emerald-500/40 text-emerald-600 bg-emerald-500/10 px-2 py-0">
                             Disponível
                           </Badge>
                         )}
@@ -574,7 +574,7 @@ function WorkspaceCandidatesPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-xl text-xs font-semibold">
+                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs font-semibold">
                       <Link to={"/u/" + candidate.username} target="_blank">
                         <ExternalLink className="size-3 mr-1" /> Perfil
                       </Link>
@@ -586,7 +586,7 @@ function WorkspaceCandidatesPage() {
           )}
         </div>
       ) : filteredApps.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl border border-border/60 bg-card space-y-2">
+        <div className="py-16 text-center rounded-lg border border-border/60 bg-card space-y-2">
           <Briefcase className="size-10 text-muted-foreground/40 mx-auto" />
           <h3 className="text-sm font-bold text-foreground">Nenhuma candidatura encontrada</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -596,20 +596,20 @@ function WorkspaceCandidatesPage() {
       ) : (
         <>
           {/* ── BIFURCAÇÃO: MOBILE WHATSAPP LIST EDGE-TO-EDGE (< 640px) ── */}
-          <div className="block sm:hidden rounded-2xl border border-border/60 bg-card divide-y divide-border/40 overflow-hidden shadow-none">
+          <div className="block sm:hidden rounded-lg border border-border/60 bg-card divide-y divide-border/40 overflow-hidden shadow-none">
             {filteredApps.map((app) => (
               <div
                 key={app.id}
                 onClick={() => handleOpenDossier(app)}
-                className="p-3.5 flex items-center justify-between gap-3 hover:bg-muted/20 active:bg-muted/30 transition-colors cursor-pointer"
+                className="p-4 flex items-center justify-between gap-3 hover:bg-muted/20 active:bg-muted/30 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                     {app.candidate_name?.charAt(0).toUpperCase() || "C"}
                   </div>
 
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <div className="flex items-center justify-between gap-1.5">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center justify-between gap-2">
                       <h4 className="text-xs font-bold text-foreground truncate">{app.candidate_name}</h4>
                       <Badge
                         variant={
@@ -619,7 +619,7 @@ function WorkspaceCandidatesPage() {
                             ? "outline"
                             : "secondary"
                         }
-                        className={`text-xs px-1.5 py-0 shrink-0 ${
+                        className={`text-xs px-2 py-0 shrink-0 ${
                           app.status === "hired"
                             ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
                             : app.status === "interview_scheduled"
@@ -639,10 +639,10 @@ function WorkspaceCandidatesPage() {
 
                     <p className="text-xs text-muted-foreground truncate">{app.job_title}</p>
 
-                    <div className="flex items-center gap-2 pt-0.5">
+                    <div className="flex items-center gap-2 pt-1">
                       {app.rating ? (
                         <div className="flex items-center text-xs text-amber-500 font-bold">
-                          <Star className="size-3 fill-amber-400 mr-0.5" />
+                          <Star className="size-3 fill-amber-400 mr-1" />
                           <span>{app.rating}.0</span>
                         </div>
                       ) : null}
@@ -663,7 +663,7 @@ function WorkspaceCandidatesPage() {
             {filteredApps.map((app) => (
               <div
                 key={app.id}
-                className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 flex flex-col justify-between hover:border-primary/40 transition-colors shadow-xs"
+                className="p-5 rounded-lg bg-card border border-border/60 space-y-4 flex flex-col justify-between hover:border-primary/40 transition-colors shadow-xs"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -698,12 +698,12 @@ function WorkspaceCandidatesPage() {
 
                   {/* Contatos */}
                   <div className="space-y-1 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1.5 truncate">
+                    <div className="flex items-center gap-2 truncate">
                       <Mail className="size-3.5 shrink-0" />
                       <span className="truncate">{app.candidate_email}</span>
                     </div>
                     {app.candidate_phone && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <Phone className="size-3.5 shrink-0" />
                         <span>{app.candidate_phone}</span>
                       </div>
@@ -716,7 +716,7 @@ function WorkspaceCandidatesPage() {
                       href={app.resume_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted text-foreground text-xs font-semibold hover:bg-muted/80 transition-colors"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-muted text-foreground text-xs font-semibold hover:bg-muted/80 transition-colors"
                     >
                       <FileText className="size-3.5" />
                       <span>Ver Currículo</span>
@@ -726,8 +726,8 @@ function WorkspaceCandidatesPage() {
 
                   {/* Detalhe da Entrevista */}
                   {app.status === "interview_scheduled" && app.interview_at && (
-                    <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 text-xs space-y-1">
-                      <div className="flex items-center gap-1.5 text-foreground font-semibold">
+                    <div className="p-3 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1">
+                      <div className="flex items-center gap-2 text-foreground font-semibold">
                         <Calendar className="size-3.5 text-primary" />
                         <span>{new Date(app.interview_at).toLocaleString("pt-BR")}</span>
                       </div>
@@ -747,7 +747,7 @@ function WorkspaceCandidatesPage() {
 
                   {/* Detalhe de Contratado */}
                   {app.status === "hired" && (
-                    <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-0.5">
+                    <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1">
                       <p className="font-bold text-emerald-700">Contratado como: {app.hired_role}</p>
                       {app.hired_salary_cents && (
                         <p className="text-xs text-emerald-600 font-mono">
@@ -788,7 +788,7 @@ function WorkspaceCandidatesPage() {
                         setInterviewModalApp(app);
                         setInterviewDate("");
                       }}
-                      className="rounded-xl text-xs font-semibold gap-1 h-9"
+                      className="rounded-lg text-xs font-semibold gap-1 h-9"
                     >
                       <Calendar className="size-3.5" />
                       <span>Entrevista</span>
@@ -798,7 +798,7 @@ function WorkspaceCandidatesPage() {
                       <Button
                         size="sm"
                         onClick={() => handleOpenHireModal(app)}
-                        className="rounded-xl text-xs font-semibold gap-1 h-9 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                        className="rounded-lg text-xs font-semibold gap-1 h-9 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                       >
                         <UserCheck className="size-3.5" />
                         <span>Contratar</span>
@@ -808,7 +808,7 @@ function WorkspaceCandidatesPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleOpenDossier(app)}
-                        className="rounded-xl text-xs h-9 text-muted-foreground"
+                        className="rounded-lg text-xs h-9 text-muted-foreground"
                       >
                         Dossiê
                       </Button>
@@ -860,7 +860,7 @@ function WorkspaceCandidatesPage() {
                     asChild
                     variant="outline"
                     size="sm"
-                    className="h-10 rounded-xl justify-start gap-2 text-xs font-semibold"
+                    className="h-10 rounded-lg justify-start gap-2 text-xs font-semibold"
                   >
                     <a href={`tel:${dossierCandidate.candidate_phone}`}>
                       <Phone className="size-3.5 text-primary" />
@@ -873,7 +873,7 @@ function WorkspaceCandidatesPage() {
                     asChild
                     variant="outline"
                     size="sm"
-                    className="h-10 rounded-xl justify-start gap-2 text-xs font-semibold truncate"
+                    className="h-10 rounded-lg justify-start gap-2 text-xs font-semibold truncate"
                   >
                     <a href={`mailto:${dossierCandidate.candidate_email}`}>
                       <Mail className="size-3.5 text-primary" />
@@ -885,7 +885,7 @@ function WorkspaceCandidatesPage() {
 
               {/* Currículo e Carta */}
               {dossierCandidate.resume_url && (
-                <Button asChild variant="secondary" className="w-full h-10 rounded-xl text-xs font-semibold gap-2">
+                <Button asChild variant="secondary" className="w-full h-10 rounded-lg text-xs font-semibold gap-2">
                   <a href={dossierCandidate.resume_url} target="_blank" rel="noreferrer">
                     <FileText className="size-4" />
                     <span>Visualizar Currículo Completo</span>
@@ -895,7 +895,7 @@ function WorkspaceCandidatesPage() {
               )}
 
               {/* Avaliação Estrelas */}
-              <div className="p-3 rounded-xl bg-muted/30 border border-border/50 flex items-center justify-between">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground">Classificação do Candidato:</span>
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -918,19 +918,19 @@ function WorkspaceCandidatesPage() {
               </div>
 
               {/* Anotação Interna */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-muted-foreground">Anotações Internas do Recrutador</Label>
                 <Textarea
                   value={internalNoteDraft}
                   onChange={(e) => setInternalNoteDraft(e.target.value)}
                   placeholder="Observações sobre perfil, expectativas salariais, postura..."
-                  className="text-xs rounded-xl min-h-[70px] bg-background"
+                  className="text-xs rounded-lg min-h-[70px] bg-background"
                 />
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleSaveInternalNote(dossierCandidate.id)}
-                  className="h-8 rounded-xl text-xs font-semibold"
+                  className="h-8 rounded-lg text-xs font-semibold"
                 >
                   Salvar Nota
                 </Button>
@@ -944,7 +944,7 @@ function WorkspaceCandidatesPage() {
                     setInterviewModalApp(dossierCandidate);
                     setInterviewDate("");
                   }}
-                  className="h-11 rounded-xl text-xs font-semibold gap-1.5"
+                  className="h-11 rounded-lg text-xs font-semibold gap-2"
                 >
                   <Calendar className="size-4" />
                   <span>Agendar Entrevista</span>
@@ -956,7 +956,7 @@ function WorkspaceCandidatesPage() {
                       setIsDossierOpen(false);
                       handleOpenHireModal(dossierCandidate);
                     }}
-                    className="h-11 rounded-xl text-xs font-semibold gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="h-11 rounded-lg text-xs font-semibold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     <UserCheck className="size-4" />
                     <span>Contratar</span>
@@ -965,7 +965,7 @@ function WorkspaceCandidatesPage() {
                   <Button
                     variant="destructive"
                     onClick={() => handleReject(dossierCandidate.id)}
-                    className="h-11 rounded-xl text-xs font-semibold"
+                    className="h-11 rounded-lg text-xs font-semibold"
                   >
                     Arquivar
                   </Button>
@@ -978,7 +978,7 @@ function WorkspaceCandidatesPage() {
 
       {/* ── 6. MODAL: AGENDAR ENTREVISTA ── */}
       <Dialog open={!!interviewModalApp} onOpenChange={(open) => !open && setInterviewModalApp(null)}>
-        <DialogContent className="sm:max-w-md sm:p-6 sm:rounded-2xl bg-card">
+        <DialogContent className="sm:max-w-md sm:p-6 sm:rounded-lg bg-card">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               Agendar Entrevista
@@ -989,35 +989,35 @@ function WorkspaceCandidatesPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Data e Horário</Label>
               <Input
                 type="datetime-local"
                 value={interviewDate}
                 onChange={(e) => setInterviewDate(e.target.value)}
-                className="rounded-xl text-xs h-10"
+                className="rounded-lg text-xs h-10"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Link da Sala de Vídeo (Opcional)</Label>
               <Input
                 placeholder="Deixe em branco para gerar sala de vídeo automática"
                 value={meetingUrl}
                 onChange={(e) => setMeetingUrl(e.target.value)}
-                className="rounded-xl text-xs h-10"
+                className="rounded-lg text-xs h-10"
               />
             </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setInterviewModalApp(null)} className="rounded-xl h-10 text-xs">
+            <Button variant="outline" onClick={() => setInterviewModalApp(null)} className="rounded-lg h-10 text-xs">
               Cancelar
             </Button>
             <Button
               onClick={handleScheduleInterview}
               disabled={isProcessing}
-              className="rounded-xl font-semibold text-xs h-10 bg-primary text-primary-foreground"
+              className="rounded-lg font-semibold text-xs h-10 bg-primary text-primary-foreground"
             >
               Confirmar Agendamento
             </Button>
@@ -1027,7 +1027,7 @@ function WorkspaceCandidatesPage() {
 
       {/* ── 7. MODAL ENTERPRISE: ADMISSÃO & TRANSIÇÃO PARA RH ── */}
       <Dialog open={!!hireModalApp} onOpenChange={(open) => !open && setHireModalApp(null)}>
-        <DialogContent className="sm:max-w-lg sm:p-6 sm:rounded-2xl bg-card">
+        <DialogContent className="sm:max-w-lg sm:p-6 sm:rounded-lg bg-card">
           <DialogHeader>
             <div className="flex items-center gap-2">
               <span className="p-1 rounded-lg bg-emerald-500/10 text-emerald-600">
@@ -1042,24 +1042,24 @@ function WorkspaceCandidatesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3.5 py-2">
+          <div className="space-y-4 py-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Cargo Contratual</Label>
                 <Input
                   value={hiredRole}
                   onChange={(e) => setHiredRole(e.target.value)}
                   placeholder="Ex: Vendedor, Caixa, Cozinheiro..."
-                  className="rounded-xl text-xs h-10"
+                  className="rounded-lg text-xs h-10"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Perfil no Sistema</Label>
                 <select
                   value={hireSystemRole}
                   onChange={(e) => setHireSystemRole(e.target.value as any)}
-                  className="w-full h-10 rounded-xl border border-input bg-background px-3 text-xs focus-visible:outline-hidden"
+                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-xs focus-visible:outline-hidden"
                 >
                   <option value="seller">Vendedor / Comercial</option>
                   <option value="support">Atendimento / Suporte</option>
@@ -1071,12 +1071,12 @@ function WorkspaceCandidatesPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Regime de Contrato</Label>
                 <select
                   value={hireEmploymentType}
                   onChange={(e) => setHireEmploymentType(e.target.value as any)}
-                  className="w-full h-10 rounded-xl border border-input bg-background px-3 text-xs focus-visible:outline-hidden"
+                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-xs focus-visible:outline-hidden"
                 >
                   <option value="clt">CLT (Carteira Assinada)</option>
                   <option value="pj">PJ (Prestador de Serviço)</option>
@@ -1085,29 +1085,29 @@ function WorkspaceCandidatesPage() {
                 </select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Salário Base Mensal</Label>
                 <CurrencyField
                   value={hiredSalaryCents}
                   onChange={setHiredSalaryCents}
                   placeholder="0,00"
-                  className="rounded-xl text-xs h-10"
+                  className="rounded-lg text-xs h-10"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Data de Início</Label>
                 <Input
                   type="date"
                   value={hireDate}
                   onChange={(e) => setHireDate(e.target.value)}
-                  className="rounded-xl text-xs h-10"
+                  className="rounded-lg text-xs h-10"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold">PIN de Ponto (4-6 dígitos)</Label>
                   <button
@@ -1122,20 +1122,20 @@ function WorkspaceCandidatesPage() {
                   value={hirePin}
                   onChange={(e) => setHirePin(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="4 dígitos numéricos"
-                  className="rounded-xl text-xs h-10 font-mono tracking-widest"
+                  className="rounded-lg text-xs h-10 font-mono tracking-widest"
                 />
               </div>
             </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setHireModalApp(null)} className="rounded-xl h-10 text-xs">
+            <Button variant="outline" onClick={() => setHireModalApp(null)} className="rounded-lg h-10 text-xs">
               Cancelar
             </Button>
             <Button
               onClick={handleConfirmHire}
               disabled={isProcessing}
-              className="rounded-xl font-semibold text-xs h-10 bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+              className="rounded-lg font-semibold text-xs h-10 bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
             >
               {isProcessing ? <Loader2 className="size-4 animate-spin mr-1" /> : <UserCheck className="size-4 mr-1" />}
               <span>Efetivar Admissão</span>
@@ -1146,8 +1146,8 @@ function WorkspaceCandidatesPage() {
 
       {/* ── 8. DIALOG: CONFIRMAÇÃO DE ADMISSÃO COM PIN DE PONTO ── */}
       <Dialog open={!!hireSuccessData} onOpenChange={(open) => !open && setHireSuccessData(null)}>
-        <DialogContent className="sm:max-w-md sm:p-6 sm:rounded-2xl bg-card text-center space-y-4">
-          <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 flex items-center justify-center mx-auto">
+        <DialogContent className="sm:max-w-md sm:p-6 sm:rounded-lg bg-card text-center space-y-4">
+          <div className="size-12 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 flex items-center justify-center mx-auto">
             <CheckCircle2 className="size-6" />
           </div>
 
@@ -1161,7 +1161,7 @@ function WorkspaceCandidatesPage() {
           </div>
 
           {/* Credencial de Acesso Rápido */}
-          <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-2">
+          <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
               PIN de Ponto Eletrônico & Terminal
             </span>
@@ -1185,13 +1185,13 @@ function WorkspaceCandidatesPage() {
                   setTimeout(() => setCopiedPin(false), 2500);
                 }
               }}
-              className="w-full sm:w-auto flex-1 rounded-xl h-10 text-xs font-semibold gap-1.5"
+              className="w-full sm:w-auto flex-1 rounded-lg h-10 text-xs font-semibold gap-2"
             >
               {copiedPin ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
               <span>{copiedPin ? "Copiado!" : "Copiar Dados"}</span>
             </Button>
 
-            <Button asChild className="w-full sm:w-auto flex-1 rounded-xl h-10 text-xs font-semibold">
+            <Button asChild className="w-full sm:w-auto flex-1 rounded-lg h-10 text-xs font-semibold">
               <Link to="/workspace/rh/ponto">
                 Ver no Espelho de Ponto
               </Link>

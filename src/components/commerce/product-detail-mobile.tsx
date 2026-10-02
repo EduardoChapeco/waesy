@@ -131,7 +131,7 @@ export function ProductDetailMobile({
 
         {/* Contador de Fotos */}
         {mediaList.length > 1 && (
-          <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-mono font-medium pointer-events-none">
+          <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-mono font-medium pointer-events-none">
             {(currentMediaIndex >= 0 ? currentMediaIndex : 0) + 1} / {mediaList.length}
           </div>
         )}
@@ -166,7 +166,7 @@ export function ProductDetailMobile({
 
       {/* Miniaturas horizontais caso haja mais de 1 foto */}
       {mediaList.length > 1 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-4 py-2.5 bg-card border-b border-border/40 snap-x snap-mandatory">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-4 py-3 bg-card border-b border-border/40 snap-x snap-mandatory">
           {mediaList.map((m: ProductMediaDTO) => {
             const active = activeMedia?.id === m.id;
             return (
@@ -175,7 +175,7 @@ export function ProductDetailMobile({
                 type="button"
                 onClick={() => setActiveMedia(m)}
                 className={cn(
-                  "relative aspect-square size-12 rounded-xl overflow-hidden border shrink-0 snap-start transition-all cursor-pointer",
+                  "relative aspect-square size-12 rounded-lg overflow-hidden border shrink-0 snap-start transition-all cursor-pointer",
                   active
                     ? "border-primary ring-2 ring-primary/20 scale-105"
                     : "border-border/60 bg-muted/20"
@@ -191,8 +191,8 @@ export function ProductDetailMobile({
       {/* ── 2. CONTEÚDO PRINCIPAL (Padrão WhatsApp / Mobile App Native List) ── */}
       <div className="px-4 pt-4 space-y-5">
         {/* Preço & Identificação */}
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-1.5">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
             {product.categories?.[0] && (
               <Badge variant="outline" className="text-[10px] font-semibold text-primary border-primary/30 bg-primary/10">
                 {product.categories[0].name}
@@ -207,7 +207,7 @@ export function ProductDetailMobile({
                 Esgotado
               </Badge>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
                 <Check className="size-3" /> Em Estoque
               </span>
             )}
@@ -222,13 +222,13 @@ export function ProductDetailMobile({
           </div>
 
           {/* Título do Produto */}
-          <h1 className="text-lg sm:text-xl font-bold text-foreground leading-snug pt-0.5">
+          <h1 className="text-lg sm:text-xl font-bold text-foreground leading-snug pt-1">
             {product.title}
           </h1>
 
           {/* Localização da Loja */}
           {storeLocation && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground pt-0.5">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1">
               <MapPin className="size-3.5 shrink-0 text-muted-foreground/70" />
               <span className="truncate">{storeLocation}</span>
             </div>
@@ -275,7 +275,7 @@ export function ProductDetailMobile({
                             setSelectedAttributes((prev) => ({ ...prev, [key]: val }));
                           }}
                           className={cn(
-                            "h-9 min-w-10 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer active:scale-95 flex items-center justify-center",
+                            "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer active:scale-95 flex items-center justify-center",
                             isSelected
                               ? "border-primary bg-primary text-primary-foreground shadow-xs"
                               : "border-border/70 bg-card text-foreground hover:bg-muted/30"
@@ -325,7 +325,7 @@ export function ProductDetailMobile({
                       {isMultiple ? `Até ${og.maxSelections} opções` : "Escolha 1"}
                     </span>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {og.values.map((val: any) => {
                       const isSelected = isMultiple
                         ? Array.isArray(selection) && selection.includes(val.id)
@@ -337,7 +337,7 @@ export function ProductDetailMobile({
                           type="button"
                           onClick={() => handleToggle(val.id)}
                           className={cn(
-                            "w-full flex items-center justify-between p-2.5 rounded-xl border text-left transition-all active:scale-[0.99] cursor-pointer",
+                            "w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all active:scale-[0.99] cursor-pointer",
                             isSelected
                               ? "border-primary bg-primary/5 ring-1 ring-primary/40"
                               : "border-border/60 bg-card hover:bg-muted/20"
@@ -373,7 +373,7 @@ export function ProductDetailMobile({
         )}
 
         {/* ── 5. CARD DA LOJA PARCEIRA ── */}
-        <div className="rounded-2xl border border-border/60 bg-card p-3.5 flex items-center justify-between gap-3 shadow-xs">
+        <div className="rounded-lg border border-border/60 bg-card p-4 flex items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3 min-w-0">
             <div className="size-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary text-sm shrink-0">
               {(product as any).store?.name?.slice(0, 2).toUpperCase() || "LJ"}
@@ -394,7 +394,7 @@ export function ProductDetailMobile({
             variant={isFollowingStore ? "secondary" : "outline"}
             size="sm"
             onClick={handleToggleFollow}
-            className="h-9 px-3 rounded-xl text-xs font-bold shrink-0 cursor-pointer active:scale-95"
+            className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 cursor-pointer active:scale-95"
           >
             {isFollowingStore ? "Seguindo" : "+ Seguir"}
           </Button>
@@ -402,7 +402,7 @@ export function ProductDetailMobile({
 
         {/* ── 6. SIMULAÇÃO DE FRETE RÁPIDA ── */}
         <div className="space-y-2 pt-1 border-t border-border/40">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+          <div className="flex items-center gap-2 text-xs font-bold text-foreground">
             <Truck className="size-4 text-primary" />
             <span>Consultar Frete e Prazo</span>
           </div>
@@ -411,12 +411,12 @@ export function ProductDetailMobile({
               placeholder="Digite seu CEP"
               value={zipcode}
               onChange={(e) => setZipcode(e.target.value)}
-              className="h-10 text-xs rounded-xl bg-muted/30"
+              className="h-10 text-xs rounded-lg bg-muted/30"
             />
             <Button
               type="submit"
               size="sm"
-              className="h-10 font-bold px-4 rounded-xl shrink-0 cursor-pointer"
+              className="h-10 font-bold px-4 rounded-lg shrink-0 cursor-pointer"
               disabled={loadingShipping}
             >
               {loadingShipping ? <Loader2 className="size-4 animate-spin" /> : "Calcular"}
@@ -424,10 +424,10 @@ export function ProductDetailMobile({
           </form>
 
           {shippingRates !== null && (
-            <div className="space-y-1.5 pt-1">
+            <div className="space-y-2 pt-1">
               {shippingRates.length > 0 ? (
                 shippingRates.map((rate, idx) => (
-                  <div key={rate.id || idx} className="flex justify-between items-center text-xs p-2.5 rounded-xl border border-border/50 bg-muted/20">
+                  <div key={rate.id || idx} className="flex justify-between items-center text-xs p-3 rounded-lg border border-border/50 bg-muted/20">
                     <div>
                       <p className="font-bold text-foreground">{rate.service_name || rate.name || rate.provider}</p>
                       <p className="text-[10px] text-muted-foreground">Prazo: {rate.estimated_days} dias úteis</p>
@@ -450,7 +450,7 @@ export function ProductDetailMobile({
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Descrição do Produto
             </h2>
-            <div className="rounded-2xl border border-border/50 bg-card p-3.5 space-y-2 text-xs text-foreground/90 leading-relaxed">
+            <div className="rounded-lg border border-border/50 bg-card p-4 space-y-2 text-xs text-foreground/90 leading-relaxed">
               <p className={isDescExpanded ? "whitespace-pre-line" : "whitespace-pre-line line-clamp-4"}>
                 {product.description}
               </p>
@@ -468,9 +468,9 @@ export function ProductDetailMobile({
         )}
 
         {/* ── 8. SELOS DE CONFIANÇA ── */}
-        <div className="rounded-xl border border-border/40 bg-muted/20 p-3 flex items-start gap-2.5 text-muted-foreground">
-          <ShieldCheck className="size-4 text-primary shrink-0 mt-0.5" />
-          <div className="text-[11px] leading-snug space-y-0.5">
+        <div className="rounded-lg border border-border/40 bg-muted/20 p-3 flex items-start gap-3 text-muted-foreground">
+          <ShieldCheck className="size-4 text-primary shrink-0 mt-1" />
+          <div className="text-[11px] leading-snug space-y-1">
             <span className="font-semibold text-foreground block">Compra Segura Waesy</span>
             <span>Seu pagamento fica protegido até a confirmação de entrega do produto.</span>
           </div>
@@ -478,9 +478,9 @@ export function ProductDetailMobile({
       </div>
 
       {/* ── 9. STICKY BOTTOM ACTION BAR (Native-First: Nielsen Norman & Apple HIG) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/50 px-4 py-2.5 pb-[calc(0.65rem+env(safe-area-inset-bottom))] flex items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] mobile-nav-hide-on-keyboard">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/50 px-4 py-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] flex items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] mobile-nav-hide-on-keyboard">
         {/* Seletor de Quantidade Mobile */}
-        <div className="flex items-center rounded-xl bg-secondary/80 border border-border/60 h-11 px-1 shrink-0">
+        <div className="flex items-center rounded-lg bg-secondary/80 border border-border/60 h-11 px-1 shrink-0">
           <button
             type="button"
             onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
@@ -506,7 +506,7 @@ export function ProductDetailMobile({
         {isOutOfStock ? (
           <Button
             size="lg"
-            className="flex-1 rounded-xl font-bold text-xs h-11 px-3 bg-muted text-foreground border border-border/80 flex items-center justify-center gap-1.5 cursor-pointer"
+            className="flex-1 rounded-lg font-bold text-xs h-11 px-3 bg-muted text-foreground border border-border/80 flex items-center justify-center gap-2 cursor-pointer"
             onClick={() => setIsWaitlistOpen(true)}
           >
             <BellRing className="size-3.5 text-primary shrink-0" />
@@ -517,7 +517,7 @@ export function ProductDetailMobile({
             <Button
               variant="outline"
               size="lg"
-              className="rounded-xl font-bold text-xs h-11 px-2 border-border/80 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all text-foreground hover:bg-muted"
+              className="rounded-lg font-bold text-xs h-11 px-2 border-border/80 flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all text-foreground hover:bg-muted"
               onClick={handleAddToCart}
               disabled={Boolean(isAdding)}
             >
@@ -526,7 +526,7 @@ export function ProductDetailMobile({
             </Button>
             <Button
               size="lg"
-              className="rounded-xl font-bold text-xs h-11 px-2 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-sm"
+              className="rounded-lg font-bold text-xs h-11 px-2 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all shadow-sm"
               onClick={() => setIsQuickOrderOpen(true)}
             >
               <MessageCircle className="size-4 shrink-0" />

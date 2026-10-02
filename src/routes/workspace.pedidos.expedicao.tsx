@@ -232,13 +232,13 @@ function WmsExpedicaoPage() {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            className="h-11 rounded-xl text-xs font-semibold cursor-pointer"
+            className="h-11 rounded-lg text-xs font-semibold cursor-pointer"
             onClick={handleConnectEscPos}
           >
-            <Printer className="size-4 mr-1.5" /> Conectar Impressora
+            <Printer className="size-4 mr-2" /> Conectar Impressora
           </Button>
           <Button
-            className="h-11 rounded-xl text-xs font-semibold bg-foreground text-background cursor-pointer"
+            className="h-11 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
             onClick={handlePrintThermalLabels}
           >
             Imprimir Etiquetas 100x150
@@ -247,7 +247,7 @@ function WmsExpedicaoPage() {
       </div>
 
       {/* Camada 1: Leitor Ótico de Código de Barras */}
-      <div className="bg-card rounded-2xl border border-border p-6 shadow-xs space-y-4">
+      <div className="bg-card rounded-lg border border-border p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
             <ScanLine className="h-4 w-4 text-primary" /> Bipagem de Produtos
@@ -267,7 +267,7 @@ function WmsExpedicaoPage() {
               placeholder="Aponte o leitor ou digite o EAN, SKU ou Código de Barras..."
               value={barcodeInput}
               onChange={(e) => setBarcodeInput(e.target.value)}
-              className="pl-9 h-11 rounded-xl text-sm"
+              className="pl-9 h-11 rounded-lg text-sm"
               autoFocus
               disabled={scanMutation.isPending}
             />
@@ -275,7 +275,7 @@ function WmsExpedicaoPage() {
           <Button 
             type="submit" 
             disabled={scanMutation.isPending || !barcodeInput.trim()}
-            className="h-11 px-5 rounded-xl font-semibold bg-primary text-primary-foreground cursor-pointer"
+            className="h-11 px-5 rounded-lg font-semibold bg-primary text-primary-foreground cursor-pointer"
           >
             <Barcode className="h-4 w-4 mr-2" /> Bipar
           </Button>
@@ -283,7 +283,7 @@ function WmsExpedicaoPage() {
       </div>
 
       {/* Camada 2: Ondas de Separação (Lotes Ativos) */}
-      <div className="bg-card rounded-2xl border border-border p-6 shadow-xs space-y-4">
+      <div className="bg-card rounded-lg border border-border p-6 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
@@ -296,7 +296,7 @@ function WmsExpedicaoPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsCreateBatchModalOpen(true)}
-              className="h-11 rounded-xl text-xs font-semibold cursor-pointer gap-1.5"
+              className="h-11 rounded-lg text-xs font-semibold cursor-pointer gap-2"
             >
               <Plus className="size-4" /> Nova Onda ({pendingOrdersForPicking.length} pendentes)
             </Button>
@@ -305,9 +305,9 @@ function WmsExpedicaoPage() {
               size="sm" 
               disabled={!selectedBatch || batchOrderIds.length === 0 || manifestMutation.isPending}
               onClick={() => manifestMutation.mutate()}
-              className="h-11 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 rounded-lg text-xs font-semibold cursor-pointer"
             >
-              <Truck className="h-4 w-4 mr-1.5" /> Gerar Romaneio ({batchOrderIds.length})
+              <Truck className="h-4 w-4 mr-2" /> Gerar Romaneio ({batchOrderIds.length})
             </Button>
           </div>
         </div>
@@ -315,7 +315,7 @@ function WmsExpedicaoPage() {
         {isLoading ? (
           <div className="py-8 text-center text-xs text-muted-foreground">Carregando lotes...</div>
         ) : batches.length === 0 ? (
-          <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-xl">
+          <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
             Nenhum lote de separação em andamento. Clique em "Nova Onda" para agrupar pedidos.
           </div>
         ) : (
@@ -326,7 +326,7 @@ function WmsExpedicaoPage() {
                 <div 
                   key={batch.id} 
                   onClick={() => setSelectedBatchId(batch.id)}
-                  className={`p-4 rounded-2xl border transition-all cursor-pointer select-none space-y-3 ${
+                  className={`p-4 rounded-lg border transition-all cursor-pointer select-none space-y-3 ${
                     isSelected 
                       ? "bg-primary/5 border-primary shadow-xs ring-2 ring-primary/20" 
                       : "bg-muted/40 border-border hover:border-primary/40"
@@ -334,7 +334,7 @@ function WmsExpedicaoPage() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono font-bold text-sm text-primary">{batch.batch_code}</span>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {isSelected && (
                         <Badge className="text-xs bg-primary text-primary-foreground font-semibold">Ativo</Badge>
                       )}
@@ -361,7 +361,7 @@ function WmsExpedicaoPage() {
               {batchOrderIds.map((oId) => {
                 const matchedOrder = allStoreOrders.find((o: any) => o.id === oId);
                 return (
-                  <div key={oId} className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border text-xs">
+                  <div key={oId} className="flex items-center justify-between p-3 rounded-lg bg-background border border-border text-xs">
                     <div className="truncate pr-2">
                       <span className="font-mono font-bold text-foreground">#{matchedOrder?.public_token || oId.substring(0, 8)}</span>
                       <p className="text-xs text-muted-foreground truncate">
@@ -371,7 +371,7 @@ function WmsExpedicaoPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs rounded-xl sm:rounded-lg gap-1.5 cursor-pointer shrink-0 font-medium"
+                      className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs rounded-lg sm:rounded-lg gap-2 cursor-pointer shrink-0 font-medium"
                       onClick={() => setSelectedShippingLabelOrderId(oId)}
                     >
                       <Printer className="size-3.5 text-primary" /> Etiqueta
@@ -385,7 +385,7 @@ function WmsExpedicaoPage() {
       </div>
 
       {/* Camada 3: Pedidos Multicanal & Expedição Integrada */}
-      <div className="bg-card rounded-2xl border border-border p-6 shadow-xs space-y-4">
+      <div className="bg-card rounded-lg border border-border p-6 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
@@ -393,13 +393,13 @@ function WmsExpedicaoPage() {
             </h3>
             <p className="text-xs text-muted-foreground">Pedidos do Mercado Livre, iFood, Shopee e loja própria.</p>
           </div>
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
             {["all", "mercadolivre", "ifood", "shopee"].map((ch) => (
               <button
                 key={ch}
                 type="button"
                 onClick={() => setChannelFilter(ch)}
-                className={`h-10 sm:h-8 px-3.5 rounded-xl sm:rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+                className={`h-10 sm:h-8 px-4 rounded-lg sm:rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                   channelFilter === ch ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -410,13 +410,13 @@ function WmsExpedicaoPage() {
         </div>
 
         {externalOrders.length === 0 ? (
-          <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-xl">
+          <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
             Nenhum pedido externo aguardando despacho no filtro selecionado.
           </div>
         ) : (
           <div className="divide-y divide-border/60">
             {externalOrders.map((ord: ExternalOrderDTO) => (
-              <div key={ord.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+              <div key={ord.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-bold text-foreground">#{ord.external_order_id}</span>
@@ -435,7 +435,7 @@ function WmsExpedicaoPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-11 sm:h-8 px-4 sm:px-2.5 text-xs rounded-xl sm:rounded-lg gap-1.5 cursor-pointer shrink-0 font-semibold sm:font-normal"
+                      className="h-11 sm:h-8 px-4 sm:px-3 text-xs rounded-lg sm:rounded-lg gap-2 cursor-pointer shrink-0 font-semibold sm:font-normal"
                       onClick={() => setSelectedShippingLabelOrderId(ord.id)}
                     >
                       <Printer className="size-3.5 text-primary" /> Etiqueta
@@ -450,7 +450,7 @@ function WmsExpedicaoPage() {
 
       {/* Modal: Criar Nova Onda de Separação */}
       <Dialog open={isCreateBatchModalOpen} onOpenChange={setIsCreateBatchModalOpen}>
-        <DialogContent className="max-w-xl rounded-2xl">
+        <DialogContent className="max-w-xl rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">Nova Onda de Separação</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -472,7 +472,7 @@ function WmsExpedicaoPage() {
               </button>
             </div>
 
-            <div className="max-h-72 overflow-y-auto divide-y divide-border border rounded-xl p-2 space-y-1">
+            <div className="max-h-72 overflow-y-auto divide-y divide-border border rounded-lg p-2 space-y-1">
               {pendingOrdersForPicking.length === 0 ? (
                 <div className="py-8 text-center text-xs text-muted-foreground">
                   Nenhum pedido pago aguardando separação.
@@ -484,7 +484,7 @@ function WmsExpedicaoPage() {
                     <div
                       key={ord.id}
                       onClick={() => toggleOrderSelection(ord.id)}
-                      className={`p-2.5 rounded-lg flex items-center justify-between cursor-pointer transition-colors ${
+                      className={`p-3 rounded-lg flex items-center justify-between cursor-pointer transition-colors ${
                         isChecked ? "bg-primary/10 border border-primary/30" : "hover:bg-muted/50"
                       }`}
                     >
@@ -518,7 +518,7 @@ function WmsExpedicaoPage() {
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
               variant="outline"
-              className="h-11 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 rounded-lg text-xs font-semibold cursor-pointer"
               onClick={() => setIsCreateBatchModalOpen(false)}
             >
               Cancelar
@@ -526,7 +526,7 @@ function WmsExpedicaoPage() {
             <Button
               disabled={selectedOrderIdsForBatch.length === 0 || createBatchMutation.isPending}
               onClick={() => createBatchMutation.mutate(selectedOrderIdsForBatch)}
-              className="h-11 rounded-xl text-xs font-semibold bg-primary text-primary-foreground cursor-pointer"
+              className="h-11 rounded-lg text-xs font-semibold bg-primary text-primary-foreground cursor-pointer"
             >
               {createBatchMutation.isPending
                 ? "Criando..."

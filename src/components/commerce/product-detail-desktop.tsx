@@ -53,7 +53,7 @@ export function ProductDetailDesktop({
       {/* ── BREADCRUMBS DESKTOP ── */}
       <nav
         aria-label="Navegação estrutural"
-        className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium py-2"
+        className="flex items-center gap-2 text-xs text-muted-foreground font-medium py-2"
       >
         <Link to="/" className="hover:text-foreground">
           Início
@@ -86,7 +86,7 @@ export function ProductDetailDesktop({
           <div className="w-full flex gap-3 items-start">
             {/* Strip vertical de miniaturas */}
             {mediaList.length > 1 && (
-              <div className="flex flex-col gap-2 w-16 shrink-0 max-h-[500px] overflow-y-auto no-scrollbar pr-0.5">
+              <div className="flex flex-col gap-2 w-16 shrink-0 max-h-[500px] overflow-y-auto no-scrollbar pr-1">
                 {mediaList.map((m: ProductMediaDTO) => {
                   const isVideo = m.mediaType === "video";
                   const active = activeMedia?.id === m.id;
@@ -96,7 +96,7 @@ export function ProductDetailDesktop({
                       type="button"
                       onClick={() => setActiveMedia(m)}
                       className={cn(
-                        "relative aspect-square w-14 shrink-0 rounded-xl overflow-hidden border transition-all duration-200 cursor-pointer",
+                        "relative aspect-square w-14 shrink-0 rounded-lg overflow-hidden border transition-all duration-200 cursor-pointer",
                         active
                           ? "border-primary ring-2 ring-primary/20 scale-[1.03]"
                           : "border-border/60 hover:border-primary/50 bg-secondary"
@@ -122,7 +122,7 @@ export function ProductDetailDesktop({
 
             {/* Viewport Principal de Imagem */}
             <div className="flex-1 w-full relative">
-              <div className="relative w-full aspect-[4/3] md:aspect-square overflow-hidden bg-secondary rounded-2xl border border-border/50">
+              <div className="relative w-full aspect-[4/3] md:aspect-square overflow-hidden bg-secondary rounded-lg border border-border/50">
                 {activeMedia ? (
                   activeMedia.mediaType === "video" ? (
                     <video
@@ -152,16 +152,16 @@ export function ProductDetailDesktop({
           {product.description && (
             <div className="space-y-3 pt-4 border-t border-border/50">
               <h2 className="text-sm font-bold text-foreground">Descrição do Produto</h2>
-              <div className="rounded-2xl border border-border/50 bg-card p-5 text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
+              <div className="rounded-lg border border-border/50 bg-card p-5 text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
                 {product.description}
               </div>
             </div>
           )}
 
           {/* Informações da Loja e Denúncia */}
-          <div className="p-4 rounded-2xl border border-border/50 bg-muted/20 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="p-4 rounded-lg border border-border/50 bg-muted/20 flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1.5 font-medium text-foreground">
+              <span className="flex items-center gap-2 font-medium text-foreground">
                 <Store className="size-4 text-muted-foreground" />
                 Vendido pela loja parceira
               </span>
@@ -179,7 +179,7 @@ export function ProductDetailDesktop({
 
         {/* ══ COLUNA DIREITA (5 Colunas): Card Sticky de Conversão ══ */}
         <div className="col-span-5 space-y-6">
-          <div className="sticky top-20 rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-6">
+          <div className="sticky top-20 rounded-lg border border-border/60 bg-card p-6 shadow-sm space-y-6">
             {/* Bloco de Título & Preço */}
             <div className="space-y-2 pb-4 border-b border-border/50">
               <div className="flex items-center justify-between gap-2">
@@ -247,7 +247,7 @@ export function ProductDetailDesktop({
                                 setSelectedAttributes((prev) => ({ ...prev, [key]: val }));
                               }}
                               className={cn(
-                                "h-9 min-w-10 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center",
+                                "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer flex items-center justify-center",
                                 isSelected
                                   ? "border-primary bg-primary text-primary-foreground shadow-xs"
                                   : "border-border/70 bg-card text-foreground hover:bg-muted/30"
@@ -297,7 +297,7 @@ export function ProductDetailDesktop({
                           {isMultiple ? `Até ${og.maxSelections} opções` : "Escolha 1"}
                         </span>
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {og.values.map((val: any) => {
                           const isSelected = isMultiple
                             ? Array.isArray(selection) && selection.includes(val.id)
@@ -309,7 +309,7 @@ export function ProductDetailDesktop({
                               type="button"
                               onClick={() => handleToggle(val.id)}
                               className={cn(
-                                "w-full flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer",
+                                "w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all cursor-pointer",
                                 isSelected
                                   ? "border-primary bg-primary/5 ring-1 ring-primary/40"
                                   : "border-border/60 bg-card hover:bg-muted/20"
@@ -350,7 +350,7 @@ export function ProductDetailDesktop({
                 <Button
                   type="button"
                   size="lg"
-                  className="w-full font-bold text-xs uppercase rounded-xl h-12 bg-muted text-foreground border border-border/80 hover:bg-muted/80 gap-2 cursor-pointer"
+                  className="w-full font-bold text-xs uppercase rounded-lg h-12 bg-muted text-foreground border border-border/80 hover:bg-muted/80 gap-2 cursor-pointer"
                   onClick={() => setIsWaitlistOpen(true)}
                 >
                   <BellRing className="size-4 text-primary" />
@@ -359,7 +359,7 @@ export function ProductDetailDesktop({
               ) : (
                 <div className="flex items-center gap-3">
                   {/* Seletor de Quantidade */}
-                  <div className="flex items-center rounded-xl border border-border/70 bg-secondary/50 h-12 px-1 shrink-0">
+                  <div className="flex items-center rounded-lg border border-border/70 bg-secondary/50 h-12 px-1 shrink-0">
                     <button
                       type="button"
                       onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
@@ -386,7 +386,7 @@ export function ProductDetailDesktop({
                     <Button
                       variant="outline"
                       size="lg"
-                      className="font-bold text-xs uppercase rounded-xl h-12 transition-all cursor-pointer gap-2 border-border/80 hover:bg-muted text-foreground"
+                      className="font-bold text-xs uppercase rounded-lg h-12 transition-all cursor-pointer gap-2 border-border/80 hover:bg-muted text-foreground"
                       onClick={handleAddToCart}
                       disabled={Boolean(isAdding)}
                     >
@@ -395,7 +395,7 @@ export function ProductDetailDesktop({
                     </Button>
                     <Button
                       size="lg"
-                      className="font-bold text-xs uppercase rounded-xl h-12 transition-all cursor-pointer gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                      className="font-bold text-xs uppercase rounded-lg h-12 transition-all cursor-pointer gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                       onClick={() => setIsQuickOrderOpen(true)}
                     >
                       <MessageCircle className="size-4" />
@@ -422,18 +422,18 @@ export function ProductDetailDesktop({
                   placeholder="Digite seu CEP"
                   value={zipcode}
                   onChange={(e) => setZipcode(e.target.value)}
-                  className="h-10 text-xs rounded-xl bg-muted/30"
+                  className="h-10 text-xs rounded-lg bg-muted/30"
                 />
-                <Button type="submit" size="sm" className="h-10 font-bold px-4 rounded-xl shrink-0 cursor-pointer" disabled={loadingShipping}>
+                <Button type="submit" size="sm" className="h-10 font-bold px-4 rounded-lg shrink-0 cursor-pointer" disabled={loadingShipping}>
                   {loadingShipping ? <Loader2 className="size-4 animate-spin" /> : "Calcular"}
                 </Button>
               </form>
 
               {shippingRates !== null && (
-                <div className="space-y-1.5 pt-1">
+                <div className="space-y-2 pt-1">
                   {shippingRates.length > 0 ? (
                     shippingRates.map((rate, idx) => (
-                      <div key={rate.id || idx} className="flex justify-between items-center text-xs p-2.5 rounded-xl border border-border/50 bg-muted/20">
+                      <div key={rate.id || idx} className="flex justify-between items-center text-xs p-3 rounded-lg border border-border/50 bg-muted/20">
                         <div>
                           <p className="font-bold text-foreground">{rate.service_name || rate.name || rate.provider}</p>
                           <p className="text-[10px] text-muted-foreground">Prazo: {rate.estimated_days} dias úteis</p>
@@ -451,21 +451,21 @@ export function ProductDetailDesktop({
             </div>
 
             {/* Card Sobre a Loja Desktop */}
-            <div className="p-4 rounded-2xl border border-border/60 bg-muted/20 flex items-center justify-between gap-3">
+            <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="size-11 rounded-xl bg-primary/10 flex items-center justify-center font-black text-sm text-primary shrink-0 border border-primary/20">
+                <div className="size-11 rounded-lg bg-primary/10 flex items-center justify-center font-black text-sm text-primary shrink-0 border border-primary/20">
                   {(product as any).store?.name?.slice(0, 2).toUpperCase() || "LJ"}
                 </div>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <h3 className="font-bold text-xs text-foreground truncate">
                       {(product as any).store?.name || product.brand || "Loja Parceira"}
                     </h3>
-                    <Badge variant="outline" className="text-[9px] bg-primary/10 text-primary border-primary/20 py-0 px-1.5 rounded">
+                    <Badge variant="outline" className="text-[9px] bg-primary/10 text-primary border-primary/20 py-0 px-2 rounded">
                       Oficial
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                  <p className="text-[11px] text-muted-foreground truncate mt-1">
                     {(product as any).store?.city ? `${(product as any).store.city} - ${(product as any).store.state || "SC"}` : "Loja Verificada Waesy"}
                   </p>
                 </div>
@@ -474,7 +474,7 @@ export function ProductDetailDesktop({
               <Button
                 size="sm"
                 variant={isFollowingStore ? "secondary" : "outline"}
-                className="text-xs font-bold rounded-xl h-9 shrink-0 cursor-pointer"
+                className="text-xs font-bold rounded-lg h-9 shrink-0 cursor-pointer"
                 onClick={handleToggleFollow}
               >
                 {isFollowingStore ? "Seguindo" : "+ Seguir"}

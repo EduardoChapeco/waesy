@@ -200,7 +200,7 @@ function StockAlertsPage() {
               onClick={handleExportCsv}
               variant="outline"
               size="sm"
-              className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+              className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
               disabled={variants.length === 0}
             >
               <FileSpreadsheet className="size-3.5 text-emerald-600" />
@@ -212,8 +212,8 @@ function StockAlertsPage() {
 
       {/* ── BANNER DE ALERTA SE HOUVER CLIENTES ESPERANDO ITENS ESGOTADOS ── */}
       {kpis.totalWaitlist > 0 && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 shadow-2xs">
-          <ShieldAlert className="size-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 shadow-2xs">
+          <ShieldAlert className="size-5 text-amber-600 shrink-0 mt-1" />
           <div className="space-y-1">
             <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">
               Demanda Reprimida Identificada: {kpis.totalWaitlist} {kpis.totalWaitlist === 1 ? "cliente aguardando" : "clientes aguardando"}
@@ -227,8 +227,8 @@ function StockAlertsPage() {
 
       {/* ── KPIS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Flame className="size-3.5 text-destructive" />
             Itens Esgotados
           </span>
@@ -240,8 +240,8 @@ function StockAlertsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <AlertTriangle className="size-3.5 text-amber-500" />
             Nível Crítico
           </span>
@@ -253,8 +253,8 @@ function StockAlertsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <BellRing className="size-3.5 text-blue-600" />
             Fila de Espera (Waitlist)
           </span>
@@ -266,8 +266,8 @@ function StockAlertsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Boxes className="size-3.5 text-foreground" />
             Total SKUs em Risco
           </span>
@@ -281,7 +281,7 @@ function StockAlertsPage() {
       </div>
 
       {/* ── BARRA DE CONTROLE, BUSCA E FILTROS ── */}
-      <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs">
+      <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="relative w-full sm:w-80">
             <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -289,16 +289,16 @@ function StockAlertsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por produto ou SKU..."
-              className="pl-9 h-10 rounded-xl bg-background border-border/80 text-xs"
+              className="pl-9 h-10 rounded-lg bg-background border-border/80 text-xs"
             />
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
             <Button
               size="sm"
               variant={filterSeverity === "all" ? "default" : "outline"}
               onClick={() => setFilterSeverity("all")}
-              className="rounded-xl text-xs h-8 cursor-pointer"
+              className="rounded-lg text-xs h-8 cursor-pointer"
             >
               Todos ({variants.length})
             </Button>
@@ -306,7 +306,7 @@ function StockAlertsPage() {
               size="sm"
               variant={filterSeverity === "out_of_stock" ? "default" : "outline"}
               onClick={() => setFilterSeverity("out_of_stock")}
-              className="rounded-xl text-xs h-8 cursor-pointer"
+              className="rounded-lg text-xs h-8 cursor-pointer"
             >
               Esgotados ({kpis.outOfStock})
             </Button>
@@ -314,7 +314,7 @@ function StockAlertsPage() {
               size="sm"
               variant={filterSeverity === "low_stock" ? "default" : "outline"}
               onClick={() => setFilterSeverity("low_stock")}
-              className="rounded-xl text-xs h-8 cursor-pointer"
+              className="rounded-lg text-xs h-8 cursor-pointer"
             >
               Críticos ({kpis.lowStock})
             </Button>
@@ -322,7 +322,7 @@ function StockAlertsPage() {
               size="sm"
               variant={filterSeverity === "with_waitlist" ? "default" : "outline"}
               onClick={() => setFilterSeverity("with_waitlist")}
-              className="rounded-xl text-xs h-8 cursor-pointer"
+              className="rounded-lg text-xs h-8 cursor-pointer"
             >
               Com Espera ({variants.filter((v: any) => ((waitlistCounts as any)[v.id] || 0) > 0).length})
             </Button>
@@ -359,29 +359,29 @@ function StockAlertsPage() {
               return (
                 <div
                   key={v.id}
-                  className="rounded-2xl border border-border/70 bg-card p-4 space-y-3.5 shadow-2xs"
+                  className="rounded-lg border border-border/70 bg-card p-4 space-y-4 shadow-2xs"
                 >
                   {/* Topo do Card: SKU, Nível e Fila de Espera */}
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-muted/60 text-foreground border border-border/40">
+                    <span className="font-mono text-xs font-semibold px-2 py-1 rounded-md bg-muted/60 text-foreground border border-border/40">
                       {v.sku || "Sem SKU"}
                     </span>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {waitingCount > 0 && (
-                        <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 font-bold text-xs px-2 py-0.5">
+                        <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 font-bold text-xs px-2 py-1">
                           <BellRing className="size-3" />
                           <span>{waitingCount} na fila</span>
                         </Badge>
                       )}
 
                       {available <= 0 ? (
-                        <Badge variant="destructive" className="gap-1 text-xs font-bold px-2 py-0.5">
+                        <Badge variant="destructive" className="gap-1 text-xs font-bold px-2 py-1">
                           <Flame className="size-3" />
                           Esgotado
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="gap-1 text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-0.5">
+                        <Badge variant="secondary" className="gap-1 text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-1">
                           <AlertTriangle className="size-3 text-amber-500" />
                           Crítico
                         </Badge>
@@ -413,7 +413,7 @@ function StockAlertsPage() {
                       variant="outline"
                       onClick={() => handleQuickRefill(v.id, 5)}
                       disabled={isItemAdjusting}
-                      className="h-11 flex-1 text-xs font-bold rounded-xl cursor-pointer"
+                      className="h-11 flex-1 text-xs font-bold rounded-lg cursor-pointer"
                     >
                       +5 un
                     </Button>
@@ -424,7 +424,7 @@ function StockAlertsPage() {
                       variant="outline"
                       onClick={() => handleQuickRefill(v.id, 10)}
                       disabled={isItemAdjusting}
-                      className="h-11 flex-1 text-xs font-bold rounded-xl cursor-pointer"
+                      className="h-11 flex-1 text-xs font-bold rounded-lg cursor-pointer"
                     >
                       +10 un
                     </Button>
@@ -437,7 +437,7 @@ function StockAlertsPage() {
                         setCustomModalItem(v);
                         setCustomQuantity(waitingCount > 0 ? waitingCount * 2 : 20);
                       }}
-                      className="h-11 flex-2 text-xs font-bold rounded-xl gap-1.5 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                      className="h-11 flex-2 text-xs font-bold rounded-lg gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                     >
                       <Plus className="size-3.5" />
                       <span>Repor</span>
@@ -449,7 +449,7 @@ function StockAlertsPage() {
           </div>
 
           {/* ── VISUALIZAÇÃO DESKTOP: TABELA ANALÍTICA (hidden md:block) ── */}
-          <div className="hidden md:block rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+          <div className="hidden md:block rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 bg-muted/20">
@@ -507,7 +507,7 @@ function StockAlertsPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-2">
                           <Button
                             size="sm"
                             variant="outline"
@@ -551,7 +551,7 @@ function StockAlertsPage() {
 
       {/* ── MODAL DE ENTRADA CUSTOMIZADA DE REPOSIÇÃO ── */}
       <Dialog open={Boolean(customModalItem)} onOpenChange={(open) => !open && setCustomModalItem(null)}>
-        <DialogContent className="sm:max-w-md bg-background border-border/80 rounded-2xl">
+        <DialogContent className="sm:max-w-md bg-background border-border/80 rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <PackageCheck className="size-4 text-emerald-600" />
@@ -563,7 +563,7 @@ function StockAlertsPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">
                 Quantidade a Adicionar ao Estoque
               </Label>
@@ -572,7 +572,7 @@ function StockAlertsPage() {
                 min={1}
                 value={customQuantity}
                 onChange={(e) => setCustomQuantity(parseInt(e.target.value, 10) || 1)}
-                className="font-mono font-bold text-sm h-11 rounded-xl bg-background border-border/80"
+                className="font-mono font-bold text-sm h-11 rounded-lg bg-background border-border/80"
               />
               <p className="text-xs text-muted-foreground">
                 Saldo atual: <strong>{customModalItem?.stock_on_hand || 0} un</strong>  Novo saldo:{" "}
@@ -582,7 +582,7 @@ function StockAlertsPage() {
               </p>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">
                 Nota / Justificativa de Entrada
               </Label>
@@ -590,7 +590,7 @@ function StockAlertsPage() {
                 value={customNote}
                 onChange={(e) => setCustomNote(e.target.value)}
                 placeholder="Ex: NF 1042 / Fornecedor XPTO"
-                className="text-xs h-10 rounded-xl bg-background border-border/80"
+                className="text-xs h-10 rounded-lg bg-background border-border/80"
               />
             </div>
           </div>
@@ -600,7 +600,7 @@ function StockAlertsPage() {
               variant="outline"
               size="sm"
               onClick={() => setCustomModalItem(null)}
-              className="rounded-xl text-xs font-bold h-10 cursor-pointer"
+              className="rounded-lg text-xs font-bold h-10 cursor-pointer"
             >
               Cancelar
             </Button>
@@ -609,7 +609,7 @@ function StockAlertsPage() {
               size="sm"
               onClick={handleConfirmCustomRefill}
               disabled={isSubmittingCustom}
-              className="rounded-xl text-xs font-bold h-10 cursor-pointer"
+              className="rounded-lg text-xs font-bold h-10 cursor-pointer"
             >
               {isSubmittingCustom ? "Registrando..." : "Confirmar Entrada"}
             </Button>

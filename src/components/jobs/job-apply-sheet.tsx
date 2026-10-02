@@ -86,7 +86,7 @@ export function JobApplySheet({
           <SheetTitle className="text-lg font-black text-foreground">
             Candidatura — {job.title}
           </SheetTitle>
-          <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+          <SheetDescription className="text-xs text-muted-foreground mt-1">
             Preencha seus dados para enviar seu perfil para {job.company_name}.
           </SheetDescription>
         </div>
@@ -94,7 +94,7 @@ export function JobApplySheet({
         <div className="flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar">
           {hasApplied ? (
             <div className="py-12 text-center space-y-3">
-              <div className="size-14 rounded-2xl bg-foreground text-background flex items-center justify-center mx-auto shadow-md">
+              <div className="size-14 rounded-lg bg-foreground text-background flex items-center justify-center mx-auto shadow-md">
                 <CheckCircle size={28} weight="bold" />
               </div>
               <h4 className="text-base font-bold text-foreground">Candidatura Registrada!</h4>
@@ -104,7 +104,7 @@ export function JobApplySheet({
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="rounded-xl font-bold text-xs h-10 mt-2"
+                className="rounded-lg font-bold text-xs h-10 mt-2"
               >
                 Fechar
               </Button>
@@ -115,14 +115,14 @@ export function JobApplySheet({
                 <button
                   type="button"
                   onClick={handlePrefillWithProfile}
-                  className="w-full py-2 px-3 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="w-full py-2 px-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
                   <Lightning size={14} weight="fill" className="text-primary" />
                   <span>Preencher com meu Perfil Waesy</span>
                 </button>
               )}
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-2">
                   <User size={14} className="text-muted-foreground" />
                   Nome Completo *
                 </label>
@@ -131,13 +131,13 @@ export function JobApplySheet({
                   placeholder="Seu nome completo"
                   value={candidateName}
                   onChange={(e) => setCandidateName(e.target.value)}
-                  className="rounded-xl h-10 text-xs bg-background"
+                  className="rounded-lg h-10 text-xs bg-background"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-2">
                     <EnvelopeSimple size={14} className="text-muted-foreground" />
                     E-mail de Contato *
                   </label>
@@ -147,12 +147,12 @@ export function JobApplySheet({
                     placeholder="seu.email@exemplo.com"
                     value={candidateEmail}
                     onChange={(e) => setCandidateEmail(e.target.value)}
-                    className="rounded-xl h-10 text-xs bg-background"
+                    className="rounded-lg h-10 text-xs bg-background"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-2">
                     <Phone size={14} className="text-muted-foreground" />
                     WhatsApp / Telefone *
                   </label>
@@ -162,13 +162,13 @@ export function JobApplySheet({
                     placeholder="(00) 00000-0000"
                     value={candidatePhone}
                     onChange={(e) => setCandidatePhone(e.target.value)}
-                    className="rounded-xl h-10 text-xs bg-background"
+                    className="rounded-lg h-10 text-xs bg-background"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-2">
                   <LinkSimple size={14} className="text-muted-foreground" />
                   Link do Currículo / LinkedIn / Portfólio
                 </label>
@@ -177,12 +177,12 @@ export function JobApplySheet({
                   placeholder="https://linkedin.com/in/seu-perfil ou link do Google Drive"
                   value={resumeUrl}
                   onChange={(e) => setResumeUrl(e.target.value)}
-                  className="rounded-xl h-10 text-xs bg-background"
+                  className="rounded-lg h-10 text-xs bg-background"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-2">
                   <ChatText size={14} className="text-muted-foreground" />
                   Carta de Apresentação
                 </label>
@@ -191,25 +191,25 @@ export function JobApplySheet({
                   value={coverLetter}
                   onChange={(e) => setCoverLetter(e.target.value)}
                   rows={3}
-                  className="rounded-xl text-xs bg-background resize-none leading-relaxed"
+                  className="rounded-lg text-xs bg-background resize-none leading-relaxed"
                 />
               </div>
 
               {/* Inteligência Salarial & Histórico */}
-              <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-3">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                <span className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Briefcase size={14} weight="bold" className="text-primary" />
                   Pretensão Salarial
                 </span>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[11px] font-semibold text-muted-foreground">Pretensão Salarial (R$)</label>
                     <Input
                       placeholder="Ex: 3.500,00"
                       value={salaryExpectationStr}
                       onChange={(e) => setSalaryExpectationStr(e.target.value)}
-                      className="rounded-xl h-9 text-xs bg-background font-mono"
+                      className="rounded-lg h-9 text-xs bg-background font-mono"
                     />
                   </div>
                   <div className="space-y-1">
@@ -218,7 +218,7 @@ export function JobApplySheet({
                       placeholder="Ex: Supermercado Central"
                       value={previousCompanyName}
                       onChange={(e) => setPreviousCompanyName(e.target.value)}
-                      className="rounded-xl h-9 text-xs bg-background"
+                      className="rounded-lg h-9 text-xs bg-background"
                     />
                   </div>
                 </div>
@@ -229,11 +229,11 @@ export function JobApplySheet({
                     placeholder="Ex: Mudança de cidade, busca de crescimento..."
                     value={reasonForLeaving}
                     onChange={(e) => setReasonForLeaving(e.target.value)}
-                    className="rounded-xl h-9 text-xs bg-background"
+                    className="rounded-lg h-9 text-xs bg-background"
                   />
                 </div>
 
-                <div className="space-y-1.5 pt-1">
+                <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between">
                     <label className="text-[11px] font-semibold text-muted-foreground">Como você avalia sua última empresa?</label>
                     <div className="flex items-center gap-1">
@@ -253,7 +253,7 @@ export function JobApplySheet({
                     placeholder="O que você mais gostava no ambiente?"
                     value={previousCompanyFeedback}
                     onChange={(e) => setPreviousCompanyFeedback(e.target.value)}
-                    className="rounded-xl h-9 text-xs bg-background"
+                    className="rounded-lg h-9 text-xs bg-background"
                   />
                 </div>
               </div>
@@ -261,7 +261,7 @@ export function JobApplySheet({
               <Button
                 type="submit"
                 disabled={isPending}
-                className="w-full rounded-xl font-bold h-11 text-xs bg-foreground text-background mt-2"
+                className="w-full rounded-lg font-bold h-11 text-xs bg-foreground text-background mt-2"
               >
                 {isPending ? (
                   <>

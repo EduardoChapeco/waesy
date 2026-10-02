@@ -117,7 +117,7 @@ export default function WorkspaceReviewsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
+            <span className="p-2 rounded-lg bg-amber-500/10 text-amber-600">
               <Star className="w-5 h-5 fill-amber-500 text-amber-500" />
             </span>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -136,7 +136,7 @@ export default function WorkspaceReviewsPage() {
           variant="outline"
           size="sm"
           onClick={handleCopyReviewLink}
-          className="rounded-xl h-10 px-4 gap-2 text-xs"
+          className="rounded-lg h-10 px-4 gap-2 text-xs"
         >
           {copiedLink ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
           <span>{copiedLink ? "Link Copiado" : "Copiar Link de Avaliação"}</span>
@@ -146,7 +146,7 @@ export default function WorkspaceReviewsPage() {
       {/* Grid de Estatísticas / Reputação */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Média Geral */}
-        <div className="bg-card border border-border/60 rounded-2xl p-5 space-y-2 shadow-xs">
+        <div className="bg-card border border-border/60 rounded-lg p-5 space-y-2 shadow-xs">
           <span className="text-xs text-muted-foreground font-medium">Nota Média da Loja</span>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold tracking-tight text-foreground">
@@ -168,7 +168,7 @@ export default function WorkspaceReviewsPage() {
         </div>
 
         {/* Card 2: Total Avaliações */}
-        <div className="bg-card border border-border/60 rounded-2xl p-5 space-y-2 shadow-xs">
+        <div className="bg-card border border-border/60 rounded-lg p-5 space-y-2 shadow-xs">
           <span className="text-xs text-muted-foreground font-medium">Total de Avaliações</span>
           <div className="text-3xl font-bold tracking-tight text-foreground">
             {stats.total_reviews}
@@ -179,7 +179,7 @@ export default function WorkspaceReviewsPage() {
         </div>
 
         {/* Card 3: Taxa de Resposta */}
-        <div className="bg-card border border-border/60 rounded-2xl p-5 space-y-2 shadow-xs">
+        <div className="bg-card border border-border/60 rounded-lg p-5 space-y-2 shadow-xs">
           <span className="text-xs text-muted-foreground font-medium">Taxa de Resposta</span>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold tracking-tight text-emerald-600">
@@ -192,10 +192,10 @@ export default function WorkspaceReviewsPage() {
         </div>
 
         {/* Card 4: Distribuição */}
-        <div className="bg-card border border-border/60 rounded-2xl p-4 space-y-1.5 shadow-xs text-xs">
+        <div className="bg-card border border-border/60 rounded-lg p-4 space-y-2 shadow-xs text-xs">
           <span className="text-xs text-muted-foreground font-medium block mb-1">Distribuição de Notas</span>
           <div className="flex items-center gap-2">
-            <span className="w-7 text-muted-foreground text-xs flex items-center gap-0.5">5<Star className="size-2.5 fill-amber-500 text-amber-500" /></span>
+            <span className="w-7 text-muted-foreground text-xs flex items-center gap-1">5<Star className="size-2.5 fill-amber-500 text-amber-500" /></span>
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className="h-full bg-amber-500 rounded-full"
@@ -205,7 +205,7 @@ export default function WorkspaceReviewsPage() {
             <span className="w-5 text-right font-mono text-xs">{stats.count_5_stars}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-7 text-muted-foreground text-xs flex items-center gap-0.5">4<Star className="size-2.5 fill-amber-400 text-amber-400" /></span>
+            <span className="w-7 text-muted-foreground text-xs flex items-center gap-1">4<Star className="size-2.5 fill-amber-400 text-amber-400" /></span>
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className="h-full bg-amber-400 rounded-full"
@@ -215,7 +215,7 @@ export default function WorkspaceReviewsPage() {
             <span className="w-5 text-right font-mono text-xs">{stats.count_4_stars}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-7 text-muted-foreground text-xs flex items-center gap-0.5">3<Star className="size-2.5 fill-amber-300 text-amber-300" /></span>
+            <span className="w-7 text-muted-foreground text-xs flex items-center gap-1">3<Star className="size-2.5 fill-amber-300 text-amber-300" /></span>
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className="h-full bg-amber-300 rounded-full"
@@ -234,7 +234,7 @@ export default function WorkspaceReviewsPage() {
             type="button"
             onClick={() => setFilterRating("all")}
             className={cn(
-              "px-3.5 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap",
+              "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
               filterRating === "all"
                 ? "bg-foreground text-background font-semibold"
                 : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -246,7 +246,7 @@ export default function WorkspaceReviewsPage() {
             type="button"
             onClick={() => setFilterRating("pending")}
             className={cn(
-              "px-3.5 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap",
+              "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
               filterRating === "pending"
                 ? "bg-foreground text-background font-semibold"
                 : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -258,7 +258,7 @@ export default function WorkspaceReviewsPage() {
             type="button"
             onClick={() => setFilterRating("5")}
             className={cn(
-              "px-3.5 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap",
+              "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
               filterRating === "5"
                 ? "bg-foreground text-background font-semibold"
                 : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -270,7 +270,7 @@ export default function WorkspaceReviewsPage() {
             type="button"
             onClick={() => setFilterRating("critical")}
             className={cn(
-              "px-3.5 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap",
+              "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
               filterRating === "critical"
                 ? "bg-rose-500 text-white font-semibold"
                 : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -286,7 +286,7 @@ export default function WorkspaceReviewsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por cliente ou produto..."
-            className="pl-8 h-9 text-xs rounded-xl"
+            className="pl-8 h-9 text-xs rounded-lg"
           />
         </div>
       </div>
@@ -294,7 +294,7 @@ export default function WorkspaceReviewsPage() {
       {/* Lista de Avaliações */}
       <div className="space-y-4">
         {filteredReviews.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border p-12 text-center bg-card">
+          <div className="rounded-lg border border-dashed border-border p-12 text-center bg-card">
             <Star className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-30" />
             <h3 className="text-sm font-semibold text-foreground">Nenhuma avaliação encontrada</h3>
             <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
@@ -305,7 +305,7 @@ export default function WorkspaceReviewsPage() {
           filteredReviews.map((review: any) => (
             <div
               key={review.id}
-              className="bg-card border border-border/60 rounded-2xl p-5 space-y-4 shadow-xs transition-colors hover:border-border"
+              className="bg-card border border-border/60 rounded-lg p-5 space-y-4 shadow-xs transition-colors hover:border-border"
             >
               {/* Header da Avaliação */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -342,7 +342,7 @@ export default function WorkspaceReviewsPage() {
                       <span className="truncate">{review.classified.title}</span>
                     </Badge>
                   )}
-                  <div className="flex items-center gap-0.5 text-amber-500">
+                  <div className="flex items-center gap-1 text-amber-500">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
@@ -366,9 +366,9 @@ export default function WorkspaceReviewsPage() {
               {/* Bloco de Resposta do Lojista */}
               <div className="pl-12 space-y-3">
                 {review.response_comment ? (
-                  <div className="bg-muted/40 border border-border/50 rounded-xl p-3.5 space-y-1.5 text-xs">
+                  <div className="bg-muted/40 border border-border/50 rounded-lg p-4 space-y-2 text-xs">
                     <div className="flex items-center justify-between text-muted-foreground">
-                      <div className="flex items-center gap-1.5 font-medium text-foreground">
+                      <div className="flex items-center gap-2 font-medium text-foreground">
                         <CornerDownRight className="w-3.5 h-3.5 text-primary" />
                         <span>Sua Resposta Oficial:</span>
                       </div>
@@ -383,7 +383,7 @@ export default function WorkspaceReviewsPage() {
                     </p>
                   </div>
                 ) : replyingToId === review.id ? (
-                  <div className="space-y-2 border border-border rounded-xl p-3 bg-muted/20">
+                  <div className="space-y-2 border border-border rounded-lg p-3 bg-muted/20">
                     <Textarea
                       rows={2}
                       value={replyText}
@@ -407,7 +407,7 @@ export default function WorkspaceReviewsPage() {
                         size="sm"
                         onClick={() => handleSendReply(review.id)}
                         disabled={respondMutation.isPending}
-                        className="h-8 text-xs rounded-lg gap-1.5"
+                        className="h-8 text-xs rounded-lg gap-2"
                       >
                         <Send className="w-3 h-3" />
                         <span>{respondMutation.isPending ? "Enviando..." : "Publicar Resposta"}</span>
@@ -422,7 +422,7 @@ export default function WorkspaceReviewsPage() {
                       setReplyingToId(review.id);
                       setReplyText("");
                     }}
-                    className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground gap-1.5"
+                    className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-2"
                   >
                     <CornerDownRight className="w-3.5 h-3.5" />
                     <span>Responder Cliente</span>

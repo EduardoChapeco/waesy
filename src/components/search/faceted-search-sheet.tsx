@@ -121,9 +121,9 @@ export function FacetedSearchSheet({
       */}
       <SheetContent
         side="bottom"
-        className="sm:hidden p-0 max-h-[90dvh] flex flex-col rounded-t-3xl border-t border-border bg-background"
+        className="sm:hidden p-0 max-h-[90dvh] flex flex-col rounded-t-lg border-t border-border bg-background"
       >
-        <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30 mx-auto mt-2.5 mb-1 shrink-0" />
+        <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30 mx-auto mt-3 mb-1 shrink-0" />
         <SheetHeader className="px-5 py-3 border-b border-border/40 shrink-0 text-left">
           <SheetTitle className="text-base font-bold flex items-center justify-between">
             <span className="flex items-center gap-2">
@@ -144,8 +144,8 @@ export function FacetedSearchSheet({
         {/* Corpo com Scroll */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6 no-scrollbar">
           {/* Ordenação */}
-          <div className="space-y-2.5">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <div className="space-y-3">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <ArrowDownUp className="size-3.5" /> Ordenar Por
             </Label>
             <div className="grid grid-cols-2 gap-2">
@@ -156,7 +156,7 @@ export function FacetedSearchSheet({
                     key={opt.id}
                     type="button"
                     onClick={() => setSort(opt.id)}
-                    className={`flex items-center justify-between p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                    className={`flex items-center justify-between p-3 rounded-lg border text-xs font-medium transition-all ${
                       isSelected
                         ? "bg-primary/10 border-primary text-primary font-bold shadow-2xs"
                         : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
@@ -171,7 +171,7 @@ export function FacetedSearchSheet({
           </div>
 
           {/* Faixa de Preço */}
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Faixa de Preço (R$)
@@ -190,7 +190,7 @@ export function FacetedSearchSheet({
                   placeholder="0,00"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  className="min-h-[44px] rounded-xl text-xs font-mono"
+                  className="min-h-11 rounded-lg text-xs font-mono"
                 />
               </div>
               <div className="space-y-1">
@@ -200,7 +200,7 @@ export function FacetedSearchSheet({
                   placeholder="Sem limite"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  className="min-h-[44px] rounded-xl text-xs font-mono"
+                  className="min-h-11 rounded-lg text-xs font-mono"
                 />
               </div>
             </div>
@@ -208,11 +208,11 @@ export function FacetedSearchSheet({
 
           {/* Nichos / Verticais */}
           {facets?.niches && facets.niches.length > 0 && (
-            <div className="space-y-2.5">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <div className="space-y-3">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Sparkles className="size-3 text-primary" /> Nichos de Negócio
               </Label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {facets.niches.map((niche) => {
                   const isSelected = niches.includes(niche.id);
                   return (
@@ -220,7 +220,7 @@ export function FacetedSearchSheet({
                       key={niche.id}
                       type="button"
                       onClick={() => toggleNiche(niche.id)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs transition-all ${
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-muted/50 border border-border/50 text-foreground hover:bg-muted"
@@ -242,11 +242,11 @@ export function FacetedSearchSheet({
 
           {/* Categorias */}
           {facets?.categories && facets.categories.length > 0 && (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Categorias
               </Label>
-              <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto no-scrollbar p-0.5">
+              <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto no-scrollbar p-1">
                 {facets.categories.map((cat) => {
                   const isSelected = categories.includes(cat.id);
                   return (
@@ -254,7 +254,7 @@ export function FacetedSearchSheet({
                       key={cat.id}
                       type="button"
                       onClick={() => toggleCategory(cat.id)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs transition-all ${
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-card border border-border/60 text-muted-foreground hover:text-foreground"
@@ -274,7 +274,7 @@ export function FacetedSearchSheet({
         <div className="p-4 border-t border-border/50 bg-background/95 backdrop-blur-sm shrink-0">
           <Button
             onClick={handleApply}
-            className="w-full min-h-[44px] rounded-xl text-sm font-bold shadow-xs cursor-pointer"
+            className="w-full min-h-11 rounded-lg text-sm font-bold shadow-xs cursor-pointer"
           >
             Aplicar Filtros {totalResultsCount > 0 ? `(${totalResultsCount} itens)` : ""}
           </Button>
@@ -288,7 +288,7 @@ export function FacetedSearchSheet({
       >
         <SheetHeader className="p-6 border-b border-border/40 shrink-0 text-left">
           <SheetTitle className="text-lg font-bold flex items-center justify-between">
-            <span className="flex items-center gap-2.5">
+            <span className="flex items-center gap-3">
               <SlidersHorizontal className="size-5 text-primary" />
               Filtros Avançados
             </span>
@@ -306,11 +306,11 @@ export function FacetedSearchSheet({
         {/* Conteúdo Desktop com Scroll */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Ordenação */}
-          <div className="space-y-2.5">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <div className="space-y-3">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <ArrowDownUp className="size-3.5" /> Ordenar Resultados
             </Label>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {SORT_OPTIONS.map((opt) => {
                 const isSelected = sort === opt.id;
                 return (
@@ -318,7 +318,7 @@ export function FacetedSearchSheet({
                     key={opt.id}
                     type="button"
                     onClick={() => setSort(opt.id)}
-                    className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-medium transition-all ${
+                    className={`w-full flex items-center justify-between p-3 rounded-lg border text-xs font-medium transition-all ${
                       isSelected
                         ? "bg-primary/10 border-primary text-primary font-bold shadow-2xs"
                         : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
@@ -333,7 +333,7 @@ export function FacetedSearchSheet({
           </div>
 
           {/* Faixa de Preço */}
-          <div className="space-y-2.5 border-t border-border/40 pt-4">
+          <div className="space-y-3 border-t border-border/40 pt-4">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Faixa de Preço (R$)
@@ -352,7 +352,7 @@ export function FacetedSearchSheet({
                   placeholder="0,00"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  className="rounded-xl text-xs font-mono"
+                  className="rounded-lg text-xs font-mono"
                 />
               </div>
               <div className="space-y-1">
@@ -362,7 +362,7 @@ export function FacetedSearchSheet({
                   placeholder="Sem limite"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  className="rounded-xl text-xs font-mono"
+                  className="rounded-lg text-xs font-mono"
                 />
               </div>
             </div>
@@ -370,11 +370,11 @@ export function FacetedSearchSheet({
 
           {/* Nichos / Verticais */}
           {facets?.niches && facets.niches.length > 0 && (
-            <div className="space-y-2.5 border-t border-border/40 pt-4">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <div className="space-y-3 border-t border-border/40 pt-4">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Sparkles className="size-3 text-primary" /> Nichos de Negócio
               </Label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {facets.niches.map((niche) => {
                   const isSelected = niches.includes(niche.id);
                   return (
@@ -382,7 +382,7 @@ export function FacetedSearchSheet({
                       key={niche.id}
                       type="button"
                       onClick={() => toggleNiche(niche.id)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all ${
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-muted/50 border border-border/50 text-foreground hover:bg-muted"
@@ -404,11 +404,11 @@ export function FacetedSearchSheet({
 
           {/* Categorias */}
           {facets?.categories && facets.categories.length > 0 && (
-            <div className="space-y-2.5 border-t border-border/40 pt-4">
+            <div className="space-y-3 border-t border-border/40 pt-4">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Categorias
               </Label>
-              <div className="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto no-scrollbar p-0.5">
+              <div className="flex flex-wrap gap-2 max-h-56 overflow-y-auto no-scrollbar p-1">
                 {facets.categories.map((cat) => {
                   const isSelected = categories.includes(cat.id);
                   return (
@@ -416,7 +416,7 @@ export function FacetedSearchSheet({
                       key={cat.id}
                       type="button"
                       onClick={() => toggleCategory(cat.id)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs transition-all ${
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-card border border-border/60 text-muted-foreground hover:text-foreground"
@@ -434,12 +434,12 @@ export function FacetedSearchSheet({
 
         {/* Rodapé Desktop */}
         <div className="p-6 border-t border-border/40 bg-muted/20 shrink-0 flex gap-2">
-          <Button variant="outline" onClick={onClose} className="rounded-xl flex-1 text-xs">
+          <Button variant="outline" onClick={onClose} className="rounded-lg flex-1 text-xs">
             Cancelar
           </Button>
           <Button
             onClick={handleApply}
-            className="rounded-xl flex-1 text-xs font-bold shadow-xs cursor-pointer"
+            className="rounded-lg flex-1 text-xs font-bold shadow-xs cursor-pointer"
           >
             Aplicar Filtros {totalResultsCount > 0 ? `(${totalResultsCount})` : ""}
           </Button>

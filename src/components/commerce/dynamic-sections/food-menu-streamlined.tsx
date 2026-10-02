@@ -121,13 +121,13 @@ export function FoodMenuStreamlinedSection({
  </div>
  </div>
 
- <Badge variant="outline" className="text-[10px] font-mono border-border/80 px-2.5 py-1">
+ <Badge variant="outline" className="text-[10px] font-mono border-border/80 px-3 py-1">
  Cardápio Digital
  </Badge>
  </div>
 
  {/* ── 2. Barra de Categorias Horizontal (Pills de Navegação) ── */}
- <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md py-2 px-0 border-b border-border/40 flex items-center gap-1.5 overflow-x-auto no-scrollbar ">
+ <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md py-2 px-0 border-b border-border/40 flex items-center gap-2 overflow-x-auto no-scrollbar ">
  {displayCategories.map((cat) => {
  const isSelected = activeCategory === cat;
  return (
@@ -136,7 +136,7 @@ export function FoodMenuStreamlinedSection({
  type="button"
  onClick={() => setActiveCategory(cat)}
  className={cn(
- "px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer",
+ "px-4 py-2 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground shadow-2xs"
  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -153,7 +153,7 @@ export function FoodMenuStreamlinedSection({
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group p-3.5 rounded-2xl border border-border/70 bg-card hover:border-primary/40 transition-all flex items-center justify-between gap-4 shadow-2xs"
+ className="group p-4 rounded-lg border border-border/70 bg-card hover:border-primary/40 transition-all flex items-center justify-between gap-4 shadow-2xs"
  >
  {/* Informações do Item */}
  <div className="flex-1 min-w-0 space-y-1">
@@ -162,7 +162,7 @@ export function FoodMenuStreamlinedSection({
  {item.name}
  </h3>
  {item.badge && (
- <Badge variant="secondary" className="text-[9px] px-1.5 py-0 shrink-0 font-medium">
+ <Badge variant="secondary" className="text-[9px] px-2 py-0 shrink-0 font-medium">
  {item.badge}
  </Badge>
  )}
@@ -172,7 +172,7 @@ export function FoodMenuStreamlinedSection({
  {item.description}
  </p>
 
- <div className="pt-0.5">
+ <div className="pt-1">
  <span className="text-sm font-bold text-foreground font-mono">
  {formatPrice(item.priceCents)}
  </span>
@@ -181,7 +181,7 @@ export function FoodMenuStreamlinedSection({
 
  {/* Miniatura Quadrada com Botão '+' Sobreposto */}
  {item.imageUrl && (
- <div className="relative size-20 sm:size-22 rounded-xl overflow-hidden bg-muted shrink-0 border border-border/60">
+ <div className="relative size-20 sm:size-22 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/60">
  <img
  src={item.imageUrl}
  alt={item.name}
@@ -208,7 +208,7 @@ export function FoodMenuStreamlinedSection({
  {/* ── 4. Barra Flutuante Inferior Fixa na Thumb Zone (Padrão iFood / Rocco) ── */}
  {cartItemsCount > 0 && (
  <div className="fixed bottom-4 inset-x-4 max-w-lg mx-auto z-40 animate-in slide-in-from-bottom-3 duration-200">
- <div className="p-3 rounded-2xl bg-foreground text-background shadow-2xl flex items-center justify-between gap-4 border border-foreground/10">
+ <div className="p-3 rounded-lg bg-foreground text-background shadow-2xl flex items-center justify-between gap-4 border border-foreground/10">
  <div className="flex items-center gap-3 pl-2">
  <div className="size-8 rounded-full bg-background/20 flex items-center justify-center font-bold text-xs">
  {cartItemsCount}
@@ -226,7 +226,7 @@ export function FoodMenuStreamlinedSection({
  <Button
  type="button"
  onClick={onOpenCart}
- className="h-10 px-6 rounded-xl font-bold text-xs bg-background text-foreground hover:bg-background/90 cursor-pointer shadow-xs gap-2"
+ className="h-10 px-6 rounded-lg font-bold text-xs bg-background text-foreground hover:bg-background/90 cursor-pointer shadow-xs gap-2"
  >
  <span>Ver Sacola / Pedir</span>
  </Button>

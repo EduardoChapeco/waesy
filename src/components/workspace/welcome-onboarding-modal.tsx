@@ -44,7 +44,7 @@ export function WelcomeOnboardingModal({ initialSteps }: { initialSteps: SystemO
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200">
       <div
         key={currentStep.id}
-        className="relative w-full max-w-4xl bg-card border border-border shadow-2xl overflow-hidden rounded-3xl flex flex-col md:flex-row min-h-[500px] transition-all duration-300 animate-in zoom-in-95"
+        className="relative w-full max-w-4xl bg-card border border-border shadow-2xl overflow-hidden rounded-lg flex flex-col md:flex-row min-h-[500px] transition-all duration-300 animate-in zoom-in-95"
       >
         {/* Lado Esquerdo: Mídia (Vídeo ou Imagem) */}
         <div className="w-full md:w-1/2 bg-muted/30 relative overflow-hidden flex items-center justify-center min-h-[250px] md:min-h-full">
@@ -77,7 +77,7 @@ export function WelcomeOnboardingModal({ initialSteps }: { initialSteps: SystemO
         {/* Lado Direito: Conteúdo e Controles */}
         <div className="w-full md:w-1/2 flex flex-col p-6 sm:p-10 justify-between bg-card relative z-10">
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
               Passo {currentStepIndex + 1} de {steps.length}
             </div>
 
@@ -92,7 +92,7 @@ export function WelcomeOnboardingModal({ initialSteps }: { initialSteps: SystemO
 
           <div className="mt-12 flex flex-col gap-4">
             {/* Barra de Progresso */}
-            <div className="flex gap-1.5 w-full">
+            <div className="flex gap-2 w-full">
               {steps.map((_, idx) => (
                 <div
                   key={idx}
@@ -108,7 +108,7 @@ export function WelcomeOnboardingModal({ initialSteps }: { initialSteps: SystemO
               size="lg"
               onClick={handleNext}
               disabled={isFinishing}
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all gap-2"
+              className="w-full h-14 rounded-lg text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all gap-2"
             >
               {isFinishing ? (
                 <Loader2 className="size-5 animate-spin" />

@@ -287,15 +287,15 @@ export function QuickOptionGroupDialog({
  side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] w-full flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
  >
  <SheetHeader className="p-6 pb-4 border-b border-border/80 bg-muted/20">
- <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
  <SlidersHorizontal className="size-4.5" />
  </div>
  <div>
  <SheetTitle className="text-base font-bold text-foreground">
  {groupToEdit ? "Editar Modificadores" : "Novo Grupo de Adicionais"}
  </SheetTitle>
- <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+ <SheetDescription className="text-xs text-muted-foreground mt-1">
  Defina as opções com fotos, regras de escolha e valores adicionais.
  </SheetDescription>
  </div>
@@ -306,7 +306,7 @@ export function QuickOptionGroupDialog({
  {/* PRESETS RÁPIDOS (Se for criação) */}
  {!groupToEdit && (
  <div className="space-y-2">
- <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
  <Sliders className="size-3.5 text-primary" />
  <span>Modelos Prontos (Presets de 1 Clique)</span>
  </div>
@@ -318,9 +318,9 @@ export function QuickOptionGroupDialog({
  key={preset.name}
  type="button"
  onClick={() => applyPreset(preset)}
- className="flex flex-col items-start p-2.5 rounded-xl border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group"
+ className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group"
  >
- <div className="flex items-center gap-1.5 w-full mb-1">
+ <div className="flex items-center gap-2 w-full mb-1">
  <Icon className="size-3.5 text-primary shrink-0" />
  <span className="text-xs font-semibold text-foreground truncate">{preset.name}</span>
  </div>
@@ -335,7 +335,7 @@ export function QuickOptionGroupDialog({
  {/* DADOS BÁSICOS DO GRUPO */}
  <div className="space-y-3">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">
  Nome para o Cliente <span className="text-destructive">*</span>
  </Label>
@@ -349,7 +349,7 @@ export function QuickOptionGroupDialog({
  ? "Ex: Selecione o Tamanho da Peça"
  : "Ex: Escolha o Ponto da Carne"
  }
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  {...form.register("display_name", {
  onChange: (e) => {
  if (!form.getValues("internal_name") || form.getValues("internal_name") === "") {
@@ -373,7 +373,7 @@ export function QuickOptionGroupDialog({
  )}
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">
  Identificador Interno
  </Label>
@@ -387,13 +387,13 @@ export function QuickOptionGroupDialog({
  ? "Ex: tamanho-peca"
  : "Ex: ponto-carne"
  }
- className="h-10 text-xs font-mono rounded-xl"
+ className="h-10 text-xs font-mono rounded-lg"
  {...form.register("internal_name")}
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">
  Instrução ou Descrição do Grupo (Opcional)
  </Label>
@@ -407,17 +407,17 @@ export function QuickOptionGroupDialog({
  ? "Ex: Selecione o tamanho e cor ideais"
  : "Ex: Escolha até 3 opções para turbinar seu prato"
  }
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  {...form.register("description")}
  />
  </div>
  </div>
 
  {/* TIPO DE ESCOLHA & REGRAS */}
- <div className="rounded-2xl p-4 bg-muted/30 border border-border/70 space-y-4">
+ <div className="rounded-lg p-4 bg-muted/30 border border-border/70 space-y-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  {/* TIPO DE SELEÇÃO */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Tipo de Seleção</Label>
  <div className="grid grid-cols-2 gap-2">
  <button
@@ -427,7 +427,7 @@ export function QuickOptionGroupDialog({
  form.setValue("max_selections", 1);
  }}
  className={cn(
- "flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-medium transition-all cursor-pointer",
+ "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs font-medium transition-all cursor-pointer",
  selectionType === "single"
  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
  : "border-border/80 bg-background text-muted-foreground hover:bg-muted/40",
@@ -439,7 +439,7 @@ export function QuickOptionGroupDialog({
  type="button"
  onClick={() => form.setValue("selection_type", "multiple")}
  className={cn(
- "flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-medium transition-all cursor-pointer",
+ "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs font-medium transition-all cursor-pointer",
  selectionType === "multiple"
  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
  : "border-border/80 bg-background text-muted-foreground hover:bg-muted/40",
@@ -451,9 +451,9 @@ export function QuickOptionGroupDialog({
  </div>
 
  {/* OBRIGATÓRIO SWITCH */}
- <div className="flex flex-col justify-between p-2.5 rounded-xl border border-border/80 bg-background">
+ <div className="flex flex-col justify-between p-3 rounded-lg border border-border/80 bg-background">
  <div className="flex items-center justify-between">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <Label className="text-xs font-semibold">Escolha Obrigatória</Label>
  <p className="text-[10px] text-muted-foreground">O cliente não pode avançar sem escolher</p>
  </div>
@@ -480,7 +480,7 @@ export function QuickOptionGroupDialog({
  <Input
  type="number"
  min={0}
- className="h-8.5 text-xs rounded-xl"
+ className="h-8.5 text-xs rounded-lg"
  {...form.register("min_selections", { valueAsNumber: true })}
  />
  </div>
@@ -489,7 +489,7 @@ export function QuickOptionGroupDialog({
  <Input
  type="number"
  min={1}
- className="h-8.5 text-xs rounded-xl"
+ className="h-8.5 text-xs rounded-lg"
  {...form.register("max_selections", { valueAsNumber: true })}
  />
  </div>
@@ -517,14 +517,14 @@ export function QuickOptionGroupDialog({
  is_active: true,
  })
  }
- className="h-7 text-xs gap-1 border-dashed rounded-xl"
+ className="h-7 text-xs gap-1 border-dashed rounded-lg"
  >
  <Plus className="size-3.5 text-primary" />
  Adicionar Opção
  </Button>
  </div>
 
- <div className="space-y-2.5">
+ <div className="space-y-3">
  {fields.map((field, index) => {
  const imageUrl = form.watch(`values.${index}.image_url`);
  const isUploadingThis = uploadingIndex === index;
@@ -532,13 +532,13 @@ export function QuickOptionGroupDialog({
  return (
  <div
  key={field.id}
- className="p-3 rounded-2xl border border-border/80 bg-background hover:border-foreground/20 transition-all space-y-2"
+ className="p-3 rounded-lg border border-border/80 bg-background hover:border-foreground/20 transition-all space-y-2"
  >
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  {/* Mini Uploader de Foto 1:1 */}
  <div className="relative group shrink-0">
  {imageUrl ? (
- <div className="relative size-11 rounded-xl overflow-hidden border border-border bg-muted">
+ <div className="relative size-11 rounded-lg overflow-hidden border border-border bg-muted">
  <img src={imageUrl} alt="" className="size-full object-cover" />
  <button
  type="button"
@@ -554,7 +554,7 @@ export function QuickOptionGroupDialog({
  type="button"
  onClick={() => handleSelectFileForValue(index)}
  disabled={isUploadingThis}
- className="size-11 rounded-xl border border-dashed border-border hover:border-primary/60 bg-muted/30 hover:bg-primary/5 flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-all cursor-pointer"
+ className="size-11 rounded-lg border border-dashed border-border hover:border-primary/60 bg-muted/30 hover:bg-primary/5 flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-all cursor-pointer"
  title="Adicionar foto 1:1 ao adicional"
  >
  {isUploadingThis ? (
@@ -570,7 +570,7 @@ export function QuickOptionGroupDialog({
  <div className="flex-1 min-w-[140px]">
  <Input
  placeholder="Nome do adicional (ex: Bacon Extra)"
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  {...form.register(`values.${index}.label` as const)}
  />
  </div>
@@ -579,7 +579,7 @@ export function QuickOptionGroupDialog({
  <div className="w-28 shrink-0">
  <CurrencyField
  placeholder="R$ 0,00"
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  value={form.watch(`values.${index}.price_modifier_cents` as const) || 0}
  onChange={(cents) =>
  form.setValue(`values.${index}.price_modifier_cents` as const, cents ?? 0)
@@ -628,7 +628,7 @@ export function QuickOptionGroupDialog({
  variant="outline"
  onClick={() => onOpenChange(false)}
  disabled={isSubmitting}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  >
  Cancelar
  </Button>
@@ -636,7 +636,7 @@ export function QuickOptionGroupDialog({
  type="button"
  onClick={form.handleSubmit(onSubmit)}
  disabled={isSubmitting}
- className="h-10 text-xs gap-1.5 font-bold rounded-xl bg-primary text-primary-foreground"
+ className="h-10 text-xs gap-2 font-bold rounded-lg bg-primary text-primary-foreground"
  >
  {isSubmitting ? (
  <>

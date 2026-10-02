@@ -747,8 +747,8 @@ function WorkspaceHotelsPage() {
 
  {/* ── CONTEÚDO PRINCIPAL (GRID OU TABELA) ── */}
  {filtered.length === 0 ? (
- <div className="p-8 sm:p-12 text-center rounded-2xl bg-card border border-border/60 space-y-4">
- <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+ <div className="p-8 sm:p-12 text-center rounded-lg bg-card border border-border/60 space-y-4">
+ <div className="size-14 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
  <Hotel className="size-7" />
  </div>
  <div className="space-y-1">
@@ -757,9 +757,9 @@ function WorkspaceHotelsPage() {
  Cadastre os resorts parceiros ou utilize nossos presets de 1 toque (Nannai, Salinas, Pratagy, Colline de France, etc.) com acomodações e fotos de alta resolução.
  </p>
  </div>
- <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
- <Button onClick={handleOpenCreate} size="default" className="h-11 sm:h-9 px-5 rounded-xl font-bold bg-primary text-primary-foreground cursor-pointer shadow-xs">
- <Plus className="size-4 mr-1.5" />
+ <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+ <Button onClick={handleOpenCreate} size="default" className="h-11 sm:h-9 px-5 rounded-lg font-bold bg-primary text-primary-foreground cursor-pointer shadow-xs">
+ <Plus className="size-4 mr-2" />
  Cadastrar Hotel do Zero
  </Button>
  <Button
@@ -769,9 +769,9 @@ function WorkspaceHotelsPage() {
  }}
  size="default"
  variant="outline"
- className="h-11 sm:h-9 px-5 rounded-xl font-medium cursor-pointer"
+ className="h-11 sm:h-9 px-5 rounded-lg font-medium cursor-pointer"
  >
- <Zap className="size-4 mr-1.5 text-amber-500" />
+ <Zap className="size-4 mr-2 text-amber-500" />
  Importar Nannai Muro Alto (Preset Completo)
  </Button>
  </div>
@@ -785,7 +785,7 @@ function WorkspaceHotelsPage() {
  return (
  <div
  key={hotel.id}
- className="bg-card rounded-2xl overflow-hidden border border-border/70 hover:border-primary/40 transition-all group flex flex-col shadow-2xs hover:shadow-sm"
+ className="bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/40 transition-all group flex flex-col shadow-2xs hover:shadow-sm"
  >
  {/* Foto de Capa & Badges */}
  <div className="relative aspect-video w-full bg-muted/30 overflow-hidden">
@@ -796,7 +796,7 @@ function WorkspaceHotelsPage() {
  className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
  />
  ) : (
- <div className="size-full flex flex-col items-center justify-center text-muted-foreground/40 gap-1.5">
+ <div className="size-full flex flex-col items-center justify-center text-muted-foreground/40 gap-2">
  <Camera className="size-8 stroke-1" />
  <span className="text-xs">Sem foto de capa</span>
  </div>
@@ -805,13 +805,13 @@ function WorkspaceHotelsPage() {
 
  {/* Top Badges */}
  <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
- <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-mono tracking-wide">
+ <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-mono tracking-wide">
  {hotel.stars || 4} Estrelas
  </span>
 
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  {photosCount > 1 && (
- <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-1">
+ <span className="px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-1">
  <Camera className="size-3" />
  <span>{photosCount} fotos</span>
  </span>
@@ -823,7 +823,7 @@ function WorkspaceHotelsPage() {
  </div>
 
  {/* Bottom Info on Capa */}
- <div className="absolute bottom-3 left-3 right-3 text-white space-y-0.5">
+ <div className="absolute bottom-3 left-3 right-3 text-white space-y-1">
  <h4 className="text-base font-bold drop-shadow-sm truncate">{hotel.name}</h4>
  <p className="text-xs text-white/80 truncate flex items-center gap-1">
  <MapPin className="size-3 shrink-0 text-primary-foreground/90" />
@@ -837,24 +837,24 @@ function WorkspaceHotelsPage() {
 
  {/* Informações Comerciais & Acomodações */}
  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
- <div className="space-y-2.5 text-xs">
+ <div className="space-y-3 text-xs">
  {/* Regimes & Categorias de Quarto */}
- <div className="flex flex-wrap items-center gap-1.5">
+ <div className="flex flex-wrap items-center gap-2">
  {hotel.regime_options.map((regime, i) => (
  <span
  key={i}
- className="px-2.5 py-0.5 rounded-lg bg-primary/10 text-primary text-xs font-bold"
+ className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold"
  >
  {regime}
  </span>
  ))}
  {roomsCount > 0 ? (
- <span className="px-2 py-0.5 rounded-lg bg-muted text-foreground text-xs font-semibold flex items-center gap-1 border border-border/50">
+ <span className="px-2 py-1 rounded-lg bg-muted text-foreground text-xs font-semibold flex items-center gap-1 border border-border/50">
  <BedDouble className="size-3 text-muted-foreground" />
  <span>{roomsCount} {roomsCount === 1 ? "quarto" : "quartos"}</span>
  </span>
  ) : (
- <span className="px-2 py-0.5 rounded-lg bg-muted/50 text-muted-foreground text-xs italic">
+ <span className="px-2 py-1 rounded-lg bg-muted/50 text-muted-foreground text-xs italic">
  Sem quartos estruturados
  </span>
  )}
@@ -866,7 +866,7 @@ function WorkspaceHotelsPage() {
  {hotel.badges.slice(0, 3).map((b, i) => (
  <span
  key={i}
- className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs border border-border/50 font-medium"
+ className="px-2 py-1 rounded-full bg-muted text-muted-foreground text-xs border border-border/50 font-medium"
  >
  {b}
  </span>
@@ -881,7 +881,7 @@ function WorkspaceHotelsPage() {
 
  {/* Localização & Aeroporto */}
  {hotel.airport_distance && (
- <p className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1 truncate pt-0.5">
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-1 truncate pt-1">
  <Navigation className="size-3 text-primary shrink-0" />
  <span>{hotel.airport_distance}</span>
  </p>
@@ -889,7 +889,7 @@ function WorkspaceHotelsPage() {
 
  {/* Bullets de Venda */}
  {hotel.bio_bullets && hotel.bio_bullets.length > 0 && (
- <div className="space-y-1 pt-1.5 text-xs text-muted-foreground/75 text-muted-foreground border-t border-border/40">
+ <div className="space-y-1 pt-2 text-xs text-muted-foreground/75 text-muted-foreground border-t border-border/40">
  {hotel.bio_bullets.slice(0, 2).map((bullet, i) => (
  <p key={i} className="truncate">
  {bullet}
@@ -901,12 +901,12 @@ function WorkspaceHotelsPage() {
 
  {/* Ações do Card */}
  <div className="pt-3 border-t border-border/40 flex items-center justify-between">
- <div className="flex items-center gap-1.5 sm:gap-1">
+ <div className="flex items-center gap-2 sm:gap-1">
  <Button
  type="button"
  variant="secondary"
  onClick={() => setPreviewHotel(hotel)}
- className="h-11 sm:h-8 px-3.5 sm:px-3 rounded-xl text-xs gap-1.5 font-bold cursor-pointer"
+ className="h-11 sm:h-8 px-4 sm:px-3 rounded-lg text-xs gap-2 font-bold cursor-pointer"
  title="Visualizar Raio-X Completo do Hotel"
  >
  <Eye className="size-4 sm:size-3.5" />
@@ -917,7 +917,7 @@ function WorkspaceHotelsPage() {
  type="button"
  variant="outline"
  onClick={() => handleOpenEdit(hotel)}
- className="h-11 sm:h-8 px-3.5 sm:px-3 rounded-xl text-xs gap-1 font-bold cursor-pointer"
+ className="h-11 sm:h-8 px-4 sm:px-3 rounded-lg text-xs gap-1 font-bold cursor-pointer"
  >
  <Edit2 className="size-4 sm:size-3" />
  <span>Editar</span>
@@ -928,7 +928,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => duplicateMut.mutate(hotel.id)}
- className="size-11 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Duplicar Hotel"
  >
  <Copy className="size-4 sm:size-3.5" />
@@ -939,7 +939,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => handleExportHotelsRoomsCSV([hotel], `hotel-${hotel.name.toLowerCase().replace(/\s+/g, "-")}-quartos.csv`)}
- className="size-11 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Exportar Ficha de Quartos (CSV)"
  >
  <Download className="size-4 sm:size-3.5" />
@@ -965,7 +965,7 @@ function WorkspaceHotelsPage() {
  </div>
  ) : (
  /* ── MODO TABELA OPERACIONAL ── */
- <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+ <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
  <div className="overflow-x-auto no-scrollbar">
  <table className="w-full text-left text-xs">
  <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-semibold">
@@ -1010,13 +1010,13 @@ function WorkspaceHotelsPage() {
  <span className="text-muted-foreground ml-1">({hotel.state || hotel.country})</span>
  </td>
  <td className="p-3 whitespace-nowrap">
- <div className="flex items-center gap-0.5 text-amber-500 font-bold">
+ <div className="flex items-center gap-1 text-amber-500 font-bold">
  <span>{hotel.stars} Estrelas</span>
  {(hotel.internal_rating || 0) > 0 ? <span className="text-muted-foreground text-xs font-normal ml-1">({hotel.internal_rating})</span> : null}
  </div>
  </td>
  <td className="p-3">
- <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-bold whitespace-nowrap">
+ <span className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-bold whitespace-nowrap">
  {hotel.regime_options?.[0] || "Padrão"}
  </span>
  </td>
@@ -1036,7 +1036,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => setPreviewHotel(hotel)}
- className="size-9 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Raio-X do Hotel"
  >
  <Eye className="size-4 sm:size-3.5" />
@@ -1045,7 +1045,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => handleOpenEdit(hotel)}
- className="size-9 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Editar"
  >
  <Edit2 className="size-4 sm:size-3.5" />
@@ -1054,7 +1054,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => duplicateMut.mutate(hotel.id)}
- className="size-9 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Duplicar"
  >
  <Copy className="size-4 sm:size-3.5" />
@@ -1063,7 +1063,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => handleExportHotelsRoomsCSV([hotel], `hotel-${hotel.name.toLowerCase().replace(/\s+/g, "-")}-quartos.csv`)}
- className="size-9 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Exportar Ficha de Quartos (CSV)"
  >
  <Download className="size-4 sm:size-3.5" />
@@ -1110,8 +1110,8 @@ function WorkspaceHotelsPage() {
                   )}
  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
  <div className="absolute bottom-4 left-5 right-5 text-white">
- <div className="flex items-center gap-1.5 text-xs font-bold mb-1">
- <span className="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs">
+ <div className="flex items-center gap-2 text-xs font-bold mb-1">
+ <span className="px-2 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs">
  {previewHotel.stars || 4} Estrelas
  </span>
  {(previewHotel.internal_rating || 0) > 0 ? <span className="text-white/80 font-normal ml-1">Nota {previewHotel.internal_rating} / 5.0</span> : null}
@@ -1126,14 +1126,14 @@ function WorkspaceHotelsPage() {
 
  <div className="p-5 space-y-5 text-xs">
  {/* Regimes e Badges */}
- <div className="flex flex-wrap items-center gap-1.5">
+ <div className="flex flex-wrap items-center gap-2">
  {previewHotel.regime_options.map((regime, i) => (
  <Badge key={i} className="bg-primary text-primary-foreground font-bold text-xs text-muted-foreground/75">
  {regime}
  </Badge>
  ))}
  {previewHotel.badges?.map((b, i) => (
- <span key={i} className="px-2.5 py-1 rounded-full bg-muted text-foreground border border-border/60 text-xs font-semibold">
+ <span key={i} className="px-3 py-1 rounded-full bg-muted text-foreground border border-border/60 text-xs font-semibold">
  {b}
  </span>
  ))}
@@ -1142,13 +1142,13 @@ function WorkspaceHotelsPage() {
  {/* Galeria de Fotos */}
  {previewHotel.photos && previewHotel.photos.length > 0 && (
  <div className="space-y-2">
- <h4 className="font-bold text-foreground text-xs flex items-center gap-1.5">
+ <h4 className="font-bold text-foreground text-xs flex items-center gap-2">
  <Camera className="size-3.5 text-primary" />
  <span>Galeria de Fotos do Hotel ({previewHotel.photos.length})</span>
  </h4>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
  {previewHotel.photos.map((p, idx) => (
- <div key={idx} className="aspect-video rounded-xl overflow-hidden border border-border/60 bg-muted/40">
+ <div key={idx} className="aspect-video rounded-lg overflow-hidden border border-border/60 bg-muted/40">
  <img src={p} alt={`Foto ${idx + 1}`} className="size-full object-cover hover:scale-105 transition-transform" />
  </div>
  ))}
@@ -1157,15 +1157,15 @@ function WorkspaceHotelsPage() {
  )}
 
  {/* Categorias de Acomodação (Room Types) */}
- <div className="space-y-2.5">
- <h4 className="font-bold text-foreground text-xs flex items-center gap-1.5">
+ <div className="space-y-3">
+ <h4 className="font-bold text-foreground text-xs flex items-center gap-2">
  <BedDouble className="size-3.5 text-primary" />
  <span>Categorias de Acomodação ({previewHotel.room_categories?.length || 0})</span>
  </h4>
  {previewHotel.room_categories && previewHotel.room_categories.length > 0 ? (
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  {previewHotel.room_categories.map((room) => (
- <div key={room.id} className="p-3 rounded-xl bg-muted/30 border border-border/60 space-y-2">
+ <div key={room.id} className="p-3 rounded-lg bg-muted/30 border border-border/60 space-y-2">
  {room.cover_photo_url && (
  <div className="aspect-video rounded-lg overflow-hidden border border-border/40">
  <img src={room.cover_photo_url} alt={room.name} className="size-full object-cover" />
@@ -1180,7 +1180,7 @@ function WorkspaceHotelsPage() {
  </span>
  ) : null}
  </div>
- <p className="text-xs text-muted-foreground/75 text-muted-foreground mt-0.5">{room.description}</p>
+ <p className="text-xs text-muted-foreground/75 text-muted-foreground mt-1">{room.description}</p>
  </div>
  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground pt-1 border-t border-border/40 font-medium">
  {room.bedding && <span>{room.bedding}</span>}
@@ -1196,8 +1196,8 @@ function WorkspaceHotelsPage() {
  </div>
 
  {/* Políticas de Hospedagem */}
- <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
- <h4 className="font-bold text-foreground text-xs flex items-center gap-1.5">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+ <h4 className="font-bold text-foreground text-xs flex items-center gap-2">
  <Clock className="size-3.5 text-primary" />
  <span>Políticas e Condições de Estadia</span>
  </h4>
@@ -1248,7 +1248,7 @@ function WorkspaceHotelsPage() {
  setPreviewHotel(null);
  handleOpenEdit(previewHotel);
  }}
- className="rounded-xl font-semibold gap-1.5"
+ className="rounded-lg font-semibold gap-2"
  >
  <Edit2 className="size-3.5" />
  <span>Editar Hotel no Banco</span>
@@ -1256,7 +1256,7 @@ function WorkspaceHotelsPage() {
  <Button
  size="sm"
  onClick={() => setPreviewHotel(null)}
- className="rounded-xl font-semibold"
+ className="rounded-lg font-semibold"
  >
  Fechar
  </Button>
@@ -1277,7 +1277,7 @@ function WorkspaceHotelsPage() {
  <Hotel className="size-4 text-primary" />
  <span>{editingHotel ? "Editar Hotel / Resort" : "Novo Hotel no Banco de Hospedagens"}</span>
  </SheetTitle>
- <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+ <SheetDescription className="text-xs text-muted-foreground mt-1">
  Cadastre com acomodações estruturadas, fotos, políticas e comodidades para auto-preenchimento instantâneo em propostas TravelOS.
  </SheetDescription>
  </div>
@@ -1285,19 +1285,19 @@ function WorkspaceHotelsPage() {
 
  {/* Presets Rápidos de 1-Toque */}
  <div className="mt-3 pt-3 border-t border-border/50">
- <div className="flex items-center justify-between mb-1.5">
+ <div className="flex items-center justify-between mb-2">
  <span className="text-xs text-muted-foreground/75 font-bold text-foreground flex items-center gap-1">
  <Zap className="size-3 text-amber-500" />
  <span>Preencher com Preset de Resort Famoso (1 Toque):</span>
  </span>
  </div>
- <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+ <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
  {FAMOUS_HOTEL_PRESETS.map((preset) => (
  <button
  key={preset.id}
  type="button"
  onClick={() => handleApplyPreset(preset)}
- className="px-2.5 py-1 rounded-lg bg-background border border-border/70 hover:border-primary/50 text-xs text-muted-foreground/75 font-semibold text-foreground whitespace-nowrap cursor-pointer transition-colors"
+ className="px-3 py-1 rounded-lg bg-background border border-border/70 hover:border-primary/50 text-xs text-muted-foreground/75 font-semibold text-foreground whitespace-nowrap cursor-pointer transition-colors"
  >
  {preset.name.split(" ")[0]} {preset.name.split(" ")[1]}
  </button>
@@ -1352,20 +1352,20 @@ function WorkspaceHotelsPage() {
  <div className="p-5 flex-1 space-y-4 text-xs">
  {/* ── ABA 1: DADOS GERAIS & LOCALIZAÇÃO ── */}
  <TabsContent value="dados" className="space-y-4 m-0">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Nome do Hotel / Resort *</Label>
  <Input
  value={formData.name}
  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
  placeholder="Ex: Nannai Muro Alto Resort & Spa, Salinas Maragogi, Hotel Fasano"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  required
  />
  </div>
 
  {/* Atalho de Destinos Canônicos */}
- <div className="space-y-1.5 p-3 rounded-xl bg-muted/40 border border-border/60">
- <Label className="text-xs text-muted-foreground/75 font-bold text-foreground flex items-center gap-1.5">
+ <div className="space-y-2 p-3 rounded-lg bg-muted/40 border border-border/60">
+ <Label className="text-xs text-muted-foreground/75 font-bold text-foreground flex items-center gap-2">
  <Compass className="size-3 text-primary" />
  <span>Vincular a Destino Oficial (Preenche Cidade/Estado e IATA):</span>
  </Label>
@@ -1375,7 +1375,7 @@ function WorkspaceHotelsPage() {
  key={cd.id}
  type="button"
  onClick={() => handleSelectCanonicalDestination(cd)}
- className="px-2 py-0.5 rounded-md bg-background text-xs text-muted-foreground/75 border border-border/60 hover:border-primary/50 text-foreground cursor-pointer transition-colors"
+ className="px-2 py-1 rounded-md bg-background text-xs text-muted-foreground/75 border border-border/60 hover:border-primary/50 text-foreground cursor-pointer transition-colors"
  >
  {cd.city} ({cd.iata})
  </button>
@@ -1384,68 +1384,68 @@ function WorkspaceHotelsPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Cidade *</Label>
  <Input
  value={formData.city}
  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
  placeholder="Ex: Porto de Galinhas, Maceió"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Estado</Label>
  <Input
  value={formData.state}
  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
  placeholder="Ex: PE, AL, RS, BA"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">País</Label>
  <Input
  value={formData.country}
  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
  placeholder="Ex: Brasil, México"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Endereço Completo e Bairro</Label>
  <Input
  value={formData.address}
  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
  placeholder="Ex: Rodovia PE-09, Km 03 - Muro Alto"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Distância do Aeroporto Gateway</Label>
  <Input
  value={formData.airport_distance}
  onChange={(e) => setFormData({ ...formData, airport_distance: e.target.value })}
  placeholder="Ex: 45 min do Aeroporto de Recife (REC)"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Classificação (Estrelas)</Label>
  <Select
  value={String(formData.stars)}
  onValueChange={(val) => setFormData({ ...formData, stars: Number(val) })}
  >
- <SelectTrigger className="h-10 rounded-xl bg-background">
+ <SelectTrigger className="h-10 rounded-lg bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1457,13 +1457,13 @@ function WorkspaceHotelsPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Regime Alimentar Principal</Label>
  <Select
  value={formData.regime_options[0] || ""}
  onValueChange={(val) => setFormData({ ...formData, regime_options: [val] })}
  >
- <SelectTrigger className="h-10 rounded-xl bg-background">
+ <SelectTrigger className="h-10 rounded-lg bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1478,30 +1478,30 @@ function WorkspaceHotelsPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Site Oficial do Hotel</Label>
  <Input
  value={formData.website}
  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
  placeholder="https://hotel.com.br"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Telefone / Central de Reservas</Label>
  <Input
  value={formData.phone}
  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
  placeholder="(81) 3552-0000"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
  </div>
  
             {/* Coordenadas GPS (wttr.in e Mapas Reais) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="font-semibold text-foreground">Latitude GPS (ex: -8.4988)</Label>
                 <Input
                   type="number"
@@ -1509,11 +1509,11 @@ function WorkspaceHotelsPage() {
                   value={formData.location_lat ?? ""}
                   onChange={(e) => setFormData({ ...formData, location_lat: e.target.value ? parseFloat(e.target.value) : null })}
                   placeholder="-8.4988000"
-                  className="h-10 rounded-xl bg-background font-mono text-xs"
+                  className="h-10 rounded-lg bg-background font-mono text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="font-semibold text-foreground">Longitude GPS (ex: -34.9982)</Label>
                 <Input
                   type="number"
@@ -1521,13 +1521,13 @@ function WorkspaceHotelsPage() {
                   value={formData.location_lng ?? ""}
                   onChange={(e) => setFormData({ ...formData, location_lng: e.target.value ? parseFloat(e.target.value) : null })}
                   placeholder="-34.9982000"
-                  className="h-10 rounded-xl bg-background font-mono text-xs"
+                  className="h-10 rounded-lg bg-background font-mono text-xs"
                 />
               </div>
             </div>
 
             {/* Parcelamento Máximo (1-24x) */}
-            <div className="space-y-2 p-3.5 rounded-xl bg-muted/20 border border-border/50">
+            <div className="space-y-2 p-4 rounded-lg bg-muted/20 border border-border/50">
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="font-semibold text-foreground block">Parcelamento Máximo no Pacote</Label>
@@ -1550,7 +1550,7 @@ function WorkspaceHotelsPage() {
                   max={24}
                   value={formData.max_installments}
                   onChange={(e) => setFormData({ ...formData, max_installments: Math.min(24, Math.max(1, parseInt(e.target.value, 10) || 1)) })}
-                  className="w-16 h-9 text-center font-mono text-xs rounded-xl bg-background"
+                  className="w-16 h-9 text-center font-mono text-xs rounded-lg bg-background"
                 />
               </div>
             </div>
@@ -1558,7 +1558,7 @@ function WorkspaceHotelsPage() {
 
  {/* ── ABA 2: GALERIA DE FOTOS & CAPA ── */}
  <TabsContent value="galeria" className="space-y-4 m-0">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Foto de Capa Principal (Panorâmica 16:9)</Label>
  <ImageUpload
  value={formData.cover_photo_url}
@@ -1582,17 +1582,17 @@ function WorkspaceHotelsPage() {
  onChange={(e) => setNewPhotoUrl(e.target.value)}
  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddPhoto())}
  placeholder="Cole a URL da foto (Unsplash ou CDN) ou envie abaixo..."
- className="h-9 rounded-xl text-xs bg-background flex-1"
+ className="h-9 rounded-lg text-xs bg-background flex-1"
  />
- <Button type="button" size="sm" variant="outline" onClick={handleAddPhoto} className="rounded-xl h-9">
+ <Button type="button" size="sm" variant="outline" onClick={handleAddPhoto} className="rounded-lg h-9">
  + Adicionar URL
  </Button>
  </div>
 
  {formData.photos.length > 0 && (
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
  {formData.photos.map((url, idx) => (
- <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-border/60 group bg-muted/30">
+ <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-border/60 group bg-muted/30">
  <img src={url} alt={`Foto ${idx + 1}`} className="size-full object-cover" />
  <button
  type="button"
@@ -1621,7 +1621,7 @@ function WorkspaceHotelsPage() {
  type="button"
  size="sm"
  onClick={handleAddRoomCategory}
- className="rounded-xl font-semibold gap-1.5 h-8 bg-primary text-primary-foreground"
+ className="rounded-lg font-semibold gap-2 h-8 bg-primary text-primary-foreground"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Quarto</span>
@@ -1629,22 +1629,22 @@ function WorkspaceHotelsPage() {
  </div>
 
  {formData.room_categories.length === 0 ? (
- <div className="p-8 text-center rounded-2xl bg-muted/20 border border-dashed border-border/70 space-y-2">
+ <div className="p-8 text-center rounded-lg bg-muted/20 border border-dashed border-border/70 space-y-2">
  <BedDouble className="size-8 text-muted-foreground mx-auto" />
  <p className="font-bold text-foreground text-xs">Nenhuma categoria de quarto cadastrada</p>
  <p className="text-muted-foreground text-xs text-muted-foreground/75 max-w-sm mx-auto">
  Adicione quartos (ex: Bangalô Master, Apartamento Luxo, Suíte Família) com suas capacidades e comodidades.
  </p>
- <Button type="button" size="sm" variant="outline" onClick={handleAddRoomCategory} className="rounded-xl mt-2">
+ <Button type="button" size="sm" variant="outline" onClick={handleAddRoomCategory} className="rounded-lg mt-2">
  + Criar Primeira Categoria
  </Button>
  </div>
  ) : (
  <div className="space-y-3">
  {formData.room_categories.map((room, idx) => (
- <div key={room.id} className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-3">
+ <div key={room.id} className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-3">
  <div className="flex items-center justify-between">
- <span className="font-bold text-foreground text-xs flex items-center gap-1.5">
+ <span className="font-bold text-foreground text-xs flex items-center gap-2">
  <BedDouble className="size-3.5 text-primary" />
  <span>Categoria #{idx + 1}</span>
  </span>
@@ -1659,7 +1659,7 @@ function WorkspaceHotelsPage() {
  </Button>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
  <Label className="text-xs font-semibold text-foreground">Nome do Quarto / Suíte *</Label>
  <Input
@@ -1757,7 +1757,7 @@ function WorkspaceHotelsPage() {
  type="button"
  onClick={() => toggleAmenityBadge(opt)}
  className={cn(
- "p-2.5 rounded-xl text-left text-xs font-semibold border transition-all cursor-pointer flex items-center justify-between",
+ "p-3 rounded-lg text-left text-xs font-semibold border transition-all cursor-pointer flex items-center justify-between",
  isActive
  ? "bg-primary/10 text-primary border-primary shadow-xs"
  : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/30"
@@ -1772,7 +1772,7 @@ function WorkspaceHotelsPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/50">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Estrutura de Praia</Label>
  <Input
  value={formData.structure.beach_setup || ""}
@@ -1783,11 +1783,11 @@ function WorkspaceHotelsPage() {
  })
  }
  placeholder="Ex: Pé na areia com garçom, toalhas e quiosques privativos"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Recreação e Kids Club</Label>
  <Input
  value={formData.structure.kids_club_details || ""}
@@ -1798,7 +1798,7 @@ function WorkspaceHotelsPage() {
  })
  }
  placeholder="Ex: Monitores das 09h às 22h para crianças a partir de 4 anos"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
  </div>
@@ -1810,23 +1810,23 @@ function WorkspaceHotelsPage() {
  value={newRestaurant.name}
  onChange={(e) => setNewRestaurant({ ...newRestaurant, name: e.target.value })}
  placeholder="Nome do restaurante (Ex: Restaurante Francês Le Bistro)..."
- className="h-9 rounded-xl text-xs bg-background flex-1"
+ className="h-9 rounded-lg text-xs bg-background flex-1"
  />
  <Input
  value={newRestaurant.cuisine}
  onChange={(e) => setNewRestaurant({ ...newRestaurant, cuisine: e.target.value })}
  placeholder="Culinária (Ex: Frutos do Mar)..."
- className="h-9 rounded-xl text-xs bg-background w-36"
+ className="h-9 rounded-lg text-xs bg-background w-36"
  />
- <Button type="button" size="sm" variant="outline" onClick={handleAddRestaurant} className="rounded-xl h-9">
+ <Button type="button" size="sm" variant="outline" onClick={handleAddRestaurant} className="rounded-lg h-9">
  + Adicionar
  </Button>
  </div>
 
  {formData.structure.restaurants && formData.structure.restaurants.length > 0 && (
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  {formData.structure.restaurants.map((rest, idx) => (
- <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-muted/40 border border-border/50 text-xs">
+ <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-muted/40 border border-border/50 text-xs">
  <div>
  <span className="font-bold text-foreground">{rest.name}</span>
  <span className="text-muted-foreground ml-2">({rest.cuisine || "Internacional"})</span>
@@ -1848,7 +1848,7 @@ function WorkspaceHotelsPage() {
  {/* ── ABA 5: POLÍTICAS DE HOSPEDAGEM ── */}
  <TabsContent value="politicas" className="space-y-4 m-0">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Horário de Check-in</Label>
  <Input
  value={formData.policies.check_in_time || "15:00"}
@@ -1859,11 +1859,11 @@ function WorkspaceHotelsPage() {
  })
  }
  placeholder="15:00"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Horário de Check-out</Label>
  <Input
  value={formData.policies.check_out_time || "12:00"}
@@ -1874,12 +1874,12 @@ function WorkspaceHotelsPage() {
  })
  }
  placeholder="12:00"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Política de Crianças</Label>
  <Input
  value={formData.policies.children_policy || ""}
@@ -1890,11 +1890,11 @@ function WorkspaceHotelsPage() {
  })
  }
  placeholder="Ex: Até 2 crianças de até 12 anos grátis na mesma acomodação dos pais"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Política de Cancelamento e Reembolso</Label>
  <Input
  value={formData.policies.cancellation_policy || ""}
@@ -1905,12 +1905,12 @@ function WorkspaceHotelsPage() {
  })
  }
  placeholder="Ex: Cancelamento gratuito até 7 dias antes do check-in"
- className="h-10 rounded-xl bg-background"
+ className="h-10 rounded-lg bg-background"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Voltagem Elétrica</Label>
  <Select
  value={formData.policies.voltage || "220V"}
@@ -1921,7 +1921,7 @@ function WorkspaceHotelsPage() {
  })
  }
  >
- <SelectTrigger className="h-10 rounded-xl bg-background">
+ <SelectTrigger className="h-10 rounded-lg bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1932,7 +1932,7 @@ function WorkspaceHotelsPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Aceita Animais (Pet Friendly)?</Label>
  <Select
  value={formData.policies.pet_friendly ? "sim" : "nao"}
@@ -1943,7 +1943,7 @@ function WorkspaceHotelsPage() {
  })
  }
  >
- <SelectTrigger className="h-10 rounded-xl bg-background">
+ <SelectTrigger className="h-10 rounded-lg bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1957,13 +1957,13 @@ function WorkspaceHotelsPage() {
 
  {/* ── ABA 6: EDITORIAL & DESTAQUES DE VENDA ── */}
  <TabsContent value="editorial" className="space-y-4 m-0">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="font-semibold text-foreground">Descrição Editorial do Hotel</Label>
  <Textarea
  value={formData.description}
  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
  placeholder="Escreva sobre a atmosfera, arquitetura, restaurantes e diferenciais para encantar o cliente na lâmina de proposta..."
- className="h-24 rounded-xl bg-background text-xs resize-none"
+ className="h-24 rounded-lg bg-background text-xs resize-none"
  />
  </div>
 
@@ -1971,9 +1971,9 @@ function WorkspaceHotelsPage() {
  <Label className="font-semibold text-foreground">
  Destaques em Bullets (Auto-preenchem a lâmina da proposta)
  </Label>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  {formData.bio_bullets.map((bullet, idx) => (
- <div key={idx} className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/40 text-xs border border-border/50">
+ <div key={idx} className="flex items-center gap-2 p-3 rounded-lg bg-muted/40 text-xs border border-border/50">
  <span className="flex-1 text-foreground font-medium">{bullet}</span>
  <button
  type="button"
@@ -2008,7 +2008,7 @@ function WorkspaceHotelsPage() {
  }
  }}
  placeholder="Adicionar bullet persuasivo (Ex: Piscinas naturais com bar molhado)..."
- className="h-11 sm:h-9 rounded-xl text-xs bg-background flex-1"
+ className="h-11 sm:h-9 rounded-lg text-xs bg-background flex-1"
  />
  <Button
  type="button"
@@ -2022,7 +2022,7 @@ function WorkspaceHotelsPage() {
  setNewBullet("");
  }
  }}
- className="h-11 sm:h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer shrink-0"
+ className="h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer shrink-0"
  >
  + Adicionar
  </Button>
@@ -2036,14 +2036,14 @@ function WorkspaceHotelsPage() {
  type="button"
  variant="outline"
  onClick={() => setIsSheetOpen(false)}
- className="h-11 sm:h-9 px-4 rounded-xl font-semibold cursor-pointer"
+ className="h-11 sm:h-9 px-4 rounded-lg font-semibold cursor-pointer"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={createMut.isPending || updateMut.isPending}
- className="rounded-xl font-bold bg-primary text-primary-foreground min-w-32"
+ className="rounded-lg font-bold bg-primary text-primary-foreground min-w-32"
  >
  {createMut.isPending || updateMut.isPending ? "Salvando..." : "Salvar Hotel no Banco"}
  </Button>

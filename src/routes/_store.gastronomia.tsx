@@ -92,14 +92,14 @@ export const Route = createFileRoute("/_store/gastronomia")({
 function GastronomiaErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <ForkKnife size={32} />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar gastronomia</h2>
       <p className="text-sm text-muted-foreground max-w-md mx-auto">
         {error?.message || "Não foi possível carregar os restaurantes e cardápios no momento."}
       </p>
-      <Button onClick={reset} className="rounded-xl font-bold">
+      <Button onClick={reset} className="rounded-lg font-bold">
         Tentar Novamente
       </Button>
     </div>
@@ -248,7 +248,7 @@ function GastronomiaVerticalPage() {
               description="Tente escolher outro tipo de culinária ou busque por restaurantes específicos."
             />
           ) : viewMode === "list" ? (
-            <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
+            <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-lg border-y sm:border border-border/60 bg-card overflow-hidden">
               {allProducts.map((product: any) => (
                 <GroceryProductCard key={product.id} product={product} viewMode="list" />
               ))}
@@ -265,9 +265,9 @@ function GastronomiaVerticalPage() {
 
       {/* ── BARRA FLUTUANTE DA SACOLA (3 TOQUES - APPLE HIG THUMB ZONE) ── */}
       {cartItemsCount > 0 && (
-        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 p-3 rounded-2xl bg-foreground text-background shadow-xs flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 border border-background/20">
-          <div className="flex items-center gap-2.5">
-            <div className="size-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 p-3 rounded-lg bg-foreground text-background shadow-xs flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 border border-background/20">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
               <ShoppingBag className="size-5" />
             </div>
             <div className="flex flex-col">
@@ -283,7 +283,7 @@ function GastronomiaVerticalPage() {
           <Button
             size="sm"
             onClick={() => setIsCartOpen(true)}
-            className="h-10 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1.5 shadow-xs cursor-pointer shrink-0"
+            className="h-10 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 shadow-xs cursor-pointer shrink-0"
           >
             <span>Ver Sacola</span>
             <ArrowRight className="size-3.5" />

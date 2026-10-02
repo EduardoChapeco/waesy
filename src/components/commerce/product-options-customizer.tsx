@@ -80,11 +80,11 @@ export function ProductOptionsCustomizer({
  return (
  <div
  key={group.id}
- className="p-4 rounded-2xl bg-card/60 space-y-3"
+ className="p-4 rounded-lg bg-card/60 space-y-3"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
- <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+ <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
  <span>{group.displayName}</span>
  {group.isRequired && (
  <span className="text-xs text-destructive font-bold">*</span>
@@ -114,7 +114,7 @@ export function ProductOptionsCustomizer({
  </div>
 
  {/* Valores / Adicionais */}
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  {group.values.map((val) => {
  const isChecked = selected.includes(val.id);
  const isSingle = group.selectionType === "single";
@@ -132,7 +132,7 @@ export function ProductOptionsCustomizer({
  group.maxSelections,
  )
  }
- className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between select-none cursor-pointer ${
+ className={`w-full p-3 rounded-lg border text-left transition-all flex items-center justify-between select-none cursor-pointer ${
  isChecked
  ? "bg-primary/10 border-primary text-foreground font-semibold"
  : "bg-card border-border/70 text-muted-foreground hover:border-border hover:bg-muted/30"

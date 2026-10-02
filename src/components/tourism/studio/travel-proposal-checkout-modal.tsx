@@ -148,10 +148,10 @@ export function TravelProposalCheckoutModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-card border border-border/80 shadow-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-card border border-border/80 shadow-2xl">
         <DialogHeader className="pb-3 border-b border-border/40">
           <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               <DialogTitle className="text-base sm:text-lg font-bold flex items-center gap-2">
                 <ShieldCheck className="size-5 text-primary" />
                 <span>Reserva e Condições de Pagamento</span>
@@ -169,8 +169,8 @@ export function TravelProposalCheckoutModal({
         {/* ── ETAPA 1: MANIFESTO DE PASSAGEIROS ── */}
         {step === "passengers" && (
           <div className="space-y-5 pt-2">
-            <div className="p-3.5 bg-primary/[0.03] border border-primary/15 rounded-2xl space-y-1">
-              <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <div className="p-4 bg-primary/[0.03] border border-primary/15 rounded-lg space-y-1">
+              <p className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Users className="size-4 text-primary" />
                 <span>Manifesto de Passageiros ({totalPassengers} viajante{totalPassengers > 1 ? "s" : ""})</span>
               </p>
@@ -180,9 +180,9 @@ export function TravelProposalCheckoutModal({
             </div>
 
             {/* Passageiro Principal (Titular da Reserva) */}
-            <div className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-3">
+            <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span className="text-xs font-bold text-foreground flex items-center gap-2">
                   <span className="size-2 rounded-full bg-primary" />
                   Passageiro 1 (Titular / Responsável)
                 </span>
@@ -198,7 +198,7 @@ export function TravelProposalCheckoutModal({
                     placeholder="Ex: Carlos Eduardo Silva"
                     value={leadName}
                     onChange={(e) => setLeadName(e.target.value)}
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1">
@@ -207,7 +207,7 @@ export function TravelProposalCheckoutModal({
                     value={leadCpf}
                     onChange={setLeadCpf}
                     placeholder="000.000.000-00"
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1">
@@ -216,7 +216,7 @@ export function TravelProposalCheckoutModal({
                     type="date"
                     value={leadBirthDate}
                     onChange={(e) => setLeadBirthDate(e.target.value)}
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1">
@@ -225,7 +225,7 @@ export function TravelProposalCheckoutModal({
                     value={leadPhone}
                     onChange={(val) => setLeadPhone(val || "")}
                     placeholder="(00) 00000-0000"
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-lg"
                   />
                 </div>
               </div>
@@ -238,11 +238,11 @@ export function TravelProposalCheckoutModal({
                   Acompanhantes do Pacote ({additionalPassengers.length})
                 </h4>
                 {additionalPassengers.map((passenger, idx) => (
-                  <div key={idx} className="p-3.5 rounded-2xl border border-border/40 bg-card space-y-2.5">
+                  <div key={idx} className="p-4 rounded-lg border border-border/40 bg-card space-y-3">
                     <span className="text-xs font-bold text-muted-foreground">
                       Passageiro {idx + 2}
                     </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="space-y-1 sm:col-span-2">
                         <Label className="text-[11px] text-muted-foreground">Nome Completo</Label>
                         <Input
@@ -285,7 +285,7 @@ export function TravelProposalCheckoutModal({
                   }
                   setStep("payment");
                 }}
-                className="rounded-xl text-xs font-bold gap-1.5 h-10 px-5"
+                className="rounded-lg text-xs font-bold gap-2 h-10 px-5"
               >
                 <span>Avançar para Condições de Pagamento</span>
                 <ArrowRight className="size-4" />
@@ -297,7 +297,7 @@ export function TravelProposalCheckoutModal({
         {/* ── ETAPA 2: MODALIDADES REAIS DE PAGAMENTO DA AGÊNCIA ── */}
         {step === "payment" && (
           <div className="space-y-5 pt-2">
-            <div className="p-3.5 bg-muted/40 border border-border/60 rounded-2xl flex items-center justify-between">
+            <div className="p-4 bg-muted/40 border border-border/60 rounded-lg flex items-center justify-between">
               <div>
                 <span className="text-[10px] text-muted-foreground uppercase font-bold block">Valor Total do Pacote</span>
                 <span className="text-xl font-black font-mono text-foreground">{formatMoney(totalCents)}</span>
@@ -310,12 +310,12 @@ export function TravelProposalCheckoutModal({
             {/* Modalidades Reais de Fechamento da Agência */}
             <div className="space-y-2">
               <Label className="text-xs font-bold">Selecione o Formato de Pagamento</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* 1. Financiamento Bancário */}
                 <button
                   type="button"
                   onClick={() => setSelectedMethod("financiamento_bancario")}
-                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                  className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
                     selectedMethod === "financiamento_bancario"
                       ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-xs"
                       : "border-border/60 hover:bg-muted/40"
@@ -334,7 +334,7 @@ export function TravelProposalCheckoutModal({
                 <button
                   type="button"
                   onClick={() => setSelectedMethod("cartao_operadora")}
-                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                  className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
                     selectedMethod === "cartao_operadora"
                       ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-xs"
                       : "border-border/60 hover:bg-muted/40"
@@ -353,7 +353,7 @@ export function TravelProposalCheckoutModal({
                 <button
                   type="button"
                   onClick={() => setSelectedMethod("pix")}
-                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                  className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
                     selectedMethod === "pix"
                       ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-xs"
                       : "border-border/60 hover:bg-muted/40"
@@ -377,7 +377,7 @@ export function TravelProposalCheckoutModal({
                 <button
                   type="button"
                   onClick={() => setSelectedMethod("faturado_agencia")}
-                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                  className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
                     selectedMethod === "faturado_agencia"
                       ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-xs"
                       : "border-border/60 hover:bg-muted/40"
@@ -396,13 +396,13 @@ export function TravelProposalCheckoutModal({
 
             {/* Detalhes Contextuais do Método Selecionado */}
             {selectedMethod === "financiamento_bancario" && (
-              <div className="p-4 rounded-2xl bg-primary/[0.03] border border-primary/20 space-y-3">
+              <div className="p-4 rounded-lg bg-primary/[0.03] border border-primary/20 space-y-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Prazo de Financiamento Desejado</Label>
                   <select
                     value={bankFinanceMonths}
                     onChange={(e) => setBankFinanceMonths(Number(e.target.value))}
-                    className="w-full h-9 px-3 rounded-xl border border-border/60 bg-background text-xs font-mono font-medium"
+                    className="w-full h-9 px-3 rounded-lg border border-border/60 bg-background text-xs font-mono font-medium"
                   >
                     <option value={10}>10x parcelas bancárias</option>
                     <option value={12}>12x parcelas bancárias</option>
@@ -418,13 +418,13 @@ export function TravelProposalCheckoutModal({
             )}
 
             {selectedMethod === "cartao_operadora" && (
-              <div className="p-4 rounded-2xl bg-muted/30 border border-border/60 space-y-3">
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Parcelamento no Cartão (Operadora)</Label>
                   <select
                     value={operatorInstallments}
                     onChange={(e) => setOperatorInstallments(Number(e.target.value))}
-                    className="w-full h-9 px-3 rounded-xl border border-border/60 bg-background text-xs font-mono font-medium"
+                    className="w-full h-9 px-3 rounded-lg border border-border/60 bg-background text-xs font-mono font-medium"
                   >
                     {Array.from({ length: 12 }).map((_, i) => {
                       const inst = i + 1;
@@ -444,12 +444,12 @@ export function TravelProposalCheckoutModal({
             )}
 
             {selectedMethod === "pix" && (
-              <div className="p-4 rounded-2xl bg-muted/30 border border-border/60 flex flex-col sm:flex-row items-center gap-4">
-                <div className="size-28 sm:size-32 bg-white p-2 rounded-xl border border-border/60 flex items-center justify-center shrink-0">
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/60 flex flex-col sm:flex-row items-center gap-4">
+                <div className="size-28 sm:size-32 bg-white p-2 rounded-lg border border-border/60 flex items-center justify-center shrink-0">
                   <QrCode className="size-full text-foreground" />
                 </div>
                 <div className="space-y-2 text-center sm:text-left min-w-0 flex-1">
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="text-xs font-semibold text-foreground">Valor no Pix com Desconto:</span>
                     <p className="text-2xl font-black text-foreground font-mono">
                       {formatMoney(pixFullCents)}
@@ -460,7 +460,7 @@ export function TravelProposalCheckoutModal({
                     size="sm"
                     variant="outline"
                     onClick={handleCopyPix}
-                    className="rounded-xl text-xs font-semibold gap-1.5 h-9 w-full sm:w-auto border-border/80 cursor-pointer"
+                    className="rounded-lg text-xs font-semibold gap-2 h-9 w-full sm:w-auto border-border/80 cursor-pointer"
                   >
                     {isCopiedPix ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
                     <span>{isCopiedPix ? "Copiado!" : "Copiar Código Pix"}</span>
@@ -470,7 +470,7 @@ export function TravelProposalCheckoutModal({
             )}
 
             {selectedMethod === "faturado_agencia" && (
-              <div className="p-4 rounded-2xl bg-muted/30 border border-border/60 space-y-2">
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-2">
                 <p className="text-xs font-bold text-foreground">Faturamento Corporativo</p>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   As faturas e boletos serão gerados pela agência com prazo acordado de 15 a 30 dias após emissão.
@@ -483,7 +483,7 @@ export function TravelProposalCheckoutModal({
                 type="button"
                 variant="ghost"
                 onClick={() => setStep("passengers")}
-                className="rounded-xl text-xs font-bold h-10 px-4 text-muted-foreground"
+                className="rounded-lg text-xs font-bold h-10 px-4 text-muted-foreground"
               >
                 Voltar aos Passageiros
               </Button>
@@ -491,7 +491,7 @@ export function TravelProposalCheckoutModal({
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleConfirmBooking}
-                className="rounded-xl text-xs font-bold gap-1.5 h-10 px-6"
+                className="rounded-lg text-xs font-bold gap-2 h-10 px-6"
               >
                 {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
                 <span>Confirmar Reserva</span>
@@ -536,7 +536,7 @@ export function TravelProposalCheckoutModal({
                   onClose();
                   navigate({ to: "/conta/viagens" });
                 }}
-                className="rounded-xl text-xs font-bold h-10 px-4 w-full sm:w-auto"
+                className="rounded-lg text-xs font-bold h-10 px-4 w-full sm:w-auto"
               >
                 Minhas Viagens
               </Button>
@@ -547,7 +547,7 @@ export function TravelProposalCheckoutModal({
                   onClose();
                   navigate({ to: "/viajante/carteira" });
                 }}
-                className="rounded-xl text-xs font-bold h-10 px-5 w-full sm:w-auto bg-primary text-primary-foreground"
+                className="rounded-lg text-xs font-bold h-10 px-5 w-full sm:w-auto bg-primary text-primary-foreground"
               >
                 <span>Abrir Carteira Digital</span>
                 <ArrowRight className="size-4 ml-1" />

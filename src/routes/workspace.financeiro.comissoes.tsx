@@ -218,7 +218,7 @@ function CommissionsPage() {
             onClick={handleExportCSV}
             variant="outline"
             size="sm"
-            className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+            className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
           >
             <FileSpreadsheet className="size-3.5 text-emerald-600" />
             <span>Exportar CSV</span>
@@ -228,8 +228,8 @@ function CommissionsPage() {
 
       {/* ── KPIS FINANCEIROS DE COMISSÕES ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
             Total Pago em Comissões
           </span>
@@ -241,8 +241,8 @@ function CommissionsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Clock className="size-3.5 text-amber-500" />
             Pendente a Quitar
           </span>
@@ -254,8 +254,8 @@ function CommissionsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="size-3.5 text-primary" />
             Média por Pedido
           </span>
@@ -267,8 +267,8 @@ function CommissionsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Users className="size-3.5 text-foreground" />
             Vendedores Ativos
           </span>
@@ -283,12 +283,12 @@ function CommissionsPage() {
 
       {/* ── ABAS CANÔNICAS ── */}
       <Tabs defaultValue="extrato" className="w-full space-y-4">
-        <TabsList className="bg-muted/60 p-1 rounded-2xl border border-border/60">
-          <TabsTrigger value="extrato" className="rounded-xl text-xs font-bold gap-2">
+        <TabsList className="bg-muted/60 p-1 rounded-lg border border-border/60">
+          <TabsTrigger value="extrato" className="rounded-lg text-xs font-bold gap-2">
             <DollarSign className="size-4" />
             <span>Extrato de Comissões ({commissions.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="equipe" className="rounded-xl text-xs font-bold gap-2">
+          <TabsTrigger value="equipe" className="rounded-lg text-xs font-bold gap-2">
             <Users className="size-4" />
             <span>Equipe, Regras & Quitação em Lote ({sellers.length})</span>
           </TabsTrigger>
@@ -296,22 +296,22 @@ function CommissionsPage() {
 
         {/* ── ABA 1: EXTRATO ── */}
         <TabsContent value="extrato" className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar por vendedor ou pedido..."
-                className="pl-10 h-10 rounded-xl text-xs bg-background"
+                className="pl-10 h-10 rounded-lg text-xs bg-background"
               />
             </div>
 
-            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60 self-start sm:self-auto">
+            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 self-start sm:self-auto">
               <button
                 type="button"
                 onClick={() => setStatusFilter("all")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                   statusFilter === "all"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -322,7 +322,7 @@ function CommissionsPage() {
               <button
                 type="button"
                 onClick={() => setStatusFilter("pending")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                   statusFilter === "pending"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -333,7 +333,7 @@ function CommissionsPage() {
               <button
                 type="button"
                 onClick={() => setStatusFilter("paid")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                   statusFilter === "paid"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -344,7 +344,7 @@ function CommissionsPage() {
               <button
                 type="button"
                 onClick={() => setStatusFilter("refunds")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                   statusFilter === "refunds"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -361,7 +361,7 @@ function CommissionsPage() {
               description="Nenhum lançamento corresponde aos filtros ou termos pesquisados."
             />
           ) : (
-            <div className="bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+            <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
               <Table>
                 <TableHeader>
                   <TableRow className="border-border/60 hover:bg-transparent">
@@ -423,7 +423,7 @@ function CommissionsPage() {
                             size="sm"
                             disabled={payingId === c.id}
                             onClick={() => handlePay(c.id, c.sellerName)}
-                            className="h-8 rounded-xl text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                            className="h-8 rounded-lg text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
                           >
                             <CheckCircle className="size-3.5 mr-1" />
                             {payingId === c.id ? "Quitando..." : "Pagar"}
@@ -440,7 +440,7 @@ function CommissionsPage() {
 
         {/* ── ABA 2: EQUIPE, REGRAS & QUITAÇÃO EM LOTE ── */}
         <TabsContent value="equipe" className="space-y-4">
-          <div className="bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+          <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
@@ -479,7 +479,7 @@ function CommissionsPage() {
                         </TableCell>
                         <TableCell>
                           {isEditing ? (
-                            <div className="flex items-center gap-1.5 max-w-[120px]">
+                            <div className="flex items-center gap-2 max-w-[120px]">
                               <Input
                                 type="number"
                                 step="0.5"
@@ -515,14 +515,14 @@ function CommissionsPage() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setEditingSellerId(null)}
-                                  className="h-8 rounded-xl text-xs font-bold"
+                                  className="h-8 rounded-lg text-xs font-bold"
                                 >
                                   Cancelar
                                 </Button>
                                 <Button
                                   size="sm"
                                   onClick={() => handleSaveRate(seller.id)}
-                                  className="h-8 rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+                                  className="h-8 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
                                 >
                                   Salvar
                                 </Button>
@@ -536,7 +536,7 @@ function CommissionsPage() {
                                     setEditingRate((seller.commission_rate ?? 5).toString());
                                     setEditingSellerId(seller.id);
                                   }}
-                                  className="min-h-[44px] px-3 rounded-xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+                                  className="min-h-11 px-3 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
                                 >
                                   <Edit2 className="size-3.5" />
                                   <span>Regra</span>
@@ -547,7 +547,7 @@ function CommissionsPage() {
                                     size="sm"
                                     disabled={payingSellerId === seller.id}
                                     onClick={() => handlePayAllForSeller(seller.id, seller.full_name)}
-                                    className="min-h-[44px] px-3 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer shadow-2xs"
+                                    className="min-h-11 px-3 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer shadow-2xs"
                                   >
                                     <CheckCircle2 className="size-3.5" />
                                     <span>

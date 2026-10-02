@@ -125,11 +125,11 @@ export function TravelQuoteModal({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-md sm:w-full sm:rounded-2xl p-0 overflow-hidden bg-card border-border">
+ <DialogContent className="sm:max-w-md sm:w-full sm:rounded-lg p-0 overflow-hidden bg-card border-border">
  {/* Header de Cotação de Viagem */}
  <div className="bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 text-white p-5 space-y-1 relative">
  <div className="flex items-center justify-between">
- <span className="text-[10px] font-mono font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur-md">
+ <span className="text-[10px] font-mono font-black uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full backdrop-blur-md">
  Cotação Especial de Viagem
  </span>
  <span className="text-xs font-mono font-bold opacity-80">
@@ -164,7 +164,7 @@ export function TravelQuoteModal({
  Nossos consultores de viagem parceiros receberam seus detalhes e entrarão em contato no WhatsApp com as melhores opções de voos e hotéis.
  </p>
  </div>
- <Button onClick={resetAll} className="rounded-xl font-bold text-xs h-10 px-6 bg-foreground text-background">
+ <Button onClick={resetAll} className="rounded-lg font-bold text-xs h-10 px-6 bg-foreground text-background">
  Concluir
  </Button>
  </div>
@@ -174,7 +174,7 @@ export function TravelQuoteModal({
  {step === 1 && (
  <div className="space-y-4">
  {/* Seletor de Origem */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Onde você vai pegar seu voo / embarque?</Label>
  <div className="relative">
  <Input
@@ -186,13 +186,13 @@ export function TravelQuoteModal({
  }}
  onFocus={() => setShowOriginSearch(true)}
  placeholder="Cidade ou Aeroporto de Origem..."
- className="h-11 rounded-xl bg-muted/40 border-border text-xs pl-9 font-medium"
+ className="h-11 rounded-lg bg-muted/40 border-border text-xs pl-9 font-medium"
  />
  <AirplaneTilt size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
  </div>
 
  {showOriginSearch && (
- <div className=" rounded-xl bg-card p-1.5 space-y-1 max-h-40 overflow-y-auto no-scrollbar">
+ <div className=" rounded-lg bg-card p-2 space-y-1 max-h-40 overflow-y-auto no-scrollbar">
  {filteredAirports.slice(0, 5).map((a) => (
  <button
  key={a.iata}
@@ -225,7 +225,7 @@ export function TravelQuoteModal({
  </div>
 
  {/* Seletor de Destino */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Para qual destino você quer ir?</Label>
  <div className="relative">
  <Input
@@ -237,13 +237,13 @@ export function TravelQuoteModal({
  }}
  onFocus={() => setShowDestSearch(true)}
  placeholder="Cidade ou Aeroporto de Destino..."
- className="h-11 rounded-xl bg-muted/40 border-border text-xs pl-9 font-medium"
+ className="h-11 rounded-lg bg-muted/40 border-border text-xs pl-9 font-medium"
  />
  <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
  </div>
 
  {showDestSearch && (
- <div className=" rounded-xl bg-card p-1.5 space-y-1 max-h-40 overflow-y-auto no-scrollbar">
+ <div className=" rounded-lg bg-card p-2 space-y-1 max-h-40 overflow-y-auto no-scrollbar">
  {filteredAirports.slice(0, 5).map((a) => (
  <button
  key={a.iata}
@@ -264,17 +264,17 @@ export function TravelQuoteModal({
  </div>
 
  {/* Buscas Recentes Rápidas */}
- <div className="pt-2 space-y-1.5">
+ <div className="pt-2 space-y-2">
  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
  Destinos Populares
  </span>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {["Natal - RN", "Maceió - AL", "Gramado - RS", "Porto Seguro - BA", "Orlando (MCO)", "Lisboa (LIS)"].map((d) => (
  <button
  key={d}
  type="button"
  onClick={() => setDestination(d)}
- className="px-2.5 py-1 rounded-lg bg-muted/60 hover:bg-muted text-[11px] font-semibold text-foreground transition-colors cursor-pointer"
+ className="px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-[11px] font-semibold text-foreground transition-colors cursor-pointer"
  >
  {d}
  </button>
@@ -288,29 +288,29 @@ export function TravelQuoteModal({
  {step === 2 && (
  <div className="space-y-4">
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Data de Ida</Label>
  <Input
  type="date"
  value={departureDate}
  onChange={(e) => setDepartureDate(e.target.value)}
- className="h-11 rounded-xl bg-muted/40 border-border text-xs font-medium"
+ className="h-11 rounded-lg bg-muted/40 border-border text-xs font-medium"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Data de Volta</Label>
  <Input
  type="date"
  value={returnDate}
  onChange={(e) => setReturnDate(e.target.value)}
- className="h-11 rounded-xl bg-muted/40 border-border text-xs font-medium"
+ className="h-11 rounded-lg bg-muted/40 border-border text-xs font-medium"
  />
  </div>
  </div>
 
  {/* Datas Flexíveis Toggle */}
- <label className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/30 cursor-pointer">
+ <label className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 cursor-pointer">
  <input
  type="checkbox"
  checked={flexibleDates}
@@ -329,12 +329,12 @@ export function TravelQuoteModal({
  {step === 3 && (
  <div className="space-y-4">
  {/* Quartos */}
- <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Quartos de Hotel</p>
  <p className="text-[11px] text-muted-foreground">Número de acomodações</p>
  </div>
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <Button
  size="icon"
  variant="outline"
@@ -358,12 +358,12 @@ export function TravelQuoteModal({
  </div>
 
  {/* Adultos */}
- <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Adultos</p>
  <p className="text-[11px] text-muted-foreground">18 anos ou mais</p>
  </div>
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <Button
  size="icon"
  variant="outline"
@@ -387,12 +387,12 @@ export function TravelQuoteModal({
  </div>
 
  {/* Crianças & Bebês */}
- <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Crianças e Bebês</p>
  <p className="text-[11px] text-muted-foreground">De 0 a 17 anos</p>
  </div>
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <Button
  size="icon"
  variant="outline"
@@ -417,7 +417,7 @@ export function TravelQuoteModal({
 
  {/* Seleção individual da idade de cada criança */}
  {childrenCount > 0 && (
- <div className="p-3 rounded-xl border border-primary/30 bg-primary/5 space-y-2.5">
+ <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
  <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">
  Idade de cada criança no momento da viagem:
  </span>
@@ -450,7 +450,7 @@ export function TravelQuoteModal({
  {step === 4 && (
  <div className="space-y-4">
  {/* Tipo de Viagem */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Tipo de Pacote Desejado</Label>
  <div className="grid grid-cols-2 gap-2">
  {[
@@ -464,7 +464,7 @@ export function TravelQuoteModal({
  key={t.id}
  type="button"
  onClick={() => setTripType(t.id as any)}
- className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+ className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
  tripType === t.id
  ? "bg-primary/10 border-primary text-primary font-bold "
  : "bg-muted/30 border-border text-muted-foreground hover:text-foreground"
@@ -478,32 +478,32 @@ export function TravelQuoteModal({
  </div>
 
  {/* Nome Completo */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Seu Nome Completo</Label>
  <Input
  value={contactName}
  onChange={(e) => setContactName(e.target.value)}
  placeholder="Ex: João da Silva"
- className="h-11 rounded-xl bg-muted/40 border-border text-xs font-medium"
+ className="h-11 rounded-lg bg-muted/40 border-border text-xs font-medium"
  />
  </div>
 
  {/* WhatsApp */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">WhatsApp para Receber as Propostas</Label>
  <div className="relative">
  <Input
  value={contactWhatsapp}
  onChange={(e) => setContactWhatsapp(e.target.value)}
  placeholder="(49) 99999-9999"
- className="h-11 rounded-xl bg-muted/40 border-border text-xs pl-9 font-medium font-mono"
+ className="h-11 rounded-lg bg-muted/40 border-border text-xs pl-9 font-medium font-mono"
  />
  <WhatsappLogo size={16} weight="bold" className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600" />
  </div>
  </div>
 
  {/* Disclaimer Transparente de Turismo & Agências */}
- <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-1 text-[11px] text-muted-foreground leading-relaxed">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1 text-[11px] text-muted-foreground leading-relaxed">
  <span className="font-bold text-foreground block">
  ℹ️ Transparência de Valores & Disponibilidade:
  </span>
@@ -521,7 +521,7 @@ export function TravelQuoteModal({
  type="button"
  variant="outline"
  onClick={() => setStep((step - 1) as any)}
- className="h-10 px-4 rounded-xl text-xs font-bold"
+ className="h-10 px-4 rounded-lg text-xs font-bold"
  >
  Voltar
  </Button>
@@ -533,7 +533,7 @@ export function TravelQuoteModal({
  <Button
  type="button"
  onClick={() => setStep((step + 1) as any)}
- className="h-10 px-6 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-1 "
+ className="h-10 px-6 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-1 "
  >
  <span>Continuar</span>
  <CaretRight size={14} weight="bold" />
@@ -543,7 +543,7 @@ export function TravelQuoteModal({
  type="button"
  disabled={isSubmitting}
  onClick={handleSubmit}
- className="h-10 px-6 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 flex-1"
+ className="h-10 px-6 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 flex-1"
  >
  <AirplaneTilt size={14} weight="bold" />
  <span>{isSubmitting ? "Enviando..." : "Solicitar Cotação Grátis"}</span>

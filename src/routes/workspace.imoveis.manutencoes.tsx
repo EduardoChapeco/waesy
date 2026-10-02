@@ -113,12 +113,12 @@ function PropertyMaintenanceDashboard() {
  <div className="flex items-center gap-2">
  <Button
  onClick={() => setIsNewModalOpen(true)}
- className="rounded-xl font-bold bg-primary text-primary-foreground text-xs gap-1.5"
+ className="rounded-lg font-bold bg-primary text-primary-foreground text-xs gap-2"
  >
  <Plus className="size-4" />
  <span>Novo Chamado</span>
  </Button>
- <Button asChild variant="outline" className="rounded-xl font-bold text-xs">
+ <Button asChild variant="outline" className="rounded-lg font-bold text-xs">
  <Link to="/workspace">Voltar</Link>
  </Button>
  </div>
@@ -126,7 +126,7 @@ function PropertyMaintenanceDashboard() {
 
  {/* Tabs & Search */}
  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
- <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 ">
+ <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 ">
  {[
  { id: "all", label: "Todos", count: requests.length },
  {
@@ -150,7 +150,7 @@ function PropertyMaintenanceDashboard() {
  <button
  key={tab.id}
  onClick={() => setStatusTab(tab.id)}
- className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+ className={`px-3 py-2 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-2 ${
  statusTab === tab.id
  ? "bg-foreground text-background "
  : "bg-card text-muted-foreground hover:text-foreground"
@@ -168,14 +168,14 @@ function PropertyMaintenanceDashboard() {
  placeholder="Buscar por chamado, imÃ³vel ou categoria..."
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
- className="pl-9 h-9 rounded-xl text-xs bg-card"
+ className="pl-9 h-9 rounded-lg text-xs bg-card"
  />
  </div>
  </div>
 
  {/* Grid de Chamados */}
  {filteredRequests.length === 0 ? (
- <div className="py-16 text-center rounded-2xl border border-border/60 bg-card space-y-2">
+ <div className="py-16 text-center rounded-lg border border-border/60 bg-card space-y-2">
  <Wrench className="size-10 text-muted-foreground/40 mx-auto" />
  <h3 className="text-base font-bold text-foreground">Nenhum chamado de manutenÃ§Ã£o</h3>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -187,7 +187,7 @@ function PropertyMaintenanceDashboard() {
  {filteredRequests.map((req) => (
  <div
  key={req.id}
- className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 flex flex-col justify-between hover:border-primary/40 transition-colors"
+ className="p-5 rounded-lg bg-card border border-border/60 space-y-4 flex flex-col justify-between hover:border-primary/40 transition-colors"
  >
  <div className="space-y-3">
  <div className="flex items-start justify-between gap-2">
@@ -196,7 +196,7 @@ function PropertyMaintenanceDashboard() {
  <Building className="size-3" />
  <span>{req.property_title}</span>
  </span>
- <h4 className="text-base font-black text-foreground mt-0.5">{req.title}</h4>
+ <h4 className="text-base font-black text-foreground mt-1">{req.title}</h4>
  </div>
 
  <Badge
@@ -214,7 +214,7 @@ function PropertyMaintenanceDashboard() {
  </Badge>
  </div>
 
- <p className="text-xs text-muted-foreground leading-relaxed bg-muted/30 p-2.5 rounded-xl border border-border/40">
+ <p className="text-xs text-muted-foreground leading-relaxed bg-muted/30 p-3 rounded-lg border border-border/40">
  {req.description}
  </p>
 
@@ -227,7 +227,7 @@ function PropertyMaintenanceDashboard() {
  href={photo}
  target="_blank"
  rel="noreferrer"
- className="size-14 rounded-xl overflow-hidden shrink-0 hover:opacity-80 transition-opacity border border-border/40"
+ className="size-14 rounded-lg overflow-hidden shrink-0 hover:opacity-80 transition-opacity border border-border/40"
  >
  <img src={photo} alt="Foto da avaria" className="size-full object-cover" />
  </a>
@@ -286,7 +286,7 @@ function PropertyMaintenanceDashboard() {
  setAdminNotes(req.admin_notes || "");
  setEstimatedCostCents(req.estimated_cost_cents || undefined);
  }}
- className="rounded-xl text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8"
  >
  Gerenciar Chamado
  </Button>
@@ -298,7 +298,7 @@ function PropertyMaintenanceDashboard() {
 
  {/* Modal: Gerenciar Chamado */}
  <Dialog open={!!editModalReq} onOpenChange={(open) => !open && setEditModalReq(null)}>
- <DialogContent className="sm:max-w-md sm:p-6 sm:rounded-2xl bg-card">
+ <DialogContent className="sm:max-w-md sm:p-6 sm:rounded-lg bg-card">
  <DialogHeader>
  <DialogTitle className="text-lg font-black">{editModalReq?.title}</DialogTitle>
  <DialogDescription className="text-xs">
@@ -307,23 +307,23 @@ function PropertyMaintenanceDashboard() {
  </DialogHeader>
 
  <div className="space-y-4 py-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">OrÃ§amento Estimado (R$)</Label>
  <CurrencyField
  value={estimatedCostCents}
  onChange={setEstimatedCostCents}
  placeholder="0,00"
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Notas do Gestor / Prestador de ServiÃ§o</Label>
  <Textarea
  value={adminNotes}
  onChange={(e) => setAdminNotes(e.target.value)}
  placeholder="Ex: Encanador agendado para terÃ§a-feira Ã s 14h. PeÃ§a de reposiÃ§Ã£o comprada."
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  rows={3}
  />
  </div>
@@ -334,14 +334,14 @@ function PropertyMaintenanceDashboard() {
  variant="outline"
  onClick={() => handleUpdateStatus("in_progress")}
  disabled={isProcessing}
- className="rounded-xl text-xs font-bold"
+ className="rounded-lg text-xs font-bold"
  >
  Marcar Em Andamento
  </Button>
  <Button
  onClick={() => handleUpdateStatus("resolved")}
  disabled={isProcessing}
- className="rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
+ className="rounded-lg font-bold bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
  >
  Concluir e Baixar Chamado
  </Button>

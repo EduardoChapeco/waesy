@@ -300,7 +300,7 @@ function PersonalFinancePage() {
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
-      <NativeMobileHeader title="Finanças" fallbackHref="/conta" mobileOnly rightActions={<Button size="sm" onClick={() => setIsNewEntryOpen(true)} className="rounded-xl h-8 px-2.5 text-xs font-semibold gap-1 bg-foreground text-background shrink-0"><Plus className="size-3.5" /><span>Lançar</span></Button>} />
+      <NativeMobileHeader title="Finanças" fallbackHref="/conta" mobileOnly rightActions={<Button size="sm" onClick={() => setIsNewEntryOpen(true)} className="rounded-lg h-8 px-3 text-xs font-semibold gap-1 bg-foreground text-background shrink-0"><Plus className="size-3.5" /><span>Lançar</span></Button>} />
       <div className="hidden sm:flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -311,7 +311,7 @@ function PersonalFinancePage() {
         <Button
           size="sm"
           onClick={() => setIsNewEntryOpen(true)}
-          className="rounded-xl h-8 px-3.5 text-xs font-semibold gap-1.5 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer"
+          className="rounded-lg h-8 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer"
         >
           <Plus className="size-3.5" />
           <span>Lançar</span>
@@ -319,12 +319,12 @@ function PersonalFinancePage() {
       </div>
 
         {/* Seletor de Período (Mês / Ano) */}
-        <div className="flex items-center justify-between bg-card border border-border/60 rounded-2xl p-2 sm:p-3 shadow-xs">
+        <div className="flex items-center justify-between bg-card border border-border/60 rounded-lg p-2 sm:p-3 shadow-xs">
           <button
             type="button"
             onClick={handlePrevMonth}
             disabled={isLoadingPeriod}
-            className="h-10 w-10 inline-flex items-center justify-center rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            className="h-10 w-10 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
             aria-label="Mês Anterior"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -341,7 +341,7 @@ function PersonalFinancePage() {
             type="button"
             onClick={handleNextMonth}
             disabled={isLoadingPeriod}
-            className="h-10 w-10 inline-flex items-center justify-center rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            className="h-10 w-10 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
             aria-label="Próximo Mês"
           >
             <ChevronRight className="h-5 w-5" />
@@ -351,7 +351,7 @@ function PersonalFinancePage() {
         {/* Cards de Métricas Principais (Apple HIG) */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {/* Saldo Líquido */}
-          <div className="bg-card border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs uppercase tracking-wider font-semibold">
                 Saldo
@@ -376,7 +376,7 @@ function PersonalFinancePage() {
           </div>
 
           {/* Total de Receitas */}
-          <div className="bg-card border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs uppercase tracking-wider font-semibold">Receitas</span>
               <div className="h-6 w-6 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
@@ -390,7 +390,7 @@ function PersonalFinancePage() {
           </div>
 
           {/* Total de Despesas */}
-          <div className="bg-card border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs uppercase tracking-wider font-semibold">Despesas</span>
               <div className="h-6 w-6 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
@@ -405,10 +405,10 @@ function PersonalFinancePage() {
         </div>
 
         {/* Card de Governança Militar: Carteira de Tokens & Fidelidade */}
-        <div className="bg-card border border-border/70 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+        <div className="bg-card border border-border/70 rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/50">
-            <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                 <Coins className="h-5 w-5" />
               </div>
               <div>
@@ -416,7 +416,7 @@ function PersonalFinancePage() {
                   <h2 className="text-sm font-semibold tracking-tight text-foreground">
                     Tokens e Fidelidade
                   </h2>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                     <Shield className="h-2.5 w-2.5" /> Protegido
                   </span>
                 </div>
@@ -430,7 +430,7 @@ function PersonalFinancePage() {
               asChild
               variant="outline"
               size="sm"
-              className="rounded-xl text-xs font-semibold h-8 gap-1.5 self-start sm:self-auto border-border/80"
+              className="rounded-lg text-xs font-semibold h-8 gap-2 self-start sm:self-auto border-border/80"
             >
               <Link to="/conta/tokens">
                 <span>Extrato</span>
@@ -440,7 +440,7 @@ function PersonalFinancePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-3.5 rounded-xl bg-muted/30 border border-border/40 space-y-1">
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
                 Saldo Disponível
               </span>
@@ -453,7 +453,7 @@ function PersonalFinancePage() {
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-muted/30 border border-border/40 space-y-1">
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
                 Tokens em Liberação
               </span>
@@ -467,7 +467,7 @@ function PersonalFinancePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground bg-muted/20 px-3 py-2 rounded-xl border border-border/30">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground bg-muted/20 px-3 py-2 rounded-lg border border-border/30">
             <Lock className="h-3.5 w-3.5 shrink-0 text-primary" />
             <span>
               <strong>Proteção da Carteira:</strong> Seus tokens são vinculados ao seu CPF com rastreabilidade e proteção.
@@ -477,7 +477,7 @@ function PersonalFinancePage() {
 
         {/* Distribuição por Categoria (se houver despesas) */}
         {summary.byCategory.length > 0 && (
-          <div className="bg-card border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold tracking-tight text-foreground">
                 Distribuição
@@ -487,7 +487,7 @@ function PersonalFinancePage() {
               </span>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {summary.byCategory.slice(0, 5).map((cat) => (
                 <div key={cat.categoryId || cat.name} className="space-y-1">
                   <div className="flex items-center justify-between text-xs sm:text-sm">
@@ -521,13 +521,13 @@ function PersonalFinancePage() {
         )}
 
         {/* Barra de Filtros Rápidos & Busca */}
-        <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
-          <div className="inline-flex bg-muted/60 p-1 rounded-xl border border-border/40 self-start overflow-x-auto no-scrollbar max-w-full">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+          <div className="inline-flex bg-muted/60 p-1 rounded-lg border border-border/40 self-start overflow-x-auto no-scrollbar max-w-full">
             <button
               type="button"
               onClick={() => setActiveTab("all")}
               className={cn(
-                "h-9 px-3.5 rounded-lg text-xs font-medium transition-all",
+                "h-9 px-4 rounded-lg text-xs font-medium transition-all",
                 activeTab === "all"
                   ? "bg-card text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -539,7 +539,7 @@ function PersonalFinancePage() {
               type="button"
               onClick={() => setActiveTab("expense")}
               className={cn(
-                "h-9 px-3.5 rounded-lg text-xs font-medium transition-all",
+                "h-9 px-4 rounded-lg text-xs font-medium transition-all",
                 activeTab === "expense"
                   ? "bg-card text-rose-600 dark:text-rose-400 shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -551,7 +551,7 @@ function PersonalFinancePage() {
               type="button"
               onClick={() => setActiveTab("income")}
               className={cn(
-                "h-9 px-3.5 rounded-lg text-xs font-medium transition-all",
+                "h-9 px-4 rounded-lg text-xs font-medium transition-all",
                 activeTab === "income"
                   ? "bg-card text-emerald-600 dark:text-emerald-400 shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -567,7 +567,7 @@ function PersonalFinancePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar lançamento..."
-              className="h-10 pl-9 rounded-xl text-xs sm:text-sm bg-card border-border/60"
+              className="h-10 pl-9 rounded-lg text-xs sm:text-sm bg-card border-border/60"
             />
           </div>
         </div>
@@ -575,8 +575,8 @@ function PersonalFinancePage() {
         {/* Timeline de Lançamentos Agrupados */}
         <div className="space-y-4">
           {filteredEntries.length === 0 ? (
-            <div className="bg-card border border-border/60 rounded-2xl p-8 sm:p-12 text-center space-y-3 shadow-xs">
-              <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+            <div className="bg-card border border-border/60 rounded-lg p-8 sm:p-12 text-center space-y-3 shadow-xs">
+              <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
                 <Receipt className="h-6 w-6" />
               </div>
               <h3 className="font-semibold text-base text-foreground">
@@ -589,7 +589,7 @@ function PersonalFinancePage() {
               <Button
                 onClick={() => setIsNewEntryOpen(true)}
                 variant="outline"
-                className="h-11 px-5 rounded-xl border-border/80 hover:bg-muted font-medium"
+                className="h-11 px-5 rounded-lg border-border/80 hover:bg-muted font-medium"
               >
                 Adicionar Lançamento
               </Button>
@@ -605,7 +605,7 @@ function PersonalFinancePage() {
                     {formattedDate}
                   </div>
 
-                  <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-xs divide-y divide-border/40">
+                  <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs divide-y divide-border/40">
                     {dayEntries.map((entry) => {
                       const isExpense = entry.type === "expense";
                       const catColor = entry.category?.color || (isExpense ? "#f43f5e" : "#10b981");
@@ -613,12 +613,12 @@ function PersonalFinancePage() {
                       return (
                         <div
                           key={entry.id}
-                          className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-muted/30 transition-colors"
+                          className="flex items-center justify-between p-4 sm:p-4 hover:bg-muted/30 transition-colors"
                         >
                           {/* Esquerda: Ícone & Detalhes */}
                           <div className="flex items-center gap-3 min-w-0 pr-2">
                             <div
-                              className="h-10 w-10 shrink-0 rounded-xl flex items-center justify-center text-white shadow-2xs"
+                              className="h-10 w-10 shrink-0 rounded-lg flex items-center justify-center text-white shadow-2xs"
                               style={{ backgroundColor: catColor }}
                             >
                               {getCategoryIcon(entry.category?.icon || "Receipt")}
@@ -628,7 +628,7 @@ function PersonalFinancePage() {
                               <div className="font-medium text-sm text-foreground truncate">
                                 {entry.description}
                               </div>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                                 <span>{entry.category?.name || (isExpense ? "Despesa" : "Receita")}</span>
                                 <span>•</span>
                                 <span className="capitalize">{entry.paymentMethod}</span>
@@ -692,7 +692,7 @@ function PersonalFinancePage() {
       {isNewEntryOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
           <div
-            className="bg-card border border-border/80 w-full sm:max-w-lg rounded-t-[28px] sm:rounded-2xl p-5 sm:p-6 shadow-xs max-h-[90vh] overflow-y-auto space-y-5"
+            className="bg-card border border-border/80 w-full sm:max-w-lg rounded-t-[28px] sm:rounded-lg p-5 sm:p-6 shadow-xs max-h-[90vh] overflow-y-auto space-y-5"
             role="dialog"
             aria-modal="true"
           >
@@ -702,7 +702,7 @@ function PersonalFinancePage() {
               <button
                 type="button"
                 onClick={() => setIsNewEntryOpen(false)}
-                className="h-9 w-9 inline-flex items-center justify-center rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                className="h-9 w-9 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -710,7 +710,7 @@ function PersonalFinancePage() {
 
             <form onSubmit={handleCreateEntry} className="space-y-4">
               {/* Toggle Tipo: Despesa / Receita */}
-              <div className="grid grid-cols-2 gap-2 bg-muted/60 p-1 rounded-xl border border-border/40">
+              <div className="grid grid-cols-2 gap-2 bg-muted/60 p-1 rounded-lg border border-border/40">
                 <button
                   type="button"
                   onClick={() => setEntryType("expense")}
@@ -740,7 +740,7 @@ function PersonalFinancePage() {
               </div>
 
               {/* Valor Monetário */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Valor (R$)
                 </label>
@@ -756,13 +756,13 @@ function PersonalFinancePage() {
                     onChange={(e) => setAmountStr(e.target.value)}
                     required
                     autoFocus
-                    className="h-12 pl-11 text-xl font-bold rounded-xl bg-card border-border/80"
+                    className="h-12 pl-11 text-xl font-bold rounded-lg bg-card border-border/80"
                   />
                 </div>
               </div>
 
               {/* Descrição */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Descrição
                 </label>
@@ -772,16 +772,16 @@ function PersonalFinancePage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   required
-                  className="h-11 rounded-xl bg-card border-border/80"
+                  className="h-11 rounded-lg bg-card border-border/80"
                 />
               </div>
 
               {/* Categoria */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Categoria
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-1 border border-border/40 rounded-xl bg-muted/30">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-1 border border-border/40 rounded-lg bg-muted/30">
                   {availableCategories.map((cat: any) => (
                     <button
                       key={cat.id}
@@ -806,7 +806,7 @@ function PersonalFinancePage() {
 
               {/* Data & Método de Pagamento */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Data
                   </label>
@@ -815,18 +815,18 @@ function PersonalFinancePage() {
                     value={entryDate}
                     onChange={(e) => setEntryDate(e.target.value)}
                     required
-                    className="h-11 rounded-xl bg-card border-border/80"
+                    className="h-11 rounded-lg bg-card border-border/80"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Forma de Pagamento
                   </label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value as any)}
-                    className="w-full h-11 px-3 rounded-xl bg-card border border-border/80 text-sm font-medium text-foreground"
+                    className="w-full h-11 px-3 rounded-lg bg-card border border-border/80 text-sm font-medium text-foreground"
                   >
                     <option value="pix">Pix</option>
                     <option value="credit_card">Cartão de Crédito</option>
@@ -840,7 +840,7 @@ function PersonalFinancePage() {
               </div>
 
               {/* Comprovante / Foto do Recibo */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Foto do Comprovante
@@ -869,7 +869,7 @@ function PersonalFinancePage() {
                           setIsAnalyzingOcr(false);
                         }
                       }}
-                      className="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-2 h-7 px-3 rounded-lg text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isAnalyzingOcr ? (
                         <><Activity className="h-3 w-3 animate-pulse" /> Analisando...</>
@@ -889,8 +889,8 @@ function PersonalFinancePage() {
                 />
                 {/* Resultado do OCR */}
                 {ocrResult && (
-                  <div className="mt-2 p-3 rounded-xl bg-emerald-500/8 border border-emerald-500/20 space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                  <div className="mt-2 p-3 rounded-lg bg-emerald-500/8 border border-emerald-500/20 space-y-1">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                       <Activity className="h-3 w-3" />
                       OCR Concluído — {ocrResult.confidence === "high" ? "Alta confiança" : ocrResult.confidence === "medium" ? "Média confiança" : "Baixa confiança — revise"}
                     </div>
@@ -917,7 +917,7 @@ function PersonalFinancePage() {
               </div>
 
               {/* Observações */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Notas / Observações (Opcional)
                 </label>
@@ -926,7 +926,7 @@ function PersonalFinancePage() {
                   placeholder="Detalhes adicionais..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="h-11 rounded-xl bg-card border-border/80"
+                  className="h-11 rounded-lg bg-card border-border/80"
                 />
               </div>
 
@@ -936,14 +936,14 @@ function PersonalFinancePage() {
                   type="button"
                   variant="outline"
                   onClick={() => setIsNewEntryOpen(false)}
-                  className="h-11 px-5 rounded-xl border-border/80"
+                  className="h-11 px-5 rounded-lg border-border/80"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="h-11 px-6 rounded-xl bg-primary text-primary-foreground font-semibold shadow-sm hover:opacity-90"
+                  className="h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold shadow-sm hover:opacity-90"
                 >
                   {isSubmitting ? "Salvando..." : "Salvar Lançamento"}
                 </Button>
@@ -960,7 +960,7 @@ function PersonalFinancePage() {
           onClick={() => setViewingReceiptUrl(null)}
         >
           <div
-            className="relative max-w-2xl w-full bg-card rounded-2xl overflow-hidden shadow-xs p-2"
+            className="relative max-w-2xl w-full bg-card rounded-lg overflow-hidden shadow-xs p-2"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-2 border-b border-border/40">
@@ -977,7 +977,7 @@ function PersonalFinancePage() {
               <img
                 src={viewingReceiptUrl}
                 alt="Comprovante de pagamento"
-                className="max-h-[70vh] w-auto object-contain rounded-xl"
+                className="max-h-[70vh] w-auto object-contain rounded-lg"
               />
             </div>
           </div>

@@ -43,7 +43,7 @@ describe("Cross-Module CRM, Contracts & Silent Design Integrations (Big Tech Cou
     // Mobile WhatsApp List
     expect(content).toContain("BIFURCAÇÃO MOBILE: WhatsApp List Edge-to-Edge");
     expect(content).toContain("block sm:hidden divide-y divide-border/40");
-    expect(content).toContain("min-h-[44px]");
+    expect(content).toContain("min-h-11");
 
     // Desktop Corporate Table
     expect(content).toContain("BIFURCAÇÃO DESKTOP: Tabela Corporativa Densa");
@@ -72,6 +72,6 @@ describe("Cross-Module CRM, Contracts & Silent Design Integrations (Big Tech Cou
     const candidaturasPath = path.resolve(__dirname, "../routes/_store.conta.candidaturas.tsx");
     const candidaturasContent = fs.readFileSync(candidaturasPath, "utf8");
     expect(candidaturasContent).not.toContain("bg-amber-600 hover:bg-amber-700");
-    expect(candidaturasContent).toContain("min-h-[44px]");
+    expect(candidaturasContent).toContain("min-h-11");
   });
 });

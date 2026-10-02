@@ -53,7 +53,7 @@ export function ClassifiedForm({ defaultValues, onSubmit, isSubmitting }: Classi
  });
 
  return (
- <div className="bg-background rounded-xl p-6 md:p-8">
+ <div className="bg-background rounded-lg p-6 md:p-8">
  <Form {...form}>
  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
  {/* Informações Principais */}
@@ -208,7 +208,7 @@ export function ClassifiedForm({ defaultValues, onSubmit, isSubmitting }: Classi
  control={form.control}
  name="negotiable"
  render={({ field }) => (
- <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-xl p-4 bg-muted/50 ">
+ <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg p-4 bg-muted/50 ">
  <FormControl>
  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
  </FormControl>

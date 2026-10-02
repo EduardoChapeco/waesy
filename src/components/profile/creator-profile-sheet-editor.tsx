@@ -218,7 +218,7 @@ export function CreatorProfileSheetEditor({
         onOpenChange={onOpenChange}
         size="lg"
         title={
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <Star className="size-5 text-primary" />
             <span>
               {isNew ? "Ativar Perfil de Criador & Marca" : `Editar Perfil de Criador`}
@@ -232,13 +232,13 @@ export function CreatorProfileSheetEditor({
         }
         description="Defina sua identidade visual, nicho de atuação e canais para curar vitrines e monetizar."
         footer={
-          <div className="flex items-center justify-end gap-2.5 w-full">
+          <div className="flex items-center justify-end gap-3 w-full">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isSaving}
-              className="h-10 px-4 rounded-xl text-xs"
+              className="h-10 px-4 rounded-lg text-xs"
             >
               Cancelar
             </Button>
@@ -246,7 +246,7 @@ export function CreatorProfileSheetEditor({
               type="button"
               onClick={() => handleSubmit()}
               disabled={isSaving || isUploadingMedia}
-              className="h-10 px-5 rounded-xl text-xs font-semibold gap-1.5"
+              className="h-10 px-5 rounded-lg text-xs font-semibold gap-2"
             >
               {isSaving ? (
                 <>
@@ -265,24 +265,24 @@ export function CreatorProfileSheetEditor({
       >
         <div className="p-4 sm:p-6 space-y-6">
           <Tabs defaultValue="dados" className="space-y-6">
-            <TabsList className="bg-muted/30 p-1 rounded-xl h-11 flex gap-1 w-full sm:w-auto">
+            <TabsList className="bg-muted/30 p-1 rounded-lg h-11 flex gap-1 w-full sm:w-auto">
               <TabsTrigger
                 value="dados"
-                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-1.5"
+                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2"
               >
                 <User className="size-3.5" />
                 <span>Identidade e Visual</span>
               </TabsTrigger>
               <TabsTrigger
                 value="redes"
-                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-1.5"
+                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2"
               >
                 <Share2 className="size-3.5" />
                 <span>Redes e Canais</span>
               </TabsTrigger>
               <TabsTrigger
                 value="avancado"
-                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-1.5"
+                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2"
               >
                 <SlidersHorizontal className="size-3.5" />
                 <span>Opções Avançadas</span>
@@ -292,8 +292,8 @@ export function CreatorProfileSheetEditor({
             {/* ─── TAB 1: IDENTIDADE & VISUAL ─── */}
             <TabsContent value="dados" className="space-y-5 mt-0">
               {/* Card 1: Fotos com Ferramenta de Recorte e Zoom (Padrão _store.conta.perfil.tsx) */}
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <Camera className="size-4 text-primary shrink-0" />
                   <span>1. Fotos de Identidade Visual da Marca</span>
                 </div>
@@ -303,7 +303,7 @@ export function CreatorProfileSheetEditor({
                   <Label className="text-xs font-semibold text-foreground">
                     Foto de Capa Panorâmica da Marca (Panorâmica 16:9 / 3:1)
                   </Label>
-                  <div className="w-full h-28 sm:h-36 rounded-2xl bg-muted/30 overflow-hidden flex items-center justify-center border border-border/40 relative group">
+                  <div className="w-full h-28 sm:h-36 rounded-lg bg-muted/30 overflow-hidden flex items-center justify-center border border-border/40 relative group">
                     {coverUrl ? (
                       <img
                         src={coverUrl}
@@ -312,7 +312,7 @@ export function CreatorProfileSheetEditor({
                       />
                     ) : (
                       <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground flex items-center gap-2">
                           <ImageIcon className="size-4 opacity-50" />
                           Nenhuma capa adicionada (Formato Panorâmico)
                         </span>
@@ -331,7 +331,7 @@ export function CreatorProfileSheetEditor({
                       type="button"
                       size="sm"
                       variant="secondary"
-                      className="absolute right-3 bottom-3 z-10 shrink-0 rounded-xl text-xs font-bold gap-1.5 bg-background/90 backdrop-blur-sm shadow-sm hover:bg-background"
+                      className="absolute right-3 bottom-3 z-10 shrink-0 rounded-lg text-xs font-bold gap-2 bg-background/90 backdrop-blur-sm shadow-sm hover:bg-background"
                       onClick={() => coverInputRef.current?.click()}
                       disabled={isUploadingMedia}
                     >
@@ -344,7 +344,7 @@ export function CreatorProfileSheetEditor({
                 {/* Avatar Circular / Foto da Marca */}
                 <div className="flex items-center gap-4 pt-2 border-t border-border/40">
                   <div className="relative">
-                    <div className="size-20 rounded-2xl overflow-hidden bg-muted flex items-center justify-center border border-border/50">
+                    <div className="size-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border/50">
                       {avatarUrl ? (
                         <img src={avatarUrl} alt="Avatar" className="size-full object-cover" />
                       ) : (
@@ -360,7 +360,7 @@ export function CreatorProfileSheetEditor({
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold text-foreground">
                       Foto ou Logo da Marca (1:1 Quadrado)
                     </Label>
@@ -369,7 +369,7 @@ export function CreatorProfileSheetEditor({
                         type="button"
                         size="sm"
                         variant="outline"
-                        className="rounded-xl text-xs font-bold gap-1.5 border-border h-9"
+                        className="rounded-lg text-xs font-bold gap-2 border-border h-9"
                         onClick={() => avatarInputRef.current?.click()}
                         disabled={isUploadingMedia}
                       >
@@ -382,14 +382,14 @@ export function CreatorProfileSheetEditor({
               </div>
 
               {/* Card 2: Dados Básicos & Nicho Estruturado */}
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <User className="size-4 text-primary shrink-0" />
                   <span>2. Identificação e Segmento</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium">Identificador Único (@handle) *</Label>
                     <div className="relative">
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-muted-foreground">
@@ -401,27 +401,27 @@ export function CreatorProfileSheetEditor({
                           setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))
                         }
                         placeholder="seu_nome_ou_marca"
-                        className="h-11 pl-8 rounded-xl text-xs font-mono"
+                        className="h-11 pl-8 rounded-lg text-xs font-mono"
                         required
                         disabled={!isNew && !!initialData?.handle}
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium">Nome Artístico / Marca Pública *</Label>
                     <Input
                       value={stageName}
                       onChange={(e) => setStageName(e.target.value)}
                       placeholder="Como você é reconhecido pelo público"
-                      className="h-11 rounded-xl text-xs"
+                      className="h-11 rounded-lg text-xs"
                       required
                     />
                   </div>
                 </div>
 
                 {/* Nicho / Categoria via SELECT CANÔNICO */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-medium">
                     Nicho Principal de Atuação (Selecione no catálogo) *
                   </Label>
@@ -435,7 +435,7 @@ export function CreatorProfileSheetEditor({
                 </div>
 
                 {/* Biografia Comercial */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-medium">Mini Biografia Comercial</Label>
                   <Textarea
                     value={bio}
@@ -443,7 +443,7 @@ export function CreatorProfileSheetEditor({
                     placeholder="Conte resumidamente seu foco, proposta de valor ou estilo de conteúdo..."
                     rows={3}
                     maxLength={500}
-                    className="rounded-xl text-xs resize-none"
+                    className="rounded-lg text-xs resize-none"
                   />
                   <div className="text-right text-[10px] text-muted-foreground">
                     {bio.length}/500 caracteres
@@ -454,15 +454,15 @@ export function CreatorProfileSheetEditor({
 
             {/* ─── TAB 2: REDES SOCIAIS & CANAIS ─── */}
             <TabsContent value="redes" className="space-y-5 mt-0">
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <Share2 className="size-4 text-primary shrink-0" />
                   <span>Canais Sociais e Pontos de Contato</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium flex items-center gap-1.5">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium flex items-center gap-2">
                       <Instagram className="size-3.5 text-pink-500" />
                       <span>Instagram</span>
                     </Label>
@@ -470,12 +470,12 @@ export function CreatorProfileSheetEditor({
                       value={instagram}
                       onChange={(e) => setInstagram(e.target.value)}
                       placeholder="@seu_perfil"
-                      className="h-11 rounded-xl text-xs"
+                      className="h-11 rounded-lg text-xs"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium flex items-center gap-1.5">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium flex items-center gap-2">
                       <span className="font-bold text-xs">🎵</span>
                       <span>TikTok</span>
                     </Label>
@@ -483,12 +483,12 @@ export function CreatorProfileSheetEditor({
                       value={tiktok}
                       onChange={(e) => setTiktok(e.target.value)}
                       placeholder="@seu_tiktok"
-                      className="h-11 rounded-xl text-xs"
+                      className="h-11 rounded-lg text-xs"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium flex items-center gap-1.5">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium flex items-center gap-2">
                       <span className="text-red-500 font-bold text-xs">▶</span>
                       <span>YouTube</span>
                     </Label>
@@ -496,12 +496,12 @@ export function CreatorProfileSheetEditor({
                       value={youtube}
                       onChange={(e) => setYoutube(e.target.value)}
                       placeholder="Canal ou link completo"
-                      className="h-11 rounded-xl text-xs"
+                      className="h-11 rounded-lg text-xs"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium flex items-center gap-1.5">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium flex items-center gap-2">
                       <span className="text-emerald-500 font-bold text-xs">💬</span>
                       <span>WhatsApp Comercial</span>
                     </Label>
@@ -509,13 +509,13 @@ export function CreatorProfileSheetEditor({
                       value={whatsapp}
                       onChange={(e) => setWhatsapp(e.target.value)}
                       placeholder="(DDD) 99999-9999"
-                      className="h-11 rounded-xl text-xs"
+                      className="h-11 rounded-lg text-xs"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5 pt-1">
-                  <Label className="text-xs font-medium flex items-center gap-1.5">
+                <div className="space-y-2 pt-1">
+                  <Label className="text-xs font-medium flex items-center gap-2">
                     <Globe className="size-3.5 text-primary" />
                     <span>Website / Blog / Link Externo</span>
                   </Label>
@@ -523,7 +523,7 @@ export function CreatorProfileSheetEditor({
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
                     placeholder="https://seusite.com.br"
-                    className="h-11 rounded-xl text-xs font-mono"
+                    className="h-11 rounded-lg text-xs font-mono"
                   />
                 </div>
               </div>
@@ -531,15 +531,15 @@ export function CreatorProfileSheetEditor({
 
             {/* ─── TAB 3: OPÇÕES AVANÇADAS ─── */}
             <TabsContent value="avancado" className="space-y-5 mt-0">
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <ShieldCheck className="size-4 text-primary shrink-0" />
                   <span>Governança e Privacidade da Vitrine</span>
                 </div>
 
-                <div className="p-4 rounded-xl border border-border/40 bg-muted/10 space-y-3">
+                <div className="p-4 rounded-lg border border-border/40 bg-muted/10 space-y-3">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <h4 className="text-xs font-bold text-foreground">
                         Visibilidade da Vitrine
                       </h4>
@@ -548,13 +548,13 @@ export function CreatorProfileSheetEditor({
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg text-xs font-medium">
+                    <div className="flex items-center gap-1 bg-muted p-1 rounded-lg text-xs font-medium">
                       <Button
                         type="button"
                         size="sm"
                         variant={privacyMode === "public" ? "default" : "ghost"}
                         onClick={() => setPrivacyMode("public")}
-                        className="h-8 px-2.5 rounded-md text-xs"
+                        className="h-8 px-3 rounded-md text-xs"
                       >
                         Pública
                       </Button>
@@ -563,7 +563,7 @@ export function CreatorProfileSheetEditor({
                         size="sm"
                         variant={privacyMode === "unlisted" ? "default" : "ghost"}
                         onClick={() => setPrivacyMode("unlisted")}
-                        className="h-8 px-2.5 rounded-md text-xs"
+                        className="h-8 px-3 rounded-md text-xs"
                       >
                         Não Listada
                       </Button>
@@ -571,7 +571,7 @@ export function CreatorProfileSheetEditor({
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl border border-border/40 bg-muted/10 space-y-2">
+                <div className="p-4 rounded-lg border border-border/40 bg-muted/10 space-y-2">
                   <h4 className="text-xs font-bold text-foreground">
                     Monetização e Comissões
                   </h4>

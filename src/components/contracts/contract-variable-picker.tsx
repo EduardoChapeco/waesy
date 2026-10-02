@@ -81,17 +81,17 @@ export function ContractVariablePicker({
   };
 
   return (
-    <div className={cn("p-4 rounded-2xl bg-card border border-border/70 shadow-xs space-y-3.5", className)}>
+    <div className={cn("p-4 rounded-lg bg-card border border-border/70 shadow-xs space-y-4", className)}>
       {/* Cabeçalho da Barra — Comercial & Direto */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <Star className="size-4.5" />
           </div>
           <div>
             <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
               Campos Automáticos
-              <Badge variant="outline" className="text-xs font-semibold py-0.5 px-2 bg-muted/40">
+              <Badge variant="outline" className="text-xs font-semibold py-1 px-2 bg-muted/40">
                 Preenchimento Inteligente
               </Badge>
             </h4>
@@ -108,14 +108,14 @@ export function ContractVariablePicker({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar dado (ex: placa, valor)..."
-            className="h-9.5 pl-9 text-xs sm:text-sm rounded-xl bg-background border-border/70"
+            className="h-9.5 pl-9 text-xs sm:text-sm rounded-lg bg-background border-border/70"
           />
         </div>
       </div>
 
       {/* Abas dos Nichos (Scroll Horizontal Ergonômico) */}
       {!searchTerm.trim() && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
           {CONTRACT_SEMANTIC_GROUPS.map((group) => {
             const isActive = group.id === activeNiche;
             const colors = NICHE_COLORS[group.id] || NICHE_COLORS.geral;
@@ -126,7 +126,7 @@ export function ContractVariablePicker({
                 type="button"
                 onClick={() => setActiveNiche(group.id)}
                 className={cn(
-                  "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer border",
+                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer border",
                   isActive
                     ? cn("shadow-xs ring-1 ring-primary/20", colors.bg, colors.text, colors.border)
                     : "bg-muted/40 text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/70"
@@ -160,7 +160,7 @@ export function ContractVariablePicker({
                       type="button"
                       onClick={() => handleSelect(variable)}
                       className={cn(
-                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium border transition-all cursor-pointer min-h-[36px]",
+                        "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all cursor-pointer min-h-9",
                         colors.bg,
                         colors.text,
                         colors.border,
@@ -176,10 +176,10 @@ export function ContractVariablePicker({
                       <span className="font-semibold">{variable.label}</span>
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-xs text-xs space-y-1.5 p-2.5 rounded-xl">
+                  <TooltipContent side="top" className="max-w-xs text-xs space-y-2 p-3 rounded-lg">
                     <p className="font-bold text-sm text-foreground">{variable.label}</p>
                     <p className="text-muted-foreground leading-relaxed">{variable.description}</p>
-                    <div className="pt-1.5 border-t border-border/40 text-xs text-primary font-medium">
+                    <div className="pt-2 border-t border-border/40 text-xs text-primary font-medium">
                       Exemplo preenchido: <span className="text-foreground font-semibold">&quot;{variable.example}&quot;</span>
                     </div>
                   </TooltipContent>

@@ -247,7 +247,7 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
  }}
  />
  {sharedImage ? (
- <div className="relative group w-full aspect-square rounded-xl overflow-hidden border bg-card ">
+ <div className="relative group w-full aspect-square rounded-lg overflow-hidden border bg-card ">
  <img
  src={sharedImage}
  alt={gName}
@@ -267,7 +267,7 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
  onChange={(url) => handleGroupImageUpdate(gName, url)}
  bucket="product-media"
  variant="minimal"
- className="h-full w-full p-0 min-h-[80px] rounded-xl border-dashed bg-card"
+ className="h-full w-full p-0 min-h-[80px] rounded-lg border-dashed bg-card"
  />
  </div>
  )}

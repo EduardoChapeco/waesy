@@ -119,7 +119,7 @@ export function ProductEditorLayout({ sections, children, preview }: ProductEdit
 
  {/* Sidebar Anchor Navigation & Truthful Preview (Right Column - 40%) */}
  <div className="lg:col-span-5 lg:sticky lg:top-20 flex flex-col gap-6 order-1 lg:order-2">
- <nav className="flex flex-col space-y-1 bg-card rounded-2xl p-3 ">
+ <nav className="flex flex-col space-y-1 bg-card rounded-lg p-3 ">
  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground px-3 py-1">
  Seções do Produto
  </p>
@@ -129,7 +129,7 @@ export function ProductEditorLayout({ sections, children, preview }: ProductEdit
  type="button"
  onClick={() => scrollTo(section.id)}
  className={cn(
- "flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-xl transition-colors text-left",
+ "flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-colors text-left",
  activeSection === section.id
  ? "bg-primary/10 text-primary"
  : "text-muted-foreground hover:bg-muted hover:text-foreground",

@@ -242,9 +242,9 @@ export default function WorkspaceDashboardPage() {
   const catalogDetails = getCatalogCardDetails();
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3.5 sm:px-4 md:px-0 space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-4 md:px-0 space-y-4 sm:space-y-6 animate-in fade-in duration-200">
       {/* ── 1. Top Header com Identificação do Negócio ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-card border border-border/40">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-4 p-4 sm:p-5 rounded-lg bg-card border border-border/40">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-muted-foreground/80">
@@ -266,7 +266,7 @@ export default function WorkspaceDashboardPage() {
             type="button"
             onClick={handleToggleStoreStatus}
             disabled={isTogglingStatus}
-            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-colors cursor-pointer min-h-11 sm:min-h-9 ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border transition-colors cursor-pointer min-h-11 sm:min-h-9 ${
               isOpenNow
                 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15"
                 : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/15"
@@ -287,20 +287,20 @@ export default function WorkspaceDashboardPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsShareModalOpen(true)}
-            className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9"
+            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9"
           >
             <QrCode className="size-3.5 text-primary" />
             <span>Divulgar</span>
           </Button>
 
-          <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9">
             <Link to="/workspace/lojas">
               Trocar Loja
             </Link>
           </Button>
 
           {activeStore?.slug && (
-            <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold gap-1.5 border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9">
+            <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold gap-2 border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9">
               <Link to="/diretorio/$id" params={{ id: activeStore.slug }}>
                 <Store className="size-3.5 text-primary" />
                 <span>Vitrine Pública</span>
@@ -308,7 +308,7 @@ export default function WorkspaceDashboardPage() {
             </Button>
           )}
 
-          <Button asChild size="sm" variant="ghost" className="rounded-xl text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 min-h-11 sm:min-h-9">
+          <Button asChild size="sm" variant="ghost" className="rounded-lg text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 min-h-11 sm:min-h-9">
             <Link to="/workspace/marketing/vitrine">
               <Layers className="size-3.5" />
               <span>Vitrine</span>
@@ -317,13 +317,13 @@ export default function WorkspaceDashboardPage() {
 
           {/* Ação Primária Única da Tela */}
           {semantics.primaryQuickAction ? (
-            <Button asChild size="sm" className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground shadow-none min-h-11 sm:min-h-9 px-4">
+            <Button asChild size="sm" className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground shadow-none min-h-11 sm:min-h-9 px-4">
               <Link to={semantics.primaryQuickAction.path as any}>
                 {semantics.primaryQuickAction.label}
               </Link>
             </Button>
           ) : (
-            <Button asChild size="sm" className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground shadow-none min-h-11 sm:min-h-9 px-4">
+            <Button asChild size="sm" className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground shadow-none min-h-11 sm:min-h-9 px-4">
               <Link to="/workspace/pdv">
                 PDV
               </Link>
@@ -333,9 +333,9 @@ export default function WorkspaceDashboardPage() {
       </div>
 
       {/* ── 2. Bento Grid Operacional de Alta Performance (12 Colunas) ── */}
-      <div className="grid grid-cols-12 gap-3.5 sm:gap-4 lg:gap-5 items-stretch">
+      <div className="grid grid-cols-12 gap-4 sm:gap-4 lg:gap-5 items-stretch">
         {/* Herói de Faturamento do Mês (7/8 cols no Desktop, 12 cols no Mobile) */}
-        <div className="col-span-12 lg:col-span-7 xl:col-span-8 p-5 sm:p-6 rounded-2xl bg-card border border-border/40 flex flex-col justify-between gap-5">
+        <div className="col-span-12 lg:col-span-7 xl:col-span-8 p-5 sm:p-6 rounded-lg bg-card border border-border/40 flex flex-col justify-between gap-5">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/75">
@@ -362,13 +362,13 @@ export default function WorkspaceDashboardPage() {
           <div className="flex items-center gap-2 pt-3 border-t border-border/30">
             <Link
               to="/workspace/financeiro/caixa"
-              className="inline-flex items-center justify-center min-h-11 sm:min-h-9 px-4 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors"
+              className="inline-flex items-center justify-center min-h-11 sm:min-h-9 px-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors"
             >
               Fluxo de Caixa
             </Link>
             <Link
               to={catalogDetails.path as any}
-              className="inline-flex items-center justify-center min-h-11 sm:min-h-9 px-4 rounded-xl bg-muted/60 hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+              className="inline-flex items-center justify-center min-h-11 sm:min-h-9 px-4 rounded-lg bg-muted/60 hover:bg-muted text-foreground text-xs font-semibold transition-colors"
             >
               {semantics.catalogTitle}
             </Link>
@@ -380,17 +380,17 @@ export default function WorkspaceDashboardPage() {
           {/* Card 1: Pedidos */}
           <Link
             to={getOrdersDestination() as any}
-            className="p-4 rounded-2xl bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+            className="p-4 rounded-lg bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
           >
             <div className="flex items-center justify-between">
-              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <ShoppingBag className="size-4" />
               </div>
               <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
             </div>
             <div className="mt-3">
               <p className="text-xs font-semibold text-muted-foreground/75 truncate">{semantics.ordersLabel}</p>
-              <p className="text-sm font-bold tracking-tight text-foreground mt-0.5 font-mono">
+              <p className="text-sm font-bold tracking-tight text-foreground mt-1 font-mono">
                 {dashboardMetrics?.ordersTodayCount || 0} hoje
               </p>
             </div>
@@ -399,17 +399,17 @@ export default function WorkspaceDashboardPage() {
           {/* Card 2: Clientes */}
           <Link
             to="/workspace/clientes"
-            className="p-4 rounded-2xl bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+            className="p-4 rounded-lg bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
           >
             <div className="flex items-center justify-between">
-              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <Users className="size-4" />
               </div>
               <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
             </div>
             <div className="mt-3">
               <p className="text-xs font-semibold text-muted-foreground/75 truncate">{semantics.customerLabel}</p>
-              <p className="text-sm font-bold tracking-tight text-foreground mt-0.5 font-mono">
+              <p className="text-sm font-bold tracking-tight text-foreground mt-1 font-mono">
                 +{dashboardMetrics?.newCustomers30d ?? 0} no mês
               </p>
             </div>
@@ -418,17 +418,17 @@ export default function WorkspaceDashboardPage() {
           {/* Card 3: Vendas Hoje */}
           <Link
             to="/workspace/financeiro/caixa"
-            className="p-4 rounded-2xl bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+            className="p-4 rounded-lg bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
           >
             <div className="flex items-center justify-between">
-              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <DollarSign className="size-4" />
               </div>
               <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
             </div>
             <div className="mt-3">
               <p className="text-xs font-semibold text-muted-foreground/75 truncate">Vendas Hoje</p>
-              <p className="text-sm font-bold tracking-tight text-foreground mt-0.5 font-mono truncate">
+              <p className="text-sm font-bold tracking-tight text-foreground mt-1 font-mono truncate">
                 {formatMoney(dashboardMetrics?.salesTodayCents || 0)}
               </p>
             </div>
@@ -437,17 +437,17 @@ export default function WorkspaceDashboardPage() {
           {/* Card 4: Catálogo / Estoque */}
           <Link
             to={catalogDetails.path as any}
-            className="p-4 rounded-2xl bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+            className="p-4 rounded-lg bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
           >
             <div className="flex items-center justify-between">
-              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <Package className="size-4" />
               </div>
               <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
             </div>
             <div className="mt-3">
               <p className="text-xs font-semibold text-muted-foreground/75 truncate">{semantics.stockLabel || semantics.catalogTitle}</p>
-              <p className="text-sm font-bold tracking-tight text-foreground mt-0.5 truncate">
+              <p className="text-sm font-bold tracking-tight text-foreground mt-1 truncate">
                 {catalogDetails.subtitle}
               </p>
             </div>
@@ -463,9 +463,9 @@ export default function WorkspaceDashboardPage() {
       />
 
       {/* ── 4. Matriz Bilateral: Atividades Reais & Vitrine / Canais Contextuais ── */}
-      <div className="grid grid-cols-12 gap-3.5 sm:gap-4 lg:gap-5 items-stretch">
+      <div className="grid grid-cols-12 gap-4 sm:gap-4 lg:gap-5 items-stretch">
         {/* Atividades Recentes do Banco de Dados (8 cols no Desktop, 12 cols no Mobile) */}
-        <Card className="col-span-12 lg:col-span-8 p-5 border border-border/40 bg-card rounded-2xl flex flex-col justify-between h-full space-y-4 shadow-none">
+        <Card className="col-span-12 lg:col-span-8 p-5 border border-border/40 bg-card rounded-lg flex flex-col justify-between h-full space-y-4 shadow-none">
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border/30">
               <div className="flex items-center gap-2">
@@ -478,19 +478,19 @@ export default function WorkspaceDashboardPage() {
             </div>
 
             {recentActivities.length === 0 ? (
-              <div className="py-8 text-center space-y-1 rounded-2xl bg-muted/20">
+              <div className="py-8 text-center space-y-1 rounded-lg bg-muted/20">
                 <Clock className="size-6 text-muted-foreground/40 mx-auto mb-1" />
                 <p className="text-xs font-semibold text-muted-foreground/75">Nenhuma atividade recente</p>
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {recentActivities.map((act: any) => (
                   <div
                     key={act.id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-muted/20 text-xs hover:bg-muted/40 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/20 text-xs hover:bg-muted/40 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                         <CheckCircle2 className="size-4" />
                       </div>
                       <div>
@@ -512,7 +512,7 @@ export default function WorkspaceDashboardPage() {
         </Card>
 
         {/* Vitrine & Ferramentas Contextuais da Empresa (4 cols no Desktop, 12 cols no Mobile) */}
-        <Card className="col-span-12 lg:col-span-4 p-5 border border-border/40 bg-card rounded-2xl flex flex-col justify-between h-full space-y-4 shadow-none">
+        <Card className="col-span-12 lg:col-span-4 p-5 border border-border/40 bg-card rounded-lg flex flex-col justify-between h-full space-y-4 shadow-none">
           <div className="space-y-3">
             <div className="flex items-center justify-between pb-3 border-b border-border/30">
               <div className="flex items-center gap-2">
@@ -522,16 +522,16 @@ export default function WorkspaceDashboardPage() {
               <Badge variant="secondary" className="text-xs">Ativo</Badge>
             </div>
 
-            <div className="space-y-1.5 pt-1">
+            <div className="space-y-2 pt-1">
               {channelLinks.map((link, idx) => {
                 const Icon = link.icon;
                 return (
                   <Link
                     key={idx}
                     to={link.path as any}
-                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-muted/60 text-xs font-medium transition-colors group min-h-11 sm:min-h-9"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/60 text-xs font-medium transition-colors group min-h-11 sm:min-h-9"
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-3">
                       <Icon className="size-4 text-muted-foreground/80 group-hover:text-foreground transition-colors" />
                       <span className="text-foreground">{link.label}</span>
                     </div>
@@ -545,7 +545,7 @@ export default function WorkspaceDashboardPage() {
       </div>
 
       {/* ── 5. Departamentos Corporativos Universais (Visão 360° da Empresa) ── */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/40 space-y-3 sm:space-y-4">
+      <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/40 space-y-3 sm:space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-border/30">
           <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Layers className="size-4 text-primary" />
@@ -553,13 +553,13 @@ export default function WorkspaceDashboardPage() {
           </h3>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 pt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-3 pt-1">
           {/* 1. Vitrine & Marketing */}
           <Link
             to="/workspace/marketing/banners"
-            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2.5">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
               <Megaphone className="size-4" />
             </div>
             <div>
@@ -571,9 +571,9 @@ export default function WorkspaceDashboardPage() {
           {/* 2. Vendas & CRM */}
           <Link
             to={semantics.nicheId === "tourism" ? "/workspace/comercial" : "/workspace/pedidos"}
-            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-xl bg-info/10 text-info flex items-center justify-center mb-2.5">
+            <div className="size-8 rounded-lg bg-info/10 text-info flex items-center justify-center mb-3">
               <ShoppingBag className="size-4" />
             </div>
             <div>
@@ -589,9 +589,9 @@ export default function WorkspaceDashboardPage() {
           {/* 3. Financeiro & Caixa */}
           <Link
             to="/workspace/financeiro/caixa"
-            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2.5">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
               <DollarSign className="size-4" />
             </div>
             <div>
@@ -603,9 +603,9 @@ export default function WorkspaceDashboardPage() {
           {/* 4. RH & Pessoas */}
           <Link
             to="/workspace/configuracoes/equipe"
-            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2.5">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
               <Users className="size-4" />
             </div>
             <div>
@@ -617,9 +617,9 @@ export default function WorkspaceDashboardPage() {
           {/* 5. Logística & Estoque */}
           <Link
             to={semantics.nicheId === "tourism" ? "/workspace/turismo/embarques" : "/workspace/estoque"}
-            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2.5">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
               {semantics.nicheId === "tourism" ? <Bus className="size-4" /> : <Package className="size-4" />}
             </div>
             <div>
@@ -635,9 +635,9 @@ export default function WorkspaceDashboardPage() {
           {/* 6. Governança & Config */}
           <Link
             to="/workspace/configuracoes"
-            className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-xl bg-muted text-muted-foreground flex items-center justify-center mb-2.5">
+            <div className="size-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mb-3">
               <Store className="size-4" />
             </div>
             <div>

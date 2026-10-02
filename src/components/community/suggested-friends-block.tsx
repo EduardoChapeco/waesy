@@ -79,7 +79,7 @@ export function SuggestedFriendsBlock({ friends = [] }: SuggestedFriendsBlockPro
  </Avatar>
 
  <p className="text-xs font-bold text-foreground truncate w-full">{friend.name}</p>
- <p className="text-[10px] text-muted-foreground truncate w-full mt-0.5 mb-3">
+ <p className="text-[10px] text-muted-foreground truncate w-full mt-1 mb-3">
  {friend.reason || "Membro comunitário"}
  </p>
 

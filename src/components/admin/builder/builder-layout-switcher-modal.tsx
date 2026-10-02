@@ -71,11 +71,11 @@ export function BuilderLayoutSwitcherModal({
 
  return (
  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs select-none animate-in fade-in duration-150">
- <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+ <div className="w-full max-w-lg bg-card border border-border rounded-lg shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
  {/* Cabeçalho do Seletor (Wix Pro Gallery Standard — Imagem 2) */}
  <div className="p-5 border-b border-border/70 flex items-center justify-between bg-muted/20">
- <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
  <LayoutGrid className="size-5" />
  </div>
  <div>
@@ -91,7 +91,7 @@ export function BuilderLayoutSwitcherModal({
  variant="ghost"
  size="icon"
  onClick={onClose}
- className="size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  >
  <X className="size-4" />
  </Button>
@@ -112,7 +112,7 @@ export function BuilderLayoutSwitcherModal({
  onClose();
  }}
  className={cn(
- "p-4 rounded-2xl border flex flex-col items-center justify-between text-center gap-2.5 transition-all cursor-pointer group relative",
+ "p-4 rounded-lg border flex flex-col items-center justify-between text-center gap-3 transition-all cursor-pointer group relative",
  isSelected
  ? "bg-primary/10 border-primary shadow-xs ring-2 ring-primary/20"
  : "bg-muted/30 border-border/70 hover:bg-muted/70 hover:border-primary/40"
@@ -121,7 +121,7 @@ export function BuilderLayoutSwitcherModal({
  {/* Diagrama / Ícone Visual do Layout */}
  <div
  className={cn(
- "size-12 rounded-xl flex items-center justify-center transition-all",
+ "size-12 rounded-lg flex items-center justify-center transition-all",
  isSelected
  ? "bg-primary text-primary-foreground shadow-xs"
  : "bg-background border border-border/80 text-muted-foreground group-hover:text-foreground group-hover:scale-105"
@@ -130,7 +130,7 @@ export function BuilderLayoutSwitcherModal({
  <Icon className="size-6" />
  </div>
 
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <span
  className={cn(
  "text-xs font-bold block",
@@ -155,14 +155,14 @@ export function BuilderLayoutSwitcherModal({
  </div>
 
  {/* Rodapé Informativo */}
- <div className="p-3.5 bg-muted/10 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground px-5">
+ <div className="p-4 bg-muted/10 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground px-5">
  <span>O layout selecionado é salvo instantaneamente.</span>
  <Button
  type="button"
  variant="outline"
  size="sm"
  onClick={onClose}
- className="h-8 px-4 rounded-xl text-xs font-bold"
+ className="h-8 px-4 rounded-lg text-xs font-bold"
  >
  Concluir
  </Button>

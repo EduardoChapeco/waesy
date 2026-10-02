@@ -25,7 +25,7 @@ export function CareersHeroBanner({ content, design_tokens }: CareersHeroBannerP
  return (
  <div className={cn("w-full py-16 px-4 bg-muted/20 border-b border-border/40", design_tokens?.className)}>
  <div className="max-w-5xl mx-auto text-center space-y-6">
- <Badge variant="outline" className="px-3.5 py-1 text-xs gap-1.5 border-primary/30 text-primary bg-primary/10 mx-auto">
+ <Badge variant="outline" className="px-4 py-1 text-xs gap-2 border-primary/30 text-primary bg-primary/10 mx-auto">
  <Layers className="w-3.5 h-3.5" />
  {content?.company_name ? `Trabalhe Conosco na ${content.company_name}` : "Trabalhe Conosco"}
  </Badge>
@@ -40,8 +40,8 @@ export function CareersHeroBanner({ content, design_tokens }: CareersHeroBannerP
 
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-8 text-left">
  {highlights.map((h, i) => (
- <div key={i} className="p-5 rounded-2xl border border-border/60 bg-card shadow-sm space-y-2">
- <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+ <div key={i} className="p-5 rounded-lg border border-border/60 bg-card shadow-sm space-y-2">
+ <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
  <Users className="w-4 h-4" />
  </div>
  <h3 className="font-semibold text-sm text-foreground">{h.title}</h3>

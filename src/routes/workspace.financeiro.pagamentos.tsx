@@ -206,7 +206,7 @@ function AdminPaymentsPage() {
             onClick={handleExportCsv}
             variant="outline"
             size="sm"
-            className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+            className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
           >
             <FileSpreadsheet className="size-3.5 text-emerald-600" />
             <span>Exportar Conciliação CSV</span>
@@ -216,8 +216,8 @@ function AdminPaymentsPage() {
 
       {/* ── KPIS FINANCEIROS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
             Total Liquidado
           </span>
@@ -229,8 +229,8 @@ function AdminPaymentsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Clock className="size-3.5 text-amber-500" />
             Aguardando Pagamento
           </span>
@@ -242,8 +242,8 @@ function AdminPaymentsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="size-3.5 text-primary" />
             Ticket Médio
           </span>
@@ -255,8 +255,8 @@ function AdminPaymentsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Percent className="size-3.5 text-foreground" />
             Taxa de Liquidação
           </span>
@@ -270,22 +270,22 @@ function AdminPaymentsPage() {
       </div>
 
       {/* ── BARRA DE CONTROLE, FILTROS & BUSCA ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por cliente, pedido ou código..."
-            className="pl-10 h-10 rounded-xl text-xs bg-background"
+            className="pl-10 h-10 rounded-lg text-xs bg-background"
           />
         </div>
 
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60 self-start sm:self-auto overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 self-start sm:self-auto overflow-x-auto no-scrollbar">
           <button
             type="button"
             onClick={() => setStatusFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
               statusFilter === "all"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -296,7 +296,7 @@ function AdminPaymentsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("processing")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
               statusFilter === "processing"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -307,7 +307,7 @@ function AdminPaymentsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("awaiting")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
               statusFilter === "awaiting"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -318,7 +318,7 @@ function AdminPaymentsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("paid")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
               statusFilter === "paid"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -336,7 +336,7 @@ function AdminPaymentsPage() {
           description="Nenhuma transação financeira atende aos critérios de busca selecionados."
         />
       ) : (
-        <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+        <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
           <Table>
             <TableHeader>
               <TableRow className="border-border/60 hover:bg-transparent">
@@ -396,7 +396,7 @@ function AdminPaymentsPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => setRejectModal({ isOpen: true, order: p })}
-                            className="h-8 rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 cursor-pointer"
+                            className="h-8 rounded-lg text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 cursor-pointer"
                           >
                             <XCircle className="size-3.5 mr-1" />
                             Recusar
@@ -404,14 +404,14 @@ function AdminPaymentsPage() {
                           <Button
                             size="sm"
                             onClick={() => setApproveModal({ isOpen: true, order: p })}
-                            className="h-8 rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                            className="h-8 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                           >
                             <CheckCircle2 className="size-3.5 mr-1" />
                             Aprovar
                           </Button>
                         </div>
                       ) : (
-                        <Button variant="ghost" size="sm" asChild className="h-8 rounded-xl text-xs font-bold">
+                        <Button variant="ghost" size="sm" asChild className="h-8 rounded-lg text-xs font-bold">
                           <Link to="/workspace/pedidos/$id" params={{ id: p.id }}>
                             Ver Pedido
                           </Link>
@@ -438,14 +438,14 @@ function AdminPaymentsPage() {
               variant="outline"
               onClick={() => setApproveModal({ isOpen: false, order: null })}
               disabled={isApproving}
-              className="h-10 px-4 rounded-xl text-xs font-bold"
+              className="h-10 px-4 rounded-lg text-xs font-bold"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleConfirmApprove}
               disabled={isApproving}
-              className="h-10 px-5 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
+              className="h-10 px-5 rounded-lg font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
             >
               {isApproving ? "Processando..." : "Confirmar Recebimento"}
             </Button>
@@ -453,7 +453,7 @@ function AdminPaymentsPage() {
         }
       >
         <div className="space-y-5 py-4">
-          <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-2">
+          <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Valor a Liquidar:</span>
               <span className="font-mono font-bold text-sm text-foreground">
@@ -471,10 +471,10 @@ function AdminPaymentsPage() {
           <div className="space-y-2">
             <label className="text-xs font-bold text-foreground">Meio de Recebimento Confirmado</label>
             <Select value={selectedMethod} onValueChange={setSelectedMethod}>
-              <SelectTrigger className="rounded-xl h-11 text-xs">
+              <SelectTrigger className="rounded-lg h-11 text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="rounded-xl text-xs">
+              <SelectContent className="rounded-lg text-xs">
                 <SelectItem value="pix">
                   <div className="flex items-center gap-2">
                     <QrCode className="size-4 text-emerald-600" />
@@ -526,14 +526,14 @@ function AdminPaymentsPage() {
               variant="outline"
               onClick={() => setRejectModal({ isOpen: false, order: null })}
               disabled={isRejecting}
-              className="h-10 px-4 rounded-xl text-xs font-bold"
+              className="h-10 px-4 rounded-lg text-xs font-bold"
             >
               Voltar
             </Button>
             <Button
               onClick={handleConfirmReject}
               disabled={isRejecting}
-              className="h-10 px-5 rounded-xl font-bold text-xs bg-rose-600 hover:bg-rose-700 text-white gap-1.5"
+              className="h-10 px-5 rounded-lg font-bold text-xs bg-rose-600 hover:bg-rose-700 text-white gap-2"
             >
               {isRejecting ? "Recusando..." : "Confirmar Recusa"}
             </Button>
@@ -548,10 +548,10 @@ function AdminPaymentsPage() {
           <div className="space-y-2">
             <label className="text-xs font-bold text-foreground">Motivo da Recusa</label>
             <Select value={rejectReason} onValueChange={setRejectReason}>
-              <SelectTrigger className="rounded-xl h-11 text-xs">
+              <SelectTrigger className="rounded-lg h-11 text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="rounded-xl text-xs">
+              <SelectContent className="rounded-lg text-xs">
                 <SelectItem value="Comprovante ilegível ou cortado">Comprovante ilegível ou cortado</SelectItem>
                 <SelectItem value="Valor divergente do total do pedido">Valor divergente do total do pedido</SelectItem>
                 <SelectItem value="Pagamento não compensado na conta bancária">Pagamento não compensado na conta bancária</SelectItem>

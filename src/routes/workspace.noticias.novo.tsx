@@ -168,9 +168,9 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => setShowAiImport(!showAiImport)}
- className="rounded-xl font-bold text-xs border-primary/40 text-primary hover:bg-primary/10"
+ className="rounded-lg font-bold text-xs border-primary/40 text-primary hover:bg-primary/10"
  >
- <Globe className="size-3.5 mr-1.5" />
+ <Globe className="size-3.5 mr-2" />
  Importar de Link
  </Button>
  <Button
@@ -179,7 +179,7 @@ function WorkspaceNovaMateriaPage() {
  size="sm"
  disabled={isSubmitting}
  onClick={() => handleSubmit("draft")}
- className="rounded-xl font-bold text-xs"
+ className="rounded-lg font-bold text-xs"
  >
  Salvar Rascunho
  </Button>
@@ -188,12 +188,12 @@ function WorkspaceNovaMateriaPage() {
  size="sm"
  disabled={isSubmitting}
  onClick={() => handleSubmit("published")}
- className="rounded-xl font-bold text-xs bg-primary text-primary-foreground"
+ className="rounded-lg font-bold text-xs bg-primary text-primary-foreground"
  >
  {isSubmitting ? (
- <Loader2 className="size-3.5 animate-spin mr-1.5" />
+ <Loader2 className="size-3.5 animate-spin mr-2" />
  ) : (
- <CheckCircle2 className="size-3.5 mr-1.5" />
+ <CheckCircle2 className="size-3.5 mr-2" />
  )}
  <span>Publicar</span>
  </Button>
@@ -203,7 +203,7 @@ function WorkspaceNovaMateriaPage() {
 
  {/* ── Modal / Caixa de Importação IA ── */}
  {showAiImport && (
- <div className="p-5 rounded-2xl bg-primary/5 border border-primary/30 space-y-4">
+ <div className="p-5 rounded-lg bg-primary/5 border border-primary/30 space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -214,7 +214,7 @@ function WorkspaceNovaMateriaPage() {
  <p className="text-xs text-muted-foreground">Cole a URL de qualquer portal de notícias para estruturar os blocos editoriais automaticamente.</p>
  </div>
  </div>
- <button onClick={() => setShowAiImport(false)} className="text-muted-foreground hover:text-foreground">
+ <button onClick={() => setShowAiImport(false)} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring text-muted-foreground hover:text-foreground">
  <X className="size-4" />
  </button>
  </div>
@@ -228,14 +228,14 @@ function WorkspaceNovaMateriaPage() {
  placeholder="https://g1.globo.com/sc/..."
  value={aiUrl}
  onChange={(e) => setAiUrl(e.target.value)}
- className="rounded-xl h-10 pl-9 text-xs border-border/60"
+ className="rounded-lg h-10 pl-9 text-xs border-border/60"
  required
  />
  </div>
  <select
  value={aiTone}
  onChange={(e) => setAiTone(e.target.value as any)}
- className="h-10 px-3 rounded-xl border border-border/60 bg-background text-xs font-semibold"
+ className="h-10 px-3 rounded-lg border border-border/60 bg-background text-xs font-semibold"
  >
  <option value="editorial">Tom Editorial</option>
  <option value="profissional">Tom Profissional</option>
@@ -244,7 +244,7 @@ function WorkspaceNovaMateriaPage() {
  <Button
  type="submit"
  disabled={isAiProcessing || !aiUrl.trim()}
- className="rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-1.5 h-10 px-4 shrink-0"
+ className="rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 h-10 px-4 shrink-0"
  >
  {isAiProcessing ? (
  <>
@@ -264,7 +264,7 @@ function WorkspaceNovaMateriaPage() {
  )}
 
  {extractedSourceDomain && (
- <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 font-medium">
+ <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 font-medium">
  <CheckCircle2 className="size-3.5" />
  <span>Conteúdo importado e reestruturado a partir de: <strong>{extractedSourceDomain}</strong></span>
  </div>
@@ -272,28 +272,28 @@ function WorkspaceNovaMateriaPage() {
 
  <div className="space-y-6">
  {/* ── 1. Metadados e Manchete ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <span className="text-xs font-black uppercase tracking-wider text-primary">
  1. Estrutura Editorial
  </span>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Chapéu / Kicker</Label>
  <Input
  placeholder="Ex: POLÍTICA LOCAL"
  value={kicker}
  onChange={(e) => setKicker(e.target.value)}
- className="rounded-xl h-10 uppercase text-xs border-border/60"
+ className="rounded-lg h-10 uppercase text-xs border-border/60"
  />
  </div>
 
- <div className="space-y-1.5 sm:col-span-2">
+ <div className="space-y-2 sm:col-span-2">
  <Label className="text-xs font-bold">Categoria / Editoria</Label>
  <select
  value={category}
  onChange={(e) => setCategory(e.target.value)}
- className="w-full h-10 px-3 rounded-xl border border-border/60 bg-background text-xs font-semibold"
+ className="w-full h-10 px-3 rounded-lg border border-border/60 bg-background text-xs font-semibold"
  >
  <option value="cidade">Cidade e Região</option>
  <option value="politica">Política</option>
@@ -306,39 +306,39 @@ function WorkspaceNovaMateriaPage() {
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Manchete / Título Principal *</Label>
  <Input
  placeholder="Digite o título da matéria..."
  value={title}
  onChange={(e) => handleTitleChange(e.target.value)}
- className="rounded-xl h-11 text-sm font-bold border-border/60"
+ className="rounded-lg h-11 text-sm font-bold border-border/60"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Subtítulo / Lead</Label>
  <textarea
  placeholder="Breve resumo ou linha de apoio da matéria..."
  value={subtitle}
  onChange={(e) => setSubtitle(e.target.value)}
  rows={2}
- className="w-full p-3 rounded-xl border border-border/60 bg-background text-xs font-medium resize-none focus:outline-none focus:border-primary"
+ className="w-full p-3 rounded-lg border border-border/60 bg-background text-xs font-medium resize-none focus:outline-none focus:border-primary"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Slug URL *</Label>
  <Input
  placeholder="slug-da-materia"
  value={slug}
  onChange={(e) => setSlug(e.target.value)}
- className="rounded-xl h-10 font-mono text-xs border-border/60"
+ className="rounded-lg h-10 font-mono text-xs border-border/60"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Tempo Estimado de Leitura (minutos)</Label>
  <Input
  type="number"
@@ -346,19 +346,19 @@ function WorkspaceNovaMateriaPage() {
  max={60}
  value={readingTime}
  onChange={(e) => setReadingTime(parseInt(e.target.value) || 3)}
- className="rounded-xl h-10 text-xs border-border/60"
+ className="rounded-lg h-10 text-xs border-border/60"
  />
  </div>
  </div>
  </div>
 
  {/* ── 2. Mídia de Capa ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <span className="text-xs font-black uppercase tracking-wider text-primary">
  2. Imagem de Capa
  </span>
 
- <div className="space-y-1.5 max-w-xl">
+ <div className="space-y-2 max-w-xl">
  <ImageUpload
  value={coverMediaUrl}
  onChange={(url) => setCoverMediaUrl(url)}
@@ -370,19 +370,19 @@ function WorkspaceNovaMateriaPage() {
  </div>
 
  {/* ── 3. Corpo da Matéria (Blocos) ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <div className="flex items-center justify-between">
  <span className="text-xs font-black uppercase tracking-wider text-primary">
  3. Conteúdo da Matéria ({sections.length} seções)
  </span>
 
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Button
  type="button"
  variant="outline"
  size="sm"
  onClick={() => addSection("paragraph")}
- className="h-8 text-xs font-bold gap-1 rounded-xl"
+ className="h-8 text-xs font-bold gap-1 rounded-lg"
  >
  <AlignLeft className="size-3" />
  Parágrafo
@@ -392,7 +392,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("heading")}
- className="h-8 text-xs font-bold gap-1 rounded-xl"
+ className="h-8 text-xs font-bold gap-1 rounded-lg"
  >
  <Heading className="size-3" />
  Subtítulo
@@ -402,7 +402,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("quote")}
- className="h-8 text-xs font-bold gap-1 rounded-xl"
+ className="h-8 text-xs font-bold gap-1 rounded-lg"
  >
  <Quote className="size-3" />
  Citação
@@ -412,7 +412,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("gallery")}
- className="h-8 text-xs font-bold gap-1 rounded-xl"
+ className="h-8 text-xs font-bold gap-1 rounded-lg"
  >
  <Image className="size-3" />
  Foto
@@ -424,7 +424,7 @@ function WorkspaceNovaMateriaPage() {
  {sections.map((section, idx) => (
  <div
  key={idx}
- className="p-4 rounded-xl bg-background border border-border/60 space-y-2 relative group"
+ className="p-4 rounded-lg bg-background border border-border/60 space-y-2 relative group"
  >
  <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
  <span className="uppercase text-xs font-bold">
@@ -459,7 +459,7 @@ function WorkspaceNovaMateriaPage() {
  value={typeof section.content === "string" ? section.content : ""}
  onChange={(e) => updateSectionContent(idx, e.target.value, section.caption)}
  rows={2}
- className="w-full p-2.5 rounded-lg border border-border/60 bg-card text-xs italic resize-none focus:outline-none focus:border-primary"
+ className="w-full p-3 rounded-lg border border-border/60 bg-card text-xs italic resize-none focus:outline-none focus:border-primary"
  />
  <Input
  placeholder="Fonte / Autor da declaração (ex: Prefeito Municipal)"

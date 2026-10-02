@@ -28,9 +28,9 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
     sm: "rounded-sm",
     md: "rounded-md",
     lg: "rounded-lg",
-    xl: "rounded-xl",
-    "2xl": "rounded-2xl",
-    full: "rounded-3xl",
+    xl: "rounded-lg",
+    "2xl": "rounded-lg",
+    full: "rounded-lg",
   }[styling?.borderRadius || "xl"];
 
   const customStyle: React.CSSProperties = {
@@ -112,7 +112,7 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
               </div>
 
               {/* Autor */}
-              <div className="flex items-center gap-3.5 pt-4 border-t border-border/40">
+              <div className="flex items-center gap-4 pt-4 border-t border-border/40">
                 {t.avatarUrl ? (
                   <img
                     src={t.avatarUrl}
@@ -125,7 +125,7 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
                   </div>
                 )}
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-foreground">{t.name}</span>
                     {t.verified && (
                       <span title="Verificado" className="inline-flex items-center">

@@ -160,7 +160,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  return (
  <div className="space-y-4">
  {/* Header do Rooming List */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-card border border-border/80 text-xs">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/80 text-xs">
  <div className="flex items-center gap-2">
  <Building className="size-4 text-primary shrink-0" />
  <span className="font-bold text-foreground">
@@ -176,7 +176,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  variant="outline"
  size="sm"
  onClick={handleCopyReceptionSummary}
- className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+ className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
  title="Copiar lista para WhatsApp"
  >
  <Copy className="size-3.5 text-muted-foreground" />
@@ -187,7 +187,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  variant="outline"
  size="sm"
  onClick={handleExportCSV}
- className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+ className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
  title="Exportar planilha CSV"
  >
  <FileSpreadsheet className="size-3.5 text-emerald-600" />
@@ -199,7 +199,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  size="sm"
  disabled={isExportingPdf}
  onClick={handleExportPDF}
- className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+ className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
  title="Exportar documento PDF"
  >
  <Download className="size-3.5 text-blue-600" />
@@ -210,26 +210,26 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
 
  <Dialog open={isAddRoomOpen} onOpenChange={setIsAddRoomOpen}>
  <DialogTrigger asChild>
- <Button size="sm" className="h-8 rounded-xl text-xs font-bold gap-1 bg-foreground text-background cursor-pointer">
+ <Button size="sm" className="h-8 rounded-lg text-xs font-bold gap-1 bg-foreground text-background cursor-pointer">
  <Plus className="size-3.5" /> Adicionar Quarto
  </Button>
  </DialogTrigger>
 
- <DialogContent className="sm:max-w-md sm:rounded-2xl p-6 bg-card border-border">
+ <DialogContent className="sm:max-w-md sm:rounded-lg p-6 bg-card border-border">
  <DialogHeader className="space-y-1">
  <DialogTitle className="text-base font-bold text-foreground">
  Novo Quarto no Hotel
  </DialogTitle>
  </DialogHeader>
 
- <div className="space-y-3.5 pt-2 text-xs">
+ <div className="space-y-4 pt-2 text-xs">
  <div className="space-y-1">
  <Label className="text-xs font-bold">Nome do Hotel / Pousada *</Label>
  <Input
  placeholder="Ex: Hotel Plaza Centro"
  value={hotelName}
  onChange={(e) => setHotelName(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
@@ -240,7 +240,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  <select
  value={roomType}
  onChange={(e) => handleRoomTypeChange(e.target.value)}
- className="w-full h-10 rounded-xl bg-background border border-border px-2 text-xs"
+ className="w-full h-10 rounded-lg bg-background border border-border px-2 text-xs"
  >
  <option value="single">Single (1 Pessoa)</option>
  <option value="double_couple">Duplo Casal (2 Pessoas)</option>
@@ -256,7 +256,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  placeholder="Ex: 204"
  value={roomNumber}
  onChange={(e) => setRoomNumber(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  </div>
@@ -292,7 +292,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  <Button
  type="button"
  onClick={handleAddRoom}
- className="w-full h-11 rounded-xl text-xs font-bold bg-foreground text-background mt-2"
+ className="w-full h-11 rounded-lg text-xs font-bold bg-foreground text-background mt-2"
  >
  Salvar Quarto no Rooming List
  </Button>
@@ -304,7 +304,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
 
  {/* Grid de Quartos Alocados */}
  {rooms.length === 0 ? (
- <div className="py-12 text-center space-y-2 rounded-2xl bg-muted/20 border border-border/60 p-6 text-xs text-muted-foreground">
+ <div className="py-12 text-center space-y-2 rounded-lg bg-muted/20 border border-border/60 p-6 text-xs text-muted-foreground">
  <BedDouble className="size-8 mx-auto opacity-50" />
  <p>Nenhum quarto configurado ainda.</p>
  </div>
@@ -313,10 +313,10 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  {rooms.map((r) => (
  <Card
  key={r.room_id}
- className="p-4 rounded-2xl border border-border/60 bg-card space-y-3 shadow-none"
+ className="p-4 rounded-lg border border-border/60 bg-card space-y-3 shadow-none"
  >
  <div className="flex items-center justify-between text-xs font-bold">
- <span className="flex items-center gap-1.5 truncate">
+ <span className="flex items-center gap-2 truncate">
  <BedDouble className="size-4 text-primary shrink-0" />
  <span className="truncate">{r.hotel_name}</span>
  {r.room_number && <span className="font-mono text-muted-foreground">#{r.room_number}</span>}
@@ -333,7 +333,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  </Button>
  </div>
 
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Badge variant="outline" className="text-[10px] font-mono">
  {r.room_type === "single"
  ? "Single"
@@ -352,7 +352,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
 
  <div className="space-y-1 pt-1 border-t border-border/40 text-xs">
  {r.passengers.map((p, i) => (
- <div key={i} className="flex items-center gap-1.5 text-foreground font-medium truncate">
+ <div key={i} className="flex items-center gap-2 text-foreground font-medium truncate">
  <User className="size-3 text-muted-foreground shrink-0" />
  <span className="truncate">{p.name}</span>
  </div>

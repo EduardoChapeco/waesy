@@ -78,7 +78,7 @@ function ContatoPage() {
  <button
  type="button"
  onClick={() => (window.history.length > 1 ? window.history.back() : window.location.assign("/"))}
- className="size-11 rounded-xl bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+ className="size-11 rounded-lg bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-all"
  aria-label="Voltar"
  >
  <ArrowLeft className="size-5" />
@@ -105,9 +105,9 @@ function ContatoPage() {
  {/* Grid de Canais de Contato Reais */}
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
  {/* WhatsApp */}
- <div className="p-5 rounded-2xl bg-card border border-border/70 flex flex-col justify-between space-y-4 shadow-xs">
+ <div className="p-5 rounded-lg bg-card border border-border/70 flex flex-col justify-between space-y-4 shadow-xs">
  <div className="space-y-2">
- <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+ <div className="size-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
  <MessageSquare className="size-5" />
  </div>
  <h3 className="font-bold text-sm text-foreground">WhatsApp Oficial</h3>
@@ -116,7 +116,7 @@ function ContatoPage() {
  </p>
  </div>
  {cleanWhatsapp ? (
- <Button asChild size="sm" className="w-full min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer">
+ <Button asChild size="sm" className="w-full min-h-11 sm:min-h-9 h-11 sm:h-9 rounded-lg font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer">
  <a
  href={`https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent(
  `Olá! Gostaria de falar com o suporte da plataforma ${brand?.platform_name || "Waesy"}.`
@@ -128,16 +128,16 @@ function ContatoPage() {
  </a>
  </Button>
  ) : (
- <Button size="sm" variant="outline" disabled className="w-full rounded-xl text-xs">
+ <Button size="sm" variant="outline" disabled className="w-full rounded-lg text-xs">
  Canal em Configuração
  </Button>
  )}
  </div>
 
  {/* E-mail */}
- <div className="p-5 rounded-2xl bg-card border border-border/70 flex flex-col justify-between space-y-4 shadow-xs">
+ <div className="p-5 rounded-lg bg-card border border-border/70 flex flex-col justify-between space-y-4 shadow-xs">
  <div className="space-y-2">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Mail className="size-5" />
  </div>
  <h3 className="font-bold text-sm text-foreground">E-mail de Suporte</h3>
@@ -145,7 +145,7 @@ function ContatoPage() {
  {brand?.support_email || "contato@usewaesy.com"}
  </p>
  </div>
- <Button asChild variant="outline" size="sm" className="w-full rounded-xl font-bold text-xs cursor-pointer bg-background">
+ <Button asChild variant="outline" size="sm" className="w-full rounded-lg font-bold text-xs cursor-pointer bg-background">
  <a href={`mailto:${brand?.support_email || "contato@usewaesy.com"}`}>
  Enviar E-mail
  </a>
@@ -153,9 +153,9 @@ function ContatoPage() {
  </div>
 
  {/* Horário */}
- <div className="p-5 rounded-2xl bg-card border border-border/70 flex flex-col justify-between space-y-4 shadow-xs">
+ <div className="p-5 rounded-lg bg-card border border-border/70 flex flex-col justify-between space-y-4 shadow-xs">
  <div className="space-y-2">
- <div className="size-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+ <div className="size-10 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
  <Clock className="size-5" />
  </div>
  <h3 className="font-bold text-sm text-foreground">Horário de Operação</h3>
@@ -163,16 +163,16 @@ function ContatoPage() {
  {brand?.support_hours || "Segunda a Sexta, das 08h às 18h"}
  </p>
  </div>
- <div className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 pt-2">
+ <div className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 pt-2">
  <span className="size-2 rounded-full bg-emerald-500" />
  <span>Plantão Digital 24/7</span>
  </div>
  </div>
 
  {/* Sede / Localização */}
- <div className="p-5 rounded-2xl bg-card border border-border/70 flex flex-col justify-between space-y-4 shadow-xs">
+ <div className="p-5 rounded-lg bg-card border border-border/70 flex flex-col justify-between space-y-4 shadow-xs">
  <div className="space-y-2">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <MapPin className="size-5" />
  </div>
  <h3 className="font-bold text-sm text-foreground">Sede Regional</h3>
@@ -188,7 +188,7 @@ function ContatoPage() {
  </div>
 
  {/* Formulário Interativo de Mensagem */}
- <div className="p-6 sm:p-8 rounded-2xl bg-card border border-border/70 shadow-xs max-w-3xl mx-auto space-y-6">
+ <div className="p-6 sm:p-8 rounded-lg bg-card border border-border/70 shadow-xs max-w-3xl mx-auto space-y-6">
  <div className="space-y-1">
  <h2 className="text-lg sm:text-xl font-bold text-foreground">Envie uma Mensagem</h2>
  <p className="text-xs text-muted-foreground">
@@ -197,7 +197,7 @@ function ContatoPage() {
  </div>
 
  {isSent ? (
- <div className="p-6 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-500/30 text-center space-y-3">
+ <div className="p-6 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-500/30 text-center space-y-3">
  <div className="size-12 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto">
  <CheckCircle2 className="size-6" />
  </div>
@@ -216,7 +216,7 @@ function ContatoPage() {
  setSubject("");
  setMessage("");
  }}
- className="rounded-xl font-bold text-xs"
+ className="rounded-lg font-bold text-xs"
  >
  Enviar Outra Mensagem
  </Button>
@@ -224,18 +224,18 @@ function ContatoPage() {
  ) : (
  <form onSubmit={handleSubmit} className="space-y-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">Seu Nome Completo *</label>
  <Input
  required
  placeholder="Ex: João da Silva"
  value={name}
  onChange={(e) => setName(e.target.value)}
- className="rounded-xl h-10 bg-muted/20 text-xs"
+ className="rounded-lg h-10 bg-muted/20 text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">Seu E-mail *</label>
  <Input
  required
@@ -243,35 +243,35 @@ function ContatoPage() {
  placeholder="Ex: joao@email.com"
  value={email}
  onChange={(e) => setEmail(e.target.value)}
- className="rounded-xl h-10 bg-muted/20 text-xs"
+ className="rounded-lg h-10 bg-muted/20 text-xs"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">WhatsApp / Telefone</label>
  <Input
  placeholder="Ex: (49) 99999-9999"
  value={phone}
  onChange={(e) => setPhone(e.target.value)}
- className="rounded-xl h-10 bg-muted/20 text-xs"
+ className="rounded-lg h-10 bg-muted/20 text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">Assunto *</label>
  <Input
  required
  placeholder="Ex: Dúvida sobre minha loja / Pedido"
  value={subject}
  onChange={(e) => setSubject(e.target.value)}
- className="rounded-xl h-10 bg-muted/20 text-xs"
+ className="rounded-lg h-10 bg-muted/20 text-xs"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">Mensagem *</label>
  <Textarea
  required
@@ -279,14 +279,14 @@ function ContatoPage() {
  placeholder="Descreva detalhadamente o que você precisa..."
  value={message}
  onChange={(e) => setMessage(e.target.value)}
- className="rounded-2xl bg-muted/20 text-xs resize-none"
+ className="rounded-lg bg-muted/20 text-xs resize-none"
  />
  </div>
 
  <Button
  type="submit"
  disabled={isSubmitting}
- className="w-full sm:w-auto h-10 px-8 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer"
+ className="w-full sm:w-auto h-10 px-8 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer"
  >
  <Send className="size-3.5" />
  <span>{isSubmitting ? "Enviando..." : "Enviar Mensagem"}</span>

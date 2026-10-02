@@ -64,11 +64,11 @@ export function ContractEditorSheet({
 
  return (
  <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
- <div className="w-full max-w-5xl h-[90vh] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+ <div className="w-full max-w-5xl h-[90vh] bg-card border border-border rounded-lg shadow-2xl flex flex-col overflow-hidden">
  {/* Header */}
  <div className="p-4 border-b border-border flex items-center justify-between bg-muted/20">
  <div className="flex items-center gap-3">
- <div className="p-2 rounded-xl bg-primary/10 text-primary">
+ <div className="p-2 rounded-lg bg-primary/10 text-primary">
  <FileText className="w-5 h-5" />
  </div>
  <div>
@@ -82,11 +82,11 @@ export function ContractEditorSheet({
  </div>
 
  <div className="flex items-center gap-2">
- <div className="flex items-center bg-muted/60 p-1 rounded-xl gap-1">
+ <div className="flex items-center bg-muted/60 p-1 rounded-lg gap-1">
  <button
  type="button"
  onClick={() => setActiveTab('editor')}
- className={'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ' + (
+ className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
  activeTab === 'editor' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
  )}
  >
@@ -96,7 +96,7 @@ export function ContractEditorSheet({
  <button
  type="button"
  onClick={() => setActiveTab('library')}
- className={'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ' + (
+ className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
  activeTab === 'library' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
  )}
  >
@@ -106,7 +106,7 @@ export function ContractEditorSheet({
  <button
  type="button"
  onClick={() => setActiveTab('preview')}
- className={'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ' + (
+ className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
  activeTab === 'preview' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
  )}
  >
@@ -116,7 +116,7 @@ export function ContractEditorSheet({
  <button
  type="button"
  onClick={() => setActiveTab('sign')}
- className={'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ' + (
+ className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
  activeTab === 'sign' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
  )}
  >
@@ -128,7 +128,7 @@ export function ContractEditorSheet({
  <Button
  type="button"
  onClick={handleSave}
- className="min-h-[40px] px-4 rounded-xl bg-primary text-primary-foreground text-xs font-semibold"
+ className="min-h-10 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
  >
  Salvar Contrato
  </Button>
@@ -138,7 +138,7 @@ export function ContractEditorSheet({
  type="button"
  variant="ghost"
  onClick={onClose}
- className="h-9 w-9 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  >
  <X className="w-5 h-5" />
  </Button>
@@ -147,9 +147,9 @@ export function ContractEditorSheet({
  </div>
 
  {/* Dynamic Variable Bar */}
- <div className="px-6 py-2.5 bg-muted/40 border-b border-border/60 flex flex-wrap items-center gap-3 text-xs">
+ <div className="px-6 py-3 bg-muted/40 border-b border-border/60 flex flex-wrap items-center gap-3 text-xs">
  <span className="font-semibold text-muted-foreground uppercase text-[10px] tracking-wider">Variáveis Dinâmicas:</span>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="text-muted-foreground">Cliente:</span>
  <Input
  value={clientName}
@@ -157,7 +157,7 @@ export function ContractEditorSheet({
  className="h-7 w-32 text-xs rounded-lg bg-card"
  />
  </div>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="text-muted-foreground">CPF:</span>
  <Input
  value={clientCpf}
@@ -165,7 +165,7 @@ export function ContractEditorSheet({
  className="h-7 w-28 text-xs rounded-lg bg-card"
  />
  </div>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="text-muted-foreground">Valor:</span>
  <Input
  value={totalValue}
@@ -173,7 +173,7 @@ export function ContractEditorSheet({
  className="h-7 w-24 text-xs rounded-lg bg-card"
  />
  </div>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="text-muted-foreground">Vencimento:</span>
  <Input
  value={dueDate}
@@ -191,10 +191,10 @@ export function ContractEditorSheet({
  value={content}
  onChange={(e) => setContent(e.target.value)}
  placeholder="Insira as cláusulas do contrato..."
- className="flex-1 min-h-[400px] font-mono text-xs leading-relaxed p-4 rounded-2xl bg-card border-border shadow-inner resize-none focus-visible:ring-1"
+ className="flex-1 min-h-[400px] font-mono text-xs leading-relaxed p-4 rounded-lg bg-card border-border shadow-inner resize-none focus-visible:ring-1"
  />
  <p className="text-[11px] text-muted-foreground">
- Dica: Use tags como <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">{'{{cliente.nome}}'}</code>, <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">{'{{valor_total}}'}</code> para substituição automática.
+ Dica: Use tags como <code className="bg-muted px-2 py-1 rounded text-foreground">{'{{cliente.nome}}'}</code>, <code className="bg-muted px-2 py-1 rounded text-foreground">{'{{valor_total}}'}</code> para substituição automática.
  </p>
  </div>
  )}
@@ -204,7 +204,7 @@ export function ContractEditorSheet({
  )}
 
  {activeTab === 'preview' && (
- <div className="max-w-3xl mx-auto p-8 bg-card border border-border rounded-2xl shadow-lg space-y-6 text-foreground">
+ <div className="max-w-3xl mx-auto p-8 bg-card border border-border rounded-lg shadow-lg space-y-6 text-foreground">
  <div className="text-center border-b border-border/80 pb-4">
  <h2 className="text-xl font-bold uppercase tracking-wider">{title}</h2>
  <p className="text-xs text-muted-foreground mt-1">{storeName}</p>
@@ -221,11 +221,11 @@ export function ContractEditorSheet({
  </h4>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  {signatures.map((sig, i) => (
- <div key={i} className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+ <div key={i} className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-2">
  <img
  src={sig.signatureBase64}
  alt="Assinatura"
- className="h-12 w-auto max-w-[200px] aspect-[4/1] object-contain filter invert dark:invert-0" width={192} height={48} loading="lazy"
+ className="h-12 w-auto max-w-52 aspect-[4/1] object-contain filter invert dark:invert-0" width={192} height={48} loading="lazy"
  />
  <div className="text-[11px] font-medium text-foreground">
  {sig.signerName} ({sig.signerCpf})

@@ -94,14 +94,14 @@ function EventDetailPage() {
   if (!event) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center space-y-4">
-        <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-2">
+        <div className="inline-flex size-16 items-center justify-center rounded-lg bg-muted text-muted-foreground mb-2">
           <WarningCircle size={32} />
         </div>
         <h2 className="text-2xl font-bold text-foreground">Evento não encontrado</h2>
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
           O evento que você procura não existe ou foi cancelado pelo organizador.
         </p>
-        <Button asChild className="rounded-xl font-bold" variant="outline">
+        <Button asChild className="rounded-lg font-bold" variant="outline">
           <Link to="/agenda">
             <ArrowLeft size={16} weight="bold" className="mr-2" />
             Voltar para Agenda

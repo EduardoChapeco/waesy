@@ -114,10 +114,10 @@ function AdminMasterLogisticaPage() {
  return (
  <div className="space-y-6 max-w-6xl mx-auto pb-16 animate-in fade-in duration-200">
  {/* ── Topo & Ações ── */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-6 rounded-2xl border border-border/70">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-6 rounded-lg border border-border/70">
  <div className="space-y-1">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
  <Truck className="size-4" />
  </div>
  <h1 className="text-xl font-bold tracking-tight text-foreground">
@@ -135,7 +135,7 @@ function AdminMasterLogisticaPage() {
  <Button
  onClick={handleSave}
  disabled={isSubmitting}
- className="rounded-xl text-xs font-bold h-10 px-6 gap-2 shrink-0"
+ className="rounded-lg text-xs font-bold h-10 px-6 gap-2 shrink-0"
  >
  {isSubmitting ? (
  <>
@@ -155,8 +155,8 @@ function AdminMasterLogisticaPage() {
  {/* ── Coluna da Esquerda: Formulário de Configuração (7 colunas) ── */}
  <div className="lg:col-span-7 space-y-6">
  {/* 1. Textos Principais */}
- <Card className="p-6 rounded-2xl border border-border/70 space-y-4 bg-card">
- <div className="space-y-0.5 pb-2 border-b border-border/60">
+ <Card className="p-6 rounded-lg border border-border/70 space-y-4 bg-card">
+ <div className="space-y-1 pb-2 border-b border-border/60">
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Layers className="size-4 text-primary" />
  <span>Textos da Apresentação</span>
@@ -168,45 +168,45 @@ function AdminMasterLogisticaPage() {
 
  <div className="space-y-3">
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="sm:col-span-2 space-y-1.5">
+ <div className="sm:col-span-2 space-y-2">
  <Label className="text-xs font-bold text-foreground">Título Principal</Label>
  <Input
  value={title}
  onChange={(e) => setTitle(e.target.value)}
- className="h-10 rounded-xl text-xs bg-background font-medium"
+ className="h-10 rounded-lg text-xs bg-background font-medium"
  placeholder="Logística"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">Badge de Destaque</Label>
  <Input
  value={badge}
  onChange={(e) => setBadge(e.target.value)}
- className="h-10 rounded-xl text-xs bg-background font-medium"
+ className="h-10 rounded-lg text-xs bg-background font-medium"
  placeholder="Zero Taxa"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Subtítulo Explicativo</Label>
  <Input
  value={subtitle}
  onChange={(e) => setSubtitle(e.target.value)}
- className="h-10 rounded-xl text-xs bg-background"
+ className="h-10 rounded-lg text-xs bg-background"
  placeholder="Conecte-se aos motoboys da cidade sem intermediários..."
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">
  Nome da Solução de Despacho (Ex: MotoLink, Waesy Log)
  </Label>
  <Input
  value={motolinkName}
  onChange={(e) => setMotolinkName(e.target.value)}
- className="h-10 rounded-xl text-xs bg-background font-bold"
+ className="h-10 rounded-lg text-xs bg-background font-bold"
  placeholder="MotoLink"
  />
  </div>
@@ -214,8 +214,8 @@ function AdminMasterLogisticaPage() {
  </Card>
 
  {/* 2. Manifesto & Disclaimer Legal de Não-Intermediação */}
- <Card className="p-6 rounded-2xl border border-border/70 space-y-4 bg-card">
- <div className="space-y-0.5 pb-2 border-b border-border/60">
+ <Card className="p-6 rounded-lg border border-border/70 space-y-4 bg-card">
+ <div className="space-y-1 pb-2 border-b border-border/60">
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <ShieldCheck className="size-4 text-primary" />
  <span>Disclaimer Legal e Não-Intermediação</span>
@@ -225,7 +225,7 @@ function AdminMasterLogisticaPage() {
  </p>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">
  Termo de Esclarecimento de Não-Intermediação
  </Label>
@@ -233,15 +233,15 @@ function AdminMasterLogisticaPage() {
  value={disclaimer}
  onChange={(e) => setDisclaimer(e.target.value)}
  rows={3}
- className="w-full rounded-2xl border border-border bg-background p-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed resize-none"
+ className="w-full rounded-lg border border-border bg-background p-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed resize-none"
  placeholder="A Waesy não cobra comissões sobre entregas..."
  />
  </div>
  </Card>
 
  {/* 3. Upload de 3 Imagens Responsivas (Mobile, Tablet, Desktop) */}
- <Card className="p-6 rounded-2xl border border-border/70 space-y-4 bg-card">
- <div className="space-y-0.5 pb-2 border-b border-border/60">
+ <Card className="p-6 rounded-lg border border-border/70 space-y-4 bg-card">
+ <div className="space-y-1 pb-2 border-b border-border/60">
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <ImageIcon className="size-4 text-primary" />
  <span>Imagens Ilustrativas em 3 Resoluções</span>
@@ -255,7 +255,7 @@ function AdminMasterLogisticaPage() {
  {/* Desktop (Panorâmica 21:9 / 16:9) */}
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Monitor className="size-3.5 text-primary" />
  <span>Imagem Desktop (Panorâmica 21:9)</span>
  </Label>
@@ -274,7 +274,7 @@ function AdminMasterLogisticaPage() {
  {/* Tablet (4:3 / 16:10) */}
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Tablet className="size-3.5 text-primary" />
  <span>Imagem Tablet (Médio 4:3)</span>
  </Label>
@@ -294,7 +294,7 @@ function AdminMasterLogisticaPage() {
  {/* Mobile (1:1 / 9:16) */}
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Smartphone className="size-3.5 text-primary" />
  <span>Imagem Mobile (Quadrado 1:1)</span>
  </Label>
@@ -316,7 +316,7 @@ function AdminMasterLogisticaPage() {
 
  {/* ── Coluna da Direita: Truthful Live Preview Responsivo (5 colunas) ── */}
  <div className="lg:col-span-5 space-y-4">
- <Card className="p-5 rounded-2xl border border-border/70 bg-card space-y-4 sticky top-6">
+ <Card className="p-5 rounded-lg border border-border/70 bg-card space-y-4 sticky top-6">
  <div className="flex items-center justify-between pb-2 border-b border-border/60">
  <div className="flex items-center gap-2">
  <Info className="size-4 text-primary" />
@@ -324,12 +324,12 @@ function AdminMasterLogisticaPage() {
  </div>
 
  {/* Seletor de Breakpoints para Teste de Tela */}
- <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl">
+ <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg">
  <button
  type="button"
  onClick={() => setPreviewMode("desktop")}
  className={cn(
- "p-1.5 rounded-lg text-xs transition-all",
+ "p-2 rounded-lg text-xs transition-all",
  previewMode === "desktop"
  ? "bg-foreground text-background font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -342,7 +342,7 @@ function AdminMasterLogisticaPage() {
  type="button"
  onClick={() => setPreviewMode("tablet")}
  className={cn(
- "p-1.5 rounded-lg text-xs transition-all",
+ "p-2 rounded-lg text-xs transition-all",
  previewMode === "tablet"
  ? "bg-foreground text-background font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -355,7 +355,7 @@ function AdminMasterLogisticaPage() {
  type="button"
  onClick={() => setPreviewMode("mobile")}
  className={cn(
- "p-1.5 rounded-lg text-xs transition-all",
+ "p-2 rounded-lg text-xs transition-all",
  previewMode === "mobile"
  ? "bg-foreground text-background font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -370,13 +370,13 @@ function AdminMasterLogisticaPage() {
  {/* Mockup do Bloco de Logística */}
  <div
  className={cn(
- "rounded-2xl border border-border/80 overflow-hidden bg-background p-4 space-y-3 transition-all",
- previewMode === "mobile" && "max-w-[320px] mx-auto",
+ "rounded-lg border border-border/80 overflow-hidden bg-background p-4 space-y-3 transition-all",
+ previewMode === "mobile" && "max-w-80 mx-auto",
  previewMode === "tablet" && "max-w-full max-w-[420px] mx-auto"
  )}
  >
  {/* Imagem Adaptativa da Prévia */}
- <div className="relative rounded-xl overflow-hidden bg-muted aspect-video border border-border/40">
+ <div className="relative rounded-lg overflow-hidden bg-muted aspect-video border border-border/40">
  <img
  src={
  previewMode === "mobile"
@@ -402,7 +402,7 @@ function AdminMasterLogisticaPage() {
  </div>
 
  {/* Ficha Ilustrativa do Motoboy */}
- <div className="p-2.5 rounded-xl bg-muted/20 border border-border/60 space-y-2">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-2">
  <p className="text-[10px] font-bold text-foreground flex items-center gap-1">
  <Bike className="size-3 text-primary" />
  <span>Exemplo de Ficha de Motoboy Parceiro</span>

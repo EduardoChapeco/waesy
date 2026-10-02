@@ -129,23 +129,23 @@ function ConcursosPublicPage() {
         <Button
           asChild
           variant="outline"
-          className="h-10 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+          className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
         >
           <Link to="/conta/concursos">
-            <Ticket className="size-4 mr-1.5" />
+            <Ticket className="size-4 mr-2" />
             <span>Meus Cupons</span>
           </Link>
         </Button>
       </div>
 
       {/* ── Filtros de Descoberta (Tabs Limpas) ── */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
         <Button
           type="button"
           variant={filter === "all" ? "default" : "outline"}
           size="sm"
           onClick={() => handleFilterChange("all")}
-          className="h-9 px-3.5 rounded-xl text-xs font-semibold cursor-pointer"
+          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer"
         >
           Todos os Sorteios
         </Button>
@@ -154,7 +154,7 @@ function ConcursosPublicPage() {
           variant={filter === "stores" ? "default" : "outline"}
           size="sm"
           onClick={() => handleFilterChange("stores")}
-          className="h-9 px-3.5 rounded-xl text-xs font-semibold cursor-pointer"
+          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer"
         >
           Lojas da Região
         </Button>
@@ -163,7 +163,7 @@ function ConcursosPublicPage() {
           variant={filter === "official" ? "default" : "outline"}
           size="sm"
           onClick={() => handleFilterChange("official")}
-          className="h-9 px-3.5 rounded-xl text-xs font-semibold cursor-pointer"
+          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer"
         >
           Oficiais Waesy
         </Button>
@@ -172,7 +172,7 @@ function ConcursosPublicPage() {
           variant={filter === "completed" ? "default" : "outline"}
           size="sm"
           onClick={() => handleFilterChange("completed")}
-          className="h-9 px-3.5 rounded-xl text-xs font-semibold cursor-pointer"
+          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer"
         >
           Recém-Sorteados
         </Button>
@@ -185,8 +185,8 @@ function ConcursosPublicPage() {
           <span className="text-xs font-mono">Carregando sorteios...</span>
         </div>
       ) : concursos.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border/80 bg-card p-12 text-center space-y-3">
-          <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-border/80 bg-card p-12 text-center space-y-3">
+          <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Ticket className="size-6" />
           </div>
           <div className="max-w-md mx-auto space-y-1">
@@ -211,7 +211,7 @@ function ConcursosPublicPage() {
             return (
               <div
                 key={raffle.id}
-                className="rounded-2xl border border-border/80 bg-card overflow-hidden flex flex-col justify-between shadow-xs hover:border-foreground/30 transition-all group"
+                className="rounded-lg border border-border/80 bg-card overflow-hidden flex flex-col justify-between shadow-xs hover:border-foreground/30 transition-all group"
               >
                 <div>
                   {/* Frame de Imagem no Aspecto Exato 16:9 */}
@@ -235,13 +235,13 @@ function ConcursosPublicPage() {
                           to="/diretorio/$id"
                           params={{ id: raffle.storeId }}
                           onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/70 hover:bg-black/90 text-white text-[10px] backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/70 hover:bg-black/90 text-white text-[10px] backdrop-blur-md transition-all active:scale-95 cursor-pointer"
                         >
                           <Store className="size-3" />
                           <span>{raffle.storeName}</span>
                         </Link>
                       ) : (
-                        <Badge className="bg-black/70 text-white text-[10px] backdrop-blur-md border-0 gap-1 px-2.5 py-0.5">
+                        <Badge className="bg-black/70 text-white text-[10px] backdrop-blur-md border-0 gap-1 px-3 py-1">
                           <Store className="size-3" />
                           <span>{raffle.storeName}</span>
                         </Badge>
@@ -294,7 +294,7 @@ function ConcursosPublicPage() {
                     </div>
 
                     {isCompleted && raffle.winnerTicketNumber && (
-                      <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-3 flex items-center gap-3">
+                      <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 flex items-center gap-3">
                         <Trophy className="size-5 text-amber-500 shrink-0" />
                         <div className="text-xs">
                           <span className="font-bold text-foreground block">
@@ -313,7 +313,7 @@ function ConcursosPublicPage() {
                     variant="ghost"
                     size="sm"
                     onClick={(e) => handleShareConcurso(raffle, e)}
-                    className="h-10 px-3 rounded-xl text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="h-10 px-3 rounded-lg text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <Share2 className="size-3.5" />
                     <span>Compartilhar</span>
@@ -324,7 +324,7 @@ function ConcursosPublicPage() {
                       asChild
                       variant="outline"
                       size="sm"
-                      className="h-10 px-3.5 rounded-xl text-xs font-semibold cursor-pointer"
+                      className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
                     >
                       <Link to="/concurso/$id" params={{ id: raffle.id }}>
                         <span>Ver Detalhes</span>
@@ -337,7 +337,7 @@ function ConcursosPublicPage() {
                         size="sm"
                         disabled={hasReachedLimit}
                         onClick={(e) => handleOpenRaffleModal(raffle, e)}
-                        className="h-10 px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground cursor-pointer"
+                        className="h-10 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer"
                       >
                         <Ticket className="size-3.5" />
                         <span>{hasReachedLimit ? "Esgotado" : "Emitir Cupom"}</span>
@@ -353,7 +353,7 @@ function ConcursosPublicPage() {
 
       {/* ── MODAL CANÔNICO DE EMISSÃO RÁPIDA ── */}
       <Dialog open={!!selectedRaffle} onOpenChange={(open) => !open && setSelectedRaffle(null)}>
-        <DialogContent className="max-w-md rounded-3xl p-6 space-y-4">
+        <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">Emitir Cupom do Sorteio</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -361,7 +361,7 @@ function ConcursosPublicPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="rounded-2xl border border-border/60 bg-muted/40 p-3.5 text-xs text-muted-foreground space-y-2 max-h-52 overflow-y-auto leading-relaxed">
+          <div className="rounded-lg border border-border/60 bg-muted/40 p-4 text-xs text-muted-foreground space-y-2 max-h-52 overflow-y-auto leading-relaxed">
             <p className="font-semibold text-foreground">Regras de Participação:</p>
             <p>{selectedRaffle?.termsText}</p>
             <p className="font-mono text-[11px]">
@@ -369,7 +369,7 @@ function ConcursosPublicPage() {
             </p>
           </div>
 
-          <div className="flex items-start gap-2.5 pt-1">
+          <div className="flex items-start gap-3 pt-1">
             <Checkbox
               id="terms-accept-modal"
               checked={acceptedTerms}
@@ -388,7 +388,7 @@ function ConcursosPublicPage() {
               type="button"
               variant="outline"
               onClick={() => setSelectedRaffle(null)}
-              className="h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
@@ -396,7 +396,7 @@ function ConcursosPublicPage() {
               type="button"
               disabled={!acceptedTerms || isSubmittingTicket}
               onClick={handleConfirmParticipation}
-              className="h-11 px-5 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground cursor-pointer"
+              className="h-11 px-5 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer"
             >
               {isSubmittingTicket ? (
                 <Loader2 className="size-4 animate-spin" />

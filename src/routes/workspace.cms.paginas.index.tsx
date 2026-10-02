@@ -222,7 +222,7 @@ function CmsPagesPage() {
         actions={
           <Button
             onClick={() => setIsCreateModalOpen(true)}
-            className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 bg-foreground text-background hover:bg-foreground/90 shadow-sm"
+            className="h-9 px-4 rounded-lg font-semibold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-sm"
           >
             <Plus className="size-4" />
             <span>Nova Página</span>
@@ -238,7 +238,7 @@ function CmsPagesPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar..."
-            className="pl-8.5 h-9 rounded-xl text-xs bg-background border-border/80"
+            className="pl-8.5 h-9 rounded-lg text-xs bg-background border-border/80"
           />
         </div>
         <span className="text-xs text-muted-foreground font-mono">
@@ -248,7 +248,7 @@ function CmsPagesPage() {
 
       {/* ── EMPTY STATE SILENCIOSO (ZERO TEXTÕES) ── */}
       {filteredPages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border/80 rounded-2xl bg-card/40 text-center p-6">
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border/80 rounded-lg bg-card/40 text-center p-6">
           <FileText className="size-8 text-muted-foreground/30 mb-3" />
           <p className="text-xs font-semibold text-foreground mb-4">
             {search ? "Nenhum resultado." : "Nenhuma página criada."}
@@ -274,7 +274,7 @@ function CmsPagesPage() {
             return (
               <div
                 key={page.id}
-                className="group relative flex flex-col bg-card border border-border/80 rounded-2xl overflow-hidden shadow-xs hover:border-foreground/30 hover:shadow-md transition-all"
+                className="group relative flex flex-col bg-card border border-border/80 rounded-lg overflow-hidden shadow-xs hover:border-foreground/30 hover:shadow-md transition-all"
               >
                 {/* Viewport Preview / Thumbnail Mock */}
                 <div
@@ -295,7 +295,7 @@ function CmsPagesPage() {
                     </div>
                     <Badge
                       variant="outline"
-                      className={`text-xs font-mono font-medium px-1.5 py-0 rounded-md border ${
+                      className={`text-xs font-mono font-medium px-2 py-0 rounded-md border ${
                         isPublished
                           ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
                           : "bg-muted text-muted-foreground border-border/80"
@@ -306,7 +306,7 @@ function CmsPagesPage() {
                   </div>
 
                   {/* Wireframe Miniatura da Página */}
-                  <div className="space-y-1.5 px-2 opacity-50 group-hover:opacity-75 transition-opacity">
+                  <div className="space-y-2 px-2 opacity-50 group-hover:opacity-75 transition-opacity">
                     <div className="h-2 w-3/4 bg-foreground/20 rounded-sm" />
                     <div className="h-1.5 w-1/2 bg-foreground/15 rounded-sm" />
                     <div className="grid grid-cols-3 gap-1 pt-1">
@@ -318,7 +318,7 @@ function CmsPagesPage() {
 
                   {/* Overlay Flutuante com Ação Direta */}
                   <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <span className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-foreground text-background shadow-xs flex items-center gap-1.5">
+                    <span className="text-xs font-semibold px-3 py-2 rounded-lg bg-foreground text-background shadow-xs flex items-center gap-2">
                       <Edit3 className="size-3.5" />
                       Editar
                     </span>
@@ -326,7 +326,7 @@ function CmsPagesPage() {
                 </div>
 
                 {/* Corpo do Card */}
-                <div className="p-3.5 flex flex-col justify-between flex-1 gap-2">
+                <div className="p-4 flex flex-col justify-between flex-1 gap-2">
                   <div className="min-w-0">
                     <h3
                       onClick={() =>
@@ -340,7 +340,7 @@ function CmsPagesPage() {
                     >
                       {page.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground font-mono truncate mt-0.5">
+                    <p className="text-xs text-muted-foreground font-mono truncate mt-1">
                       /{page.slug}
                     </p>
                   </div>
@@ -369,7 +369,7 @@ function CmsPagesPage() {
                           <MoreHorizontal className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40 rounded-xl">
+                      <DropdownMenuContent align="end" className="w-40 rounded-lg">
                         <DropdownMenuItem
                           onClick={() =>
                             navigate({
@@ -422,7 +422,7 @@ function CmsPagesPage() {
       {/* ── CRIAÇÃO VISUAL DE PROJETOS (FASE 3 - DESKTOP MODAL VS MOBILE BOTTOM SHEET) ── */}
       {isMobile ? (
         <Sheet open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl p-5 flex flex-col">
+          <SheetContent side="bottom" className="h-[85vh] rounded-t-lg p-5 flex flex-col">
             <SheetHeader className="mb-3">
               <SheetTitle className="text-sm font-bold tracking-tight">Nova Página</SheetTitle>
             </SheetHeader>
@@ -434,7 +434,7 @@ function CmsPagesPage() {
                   value={title}
                   onChange={(e) => handleTitleChange(e.target.value)}
                   placeholder="Ex: Lançamento de Verão"
-                  className="h-10 rounded-xl text-xs mt-1"
+                  className="h-10 rounded-lg text-xs mt-1"
                 />
               </div>
 
@@ -449,7 +449,7 @@ function CmsPagesPage() {
                       <div
                         key={tpl.id}
                         onClick={() => handleCreate(tpl.id)}
-                        className="p-3.5 rounded-xl border border-border/80 bg-card active:bg-muted/60 flex items-center justify-between cursor-pointer"
+                        className="p-4 rounded-lg border border-border/80 bg-card active:bg-muted/60 flex items-center justify-between cursor-pointer"
                       >
                         <div className="flex items-center gap-3 min-w-0 pr-2">
                           <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
@@ -458,11 +458,11 @@ function CmsPagesPage() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <h4 className="text-xs font-bold text-foreground truncate">{tpl.name}</h4>
-                              <span className="text-xs font-medium px-1.5 py-0.2 rounded bg-muted/80 text-muted-foreground">
+                              <span className="text-xs font-medium px-2 py-0.2 rounded bg-muted/80 text-muted-foreground">
                                 {tpl.badge}
                               </span>
                             </div>
-                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
                               {tpl.description}
                             </p>
                           </div>
@@ -478,7 +478,7 @@ function CmsPagesPage() {
         </Sheet>
       ) : (
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="max-w-xl rounded-2xl p-5 border-border/80">
+          <DialogContent className="max-w-xl rounded-lg p-5 border-border/80">
             <DialogHeader className="mb-3">
               <DialogTitle className="text-sm font-bold tracking-tight">Nova Página</DialogTitle>
             </DialogHeader>
@@ -490,7 +490,7 @@ function CmsPagesPage() {
                   value={title}
                   onChange={(e) => handleTitleChange(e.target.value)}
                   placeholder="Ex: Lançamento de Verão"
-                  className="h-9 rounded-xl text-xs mt-1"
+                  className="h-9 rounded-lg text-xs mt-1"
                   autoFocus
                 />
               </div>
@@ -499,7 +499,7 @@ function CmsPagesPage() {
                 <Label className="text-xs font-semibold text-muted-foreground mb-2 block">
                   Escolha o modelo inicial
                 </Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[320px] overflow-y-auto p-0.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[320px] overflow-y-auto p-1">
                   {TEMPLATE_OPTIONS.map((tpl) => {
                     const Icon = tpl.icon;
                     const isSelected = selectedTemplateId === tpl.id;
@@ -508,7 +508,7 @@ function CmsPagesPage() {
                       <div
                         key={tpl.id}
                         onClick={() => setSelectedTemplateId(tpl.id)}
-                        className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                        className={`p-3 rounded-lg border transition-all cursor-pointer flex flex-col justify-between ${
                           isSelected
                             ? "border-foreground bg-muted/40 shadow-xs"
                             : "border-border/80 bg-card hover:border-foreground/40"
@@ -519,12 +519,12 @@ function CmsPagesPage() {
                             <div className="size-7 rounded-lg bg-muted flex items-center justify-center">
                               <Icon className="size-3.5 text-foreground" />
                             </div>
-                            <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-muted/80 text-muted-foreground">
+                            <span className="text-xs font-medium px-2 py-1 rounded bg-muted/80 text-muted-foreground">
                               {tpl.badge}
                             </span>
                           </div>
                           <h4 className="text-xs font-bold text-foreground line-clamp-1">{tpl.name}</h4>
-                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                             {tpl.description}
                           </p>
                         </div>
@@ -540,7 +540,7 @@ function CmsPagesPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="h-9 px-3 rounded-xl text-xs"
+                  className="h-9 px-3 rounded-lg text-xs"
                 >
                   Cancelar
                 </Button>
@@ -549,10 +549,10 @@ function CmsPagesPage() {
                   size="sm"
                   disabled={isSubmitting}
                   onClick={() => handleCreate(selectedTemplateId)}
-                  className="h-9 px-4 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-sm"
+                  className="h-9 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-sm"
                 >
                   {isSubmitting ? (
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-2">
                       <Loader2 className="size-3.5 animate-spin" />
                       Criando...
                     </span>
@@ -568,7 +568,7 @@ function CmsPagesPage() {
 
       {/* ── DIÁLOGO DE EXCLUSÃO SILENCIOSO ── */}
       <AlertDialog open={Boolean(pageToDelete)} onOpenChange={(open) => { if (!open) setPageToDelete(null); }}>
-        <AlertDialogContent className="max-w-sm rounded-2xl p-5 border-border/80">
+        <AlertDialogContent className="max-w-sm rounded-lg p-5 border-border/80">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm font-bold">
               Excluir página?
@@ -580,7 +580,7 @@ function CmsPagesPage() {
           <AlertDialogFooter className="mt-3 gap-2">
             <AlertDialogCancel
               disabled={isDeleting}
-              className="h-9 px-3 rounded-xl text-xs font-medium"
+              className="h-9 px-3 rounded-lg text-xs font-medium"
             >
               Cancelar
             </AlertDialogCancel>
@@ -590,7 +590,7 @@ function CmsPagesPage() {
                 confirmDelete();
               }}
               disabled={isDeleting}
-              className="h-9 px-3 rounded-xl text-xs font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              className="h-9 px-3 rounded-lg text-xs font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground"
             >
               {isDeleting ? "Excluindo..." : "Excluir"}
             </AlertDialogAction>

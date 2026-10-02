@@ -32,7 +32,7 @@ export const Route = createFileRoute("/_store/conta/salvos")({
 function SavedItemsErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <Bookmark className="size-8" />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar itens salvos</h2>
@@ -40,10 +40,10 @@ function SavedItemsErrorComponent({ error, reset }: { error: any; reset: () => v
         {error?.message || "Não foi possível carregar sua lista de itens salvos no momento."}
       </p>
       <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-xl font-bold">
+        <Button onClick={reset} className="rounded-lg font-bold">
           Tentar Novamente
         </Button>
-        <Button asChild variant="outline" className="rounded-xl font-bold">
+        <Button asChild variant="outline" className="rounded-lg font-bold">
           <Link to="/conta">Voltar para Conta</Link>
         </Button>
       </div>
@@ -124,12 +124,12 @@ function SavedItemsPage() {
       {/* ── 1. Top Header Limpo & Direto (Apple HIG) ── */}
       <NativeMobileHeader title="Salvos" fallbackHref="/conta" mobileOnly />
       <div className="hidden sm:flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
             Salvos
           </h1>
           {filteredFavorites && filteredFavorites.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {filteredFavorites.length}
             </Badge>
           )}
@@ -139,7 +139,7 @@ function SavedItemsPage() {
           asChild
           size="sm"
           variant="outline"
-          className="rounded-xl h-9 px-3.5 text-xs font-semibold cursor-pointer hover:bg-muted"
+          className="rounded-lg h-9 px-4 text-xs font-semibold cursor-pointer hover:bg-muted"
         >
           <Link to="/mercado">Explorar</Link>
         </Button>
@@ -182,7 +182,7 @@ function SavedItemsPage() {
         ) : (
           <>
             {/* Trilho com scroll horizontal para não empilhar linhas no mobile */}
-            <div className="flex-1 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
+            <div className="flex-1 flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1">
               {TYPE_TABS.map((tab) => {
                 const isActive = selectedType === tab.id;
                 return (
@@ -191,7 +191,7 @@ function SavedItemsPage() {
                     type="button"
                     onClick={() => setSelectedType(tab.id)}
                     className={cn(
-                      "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+                      "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
                       isActive
                         ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                         : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -211,7 +211,7 @@ function SavedItemsPage() {
               size="icon"
               onClick={() => setIsSearchOpen(true)}
               className={cn(
-                "h-10 sm:h-11 w-10 sm:w-11 rounded-xl shrink-0 border-border/70 bg-card hover:bg-muted/50 cursor-pointer relative shadow-2xs active:scale-95",
+                "h-10 sm:h-11 w-10 sm:w-11 rounded-lg shrink-0 border-border/70 bg-card hover:bg-muted/50 cursor-pointer relative shadow-2xs active:scale-95",
                 searchQuery ? "border-primary text-primary" : ""
               )}
               title="Buscar em itens salvos"
@@ -227,14 +227,14 @@ function SavedItemsPage() {
 
       {/* ── 3. Itens Salvos: Universal Dual Design (Mobile WhatsApp/Apple HIG List vs Desktop Grid) ── */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-2.5">
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
           <Loader2 className="size-6 animate-spin text-primary" />
           <p className="text-xs font-medium">Carregando itens salvos...</p>
         </div>
       ) : filteredFavorites && filteredFavorites.length > 0 ? (
         <>
           {/* ── MOBILE: WhatsApp / Apple HIG List Pattern ── */}
-          <div className="block sm:hidden divide-y divide-border/20 rounded-none sm:rounded-2xl bg-card border-y sm:border border-border/40 overflow-hidden shadow-xs">
+          <div className="block sm:hidden divide-y divide-border/20 rounded-none sm:rounded-lg bg-card border-y sm:border border-border/40 overflow-hidden shadow-xs">
             {filteredFavorites.map((fav: any) => {
               const item = fav.details;
               if (!item) return null;
@@ -275,10 +275,10 @@ function SavedItemsPage() {
               return (
                 <div
                   key={`mobile-${fav.id}`}
-                  className="flex items-center gap-3 p-3.5 hover:bg-muted/40 active:bg-muted/60 transition-colors"
+                  className="flex items-center gap-3 p-4 hover:bg-muted/40 active:bg-muted/60 transition-colors"
                 >
                   {/* Thumbnail Quadrada Ergonômica */}
-                  <div className="size-16 rounded-xl bg-muted border border-border/40 overflow-hidden shrink-0 flex items-center justify-center relative">
+                  <div className="size-16 rounded-lg bg-muted border border-border/40 overflow-hidden shrink-0 flex items-center justify-center relative">
                     {cover ? (
                       <img src={cover} alt={title} className="size-full object-cover" />
                     ) : (
@@ -287,9 +287,9 @@ function SavedItemsPage() {
                   </div>
 
                   {/* Informações Centrais */}
-                  <div className="flex-1 min-w-0 space-y-0.5">
-                    <div className="flex items-center gap-1.5">
-                      <Badge variant="outline" className="text-[9px] uppercase font-bold px-1.5 py-0 rounded-md">
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[9px] uppercase font-bold px-2 py-0 rounded-md">
                         {badgeLabel}
                       </Badge>
                       <span className="text-xs font-bold text-foreground truncate">{title}</span>
@@ -299,7 +299,7 @@ function SavedItemsPage() {
                         {subtitle}
                       </p>
                     )}
-                    <div className="pt-0.5">
+                    <div className="pt-1">
                       <span className="text-xs font-black text-primary font-mono">{priceLabel}</span>
                     </div>
                   </div>
@@ -310,7 +310,7 @@ function SavedItemsPage() {
                       asChild
                       size="icon"
                       variant="ghost"
-                      className="size-9 rounded-xl hover:bg-muted cursor-pointer"
+                      className="size-9 rounded-lg hover:bg-muted cursor-pointer"
                       title="Acessar"
                     >
                       <Link to={targetUrl}>
@@ -321,7 +321,7 @@ function SavedItemsPage() {
                       size="icon"
                       variant="ghost"
                       onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                      className="size-9 rounded-xl text-destructive hover:bg-destructive/10 cursor-pointer"
+                      className="size-9 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       title="Remover"
                     >
                       <Trash2 className="size-4" />
@@ -333,7 +333,7 @@ function SavedItemsPage() {
           </div>
 
           {/* ── DESKTOP: Clean Expansive Grid ── */}
-          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 w-full">
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-4 w-full">
             {filteredFavorites.map((fav: any) => {
               const item = fav.details;
               if (!item) return null;
@@ -346,7 +346,7 @@ function SavedItemsPage() {
                 return (
                   <div
                     key={fav.id}
-                    className="bg-card rounded-2xl overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
+                    className="bg-card rounded-lg overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="relative aspect-video bg-muted overflow-hidden">
@@ -362,14 +362,14 @@ function SavedItemsPage() {
                         </Badge>
                       </div>
 
-                      <div className="p-3.5 space-y-1.5">
+                      <div className="p-4 space-y-2">
                         <h3 className="text-sm font-bold text-foreground line-clamp-1">
                           {item.title}
                         </h3>
                         <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                           {item.content}
                         </p>
-                        <div className="pt-1.5 flex items-baseline justify-between">
+                        <div className="pt-2 flex items-baseline justify-between">
                           <span className="text-sm sm:text-base font-black text-primary font-mono">
                             {item.price_cents ? formatMoney(item.price_cents) : "A Combinar"}
                           </span>
@@ -383,15 +383,15 @@ function SavedItemsPage() {
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
+                    <div className="p-3 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
                       <Button
                         asChild
                         size="sm"
                         variant="outline"
-                        className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
+                        className="rounded-lg text-xs h-10 flex-1 font-semibold cursor-pointer"
                       >
                         <Link to="/classificados/$id" params={{ id: item.id }}>
-                          <ExternalLink className="size-3.5 mr-1.5" />
+                          <ExternalLink className="size-3.5 mr-2" />
                           <span>Ver Anúncio</span>
                         </Link>
                       </Button>
@@ -400,7 +400,7 @@ function SavedItemsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                        className="rounded-xl size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        className="rounded-lg size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
                         title="Remover dos salvos"
                       >
                         <Trash2 className="size-4" />
@@ -417,7 +417,7 @@ function SavedItemsPage() {
                 return (
                   <div
                     key={fav.id}
-                    className="bg-card rounded-2xl overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
+                    className="bg-card rounded-lg overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="relative aspect-video bg-muted overflow-hidden">
@@ -440,7 +440,7 @@ function SavedItemsPage() {
                         </Badge>
                       </div>
 
-                      <div className="p-3.5 space-y-1.5">
+                      <div className="p-4 space-y-2">
                         <h3 className="text-sm font-bold text-foreground line-clamp-1">
                           {item.name}
                         </h3>
@@ -450,7 +450,7 @@ function SavedItemsPage() {
                             {item.duration_minutes} min
                           </p>
                         )}
-                        <div className="pt-1.5 flex items-baseline justify-between">
+                        <div className="pt-2 flex items-baseline justify-between">
                           <span className="text-sm sm:text-base font-black text-primary font-mono">
                             {formatMoney(item.price_cents)}
                           </span>
@@ -458,16 +458,16 @@ function SavedItemsPage() {
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
+                    <div className="p-3 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
                       {isService ? (
                         <Button
                           asChild
                           size="sm"
                           variant="outline"
-                          className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
+                          className="rounded-lg text-xs h-10 flex-1 font-semibold cursor-pointer"
                         >
                           <Link to="/agendar/$id" params={{ id: item.id }}>
-                            <ExternalLink className="size-3.5 mr-1.5" />
+                            <ExternalLink className="size-3.5 mr-2" />
                             <span>Agendar Horário</span>
                           </Link>
                         </Button>
@@ -476,10 +476,10 @@ function SavedItemsPage() {
                           asChild
                           size="sm"
                           variant="outline"
-                          className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
+                          className="rounded-lg text-xs h-10 flex-1 font-semibold cursor-pointer"
                         >
                           <Link to="/produto/$slug" params={{ slug: item.slug || item.id }}>
-                            <ExternalLink className="size-3.5 mr-1.5" />
+                            <ExternalLink className="size-3.5 mr-2" />
                             <span>Ver Produto</span>
                           </Link>
                         </Button>
@@ -489,7 +489,7 @@ function SavedItemsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                        className="rounded-xl size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        className="rounded-lg size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
                         title="Remover dos salvos"
                       >
                         <Trash2 className="size-4" />
@@ -503,7 +503,7 @@ function SavedItemsPage() {
                 return (
                   <div
                     key={fav.id}
-                    className="bg-card rounded-2xl overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
+                    className="bg-card rounded-lg overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="relative aspect-video bg-muted overflow-hidden">
@@ -526,14 +526,14 @@ function SavedItemsPage() {
                         </Badge>
                       </div>
 
-                      <div className="p-3.5 space-y-1.5">
+                      <div className="p-4 space-y-2">
                         <h3 className="text-sm font-bold text-foreground line-clamp-1">
                           {item.title}
                         </h3>
                         <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                           {item.description}
                         </p>
-                        <div className="pt-1.5 flex items-baseline justify-between">
+                        <div className="pt-2 flex items-baseline justify-between">
                           <span className="text-xs font-semibold text-primary">
                             {new Date(item.event_date).toLocaleDateString("pt-BR")}
                           </span>
@@ -547,15 +547,15 @@ function SavedItemsPage() {
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
+                    <div className="p-3 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
                       <Button
                         asChild
                         size="sm"
                         variant="outline"
-                        className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
+                        className="rounded-lg text-xs h-10 flex-1 font-semibold cursor-pointer"
                       >
                         <Link to="/evento/$id" params={{ id: item.id }}>
-                          <ExternalLink className="size-3.5 mr-1.5" />
+                          <ExternalLink className="size-3.5 mr-2" />
                           <span>Ver Ingressos</span>
                         </Link>
                       </Button>
@@ -564,7 +564,7 @@ function SavedItemsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                        className="rounded-xl size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        className="rounded-lg size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
                         title="Remover dos salvos"
                       >
                         <Trash2 className="size-4" />
@@ -579,8 +579,8 @@ function SavedItemsPage() {
           </div>
         </>
       ) : (
-        <div className="border border-border/70 bg-card rounded-2xl p-6 sm:p-12 text-center space-y-3.5 shadow-xs w-full">
-          <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+        <div className="border border-border/70 bg-card rounded-lg p-6 sm:p-12 text-center space-y-4 shadow-xs w-full">
+          <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Bookmark className="size-6" />
           </div>
           <div className="space-y-1">
@@ -598,12 +598,12 @@ function SavedItemsPage() {
               variant="outline"
               size="sm"
               onClick={() => setSearchQuery("")}
-              className="rounded-xl h-10 px-4 text-xs font-bold"
+              className="rounded-lg h-10 px-4 text-xs font-bold"
             >
               Limpar busca
             </Button>
           ) : (
-            <Button asChild size="default" className="rounded-xl h-10 sm:h-11 px-6 text-xs sm:text-sm font-bold gap-2 mt-1 shadow-xs cursor-pointer">
+            <Button asChild size="default" className="rounded-lg h-10 sm:h-11 px-6 text-xs sm:text-sm font-bold gap-2 mt-1 shadow-xs cursor-pointer">
               <Link to="/mercado">
                 <ShoppingBag className="size-4" />
                 <span>Explorar Mercado</span>

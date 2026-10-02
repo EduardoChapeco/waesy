@@ -97,7 +97,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
   const VerdictIcon = verdictCfg.icon;
 
   return (
-    <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-6 shadow-xs select-none">
+    <div className="rounded-lg border border-border/80 bg-card p-5 space-y-6 shadow-xs select-none">
       {/* Header do Painel */}
       <div className="flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-border/60">
         <div className="space-y-1">
@@ -106,7 +106,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
               SimLab V2 • Aaru Discrete Choice
             </Badge>
             {synthesis && (
-              <Badge className={`text-xs font-semibold py-0.5 px-2 gap-1 ${verdictCfg.className}`}>
+              <Badge className={`text-xs font-semibold py-1 px-2 gap-1 ${verdictCfg.className}`}>
                 <VerdictIcon className="size-3" />
                 <span>{verdictCfg.label}</span>
               </Badge>
@@ -128,7 +128,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
               setSynthesis(null);
               setResponses([]);
             }}
-            className="h-8 rounded-xl text-xs gap-1.5"
+            className="h-8 rounded-lg text-xs gap-2"
           >
             <RefreshCw className="size-3.5" />
             <span>Nova Auditoria</span>
@@ -140,29 +140,29 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
       {!synthesis ? (
         <form onSubmit={handleRunAudit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="sm:col-span-2 space-y-1.5">
+            <div className="sm:col-span-2 space-y-2">
               <label className="text-xs font-bold text-foreground">Título da Oferta / Produto</label>
               <Input
                 value={offerTitle}
                 onChange={(e) => setOfferTitle(e.target.value)}
                 placeholder="ex: Curso de Inglês, Hamburguer Artesanal, Viagem Gramado"
-                className="h-9 rounded-xl text-xs"
+                className="h-9 rounded-lg text-xs"
                 required
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground">Preço Unitário (R$)</label>
               <Input
                 value={testPrice}
                 onChange={(e) => setTestPrice(e.target.value)}
                 placeholder="89.90"
-                className="h-9 rounded-xl text-xs font-mono"
+                className="h-9 rounded-lg text-xs font-mono"
                 required
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="text-xs font-bold text-foreground">
               Hipótese Comercial / Texto de Apoio
             </label>
@@ -170,7 +170,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
               value={offerObjective}
               onChange={(e) => setOfferObjective(e.target.value)}
               placeholder="Descreva a oferta, diferenciais e condições de pagamento..."
-              className="min-h-[72px] rounded-xl text-xs resize-none"
+              className="min-h-[72px] rounded-lg text-xs resize-none"
               required
             />
           </div>
@@ -184,7 +184,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
             <Button
               type="submit"
               disabled={isRunning}
-              className="h-9 px-4 rounded-xl text-xs font-bold gap-2"
+              className="h-9 px-4 rounded-lg text-xs font-bold gap-2"
             >
               {isRunning ? (
                 <>
@@ -205,7 +205,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
         <div className="space-y-6">
           {/* Grade de 4 KPIs Executivos */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-1">
+            <div className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Taxa de Aprovação
               </span>
@@ -220,7 +220,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
               <Progress value={synthesis.overall_approval_rate} className="h-1 bg-muted/60" />
             </div>
 
-            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-1">
+            <div className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 NPS Sintético
               </span>
@@ -241,7 +241,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-1">
+            <div className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Conversão Estimada (IC 95%)
               </span>
@@ -255,7 +255,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-1">
+            <div className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Elasticidade de Preço
               </span>
@@ -273,30 +273,30 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
 
           {/* Gatilhos e Barreiras */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl border border-border/70 bg-muted/10 space-y-2.5">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <div className="p-4 rounded-lg border border-border/70 bg-muted/10 space-y-3">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <CheckCircle2 className="size-3.5 text-emerald-500" />
                 <span>Top Gatilhos de Compra Identificados</span>
               </span>
-              <ul className="space-y-1.5">
+              <ul className="space-y-2">
                 {synthesis.top_3_buying_triggers.map((trig, i) => (
                   <li key={i} className="text-xs text-foreground/90 flex items-start gap-2">
-                    <span className="size-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                    <span className="size-1.5 rounded-full bg-emerald-500 mt-2 shrink-0" />
                     <span>{trig}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="p-4 rounded-xl border border-border/70 bg-muted/10 space-y-2.5">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <div className="p-4 rounded-lg border border-border/70 bg-muted/10 space-y-3">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <AlertTriangle className="size-3.5 text-amber-500" />
                 <span>Top Barreiras e Objeções a Superar</span>
               </span>
-              <ul className="space-y-1.5">
+              <ul className="space-y-2">
                 {synthesis.top_3_friction_barriers.map((barr, i) => (
                   <li key={i} className="text-xs text-foreground/90 flex items-start gap-2">
-                    <span className="size-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+                    <span className="size-1.5 rounded-full bg-amber-500 mt-2 shrink-0" />
                     <span>{barr}</span>
                   </li>
                 ))}
@@ -306,7 +306,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
 
           {/* Ações Recomendadas */}
           {synthesis.recommended_actions.length > 0 && (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               <span className="text-xs font-bold text-foreground">
                 Recomendações do Conselho Científico
               </span>
@@ -314,9 +314,9 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
                 {synthesis.recommended_actions.map((act, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-xl border border-border/60 bg-muted/10 flex items-start justify-between gap-3 text-xs"
+                    className="p-3 rounded-lg border border-border/60 bg-muted/10 flex items-start justify-between gap-3 text-xs"
                   >
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <p className="font-bold text-foreground">{act.title}</p>
                       <p className="text-muted-foreground text-[11px] leading-relaxed">
                         {act.description}
@@ -342,7 +342,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
 
           {/* Citações Diretas de Consumidores (Verbatims) */}
           {responses.length > 0 && (
-            <div className="space-y-2.5 pt-2 border-t border-border/60">
+            <div className="space-y-3 pt-2 border-t border-border/60">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground">
                   Depoimentos dos Agentes Sintéticos ({responses.length})
@@ -354,7 +354,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
                 {responses.slice(0, 6).map((resp) => (
                   <div
                     key={resp.id}
-                    className="p-3 rounded-xl border border-border/50 bg-background/60 text-xs space-y-1.5"
+                    className="p-3 rounded-lg border border-border/50 bg-background/60 text-xs space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-foreground">

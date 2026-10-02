@@ -58,7 +58,7 @@ export function CareersJobGrid({ content, design_tokens }: CareersJobGridProps) 
  {jobs.map((job) => (
  <div
  key={job.id}
- className="p-6 rounded-2xl border border-border/70 bg-card hover:border-primary/50 transition-all duration-200 shadow-sm flex flex-col justify-between gap-5 group"
+ className="p-6 rounded-lg border border-border/70 bg-card hover:border-primary/50 transition-all duration-200 shadow-sm flex flex-col justify-between gap-5 group"
  >
  <div className="space-y-3">
  <div className="flex items-center gap-2 flex-wrap">
@@ -77,7 +77,7 @@ export function CareersJobGrid({ content, design_tokens }: CareersJobGridProps) 
  {job.title}
  </h3>
 
- <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1.5">
+ <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-2">
  <span className="flex items-center gap-1">
  <MapPin className="w-3.5 h-3.5" />
  {job.location}
@@ -98,7 +98,7 @@ export function CareersJobGrid({ content, design_tokens }: CareersJobGridProps) 
  </div>
 
  <Button
- className="w-full min-h-[44px] gap-2 font-medium"
+ className="w-full min-h-11 gap-2 font-medium"
  onClick={() => {
  setSelectedJob(job);
  setIsApplyModalOpen(true);

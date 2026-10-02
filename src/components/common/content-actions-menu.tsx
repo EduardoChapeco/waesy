@@ -171,18 +171,18 @@ export function ContentActionsMenu({
  <Button
  variant="ghost"
  size="icon"
- className="size-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 shrink-0"
+ className="size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 shrink-0"
  aria-label="Ações do conteúdo"
  >
  <MoreHorizontal className="size-4" />
  </Button>
  </DropdownMenuTrigger>
 
- <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1.5 border-border">
+ <DropdownMenuContent align="end" className="w-56 rounded-lg p-2 border-border">
  {/* Seção 1: Compartilhamento e Links */}
  <DropdownMenuItem
  onClick={handleCopyLink}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
  >
  <Copy className="size-3.5 text-muted-foreground" />
  <span>Copiar Link</span>
@@ -190,7 +190,7 @@ export function ContentActionsMenu({
 
  <DropdownMenuItem
  onClick={handleShareClick}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
  >
  <Share2 className="size-3.5 text-muted-foreground" />
  <span>Compartilhar</span>
@@ -207,7 +207,7 @@ export function ContentActionsMenu({
  {onEdit && (
  <DropdownMenuItem
  onClick={onEdit}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
  >
  <Edit3 className="size-3.5 text-muted-foreground" />
  <span>Editar Publicação</span>
@@ -222,7 +222,7 @@ export function ContentActionsMenu({
  <DropdownMenuItem
  onClick={() => handleStatusTransition("paused")}
  disabled={isPerformingAction}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
  >
  <Pause className="size-3.5 text-amber-500" />
  <span>Pausar Anúncio</span>
@@ -231,7 +231,7 @@ export function ContentActionsMenu({
  <DropdownMenuItem
  onClick={() => handleStatusTransition("reserved")}
  disabled={isPerformingAction}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
  >
  <Clock className="size-3.5 text-sky-500" />
  <span>Marcar como Reservado</span>
@@ -240,7 +240,7 @@ export function ContentActionsMenu({
  <DropdownMenuItem
  onClick={() => handleStatusTransition("completed")}
  disabled={isPerformingAction}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
  >
  <CheckCircle2 className="size-3.5 text-emerald-500" />
  <span>{getCompletedLabel()}</span>
@@ -252,7 +252,7 @@ export function ContentActionsMenu({
  <DropdownMenuItem
  onClick={() => handleStatusTransition("active")}
  disabled={isPerformingAction}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
  >
  <Play className="size-3.5 text-emerald-500" />
  <span>Reativar Anúncio</span>
@@ -264,7 +264,7 @@ export function ContentActionsMenu({
  <DropdownMenuItem
  onClick={() => handleStatusTransition("active")}
  disabled={isPerformingAction}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
  >
  <Play className="size-3.5 text-emerald-500" />
  <span>Remover Reserva</span>
@@ -273,7 +273,7 @@ export function ContentActionsMenu({
  <DropdownMenuItem
  onClick={() => handleStatusTransition("completed")}
  disabled={isPerformingAction}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
  >
  <CheckCircle2 className="size-3.5 text-emerald-500" />
  <span>{getCompletedLabel()}</span>
@@ -284,7 +284,7 @@ export function ContentActionsMenu({
  <DropdownMenuItem
  onClick={() => handleStatusTransition("archived")}
  disabled={isPerformingAction}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
  >
  <Archive className="size-3.5 text-muted-foreground" />
  <span>Arquivar</span>
@@ -298,7 +298,7 @@ export function ContentActionsMenu({
  <DropdownMenuSeparator className="my-1" />
  <DropdownMenuItem
  onClick={() => setDeleteAlertOpen(true)}
- className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
+ className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
  >
  <Trash2 className="size-3.5 text-destructive" />
  <span>Excluir Anúncio</span>
@@ -312,7 +312,7 @@ export function ContentActionsMenu({
           <DropdownMenuSeparator className="my-1" />
           <DropdownMenuItem
             onClick={handleToggleSave}
-            className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2"
+            className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
           >
             <Bookmark
               className={`size-3.5 ${isSaved ? "text-primary fill-primary" : "text-muted-foreground"}`}
@@ -324,7 +324,7 @@ export function ContentActionsMenu({
           {!isOwner && (
             <DropdownMenuItem
               onClick={handleReport}
-              className="text-xs font-medium rounded-xl py-2 cursor-pointer gap-2 text-destructive/80 focus:bg-destructive/10 focus:text-destructive"
+              className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2 text-destructive/80 focus:bg-destructive/10 focus:text-destructive"
             >
               <Flag className="size-3.5" />
               <span>Denunciar Publicação</span>
@@ -354,9 +354,9 @@ export function ContentActionsMenu({
 
  {/* Alert Dialog de Exclusão com Explicação de Dependências */}
  <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
- <AlertDialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6 p-5">
+ <AlertDialogContent className="sm:max-w-md sm:rounded-lg sm:p-6 p-5">
  <AlertDialogHeader className="space-y-2">
- <div className="size-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
+ <div className="size-10 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center">
  <Trash2 className="size-5" />
  </div>
  <AlertDialogTitle className="text-base font-bold text-foreground">
@@ -369,11 +369,11 @@ export function ContentActionsMenu({
  </AlertDialogDescription>
  </AlertDialogHeader>
  <AlertDialogFooter className="pt-2 gap-2">
- <AlertDialogCancel className="rounded-xl text-xs">Cancelar</AlertDialogCancel>
+ <AlertDialogCancel className="rounded-lg text-xs">Cancelar</AlertDialogCancel>
  <AlertDialogAction
  onClick={handleConfirmDelete}
  disabled={isPerformingAction}
- className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-bold gap-1.5"
+ className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-xs font-bold gap-2"
  >
  {isPerformingAction ? (
  <>

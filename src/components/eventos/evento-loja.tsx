@@ -137,12 +137,12 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
             <ShoppingBag className="size-5 text-primary" />
             Loja Oficial e Bar do Evento
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Gestão de cardápio, fichas de consumo, merchandising oficial, copos colecionáveis e combos.
           </p>
         </div>
 
-        <Button onClick={handleOpenCreate} size="sm" className="gap-1.5 font-bold h-9">
+        <Button onClick={handleOpenCreate} size="sm" className="gap-2 font-bold h-9">
           <Plus className="size-4" />
           Novo Produto / Combo
         </Button>
@@ -153,7 +153,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
           Carregando catálogo da loja...
         </div>
       ) : produtos.length === 0 ? (
-        <Card className="bg-card rounded-2xl border border-dashed border-border/80 p-8 text-center space-y-3">
+        <Card className="bg-card rounded-lg border border-dashed border-border/80 p-8 text-center space-y-3">
           <div className="size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Package className="size-6" />
           </div>
@@ -163,7 +163,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
               Cadastre bebidas, alimentos ou itens de vestuário para venda antecipada e no caixa do evento.
             </p>
           </div>
-          <Button onClick={handleOpenCreate} size="sm" variant="outline" className="gap-1.5">
+          <Button onClick={handleOpenCreate} size="sm" variant="outline" className="gap-2">
             <Plus className="size-4" /> Cadastrar 1º Item
           </Button>
         </Card>
@@ -172,7 +172,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
           {produtos.map((prod) => (
             <Card
               key={prod.id}
-              className="rounded-2xl border border-border/60 bg-card overflow-hidden flex flex-col justify-between hover:border-border transition-colors"
+              className="rounded-lg border border-border/60 bg-card overflow-hidden flex flex-col justify-between hover:border-border transition-colors"
             >
               <div className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
@@ -207,7 +207,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
                 </div>
               </div>
 
-              <div className="px-4 py-2.5 bg-muted/20 border-t border-border/40 flex items-center justify-end gap-2">
+              <div className="px-4 py-3 bg-muted/20 border-t border-border/40 flex items-center justify-end gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -243,7 +243,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
           </DialogHeader>
 
           <form onSubmit={handleSaveProduct} className="space-y-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="prod-nome" className="text-xs">Nome do Produto *</Label>
               <Input
                 id="prod-nome"
@@ -256,7 +256,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="prod-price" className="text-xs">Preço Unitário (R$) *</Label>
                 <CurrencyField
                   value={priceCents}
@@ -264,7 +264,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="prod-estoque" className="text-xs">Estoque Inicial (Qtd) *</Label>
                 <Input
                   id="prod-estoque"
@@ -278,7 +278,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="prod-desc" className="text-xs">Descrição / Detalhes</Label>
               <Textarea
                 id="prod-desc"

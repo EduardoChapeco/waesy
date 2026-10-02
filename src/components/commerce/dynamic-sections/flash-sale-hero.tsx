@@ -148,7 +148,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  <div className="space-y-6 lg:col-span-7">
  {badge && (
  <div
- className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-bold backdrop-blur-md"
+ className="inline-flex items-center gap-2 rounded-full border px-4 py-1 text-xs font-bold backdrop-blur-md"
  style={{
  borderColor: `${accentColor}55`,
  backgroundColor: `${accentColor}20`,
@@ -185,13 +185,13 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  {/* Cupom 1-Toque (exibido se preenchido ou se em modo de edição) */}
  {(couponCode || props.isEditing) && (
  <div
- className="flex items-center gap-3 p-3 rounded-2xl border max-w-md backdrop-blur-sm"
+ className="flex items-center gap-3 p-3 rounded-lg border max-w-md backdrop-blur-sm"
  style={{
  backgroundColor: "rgba(24, 24, 27, 0.85)",
  borderColor: `${accentColor}40`,
  }}
  >
- <div className="space-y-0.5 min-w-0 flex-1">
+ <div className="space-y-1 min-w-0 flex-1">
  <p className="text-[10px] uppercase font-bold" style={{ color: accentColor }}>
  Cupom de Desconto
  </p>
@@ -205,7 +205,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  onClick={handleCopyCoupon}
  size="sm"
  className={cn(
- "h-8 px-3 rounded-xl text-xs font-bold gap-1.5 transition-all cursor-pointer",
+ "h-8 px-3 rounded-lg text-xs font-bold gap-2 transition-all cursor-pointer",
  copied
  ? "bg-emerald-500 text-white"
  : "text-zinc-950 font-bold hover:brightness-110"
@@ -238,7 +238,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  {/* Lado Direito: Temporizador Regressivo & CTA */}
  <div className="lg:col-span-5">
  <div
- className="rounded-2xl border p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-center space-y-6"
+ className="rounded-lg border p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-center space-y-6"
  style={{
  backgroundColor: "rgba(24, 24, 27, 0.88)",
  borderColor: `${accentColor}40`,
@@ -246,7 +246,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  >
  <div className="space-y-1">
  <div
- className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider"
+ className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider"
  style={{ color: accentColor }}
  >
  <Clock className="size-4" />
@@ -264,7 +264,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  ].map((item, idx) => (
  <div
  key={idx}
- className="p-3 rounded-2xl bg-zinc-800/80 border border-zinc-700/60 flex flex-col items-center"
+ className="p-3 rounded-lg bg-zinc-800/80 border border-zinc-700/60 flex flex-col items-center"
  >
  <span
  className="text-2xl sm:text-3xl font-mono font-black"
@@ -272,7 +272,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  >
  {String(item.value).padStart(2, "0")}
  </span>
- <span className="text-[10px] font-semibold text-zinc-400 uppercase mt-0.5">
+ <span className="text-[10px] font-semibold text-zinc-400 uppercase mt-1">
  {item.label}
  </span>
  </div>
@@ -281,7 +281,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
 
  <Button
  asChild
- className="w-full h-11 rounded-2xl text-xs sm:text-sm font-bold gap-2 text-zinc-950 shadow-lg cursor-pointer transition-transform hover:scale-102"
+ className="w-full h-11 rounded-lg text-xs sm:text-sm font-bold gap-2 text-zinc-950 shadow-lg cursor-pointer transition-transform hover:scale-102"
  style={{
  background: `linear-gradient(135deg, ${accentColor}, #f97316)`,
  }}

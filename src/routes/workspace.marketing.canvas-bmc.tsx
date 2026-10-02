@@ -234,7 +234,7 @@ export function BusinessModelCanvasPage() {
 
     return (
       <div
-        className={`flex flex-col rounded-xl border border-border/70 bg-card p-4 transition-colors hover:border-border ${extraClass}`}
+        className={`flex flex-col rounded-lg border border-border/70 bg-card p-4 transition-colors hover:border-border ${extraClass}`}
       >
         <div className="flex items-start justify-between gap-2 border-b border-border/40 pb-3">
           <div className="flex items-center gap-2">
@@ -258,13 +258,13 @@ export function BusinessModelCanvasPage() {
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground">
               <p className="text-xs">Nenhum item adicionado.</p>
-              <p className="text-xs mt-0.5">Use a IA ou digite abaixo.</p>
+              <p className="text-xs mt-1">Use a IA ou digite abaixo.</p>
             </div>
           ) : (
             items.map((item) => (
               <div
                 key={item.id}
-                className="group relative flex flex-col rounded-lg border border-border/40 bg-muted/20 p-2.5 text-xs transition-colors hover:bg-muted/40"
+                className="group relative flex flex-col rounded-lg border border-border/40 bg-muted/20 p-3 text-xs transition-colors hover:bg-muted/40"
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="leading-relaxed text-foreground font-medium flex-1">
@@ -280,7 +280,7 @@ export function BusinessModelCanvasPage() {
                   </button>
                 </div>
                 {item.evidence && (
-                  <p className="mt-1.5 text-xs text-muted-foreground border-t border-border/30 pt-1 italic">
+                  <p className="mt-2 text-xs text-muted-foreground border-t border-border/30 pt-1 italic">
                     Fonte: {item.evidence}
                   </p>
                 )}
@@ -290,13 +290,13 @@ export function BusinessModelCanvasPage() {
         </div>
 
         {/* Campo de Inserção Rápida */}
-        <div className="border-t border-border/40 pt-2.5">
+        <div className="border-t border-border/40 pt-3">
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleAddItem(key);
             }}
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-2"
           >
             <Input
               value={newItemText[key] || ""}
@@ -330,7 +330,7 @@ export function BusinessModelCanvasPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                   Planejamento Estratégico
                 </span>
                 {lastSaved && (
@@ -348,7 +348,7 @@ export function BusinessModelCanvasPage() {
               <h1 className="text-xl font-semibold tracking-tight mt-1 text-foreground">
                 Business Model Canvas (BMC)
               </h1>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1">
                 Metodologia canônica de 9 blocos para visualização e evolução do modelo de negócio.
               </p>
             </div>
@@ -359,7 +359,7 @@ export function BusinessModelCanvasPage() {
                 size="sm"
                 onClick={handleGenerateAI}
                 disabled={isGenerating}
-                className="h-11 px-4 rounded-xl text-xs font-medium gap-2"
+                className="h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 <Sparkles className={`w-3.5 h-3.5 ${isGenerating ? "animate-spin" : ""}`} />
                 {isGenerating ? "Analisando Empresa..." : "Preencher com IA"}
@@ -369,7 +369,7 @@ export function BusinessModelCanvasPage() {
                 size="sm"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="h-11 px-4 rounded-xl text-xs font-medium gap-2"
+                className="h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 <Save className={`w-3.5 h-3.5 ${isSaving ? "animate-spin" : ""}`} />
                 {isSaving ? "Salvando..." : "Salvar Canvas"}

@@ -47,7 +47,7 @@ function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? { label: status, variant: "outline", icon: Clock };
   const Icon = cfg.icon;
   return (
-    <Badge variant={cfg.variant} className="gap-1.5 text-xs font-medium">
+    <Badge variant={cfg.variant} className="gap-2 text-xs font-medium">
       <Icon className="size-3" />
       {cfg.label}
     </Badge>
@@ -201,15 +201,15 @@ function CouriersListPage() {
         )}
 
         {!isLoading && filteredCouriers.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center border rounded-2xl bg-card">
+          <div className="flex flex-col items-center justify-center py-16 text-center border rounded-lg bg-card">
             <Bike className="size-10 text-muted-foreground/30 mb-3" />
             <p className="text-sm font-semibold text-foreground">Nenhum entregador encontrado.</p>
             <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
               Cadastre entregadores próprios ou chame motoboys avulsos sob demanda.
             </p>
-            <Button asChild size="sm" className="mt-4 rounded-xl font-bold h-11 px-5">
+            <Button asChild size="sm" className="mt-4 rounded-lg font-bold h-11 px-5">
               <Link to="/workspace/pedidos/entregadores/novo">
-                <Plus className="size-4 mr-1.5" />
+                <Plus className="size-4 mr-2" />
                 Cadastrar Entregador
               </Link>
             </Button>
@@ -217,14 +217,14 @@ function CouriersListPage() {
         )}
 
         {!isLoading && filteredCouriers.length > 0 && (
-          <div className="rounded-2xl overflow-hidden bg-card border border-border/60 shadow-xs">
+          <div className="rounded-lg overflow-hidden bg-card border border-border/60 shadow-xs">
             <div className="p-4 bg-muted/20 flex items-center justify-between border-b border-border/40">
               <span className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Entregadores Ativos ({filteredCouriers.length})
               </span>
               <Button asChild variant="ghost" size="sm" className="h-8 text-xs font-semibold">
                 <Link to="/workspace/pedidos/frota">
-                  <Sliders className="size-3.5 mr-1.5" />
+                  <Sliders className="size-3.5 mr-2" />
                   Painel de Despacho
                 </Link>
               </Button>
@@ -243,7 +243,7 @@ function CouriersListPage() {
                     onClick={() => setSelectedCourier(courier)}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <p className="font-bold text-base text-foreground">{courier.name}</p>
                         {courier.phone && (
                           <a
@@ -256,19 +256,19 @@ function CouriersListPage() {
                           </a>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <StatusBadge status={courier.status} />
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="size-11 sm:size-9 rounded-xl hover:bg-muted/60 cursor-pointer"
+                              className="size-11 sm:size-9 rounded-lg hover:bg-muted/60 cursor-pointer"
                             >
                               <MoreVertical className="size-4 text-muted-foreground" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-52 rounded-xl p-1">
+                          <DropdownMenuContent align="end" className="w-52 rounded-lg p-1">
                             <DropdownMenuItem asChild>
                               <Link
                                 to="/workspace/pedidos/entregadores/$id"
@@ -300,7 +300,7 @@ function CouriersListPage() {
                           <VehicleIcon className="size-4 text-muted-foreground" />
                         </div>
                         {courier.vehicle_plate && (
-                          <span className="font-mono bg-muted/80 px-2 py-0.5 rounded-md uppercase font-bold text-foreground">
+                          <span className="font-mono bg-muted/80 px-2 py-1 rounded-md uppercase font-bold text-foreground">
                             {courier.vehicle_plate}
                           </span>
                         )}
@@ -344,47 +344,47 @@ function CouriersListPage() {
                         className="hover:bg-muted/20 transition-colors group cursor-pointer"
                         onClick={() => setSelectedCourier(courier)}
                       >
-                        <td className="px-4 py-3.5">
+                        <td className="px-4 py-4">
                           <p className="font-bold text-foreground">{courier.name}</p>
                           {courier.phone && (
-                            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                               <Phone className="size-3" />
                               {courier.phone}
                             </p>
                           )}
                         </td>
-                        <td className="px-4 py-3.5">
+                        <td className="px-4 py-4">
                           <div className="flex items-center gap-2">
                             <div className="size-7 rounded-lg bg-muted flex items-center justify-center">
                               <VehicleIcon className="size-3.5 text-muted-foreground" />
                             </div>
                             {courier.vehicle_plate && (
-                              <span className="text-xs font-mono bg-muted/80 px-2 py-0.5 rounded-md uppercase font-bold">
+                              <span className="text-xs font-mono bg-muted/80 px-2 py-1 rounded-md uppercase font-bold">
                                 {courier.vehicle_plate}
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3.5">
+                        <td className="px-4 py-4">
                           <StatusBadge status={courier.status} />
                         </td>
-                        <td className="px-4 py-3.5 text-right font-mono font-bold">
+                        <td className="px-4 py-4 text-right font-mono font-bold">
                           {courier.default_fee_cents > 0
                             ? formatMoney(courier.default_fee_cents)
                             : "---"}
                         </td>
-                        <td className="px-4 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
+                        <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="size-9 rounded-xl hover:bg-muted/60"
+                                className="size-9 rounded-lg hover:bg-muted/60"
                               >
                                 <MoreVertical className="size-4 text-muted-foreground" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 rounded-xl p-1">
+                            <DropdownMenuContent align="end" className="w-48 rounded-lg p-1">
                               <DropdownMenuItem asChild>
                                 <Link
                                   to="/workspace/pedidos/entregadores/$id"
@@ -433,7 +433,7 @@ function CouriersListPage() {
               <>
                 <SheetHeader className="space-y-1 text-left">
                   <div className="flex items-center gap-2">
-                    <span className="p-2 rounded-xl bg-primary/10 text-primary">
+                    <span className="p-2 rounded-lg bg-primary/10 text-primary">
                       <Bike className="size-4" />
                     </span>
                     <SheetTitle className="text-base font-bold">{selectedCourier.name}</SheetTitle>
@@ -444,7 +444,7 @@ function CouriersListPage() {
                 </SheetHeader>
 
                 <div className="space-y-4 pt-2">
-                  <div className="p-4 rounded-2xl bg-muted/40 border border-border/40 space-y-3">
+                  <div className="p-4 rounded-lg bg-muted/40 border border-border/40 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground font-semibold">Status Operacional</span>
                       <StatusBadge status={selectedCourier.status} />
@@ -477,7 +477,7 @@ function CouriersListPage() {
                   <div className="space-y-2 pt-2">
                     <Button
                       asChild
-                      className="w-full h-11 rounded-xl font-bold min-h-[44px]"
+                      className="w-full h-11 rounded-lg font-bold min-h-11"
                     >
                       <Link
                         to="/workspace/pedidos/entregadores/$id"
@@ -497,7 +497,7 @@ function CouriersListPage() {
                         })
                       }
                       disabled={toggleStatusMutation.isPending}
-                      className="w-full h-11 rounded-xl text-xs font-bold min-h-[44px]"
+                      className="w-full h-11 rounded-lg text-xs font-bold min-h-11"
                     >
                       {selectedCourier.status === "suspended"
                         ? "Reativar Entregador"

@@ -289,7 +289,7 @@ export function LeadVisualProposalSheet({
         <SheetHeader className="pb-4 border-b border-border">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-primary/10 text-primary">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
                 <FileText className="size-5" />
               </div>
               <div>
@@ -309,7 +309,7 @@ export function LeadVisualProposalSheet({
                 size="sm"
                 disabled={isScanningOcr}
                 onClick={() => ocrFileInputRef.current?.click()}
-                className="h-8 rounded-xl text-xs font-semibold gap-1.5 border-border/80 bg-background hover:bg-muted text-foreground cursor-pointer"
+                className="h-8 rounded-lg text-xs font-semibold gap-2 border-border/80 bg-background hover:bg-muted text-foreground cursor-pointer"
               >
                 {isScanningOcr ? (
                   <>
@@ -349,7 +349,7 @@ export function LeadVisualProposalSheet({
             <div className="flex items-center gap-2 pt-2">
               <Button
                 onClick={() => window.open(`/proposta/${createdProposalToken}`, "_blank")}
-                className="rounded-xl gap-2 font-bold min-h-[44px]"
+                className="rounded-lg gap-2 font-bold min-h-11"
               >
                 <ExternalLink className="size-4" /> Visualizar Lâmina
               </Button>
@@ -361,14 +361,14 @@ export function LeadVisualProposalSheet({
                   );
                   toast.success("Link copiado para o WhatsApp!");
                 }}
-                className="rounded-xl gap-2 min-h-[44px]"
+                className="rounded-lg gap-2 min-h-11"
               >
                 <Copy className="size-4" /> Copiar Link do Cliente
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setCreatedProposalToken(null)}
-                className="rounded-xl min-h-[44px]"
+                className="rounded-lg min-h-11"
               >
                 Criar Outra
               </Button>
@@ -378,7 +378,7 @@ export function LeadVisualProposalSheet({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 py-4 items-start">
             {/* ── LIVE PREVIEW LATERAL (SPLIT-SCREEN EDITOR) ── */}
             <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-0 order-2 lg:order-1">
-              <div className="p-4 rounded-2xl border border-border/80 bg-card shadow-sm space-y-4 overflow-hidden">
+              <div className="p-4 rounded-lg border border-border/80 bg-card shadow-sm space-y-4 overflow-hidden">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
@@ -395,7 +395,7 @@ export function LeadVisualProposalSheet({
                 </div>
 
                 {/* Banner / Foto de Capa */}
-                <div className="relative h-44 rounded-xl overflow-hidden bg-muted/60 border border-border/60">
+                <div className="relative h-44 rounded-lg overflow-hidden bg-muted/60 border border-border/60">
                   {coverPhotoUrl ? (
                     <img
                       src={coverPhotoUrl}
@@ -407,7 +407,7 @@ export function LeadVisualProposalSheet({
                       <MapPin className="size-10 text-primary/40" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-3.5 text-white">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-4 text-white">
                     <Badge className="w-fit text-[10px] bg-primary text-primary-foreground mb-1">
                       {destinationCountry || "Destino Exclusivo"}
                     </Badge>
@@ -422,7 +422,7 @@ export function LeadVisualProposalSheet({
 
                 {/* Resumo de Datas e Pax */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 flex items-center gap-2">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/60 flex items-center gap-2">
                     <Calendar className="size-4 text-primary shrink-0" />
                     <div className="min-w-0">
                       <p className="text-[10px] text-muted-foreground font-medium">Período</p>
@@ -431,7 +431,7 @@ export function LeadVisualProposalSheet({
                       </p>
                     </div>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 flex items-center gap-2">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/60 flex items-center gap-2">
                     <Users className="size-4 text-primary shrink-0" />
                     <div>
                       <p className="text-[10px] text-muted-foreground font-medium">Viajantes</p>
@@ -445,7 +445,7 @@ export function LeadVisualProposalSheet({
                 {/* Voo & Hotel */}
                 <div className="space-y-2 text-xs">
                   {hasFlight && (
-                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/50 flex items-center justify-between">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Plane className="size-3.5 text-primary shrink-0" />
                         <span className="font-medium text-foreground">{airline}</span>
@@ -454,7 +454,7 @@ export function LeadVisualProposalSheet({
                     </div>
                   )}
                   {hasHotel && (
-                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/50 flex items-center justify-between">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
                         <Building2 className="size-3.5 text-primary shrink-0" />
                         <span className="font-medium text-foreground truncate">{hotelName}</span>
@@ -466,13 +466,13 @@ export function LeadVisualProposalSheet({
 
                 {/* Inclusões selecionadas */}
                 {selectedTours.length > 0 && (
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                       Inclusões
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {selectedTours.map((tour) => (
-                        <Badge key={tour} variant="secondary" className="text-[10px] font-normal py-0.5 px-2">
+                        <Badge key={tour} variant="secondary" className="text-[10px] font-normal py-1 px-2">
                           ✓ {tour}
                         </Badge>
                       ))}
@@ -481,7 +481,7 @@ export function LeadVisualProposalSheet({
                 )}
 
                 {/* Preço Total & Condições */}
-                <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 space-y-2.5">
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-3">
                   <div className="flex items-baseline justify-between">
                     <span className="text-xs font-bold text-foreground">Total da Proposta</span>
                     <span className="text-xl font-black font-mono text-primary">
@@ -519,7 +519,7 @@ export function LeadVisualProposalSheet({
                   <Input
                     value={destinationCity}
                     onChange={(e) => setDestinationCity(e.target.value)}
-                    className="h-10 rounded-xl min-h-[44px]"
+                    className="h-10 rounded-lg min-h-11"
                   />
                 </div>
                 <div className="space-y-1">
@@ -527,7 +527,7 @@ export function LeadVisualProposalSheet({
                   <Input
                     value={destinationCountry}
                     onChange={(e) => setDestinationCountry(e.target.value)}
-                    className="h-10 rounded-xl min-h-[44px]"
+                    className="h-10 rounded-lg min-h-11"
                   />
                 </div>
               </div>
@@ -539,7 +539,7 @@ export function LeadVisualProposalSheet({
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="h-10 rounded-xl min-h-[44px]"
+                    className="h-10 rounded-lg min-h-11"
                   />
                 </div>
                 <div className="space-y-1">
@@ -548,7 +548,7 @@ export function LeadVisualProposalSheet({
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="h-10 rounded-xl min-h-[44px]"
+                    className="h-10 rounded-lg min-h-11"
                   />
                 </div>
                 <div className="space-y-1">
@@ -558,7 +558,7 @@ export function LeadVisualProposalSheet({
                     min={1}
                     value={passengerCount}
                     onChange={(e) => setPassengerCount(parseInt(e.target.value, 10) || 1)}
-                    className="h-10 rounded-xl min-h-[44px]"
+                    className="h-10 rounded-lg min-h-11"
                   />
                 </div>
               </div>
@@ -571,9 +571,9 @@ export function LeadVisualProposalSheet({
               </Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Voo */}
-                <div className="p-3.5 rounded-xl border border-border bg-card space-y-2.5">
+                <div className="p-4 rounded-lg border border-border bg-card space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
+                    <div className="flex items-center gap-2 text-xs font-bold text-primary">
                       <Plane className="size-4" /> Voo Comercial
                     </div>
                     <Badge variant="outline" className="text-[10px]">Ida e Volta</Badge>
@@ -597,9 +597,9 @@ export function LeadVisualProposalSheet({
                 </div>
 
                 {/* Hotel com Autocomplete Real do Banco de Hotéis */}
-                <div className="p-3.5 rounded-xl border border-border bg-card space-y-2.5 relative">
+                <div className="p-4 rounded-lg border border-border bg-card space-y-3 relative">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                       <Building2 className="size-4" /> Hotel e Resort (Banco de Hotéis)
                     </div>
                     {hasHotel && (
@@ -620,7 +620,7 @@ export function LeadVisualProposalSheet({
                       className="h-9 text-xs rounded-lg"
                     />
                     {hotelSearchOpen && hotelSuggestions.length > 0 && (
-                      <div className="absolute z-20 left-0 right-0 top-10 bg-popover border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto p-1 text-xs space-y-1">
+                      <div className="absolute z-20 left-0 right-0 top-10 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto p-1 text-xs space-y-1">
                         {hotelSuggestions.slice(0, 6).map((h) => (
                           <button
                             key={h.id}
@@ -668,7 +668,7 @@ export function LeadVisualProposalSheet({
                   {selectedTours.length} selecionado(s)
                 </span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {COMMON_TAGS.map((tag) => {
                   const isSelected = selectedTours.includes(tag);
                   return (
@@ -676,7 +676,7 @@ export function LeadVisualProposalSheet({
                       key={tag}
                       type="button"
                       onClick={() => toggleTourTag(tag)}
-                      className={`text-xs px-2.5 py-1 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 ${
+                      className={`text-xs px-3 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-2 ${
                         isSelected
                           ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
                           : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/70"
@@ -702,7 +702,7 @@ export function LeadVisualProposalSheet({
                     type="number"
                     value={(basePriceCents / 100).toFixed(2)}
                     onChange={(e) => setBasePriceCents(Math.round(parseFloat(e.target.value) * 100 || 0))}
-                    className="h-10 font-mono font-bold rounded-xl min-h-[44px]"
+                    className="h-10 font-mono font-bold rounded-lg min-h-11"
                   />
                 </div>
                 <div className="space-y-1">
@@ -711,7 +711,7 @@ export function LeadVisualProposalSheet({
                     type="number"
                     value={(boardingTaxCents / 100).toFixed(2)}
                     onChange={(e) => setBoardingTaxCents(Math.round(parseFloat(e.target.value) * 100 || 0))}
-                    className="h-10 font-mono rounded-xl min-h-[44px]"
+                    className="h-10 font-mono rounded-lg min-h-11"
                   />
                 </div>
               </div>
@@ -721,12 +721,12 @@ export function LeadVisualProposalSheet({
                 <Input
                   value={paymentTerms}
                   onChange={(e) => setPaymentTerms(e.target.value)}
-                  className="h-10 text-xs rounded-xl min-h-[44px]"
+                  className="h-10 text-xs rounded-lg min-h-11"
                 />
               </div>
 
               {/* Card Simulador de Condições & Parcelamento Dinâmico */}
-              <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-3">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border/80 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[11px] text-muted-foreground">Valor Total da Proposta</p>
@@ -743,7 +743,7 @@ export function LeadVisualProposalSheet({
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50 text-[11px]">
-                  <div className="p-2.5 rounded-xl bg-background border border-border/60 flex items-center gap-2">
+                  <div className="p-3 rounded-lg bg-background border border-border/60 flex items-center gap-2">
                     <QrCode className="size-4 text-emerald-600 shrink-0" />
                     <div>
                       <span className="font-bold text-foreground">PIX (5% off):</span>
@@ -752,7 +752,7 @@ export function LeadVisualProposalSheet({
                       </p>
                     </div>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-background border border-border/60 flex items-center gap-2">
+                  <div className="p-3 rounded-lg bg-background border border-border/60 flex items-center gap-2">
                     <CreditCard className="size-4 text-primary shrink-0" />
                     <div>
                       <span className="font-bold text-foreground">Cartão 10x s/ juros:</span>
@@ -769,14 +769,14 @@ export function LeadVisualProposalSheet({
         )}
 
         <SheetFooter className="gap-2 sm:gap-0 pt-4 border-t border-border">
-          <Button variant="outline" onClick={onClose} className="rounded-xl min-h-[44px] cursor-pointer">
+          <Button variant="outline" onClick={onClose} className="rounded-lg min-h-11 cursor-pointer">
             Fechar
           </Button>
           {!createdProposalToken && (
             <Button
               onClick={handleGenerateProposal}
               disabled={isSubmitting}
-              className="rounded-xl min-h-[44px] gap-2 bg-primary text-primary-foreground font-bold cursor-pointer"
+              className="rounded-lg min-h-11 gap-2 bg-primary text-primary-foreground font-bold cursor-pointer"
             >
               <Send className="size-4" />
               {isSubmitting ? "Emitindo..." : "Emitir Proposta Oficial"}

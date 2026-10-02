@@ -47,7 +47,7 @@ export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplate
   return (
     <div className={`relative w-full h-full overflow-hidden bg-[#f1f5f9] text-slate-900 select-none p-6 sm:p-8 flex flex-col justify-between ${className}`}>
       {/* ── 1. Janela Panorâmica Superior (58% de altura) ── */}
-      <div className="relative w-full h-[58%] rounded-3xl overflow-hidden shadow-xl border border-slate-300/80 bg-slate-900 shrink-0">
+      <div className="relative w-full h-[58%] rounded-lg overflow-hidden shadow-xl border border-slate-300/80 bg-slate-900 shrink-0">
         <img
           src={backgroundImageUrl}
           alt={title}
@@ -57,19 +57,19 @@ export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplate
 
         {/* Tag Minimalista de Topo */}
         <div className="absolute top-5 left-5">
-          <span className="px-4 py-1.5 rounded-full bg-slate-950/85 backdrop-blur-md text-white font-mono uppercase tracking-widest text-xs font-bold shadow-md">
+          <span className="px-4 py-2 rounded-full bg-slate-950/85 backdrop-blur-md text-white font-mono uppercase tracking-widest text-xs font-bold shadow-md">
             {promoBadge || "EDIFÍCIO RESIDENCIAL"}
           </span>
         </div>
 
         {/* Localização em Pílula Flutuante */}
         <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-slate-950/80 backdrop-blur-md text-white/90 text-xs sm:text-sm font-semibold">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-950/80 backdrop-blur-md text-white/90 text-xs sm:text-sm font-semibold">
             <MapPin className="size-4 text-amber-400 shrink-0" />
             <span className="truncate max-w-[260px]">{destinationOrLocation || "Localização Privilegiada"}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-md text-slate-900 text-xs font-bold shadow-sm">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/90 backdrop-blur-md text-slate-900 text-xs font-bold shadow-sm">
             <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
             <span className="truncate max-w-[120px]">{storeName}</span>
           </div>
@@ -93,7 +93,7 @@ export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplate
           {resolvedSpecs.map((spec, i) => (
             <div
               key={i}
-              className="p-3 rounded-2xl bg-white border border-slate-200 shadow-2xs flex flex-col justify-center"
+              className="p-3 rounded-lg bg-white border border-slate-200 shadow-2xs flex flex-col justify-center"
             >
               <span className="text-[10px] font-mono uppercase text-slate-500 font-semibold truncate">
                 {spec.label}
@@ -106,8 +106,8 @@ export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplate
         </div>
 
         {/* Barra Integrada em Preto Carvão com Preço e CTA */}
-        <div className="w-full p-4 rounded-2xl bg-slate-950 text-white flex items-center justify-between gap-3 shadow-lg shrink-0">
-          <div className="space-y-0.5">
+        <div className="w-full p-4 rounded-lg bg-slate-950 text-white flex items-center justify-between gap-3 shadow-lg shrink-0">
+          <div className="space-y-1">
             <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
               {pricingMode === "monthly" ? "Locação Mensal" : "Valor Total"}
             </span>
@@ -121,7 +121,7 @@ export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplate
             )}
           </div>
 
-          <div className="h-11 px-5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-1.5 shadow-md active:scale-95 transition-all shrink-0">
+          <div className="h-11 px-5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-md active:scale-95 transition-all shrink-0">
             <span>{ctaLabel}</span>
             <ArrowRight className="size-4 stroke-[3]" />
           </div>

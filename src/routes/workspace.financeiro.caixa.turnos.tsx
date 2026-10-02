@@ -182,7 +182,7 @@ function ShiftsPage() {
             onClick={handleExportCSV}
             variant="outline"
             size="sm"
-            className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+            className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
           >
             <FileSpreadsheet className="size-3.5 text-emerald-600" />
             <span>Exportar CSV</span>
@@ -192,8 +192,8 @@ function ShiftsPage() {
 
       {/* ── KPIS FINANCEIROS DE TURNOS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <History className="size-3.5 text-foreground" />
             Turnos Registrados
           </span>
@@ -205,8 +205,8 @@ function ShiftsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ArrowDownLeft className="size-3.5 text-emerald-600" />
             Total Entradas (+)
           </span>
@@ -218,8 +218,8 @@ function ShiftsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ArrowUpRight className="size-3.5 text-rose-600" />
             Total Saídas (-)
           </span>
@@ -231,8 +231,8 @@ function ShiftsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <AlertTriangle className={`size-3.5 ${kpis.totalDiscrepancyCents === 0 ? "text-muted-foreground" : "text-amber-500"}`} />
             Divergência Líquida
           </span>
@@ -253,22 +253,22 @@ function ShiftsPage() {
       </div>
 
       {/* ── BARRA DE CONTROLE, FILTROS & BUSCA ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por operador ou notas..."
-            className="pl-10 h-10 rounded-xl text-xs bg-background"
+            className="pl-10 h-10 rounded-lg text-xs bg-background"
           />
         </div>
 
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60 self-start sm:self-auto">
+        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setStatusFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               statusFilter === "all"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -279,7 +279,7 @@ function ShiftsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("open")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               statusFilter === "open"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -290,7 +290,7 @@ function ShiftsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("closed")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               statusFilter === "closed"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -301,7 +301,7 @@ function ShiftsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("discrepancy")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               statusFilter === "discrepancy"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -319,7 +319,7 @@ function ShiftsPage() {
           description="Nenhum registro de turno atende aos critérios de busca selecionados."
         />
       ) : (
-        <div className="bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+        <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
           <div className="overflow-x-auto no-scrollbar">
             <Table>
               <TableHeader>
@@ -395,7 +395,7 @@ function ShiftsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleOpenAudit(s.id)}
-                          className="h-8 px-2.5 rounded-xl text-xs font-bold text-primary hover:bg-primary/10 gap-1 cursor-pointer"
+                          className="h-8 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 gap-1 cursor-pointer"
                         >
                           <Eye className="size-3.5" />
                           <span>Auditar</span>
@@ -425,13 +425,13 @@ function ShiftsPage() {
         ) : shiftDetails ? (
           <div className="space-y-6 py-4">
             {/* Cabeçalho do Turno */}
-            <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-muted/40 border border-border/60 text-xs">
+            <div className="grid grid-cols-2 gap-3 p-4 rounded-lg bg-muted/40 border border-border/60 text-xs">
               <div>
                 <span className="text-muted-foreground block text-xs uppercase font-bold">Operador Abertura</span>
                 <span className="font-bold text-foreground">
                   {shiftDetails.opened_by_profile?.full_name || "Desconhecido"}
                 </span>
-                <span className="text-xs font-mono text-muted-foreground block mt-0.5">
+                <span className="text-xs font-mono text-muted-foreground block mt-1">
                   {formatDateTime(shiftDetails.opened_at)}
                 </span>
               </div>
@@ -441,7 +441,7 @@ function ShiftsPage() {
                 <span className="font-bold text-foreground">
                   {shiftDetails.closed_by_profile?.full_name || (shiftDetails.closed_at ? "Mesmo Operador" : "Em Aberto")}
                 </span>
-                <span className="text-xs font-mono text-muted-foreground block mt-0.5">
+                <span className="text-xs font-mono text-muted-foreground block mt-1">
                   {shiftDetails.closed_at ? formatDateTime(shiftDetails.closed_at) : "Aguardando Fechamento"}
                 </span>
               </div>
@@ -449,28 +449,28 @@ function ShiftsPage() {
 
             {/* Balanço Financeiro do Turno */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
+              <div className="p-3 rounded-lg border border-border/70 bg-card space-y-1">
                 <span className="text-xs font-bold text-muted-foreground uppercase">Fundo Inicial</span>
                 <div className="text-sm font-mono font-bold text-foreground">
                   {formatMoney(shiftDetails.initial_balance_cents)}
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
+              <div className="p-3 rounded-lg border border-border/70 bg-card space-y-1">
                 <span className="text-xs font-bold text-muted-foreground uppercase">Entradas (+)</span>
                 <div className="text-sm font-mono font-bold text-emerald-600">
                   +{formatMoney(shiftDetails.incomeCents || 0)}
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
+              <div className="p-3 rounded-lg border border-border/70 bg-card space-y-1">
                 <span className="text-xs font-bold text-muted-foreground uppercase">Saídas (-)</span>
                 <div className="text-sm font-mono font-bold text-rose-600">
                   -{formatMoney(shiftDetails.expenseCents || 0)}
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
+              <div className="p-3 rounded-lg border border-border/70 bg-card space-y-1">
                 <span className="text-xs font-bold text-muted-foreground uppercase">Saldo Esperado</span>
                 <div className="text-sm font-mono font-bold text-foreground">
                   {formatMoney(shiftDetails.initial_balance_cents + (shiftDetails.incomeCents || 0) - (shiftDetails.expenseCents || 0))}
@@ -480,7 +480,7 @@ function ShiftsPage() {
 
             {/* Conferência Cega e Quebra */}
             {shiftDetails.final_balance_cents !== null && (
-              <div className="p-4 rounded-2xl bg-muted/30 border border-border/70 space-y-2">
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-foreground">Valor Apurado no Fechamento Cego:</span>
                   <span className="font-mono font-bold text-sm text-foreground">
@@ -508,7 +508,7 @@ function ShiftsPage() {
                 </h4>
               </div>
 
-              <div className="rounded-xl border border-border/70 overflow-hidden bg-card">
+              <div className="rounded-lg border border-border/70 overflow-hidden bg-card">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border/60 hover:bg-transparent">

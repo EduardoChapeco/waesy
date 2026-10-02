@@ -32,7 +32,7 @@ export const Route = createFileRoute("/verify/document/$code")({
 function VerifyDocumentErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full border border-destructive/30 bg-destructive/5 rounded-2xl p-6 text-center space-y-4">
+      <div className="max-w-md w-full border border-destructive/30 bg-destructive/5 rounded-lg p-6 text-center space-y-4">
         <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
           <AlertTriangle className="size-6" />
         </div>
@@ -41,10 +41,10 @@ function VerifyDocumentErrorComponent({ error, reset }: { error: any; reset: () 
           {error?.message || "Ocorreu uma instabilidade ao validar o código deste documento."}
         </p>
         <div className="flex items-center justify-center gap-3 mt-2">
-          <Button onClick={reset} size="sm" className="rounded-xl font-bold">
+          <Button onClick={reset} size="sm" className="rounded-lg font-bold">
             Tentar Novamente
           </Button>
-          <Button asChild variant="outline" size="sm" className="rounded-xl">
+          <Button asChild variant="outline" size="sm" className="rounded-lg">
             <Link to="/">Voltar ao Início</Link>
           </Button>
         </div>
@@ -73,7 +73,7 @@ function DocumentVerificationPage() {
   if (error || !result) {
     return (
       <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full border border-destructive/30 bg-destructive/5 rounded-2xl p-6 text-center space-y-4">
+        <div className="max-w-md w-full border border-destructive/30 bg-destructive/5 rounded-lg p-6 text-center space-y-4">
           <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
             <AlertTriangle className="size-6" />
           </div>
@@ -82,7 +82,7 @@ function DocumentVerificationPage() {
             O código ou hash informado não corresponde a nenhum documento selado ou emitido na
             infraestrutura canônica da Waesy.
           </p>
-          <Button asChild variant="outline" size="sm" className="rounded-xl mt-2">
+          <Button asChild variant="outline" size="sm" className="rounded-lg mt-2">
             <Link to="/">
               <ArrowLeft className="size-4 mr-2" />
               Voltar ao Início
@@ -108,8 +108,8 @@ function DocumentVerificationPage() {
     <div className="min-h-[100dvh] bg-background text-foreground py-8 px-0 sm:px-4 md:px-0 flex flex-col justify-center items-center animate-in fade-in duration-200">
       <div className="max-w-3xl w-full space-y-6">
         {/* Banner Superior de Sucesso e Autenticidade */}
-        <div className="bg-card border border-border/80 rounded-2xl p-6 md:p-8 space-y-4 shadow-2xs text-center">
-          <div className="size-14 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
+        <div className="bg-card border border-border/80 rounded-lg p-6 md:p-8 space-y-4 shadow-2xs text-center">
+          <div className="size-14 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
             <ShieldCheck className="size-8" />
           </div>
           <div className="space-y-1">
@@ -124,8 +124,8 @@ function DocumentVerificationPage() {
 
         {/* Banner de Quitação Plena (Se Aplicável) */}
         {result.isSettled && (
-          <div className="bg-emerald-500/10 border-2 border-emerald-500/30 rounded-2xl p-6 space-y-3 text-center sm:text-left flex flex-col sm:flex-row items-center gap-5 shadow-2xs">
-            <div className="size-14 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+          <div className="bg-emerald-500/10 border-2 border-emerald-500/30 rounded-lg p-6 space-y-3 text-center sm:text-left flex flex-col sm:flex-row items-center gap-5 shadow-2xs">
+            <div className="size-14 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
               <CheckCircle2 className="size-8" />
             </div>
             <div className="space-y-1 flex-1">
@@ -141,7 +141,7 @@ function DocumentVerificationPage() {
                 Todas as parcelas e contraprestações financeiras deste contrato foram integralmente liquidadas. O credor confere quitação plena, geral e irrevogável quanto ao valor contratado.
               </p>
               {result.dischargeIssuedAt && (
-                <p className="text-[11px] text-muted-foreground pt-1 flex items-center gap-1.5 justify-center sm:justify-start">
+                <p className="text-[11px] text-muted-foreground pt-1 flex items-center gap-2 justify-center sm:justify-start">
                   <Calendar className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                   Data da Baixa de Quitação: {formatDate(result.dischargeIssuedAt)}
                 </p>
@@ -173,7 +173,7 @@ function DocumentVerificationPage() {
 
         {/* Ações Inferiores */}
         <div className="flex items-center justify-between pt-2">
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-10 px-4">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-10 px-4">
             <Link to="/">
               <ArrowLeft className="size-4 mr-2" />
               Voltar ao Início
@@ -185,7 +185,7 @@ function DocumentVerificationPage() {
             variant="outline"
             size="sm"
             onClick={() => window.print()}
-            className="rounded-xl text-xs h-10 px-4"
+            className="rounded-lg text-xs h-10 px-4"
           >
             <Download className="size-4 mr-2" />
             Imprimir Certificado

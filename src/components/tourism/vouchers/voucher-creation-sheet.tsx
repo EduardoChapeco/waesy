@@ -172,7 +172,7 @@ export function VoucherCreationSheet({
                 type="button"
                 onClick={() => setVoucherType("flight")}
                 className={cn(
-                  "p-2.5 rounded-xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer text-center",
+                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
                   voucherType === "flight"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
                     : "border-border/70 hover:bg-muted/40 text-muted-foreground"
@@ -186,7 +186,7 @@ export function VoucherCreationSheet({
                 type="button"
                 onClick={() => setVoucherType("hotel")}
                 className={cn(
-                  "p-2.5 rounded-xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer text-center",
+                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
                   voucherType === "hotel"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
                     : "border-border/70 hover:bg-muted/40 text-muted-foreground"
@@ -200,7 +200,7 @@ export function VoucherCreationSheet({
                 type="button"
                 onClick={() => setVoucherType("transfer")}
                 className={cn(
-                  "p-2.5 rounded-xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer text-center",
+                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
                   voucherType === "transfer"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
                     : "border-border/70 hover:bg-muted/40 text-muted-foreground"
@@ -219,33 +219,33 @@ export function VoucherCreationSheet({
               <span>Passageiro Titular</span>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Nome Completo do Passageiro *</Label>
               <Input
                 placeholder="Ex: Carlos Eduardo dos Santos"
                 value={passengerName}
                 onChange={(e) => setPassengerName(e.target.value)}
-                className="h-10 rounded-xl"
+                className="h-10 rounded-lg"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">CPF ou Passaporte</Label>
                 <Input
                   placeholder="000.000.000-00"
                   value={passengerDocument}
                   onChange={(e) => setPassengerDocument(e.target.value)}
-                  className="h-10 rounded-xl font-mono"
+                  className="h-10 rounded-lg font-mono"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Título Personalizado (Opcional)</Label>
                 <Input
                   placeholder="Ex: Voo São Paulo ➔ Florianópolis"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg"
                 />
               </div>
             </div>
@@ -260,94 +260,94 @@ export function VoucherCreationSheet({
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Cia Aérea</Label>
                   <Input
                     placeholder="Ex: LATAM Airlines"
                     value={airline}
                     onChange={(e) => setAirline(e.target.value)}
-                    className="h-10 rounded-xl"
+                    className="h-10 rounded-lg"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Nº do Voo</Label>
                   <Input
                     placeholder="Ex: LA 3450"
                     value={flightNumber}
                     onChange={(e) => setFlightNumber(e.target.value)}
-                    className="h-10 rounded-xl font-mono"
+                    className="h-10 rounded-lg font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Origem (IATA / Cidade)</Label>
                   <Input
                     placeholder="Ex: GRU"
                     value={originAirport}
                     onChange={(e) => setOriginAirport(e.target.value.toUpperCase())}
-                    className="h-10 rounded-xl font-mono"
+                    className="h-10 rounded-lg font-mono"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Destino (IATA / Cidade)</Label>
                   <Input
                     placeholder="Ex: FLN"
                     value={destinationAirport}
                     onChange={(e) => setDestinationAirport(e.target.value.toUpperCase())}
-                    className="h-10 rounded-xl font-mono"
+                    className="h-10 rounded-lg font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Data do Voo</Label>
                   <Input
                     type="date"
                     value={departureDate}
                     onChange={(e) => setDepartureDate(e.target.value)}
-                    className="h-10 rounded-xl font-mono"
+                    className="h-10 rounded-lg font-mono"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Horário de Embarque</Label>
                   <Input
                     type="time"
                     value={departureTime}
                     onChange={(e) => setDepartureTime(e.target.value)}
-                    className="h-10 rounded-xl font-mono"
+                    className="h-10 rounded-lg font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Poltrona / Assento</Label>
                   <Input
                     placeholder="Ex: 14A"
                     value={seat}
                     onChange={(e) => setSeat(e.target.value.toUpperCase())}
-                    className="h-10 rounded-xl font-mono"
+                    className="h-10 rounded-lg font-mono"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Classe</Label>
                   <Input
                     placeholder="Econômica"
                     value={cabinClass}
                     onChange={(e) => setCabinClass(e.target.value)}
-                    className="h-10 rounded-xl"
+                    className="h-10 rounded-lg"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Franquia Bagagem</Label>
                   <Input
                     placeholder="10kg mão"
                     value={baggage}
                     onChange={(e) => setBaggage(e.target.value)}
-                    className="h-10 rounded-xl"
+                    className="h-10 rounded-lg"
                   />
                 </div>
               </div>
@@ -362,51 +362,51 @@ export function VoucherCreationSheet({
                 <span>Detalhes da Hospedagem e Quarto</span>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Nome do Hotel ou Resort *</Label>
                 <Input
                   placeholder="Ex: Ocean Palace All Inclusive Resort"
                   value={hotelName}
                   onChange={(e) => setHotelName(e.target.value)}
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Check-In</Label>
                   <Input
                     type="date"
                     value={checkInDate}
                     onChange={(e) => setCheckInDate(e.target.value)}
-                    className="h-10 rounded-xl font-mono"
+                    className="h-10 rounded-lg font-mono"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Check-Out</Label>
                   <Input
                     type="date"
                     value={checkOutDate}
                     onChange={(e) => setCheckOutDate(e.target.value)}
-                    className="h-10 rounded-xl font-mono"
+                    className="h-10 rounded-lg font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Categoria do Quarto</Label>
                   <Input
                     placeholder="Ex: Suíte Vista Mar"
                     value={roomType}
                     onChange={(e) => setRoomType(e.target.value)}
-                    className="h-10 rounded-xl"
+                    className="h-10 rounded-lg"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Regime Alimentar</Label>
                   <Select value={boardBasis} onValueChange={setBoardBasis}>
-                    <SelectTrigger className="h-10 rounded-xl">
+                    <SelectTrigger className="h-10 rounded-lg">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -420,13 +420,13 @@ export function VoucherCreationSheet({
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Localizador / Código da Reserva</Label>
                 <Input
                   placeholder="Ex: HTL-998822"
                   value={hotelConfirmation}
                   onChange={(e) => setHotelConfirmation(e.target.value)}
-                  className="h-10 rounded-xl font-mono uppercase"
+                  className="h-10 rounded-lg font-mono uppercase"
                 />
               </div>
             </div>
@@ -441,43 +441,43 @@ export function VoucherCreationSheet({
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Local de Embarque</Label>
                   <Input
                     placeholder="Ex: Aeroporto Internacional"
                     value={pickupLocation}
                     onChange={(e) => setPickupLocation(e.target.value)}
-                    className="h-10 rounded-xl"
+                    className="h-10 rounded-lg"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Destino do Desembarque</Label>
                   <Input
                     placeholder="Ex: Hotel / Pousada"
                     value={dropoffLocation}
                     onChange={(e) => setDropoffLocation(e.target.value)}
-                    className="h-10 rounded-xl"
+                    className="h-10 rounded-lg"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Tipo de Veículo</Label>
                   <Input
                     placeholder="Ex: Van Executiva"
                     value={transferVehicle}
                     onChange={(e) => setTransferVehicle(e.target.value)}
-                    className="h-10 rounded-xl"
+                    className="h-10 rounded-lg"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Contato do Motorista / Plantão</Label>
                   <Input
                     placeholder="(00) 00000-0000"
                     value={driverContact}
                     onChange={(e) => setDriverContact(e.target.value)}
-                    className="h-10 rounded-xl"
+                    className="h-10 rounded-lg"
                   />
                 </div>
               </div>
@@ -485,14 +485,14 @@ export function VoucherCreationSheet({
           )}
 
           {/* 4. OBSERVAÇÕES & ORIENTAÇÕES */}
-          <div className="space-y-1.5 pt-2">
+          <div className="space-y-2 pt-2">
             <Label className="text-xs font-semibold">Orientações de Embarque e Observações</Label>
             <Textarea
               placeholder="Instruções sobre check-in, documentos exigidos ou pontos de encontro..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="rounded-xl resize-none text-xs"
+              className="rounded-lg resize-none text-xs"
             />
           </div>
         </div>
@@ -503,7 +503,7 @@ export function VoucherCreationSheet({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="rounded-xl text-xs font-bold"
+            className="rounded-lg text-xs font-bold"
           >
             Cancelar
           </Button>
@@ -511,7 +511,7 @@ export function VoucherCreationSheet({
             type="button"
             onClick={() => createMutation.mutate()}
             disabled={createMutation.isPending}
-            className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+            className="rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
           >
             {createMutation.isPending ? (
               <>

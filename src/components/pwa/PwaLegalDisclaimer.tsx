@@ -16,15 +16,15 @@ export const PwaLegalDisclaimer: React.FC<PwaLegalDisclaimerProps> = ({
   disabled = false,
 }) => {
   return (
-    <div className="rounded-xl border border-border/70 bg-card p-3.5 space-y-2.5 text-xs text-muted-foreground select-none">
-      <div className="flex items-start gap-2.5">
+    <div className="rounded-lg border border-border/70 bg-card p-4 space-y-3 text-xs text-muted-foreground select-none">
+      <div className="flex items-start gap-3">
         <input
           id="pwa-terms-checkbox"
           type="checkbox"
           checked={checked}
           onChange={(e) => onCheckedChange(e.target.checked)}
           disabled={disabled}
-          className="size-4.5 rounded border-border text-primary focus:ring-primary/40 mt-0.5 cursor-pointer disabled:cursor-not-allowed"
+          className="size-4.5 rounded border-border text-primary focus:ring-primary/40 mt-1 cursor-pointer disabled:cursor-not-allowed"
         />
         <label
           htmlFor="pwa-terms-checkbox"
@@ -34,7 +34,7 @@ export const PwaLegalDisclaimer: React.FC<PwaLegalDisclaimerProps> = ({
           <Link
             to="/termos"
             target="_blank"
-            className="text-primary hover:underline font-semibold inline-flex items-center gap-0.5"
+            className="text-primary hover:underline font-semibold inline-flex items-center gap-1"
           >
             Termos Gerais do Waesy
             <ExternalLink className="size-2.5 inline" />
@@ -43,7 +43,7 @@ export const PwaLegalDisclaimer: React.FC<PwaLegalDisclaimerProps> = ({
           <Link
             to="/privacidade"
             target="_blank"
-            className="text-primary hover:underline font-semibold inline-flex items-center gap-0.5"
+            className="text-primary hover:underline font-semibold inline-flex items-center gap-1"
           >
             Política de Privacidade
             <ExternalLink className="size-2.5 inline" />

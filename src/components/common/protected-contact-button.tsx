@@ -102,7 +102,7 @@ export function ProtectedContactButton({
           size={size}
           onClick={handleClick}
           className={cn(
-            "rounded-xl gap-2 font-medium transition-all group border-border/80 hover:border-emerald-500/50 hover:bg-emerald-500/5 text-foreground cursor-pointer",
+            "rounded-lg gap-2 font-medium transition-all group border-border/80 hover:border-emerald-500/50 hover:bg-emerald-500/5 text-foreground cursor-pointer",
             className
           )}
           title="Faça login para contatar pelo WhatsApp"
@@ -119,9 +119,9 @@ export function ProtectedContactButton({
 
         {/* Modal de Proteção Anti-Scraping / Login Obrigatório */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-md rounded-2xl p-6 space-y-4">
+          <DialogContent className="sm:max-w-md rounded-lg p-6 space-y-4">
             <DialogHeader className="space-y-2 text-left">
-              <div className="size-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 mb-1">
+              <div className="size-11 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 mb-1">
                 <ShieldCheck className="size-6" />
               </div>
               <DialogTitle className="text-base font-bold text-foreground">
@@ -134,10 +134,10 @@ export function ProtectedContactButton({
               </DialogDescription>
             </DialogHeader>
 
-            <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 text-xs space-y-1.5">
+            <div className="p-4 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-foreground">Anunciante / Loja:</span>
-                <span className="text-muted-foreground truncate max-w-[200px]">{entityTitle || "Anúncio Verificado"}</span>
+                <span className="text-muted-foreground truncate max-w-52">{entityTitle || "Anúncio Verificado"}</span>
               </div>
               <div className="flex items-center justify-between font-mono">
                 <span className="text-muted-foreground">Telefone:</span>
@@ -150,14 +150,14 @@ export function ProtectedContactButton({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsModalOpen(false)}
-                className="w-full sm:w-auto rounded-xl text-xs"
+                className="w-full sm:w-auto rounded-lg text-xs"
               >
                 Voltar
               </Button>
               <Button
                 size="sm"
                 onClick={handleLoginRedirect}
-                className="w-full sm:w-auto rounded-xl text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                className="w-full sm:w-auto rounded-lg text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
               >
                 Entrar ou Criar Conta
                 <ArrowRight className="size-3.5" />
@@ -179,7 +179,7 @@ export function ProtectedContactButton({
       onClick={handleClick}
       className={cn(
         variant === "default" && "bg-emerald-600 hover:bg-emerald-700 text-white font-semibold",
-        "rounded-xl gap-2 transition-all cursor-pointer",
+        "rounded-lg gap-2 transition-all cursor-pointer",
         className
       )}
     >

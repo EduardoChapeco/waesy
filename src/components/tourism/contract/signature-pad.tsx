@@ -91,7 +91,7 @@ export function SignaturePad({ onSave, onClear }: SignaturePadProps) {
 
  return (
  <div className="space-y-2">
- <div className="relative w-full aspect-3/1 min-h-[140px] max-h-[200px] rounded-2xl border-2 border-dashed border-border/80 bg-slate-50 touch-none overflow-hidden flex items-center justify-center">
+ <div className="relative w-full aspect-3/1 min-h-[140px] max-h-[200px] rounded-lg border-2 border-dashed border-border/80 bg-slate-50 touch-none overflow-hidden flex items-center justify-center">
  <canvas
  ref={canvasRef}
  width={600}
@@ -107,7 +107,7 @@ export function SignaturePad({ onSave, onClear }: SignaturePadProps) {
  />
 
  {!hasSignature && (
- <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-muted-foreground/50 text-xs font-bold gap-1.5">
+ <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-muted-foreground/50 text-xs font-bold gap-2">
  <PenTool className="size-4" />
  <span>Assine ou desenhe sua rubrica aqui</span>
  </div>

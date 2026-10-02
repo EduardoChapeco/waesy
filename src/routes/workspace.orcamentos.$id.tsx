@@ -135,7 +135,7 @@ function QuoteDetailPage() {
  {/* Breadcrumb & Ações Superiores */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="flex items-center gap-2">
- <Button asChild variant="ghost" size="icon" className="rounded-xl size-9">
+ <Button asChild variant="ghost" size="icon" className="rounded-lg size-9">
  <Link to="/workspace/orcamentos">
  <ChevronLeft className="size-4" />
  </Link>
@@ -145,7 +145,7 @@ function QuoteDetailPage() {
  <span className="text-xs font-mono font-bold text-muted-foreground">{quote.quote_number}</span>
  <Badge
  variant={isTerminal ? "default" : "secondary"}
- className="text-xs font-semibold px-2 py-0.5 rounded-lg"
+ className="text-xs font-semibold px-2 py-1 rounded-lg"
  >
  {quote.status}
  </Badge>
@@ -160,7 +160,7 @@ function QuoteDetailPage() {
  <Button
  asChild
  variant="outline"
- className="h-10 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+ className="h-10 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
  >
  <Link to="/workspace/turismo/propostas/$id" params={{ id: quote.id }}>
  <FileSpreadsheet className="size-3.5 text-primary" />
@@ -171,7 +171,7 @@ function QuoteDetailPage() {
  <Button
  onClick={handleCopyPublicLink}
  variant="outline"
- className="h-10 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+ className="h-10 rounded-lg text-xs font-bold gap-2 cursor-pointer"
  >
  <Copy className="size-3.5" />
  <span>Copiar Link do Cliente</span>
@@ -180,7 +180,7 @@ function QuoteDetailPage() {
  <Button
  onClick={handleGenerateContract}
  disabled={isCreatingContract}
- className="h-10 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground cursor-pointer shadow-sm"
+ className="h-10 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer shadow-sm"
  >
  <FileCheck2 className="size-3.5" />
  <span>{isCreatingContract ? "Emitindo..." : "Gerar Contrato (SHA-256)"}</span>
@@ -192,11 +192,11 @@ function QuoteDetailPage() {
  {/* Coluna Principal (8 Cols) */}
  <div className="lg:col-span-8 space-y-6">
  {/* Cabeçalho de Dados do Cliente e Viagem */}
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4">
  <div className="flex items-start justify-between">
  <div>
  <p className="text-xs font-semibold text-muted-foreground uppercase">Cliente Contratante</p>
- <h3 className="text-lg font-bold text-foreground mt-0.5">
+ <h3 className="text-lg font-bold text-foreground mt-1">
  {quote.customer_name ?? quote.customer_email ?? "Cliente não identificado"}
  </h3>
  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
@@ -208,7 +208,7 @@ function QuoteDetailPage() {
  {quote.valid_until && (
  <div className="text-right">
  <p className="text-xs font-semibold text-muted-foreground uppercase">Validade</p>
- <p className="text-xs font-bold text-foreground font-mono mt-0.5">
+ <p className="text-xs font-bold text-foreground font-mono mt-1">
  {new Date(quote.valid_until).toLocaleDateString("pt-BR")}
  </p>
  </div>
@@ -216,7 +216,7 @@ function QuoteDetailPage() {
  </div>
 
  {travelMeta?.destination_city && (
- <div className="p-3.5 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-between text-xs">
+ <div className="p-4 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-between text-xs">
  <div className="flex items-center gap-2">
  <Plane className="size-4 text-primary" />
  <span className="font-bold text-foreground">{travelMeta.destination_city}</span>
@@ -230,7 +230,7 @@ function QuoteDetailPage() {
 
  {/* Seção de Trechos Aéreos (se houver) */}
  {Array.isArray(travelMeta?.flights) && travelMeta.flights.length > 0 && (
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Plane className="size-4 text-primary" />
  <span>Malha Aérea Selecionada ({travelMeta.flights.length} trecho(s))</span>
@@ -238,7 +238,7 @@ function QuoteDetailPage() {
 
  <div className="space-y-3">
  {travelMeta.flights.map((f: any, i: number) => (
- <div key={i} className="p-4 rounded-2xl bg-background/70 border border-border/60 space-y-2 text-xs">
+ <div key={i} className="p-4 rounded-lg bg-background/70 border border-border/60 space-y-2 text-xs">
  <div className="flex items-center justify-between font-bold">
  <span className="text-foreground">{f.airline_name} ({f.flight_number || "Voo Regular"})</span>
  <Badge variant="secondary" className="text-xs">{f.cabin_class || "Econômica"}</Badge>
@@ -258,7 +258,7 @@ function QuoteDetailPage() {
 
  {/* Seção de Hotéis (se houver) */}
  {Array.isArray(travelMeta?.hotels) && travelMeta.hotels.length > 0 && (
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Building2 className="size-4 text-primary" />
  <span>Acomodação e Hospedagem</span>
@@ -266,7 +266,7 @@ function QuoteDetailPage() {
 
  <div className="space-y-3">
  {travelMeta.hotels.map((h: any, i: number) => (
- <div key={i} className="p-4 rounded-2xl bg-background/70 border border-border/60 space-y-2 text-xs">
+ <div key={i} className="p-4 rounded-lg bg-background/70 border border-border/60 space-y-2 text-xs">
  <div className="flex items-center justify-between font-bold">
  <span className="text-foreground">{h.hotel_name}</span>
  <span className="text-amber-500">{"".repeat(h.stars || 5)}</span>
@@ -285,7 +285,7 @@ function QuoteDetailPage() {
  )}
 
  {/* Mensagens e Histórico de Negociação */}
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <MessageSquare className="size-4 text-primary" />
  <span>Histórico e Mensagens da Negociação</span>
@@ -298,7 +298,7 @@ function QuoteDetailPage() {
  quote.messages?.map((msg: any) => (
  <div
  key={msg.id}
- className={`p-3.5 rounded-2xl text-xs space-y-1 ${
+ className={`p-4 rounded-lg text-xs space-y-1 ${
  msg.is_internal ? "bg-amber-500/10 border border-amber-500/20 text-amber-950 dark:text-amber-200" : "bg-muted/60"
  }`}
  >
@@ -316,13 +316,13 @@ function QuoteDetailPage() {
  value={messageText}
  onChange={(e) => setMessageText(e.target.value)}
  placeholder="Adicionar nota interna ou mensagem..."
- className="flex-1 h-10 px-3.5 rounded-xl border border-border bg-background text-xs"
+ className="flex-1 h-10 px-4 rounded-lg border border-border bg-background text-xs"
  />
  <Button
  onClick={() => sendMessage.mutate()}
  disabled={!messageText.trim() || sendMessage.isPending}
  size="sm"
- className="h-10 px-4 rounded-xl text-xs font-bold"
+ className="h-10 px-4 rounded-lg text-xs font-bold"
  >
  <Send className="size-3.5" />
  </Button>
@@ -333,7 +333,7 @@ function QuoteDetailPage() {
 
  {/* Coluna Lateral Financeira & Ações (4 Cols) */}
  <div className="lg:col-span-4 space-y-6">
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground">Resumo Financeiro</h3>
 
  <div className="space-y-3 text-xs">
@@ -359,7 +359,7 @@ function QuoteDetailPage() {
  <Button
  onClick={() => changeStatus.mutate("sent")}
  disabled={changeStatus.isPending}
- className="w-full h-10 rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-sm"
+ className="w-full h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-sm"
  >
  <Send className="size-3.5" />
  <span>Marcar como Enviado</span>
@@ -371,7 +371,7 @@ function QuoteDetailPage() {
  <Button
  onClick={() => handleApprove.mutate()}
  disabled={handleApprove.isPending}
- className="w-full h-10 rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer"
  >
  <CheckCircle2 className="size-3.5" />
  <span>Aprovar e Fechar Venda</span>
@@ -380,7 +380,7 @@ function QuoteDetailPage() {
  onClick={() => changeStatus.mutate("rejected")}
  disabled={changeStatus.isPending}
  variant="outline"
- className="w-full h-10 rounded-xl text-xs font-bold text-destructive hover:bg-destructive/10 cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10 cursor-pointer"
  >
  <XCircle className="size-3.5" />
  <span>Marcar como Recusado</span>
@@ -390,16 +390,16 @@ function QuoteDetailPage() {
  </div>
  </div>
 
- <div className="p-5 rounded-2xl bg-muted/40 border border-border/60 space-y-3 text-xs">
+ <div className="p-5 rounded-lg bg-muted/40 border border-border/60 space-y-3 text-xs">
  <h4 className="font-bold text-foreground">Ações de Conversão Rápida</h4>
  <div className="space-y-2">
- <Button asChild variant="outline" className="w-full h-9 rounded-xl text-xs font-semibold justify-start gap-2">
+ <Button asChild variant="outline" className="w-full h-9 rounded-lg text-xs font-semibold justify-start gap-2">
  <Link to="/workspace/turismo/propostas/$id" params={{ id: quote.id }}>
  <Download className="size-3.5 text-primary" />
  <span>Exportar Lâmina (PDF/PNG)</span>
  </Link>
  </Button>
- <Button onClick={handleCopyPublicLink} variant="outline" className="w-full h-9 rounded-xl text-xs font-semibold justify-start gap-2">
+ <Button onClick={handleCopyPublicLink} variant="outline" className="w-full h-9 rounded-lg text-xs font-semibold justify-start gap-2">
  <Share2 className="size-3.5 text-primary" />
  <span>Link Direto para o WhatsApp</span>
  </Button>

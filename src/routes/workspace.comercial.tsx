@@ -655,7 +655,7 @@ function WorkspaceComercialPage() {
       />
 
       {/* ── SELETOR MOBILE RÁPIDO DE ETAPAS (TOUCH ERGONÔMICO) ── */}
-      <div className="sm:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
+      <div className="sm:hidden flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
         {STAGES.map((s) => {
           const count = filteredLeads.filter((l: any) =>
             s.id === "won"
@@ -670,7 +670,7 @@ function WorkspaceComercialPage() {
                 const el = document.getElementById(`kanban-col-${s.id}`);
                 el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
               }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer min-h-11"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer min-h-11"
             >
               <span className={cn("size-2 rounded-full", s.dotColor)} />
               <span>{s.title}</span>
@@ -699,18 +699,18 @@ function WorkspaceComercialPage() {
           return (
             <div
               key={stage.id}
-              className="flex flex-col rounded-2xl border border-border/70 bg-card w-full sm:w-80 sm:w-80 min-w-full sm:w-80 sm:min-w-80 shrink-0 min-h-96 lg:min-h-96 shadow-2xs transition-all snap-center"
+              className="flex flex-col rounded-lg border border-border/70 bg-card w-full sm:w-80 sm:w-80 min-w-full sm:w-80 sm:min-w-80 shrink-0 min-h-96 lg:min-h-96 shadow-2xs transition-all snap-center"
             >
               {/* Header da Coluna com Somatório e Ação Rápida */}
-              <div className="p-3.5 pb-2.5 border-b border-border/60 bg-muted/25 rounded-t-2xl space-y-1.5 sticky top-0 z-10">
+              <div className="p-4 pb-3 border-b border-border/60 bg-muted/25 rounded-t-lg space-y-2 sticky top-0 z-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className={cn("size-2.5 rounded-full ring-2 ring-background", stage.dotColor)} />
                     <h3 className="text-xs font-bold text-foreground truncate">{stage.title}</h3>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <Badge variant="secondary" className="text-xs font-mono px-1.5 py-0 h-5">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs font-mono px-2 py-0 h-5">
                       {stageLeads.length}
                     </Badge>
                     <Button
@@ -739,7 +739,7 @@ function WorkspaceComercialPage() {
               {/* Lista de Cards da Coluna */}
               <div className="p-3 space-y-3 flex-1 overflow-y-auto no-scrollbar max-h-96 [scrollbar-width:thin]">
                 {stageLeads.length === 0 ? (
-                  <div className="h-36 rounded-xl border border-dashed border-border/70 flex flex-col items-center justify-center p-4 text-center text-muted-foreground gap-1.5">
+                  <div className="h-36 rounded-lg border border-dashed border-border/70 flex flex-col items-center justify-center p-4 text-center text-muted-foreground gap-2">
                     <span className="text-xs font-medium">Nenhum lead nesta etapa</span>
                     <Button
                       variant="outline"
@@ -748,7 +748,7 @@ function WorkspaceComercialPage() {
                         setNewLeadTargetStage(stage.id);
                         setIsNewLeadOpen(true);
                       }}
-                      className="h-7 px-3 rounded-xl text-xs text-muted-foreground/75 font-bold gap-1.5 border-border/60 hover:bg-muted cursor-pointer mt-1"
+                      className="h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold gap-2 border-border/60 hover:bg-muted cursor-pointer mt-1"
                     >
                       <Plus className="size-3" />
                       <span>Adicionar Lead</span>
@@ -786,7 +786,7 @@ function WorkspaceComercialPage() {
           <div className="space-y-6">
             <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded-md">
                   TravelAgências Standard
                 </span>
                 <span className="text-xs text-muted-foreground">Etapa: {STAGES.find((s) => s.id === newLeadTargetStage)?.title}</span>
@@ -799,8 +799,8 @@ function WorkspaceComercialPage() {
 
             <form id="new-lead-form" onSubmit={handleCreateNewLead} className="space-y-5">
               {/* Bloco 1: Contato & Titular */}
-              <div className="space-y-3 p-3.5 rounded-2xl border border-border/60 bg-muted/20">
-                <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
+                <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Users className="size-3.5 text-primary" />
                   <span>Titular / Contato Principal</span>
                 </h4>
@@ -811,7 +811,7 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.name}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, name: e.target.value }))}
                       placeholder="Ex: Roberto Carlos Silva"
-                      className="h-8 text-xs rounded-xl"
+                      className="h-8 text-xs rounded-lg"
                       required
                     />
                   </div>
@@ -821,7 +821,7 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.phone}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, phone: e.target.value }))}
                       placeholder="(49) 99999-9999"
-                      className="h-8 text-xs rounded-xl"
+                      className="h-8 text-xs rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
@@ -831,7 +831,7 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.email}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, email: e.target.value }))}
                       placeholder="roberto@email.com"
-                      className="h-8 text-xs rounded-xl"
+                      className="h-8 text-xs rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
@@ -840,10 +840,10 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.source}
                       onValueChange={(val) => setNewLeadForm((prev) => ({ ...prev, source: val }))}
                     >
-                      <SelectTrigger className="h-8 text-xs rounded-xl">
+                      <SelectTrigger className="h-8 text-xs rounded-lg">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-lg">
                         {LEAD_SOURCES.map((s) => (
                           <SelectItem key={s.value} value={s.value} className="text-xs">
                             {s.label}
@@ -856,8 +856,8 @@ function WorkspaceComercialPage() {
               </div>
 
               {/* Bloco 2: Viagem, Destino & Período */}
-              <div className="space-y-3 p-3.5 rounded-2xl border border-border/60 bg-muted/20">
-                <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
+                <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <MapPin className="size-3.5 text-primary" />
                   <span>Viagem, Destino e Período</span>
                 </h4>
@@ -868,7 +868,7 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.destination}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, destination: e.target.value }))}
                       placeholder="Ex: Maceió, AL ou Paris, França"
-                      className="h-8 text-xs rounded-xl"
+                      className="h-8 text-xs rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
@@ -877,10 +877,10 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.interestType}
                       onValueChange={(val) => setNewLeadForm((prev) => ({ ...prev, interestType: val }))}
                     >
-                      <SelectTrigger className="h-8 text-xs rounded-xl">
+                      <SelectTrigger className="h-8 text-xs rounded-lg">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-lg">
                         {INTEREST_TYPES.map((t) => (
                           <SelectItem key={t.value} value={t.value} className="text-xs">
                             {t.label}
@@ -895,7 +895,7 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.interestPeriod}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, interestPeriod: e.target.value }))}
                       placeholder="Ex: Julho/2026, Réveillon"
-                      className="h-8 text-xs rounded-xl"
+                      className="h-8 text-xs rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
@@ -904,7 +904,7 @@ function WorkspaceComercialPage() {
                       type="date"
                       value={newLeadForm.travelStart}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, travelStart: e.target.value }))}
-                      className="h-8 text-xs rounded-xl"
+                      className="h-8 text-xs rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
@@ -913,15 +913,15 @@ function WorkspaceComercialPage() {
                       type="date"
                       value={newLeadForm.travelEnd}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, travelEnd: e.target.value }))}
-                      className="h-8 text-xs rounded-xl"
+                      className="h-8 text-xs rounded-lg"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Bloco 3: Passageiros / Pax & Regras IATA */}
-              <div className="space-y-3 p-3.5 rounded-2xl border border-border/60 bg-muted/20">
-                <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
+                <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Plane className="size-3.5 text-primary" />
                   <span>Passageiros (Pax)</span>
                 </h4>
@@ -933,7 +933,7 @@ function WorkspaceComercialPage() {
                       min={1}
                       value={newLeadForm.paxAdults}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxAdults: Number(e.target.value) || 1 }))}
-                      className="h-8 text-xs rounded-xl font-mono"
+                      className="h-8 text-xs rounded-lg font-mono"
                     />
                     <span className="text-xs text-muted-foreground block">≥ 12 anos</span>
                   </div>
@@ -944,7 +944,7 @@ function WorkspaceComercialPage() {
                       min={0}
                       value={newLeadForm.paxChildren}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxChildren: Number(e.target.value) || 0 }))}
-                      className="h-8 text-xs rounded-xl font-mono"
+                      className="h-8 text-xs rounded-lg font-mono"
                     />
                     <span className="text-xs text-muted-foreground block">2 a 11 anos</span>
                   </div>
@@ -955,7 +955,7 @@ function WorkspaceComercialPage() {
                       min={0}
                       value={newLeadForm.paxInfants}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxInfants: Number(e.target.value) || 0 }))}
-                      className="h-8 text-xs rounded-xl font-mono"
+                      className="h-8 text-xs rounded-lg font-mono"
                     />
                     <span className="text-xs text-muted-foreground block">0 a 23 meses</span>
                   </div>
@@ -967,15 +967,15 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.paxAgesStr}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxAgesStr: e.target.value }))}
                       placeholder="Ex: 4, 8 (separadas por vírgula)"
-                      className="h-8 text-xs rounded-xl"
+                      className="h-8 text-xs rounded-lg"
                     />
                   </div>
                 )}
               </div>
 
               {/* Bloco 4: Comercial, Tags & Observações */}
-              <div className="space-y-3 p-3.5 rounded-2xl border border-border/60 bg-muted/20">
-                <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
+                <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <DollarSign className="size-3.5 text-primary" />
                   <span>Comercial, Tags e Checklist</span>
                 </h4>
@@ -985,7 +985,7 @@ function WorkspaceComercialPage() {
                     <CurrencyField
                       value={newLeadForm.estimatedValueCents}
                       onChange={(cents) => setNewLeadForm((prev) => ({ ...prev, estimatedValueCents: cents ?? 0 }))}
-                      className="h-8 text-xs rounded-xl font-mono"
+                      className="h-8 text-xs rounded-lg font-mono"
                     />
                   </div>
                   <div className="space-y-1">
@@ -994,10 +994,10 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.assignedTo || "none"}
                       onValueChange={(val) => setNewLeadForm((prev) => ({ ...prev, assignedTo: val === "none" ? "" : val }))}
                     >
-                      <SelectTrigger className="h-8 text-xs rounded-xl">
+                      <SelectTrigger className="h-8 text-xs rounded-lg">
                         <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-lg">
                         <SelectItem value="none" className="text-xs text-muted-foreground">
                           Sem responsável atribuído
                         </SelectItem>
@@ -1012,9 +1012,9 @@ function WorkspaceComercialPage() {
                 </div>
 
                 {/* Seleção de Tags Populares */}
-                <div className="space-y-1.5 pt-1">
+                <div className="space-y-2 pt-1">
                   <Label className="text-xs text-muted-foreground/75 font-semibold">Tags de Segmentação</Label>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {POPULAR_TAGS.map((t) => {
                       const tagStr = `${t.name}:${t.color}`;
                       const isSelected = newLeadForm.tags.includes(tagStr);
@@ -1024,7 +1024,7 @@ function WorkspaceComercialPage() {
                           type="button"
                           onClick={() => handleToggleNewLeadTag(tagStr)}
                           className={cn(
-                            "text-xs font-bold uppercase px-2 py-0.5 rounded-md transition-all cursor-pointer border",
+                            "text-xs font-bold uppercase px-2 py-1 rounded-md transition-all cursor-pointer border",
                             isSelected
                               ? "text-white border-transparent shadow-xs"
                               : "text-muted-foreground border-border bg-background hover:border-primary/40"
@@ -1044,7 +1044,7 @@ function WorkspaceComercialPage() {
                     value={newLeadForm.notes}
                     onChange={(e) => setNewLeadForm((prev) => ({ ...prev, notes: e.target.value }))}
                     placeholder="Preferências de resort, restrições alimentares, comemoração especial..."
-                    className="text-xs rounded-xl resize-none"
+                    className="text-xs rounded-lg resize-none"
                     rows={2}
                   />
                 </div>
@@ -1058,7 +1058,7 @@ function WorkspaceComercialPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsNewLeadOpen(false)}
-              className="rounded-xl text-xs font-semibold"
+              className="rounded-lg text-xs font-semibold"
             >
               Cancelar
             </Button>
@@ -1067,7 +1067,7 @@ function WorkspaceComercialPage() {
               form="new-lead-form"
               size="sm"
               disabled={isSubmittingNew}
-              className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
+              className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isSubmittingNew ? "Salvando no Funil..." : "Salvar no Funil"}
             </Button>
@@ -1107,7 +1107,7 @@ function WorkspaceComercialPage() {
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2.5 rounded-xl border border-border/80 bg-background hover:bg-muted text-foreground flex items-center justify-center gap-1.5 font-semibold text-xs transition-colors min-h-11"
+                      className="p-3 rounded-lg border border-border/80 bg-background hover:bg-muted text-foreground flex items-center justify-center gap-2 font-semibold text-xs transition-colors min-h-11"
                     >
                       <Phone className="size-3.5 shrink-0 text-emerald-600" />
                       <span className="truncate">WhatsApp</span>
@@ -1126,7 +1126,7 @@ function WorkspaceComercialPage() {
                       estimated_value_cents: selectedLead.estimated_value_cents,
                       passenger_count: selectedLead.pax_count,
                     })}
-                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-11"
+                    className="h-auto p-3 rounded-lg border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-2 cursor-pointer min-h-11"
                   >
                     <FileText className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">Gerar Proposta</span>
@@ -1141,7 +1141,7 @@ function WorkspaceComercialPage() {
                       estimated_value_cents: selectedLead.estimated_value_cents,
                       notes: selectedLead.notes,
                     })}
-                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-11"
+                    className="h-auto p-3 rounded-lg border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-2 cursor-pointer min-h-11"
                   >
                     <Calculator className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">Comissão</span>
@@ -1155,7 +1155,7 @@ function WorkspaceComercialPage() {
                       fullName: selectedLead.full_name,
                       destination: selectedLead.destination,
                     })}
-                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-11"
+                    className="h-auto p-3 rounded-lg border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-2 cursor-pointer min-h-11"
                   >
                     <Plane className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">Malha Aérea</span>
@@ -1165,7 +1165,7 @@ function WorkspaceComercialPage() {
                     type="button"
                     variant="outline"
                     onClick={handleCopyMagicLink}
-                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-11"
+                    className="h-auto p-3 rounded-lg border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-2 cursor-pointer min-h-11"
                   >
                     {copiedMagicLink ? (
                       <Check className="size-3.5 shrink-0 text-emerald-600" />
@@ -1177,7 +1177,7 @@ function WorkspaceComercialPage() {
                 </div>
 
                 {/* Abas da Ficha 360° */}
-                <div className="flex border-b border-border/50 gap-2 overflow-x-auto scrollbar-none pb-0.5">
+                <div className="flex border-b border-border/50 gap-2 overflow-x-auto scrollbar-none pb-1">
                   <button
                     type="button"
                     onClick={() => setActiveTabDetail("viagem")}
@@ -1281,27 +1281,27 @@ function WorkspaceComercialPage() {
                 {/* Aba 1: Viagem & Destino */}
                 {activeTabDetail === "viagem" && (
                   <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs font-semibold">Destino de Interesse</Label>
                       <Input
                         value={editLeadForm.destination}
                         onChange={(e) => setEditLeadForm((prev) => ({ ...prev, destination: e.target.value }))}
                         placeholder="Ex: Maceió, AL"
-                        className="h-8 text-xs rounded-xl"
+                        className="h-8 text-xs rounded-lg"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs font-semibold">Tipo de Interesse</Label>
                         <Select
                           value={editLeadForm.interest_type || "none"}
                           onValueChange={(val) => setEditLeadForm((prev) => ({ ...prev, interest_type: val === "none" ? "" : val }))}
                         >
-                          <SelectTrigger className="h-8 text-xs rounded-xl">
+                          <SelectTrigger className="h-8 text-xs rounded-lg">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl">
+                          <SelectContent className="rounded-lg">
                             <SelectItem value="none" className="text-xs text-muted-foreground">Não informado</SelectItem>
                             {INTEREST_TYPES.map((t) => (
                               <SelectItem key={t.value} value={t.value} className="text-xs">
@@ -1312,39 +1312,39 @@ function WorkspaceComercialPage() {
                         </Select>
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs font-semibold">Período Flexível</Label>
                         <Input
                           value={editLeadForm.interest_period}
                           onChange={(e) => setEditLeadForm((prev) => ({ ...prev, interest_period: e.target.value }))}
                           placeholder="Ex: Julho/2026"
-                          className="h-8 text-xs rounded-xl"
+                          className="h-8 text-xs rounded-lg"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs font-semibold">Data de Ida</Label>
                         <Input
                           type="date"
                           value={editLeadForm.travel_start}
                           onChange={(e) => setEditLeadForm((prev) => ({ ...prev, travel_start: e.target.value }))}
-                          className="h-8 text-xs rounded-xl"
+                          className="h-8 text-xs rounded-lg"
                         />
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs font-semibold">Data de Volta</Label>
                         <Input
                           type="date"
                           value={editLeadForm.travel_end}
                           onChange={(e) => setEditLeadForm((prev) => ({ ...prev, travel_end: e.target.value }))}
-                          className="h-8 text-xs rounded-xl"
+                          className="h-8 text-xs rounded-lg"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 rounded-xl bg-muted/20 border border-border/60">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 rounded-lg bg-muted/20 border border-border/60">
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground/75 font-semibold">Adultos</Label>
                         <Input
@@ -1352,7 +1352,7 @@ function WorkspaceComercialPage() {
                           min={1}
                           value={editLeadForm.pax_adults}
                           onChange={(e) => setEditLeadForm((prev) => ({ ...prev, pax_adults: Number(e.target.value) || 1 }))}
-                          className="h-8 text-xs rounded-xl font-mono"
+                          className="h-8 text-xs rounded-lg font-mono"
                         />
                       </div>
                       <div className="space-y-1">
@@ -1362,7 +1362,7 @@ function WorkspaceComercialPage() {
                           min={0}
                           value={editLeadForm.pax_children}
                           onChange={(e) => setEditLeadForm((prev) => ({ ...prev, pax_children: Number(e.target.value) || 0 }))}
-                          className="h-8 text-xs rounded-xl font-mono"
+                          className="h-8 text-xs rounded-lg font-mono"
                         />
                       </div>
                       <div className="space-y-1">
@@ -1372,18 +1372,18 @@ function WorkspaceComercialPage() {
                           min={0}
                           value={editLeadForm.pax_infants}
                           onChange={(e) => setEditLeadForm((prev) => ({ ...prev, pax_infants: Number(e.target.value) || 0 }))}
-                          className="h-8 text-xs rounded-xl font-mono"
+                          className="h-8 text-xs rounded-lg font-mono"
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs font-semibold">Idades das Crianças (separadas por vírgula)</Label>
                       <Input
                         value={editLeadForm.pax_ages_str}
                         onChange={(e) => setEditLeadForm((prev) => ({ ...prev, pax_ages_str: e.target.value }))}
                         placeholder="Ex: 5, 8"
-                        className="h-8 text-xs rounded-xl"
+                        className="h-8 text-xs rounded-lg"
                       />
                     </div>
                   </div>
@@ -1399,7 +1399,7 @@ function WorkspaceComercialPage() {
                     ) : customer360Data?.customer ? (
                       <div className="space-y-4">
                         {/* Cartão do Cliente Master */}
-                        <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-2">
+                        <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">
                               {customer360Data.customer.full_name || "Cliente Oficial"}
@@ -1431,7 +1431,7 @@ function WorkspaceComercialPage() {
                         {/* Histórico de Outras Oportunidades do mesmo cliente */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-foreground flex items-center gap-2">
                               <History className="size-3.5 text-muted-foreground" />
                               <span>Outras Oportunidades Deste Cliente</span>
                             </span>
@@ -1441,7 +1441,7 @@ function WorkspaceComercialPage() {
                           </div>
 
                           {customer360Data.otherLeads.length === 0 ? (
-                            <div className="p-4 text-center rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground">
+                            <div className="p-4 text-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
                               Esta é a primeira oportunidade registrada deste cliente.
                             </div>
                           ) : (
@@ -1449,9 +1449,9 @@ function WorkspaceComercialPage() {
                               {customer360Data.otherLeads.map((ol: any) => (
                                 <div
                                   key={ol.id}
-                                  className="p-2.5 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-colors flex items-center justify-between text-xs"
+                                  className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors flex items-center justify-between text-xs"
                                 >
-                                  <div className="space-y-0.5">
+                                  <div className="space-y-1">
                                     <p className="font-bold text-foreground">{ol.title || ol.destination || "Oportunidade"}</p>
                                     <p className="text-xs text-muted-foreground">
                                       Criado em {new Date(ol.created_at).toLocaleDateString("pt-BR")}
@@ -1470,7 +1470,7 @@ function WorkspaceComercialPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="p-5 rounded-xl border border-dashed border-border/60 text-center space-y-3">
+                      <div className="p-5 rounded-lg border border-dashed border-border/60 text-center space-y-3">
                         <p className="text-xs text-muted-foreground">
                           Este lead ainda não está formalmente vinculado a um cadastro oficial na carteira de clientes.
                         </p>
@@ -1479,7 +1479,7 @@ function WorkspaceComercialPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handlePromoteToCustomer(selectedLead.id)}
-                          className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+                          className="rounded-lg text-xs font-bold gap-2 cursor-pointer"
                         >
                           <UserCheck className="size-3.5" />
                           <span>Vincular / Criar Perfil Oficial</span>
@@ -1493,9 +1493,9 @@ function WorkspaceComercialPage() {
                 {activeTabDetail === "contratos" && (
                   <div className="space-y-4 pt-1">
                     {/* Formulário de Emissão Rápida de Contrato */}
-                    <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-3">
+                    <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-foreground flex items-center gap-2">
                           <FileSignature className="size-3.5 text-primary" />
                           <span>Emitir Contrato com Assinatura Eletrônica</span>
                         </span>
@@ -1504,42 +1504,42 @@ function WorkspaceComercialPage() {
                         </Badge>
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-muted-foreground/75 font-semibold">Título do Contrato</Label>
                         <Input
                           value={contractForm.title}
                           onChange={(e) => setContractForm((prev) => ({ ...prev, title: e.target.value }))}
-                          className="h-8 text-xs rounded-xl"
+                          className="h-8 text-xs rounded-lg"
                           placeholder="Ex: Contrato de Pacote Turístico"
                         />
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs text-muted-foreground/75 font-semibold">Resumo dos Serviços Inclusos</Label>
                         <Textarea
                           value={contractForm.packageSummary}
                           onChange={(e) => setContractForm((prev) => ({ ...prev, packageSummary: e.target.value }))}
-                          className="text-xs rounded-xl resize-none"
+                          className="text-xs rounded-lg resize-none"
                           rows={3}
                           placeholder="Descrição dos serviços contratados..."
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs text-muted-foreground/75 font-semibold">Valor Total (R$)</Label>
                           <CurrencyField
                             value={contractForm.totalValueCents}
                             onChange={(val) => setContractForm((prev) => ({ ...prev, totalValueCents: val ?? 0 }))}
-                            className="h-8 text-xs rounded-xl font-mono"
+                            className="h-8 text-xs rounded-lg font-mono"
                           />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <Label className="text-xs text-muted-foreground/75 font-semibold">Condição de Pagamento</Label>
                           <Input
                             value={contractForm.paymentConditions}
                             onChange={(e) => setContractForm((prev) => ({ ...prev, paymentConditions: e.target.value }))}
-                            className="h-8 text-xs rounded-xl"
+                            className="h-8 text-xs rounded-lg"
                           />
                         </div>
                       </div>
@@ -1549,7 +1549,7 @@ function WorkspaceComercialPage() {
                         size="sm"
                         disabled={isIssuingContract}
                         onClick={handleIssueContract}
-                        className="w-full rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+                        className="w-full rounded-lg text-xs font-bold gap-2 cursor-pointer"
                       >
                         <FileSignature className="size-3.5" />
                         <span>{isIssuingContract ? "Gerando Contrato..." : "Gerar e Enviar para Assinatura"}</span>
@@ -1560,7 +1560,7 @@ function WorkspaceComercialPage() {
                     <div className="space-y-2">
                       <span className="text-xs font-bold text-foreground">Contratos Vinculados</span>
                       {(!customer360Data?.contracts || customer360Data.contracts.length === 0) ? (
-                        <div className="p-4 text-center rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground">
+                        <div className="p-4 text-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
                           Nenhum contrato gerado para esta oportunidade ainda.
                         </div>
                       ) : (
@@ -1568,7 +1568,7 @@ function WorkspaceComercialPage() {
                           {customer360Data.contracts.map((ctr: any) => (
                             <div
                               key={ctr.id}
-                              className="p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-colors space-y-2"
+                              className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors space-y-2"
                             >
                               <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold text-foreground">{ctr.contract_title}</span>
@@ -1596,7 +1596,7 @@ function WorkspaceComercialPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleCopyContractLink(ctr.public_token)}
-                                  className="h-7 px-2.5 rounded-lg text-xs text-muted-foreground/75 font-bold gap-1 cursor-pointer"
+                                  className="h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold gap-1 cursor-pointer"
                                 >
                                   <Copy className="size-3" />
                                   <span>Copiar Link</span>
@@ -1605,7 +1605,7 @@ function WorkspaceComercialPage() {
                                   to="/viajante/$token"
                                   params={{ token: ctr.public_token }}
                                   target="_blank"
-                                  className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs text-muted-foreground/75 font-bold border border-border/60 hover:bg-muted/50 transition-colors"
+                                  className="inline-flex items-center gap-1 h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold border border-border/60 hover:bg-muted/50 transition-colors"
                                 >
                                   <ExternalLink className="size-3" />
                                   <span>Abrir</span>
@@ -1622,9 +1622,9 @@ function WorkspaceComercialPage() {
                 {/* Aba: Telemetria & Brain */}
                 {activeTabDetail === "telemetria" && (
                   <div className="space-y-4 pt-1">
-                    <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-2">
+                    <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-foreground flex items-center gap-2">
                           <Brain className="size-3.5 text-primary" />
                           <span>Inteligência Comportamental ("Brain")</span>
                         </span>
@@ -1643,14 +1643,14 @@ function WorkspaceComercialPage() {
                       {customer360Data?.customer?.behavioral_profile?.top_niches?.length > 0 ? (
                         <div className="grid grid-cols-2 gap-2">
                           {(customer360Data?.customer?.behavioral_profile?.top_niches || []).map((n: any, idx: number) => (
-                            <div key={idx} className="p-2.5 rounded-xl border border-border/60 bg-card flex items-center justify-between text-xs">
+                            <div key={idx} className="p-3 rounded-lg border border-border/60 bg-card flex items-center justify-between text-xs">
                               <span className="capitalize font-medium">{n.niche || "Geral"}</span>
                               <span className="font-mono text-xs text-muted-foreground/75 font-bold text-primary">{Number(n.total_score || 0).toFixed(0)} pts</span>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="p-4 text-center rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground">
+                        <div className="p-4 text-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
                           Nenhuma afinidade ponderada registrada para este perfil até o momento.
                         </div>
                       )}
@@ -1660,11 +1660,11 @@ function WorkspaceComercialPage() {
                     <div className="space-y-2">
                       <span className="text-xs font-bold text-foreground">Rastro de Atividades da Oportunidade</span>
                       {(!customer360Data?.activities || customer360Data.activities.length === 0) ? (
-                        <div className="p-4 text-center rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground">
+                        <div className="p-4 text-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
                           Nenhuma atividade registrada ainda nesta oportunidade.
                         </div>
                       ) : (
-                        <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                           {customer360Data.activities.map((act: any) => (
                             <div key={act.id} className="p-2 rounded-lg border border-border/40 bg-card text-xs text-muted-foreground/75 flex items-center justify-between">
                               <div>
@@ -1698,12 +1698,12 @@ function WorkspaceComercialPage() {
                       {editLeadForm.checklist.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-colors gap-2"
+                          className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors gap-2"
                         >
                           <button
                             type="button"
                             onClick={() => handleToggleChecklist(item.id)}
-                            className="flex items-center gap-2.5 text-left flex-1 cursor-pointer"
+                            className="flex items-center gap-3 text-left flex-1 cursor-pointer"
                           >
                             {item.done ? (
                               <CheckSquare className="size-4 text-emerald-500 shrink-0" />
@@ -1733,13 +1733,13 @@ function WorkspaceComercialPage() {
                         onChange={(e) => setNewChecklistItemText(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddChecklistItem())}
                         placeholder="Adicionar tarefa ao atendimento..."
-                        className="h-8 text-xs rounded-xl"
+                        className="h-8 text-xs rounded-lg"
                       />
                       <Button
                         type="button"
                         size="sm"
                         onClick={handleAddChecklistItem}
-                        className="h-8 px-3 rounded-xl text-xs font-bold"
+                        className="h-8 px-3 rounded-lg text-xs font-bold"
                       >
                         <Plus className="size-3 mr-1" />
                         <span>Adicionar</span>
@@ -1751,16 +1751,16 @@ function WorkspaceComercialPage() {
                 {/* Aba 3: Comercial & Funil */}
                 {activeTabDetail === "comercial" && (
                   <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs font-semibold">Etapa Atual no Funil</Label>
                       <Select
                         value={editLeadForm.status}
                         onValueChange={(val) => setEditLeadForm((prev) => ({ ...prev, status: val }))}
                       >
-                        <SelectTrigger className="h-8 text-xs rounded-xl">
+                        <SelectTrigger className="h-8 text-xs rounded-lg">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl">
+                        <SelectContent className="rounded-lg">
                           {STAGES.map((s) => (
                             <SelectItem key={s.id} value={s.id} className="text-xs">
                               {s.title}
@@ -1770,16 +1770,16 @@ function WorkspaceComercialPage() {
                       </Select>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs font-semibold">Valor Estimado da Venda (R$)</Label>
                       <CurrencyField
                         value={editLeadForm.estimated_value_cents}
                         onChange={(cents) => setEditLeadForm((prev) => ({ ...prev, estimated_value_cents: cents ?? 0 }))}
-                        className="h-8 text-xs rounded-xl font-mono"
+                        className="h-8 text-xs rounded-lg font-mono"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs font-semibold">Responsável da Equipe</Label>
                       <Select
                         value={editLeadForm.assigned_to || "none"}
@@ -1790,10 +1790,10 @@ function WorkspaceComercialPage() {
                           }))
                         }
                       >
-                        <SelectTrigger className="h-8 text-xs rounded-xl">
+                        <SelectTrigger className="h-8 text-xs rounded-lg">
                           <SelectValue placeholder="Selecione um vendedor..." />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl">
+                        <SelectContent className="rounded-lg">
                           <SelectItem value="none" className="text-xs text-muted-foreground">
                             Sem responsável atribuído
                           </SelectItem>
@@ -1807,13 +1807,13 @@ function WorkspaceComercialPage() {
                     </div>
 
                     {editLeadForm.status === "lost" && (
-                      <div className="space-y-1.5 p-3 rounded-xl border border-rose-500/30 bg-rose-500/5">
+                      <div className="space-y-2 p-3 rounded-lg border border-rose-500/30 bg-rose-500/5">
                         <Label className="text-xs font-semibold text-rose-600">Motivo da Perda</Label>
                         <Input
                           value={editLeadForm.lost_reason}
                           onChange={(e) => setEditLeadForm((prev) => ({ ...prev, lost_reason: e.target.value }))}
                           placeholder="Ex: Preço elevado, fechou com concorrente, adiou planos..."
-                          className="h-8 text-xs rounded-xl"
+                          className="h-8 text-xs rounded-lg"
                         />
                       </div>
                     )}
@@ -1821,7 +1821,7 @@ function WorkspaceComercialPage() {
                     {/* Gestão de Tags */}
                     <div className="space-y-2 pt-1">
                       <Label className="text-xs font-semibold">Tags da Oportunidade</Label>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {POPULAR_TAGS.map((t) => {
                           const tagStr = `${t.name}:${t.color}`;
                           const isSelected = editLeadForm.tags.includes(tagStr);
@@ -1831,7 +1831,7 @@ function WorkspaceComercialPage() {
                               type="button"
                               onClick={() => handleToggleTag(tagStr)}
                               className={cn(
-                                "text-xs font-bold uppercase px-2 py-0.5 rounded-md transition-all cursor-pointer border",
+                                "text-xs font-bold uppercase px-2 py-1 rounded-md transition-all cursor-pointer border",
                                 isSelected
                                   ? "text-white border-transparent shadow-xs"
                                   : "text-muted-foreground border-border bg-background hover:border-primary/40"
@@ -1855,7 +1855,7 @@ function WorkspaceComercialPage() {
                       value={editLeadForm.notes}
                       onChange={(e) => setEditLeadForm((prev) => ({ ...prev, notes: e.target.value }))}
                       placeholder="Registre o que foi conversado com o cliente, orçamentos cotados, datas preferidas..."
-                      className="text-xs rounded-xl resize-none"
+                      className="text-xs rounded-lg resize-none"
                       rows={8}
                     />
                   </div>
@@ -1868,7 +1868,7 @@ function WorkspaceComercialPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handlePromoteToCustomer(selectedLead.id)}
-                  className="rounded-xl text-xs font-bold text-emerald-600 hover:bg-emerald-500/10 border-emerald-500/30 gap-1.5"
+                  className="rounded-lg text-xs font-bold text-emerald-600 hover:bg-emerald-500/10 border-emerald-500/30 gap-2"
                 >
                   <UserCheck className="size-3.5" />
                   <span>Converter em Cliente</span>
@@ -1880,7 +1880,7 @@ function WorkspaceComercialPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setSelectedLead(null)}
-                    className="rounded-xl text-xs font-semibold"
+                    className="rounded-lg text-xs font-semibold"
                   >
                     Fechar
                   </Button>
@@ -1889,7 +1889,7 @@ function WorkspaceComercialPage() {
                     size="sm"
                     disabled={isUpdatingLead}
                     onClick={handleSaveLeadDetails}
-                    className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground"
+                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground"
                   >
                     {isUpdatingLead ? "Salvando..." : "Salvar Alterações"}
                   </Button>

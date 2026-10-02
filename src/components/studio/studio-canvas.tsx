@@ -107,17 +107,17 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
   };
 
  return (
- <div className={'p-6 rounded-2xl bg-card border border-border shadow-xl space-y-5 ' + className}>
+ <div className={'p-6 rounded-lg bg-card border border-border shadow-xl space-y-5 ' + className}>
  {/* Toolbar */}
  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
  <div className="flex items-center gap-2">
- <div className="flex items-center bg-muted/60 p-1 rounded-xl gap-1">
+ <div className="flex items-center bg-muted/60 p-1 rounded-lg gap-1">
  {(['16:9', '1:1', '9:16'] as const).map((r) => (
  <button
  key={r}
  type="button"
  onClick={() => setAspect(r)}
- className={'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (
+ className={'px-3 py-2 rounded-lg text-xs font-bold transition-all ' + (
  aspect === r ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
  )}
  >
@@ -126,7 +126,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  ))}
  </div>
 
- <div className="flex items-center gap-1.5 pl-2">
+ <div className="flex items-center gap-2 pl-2">
  <span className="text-xs text-muted-foreground">Fundo:</span>
  <input
  type="color"
@@ -143,7 +143,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  variant="outline"
  size="sm"
  onClick={addTextLayer}
- className="min-h-[40px] px-3 rounded-xl text-xs flex items-center gap-1.5"
+ className="min-h-10 px-3 rounded-lg text-xs flex items-center gap-2"
  >
  <Type className="w-4 h-4" />
  Adicionar Texto
@@ -154,7 +154,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  type="button"
  size="sm"
  onClick={handleExport}
- className="min-h-[40px] px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-1.5 shadow-md"
+ className="min-h-10 px-4 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 shadow-md"
  >
  <Send className="w-3.5 h-3.5" />
  Aplicar ao Hero Banner
@@ -164,10 +164,10 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  </div>
 
  {/* Canvas Area */}
- <div className="flex justify-center items-center p-6 bg-muted/20 rounded-2xl overflow-hidden min-h-[300px]">
+ <div className="flex justify-center items-center p-6 bg-muted/20 rounded-lg overflow-hidden min-h-[300px]">
  <div
  style={{ backgroundColor: bgColor }}
- className={'w-full max-w-2xl rounded-2xl relative shadow-2xl overflow-hidden border border-white/10 ' + (
+ className={'w-full max-w-2xl rounded-lg relative shadow-2xl overflow-hidden border border-white/10 ' + (
  aspect === '16:9' ? 'aspect-video' : aspect === '9:16' ? 'aspect-[9/16] max-w-xs' : 'aspect-square max-w-sm'
  )}
  >
@@ -194,7 +194,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
 
  {/* Selected Layer Properties */}
  {selectedLayer && (
- <div className="p-4 rounded-2xl bg-muted/30 border border-border flex flex-wrap items-center gap-4 text-xs">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border flex flex-wrap items-center gap-4 text-xs">
  <span className="font-bold text-foreground">Editar Camada:</span>
  <Input
  value={selectedLayer.text || ''}
@@ -206,7 +206,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  }}
  className="h-8 max-w-xs text-xs rounded-lg"
  />
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="text-muted-foreground">Cor:</span>
  <input
  type="color"

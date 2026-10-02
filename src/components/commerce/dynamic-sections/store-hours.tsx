@@ -88,7 +88,7 @@ export function StoreHours({
  {showBadge && (
  <span
  className={cn(
- "shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
+ "shrink-0 flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
  storeHours.is_open
  ? "bg-success/15 text-success"
  : "bg-destructive/15 text-destructive",
@@ -105,7 +105,7 @@ export function StoreHours({
  )}
  </div>
 
- <div className="divide-y divide-border rounded-xl overflow-hidden">
+ <div className="divide-y divide-border rounded-lg overflow-hidden">
  {storeHours.hours.map((day) => (
  <div
  key={day.day}

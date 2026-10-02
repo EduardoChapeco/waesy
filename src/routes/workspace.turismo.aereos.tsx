@@ -319,8 +319,8 @@ export default function FlightsPage() {
       <Sheet open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <SheetContent size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen p-0 flex flex-col h-full bg-card overflow-hidden">
           <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-primary/10 text-primary">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
                 <Ticket className="size-5" />
               </div>
               <div>
@@ -341,10 +341,10 @@ export default function FlightsPage() {
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5 md:col-span-1">
+                <div className="space-y-2 md:col-span-1">
                   <Label className="text-xs font-semibold">Canal / Consolidadora</Label>
                   <select
-                    className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm font-medium focus:outline-none"
+                    className="w-full h-11 px-3 rounded-lg border border-input bg-background text-sm font-medium focus:outline-none"
                     value={consolidator}
                     onChange={(e) => setConsolidator(e.target.value)}
                   >
@@ -360,15 +360,15 @@ export default function FlightsPage() {
                       placeholder="Nome da consolidadora..."
                       value={customConsolidator}
                       onChange={(e) => setCustomConsolidator(e.target.value)}
-                      className="h-10 text-xs mt-2 rounded-xl"
+                      className="h-10 text-xs mt-2 rounded-lg"
                     />
                   )}
                 </div>
 
-                <div className="space-y-1.5 md:col-span-1">
+                <div className="space-y-2 md:col-span-1">
                   <Label className="text-xs font-semibold">Vincular Cliente da Carteira (CRM)</Label>
                   <select
-                    className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none"
+                    className="w-full h-11 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none"
                     value={selectedCustomerId}
                     onChange={(e) => setSelectedCustomerId(e.target.value)}
                   >
@@ -381,14 +381,14 @@ export default function FlightsPage() {
                   </select>
                 </div>
 
-                <div className="space-y-1.5 md:col-span-1">
+                <div className="space-y-2 md:col-span-1">
                   <Label className="text-xs font-semibold">Nome Completo do Passageiro</Label>
                   <Input
                     placeholder="Ex: João da Silva Sauro"
                     value={activePassengerDisplay}
                     onChange={(e) => setPassengerName(e.target.value)}
                     disabled={Boolean(selectedCustomerId)}
-                    className="h-11 rounded-xl"
+                    className="h-11 rounded-lg"
                   />
                 </div>
               </div>
@@ -402,33 +402,33 @@ export default function FlightsPage() {
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Localizador GDS (PNR)</Label>
                   <Input
                     placeholder="Ex: YZK982"
                     value={recordLocator}
                     onChange={(e) => setRecordLocator(e.target.value)}
-                    className="h-11 uppercase font-mono font-bold tracking-widest text-base rounded-xl"
+                    className="h-11 uppercase font-mono font-bold tracking-widest text-base rounded-lg"
                     maxLength={10}
                   />
                   <span className="text-xs text-muted-foreground">Código de 6 letras/números da reserva</span>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Número do e-Ticket IATA (13 Dígitos)</Label>
                   <Input
                     placeholder="Ex: 957-2489102842"
                     value={ticketNumber}
                     onChange={(e) => setTicketNumber(e.target.value)}
-                    className="h-11 font-mono text-sm rounded-xl"
+                    className="h-11 font-mono text-sm rounded-lg"
                   />
                   <span className="text-xs text-muted-foreground">Bilhete oficial emitido pela consolidadora</span>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold">Status do Bilhete</Label>
                   <select
-                    className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm font-medium focus:outline-none"
+                    className="w-full h-11 px-3 rounded-lg border border-input bg-background text-sm font-medium focus:outline-none"
                     value={itineraryType}
                     onChange={(e) => setItineraryType(e.target.value as FlightItineraryType)}
                   >
@@ -449,36 +449,36 @@ export default function FlightsPage() {
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-1.5 md:col-span-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label className="text-xs font-semibold">Cia Aérea (IATA + Nome)</Label>
                   <div className="grid grid-cols-3 gap-2">
                     <Input
                       placeholder="LA"
                       value={airlineCode}
                       onChange={(e) => setAirlineCode(e.target.value)}
-                      className="h-11 uppercase font-bold text-center rounded-xl"
+                      className="h-11 uppercase font-bold text-center rounded-lg"
                       maxLength={3}
                     />
                     <Input
                       placeholder="LATAM Airlines"
                       value={airlineName}
                       onChange={(e) => setAirlineName(e.target.value)}
-                      className="h-11 col-span-2 rounded-xl"
+                      className="h-11 col-span-2 rounded-lg"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5 md:col-span-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label className="text-xs font-semibold">Número do Voo</Label>
                   <Input
                     placeholder="Ex: 3214"
                     value={flightNumber}
                     onChange={(e) => setFlightNumber(e.target.value)}
-                    className="h-11 uppercase font-mono font-bold rounded-xl"
+                    className="h-11 uppercase font-mono font-bold rounded-lg"
                   />
                 </div>
 
-                <div className="space-y-1.5 md:col-span-2">
+                <div className="space-y-2 md:col-span-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-semibold">Origem (IATA + Cidade)</Label>
                     <span className="text-xs text-muted-foreground font-mono">Malha Central</span>
@@ -489,14 +489,14 @@ export default function FlightsPage() {
                       value={originIata}
                       onChange={(e) => handleSelectOrigin(e.target.value)}
                       list="airports-catalog-list"
-                      className="h-11 uppercase font-bold text-center rounded-xl"
+                      className="h-11 uppercase font-bold text-center rounded-lg"
                       maxLength={3}
                     />
                     <Input
                       placeholder="São Paulo / Guarulhos"
                       value={originCity}
                       onChange={(e) => setOriginCity(e.target.value)}
-                      className="h-11 col-span-2 rounded-xl"
+                      className="h-11 col-span-2 rounded-lg"
                     />
                   </div>
                   <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
@@ -505,7 +505,7 @@ export default function FlightsPage() {
                         key={hub}
                         type="button"
                         onClick={() => handleSelectOrigin(hub)}
-                        className={`text-xs font-mono px-1.5 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                        className={`text-xs font-mono px-2 py-1 rounded-md border transition-colors cursor-pointer ${
                           originIata === hub ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground hover:bg-muted border-border/60"
                         }`}
                       >
@@ -515,7 +515,7 @@ export default function FlightsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5 md:col-span-2">
+                <div className="space-y-2 md:col-span-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-semibold">Destino (IATA + Cidade)</Label>
                     <span className="text-xs text-muted-foreground font-mono">Malha Central</span>
@@ -526,14 +526,14 @@ export default function FlightsPage() {
                       value={destinationIata}
                       onChange={(e) => handleSelectDestination(e.target.value)}
                       list="airports-catalog-list"
-                      className="h-11 uppercase font-bold text-center rounded-xl"
+                      className="h-11 uppercase font-bold text-center rounded-lg"
                       maxLength={3}
                     />
                     <Input
                       placeholder="Miami"
                       value={destinationCity}
                       onChange={(e) => setDestinationCity(e.target.value)}
-                      className="h-11 col-span-2 rounded-xl"
+                      className="h-11 col-span-2 rounded-lg"
                     />
                   </div>
                   <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
@@ -542,7 +542,7 @@ export default function FlightsPage() {
                         key={hub}
                         type="button"
                         onClick={() => handleSelectDestination(hub)}
-                        className={`text-xs font-mono px-1.5 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                        className={`text-xs font-mono px-2 py-1 rounded-md border transition-colors cursor-pointer ${
                           destinationIata === hub ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground hover:bg-muted border-border/60"
                         }`}
                       >
@@ -561,31 +561,31 @@ export default function FlightsPage() {
                   </datalist>
                 </div>
 
-                <div className="space-y-1.5 md:col-span-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label className="text-xs font-semibold">Data / Hora Decolagem</Label>
                   <Input
                     type="datetime-local"
                     value={departureAt}
                     onChange={(e) => setDepartureAt(e.target.value)}
-                    className="h-11 rounded-xl"
+                    className="h-11 rounded-lg"
                   />
                 </div>
 
-                <div className="space-y-1.5 md:col-span-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label className="text-xs font-semibold">Data / Hora Pouso Estimado</Label>
                   <Input
                     type="datetime-local"
                     value={arrivalAt}
                     onChange={(e) => setArrivalAt(e.target.value)}
-                    className="h-11 rounded-xl"
+                    className="h-11 rounded-lg"
                   />
                 </div>
 
-                <div className="space-y-1.5 md:col-span-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label className="text-xs font-semibold">Cabine e Franquia de Bagagem</Label>
                   <div className="grid grid-cols-2 gap-2">
                     <select
-                      className="h-11 px-3 rounded-xl border border-input bg-background text-sm font-medium focus:outline-none"
+                      className="h-11 px-3 rounded-lg border border-input bg-background text-sm font-medium focus:outline-none"
                       value={cabin}
                       onChange={(e) => setCabin(e.target.value as FlightCabin)}
                     >
@@ -598,25 +598,25 @@ export default function FlightsPage() {
                       placeholder="Ex: 1x 23kg Despachada"
                       value={baggage}
                       onChange={(e) => setBaggage(e.target.value)}
-                      className="h-11 rounded-xl text-xs"
+                      className="h-11 rounded-lg text-xs"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5 md:col-span-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label className="text-xs font-semibold">Terminal / Portão do Aeroporto</Label>
                   <Input
                     placeholder="Ex: Terminal 3 Internacional"
                     value={airportTerminal}
                     onChange={(e) => setAirportTerminal(e.target.value)}
-                    className="h-11 rounded-xl text-xs"
+                    className="h-11 rounded-lg text-xs"
                   />
                 </div>
               </div>
             </div>
 
             {/* Seção 4: Composição Tarifária e Comissões da Agência */}
-            <div className="space-y-4 p-4 rounded-2xl border border-primary/20 bg-primary/5">
+            <div className="space-y-4 p-4 rounded-lg border border-primary/20 bg-primary/5">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-2">
                   <DollarSign className="size-4" />
@@ -635,7 +635,7 @@ export default function FlightsPage() {
                     step="0.01"
                     value={fareAmount}
                     onChange={(e) => setFareAmount(e.target.value)}
-                    className="h-10 text-xs rounded-xl bg-background"
+                    className="h-10 text-xs rounded-lg bg-background"
                   />
                 </div>
 
@@ -646,7 +646,7 @@ export default function FlightsPage() {
                     step="0.01"
                     value={taxAmount}
                     onChange={(e) => setTaxAmount(e.target.value)}
-                    className="h-10 text-xs rounded-xl bg-background"
+                    className="h-10 text-xs rounded-lg bg-background"
                   />
                 </div>
 
@@ -657,7 +657,7 @@ export default function FlightsPage() {
                     step="0.01"
                     value={agencyFee}
                     onChange={(e) => setAgencyFee(e.target.value)}
-                    className="h-10 text-xs rounded-xl bg-background"
+                    className="h-10 text-xs rounded-lg bg-background"
                   />
                 </div>
 
@@ -668,7 +668,7 @@ export default function FlightsPage() {
                     step="0.01"
                     value={agencyCommission}
                     onChange={(e) => setAgencyCommission(e.target.value)}
-                    className="h-10 text-xs rounded-xl bg-background border-emerald-500/40"
+                    className="h-10 text-xs rounded-lg bg-background border-emerald-500/40"
                   />
                 </div>
               </div>
@@ -676,13 +676,13 @@ export default function FlightsPage() {
           </div>
 
           <SheetFooter className="flex justify-end gap-3 px-6 py-4 border-t border-border bg-muted/20 shrink-0">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="h-11 px-5 rounded-xl">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="h-11 px-5 rounded-lg">
               Cancelar
             </Button>
             <Button
               onClick={() => createMutation.mutate()}
               disabled={createMutation.isPending}
-              className="h-11 px-6 font-bold rounded-xl bg-primary text-primary-foreground"
+              className="h-11 px-6 font-bold rounded-lg bg-primary text-primary-foreground"
             >
               {createMutation.isPending ? 'Salvando...' : 'Confirmar & Salvar Bilhete'}
             </Button>
@@ -696,13 +696,13 @@ export default function FlightsPage() {
           Carregando bilhetes e localizadores do GDS...
         </div>
       ) : filteredItineraries.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-card">
+        <div className="p-12 text-center rounded-lg border border-dashed border-border bg-card">
           <Ticket className="size-10 text-muted-foreground mx-auto mb-3 opacity-40" />
           <h3 className="text-base font-semibold text-foreground">Nenhuma emissão aérea encontrada</h3>
           <p className="text-sm text-muted-foreground mt-1 mb-4">
             Cadastre bilhetes com localizador PNR da consolidadora, franquia de bagagem e comissão.
           </p>
-          <Button onClick={() => setIsDialogOpen(true)} className="h-11 px-5 gap-2 rounded-xl">
+          <Button onClick={() => setIsDialogOpen(true)} className="h-11 px-5 gap-2 rounded-lg">
             <Plus className="size-4" />
             Cadastrar Primeiro Bilhete
           </Button>
@@ -716,23 +716,23 @@ export default function FlightsPage() {
             return (
               <div
                 key={it.id}
-                className="p-5 rounded-2xl border border-border bg-card shadow-xs hover:border-primary/40 transition-all flex flex-col gap-4"
+                className="p-5 rounded-lg border border-border bg-card shadow-xs hover:border-primary/40 transition-all flex flex-col gap-4"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                    <div className="p-3 rounded-lg bg-primary/10 text-primary">
                       <Plane className="size-5" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="text-base font-bold text-foreground">{it.title}</h3>
                         {meta?.consolidator && (
-                          <span className="px-2 py-0.5 rounded-md text-xs text-muted-foreground/75 font-semibold bg-secondary text-secondary-foreground border border-border/50">
+                          <span className="px-2 py-1 rounded-md text-xs text-muted-foreground/75 font-semibold bg-secondary text-secondary-foreground border border-border/50">
                             {meta.consolidator}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Passageiro:{' '}
                         <strong className="text-foreground font-semibold">
                           {meta?.passenger_name || 'Passageiro Geral'}
@@ -747,7 +747,7 @@ export default function FlightsPage() {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(primarySeg.record_locator!, 'Localizador PNR')}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-11 sm:min-h-9 sm:min-h-9 sm:min-h-8 rounded-xl text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-2 px-3 py-2 min-h-11 sm:min-h-9 sm:min-h-9 sm:min-h-8 rounded-lg text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
                         title="Clique para copiar localizador"
                       >
                         <Hash className="size-3.5" />
@@ -757,7 +757,7 @@ export default function FlightsPage() {
                     )}
 
                     {primarySeg?.ticket_number && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-mono bg-muted text-muted-foreground border border-border">
+                      <span className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-mono bg-muted text-muted-foreground border border-border">
                         <Ticket className="size-3.5" />
                         e-Ticket: {primarySeg.ticket_number}
                       </span>
@@ -768,7 +768,7 @@ export default function FlightsPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => deleteMutation.mutate(it.id)}
-                      className="size-11 sm:size-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer"
+                      className="size-11 sm:size-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
                     >
                       <Trash2 className="size-4" />
                     </Button>
@@ -780,11 +780,11 @@ export default function FlightsPage() {
                   {(it.segments || []).map((seg) => (
                     <div
                       key={seg.id}
-                      className="p-4 rounded-xl border border-border/70 bg-muted/20 flex flex-col justify-between gap-3"
+                      className="p-4 rounded-lg border border-border/70 bg-muted/20 flex flex-col justify-between gap-3"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md bg-primary text-primary-foreground font-mono font-bold text-xs">
+                          <span className="px-2 py-1 rounded-md bg-primary text-primary-foreground font-mono font-bold text-xs">
                             {seg.airline_code} {seg.flight_number}
                           </span>
                           <span className="text-xs font-medium text-foreground">{seg.airline_name || 'Companhia Aérea'}</span>
@@ -798,20 +798,20 @@ export default function FlightsPage() {
                         <div>
                           <p className="text-xl font-extrabold tracking-tight text-foreground">{seg.origin_iata}</p>
                           <p className="text-xs text-muted-foreground">{seg.origin_city || 'Origem'}</p>
-                          <p className="text-xs text-muted-foreground/75 font-mono font-medium text-muted-foreground mt-0.5">
+                          <p className="text-xs text-muted-foreground/75 font-mono font-medium text-muted-foreground mt-1">
                             {new Date(seg.departure_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
 
                         <div className="flex flex-col items-center px-4">
                           <ArrowRight className="size-4 text-primary" />
-                          <span className="text-xs text-muted-foreground mt-0.5">Voo Direto</span>
+                          <span className="text-xs text-muted-foreground mt-1">Voo Direto</span>
                         </div>
 
                         <div>
                           <p className="text-xl font-extrabold tracking-tight text-foreground">{seg.destination_iata}</p>
                           <p className="text-xs text-muted-foreground">{seg.destination_city || 'Destino'}</p>
-                          <p className="text-xs text-muted-foreground/75 font-mono font-medium text-muted-foreground mt-0.5">
+                          <p className="text-xs text-muted-foreground/75 font-mono font-medium text-muted-foreground mt-1">
                             {new Date(seg.arrival_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
@@ -830,7 +830,7 @@ export default function FlightsPage() {
 
                 {/* Resumo Financeiro da Emissão */}
                 {meta?.financial && (
-                  <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-muted/40 border border-border/40 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-lg bg-muted/40 border border-border/40 text-xs">
                     <div className="flex items-center gap-4 text-muted-foreground">
                       <span>Tarifa: <strong>{formatMoney(meta.financial.fare_cents || 0)}</strong></span>
                       <span>Taxas: <strong>{formatMoney(meta.financial.tax_cents || 0)}</strong></span>

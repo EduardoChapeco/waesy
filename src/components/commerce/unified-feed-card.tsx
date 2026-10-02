@@ -65,7 +65,7 @@ export function UnifiedFeedCard({
             if (onSelectPost) onSelectPost(post);
             else if (onPreviewMedia) onPreviewMedia(primaryMedia);
           }}
-          className="group aspect-square rounded-2xl overflow-hidden bg-muted/30 relative cursor-pointer border border-border/40 hover:border-foreground/40 transition-all select-none"
+          className="group aspect-square rounded-lg overflow-hidden bg-muted/30 relative cursor-pointer border border-border/40 hover:border-foreground/40 transition-all select-none"
         >
           <img
             src={primaryMedia}
@@ -91,9 +91,9 @@ export function UnifiedFeedCard({
     return (
       <div
         onClick={() => onSelectPost?.(post)}
-        className="group aspect-square rounded-2xl bg-gray-50 dark:bg-zinc-900/60 border border-border/50 hover:border-foreground/30 p-3.5 sm:p-4 flex flex-col justify-between cursor-pointer transition-all select-none"
+        className="group aspect-square rounded-lg bg-gray-50 dark:bg-zinc-900/60 border border-border/50 hover:border-foreground/30 p-4 sm:p-4 flex flex-col justify-between cursor-pointer transition-all select-none"
       >
-        <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           {authorAvatar ? (
             <img
               src={authorAvatar}
@@ -120,10 +120,10 @@ export function UnifiedFeedCard({
         <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-2 border-t border-border/30 font-mono">
           <span>{post.created_at ? formatDate(post.created_at) : "Recente"}</span>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-0.5">
+            <span className="inline-flex items-center gap-1">
               <Heart className="size-3" /> {likesCount}
             </span>
-            <span className="inline-flex items-center gap-0.5">
+            <span className="inline-flex items-center gap-1">
               <MessageCircle className="size-3" /> {commentsCount}
             </span>
           </div>
@@ -136,7 +136,7 @@ export function UnifiedFeedCard({
   return (
     <article
       className={cn(
-        "rounded-2xl border transition-all overflow-hidden",
+        "rounded-lg border transition-all overflow-hidden",
         hasMedia
           ? "bg-card border-border/60"
           : "bg-gray-50 dark:bg-zinc-900/60 border-border/50 p-4 sm:p-5"
@@ -146,10 +146,10 @@ export function UnifiedFeedCard({
       <div
         className={cn(
           "flex items-center justify-between gap-3",
-          hasMedia ? "p-3.5 sm:p-4" : "pb-3"
+          hasMedia ? "p-4 sm:p-4" : "pb-3"
         )}
       >
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           {authorAvatar ? (
             <img
               src={authorAvatar}
@@ -162,7 +162,7 @@ export function UnifiedFeedCard({
             </div>
           )}
           <div className="min-w-0">
-            <div className="inline-flex items-center flex-wrap gap-1.5">
+            <div className="inline-flex items-center flex-wrap gap-2">
               <span className="text-xs sm:text-sm font-bold text-foreground truncate">
                 {authorName}
               </span>
@@ -199,7 +199,7 @@ export function UnifiedFeedCard({
             />
           </div>
           {textContent && (
-            <div className="px-3.5 sm:px-4 pt-3">
+            <div className="px-4 sm:px-4 pt-3">
               <p className="text-xs sm:text-sm text-foreground/95 leading-relaxed whitespace-pre-line">
                 {textContent}
               </p>
@@ -219,7 +219,7 @@ export function UnifiedFeedCard({
         className={cn(
           "flex items-center justify-between text-xs text-muted-foreground",
           hasMedia
-            ? "px-3.5 sm:px-4 py-3 mt-1 border-t border-border/30"
+            ? "px-4 sm:px-4 py-3 mt-1 border-t border-border/30"
             : "pt-3 mt-3 border-t border-border/40"
         )}
       >
@@ -227,7 +227,7 @@ export function UnifiedFeedCard({
           <button
             type="button"
             onClick={() => onSelectPost?.(post)}
-            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer font-medium"
+            className="inline-flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer font-medium"
           >
             <Heart className="size-4" />
             <span>{likesCount}</span>
@@ -235,7 +235,7 @@ export function UnifiedFeedCard({
           <button
             type="button"
             onClick={() => onSelectPost?.(post)}
-            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer font-medium"
+            className="inline-flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer font-medium"
           >
             <MessageCircle className="size-4" />
             <span>{commentsCount}</span>

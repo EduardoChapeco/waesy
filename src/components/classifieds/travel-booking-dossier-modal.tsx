@@ -222,7 +222,7 @@ export function TravelBookingDossierModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-5 sm:p-6 rounded-2xl max-h-[92vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-xl p-5 sm:p-6 rounded-lg max-h-[92vh] overflow-y-auto">
         <DialogHeader className="space-y-1 pb-3 border-b border-border/40">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider text-primary border-primary/25 bg-primary/10">
@@ -241,33 +241,33 @@ export function TravelBookingDossierModal({
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           {/* Dados Pessoais do Solicitante */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Seu Nome Completo *</Label>
               <Input
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Ex: Carlos Eduardo"
                 required
-                className="h-10 rounded-xl text-xs bg-background font-medium"
+                className="h-10 rounded-lg text-xs bg-background font-medium"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">WhatsApp com DDD *</Label>
               <Input
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
                 placeholder="(49) 99999-8877"
                 required
-                className="h-10 rounded-xl text-xs bg-background font-medium font-mono"
+                className="h-10 rounded-lg text-xs bg-background font-medium font-mono"
               />
             </div>
           </div>
 
           {/* Quantidade de Passageiros (Adultos e Crianças) */}
-          <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-3">
+          <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Users className="size-3.5 text-primary" />
                 <span>Passageiros e Viajantes</span>
               </Label>
@@ -286,7 +286,7 @@ export function TravelBookingDossierModal({
                     max={20}
                     value={adultsCount}
                     onChange={(e) => setAdultsCount(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="h-10 rounded-xl text-xs bg-background font-mono font-bold"
+                    className="h-10 rounded-lg text-xs bg-background font-mono font-bold"
                   />
                 </div>
               </div>
@@ -300,7 +300,7 @@ export function TravelBookingDossierModal({
                     max={10}
                     value={childrenCount}
                     onChange={(e) => handleChildrenCountChange(parseInt(e.target.value) || 0)}
-                    className="h-10 rounded-xl text-xs bg-background font-mono font-bold"
+                    className="h-10 rounded-lg text-xs bg-background font-mono font-bold"
                   />
                 </div>
               </div>
@@ -328,7 +328,7 @@ export function TravelBookingDossierModal({
                         onChange={(e) => handleChildAgeChange(idx, e.target.value)}
                         placeholder="Ex: 4 anos"
                         required
-                        className="h-9 rounded-xl text-xs bg-background font-mono"
+                        className="h-9 rounded-lg text-xs bg-background font-mono"
                       />
                     </div>
                   ))}
@@ -338,9 +338,9 @@ export function TravelBookingDossierModal({
           </div>
 
           {/* Período de Interesse ou Saída Confirmada */}
-          <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-3">
+          <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Calendar className="size-3.5 text-primary" />
                 <span>Datas e Período de Interesse</span>
               </Label>
@@ -349,7 +349,7 @@ export function TravelBookingDossierModal({
                   <button
                     type="button"
                     onClick={() => setDateMode("confirmed")}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                    className={`px-2 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
                       dateMode === "confirmed"
                         ? "bg-primary text-primary-foreground shadow-2xs"
                         : "text-muted-foreground hover:text-foreground"
@@ -360,7 +360,7 @@ export function TravelBookingDossierModal({
                   <button
                     type="button"
                     onClick={() => setDateMode("flexible")}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                    className={`px-2 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
                       dateMode === "flexible"
                         ? "bg-primary text-primary-foreground shadow-2xs"
                         : "text-muted-foreground hover:text-foreground"
@@ -373,12 +373,12 @@ export function TravelBookingDossierModal({
             </div>
 
             {dateMode === "confirmed" && departureOptions.length > 0 ? (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-[11px] text-muted-foreground font-medium">Selecione uma saída confirmada do pacote:</Label>
                 <select
                   value={selectedDepartureId}
                   onChange={(e) => setSelectedDepartureId(e.target.value)}
-                  className="w-full h-10 rounded-xl text-xs bg-background border border-border px-3 font-medium text-foreground"
+                  className="w-full h-10 rounded-lg text-xs bg-background border border-border px-3 font-medium text-foreground"
                 >
                   {departureOptions.map((opt) => (
                     <option key={opt.id} value={opt.id}>
@@ -388,7 +388,7 @@ export function TravelBookingDossierModal({
                 </select>
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 <div className="space-y-1">
                   <Label className="text-[11px] text-muted-foreground font-medium">
                     Mês, Temporada ou Período Pretendido:
@@ -397,7 +397,7 @@ export function TravelBookingDossierModal({
                     value={flexiblePeriodText}
                     onChange={(e) => setFlexiblePeriodText(e.target.value)}
                     placeholder="Ex: Julho de 2027, Segunda quinzena, Férias escolares..."
-                    className="h-10 rounded-xl text-xs bg-background font-medium"
+                    className="h-10 rounded-lg text-xs bg-background font-medium"
                   />
                 </div>
 
@@ -408,7 +408,7 @@ export function TravelBookingDossierModal({
                       type="date"
                       value={departureDate}
                       onChange={(e) => setDepartureDate(e.target.value)}
-                      className="h-9 rounded-xl text-xs bg-background font-mono"
+                      className="h-9 rounded-lg text-xs bg-background font-mono"
                     />
                   </div>
                   <div className="space-y-1">
@@ -417,7 +417,7 @@ export function TravelBookingDossierModal({
                       type="date"
                       value={returnDate}
                       onChange={(e) => setReturnDate(e.target.value)}
-                      className="h-9 rounded-xl text-xs bg-background font-mono"
+                      className="h-9 rounded-lg text-xs bg-background font-mono"
                     />
                   </div>
                 </div>
@@ -439,9 +439,9 @@ export function TravelBookingDossierModal({
 
           {/* Perguntas Personalizadas (Estilo Meta Ads) */}
           {customLeadQuestions.length > 0 && (
-            <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/[0.03] space-y-3">
+            <div className="p-4 rounded-lg border border-primary/20 bg-primary/[0.03] space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Star className="size-3.5 text-primary" />
                   <span>Perguntas da Agência (Formulário de Interesse)</span>
                 </Label>
@@ -460,7 +460,7 @@ export function TravelBookingDossierModal({
                     <select
                       value={customAnswers[field.id] || ""}
                       onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.value }))}
-                      className="w-full h-9 rounded-xl text-xs bg-background border border-border px-3 font-medium text-foreground"
+                      className="w-full h-9 rounded-lg text-xs bg-background border border-border px-3 font-medium text-foreground"
                     >
                       <option value="">Selecione...</option>
                       {field.options.map((opt: string, i: number) => (
@@ -468,7 +468,7 @@ export function TravelBookingDossierModal({
                       ))}
                     </select>
                   ) : field.type === "boolean" ? (
-                    <label className="flex items-center gap-2 cursor-pointer pt-0.5">
+                    <label className="flex items-center gap-2 cursor-pointer pt-1">
                       <input
                         type="checkbox"
                         checked={!!customAnswers[field.id]}
@@ -483,7 +483,7 @@ export function TravelBookingDossierModal({
                       value={customAnswers[field.id] || ""}
                       onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.value }))}
                       placeholder={field.placeholder || "Sua resposta..."}
-                      className="h-9 rounded-xl text-xs bg-background"
+                      className="h-9 rounded-lg text-xs bg-background"
                     />
                   )}
                 </div>
@@ -492,7 +492,7 @@ export function TravelBookingDossierModal({
           )}
 
           {/* Preferências / Observações */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold text-foreground">
               Preferências ou Dúvidas Adicionais
             </Label>
@@ -501,13 +501,13 @@ export function TravelBookingDossierModal({
               onChange={(e) => setSpecialRequests(e.target.value)}
               placeholder="Ex: Preferência por voo matutino, quarto conjugado, transfer privativo, etc..."
               rows={2}
-              className="rounded-xl text-xs bg-background resize-none leading-relaxed text-xs"
+              className="rounded-lg text-xs bg-background resize-none leading-relaxed text-xs"
             />
           </div>
 
           {/* Resumo do Valor */}
           {priceCents > 0 && (
-            <div className="p-3 rounded-xl bg-muted/40 border border-border/40 flex items-center justify-between text-xs">
+            <div className="p-3 rounded-lg bg-muted/40 border border-border/40 flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Valor Estimado do Pacote:</span>
               <span className="font-bold text-sm text-primary font-mono">{formatMoney(priceCents)}</span>
             </div>
@@ -517,7 +517,7 @@ export function TravelBookingDossierModal({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-12 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-md cursor-pointer"
+            className="w-full h-12 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-md cursor-pointer"
           >
             {isSubmitting ? (
               <>

@@ -60,11 +60,11 @@ export function exportStaticHtml(
 
  <!-- Main Content Container -->
  <main id="waesy-experience-container" class="w-full max-w-6xl py-8 px-4 space-y-8">
- <div class="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 text-center space-y-4 shadow-2xl">
+ <div class="p-8 rounded-lg bg-slate-900/60 border border-slate-800 text-center space-y-4 shadow-2xl">
  <h1 class="text-3xl sm:text-5xl font-heading font-black tracking-tight">${title}</h1>
  <p class="text-sm text-slate-400 max-w-xl mx-auto">${desc}</p>
  <div class="pt-4 flex justify-center gap-3">
- <a href="#contato" class="px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs tracking-wide uppercase transition-all shadow-lg">
+ <a href="#contato" class="px-6 py-3 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs tracking-wide uppercase transition-all shadow-lg">
  Acessar Atendimento
  </a>
  </div>

@@ -149,7 +149,7 @@ function CmsStoriesPage() {
  eyebrow="CMS"
  title="Stories"
  actions={
- <Button onClick={handleOpenNew} className="rounded-xl font-bold gap-2">
+ <Button onClick={handleOpenNew} className="rounded-lg font-bold gap-2">
  <Plus className="size-4" />
  <span>Novo Story</span>
  </Button>
@@ -157,7 +157,7 @@ function CmsStoriesPage() {
  />
 
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
- <TabsList className="bg-muted/50 p-1 rounded-xl">
+ <TabsList className="bg-muted/50 p-1 rounded-lg">
  <TabsTrigger value="stories" className="rounded-lg font-bold text-xs gap-2">
  <Video className="size-4" />
  <span>Stories Ativos ({stories.length})</span>
@@ -174,7 +174,7 @@ function CmsStoriesPage() {
  title="Nenhum story ativo"
  description="Publique vídeos ou fotos de até 60s com links para seus produtos e alcance clientes no topo da vitrine."
  action={
- <Button onClick={handleOpenNew} className="rounded-xl font-bold gap-2">
+ <Button onClick={handleOpenNew} className="rounded-lg font-bold gap-2">
  <Plus className="size-4" />
  <span>Publicar Primeiro Story</span>
  </Button>
@@ -189,7 +189,7 @@ function CmsStoriesPage() {
  story.media_url?.includes(".mov");
 
  return (
- <Card key={story.id} className="overflow-hidden group border-border/70 rounded-2xl bg-card">
+ <Card key={story.id} className="overflow-hidden group border-border/70 rounded-lg bg-card">
  <div className="relative aspect-[9/16] bg-zinc-950 flex items-center justify-center overflow-hidden">
  {isVid ? (
  <video
@@ -215,13 +215,13 @@ function CmsStoriesPage() {
  </Badge>
  </div>
 
- <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md text-white text-xs font-mono">
+ <div className="absolute top-2.5 right-2.5 flex items-center gap-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-white text-xs font-mono">
  <Clock className="size-3" />
  <span>{story.duration_seconds || 15}s</span>
  </div>
  </div>
 
- <CardContent className="p-3.5 space-y-2">
+ <CardContent className="p-4 space-y-2">
  <div className="flex items-center justify-between text-xs text-muted-foreground">
  <span className="font-semibold text-foreground truncate max-w-[140px]">
  {story.niche || "Geral"}
@@ -230,13 +230,13 @@ function CmsStoriesPage() {
  </div>
 
  {story.link_url && (
- <div className="flex items-center gap-1.5 text-xs text-primary font-medium truncate">
+ <div className="flex items-center gap-2 text-xs text-primary font-medium truncate">
  <LinkIcon className="size-3 shrink-0" />
  <span className="truncate">{story.link_url}</span>
  </div>
  )}
 
- <div className="pt-2 flex items-center justify-end gap-1.5 border-t border-border/50">
+ <div className="pt-2 flex items-center justify-end gap-2 border-t border-border/50">
  <CrudActionsMenu
  entityName="Story"
  onDelete={() => handleDelete(story.id)}
@@ -254,9 +254,9 @@ function CmsStoriesPage() {
 
  <TabsContent value="collabs" className="space-y-4">
  {collabs.length === 0 ? (
- <Card className="rounded-2xl border-border/70">
+ <Card className="rounded-lg border-border/70">
  <CardContent className="p-8 text-center space-y-3">
- <div className="size-14 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center mx-auto">
+ <div className="size-14 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center mx-auto">
  <Share2 className="size-7" />
  </div>
  <div className="space-y-1">
@@ -272,7 +272,7 @@ function CmsStoriesPage() {
  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
  {collabs.map((collab) => (
- <Card key={collab.id} className="rounded-2xl border-border/70 overflow-hidden bg-card">
+ <Card key={collab.id} className="rounded-lg border-border/70 overflow-hidden bg-card">
  <CardContent className="p-4 space-y-3">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
@@ -304,7 +304,7 @@ function CmsStoriesPage() {
  </div>
 
  {collab.story && (
- <div className="aspect-[9/16] rounded-xl overflow-hidden bg-zinc-950 max-h-[220px]">
+ <div className="aspect-[9/16] rounded-lg overflow-hidden bg-zinc-950 max-h-[220px]">
  <img src={collab.story.media_url} alt="" className="size-full object-cover" />
  </div>
  )}
@@ -315,7 +315,7 @@ function CmsStoriesPage() {
  size="sm"
  disabled={collabActionId === collab.id}
  onClick={() => handleCollabAction(collab.id, "approve")}
- className="flex-1 rounded-xl text-xs font-bold gap-1.5"
+ className="flex-1 rounded-lg text-xs font-bold gap-2"
  >
  <CheckCircle className="size-3.5" />
  <span>Aprovar Story</span>
@@ -325,7 +325,7 @@ function CmsStoriesPage() {
  variant="outline"
  disabled={collabActionId === collab.id}
  onClick={() => handleCollabAction(collab.id, "reject")}
- className="rounded-xl text-xs font-bold text-destructive hover:bg-destructive/10"
+ className="rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10"
  >
  <XCircle className="size-3.5" />
  <span>Rejeitar</span>
@@ -342,7 +342,7 @@ function CmsStoriesPage() {
 
  {/* Modal de Criação / Edição de Story */}
  <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
- <DialogContent className="sm:max-w-md rounded-2xl">
+ <DialogContent className="sm:max-w-md rounded-lg">
  <form onSubmit={handleSave} className="space-y-4">
  <DialogHeader>
  <DialogTitle>{formData.id ? "Editar Story" : "Publicar Novo Story"}</DialogTitle>
@@ -351,8 +351,8 @@ function CmsStoriesPage() {
  </DialogDescription>
  </DialogHeader>
 
- <div className="space-y-3.5 py-2">
- <div className="space-y-1.5">
+ <div className="space-y-4 py-2">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Mídia do Story (Vertical 9:16)</Label>
  <ImageUpload
  value={formData.media_url}
@@ -364,13 +364,13 @@ function CmsStoriesPage() {
  </div>
 
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="niche">Nicho da Vitrine</Label>
  <Select
  value={formData.niche}
  onValueChange={(val) => setFormData({ ...formData, niche: val })}
  >
- <SelectTrigger id="niche" className="rounded-xl">
+ <SelectTrigger id="niche" className="rounded-lg">
  <SelectValue placeholder="Selecione o nicho" />
  </SelectTrigger>
  <SelectContent>
@@ -384,7 +384,7 @@ function CmsStoriesPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="duration">Duração (Segundos)</Label>
  <Input
  id="duration"
@@ -395,30 +395,30 @@ function CmsStoriesPage() {
  onChange={(e) =>
  setFormData({ ...formData, duration_seconds: Number(e.target.value) })
  }
- className="rounded-xl font-mono"
+ className="rounded-lg font-mono"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="link_url">Link de Redirecionamento (Opcional)</Label>
  <Input
  id="link_url"
  placeholder="https://..."
  value={formData.link_url}
  onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
- className="rounded-xl"
+ className="rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="link_cta">Texto do Botão CTA</Label>
  <Input
  id="link_cta"
  placeholder="Ex: Ver Produto, Pedir no WhatsApp"
  value={formData.link_cta}
  onChange={(e) => setFormData({ ...formData, link_cta: e.target.value })}
- className="rounded-xl"
+ className="rounded-lg"
  />
  </div>
  </div>
@@ -428,11 +428,11 @@ function CmsStoriesPage() {
  type="button"
  variant="outline"
  onClick={() => setIsModalOpen(false)}
- className="rounded-xl"
+ className="rounded-lg"
  >
  Cancelar
  </Button>
- <Button type="submit" disabled={isSubmitting} className="rounded-xl font-bold">
+ <Button type="submit" disabled={isSubmitting} className="rounded-lg font-bold">
  {isSubmitting ? "Publicando..." : "Publicar Story"}
  </Button>
  </DialogFooter>

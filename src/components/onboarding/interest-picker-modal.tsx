@@ -167,9 +167,9 @@ export function InterestPickerModal() {
 
  return (
  <Dialog open={open} onOpenChange={handleClose}>
- <DialogContent className="sm:max-w-xl p-5 sm:p-8 sm:rounded-2xl bg-background">
+ <DialogContent className="sm:max-w-xl p-5 sm:p-8 sm:rounded-lg bg-background">
  <DialogHeader className="space-y-2 text-center sm:text-left">
- <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold mx-auto sm:mx-0">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold mx-auto sm:mx-0">
  <Layers className="size-5" />
  </div>
  <DialogTitle className="text-xl sm:text-2xl font-black tracking-tight">
@@ -182,7 +182,7 @@ export function InterestPickerModal() {
  </DialogHeader>
 
  {/* Niche Grid (Pinterest / Twitter Style) */}
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 py-4">
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 py-4">
  {NICHES_LIST.map((item) => {
  const Icon = item.icon;
  const isSelected = selectedNiches.includes(item.id);
@@ -192,14 +192,14 @@ export function InterestPickerModal() {
  key={item.id}
  type="button"
  onClick={() => toggleNiche(item.id)}
- className={`relative flex flex-col items-start justify-between p-3.5 rounded-2xl border text-left transition-all select-none cursor-pointer group ${
+ className={`relative flex flex-col items-start justify-between p-4 rounded-lg border text-left transition-all select-none cursor-pointer group ${
  isSelected
  ? "bg-primary text-primary-foreground border-primary scale-[1.02]"
  : "bg-card text-foreground border-border/80 hover:border-primary/40 hover:bg-muted/40"
  }`}
  >
  <div
- className={`size-8 rounded-xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${
+ className={`size-8 rounded-lg flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${
  isSelected ? "bg-white/20 text-white" : "bg-muted text-foreground"
  }`}
  >
@@ -228,7 +228,7 @@ export function InterestPickerModal() {
  type="button"
  onClick={handleConfirm}
  disabled={isSaving}
- className="h-11 px-6 rounded-xl font-bold bg-primary text-primary-foreground text-xs gap-2 "
+ className="h-11 px-6 rounded-lg font-bold bg-primary text-primary-foreground text-xs gap-2 "
  >
  <span>Continuar</span>
  <ArrowRight className="size-4" />

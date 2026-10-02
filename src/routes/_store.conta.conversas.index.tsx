@@ -59,7 +59,7 @@ export const Route = createFileRoute("/_store/conta/conversas/")({
 function CustomerConversationsErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <MessageCircle className="size-8" />
       </div>
       <h2 className="text-xl font-bold text-foreground">Instabilidade ao carregar mensagens</h2>
@@ -67,10 +67,10 @@ function CustomerConversationsErrorComponent({ error, reset }: { error: any; res
         {error?.message || "Não foi possível carregar as conversas no momento."}
       </p>
       <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-xl font-bold">
+        <Button onClick={reset} className="rounded-lg font-bold">
           Tentar Novamente
         </Button>
-        <Button asChild variant="outline" className="rounded-xl font-bold">
+        <Button asChild variant="outline" className="rounded-lg font-bold">
           <Link to="/conta">Voltar</Link>
         </Button>
       </div>
@@ -362,9 +362,9 @@ function CustomerConversationsIndexPage() {
   };
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto min-h-[calc(100dvh-7rem)] flex flex-col space-y-2.5 pb-28 px-0 sm:px-4 md:px-0">
+    <div className="relative w-full max-w-5xl mx-auto min-h-[calc(100dvh-7rem)] flex flex-col space-y-3 pb-28 px-0 sm:px-4 md:px-0">
       {/* ── FASE 1: Header Nativo Silencioso (Apenas "Mensagens" + Ícone de Lupa 🔍 à Direita) ── */}
-      <header className="flex items-center justify-between gap-4 border-b border-border/40 px-3.5 sm:px-0 pb-2.5 pt-2">
+      <header className="flex items-center justify-between gap-4 border-b border-border/40 px-4 sm:px-0 pb-3 pt-2">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           Mensagens
         </h1>
@@ -381,7 +381,7 @@ function CustomerConversationsIndexPage() {
 
       {/* Barra de busca expansível sob demanda */}
       {showSearch && (
-        <div className="px-3.5 sm:px-0 animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="px-4 sm:px-0 animate-in fade-in slide-in-from-top-1 duration-150">
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <input
@@ -390,7 +390,7 @@ function CustomerConversationsIndexPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Pesquisar conversas..."
-              className="w-full h-10 pl-9 pr-8 rounded-xl text-sm bg-muted/60 border border-border/50 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+              className="w-full h-10 pl-9 pr-8 rounded-lg text-sm bg-muted/60 border border-border/50 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
             />
             {searchQuery && (
               <button
@@ -406,7 +406,7 @@ function CustomerConversationsIndexPage() {
       )}
 
       {/* Chips de Filtro Rápido estilo WhatsApp */}
-      <div className="flex gap-1.5 overflow-x-auto no-scrollbar px-3.5 sm:px-0 py-0.5">
+      <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 sm:px-0 py-1">
         {FILTER_TABS.map((tab) => {
           const isSelected = activeFilter === tab.id;
           return (
@@ -414,7 +414,7 @@ function CustomerConversationsIndexPage() {
               key={tab.id}
               type="button"
               onClick={() => setActiveFilter(tab.id)}
-              className={`shrink-0 h-8 px-3.5 rounded-full text-xs font-semibold transition-all cursor-pointer select-none ${
+              className={`shrink-0 h-8 px-4 rounded-full text-xs font-semibold transition-all cursor-pointer select-none ${
                 isSelected
                   ? "bg-primary/15 text-primary font-bold"
                   : "bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground"
@@ -429,7 +429,7 @@ function CustomerConversationsIndexPage() {
       {/* ── FASE 1 & 2: Empty State Silencioso (Marca d'Água) ou Lista Nativa <ChatListItem> ── */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 py-24 px-4 text-center select-none">
-          <MessageCircle className="size-14 stroke-[1.15] text-muted-foreground/25 mb-2.5" />
+          <MessageCircle className="size-14 stroke-[1.15] text-muted-foreground/25 mb-3" />
           <p className="text-xs text-gray-400 dark:text-zinc-500 max-w-[220px] leading-relaxed">
             {activeFilter !== "all" || searchQuery
               ? "Nenhuma conversa encontrada para este filtro."
@@ -437,7 +437,7 @@ function CustomerConversationsIndexPage() {
           </p>
         </div>
       ) : (
-        <div className="w-full divide-y divide-border/30 rounded-none sm:rounded-2xl border-y sm:border border-border/50 bg-card overflow-hidden">
+        <div className="w-full divide-y divide-border/30 rounded-none sm:rounded-lg border-y sm:border border-border/50 bg-card overflow-hidden">
           {filtered.map((item) => (
             <ChatListItem
               key={item.id}
@@ -471,7 +471,7 @@ function CustomerConversationsIndexPage() {
         open={Boolean(contextMenuTarget)}
         onOpenChange={(open) => !open && setContextMenuTarget(null)}
       >
-        <SheetContent side="bottom" className="rounded-t-3xl p-4 sm:p-6 max-w-lg mx-auto">
+        <SheetContent side="bottom" className="rounded-t-lg p-4 sm:p-6 max-w-lg mx-auto">
           <SheetHeader className="pb-3 border-b border-border/40 text-left">
             <SheetTitle className="text-sm font-bold text-foreground truncate">
               {contextMenuTarget?.title || "Opções da conversa"}
@@ -483,7 +483,7 @@ function CustomerConversationsIndexPage() {
               <button
                 type="button"
                 onClick={() => handleTogglePin(contextMenuTarget.id)}
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-xl transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer"
               >
                 <Pin className="size-4 text-muted-foreground" />
                 <span>
@@ -494,7 +494,7 @@ function CustomerConversationsIndexPage() {
               <button
                 type="button"
                 onClick={() => handleToggleMute(contextMenuTarget.id)}
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-xl transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer"
               >
                 <BellOff className="size-4 text-muted-foreground" />
                 <span>
@@ -512,7 +512,7 @@ function CustomerConversationsIndexPage() {
                     contextMenuTarget.unreadCount || 0
                   )
                 }
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-xl transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer"
               >
                 <MailOpen className="size-4 text-muted-foreground" />
                 <span>
@@ -528,7 +528,7 @@ function CustomerConversationsIndexPage() {
                   handleArchiveThread(contextMenuTarget.id);
                   setContextMenuTarget(null);
                 }}
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-xl transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer"
               >
                 <Archive className="size-4 text-muted-foreground" />
                 <span>
@@ -541,7 +541,7 @@ function CustomerConversationsIndexPage() {
               <button
                 type="button"
                 onClick={() => handleClearHistory(contextMenuTarget.id)}
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-xl transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer"
               >
                 <Eraser className="size-4 text-muted-foreground" />
                 <span>Limpar histórico</span>
@@ -550,7 +550,7 @@ function CustomerConversationsIndexPage() {
               <button
                 type="button"
                 onClick={() => handleDeleteThread(contextMenuTarget.id)}
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-bold text-destructive hover:bg-destructive/10 rounded-xl transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-bold text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
               >
                 <Trash2 className="size-4 text-destructive" />
                 <span>Apagar conversa</span>
@@ -562,7 +562,7 @@ function CustomerConversationsIndexPage() {
 
       {/* ── Modal "Nova Conversa" (Acionado pelo FAB) ── */}
       <Dialog open={newChatOpen} onOpenChange={setNewChatOpen}>
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden border-border/80 rounded-3xl">
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden border-border/80 rounded-lg">
           <DialogHeader className="p-4 sm:p-5 pb-3 border-b border-border/40">
             <DialogTitle className="text-base font-bold tracking-tight text-foreground">
               {selectedTarget ? `Mensagem para ${selectedTarget.name}` : "Nova Conversa"}
@@ -578,12 +578,12 @@ function CustomerConversationsIndexPage() {
                   value={contactSearch}
                   onChange={(e) => setContactSearch(e.target.value)}
                   placeholder="Buscar membros ou lojas..."
-                  className="w-full h-10 pl-9 pr-3 rounded-xl text-xs bg-muted/60 border border-border/60 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+                  className="w-full h-10 pl-9 pr-3 rounded-lg text-xs bg-muted/60 border border-border/60 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
                 />
               </div>
 
               <div className="max-h-72 overflow-y-auto space-y-4 no-scrollbar">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block px-1">
                     Membros
                   </span>
@@ -597,7 +597,7 @@ function CustomerConversationsIndexPage() {
                         <div
                           key={c.id}
                           onClick={() => setSelectedTarget(c)}
-                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/60 transition-colors cursor-pointer select-none"
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/60 transition-colors cursor-pointer select-none"
                         >
                           <div className="size-9 rounded-full bg-muted border border-border/40 flex items-center justify-center overflow-hidden shrink-0">
                             {c.avatar_url ? (
@@ -616,7 +616,7 @@ function CustomerConversationsIndexPage() {
                   )}
                 </div>
 
-                <div className="space-y-1.5 border-t border-border/40 pt-3">
+                <div className="space-y-2 border-t border-border/40 pt-3">
                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block px-1">
                     Lojas
                   </span>
@@ -630,7 +630,7 @@ function CustomerConversationsIndexPage() {
                         <div
                           key={s.id}
                           onClick={() => setSelectedTarget(s)}
-                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/60 transition-colors cursor-pointer select-none"
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/60 transition-colors cursor-pointer select-none"
                         >
                           <div className="size-9 rounded-full bg-muted border border-border/40 flex items-center justify-center overflow-hidden shrink-0">
                             {s.avatar_url ? (
@@ -652,7 +652,7 @@ function CustomerConversationsIndexPage() {
             </div>
           ) : (
             <div className="p-4 sm:p-5 space-y-4">
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 border border-border/50">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 border border-border/50">
                 <div className="size-10 rounded-full bg-muted border border-border/40 flex items-center justify-center overflow-hidden shrink-0">
                   {selectedTarget.avatar_url ? (
                     <img
@@ -689,7 +689,7 @@ function CustomerConversationsIndexPage() {
                   value={initialMsg}
                   onChange={(e) => setInitialMsg(e.target.value)}
                   placeholder="Digite sua mensagem..."
-                  className="w-full p-3 rounded-2xl text-xs bg-muted/40 border border-border/60 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground resize-none"
+                  className="w-full p-3 rounded-lg text-xs bg-muted/40 border border-border/60 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground resize-none"
                 />
               </div>
 
@@ -698,7 +698,7 @@ function CustomerConversationsIndexPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedTarget(null)}
-                  className="rounded-xl text-xs font-semibold h-10 px-4 cursor-pointer"
+                  className="rounded-lg text-xs font-semibold h-10 px-4 cursor-pointer"
                 >
                   Voltar
                 </Button>
@@ -706,7 +706,7 @@ function CustomerConversationsIndexPage() {
                   size="sm"
                   disabled={isStartingChat}
                   onClick={handleStartConversation}
-                  className="rounded-xl text-xs font-bold h-10 px-5 cursor-pointer"
+                  className="rounded-lg text-xs font-bold h-10 px-5 cursor-pointer"
                 >
                   {isStartingChat ? "Enviando..." : "Enviar"}
                 </Button>

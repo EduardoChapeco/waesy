@@ -150,7 +150,7 @@ export function FoodMenuTabsSection({
  type="button"
  onClick={() => setActiveTab(cat.id)}
  className={cn(
- "px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer",
+ "px-4 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground shadow-2xs"
  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -167,10 +167,10 @@ export function FoodMenuTabsSection({
  {currentCategory?.items.map((item) => (
  <div
  key={item.id}
- className="group p-4 rounded-2xl border border-border/80 bg-card hover:border-primary/40 transition-all flex items-start gap-4 shadow-2xs"
+ className="group p-4 rounded-lg border border-border/80 bg-card hover:border-primary/40 transition-all flex items-start gap-4 shadow-2xs"
  >
  {item.imageUrl && (
- <div className="size-20 sm:size-24 rounded-xl overflow-hidden bg-muted shrink-0 border border-border/60">
+ <div className="size-20 sm:size-24 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/60">
  <img
  src={item.imageUrl}
  alt={item.name}
@@ -179,7 +179,7 @@ export function FoodMenuTabsSection({
  </div>
  )}
 
- <div className="flex-1 min-w-0 space-y-1.5 flex flex-col justify-between h-full">
+ <div className="flex-1 min-w-0 space-y-2 flex flex-col justify-between h-full">
  <div>
  <div className="flex items-start justify-between gap-2">
  <h3 className="text-sm font-bold text-foreground truncate">{item.name}</h3>
@@ -193,7 +193,7 @@ export function FoodMenuTabsSection({
  </div>
 
  <div className="flex items-center justify-between pt-1">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  {item.badge && (
  <Badge variant="secondary" className="text-[10px] px-2 py-0">
  {item.badge}
@@ -212,7 +212,7 @@ export function FoodMenuTabsSection({
  variant="outline"
  disabled={addingItemId === item.id}
  onClick={() => handleAddDirect(item)}
- className="h-8 text-xs font-bold rounded-xl gap-1.5 border-border/80 hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+ className="h-8 text-xs font-bold rounded-lg gap-2 border-border/80 hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
  >
  {addingItemId === item.id ? (
  <Loader2 className="size-3.5 animate-spin" />

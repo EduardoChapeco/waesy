@@ -21,7 +21,7 @@ export function SectionFinancial({ draft, save }: Props) {
             <DollarSign className="h-3.5 w-3.5 text-brand" />
             <span className="ds-label-caps tracking-wider text-muted-foreground">Resumo</span>
           </div>
-          <div className="space-y-1.5 text-xs">
+          <div className="space-y-2 text-xs">
             <div className="flex justify-between text-muted-foreground">
               <span>Subtotal</span>
               <span className="font-mono">{formatCurrency(draft.subtotal, draft.currency)}</span>

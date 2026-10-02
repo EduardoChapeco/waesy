@@ -24,7 +24,7 @@ export function PoweredByWaesyBadge({
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-          "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all shadow-xs",
+          "inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-medium transition-all shadow-xs",
           isDark
             ? "bg-black/80 text-white/80 border border-white/10 hover:border-white/20 hover:text-white"
             : isLight
@@ -57,7 +57,7 @@ export function PoweredByWaesyBadge({
   return (
     <div
       className={cn(
-        "flex items-center justify-center gap-1.5 text-[10px] font-medium tracking-wide select-none py-2",
+        "flex items-center justify-center gap-2 text-[10px] font-medium tracking-wide select-none py-2",
         isDark
           ? "text-zinc-400"
           : isLight

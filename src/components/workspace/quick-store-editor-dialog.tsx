@@ -152,7 +152,7 @@ export function QuickStoreEditorDialog({
  variant="outline"
  onClick={() => onOpenChange(false)}
  disabled={isSaving}
- className="rounded-xl text-xs font-bold"
+ className="rounded-lg text-xs font-bold"
  >
  Cancelar
  </Button>
@@ -160,7 +160,7 @@ export function QuickStoreEditorDialog({
  <Button
  onClick={handleSave}
  disabled={isSaving}
- className="rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground"
+ className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground"
  >
  {isSaving ? (
  <>
@@ -179,14 +179,14 @@ export function QuickStoreEditorDialog({
  >
  <form onSubmit={handleSave} className="space-y-6 pt-2">
  <Tabs defaultValue="visual" className="w-full">
- <TabsList className="grid grid-cols-3 w-full bg-muted/60 p-1 rounded-2xl mb-4">
- <TabsTrigger value="visual" className="rounded-xl text-xs font-semibold">
+ <TabsList className="grid grid-cols-3 w-full bg-muted/60 p-1 rounded-lg mb-4">
+ <TabsTrigger value="visual" className="rounded-lg text-xs font-semibold">
  Identidade Visual
  </TabsTrigger>
- <TabsTrigger value="dados" className="rounded-xl text-xs font-semibold">
+ <TabsTrigger value="dados" className="rounded-lg text-xs font-semibold">
  Dados Básicos
  </TabsTrigger>
- <TabsTrigger value="contato" className="rounded-xl text-xs font-semibold">
+ <TabsTrigger value="contato" className="rounded-lg text-xs font-semibold">
  Contato e Local
  </TabsTrigger>
  </TabsList>
@@ -230,18 +230,18 @@ export function QuickStoreEditorDialog({
  {/* ABA 2: Dados Básicos */}
  <TabsContent value="dados" className="space-y-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Nome do Negócio *</Label>
  <Input
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Cantina do Lago"
- className="rounded-xl text-xs h-10"
+ className="rounded-lg text-xs h-10"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Slug da Vitrine *</Label>
  <div className="relative">
  <span className="absolute left-3 top-2.5 text-xs font-mono text-muted-foreground">
@@ -251,20 +251,20 @@ export function QuickStoreEditorDialog({
  value={slug}
  onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
  placeholder="cantina-do-lago"
- className="rounded-xl text-xs h-10 pl-28 font-mono font-medium"
+ className="rounded-lg text-xs h-10 pl-28 font-mono font-medium"
  />
  </div>
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Segmento / Categoria</Label>
  <Select value={type} onValueChange={setType}>
- <SelectTrigger className="rounded-xl text-xs h-10">
+ <SelectTrigger className="rounded-lg text-xs h-10">
  <SelectValue placeholder="Selecione o segmento" />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  {STORE_TYPES.map((t) => (
  <SelectItem key={t.value} value={t.value} className="text-xs">
  {t.label}
@@ -274,13 +274,13 @@ export function QuickStoreEditorDialog({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Status Operacional</Label>
  <Select value={status} onValueChange={(val: any) => setStatus(val)}>
- <SelectTrigger className="rounded-xl text-xs h-10">
+ <SelectTrigger className="rounded-lg text-xs h-10">
  <SelectValue placeholder="Status" />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="active" className="text-xs text-emerald-600 font-semibold">
  ● Aberto ao Público (Ativo)
  </SelectItem>
@@ -295,14 +295,14 @@ export function QuickStoreEditorDialog({
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Bio / Descrição Comercial</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  placeholder="Conte um pouco sobre a história da sua marca, especialidades e diferenciais..."
  rows={3}
- className="rounded-2xl text-xs resize-none"
+ className="rounded-lg text-xs resize-none"
  />
  </div>
  </TabsContent>
@@ -310,7 +310,7 @@ export function QuickStoreEditorDialog({
  {/* ABA 3: Contato & Local */}
  <TabsContent value="contato" className="space-y-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground flex items-center gap-1">
  <Phone className="size-3 text-primary" />
  WhatsApp / Telefone Comercial
@@ -319,11 +319,11 @@ export function QuickStoreEditorDialog({
  value={phone}
  onChange={(e) => setPhone(e.target.value)}
  placeholder="(49) 99999-9999"
- className="rounded-xl text-xs h-10"
+ className="rounded-lg text-xs h-10"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground flex items-center gap-1">
  <Mail className="size-3 text-primary" />
  E-mail Comercial
@@ -333,58 +333,58 @@ export function QuickStoreEditorDialog({
  value={email}
  onChange={(e) => setEmail(e.target.value)}
  placeholder="contato@minhaloja.com.br"
- className="rounded-xl text-xs h-10"
+ className="rounded-lg text-xs h-10"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="sm:col-span-2 space-y-1.5">
+ <div className="sm:col-span-2 space-y-2">
  <Label className="text-xs font-bold text-foreground">Endereço Completo</Label>
  <Input
  value={address}
  onChange={(e) => setAddress(e.target.value)}
  placeholder="Rua, número, bairro..."
- className="rounded-xl text-xs h-10"
+ className="rounded-lg text-xs h-10"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">CNPJ / CPF</Label>
  <Input
  value={cnpj}
  onChange={(e) => setCnpj(e.target.value)}
  placeholder="00.000.000/0001-00"
- className="rounded-xl text-xs h-10"
+ className="rounded-lg text-xs h-10"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cidade</Label>
  <Input
  value={city}
  onChange={(e) => setCity(e.target.value)}
  placeholder="São Miguel do Oeste"
- className="rounded-xl text-xs h-10"
+ className="rounded-lg text-xs h-10"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Estado (UF)</Label>
  <Input
  value={state}
  maxLength={2}
  onChange={(e) => setState(e.target.value.toUpperCase())}
  placeholder="SC"
- className="rounded-xl text-xs h-10 uppercase font-mono"
+ className="rounded-lg text-xs h-10 uppercase font-mono"
  />
  </div>
  </div>
 
- <div className="flex items-center justify-between p-3.5 rounded-2xl bg-muted/30 border border-border/70">
- <div className="space-y-0.5">
+ <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/70">
+ <div className="space-y-1">
  <Label htmlFor="hide-address-store" className="text-xs font-bold text-foreground cursor-pointer">
  Ocultar endereço completo na visualização pública
  </Label>

@@ -82,7 +82,7 @@ export const NativeBackButton = React.forwardRef<HTMLButtonElement, NativeBackBu
         type={type}
         onClick={handleBack}
         className={cn(
-          "size-11 min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center select-none active:scale-95 transition-all cursor-pointer",
+          "size-11 min-h-11 min-w-[44px] rounded-full flex items-center justify-center select-none active:scale-95 transition-all cursor-pointer",
           variantStyles[variant],
           className
         )}

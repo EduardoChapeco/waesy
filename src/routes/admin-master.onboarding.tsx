@@ -35,14 +35,14 @@ function AdminOnboardingManager() {
         title="Motor de Onboarding (Welcome)"
         description="Gerencie os passos explicativos exibidos aos lojistas no primeiro login."
         actions={
-          <Button className="rounded-xl font-bold bg-primary text-primary-foreground gap-2">
+          <Button className="rounded-lg font-bold bg-primary text-primary-foreground gap-2">
             <Plus className="size-4" />
             Adicionar Passo
           </Button>
         }
       />
 
-      <Card className="rounded-2xl sm:rounded-3xl border border-border/80 shadow-xs">
+      <Card className="rounded-lg sm:rounded-lg border border-border/80 shadow-xs">
         <CardHeader>
           <CardTitle className="text-xl">Passos Ativos</CardTitle>
           <CardDescription>
@@ -51,9 +51,9 @@ function AdminOnboardingManager() {
         </CardHeader>
         <CardContent>
           {steps.length === 0 ? (
-            <div className="p-8 text-center bg-muted/20 border border-dashed rounded-2xl">
+            <div className="p-8 text-center bg-muted/20 border border-dashed rounded-lg">
               <p className="text-muted-foreground text-sm font-medium">Nenhum passo cadastrado ainda.</p>
-              <Button variant="outline" className="mt-4 rounded-xl">
+              <Button variant="outline" className="mt-4 rounded-lg">
                 Criar o primeiro passo
               </Button>
             </div>
@@ -61,12 +61,12 @@ function AdminOnboardingManager() {
             <div className="space-y-3">
               {/* Esqueleto para a listagem (SortableList futuramente) */}
               {steps.map((step: any, index: number) => (
-                <div key={step.id} className="flex items-center justify-between p-4 bg-card border rounded-2xl hover:bg-muted/30 transition-colors">
+                <div key={step.id} className="flex items-center justify-between p-4 bg-card border rounded-lg hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-4">
-                    <button className="cursor-grab text-muted-foreground hover:text-foreground">
+                    <button className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-grab text-muted-foreground hover:text-foreground">
                       <GripVertical className="size-5" />
                     </button>
-                    <div className="size-10 rounded-xl bg-muted/50 flex items-center justify-center">
+                    <div className="size-10 rounded-lg bg-muted/50 flex items-center justify-center">
                       {step.media_type === "video" ? <Video className="size-4" /> : <ImageIcon className="size-4" />}
                     </div>
                     <div>

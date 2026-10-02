@@ -289,7 +289,7 @@ function ContasPagarPage() {
               onClick={handleExportCsv}
               variant="outline"
               size="sm"
-              className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+              className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
             >
               <FileSpreadsheet className="size-3.5 text-emerald-600" />
               <span>Exportar CSV</span>
@@ -297,7 +297,7 @@ function ContasPagarPage() {
             <Button
               onClick={() => setIsCreateOpen(true)}
               size="sm"
-              className="rounded-xl text-xs font-bold h-9 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs"
+              className="rounded-lg text-xs font-bold h-9 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs"
             >
               <Plus className="size-3.5" />
               <span>Nova Conta</span>
@@ -308,8 +308,8 @@ function ContasPagarPage() {
 
       {/* ── BANNER DE ALERTA DE VENCIMENTO EM ATRASO ── */}
       {kpis.overdueCount > 0 && (
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-400 text-xs">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-400 text-xs">
+          <div className="flex items-center gap-3">
             <AlertTriangle className="size-4 shrink-0 text-rose-600" />
             <span>
               <strong>Atenção:</strong> Você possui <strong>{kpis.overdueCount} conta(s) em atraso</strong> totalizando{" "}
@@ -328,8 +328,8 @@ function ContasPagarPage() {
 
       {/* ── KPIS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Clock className="size-3.5 text-blue-600" />
             Total a Pagar Previsto
           </span>
@@ -341,8 +341,8 @@ function ContasPagarPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Calendar className="size-3.5 text-amber-500" />
             Vence Hoje
           </span>
@@ -354,8 +354,8 @@ function ContasPagarPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <AlertTriangle className="size-3.5 text-rose-600" />
             Em Atraso / Vencidas
           </span>
@@ -367,8 +367,8 @@ function ContasPagarPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
             Total Liquidado
           </span>
@@ -382,24 +382,24 @@ function ContasPagarPage() {
       </div>
 
       {/* ── BARRA DE CONTROLE, BUSCA & FILTROS ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por fornecedor, título ou código..."
-            className="pl-10 h-10 rounded-xl text-xs bg-background"
+            className="pl-10 h-10 rounded-lg text-xs bg-background"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Filtro de Categoria */}
           <Select value={categoryFilter} onValueChange={(val) => setCategoryFilter(val as any)}>
-            <SelectTrigger className="rounded-xl h-9 text-xs w-[160px] bg-background">
+            <SelectTrigger className="rounded-lg h-9 text-xs w-40 bg-background">
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl text-xs">
+            <SelectContent className="rounded-lg text-xs">
               <SelectItem value="all">Todas Categorias</SelectItem>
               <SelectItem value="supplier">Fornecedores</SelectItem>
               <SelectItem value="rent">Aluguel e Imóvel</SelectItem>
@@ -413,11 +413,11 @@ function ContasPagarPage() {
           </Select>
 
           {/* Filtro de Status */}
-          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 overflow-x-auto no-scrollbar">
             <button
               type="button"
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
                 statusFilter === "all"
                   ? "bg-background text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -428,7 +428,7 @@ function ContasPagarPage() {
             <button
               type="button"
               onClick={() => setStatusFilter("pending")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
                 statusFilter === "pending"
                   ? "bg-background text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -439,7 +439,7 @@ function ContasPagarPage() {
             <button
               type="button"
               onClick={() => setStatusFilter("overdue")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
                 statusFilter === "overdue"
                   ? "bg-background text-foreground shadow-2xs text-rose-600"
                   : "text-rose-600/70 hover:text-rose-600"
@@ -450,7 +450,7 @@ function ContasPagarPage() {
             <button
               type="button"
               onClick={() => setStatusFilter("paid")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
                 statusFilter === "paid"
                   ? "bg-background text-foreground shadow-2xs text-emerald-600"
                   : "text-emerald-600/70 hover:text-emerald-600"
@@ -471,7 +471,7 @@ function ContasPagarPage() {
             <Button
               onClick={() => setIsCreateOpen(true)}
               size="sm"
-              className="rounded-xl text-xs font-bold h-9 bg-primary text-primary-foreground"
+              className="rounded-lg text-xs font-bold h-9 bg-primary text-primary-foreground"
             >
               <Plus className="size-3.5 mr-1" />
               Cadastrar Primeira Conta
@@ -492,19 +492,19 @@ function ContasPagarPage() {
               return (
                 <div
                   key={ob.id}
-                  className="rounded-2xl border border-border/70 bg-card p-4 space-y-3.5 shadow-2xs"
+                  className="rounded-lg border border-border/70 bg-card p-4 space-y-4 shadow-2xs"
                 >
                   {/* Topo do Card: Categoria, Recorrência e Status */}
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <div className={`p-1.5 rounded-lg border shrink-0 ${catInfo.color}`}>
+                      <div className={`p-2 rounded-lg border shrink-0 ${catInfo.color}`}>
                         <CatIcon className="size-3.5" />
                       </div>
                       <span className="text-xs font-semibold text-foreground">
                         {catInfo.label}
                       </span>
                       {ob.recurrence !== "none" && (
-                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 font-mono">
+                        <Badge variant="outline" className="text-xs px-2 py-0 h-4 font-mono">
                           {ob.recurrence === "monthly" ? "Mensal" : ob.recurrence === "weekly" ? "Semanal" : "Anual"}
                         </Badge>
                       )}
@@ -512,19 +512,19 @@ function ContasPagarPage() {
 
                     <div>
                       {isPaid ? (
-                        <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-bold px-2 py-0.5">
+                        <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-bold px-2 py-1">
                           Liquidado
                         </Badge>
                       ) : isOverdue ? (
-                        <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 text-xs font-medium px-2 py-0.5">
+                        <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 text-xs font-medium px-2 py-1">
                           Vencido
                         </Badge>
                       ) : isToday ? (
-                        <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-bold px-2 py-0.5">
+                        <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-bold px-2 py-1">
                           Vence Hoje
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-xs text-muted-foreground font-mono px-2 py-0.5">
+                        <Badge variant="outline" className="text-xs text-muted-foreground font-mono px-2 py-1">
                           No prazo
                         </Badge>
                       )}
@@ -536,7 +536,7 @@ function ContasPagarPage() {
                     <h3 className="font-bold text-base text-foreground leading-snug">
                       {ob.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                       <Building2 className="size-3 shrink-0" />
                       <span className="truncate">{ob.supplier_name || "Favorecido não informado"}</span>
                     </p>
@@ -544,14 +544,14 @@ function ContasPagarPage() {
 
                   {/* Vencimento e Valor */}
                   <div className="flex items-baseline justify-between pt-2 border-t border-border/30">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <span className="text-xs text-muted-foreground block">Data de Vencimento</span>
                       <span className="text-xs font-mono font-bold text-foreground">
                         {ob.due_date.split("-").reverse().join("/")}
                       </span>
                     </div>
 
-                    <div className="text-right space-y-0.5">
+                    <div className="text-right space-y-1">
                       <span className="text-xs text-muted-foreground block">Valor</span>
                       <span className="text-xl font-mono font-black text-foreground">
                         {formatMoney(ob.amount_cents)}
@@ -565,7 +565,7 @@ function ContasPagarPage() {
                       type="button"
                       variant="outline"
                       onClick={() => handleCopyBarcode(ob.id, ob.barcode!)}
-                      className="h-10 w-full rounded-xl text-xs font-mono gap-1.5 border-dashed border-border/80 text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="h-10 w-full rounded-lg text-xs font-mono gap-2 border-dashed border-border/80 text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       {copiedId === ob.id ? (
                         <>
@@ -588,13 +588,13 @@ function ContasPagarPage() {
                         type="button"
                         size="sm"
                         onClick={() => setPayModal({ isOpen: true, obligation: ob })}
-                        className="h-11 flex-1 rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-2xs"
+                        className="h-11 flex-1 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-2xs"
                       >
                         <CheckCircle2 className="size-4" />
                         <span>Dar Baixa / Pagar</span>
                       </Button>
                     ) : (
-                      <div className="h-11 flex-1 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center gap-1.5 text-emerald-600 text-xs font-semibold">
+                      <div className="h-11 flex-1 rounded-lg border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center gap-2 text-emerald-600 text-xs font-semibold">
                         <CheckCircle2 className="size-4" />
                         <span>Pago em {ob.paid_at ? ob.paid_at.slice(0, 10).split("-").reverse().join("/") : "dia"}</span>
                       </div>
@@ -602,7 +602,7 @@ function ContasPagarPage() {
 
                     <CrudActionsMenu
                       triggerVariant="outline"
-                      triggerClassName="size-11 shrink-0 rounded-xl border-border/70 hover:bg-muted"
+                      triggerClassName="size-11 shrink-0 rounded-lg border-border/70 hover:bg-muted"
                       onDelete={() => handleDelete(ob.id, ob.title)}
                       deleteTitle={`Remover conta "${ob.title}"?`}
                       deleteDescription="A obrigação financeira será excluída do fluxo de caixa e não poderá ser recuperada."
@@ -625,7 +625,7 @@ function ContasPagarPage() {
           </div>
 
           {/* ── VISUALIZAÇÃO DESKTOP: TABELA TRADICIONAL (hidden md:block) ── */}
-          <div className="hidden md:block rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+          <div className="hidden md:block rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
@@ -648,15 +648,15 @@ function ContasPagarPage() {
                   return (
                     <TableRow key={ob.id} className="border-border/40 hover:bg-muted/30 transition-colors">
                       <TableCell>
-                        <div className="flex items-start gap-2.5">
-                          <div className={`p-1.5 rounded-lg border shrink-0 ${catInfo.color}`}>
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-lg border shrink-0 ${catInfo.color}`}>
                             <CatIcon className="size-4" />
                           </div>
-                          <div className="space-y-0.5">
-                            <div className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                          <div className="space-y-1">
+                            <div className="font-bold text-xs text-foreground flex items-center gap-2">
                               {ob.title}
                               {ob.recurrence !== "none" && (
-                                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 font-mono">
+                                <Badge variant="outline" className="text-xs px-2 py-0 h-4 font-mono">
                                   {ob.recurrence === "monthly" ? "Mensal" : ob.recurrence === "weekly" ? "Semanal" : "Anual"}
                                 </Badge>
                               )}
@@ -675,7 +675,7 @@ function ContasPagarPage() {
                       </TableCell>
 
                       <TableCell>
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           <div className="text-xs font-mono font-medium text-foreground">
                             {ob.due_date.split("-").reverse().join("/")}
                           </div>
@@ -729,12 +729,12 @@ function ContasPagarPage() {
                       </TableCell>
 
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-2">
                           {!isPaid ? (
                             <Button
                               size="sm"
                               onClick={() => setPayModal({ isOpen: true, obligation: ob })}
-                              className="h-8 rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-1 cursor-pointer"
+                              className="h-8 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-1 cursor-pointer"
                             >
                               <CheckCircle2 className="size-3.5" />
                               <span>Pagar</span>
@@ -783,14 +783,14 @@ function ContasPagarPage() {
               variant="outline"
               onClick={() => setIsCreateOpen(false)}
               disabled={isSubmitting}
-              className="h-10 px-4 rounded-xl text-xs font-bold"
+              className="h-10 px-4 rounded-lg text-xs font-bold"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleCreateObligation}
               disabled={isSubmitting}
-              className="h-10 px-5 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-1.5"
+              className="h-10 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2"
             >
               {isSubmitting ? "Salvando..." : "Salvar Obrigação"}
             </Button>
@@ -798,60 +798,60 @@ function ContasPagarPage() {
         }
       >
         <form onSubmit={handleCreateObligation} className="space-y-4 py-4">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-bold text-foreground">Descrição / Título da Conta *</Label>
             <Input
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder="Ex: Aluguel do Galpão, Conta de Luz Celesc, Embalagens..."
-              className="rounded-xl h-10 text-xs"
+              className="rounded-lg h-10 text-xs"
               required
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Fornecedor / Favorecido *</Label>
               <Input
                 value={newSupplier}
                 onChange={(e) => setNewSupplier(e.target.value)}
                 placeholder="Ex: Imobiliária Central, Celesc..."
-                className="rounded-xl h-10 text-xs"
+                className="rounded-lg h-10 text-xs"
                 required
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Valor em Reais (R$) *</Label>
               <Input
                 value={newAmountReal}
                 onChange={(e) => setNewAmountReal(e.target.value)}
                 placeholder="0,00"
-                className="rounded-xl h-10 text-xs font-mono font-bold"
+                className="rounded-lg h-10 text-xs font-mono font-bold"
                 required
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Data de Vencimento *</Label>
               <Input
                 type="date"
                 value={newDueDate}
                 onChange={(e) => setNewDueDate(e.target.value)}
-                className="rounded-xl h-10 text-xs font-mono"
+                className="rounded-lg h-10 text-xs font-mono"
                 required
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Categoria da Despesa</Label>
               <Select value={newCategory} onValueChange={(val) => setNewCategory(val as any)}>
-                <SelectTrigger className="rounded-xl h-10 text-xs">
+                <SelectTrigger className="rounded-lg h-10 text-xs">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl text-xs">
+                <SelectContent className="rounded-lg text-xs">
                   <SelectItem value="supplier">Fornecedor de Insumos</SelectItem>
                   <SelectItem value="rent">Aluguel e Imóvel</SelectItem>
                   <SelectItem value="utilities">Água, Luz e Internet</SelectItem>
@@ -865,13 +865,13 @@ function ContasPagarPage() {
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-bold text-foreground">Recorrência Automática</Label>
             <Select value={newRecurrence} onValueChange={(val) => setNewRecurrence(val as any)}>
-              <SelectTrigger className="rounded-xl h-10 text-xs">
+              <SelectTrigger className="rounded-lg h-10 text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="rounded-xl text-xs">
+              <SelectContent className="rounded-lg text-xs">
                 <SelectItem value="none">Despesa Única / Não recorrente</SelectItem>
                 <SelectItem value="monthly">Mensal (Todo mês na mesma data)</SelectItem>
                 <SelectItem value="weekly">Semanal</SelectItem>
@@ -880,23 +880,23 @@ function ContasPagarPage() {
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-bold text-foreground">Código de Barras / Linha Digitável / Chave Pix</Label>
             <Input
               value={newBarcode}
               onChange={(e) => setNewBarcode(e.target.value)}
               placeholder="Cole a linha digitável do boleto ou chave Pix para agilizar o pagamento..."
-              className="rounded-xl h-10 text-xs font-mono"
+              className="rounded-lg h-10 text-xs font-mono"
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-bold text-foreground">Observações Internas (Opcional)</Label>
             <Input
               value={newNotes}
               onChange={(e) => setNewNotes(e.target.value)}
               placeholder="Ex: Parcela 2 de 4, desconto até o dia 10..."
-              className="rounded-xl h-10 text-xs"
+              className="rounded-lg h-10 text-xs"
             />
           </div>
         </form>
@@ -914,14 +914,14 @@ function ContasPagarPage() {
               variant="outline"
               onClick={() => setPayModal({ isOpen: false, obligation: null })}
               disabled={isPaying}
-              className="h-10 px-4 rounded-xl text-xs font-bold"
+              className="h-10 px-4 rounded-lg text-xs font-bold"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleConfirmPay}
               disabled={isPaying}
-              className="h-10 px-5 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer"
+              className="h-10 px-5 rounded-lg font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer"
             >
               {isPaying ? "Liquidando..." : "Confirmar Pagamento"}
             </Button>
@@ -929,7 +929,7 @@ function ContasPagarPage() {
         }
       >
         <div className="space-y-5 py-4">
-          <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-2">
+          <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Valor da Conta:</span>
               <span className="font-mono font-bold text-base text-foreground">
@@ -953,10 +953,10 @@ function ContasPagarPage() {
           <div className="space-y-2">
             <Label className="text-xs font-bold text-foreground">Forma de Pagamento Utilizada</Label>
             <Select value={payMethod} onValueChange={setPayMethod}>
-              <SelectTrigger className="rounded-xl h-11 text-xs">
+              <SelectTrigger className="rounded-lg h-11 text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="rounded-xl text-xs">
+              <SelectContent className="rounded-lg text-xs">
                 <SelectItem value="pix">Pix da Conta da Empresa</SelectItem>
                 <SelectItem value="boleto">Boleto Bancário Compensado</SelectItem>
                 <SelectItem value="ted">Transferência Bancária / TED</SelectItem>
@@ -973,7 +973,7 @@ function ContasPagarPage() {
               value={payNotes}
               onChange={(e) => setPayNotes(e.target.value)}
               placeholder="Ex: Pago com desconto de R$ 20, comprovante no e-mail..."
-              className="rounded-xl h-10 text-xs"
+              className="rounded-lg h-10 text-xs"
             />
           </div>
         </div>

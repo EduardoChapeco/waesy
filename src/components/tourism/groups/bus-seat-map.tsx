@@ -86,7 +86,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  return (
  <div className="space-y-4">
  {/* Resumo de Ocupação */}
- <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/80 text-xs">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/80 text-xs">
  <div className="flex items-center gap-2">
  <Users className="size-4 text-primary" />
  <span className="font-bold text-foreground">
@@ -105,7 +105,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  </div>
 
  {/* Carcaça Visual do Ônibus */}
- <div className="p-5 rounded-2xl bg-slate-100 border-2 border-slate-300 max-w-sm mx-auto space-y-3 shadow-inner">
+ <div className="p-5 rounded-lg bg-slate-100 border-2 border-slate-300 max-w-sm mx-auto space-y-3 shadow-inner">
  {/* Cabine do Motorista & Entrada */}
  <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-slate-300 text-[10px] font-mono font-bold text-slate-500 uppercase">
  <div className="flex items-center gap-1">
@@ -165,21 +165,21 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
 
  {/* Modal de Alocação de Passageiro */}
  <Dialog open={Boolean(selectedSeat)} onOpenChange={(open) => !open && setSelectedSeat(null)}>
- <DialogContent className="sm:max-w-md sm:rounded-2xl p-6 bg-card border-border">
+ <DialogContent className="sm:max-w-md sm:rounded-lg p-6 bg-card border-border">
  <DialogHeader className="space-y-1">
  <DialogTitle className="text-base font-bold text-foreground">
  Poltrona #{selectedSeat?.seat_number} ({selectedSeat?.column})
  </DialogTitle>
  </DialogHeader>
 
- <div className="space-y-3.5 pt-2 text-xs">
+ <div className="space-y-4 pt-2 text-xs">
  <div className="space-y-1">
  <Label className="text-xs font-bold">Nome do Passageiro</Label>
  <Input
  placeholder="Nome completo"
  value={passengerName}
  onChange={(e) => setPassengerName(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
@@ -190,7 +190,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  placeholder="000.000.000-00"
  value={passengerDoc}
  onChange={(e) => setPassengerDoc(e.target.value)}
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-xs rounded-lg font-mono"
  />
  </div>
 
@@ -200,7 +200,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  placeholder="(49) 99999-9999"
  value={passengerPhone}
  onChange={(e) => setPassengerPhone(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  </div>
@@ -211,7 +211,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  placeholder="Ex: Rodoviária Central ou Posto BR"
  value={boardingPoint}
  onChange={(e) => setBoardingPoint(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
@@ -221,7 +221,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  type="button"
  variant="outline"
  onClick={handleClearSeat}
- className="flex-1 rounded-xl text-xs font-bold h-11 text-destructive hover:bg-destructive/10"
+ className="flex-1 rounded-lg text-xs font-bold h-11 text-destructive hover:bg-destructive/10"
  >
  <Trash className="size-4 mr-1" /> Liberar Poltrona
  </Button>
@@ -230,7 +230,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  <Button
  type="button"
  onClick={handleSaveAllocation}
- className="flex-1 rounded-xl text-xs font-bold h-11 bg-foreground text-background"
+ className="flex-1 rounded-lg text-xs font-bold h-11 bg-foreground text-background"
  >
  <Check className="size-4 mr-1" /> Salvar Passageiro
  </Button>
@@ -249,7 +249,7 @@ function SeatButton({ seat, onClick }: { seat: BusSeatDTO; onClick: () => void }
  <button
  type="button"
  onClick={onClick}
- className={`size-11 rounded-xl flex flex-col items-center justify-center font-mono transition-all cursor-pointer shadow-xs ${
+ className={`size-11 rounded-lg flex flex-col items-center justify-center font-mono transition-all cursor-pointer shadow-xs ${
  isOccupied
  ? "bg-slate-900 text-white font-black ring-1 ring-slate-800"
  : "bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold border border-emerald-300"

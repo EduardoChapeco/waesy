@@ -133,31 +133,31 @@ export function NewTripSheet({
               <span>Dados do Roteiro e Destino</span>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Título do Roteiro *</Label>
               <Input
                 placeholder="Ex: Férias Porto Seguro - Família Silva"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="h-10 rounded-xl"
+                className="h-10 rounded-lg"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Cidade Destino *</Label>
                 <Input
                   placeholder="Ex: Porto Seguro, BA"
                   value={destinationCity}
                   onChange={(e) => setDestinationCity(e.target.value)}
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Status Inicial</Label>
                 <Select value={status} onValueChange={(v: any) => setStatus(v)}>
-                  <SelectTrigger className="h-10 rounded-xl">
+                  <SelectTrigger className="h-10 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -170,54 +170,54 @@ export function NewTripSheet({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Data de Partida / Embarque</Label>
                 <Input
                   type="date"
                   value={travelStartDate}
                   onChange={(e) => setTravelStartDate(e.target.value)}
-                  className="h-10 rounded-xl font-mono"
+                  className="h-10 rounded-lg font-mono"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Data de Retorno</Label>
                 <Input
                   type="date"
                   value={travelEndDate}
                   onChange={(e) => setTravelEndDate(e.target.value)}
-                  className="h-10 rounded-xl font-mono"
+                  className="h-10 rounded-lg font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Adultos</Label>
                 <Input
                   type="number"
                   min="1"
                   value={adultsCount}
                   onChange={(e) => setAdultsCount(parseInt(e.target.value) || 1)}
-                  className="h-10 rounded-xl font-mono"
+                  className="h-10 rounded-lg font-mono"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Crianças</Label>
                 <Input
                   type="number"
                   min="0"
                   value={childrenCount}
                   onChange={(e) => setChildrenCount(parseInt(e.target.value) || 0)}
-                  className="h-10 rounded-xl font-mono"
+                  className="h-10 rounded-lg font-mono"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Valor Total (R$)</Label>
                 <Input
                   placeholder="Ex: 5.400,00"
                   value={totalBrl}
                   onChange={(e) => setTotalBrl(e.target.value)}
-                  className="h-10 rounded-xl font-mono font-bold"
+                  className="h-10 rounded-lg font-mono font-bold"
                 />
               </div>
             </div>
@@ -230,43 +230,43 @@ export function NewTripSheet({
               <span>Passageiro Principal / Contratante</span>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Nome Completo *</Label>
               <Input
                 placeholder="Ex: Carlos Eduardo dos Santos"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
-                className="h-10 rounded-xl"
+                className="h-10 rounded-lg"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">WhatsApp / Telefone</Label>
                 <Input
                   placeholder="(49) 99999-9999"
                   value={clientWhatsapp}
                   onChange={(e) => setClientWhatsapp(e.target.value)}
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">E-mail</Label>
                 <Input
                   type="email"
                   placeholder="carlos@email.com"
                   value={clientEmail}
                   onChange={(e) => setClientEmail(e.target.value)}
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">CPF / Passaporte</Label>
                 <Input
                   placeholder="000.000.000-00"
                   value={clientDocument}
                   onChange={(e) => setClientDocument(e.target.value)}
-                  className="h-10 rounded-xl font-mono"
+                  className="h-10 rounded-lg font-mono"
                 />
               </div>
             </div>
@@ -280,44 +280,44 @@ export function NewTripSheet({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Hotel / Resort Reservado</Label>
                 <Input
                   placeholder="Ex: Porto Seguro Eco Bahia Hotel"
                   value={hotelName}
                   onChange={(e) => setHotelName(e.target.value)}
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Companhia Aérea</Label>
                 <Input
                   placeholder="Ex: LATAM Airlines"
                   value={airlineName}
                   onChange={(e) => setAirlineName(e.target.value)}
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Código Localizador do Voo (PNR)</Label>
               <Input
                 placeholder="Ex: JJ9021 / ABC123"
                 value={flightLocator}
                 onChange={(e) => setFlightLocator(e.target.value)}
-                className="h-10 rounded-xl font-mono uppercase"
+                className="h-10 rounded-lg font-mono uppercase"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Observações Internas</Label>
               <Textarea
                 placeholder="Detalhes sobre transfers, preferências de assento ou solicitações especiais..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="rounded-xl resize-none text-xs"
+                className="rounded-lg resize-none text-xs"
               />
             </div>
           </div>
@@ -329,7 +329,7 @@ export function NewTripSheet({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="rounded-xl text-xs font-bold"
+            className="rounded-lg text-xs font-bold"
           >
             Cancelar
           </Button>
@@ -337,7 +337,7 @@ export function NewTripSheet({
             type="button"
             onClick={() => createMutation.mutate()}
             disabled={createMutation.isPending}
-            className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+            className="rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
           >
             {createMutation.isPending ? (
               <>

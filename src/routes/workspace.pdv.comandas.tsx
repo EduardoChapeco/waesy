@@ -189,7 +189,7 @@ function PdvComandasPage() {
  >
       <div className="flex flex-col min-h-[calc(100dvh-4rem)] bg-background text-foreground pb-20 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
         {/* ── Top Bar ── */}
-        <div className="border-b border-border/80 bg-card/60 backdrop-blur-md px-3 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl">
+        <div className="border-b border-border/80 bg-card/60 backdrop-blur-md px-3 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 rounded-lg">
           <div className="flex items-center gap-3">
             <NativeBackButton fallbackHref="/workspace/pdv" />
  <div>
@@ -207,11 +207,11 @@ function PdvComandasPage() {
 
  <div className="flex items-center gap-2">
  {/* Alternador de Visão */}
- <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/60">
+ <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/60">
  <Button
  size="sm"
  variant={activeView === "grid" ? "default" : "ghost"}
- className="h-7 px-2.5 text-xs font-semibold rounded-lg gap-1.5"
+ className="h-7 px-3 text-xs font-semibold rounded-lg gap-2"
  onClick={() => setActiveView("grid")}
  >
  <LayoutGrid className="size-3.5" />
@@ -220,7 +220,7 @@ function PdvComandasPage() {
  <Button
  size="sm"
  variant={activeView === "list" ? "default" : "ghost"}
- className="h-7 px-2.5 text-xs font-semibold rounded-lg gap-1.5"
+ className="h-7 px-3 text-xs font-semibold rounded-lg gap-2"
  onClick={() => setActiveView("list")}
  >
  <ListFilter className="size-3.5" />
@@ -231,7 +231,7 @@ function PdvComandasPage() {
  <Button
  variant="outline"
  size="sm"
- className="h-9 gap-2 rounded-xl border-border/80 bg-card hover:bg-muted font-bold text-xs shadow-2xs cursor-pointer"
+ className="h-9 gap-2 rounded-lg border-border/80 bg-card hover:bg-muted font-bold text-xs shadow-2xs cursor-pointer"
  onClick={() => setQrModalOpen(true)}
  >
  <QrCode className="size-4 text-primary" />
@@ -242,8 +242,8 @@ function PdvComandasPage() {
 
  {/* ── KPI Strip ── */}
  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-4 sm:px-6">
- <div className="p-3 rounded-xl bg-card border border-border/70 flex items-center justify-between">
- <div className="space-y-0.5">
+ <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
+ <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Livres</span>
  <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
  {summary?.free_count || 0}
@@ -252,8 +252,8 @@ function PdvComandasPage() {
  <div className="size-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
  </div>
 
- <div className="p-3 rounded-xl bg-card border border-border/70 flex items-center justify-between">
- <div className="space-y-0.5">
+ <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
+ <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Ocupadas</span>
  <p className="text-xl font-black text-blue-600 dark:text-blue-400">
  {summary?.occupied_count || 0}
@@ -262,8 +262,8 @@ function PdvComandasPage() {
  <div className="size-2.5 rounded-full bg-blue-500 ring-4 ring-blue-500/20" />
  </div>
 
- <div className="p-3 rounded-xl bg-card border border-border/70 flex items-center justify-between">
- <div className="space-y-0.5">
+ <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
+ <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Pediram Conta</span>
  <p className="text-xl font-black text-amber-600 dark:text-amber-400">
  {summary?.awaiting_payment_count || 0}
@@ -272,8 +272,8 @@ function PdvComandasPage() {
  <div className="size-2.5 rounded-full bg-amber-500 ring-4 ring-amber-500/20" />
  </div>
 
- <div className="p-3 rounded-xl bg-card border border-border/70 flex items-center justify-between">
- <div className="space-y-0.5">
+ <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
+ <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Reservadas</span>
  <p className="text-xl font-black text-purple-600 dark:text-purple-400">
  {summary?.reserved_count || 0}
@@ -282,8 +282,8 @@ function PdvComandasPage() {
  <div className="size-2.5 rounded-full bg-purple-500 ring-4 ring-purple-500/20" />
  </div>
 
- <div className="p-3 rounded-xl bg-card border border-border/70 col-span-2 sm:col-span-1 flex items-center justify-between">
- <div className="space-y-0.5">
+ <div className="p-3 rounded-lg bg-card border border-border/70 col-span-2 sm:col-span-1 flex items-center justify-between">
+ <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Total Salão</span>
  <p className="text-xl font-black text-foreground">
  {formatMoney(summary?.total_active_cents || 0)}
@@ -307,7 +307,7 @@ function PdvComandasPage() {
  type="button"
  onClick={() => handleTableClick(table)}
  className={cn(
- "relative flex flex-col justify-between p-3.5 sm:p-4 rounded-xl border text-left transition-all cursor-pointer min-h-[120px] select-none group active:scale-98",
+ "relative flex flex-col justify-between p-4 sm:p-4 rounded-lg border text-left transition-all cursor-pointer min-h-[120px] select-none group active:scale-98",
  config.cardClass,
  )}
  >
@@ -319,7 +319,7 @@ function PdvComandasPage() {
  </span>
  </div>
 
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className={cn("size-2 rounded-full", config.dotClass)} />
  <span className={cn("text-xs font-bold uppercase", config.textClass)}>
  {config.label}
@@ -334,7 +334,7 @@ function PdvComandasPage() {
  <span>Abrir Mesa</span>
  </div>
  ) : table.status === "reserved" ? (
- <div className="text-xs space-y-0.5">
+ <div className="text-xs space-y-1">
  <span className="font-bold text-foreground line-clamp-1">
  {table.reservation?.customer_name}
  </span>
@@ -346,7 +346,7 @@ function PdvComandasPage() {
  </div>
  </div>
  ) : (
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
  <span className="font-black text-foreground font-mono">
  {formatMoney(table.total_cents)}
@@ -369,7 +369,7 @@ function PdvComandasPage() {
  ) : (
  /* ── VISÃO CLÁSSICA EM LISTA DE COMANDAS ── */
  activeComandas.length === 0 ? (
- <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl bg-card border border-border/60">
+ <div className="flex flex-col items-center justify-center p-12 text-center rounded-lg bg-card border border-border/60">
  <Receipt className="size-12 text-muted-foreground mb-3" />
  <h3 className="text-base font-bold text-foreground">Nenhuma comanda aberta</h3>
  <p className="text-xs text-muted-foreground mt-1">
@@ -381,9 +381,9 @@ function PdvComandasPage() {
  {activeComandas.map((comanda: any) => (
  <div
  key={comanda.id}
- className="overflow-hidden bg-card rounded-xl border border-border/80 flex flex-col justify-between"
+ className="overflow-hidden bg-card rounded-lg border border-border/80 flex flex-col justify-between"
  >
- <div className="p-3.5 border-b border-border/60 flex items-center justify-between bg-muted/20">
+ <div className="p-4 border-b border-border/60 flex items-center justify-between bg-muted/20">
  <span className="font-black text-foreground text-sm uppercase tracking-wide font-mono">
  {comanda.table_identifier}
  </span>
@@ -393,7 +393,7 @@ function PdvComandasPage() {
  </div>
 
  <div className="p-4 space-y-3 flex-1">
- <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar pr-1">
+ <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1">
  {comanda.order_items?.map((item: any) => (
  <div key={item.id} className="flex justify-between text-xs">
  <span className="text-muted-foreground truncate mr-2">
@@ -417,10 +417,10 @@ function PdvComandasPage() {
                     <div className="p-3 bg-muted/10 border-t border-border/60 flex gap-2">
                       <Button
                         size="sm"
-                        className="w-full font-bold text-xs h-11 sm:h-9 rounded-xl cursor-pointer"
+                        className="w-full font-bold text-xs h-11 sm:h-9 rounded-lg cursor-pointer"
                         onClick={() => handleOpenCheckout(comanda)}
                       >
-                        <Check className="mr-1.5 size-3.5" />
+                        <Check className="mr-2 size-3.5" />
                         Fechar Conta
                       </Button>
                     </div>
@@ -453,14 +453,14 @@ function PdvComandasPage() {
 
  {selectedTable?.order ? (
  <div className="flex-1 overflow-y-auto no-scrollbar py-4 space-y-4">
- <div className="p-3 rounded-xl bg-muted/30 border border-border/60 flex items-center justify-between text-xs">
- <div className="space-y-0.5">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/60 flex items-center justify-between text-xs">
+ <div className="space-y-1">
  <span className="text-xs text-muted-foreground font-bold uppercase">Tempo no Salão</span>
  <p className="font-mono font-bold text-foreground">
  {selectedTable.elapsed_minutes} minutos
  </p>
  </div>
- <div className="space-y-0.5 text-right">
+ <div className="space-y-1 text-right">
  <span className="text-xs text-muted-foreground font-bold uppercase">Itens Lançados</span>
  <p className="font-mono font-bold text-foreground">
  {selectedTable.items_count} produtos
@@ -473,7 +473,7 @@ function PdvComandasPage() {
  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
  Consumo da Mesa
  </h4>
- <div className="space-y-2 border border-border/70 rounded-xl p-3 bg-card">
+ <div className="space-y-2 border border-border/70 rounded-lg p-3 bg-card">
  {selectedTable.order?.order_items?.map((it: any) => (
  <div key={it.id} className="flex items-start justify-between text-xs py-1 border-b border-border/40 last:border-0">
  <div>
@@ -495,7 +495,7 @@ function PdvComandasPage() {
  </div>
 
  {/* Subtotal e Total */}
- <div className="p-4 rounded-xl bg-card border border-border/80 space-y-1.5">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-2">
  <div className="flex justify-between text-xs text-muted-foreground">
  <span>Subtotal</span>
  <span className="font-mono">{formatMoney(selectedTable.total_cents)}</span>
@@ -509,7 +509,7 @@ function PdvComandasPage() {
  {/* Ações Rápidas */}
  <div className="space-y-2 pt-2">
  <Button
- className="w-full font-bold text-xs h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-xs cursor-pointer"
+ className="w-full font-bold text-xs h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-xs cursor-pointer"
  onClick={() => setQuickWaiterModalOpen(true)}
  >
  <UtensilsCrossed className="size-4" />
@@ -519,7 +519,7 @@ function PdvComandasPage() {
                   {selectedTable.status !== "awaiting_payment" && (
                     <Button
                       variant="outline"
-                      className="w-full font-bold text-xs h-11 rounded-xl text-amber-600 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+                      className="w-full font-bold text-xs h-11 rounded-lg text-amber-600 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
                       onClick={() => requestBillMutation.mutate(selectedTable.table_number)}
                       disabled={requestBillMutation.isPending}
                     >
@@ -529,7 +529,7 @@ function PdvComandasPage() {
                   )}
 
                   <Button
-                    className="w-full font-bold text-xs h-11 rounded-xl cursor-pointer"
+                    className="w-full font-bold text-xs h-11 rounded-lg cursor-pointer"
                     onClick={() => handleOpenCheckout(selectedTable.order)}
                   >
                     <Check className="size-4 mr-2" />
@@ -539,7 +539,7 @@ function PdvComandasPage() {
                   <Button
                     variant="outline"
                     asChild
-                    className="w-full font-bold text-xs h-11 rounded-xl cursor-pointer"
+                    className="w-full font-bold text-xs h-11 rounded-lg cursor-pointer"
                   >
                     <Link
                       to="/workspace/pdv"
@@ -556,7 +556,7 @@ function PdvComandasPage() {
  </div>
  ) : selectedTable?.reservation ? (
  <div className="flex-1 py-4 space-y-4">
- <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 space-y-2">
+ <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/30 space-y-2">
  <h4 className="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase">
  Reserva Confirmada
  </h4>
@@ -576,7 +576,7 @@ function PdvComandasPage() {
  </div>
 
  <Button
- className="w-full font-bold text-xs h-10 rounded-xl"
+ className="w-full font-bold text-xs h-10 rounded-lg"
  onClick={() => openTableMutation.mutate(selectedTable.table_number)}
  >
  Acomodar Cliente e Iniciar Comanda
@@ -600,7 +600,7 @@ function PdvComandasPage() {
 
  {comandaToCheckout && (
  <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-5 space-y-4">
- <div className="p-4 rounded-xl bg-muted/30 border border-border/70 text-center space-y-1">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/70 text-center space-y-1">
  <span className="text-xs text-muted-foreground uppercase font-bold">Valor Total</span>
  <p className="text-3xl font-black text-foreground font-mono">
  {formatMoney(comandaToCheckout.total_cents)}
@@ -608,9 +608,9 @@ function PdvComandasPage() {
  </div>
 
  {/* Rateio / Divisão de Conta */}
- <div className="p-3 rounded-xl bg-card border border-border/80 space-y-2">
+ <div className="p-3 rounded-lg bg-card border border-border/80 space-y-2">
  <div className="flex items-center justify-between text-xs">
- <span className="font-bold text-foreground flex items-center gap-1.5">
+ <span className="font-bold text-foreground flex items-center gap-2">
  <Users className="size-3.5 text-primary" />
  Divisão da Conta
  </span>
@@ -620,14 +620,14 @@ function PdvComandasPage() {
  </span>
  )}
  </div>
- <div className="grid grid-cols-5 sm:grid-cols-5 gap-1.5">
+ <div className="grid grid-cols-5 sm:grid-cols-5 gap-2">
  {[1, 2, 3, 4, 5].map((count) => (
  <button
  key={count}
  type="button"
  onClick={() => setSplitCount(count)}
  className={cn(
- "py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer text-center",
+ "py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer text-center",
  splitCount === count
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-muted/30 text-muted-foreground border-border/70 hover:text-foreground"
@@ -645,7 +645,7 @@ function PdvComandasPage() {
  <Button
  type="button"
  variant={paymentMethod === "cash" ? "default" : "outline"}
- className="flex flex-col h-16 gap-1 rounded-xl text-xs font-bold"
+ className="flex flex-col h-16 gap-1 rounded-lg text-xs font-bold"
  onClick={() => setPaymentMethod("cash")}
  >
  <Banknote className="size-5" />
@@ -654,7 +654,7 @@ function PdvComandasPage() {
  <Button
  type="button"
  variant={paymentMethod === "pix" ? "default" : "outline"}
- className="flex flex-col h-16 gap-1 rounded-xl text-xs font-bold"
+ className="flex flex-col h-16 gap-1 rounded-lg text-xs font-bold"
  onClick={() => setPaymentMethod("pix")}
  >
  <QrCode className="size-5" />
@@ -663,7 +663,7 @@ function PdvComandasPage() {
  <Button
  type="button"
  variant={paymentMethod === "card" ? "default" : "outline"}
- className="flex flex-col h-16 gap-1 rounded-xl text-xs font-bold"
+ className="flex flex-col h-16 gap-1 rounded-lg text-xs font-bold"
  onClick={() => setPaymentMethod("card")}
  >
  <CreditCard className="size-5" />
@@ -679,7 +679,7 @@ function PdvComandasPage() {
  variant="ghost"
  size="sm"
  onClick={() => setCheckoutModalOpen(false)}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
@@ -687,7 +687,7 @@ function PdvComandasPage() {
  size="sm"
  onClick={handleConfirmPayment}
  disabled={payMutation.isPending}
- className="h-11 px-5 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+ className="h-11 px-5 rounded-lg font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
  >
  {payMutation.isPending ? "Processando..." : "Confirmar Recebimento"}
  </Button>
@@ -712,7 +712,7 @@ function PdvComandasPage() {
  <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Número da Mesa</Label>
  <Input
  value={qrTableNumber}
@@ -736,7 +736,7 @@ function PdvComandasPage() {
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Nome da Loja</Label>
  <Input
  value={qrStoreName}
@@ -746,7 +746,7 @@ function PdvComandasPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Wi-Fi (SSID)</Label>
  <Input
  value={qrWifiName}
@@ -754,7 +754,7 @@ function PdvComandasPage() {
  placeholder="Rede Wi-Fi"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Senha Wi-Fi</Label>
  <Input
  value={qrWifiPassword}
@@ -764,7 +764,7 @@ function PdvComandasPage() {
  </div>
  </div>
 
- <div className="p-3 rounded-xl bg-muted/30 border border-border/60 text-xs text-muted-foreground space-y-1">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/60 text-xs text-muted-foreground space-y-1">
  <span className="font-bold text-foreground">Link de Autoatendimento:</span>
  <p className="font-mono text-xs break-all select-all text-primary">
  {publicMenuTableUrl}
@@ -776,7 +776,7 @@ function PdvComandasPage() {
  <div className="flex flex-col items-center justify-center">
  <div
  id="printable-table-tent"
- className="w-full max-w-[240px] p-5 rounded-2xl bg-card border border-border/80 shadow-xs text-center space-y-3"
+ className="w-full max-w-60 p-5 rounded-lg bg-card border border-border/80 shadow-xs text-center space-y-3"
  >
  <Badge variant="outline" className="text-xs font-mono border-border/80 text-muted-foreground uppercase">
  Cardápio Digital no Salão
@@ -794,7 +794,7 @@ function PdvComandasPage() {
  </span>
  </div>
 
- <div className="p-3 rounded-xl bg-white border border-border/60 flex flex-col items-center justify-center space-y-1 shadow-2xs">
+ <div className="p-3 rounded-lg bg-white border border-border/60 flex flex-col items-center justify-center space-y-1 shadow-2xs">
  <img
  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(publicMenuTableUrl)}`}
  alt={`QR Code Mesa ${qrTableNumber}`}
@@ -806,7 +806,7 @@ function PdvComandasPage() {
  </div>
 
  {qrWifiName && (
- <div className="p-2 rounded-lg bg-muted/40 border border-border/60 text-xs text-left space-y-0.5">
+ <div className="p-2 rounded-lg bg-muted/40 border border-border/60 text-xs text-left space-y-1">
  <div className="flex items-center justify-between">
  <span className="text-muted-foreground">Wi-Fi:</span>
  <span className="font-semibold text-foreground font-mono">{qrWifiName}</span>
@@ -830,7 +830,7 @@ function PdvComandasPage() {
  <Button
  variant="outline"
  size="sm"
- className="gap-1.5 text-xs font-bold rounded-xl h-10 px-4"
+ className="gap-2 text-xs font-bold rounded-lg h-10 px-4"
  onClick={() => {
  const link = document.createElement("a");
  link.href = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(publicMenuTableUrl)}`;
@@ -845,7 +845,7 @@ function PdvComandasPage() {
  </Button>
  <Button
  size="sm"
- className="gap-1.5 text-xs font-bold rounded-xl h-10 px-4"
+ className="gap-2 text-xs font-bold rounded-lg h-10 px-4"
  onClick={() => window.print()}
  >
  <Printer className="size-3.5" />

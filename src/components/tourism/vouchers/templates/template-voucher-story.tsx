@@ -77,7 +77,7 @@ export function TemplateVoucherStory({
   return (
     <div
       id="voucher-story-canvas"
-      className="relative flex flex-col w-[360px] h-[640px] sm:w-[390px] sm:h-[693px] md:w-[414px] md:h-[736px] overflow-hidden text-white rounded-3xl shadow-2xl mx-auto border border-white/10"
+      className="relative flex flex-col w-[360px] h-[640px] sm:w-[390px] sm:h-[693px] md:w-[414px] md:h-[736px] overflow-hidden text-white rounded-lg shadow-2xl mx-auto border border-white/10"
       style={{
         background: `linear-gradient(145deg, #090d16 0%, #030712 100%)`,
         fontFamily: "'Outfit', 'Inter', sans-serif",
@@ -100,7 +100,7 @@ export function TemplateVoucherStory({
       <div className="relative z-10 flex flex-col h-full p-6 sm:p-7 justify-between">
         {/* Header: Agência & Badges */}
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             {agencyLogo ? (
               <img
                 src={agencyLogo}
@@ -126,14 +126,14 @@ export function TemplateVoucherStory({
             </div>
           </div>
 
-          <div className="px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-bold tracking-wide uppercase">
+          <div className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-bold tracking-wide uppercase">
             Confirmado
           </div>
         </div>
 
         {/* Destination Hero Block */}
         <div className="my-auto py-4">
-          <div className="flex items-center gap-1.5 mb-1.5 text-white/70">
+          <div className="flex items-center gap-2 mb-2 text-white/70">
             <MapPin className="size-3.5 text-primary" style={{ color: primaryColor }} />
             <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
               Voucher Oficial de Embarque
@@ -143,7 +143,7 @@ export function TemplateVoucherStory({
             {destination}
           </h1>
           <div className="mt-2 flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-md bg-white/10 text-[11px] font-mono font-bold text-white/90 border border-white/10">
+            <span className="px-2 py-1 rounded-md bg-white/10 text-[11px] font-mono font-bold text-white/90 border border-white/10">
               LOC: {locator}
             </span>
             {v.voucher_type && (
@@ -154,10 +154,10 @@ export function TemplateVoucherStory({
           </div>
 
           {/* Cards de Voo / Hotel no Estilo Glassmorphism */}
-          <div className="flex flex-col gap-2.5 mt-5">
+          <div className="flex flex-col gap-3 mt-5">
             {flights.length > 0 && (
-              <div className="rounded-2xl bg-white/[0.07] border border-white/15 backdrop-blur-md p-3.5 shadow-lg">
-                <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-white/60 mb-1.5">
+              <div className="rounded-lg bg-white/[0.07] border border-white/15 backdrop-blur-md p-4 shadow-lg">
+                <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-white/60 mb-2">
                   <span className="flex items-center gap-1">
                     <Plane className="size-3 text-sky-400" /> Voo Confirmado
                   </span>
@@ -183,7 +183,7 @@ export function TemplateVoucherStory({
             )}
 
             {accommodation.length > 0 && (
-              <div className="rounded-2xl bg-white/[0.07] border border-white/15 backdrop-blur-md p-3.5 shadow-lg">
+              <div className="rounded-lg bg-white/[0.07] border border-white/15 backdrop-blur-md p-4 shadow-lg">
                 <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-white/60 mb-1">
                   <span className="flex items-center gap-1">
                     <Hotel className="size-3 text-amber-400" /> Hospedagem
@@ -193,7 +193,7 @@ export function TemplateVoucherStory({
                   {accommodation[0].name}
                 </div>
                 {accommodation[0].city && (
-                  <div className="text-[11px] text-white/60 truncate mt-0.5">
+                  <div className="text-[11px] text-white/60 truncate mt-1">
                     {accommodation[0].city}
                   </div>
                 )}
@@ -203,11 +203,11 @@ export function TemplateVoucherStory({
 
           {/* Lista de Passageiros */}
           {passengers.length > 0 && (
-            <div className="mt-4 p-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-center">
+            <div className="mt-4 p-3 rounded-lg bg-white/[0.04] border border-white/10 text-center">
               <span className="text-[10px] uppercase tracking-wider text-white/50 block font-semibold">
                 Passageiro{passengers.length > 1 ? "s" : ""}
               </span>
-              <p className="text-xs font-bold text-white/90 mt-0.5 truncate">
+              <p className="text-xs font-bold text-white/90 mt-1 truncate">
                 {passengers.map((p) => p.name).join(" · ")}
               </p>
             </div>
@@ -216,7 +216,7 @@ export function TemplateVoucherStory({
 
         {/* Footer: QR Code & Assinatura Digital */}
         <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <span className="text-[9px] uppercase tracking-widest text-white/40 block">
               Emissão Digital Autorizada
             </span>
@@ -225,7 +225,7 @@ export function TemplateVoucherStory({
             </span>
           </div>
 
-          <div className="size-10 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-md">
+          <div className="size-10 rounded-lg bg-white p-1 flex items-center justify-center shrink-0 shadow-md">
             <QrCode className="size-8 text-slate-900" />
           </div>
         </div>

@@ -310,7 +310,7 @@ function EventCheckinPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <div className="hidden sm:flex items-center gap-2">
  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20 font-mono">
  <CheckCircle2 className="size-3.5" />
@@ -329,7 +329,7 @@ function EventCheckinPage() {
  size="sm"
  variant={isCameraActive ? "destructive" : "outline"}
  onClick={isCameraActive ? stopCamera : startCamera}
- className="rounded-xl text-xs font-bold gap-2 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 cursor-pointer"
  >
  {isCameraActive ? <CameraOff className="size-4" /> : <Camera className="size-4" />}
  <span className="hidden sm:inline">{isCameraActive ? "Desativar CÃ¢mera" : "CÃ¢mera Traseira"}</span>
@@ -343,7 +343,7 @@ function EventCheckinPage() {
  <div className="md:col-span-7 space-y-5">
  {/* Visualizador de CÃ¢mera */}
  {isCameraActive && (
- <div className="relative rounded-2xl overflow-hidden bg-black border border-primary/30 aspect-video flex items-center justify-center">
+ <div className="relative rounded-lg overflow-hidden bg-black border border-primary/30 aspect-video flex items-center justify-center">
  <video
  ref={videoRef}
  autoPlay
@@ -351,14 +351,14 @@ function EventCheckinPage() {
  muted
  className="w-full h-full object-cover"
  />
- <div className="absolute inset-0 border-2 border-primary/40 rounded-2xl pointer-events-none flex items-center justify-center">
- <div className="size-48 border-2 border-dashed border-primary/80 rounded-xl animate-pulse" />
+ <div className="absolute inset-0 border-2 border-primary/40 rounded-lg pointer-events-none flex items-center justify-center">
+ <div className="size-48 border-2 border-dashed border-primary/80 rounded-lg animate-pulse" />
  </div>
  </div>
  )}
 
  {/* Card de Leitura */}
- <div className="p-5 rounded-2xl bg-card border border-border/80 shadow-xs space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/80 shadow-xs space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <QrCode className="size-5 text-primary" />
@@ -377,7 +377,7 @@ function EventCheckinPage() {
  value={ticketCode}
  onChange={(e) => setTicketCode(e.target.value)}
  placeholder="Escaneie o QR Code ou digite o cÃ³digo (Ingresso ou CRED-...)"
- className="pl-10 h-12 rounded-xl text-sm font-mono bg-background"
+ className="pl-10 h-12 rounded-lg text-sm font-mono bg-background"
  disabled={isValidating}
  />
  </div>
@@ -386,7 +386,7 @@ function EventCheckinPage() {
  <Button
  type="submit"
  disabled={isValidating || !ticketCode.trim()}
- className="flex-1 h-11 rounded-xl font-bold text-sm bg-primary text-primary-foreground"
+ className="flex-1 h-11 rounded-lg font-bold text-sm bg-primary text-primary-foreground"
  >
  {isValidating ? (
  <>
@@ -401,7 +401,7 @@ function EventCheckinPage() {
  type="button"
  variant="outline"
  onClick={() => setTicketCode("")}
- className="h-11 rounded-xl px-4"
+ className="h-11 rounded-lg px-4"
  title="Limpar"
  >
  <RefreshCw className="size-4" />
@@ -413,17 +413,17 @@ function EventCheckinPage() {
  {/* Feedback Visual Imediato do Ãšltimo Check-in */}
  {lastCheckin && (
  <div
- className={`p-5 rounded-2xl border transition-all animate-in fade-in zoom-in-95 ${
+ className={`p-5 rounded-lg border transition-all animate-in fade-in zoom-in-95 ${
  lastCheckin.success
  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200"
  : "bg-destructive/10 border-destructive/30 text-destructive"
  }`}
  >
- <div className="flex items-start gap-3.5">
+ <div className="flex items-start gap-4">
  {lastCheckin.success ? (
- <CheckCircle2 className="size-8 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+ <CheckCircle2 className="size-8 text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
  ) : (
- <AlertCircle className="size-8 text-destructive shrink-0 mt-0.5" />
+ <AlertCircle className="size-8 text-destructive shrink-0 mt-1" />
  )}
  <div className="space-y-1 min-w-0 flex-1">
  <h3 className="text-base font-bold leading-tight">{lastCheckin.message}</h3>
@@ -449,7 +449,7 @@ function EventCheckinPage() {
  </div>
 
  {/* Lado Direito: HistÃ³rico de Entradas Recentes */}
- <div className="md:col-span-5 p-5 rounded-2xl bg-card space-y-3">
+ <div className="md:col-span-5 p-5 rounded-lg bg-card space-y-3">
  <div className="flex items-center justify-between pb-3">
  <h3 className="text-sm font-bold text-foreground">Entradas Recentes</h3>
  <Badge variant="secondary" className="text-xs font-mono">
@@ -466,7 +466,7 @@ function EventCheckinPage() {
  history.map((item, idx) => (
  <div
  key={idx}
- className={`p-2.5 rounded-xl border flex items-center justify-between text-xs transition-colors ${
+ className={`p-3 rounded-lg border flex items-center justify-between text-xs transition-colors ${
  item.success
  ? "border-border bg-background"
  : "border-destructive/20 bg-destructive/5 text-destructive"
@@ -478,7 +478,7 @@ function EventCheckinPage() {
  </div>
  <Badge
  variant={item.success ? "default" : "destructive"}
- className="text-xs px-1.5 py-0 uppercase font-mono"
+ className="text-xs px-2 py-0 uppercase font-mono"
  >
  {item.success ? "OK" : "ERRO"}
  </Badge>

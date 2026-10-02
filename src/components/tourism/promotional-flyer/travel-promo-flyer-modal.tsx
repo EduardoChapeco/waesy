@@ -374,7 +374,7 @@ export function TravelPromoFlyerModal({
               variant="ghost"
               size="icon"
               onClick={() => handleModalClose(false)}
-              className="size-9 rounded-xl hover:bg-muted shrink-0 cursor-pointer"
+              className="size-9 rounded-lg hover:bg-muted shrink-0 cursor-pointer"
               title="Fechar Estúdio"
             >
               <ArrowLeft className="size-4.5" />
@@ -395,7 +395,7 @@ export function TravelPromoFlyerModal({
           </div>
 
           {/* Seletor Central Rápido de Proporção (Desktop) */}
-          <div className="hidden md:flex items-center bg-muted/60 p-1 rounded-xl border border-border/60">
+          <div className="hidden md:flex items-center bg-muted/60 p-1 rounded-lg border border-border/60">
             <button
               type="button"
               onClick={() => setAspectRatio("9:16")}
@@ -429,7 +429,7 @@ export function TravelPromoFlyerModal({
           <div className="flex items-center gap-2">
             {/* Status sutil da imagem */}
             {isConvertingImage && (
-              <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <div className="hidden lg:flex items-center gap-2 text-[11px] text-muted-foreground">
                 <Loader2 className="size-3 animate-spin text-primary" />
                 <span>Otimizando imagem...</span>
               </div>
@@ -441,7 +441,7 @@ export function TravelPromoFlyerModal({
               variant="outline"
               size="sm"
               onClick={handleShuffleLayout}
-              className="h-9 px-3 rounded-xl text-xs gap-1.5 font-semibold cursor-pointer border-border/80 hover:bg-primary/10 hover:text-primary transition-all"
+              className="h-9 px-3 rounded-lg text-xs gap-2 font-semibold cursor-pointer border-border/80 hover:bg-primary/10 hover:text-primary transition-all"
               title="Alternar entre templates do mesmo nicho"
             >
               <Dices className="size-4 text-amber-500" />
@@ -454,7 +454,7 @@ export function TravelPromoFlyerModal({
               variant="outline"
               size="sm"
               onClick={() => setIsMobileControlsOpen(!isMobileControlsOpen)}
-              className="lg:hidden h-9 px-3 rounded-xl text-xs gap-1.5"
+              className="lg:hidden h-9 px-3 rounded-lg text-xs gap-2"
             >
               <Sliders className="size-3.5" />
               <span>Ajustes</span>
@@ -466,7 +466,7 @@ export function TravelPromoFlyerModal({
               size="sm"
               onClick={handleDownload}
               disabled={isExporting}
-              className="h-9 px-3 sm:px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+              className="h-9 px-3 sm:px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
             >
               {isExporting ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
               <span className="hidden sm:inline">Baixar Imagem PNG</span>
@@ -479,7 +479,7 @@ export function TravelPromoFlyerModal({
                 size="sm"
                 onClick={handleSaveToClassified}
                 disabled={isSavingToAd}
-                className="h-9 px-3 sm:px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+                className="h-9 px-3 sm:px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
               >
                 {isSavingToAd ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
                 <span className="hidden sm:inline">Usar no Anúncio</span>
@@ -501,7 +501,7 @@ export function TravelPromoFlyerModal({
 
             {/* Container escalado responsivamente sem cortes */}
             <div
-              className="relative shadow-2xl rounded-2xl border border-white/10 bg-[#0a192f] transition-all duration-150 overflow-hidden"
+              className="relative shadow-2xl rounded-lg border border-white/10 bg-[#0a192f] transition-all duration-150 overflow-hidden"
               style={{
                 width: `${artDimensions.width * previewScale}px`,
                 height: `${artDimensions.height * previewScale}px`,
@@ -532,7 +532,7 @@ export function TravelPromoFlyerModal({
               isMobileControlsOpen ? "h-[65dvh] max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:pb-safe shadow-2xl" : "max-lg:hidden h-full"
             }`}
           >
-            <div className="p-3.5 border-b border-border/60 flex items-center justify-between shrink-0">
+            <div className="p-4 border-b border-border/60 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <Sliders className="size-4 text-primary" />
                 <span className="text-xs font-bold text-foreground">Painel de Customização</span>
@@ -552,7 +552,7 @@ export function TravelPromoFlyerModal({
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
               <div className="px-3 pt-2 shrink-0">
-                <TabsList className="grid grid-cols-3 h-9 rounded-xl bg-muted/60 p-0.5">
+                <TabsList className="grid grid-cols-3 h-9 rounded-lg bg-muted/60 p-1">
                   <TabsTrigger value="template" className="text-[11px] font-semibold gap-1">
                     <Maximize2 className="size-3" />
                     <span>Template</span>
@@ -574,7 +574,7 @@ export function TravelPromoFlyerModal({
                   {/* Seletor de Modelo de Template por Nicho */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label className="text-xs font-semibold flex items-center gap-1.5">
+                      <Label className="text-xs font-semibold flex items-center gap-2">
                         <Star className="size-3.5 text-primary" />
                         <span>Modelo Visual (Template)</span>
                       </Label>
@@ -593,7 +593,7 @@ export function TravelPromoFlyerModal({
                           key={t.id}
                           type="button"
                           onClick={() => setTemplateId(t.id)}
-                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-2.5 ${
+                          className={`p-3 rounded-lg border text-left transition-all cursor-pointer flex items-start gap-3 ${
                             templateId === t.id
                               ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 font-semibold"
                               : "border-border/70 bg-card hover:bg-muted text-muted-foreground"
@@ -603,11 +603,11 @@ export function TravelPromoFlyerModal({
                           <div className="min-w-0 flex-1">
                             <div className="text-xs font-bold text-foreground flex items-center justify-between">
                               <span className="truncate">{t.name}</span>
-                              <span className="text-[10px] font-mono uppercase text-muted-foreground px-1.5 py-0.5 rounded bg-muted/60">
+                              <span className="text-[10px] font-mono uppercase text-muted-foreground px-2 py-1 rounded bg-muted/60">
                                 {t.niche}
                               </span>
                             </div>
-                            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1 leading-snug">
+                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1 leading-snug">
                               {t.description}
                             </p>
                           </div>
@@ -619,7 +619,7 @@ export function TravelPromoFlyerModal({
                   {/* Motor Dinâmico de Call-to-Action (CTA) */}
                   <div className="space-y-2 pt-2 border-t border-border/50">
                     <div className="flex items-center justify-between">
-                      <Label className="text-xs font-semibold flex items-center gap-1.5">
+                      <Label className="text-xs font-semibold flex items-center gap-2">
                         <Star className="size-3.5 text-amber-400" />
                         <span>Chamada para Ação (CTA Dinâmico)</span>
                       </Label>
@@ -631,13 +631,13 @@ export function TravelPromoFlyerModal({
                         Próximo CTA ↻
                       </button>
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {availableCTAs.map((cta) => (
                         <button
                           key={cta}
                           type="button"
                           onClick={() => setCtaLabel(cta)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                          className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                             ctaLabel === cta
                               ? "bg-amber-400 text-slate-950 font-black shadow-xs"
                               : "bg-muted/70 text-muted-foreground hover:bg-muted"
@@ -668,7 +668,7 @@ export function TravelPromoFlyerModal({
                           key={item.id}
                           type="button"
                           onClick={() => setAspectRatio(item.id as PromoAspectRatio)}
-                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
                             aspectRatio === item.id
                               ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 font-bold"
                               : "border-border/70 bg-card hover:bg-muted text-muted-foreground"
@@ -683,7 +683,7 @@ export function TravelPromoFlyerModal({
 
                   {/* Gradiente Superior do Topo */}
                   <div className="space-y-2 pt-2 border-t border-border/50">
-                    <Label className="text-xs font-semibold flex items-center gap-1.5">
+                    <Label className="text-xs font-semibold flex items-center gap-2">
                       <Palette className="size-3.5 text-primary" />
                       <span>Paleta do Topo</span>
                     </Label>
@@ -700,7 +700,7 @@ export function TravelPromoFlyerModal({
                           key={t.id}
                           type="button"
                           onClick={() => setThemeGradient(t.id as any)}
-                          className={`flex items-center gap-2 p-2 rounded-xl border text-xs transition-all cursor-pointer ${
+                          className={`flex items-center gap-2 p-2 rounded-lg border text-xs transition-all cursor-pointer ${
                             themeGradient === t.id
                               ? "border-primary bg-primary/10 text-foreground font-semibold"
                               : "border-border/70 bg-card hover:bg-muted text-muted-foreground"
@@ -716,7 +716,7 @@ export function TravelPromoFlyerModal({
                   {/* Tag Promocional de Destaque */}
                   <div className="space-y-2 pt-2 border-t border-border/50">
                     <div className="flex items-center justify-between">
-                      <Label className="text-xs font-semibold flex items-center gap-1.5">
+                      <Label className="text-xs font-semibold flex items-center gap-2">
                         <Star className="size-3.5 text-amber-500" />
                         <span>Selo de Destaque</span>
                       </Label>
@@ -730,7 +730,7 @@ export function TravelPromoFlyerModal({
                         </button>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {[
                         "ÚLTIMAS VAGAS",
                         "FERIADO CONFIRMADO",
@@ -743,7 +743,7 @@ export function TravelPromoFlyerModal({
                           key={badge}
                           type="button"
                           onClick={() => setPromoBadge(promoBadge === badge ? "" : badge)}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider transition-all cursor-pointer ${
+                          className={`px-3 py-1 rounded-lg text-[10px] font-bold tracking-wider transition-all cursor-pointer ${
                             promoBadge === badge
                               ? "bg-amber-400 text-slate-950 font-black shadow-xs"
                               : "bg-muted/70 text-muted-foreground hover:bg-muted"
@@ -763,7 +763,7 @@ export function TravelPromoFlyerModal({
                 </TabsContent>
 
                 {/* ── TAB 2: Textos & Valores ── */}
-                <TabsContent value="textos" className="space-y-3.5 m-0 focus-visible:outline-none">
+                <TabsContent value="textos" className="space-y-4 m-0 focus-visible:outline-none">
                   <div className="space-y-1">
                     <Label className="text-xs font-semibold">Título Principal do Flyer</Label>
                     <Input
@@ -832,7 +832,7 @@ export function TravelPromoFlyerModal({
                       <button
                         type="button"
                         onClick={() => setPricingMode("per_person")}
-                        className={`flex-1 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+                        className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
                           pricingMode === "per_person"
                             ? "bg-primary/10 border-primary text-foreground"
                             : "border-border/70 text-muted-foreground hover:bg-muted"
@@ -843,7 +843,7 @@ export function TravelPromoFlyerModal({
                       <button
                         type="button"
                         onClick={() => setPricingMode("total_package")}
-                        className={`flex-1 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+                        className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
                           pricingMode === "total_package"
                             ? "bg-primary/10 border-primary text-foreground"
                             : "border-border/70 text-muted-foreground hover:bg-muted"
@@ -854,7 +854,7 @@ export function TravelPromoFlyerModal({
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-border/50 space-y-1.5">
+                  <div className="pt-2 border-t border-border/50 space-y-2">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold">Inclusões (separadas por vírgula)</Label>
                       <span className="text-[10px] text-muted-foreground font-mono">
@@ -883,20 +883,20 @@ export function TravelPromoFlyerModal({
                     <Label className="text-xs font-semibold">Foto de Fundo Realista</Label>
                     
                     {/* Miniatura da Imagem Atual */}
-                    <div className="relative w-full h-32 rounded-xl overflow-hidden border border-border/80 bg-muted/40">
+                    <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border/80 bg-muted/40">
                       <img
                         src={safeBgDataUri || bgImageUrl}
                         alt="Preview de Fundo"
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2.5">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
                         <span className="text-[10px] text-white/90 font-mono truncate">
                           {bgImageUrl.startsWith("data:") ? "Imagem local carregada" : bgImageUrl}
                         </span>
                       </div>
                     </div>
 
-                    <div className="space-y-1.5 pt-1">
+                    <div className="space-y-2 pt-1">
                       <Label className="text-[11px] text-muted-foreground">URL da Imagem</Label>
                       <div className="flex items-center gap-2">
                         <Input
@@ -910,7 +910,7 @@ export function TravelPromoFlyerModal({
                           variant="outline"
                           size="sm"
                           onClick={() => fileUploadInputRef.current?.click()}
-                          className="h-8 text-xs gap-1 rounded-xl shrink-0 cursor-pointer"
+                          className="h-8 text-xs gap-1 rounded-lg shrink-0 cursor-pointer"
                         >
                           <ImagePlus className="size-3.5" />
                           <span>Upload</span>
@@ -926,9 +926,9 @@ export function TravelPromoFlyerModal({
                     </div>
 
                     {/* Certificação visual de segurança CORS */}
-                    <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 flex items-start gap-2 text-xs">
-                      <ShieldCheck className="size-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <div className="space-y-0.5">
+                    <div className="p-3 rounded-lg bg-muted/40 border border-border/60 flex items-start gap-2 text-xs">
+                      <ShieldCheck className="size-4 text-emerald-500 shrink-0 mt-1" />
+                      <div className="space-y-1">
                         <p className="font-semibold text-foreground text-[11px]">Proteção Anti-CORS Ativa</p>
                         <p className="text-[10px] text-muted-foreground leading-relaxed">
                           A imagem externa é convertida para Base64 antes da exportação, eliminando bloqueios de rede.

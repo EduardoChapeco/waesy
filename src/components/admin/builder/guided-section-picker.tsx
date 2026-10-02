@@ -53,8 +53,8 @@ export function GuidedSectionPicker({
       <div className="relative z-50 w-full max-w-xl bg-card border-r border-border shadow-2xl flex flex-col h-full overflow-hidden animate-in slide-in-from-left duration-300">
         {/* Cabeçalho do Drawer */}
         <div className="p-4 sm:p-5 border-b border-border/70 flex items-center justify-between bg-muted/20">
-          <div className="flex items-center gap-2.5">
-            <div className="size-10 sm:size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="size-10 sm:size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
               <LayoutTemplate className="size-5" />
             </div>
             <div>
@@ -69,7 +69,7 @@ export function GuidedSectionPicker({
             size="icon"
             onClick={onClose}
             aria-label="Fechar catálogo de seções"
-            className="size-11 sm:size-10 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+            className="size-11 sm:size-10 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
           >
             <X className="size-5" />
           </Button>
@@ -83,18 +83,18 @@ export function GuidedSectionPicker({
               placeholder="Buscar seção (ex: Banners, Carrossel, Depoimentos...)"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-11 pl-10 rounded-xl bg-background text-sm border-border/80"
+              className="h-11 pl-10 rounded-lg bg-background text-sm border-border/80"
             />
           </div>
 
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => setActiveCategory(cat.id)}
                 className={cn(
-                  "px-4 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer min-h-[44px] sm:min-h-[38px] flex items-center justify-center",
+                  "px-4 py-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer min-h-11 sm:min-h-[38px] flex items-center justify-center",
                   activeCategory === cat.id
                     ? "bg-primary text-primary-foreground font-bold shadow-2xs"
                     : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -114,7 +114,7 @@ export function GuidedSectionPicker({
               <p className="text-sm font-semibold">Nenhuma seção encontrada com este termo.</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2 sm:gap-3.5 pb-8">
+            <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2 sm:gap-4 pb-8">
               {filteredTemplates.map((template: any) => (
                 <div
                   key={template.id}
@@ -122,14 +122,14 @@ export function GuidedSectionPicker({
                     onSelectTemplate(template);
                     onClose();
                   }}
-                  className="group p-4 sm:p-5 rounded-2xl bg-card hover:bg-muted/40 border border-border/70 hover:border-primary/50 transition-all cursor-pointer flex flex-col justify-between space-y-3 shadow-2xs"
+                  className="group p-4 sm:p-5 rounded-lg bg-card hover:bg-muted/40 border border-border/70 hover:border-primary/50 transition-all cursor-pointer flex flex-col justify-between space-y-3 shadow-2xs"
                 >
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                         {template.name}
                       </h4>
-                      <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-medium rounded-md">
+                      <Badge variant="outline" className="text-[10px] px-2 py-1 font-medium rounded-md">
                         {template.category}
                       </Badge>
                     </div>
@@ -138,7 +138,7 @@ export function GuidedSectionPicker({
                     </p>
                   </div>
 
-                  <div className="pt-2.5 border-t border-border/40 flex items-center justify-between text-xs font-bold text-primary min-h-[36px]">
+                  <div className="pt-3 border-t border-border/40 flex items-center justify-between text-xs font-bold text-primary min-h-9">
                     <span>Inserir na Página</span>
                     <Plus className="size-4 group-hover:translate-x-0.5 transition-transform" />
                   </div>

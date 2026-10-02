@@ -132,7 +132,7 @@ function AdminMasterTermosPage() {
  <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mt-1">
  Termos e Políticas da Plataforma
  </h1>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Documentos legais, termos de uso e conformidade LGPD
  </p>
  </div>
@@ -140,19 +140,19 @@ function AdminMasterTermosPage() {
 
  {/* Métricas de Governança */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
- <div className="p-4 rounded-2xl bg-card ">
+ <div className="p-4 rounded-lg bg-card ">
  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
  Total de Aceites
  </span>
  <p className="text-xl sm:text-2xl font-black text-foreground mt-1">
  {stats.totalAcceptances}
  </p>
- <span className="text-[10px] text-primary font-medium flex items-center gap-1 mt-0.5">
+ <span className="text-[10px] text-primary font-medium flex items-center gap-1 mt-1">
  <ShieldCheck className="size-3" /> Logs Registrados
  </span>
  </div>
 
- <div className="p-4 rounded-2xl bg-card ">
+ <div className="p-4 rounded-lg bg-card ">
  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
  Aceites de Cookies
  </span>
@@ -164,7 +164,7 @@ function AdminMasterTermosPage() {
  </span>
  </div>
 
- <div className="p-4 rounded-2xl bg-card ">
+ <div className="p-4 rounded-lg bg-card ">
  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
  Termos e LGPD
  </span>
@@ -176,14 +176,14 @@ function AdminMasterTermosPage() {
  </span>
  </div>
 
- <div className="p-4 rounded-2xl bg-card ">
+ <div className="p-4 rounded-lg bg-card ">
  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
  Usuários Logados
  </span>
  <p className="text-xl sm:text-2xl font-black text-foreground mt-1">
  {stats.authenticatedAcceptances}
  </p>
- <span className="text-[10px] text-primary font-medium flex items-center gap-1 mt-0.5">
+ <span className="text-[10px] text-primary font-medium flex items-center gap-1 mt-1">
  <Lock className="size-3" /> Vínculo Permanente
  </span>
  </div>
@@ -193,11 +193,11 @@ function AdminMasterTermosPage() {
  <Tabs defaultValue="documents" className="space-y-6">
  <TabsList className="grid w-full sm:w-[480px] grid-cols-2">
  <TabsTrigger value="documents" className="font-bold text-xs">
- <FileText className="size-3.5 mr-1.5" />
+ <FileText className="size-3.5 mr-2" />
  Políticas da Plataforma ({documents.length})
  </TabsTrigger>
  <TabsTrigger value="logs" className="font-bold text-xs">
- <History className="size-3.5 mr-1.5" />
+ <History className="size-3.5 mr-2" />
  Histórico de Aceites
  </TabsTrigger>
  </TabsList>
@@ -208,7 +208,7 @@ function AdminMasterTermosPage() {
  {documents.map((doc: any) => (
  <div
  key={doc.id}
- className="p-5 rounded-2xl bg-card hover:border-primary/40 transition-all flex flex-col justify-between gap-4 "
+ className="p-5 rounded-lg bg-card hover:border-primary/40 transition-all flex flex-col justify-between gap-4 "
  >
  <div className="space-y-2">
  <div className="flex items-center justify-between gap-2">
@@ -248,7 +248,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant="outline"
- className="rounded-xl text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8"
  onClick={() => handleOpenEdit(doc)}
  >
  <Edit className="size-3 mr-1" />
@@ -269,7 +269,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant={termFilter === "all" ? "default" : "outline"}
- className="rounded-xl text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8"
  onClick={() => {
  setTermFilter("all");
  handleFilterLogs("all", searchLog);
@@ -280,7 +280,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant={termFilter === "cookie_policy" ? "default" : "outline"}
- className="rounded-xl text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8"
  onClick={() => {
  setTermFilter("cookie_policy");
  handleFilterLogs("cookie_policy", searchLog);
@@ -291,7 +291,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant={termFilter === "privacy_policy" ? "default" : "outline"}
- className="rounded-xl text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8"
  onClick={() => {
  setTermFilter("privacy_policy");
  handleFilterLogs("privacy_policy", searchLog);
@@ -302,7 +302,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant={termFilter === "terms_of_service" ? "default" : "outline"}
- className="rounded-xl text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8"
  onClick={() => {
  setTermFilter("terms_of_service");
  handleFilterLogs("terms_of_service", searchLog);
@@ -321,13 +321,13 @@ function AdminMasterTermosPage() {
  setSearchLog(e.target.value);
  handleFilterLogs(termFilter, e.target.value);
  }}
- className="pl-8 text-xs rounded-xl h-8"
+ className="pl-8 text-xs rounded-lg h-8"
  />
  </div>
  </div>
 
  {/* Tabela de Logs */}
- <div className=" rounded-2xl overflow-hidden bg-card ">
+ <div className=" rounded-lg overflow-hidden bg-card ">
  {isLoadingLogs ? (
  <div className="py-12 text-center text-muted-foreground flex items-center justify-center gap-2 text-xs">
  <Loader2 className="size-4 animate-spin" />
@@ -364,7 +364,7 @@ function AdminMasterTermosPage() {
  </TableCell>
  <TableCell>
  {log.profiles ? (
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <User className="size-3.5 text-primary shrink-0" />
  <div className="min-w-0">
  <p className="text-xs font-bold text-foreground truncate leading-tight">
@@ -397,7 +397,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant="ghost"
- className="rounded-xl text-xs font-semibold h-7 gap-1"
+ className="rounded-lg text-xs font-semibold h-7 gap-1"
  onClick={() => setSelectedLog(log)}
  >
  <Eye className="size-3 text-primary" />
@@ -426,53 +426,53 @@ function AdminMasterTermosPage() {
 
  {selectedDoc && (
  <form onSubmit={handleSaveDoc} className="space-y-5 mt-6">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Título do Documento</Label>
  <Input
  value={editTitle}
  onChange={(e) => setEditTitle(e.target.value)}
- className="rounded-xl"
+ className="rounded-lg"
  required
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Versão</Label>
  <Input
  value={editVersion}
  onChange={(e) => setEditVersion(e.target.value)}
- className="rounded-xl font-mono text-xs"
+ className="rounded-lg font-mono text-xs"
  required
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Slug da URL</Label>
  <Input
  value={`/${selectedDoc.slug}`}
  disabled
- className="rounded-xl font-mono text-xs bg-muted/60"
+ className="rounded-lg font-mono text-xs bg-muted/60"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Sumário / Resumo Executivo</Label>
  <Input
  value={editSummary}
  onChange={(e) => setEditSummary(e.target.value)}
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  placeholder="Resumo breve exibido no topo da página..."
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Conteúdo em Markdown</Label>
  <textarea
  rows={14}
  value={editMarkdown}
  onChange={(e) => setEditMarkdown(e.target.value)}
- className="w-full p-3 rounded-xl bg-background text-xs font-mono leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
+ className="w-full p-3 rounded-lg bg-background text-xs font-mono leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
  required
  />
  </div>
@@ -492,7 +492,7 @@ function AdminMasterTermosPage() {
  <Button
  type="button"
  variant="outline"
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  onClick={() => setIsEditingDoc(false)}
  >
  Cancelar
@@ -500,12 +500,12 @@ function AdminMasterTermosPage() {
  <Button
  type="submit"
  disabled={isSubmitting}
- className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+ className="rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  {isSubmitting ? (
- <Loader2 className="size-3.5 animate-spin mr-1.5" />
+ <Loader2 className="size-3.5 animate-spin mr-2" />
  ) : (
- <CheckCircle2 className="size-3.5 mr-1.5" />
+ <CheckCircle2 className="size-3.5 mr-2" />
  )}
  <span>Salvar Alterações</span>
  </Button>
@@ -531,7 +531,7 @@ function AdminMasterTermosPage() {
 
  {selectedLog && (
  <div className="space-y-4 text-xs mt-3">
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 rounded-xl bg-muted/50 font-mono text-[11px]">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 rounded-lg bg-muted/50 font-mono text-[11px]">
  <div>
  <span className="text-muted-foreground block text-[10px] uppercase font-bold">ID do Registro</span>
  <span className="text-foreground">{selectedLog.id}</span>
@@ -552,20 +552,20 @@ function AdminMasterTermosPage() {
 
  <div className="space-y-1">
  <span className="font-bold text-foreground block">Identificador de Segurança</span>
- <div className="p-2 rounded-xl bg-card font-mono text-[11px] text-primary break-all">
+ <div className="p-2 rounded-lg bg-card font-mono text-[11px] text-primary break-all">
  {selectedLog.signature_hash || "Calculado via protocolo seguro"}
  </div>
  </div>
 
  <div className="space-y-1">
  <span className="font-bold text-foreground block">Navegador / User-Agent</span>
- <div className="p-2 rounded-xl bg-muted/40 font-mono text-[10px] text-muted-foreground break-all">
+ <div className="p-2 rounded-lg bg-muted/40 font-mono text-[10px] text-muted-foreground break-all">
  {selectedLog.user_agent || "Desconhecido"}
  </div>
  </div>
 
  {selectedLog.profiles && (
- <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 space-y-1">
+ <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-1">
  <span className="font-bold text-primary block">Titular Autenticado</span>
  <p className="text-foreground font-semibold">{selectedLog.profiles.name} ({selectedLog.profiles.email})</p>
  <p className="text-muted-foreground text-[10px]">ID: {selectedLog.profiles.id}</p>

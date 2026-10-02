@@ -201,12 +201,12 @@ export default function LoyaltyDashboardPage() {
  />
 
  <Tabs defaultValue="config" className="w-full">
- <TabsList className="bg-muted/60 p-1 rounded-xl mb-6">
- <TabsTrigger value="config" className="rounded-lg font-bold text-xs gap-1.5">
+ <TabsList className="bg-muted/60 p-1 rounded-lg mb-6">
+ <TabsTrigger value="config" className="rounded-lg font-bold text-xs gap-2">
  <CreditCard className="size-4" />
  Configurar Cartão e Wallet
  </TabsTrigger>
- <TabsTrigger value="customers" className="rounded-lg font-bold text-xs gap-1.5">
+ <TabsTrigger value="customers" className="rounded-lg font-bold text-xs gap-2">
  <Users className="size-4" />
  Clientes & Selos ({customers.length})
  </TabsTrigger>
@@ -216,7 +216,7 @@ export default function LoyaltyDashboardPage() {
  <TabsContent value="config">
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
  {/* Formulário de Configurações */}
- <div className="lg:col-span-7 bg-card rounded-2xl border border-border/80 p-6 space-y-6 shadow-2xs">
+ <div className="lg:col-span-7 bg-card rounded-lg border border-border/80 p-6 space-y-6 shadow-2xs">
  <div>
  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Nome do Cartão de Fidelidade *
@@ -315,7 +315,7 @@ export default function LoyaltyDashboardPage() {
 
  <div>
  <Label className="text-xs font-bold text-muted-foreground">Ícone dos Selos</Label>
- <div className="flex flex-wrap gap-2 mt-1.5">
+ <div className="flex flex-wrap gap-2 mt-2">
  {STAMP_ICONS.map((item) => {
  const Icon = item.icon;
  const isSelected = stampIcon === item.id;
@@ -325,7 +325,7 @@ export default function LoyaltyDashboardPage() {
  type="button"
  onClick={() => setStampIcon(item.id)}
  className={cn(
- "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all",
+ "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border transition-all",
  isSelected
  ? "bg-primary text-primary-foreground border-primary shadow-xs"
  : "bg-muted/40 text-muted-foreground border-border hover:bg-muted",
@@ -366,11 +366,11 @@ export default function LoyaltyDashboardPage() {
 
  {/* Simulador de Cartão Wallet em Tempo Real */}
  <div className="lg:col-span-5 flex flex-col items-center">
- <div className="w-full max-w-full max-w-[340px] bg-card rounded-2xl border-4 border-foreground/10 p-4 shadow-xs space-y-4">
+ <div className="w-full max-w-full max-w-[340px] bg-card rounded-lg border-4 border-foreground/10 p-4 shadow-xs space-y-4">
  {/* Cartão de Fidelidade Digital (Wallet Pass) */}
  <div
  style={{ backgroundColor: cardBgColor, color: cardTextColor }}
- className="rounded-2xl p-5 shadow-xs flex flex-col justify-between min-h-[360px] relative overflow-hidden transition-all duration-300"
+ className="rounded-lg p-5 shadow-xs flex flex-col justify-between min-h-[360px] relative overflow-hidden transition-all duration-300"
  >
  {/* Topo do Cartão */}
  <div className="flex items-start justify-between">
@@ -378,7 +378,7 @@ export default function LoyaltyDashboardPage() {
  <span className="text-xs font-bold tracking-widest uppercase opacity-75">
  Cartão Fidelidade
  </span>
- <h4 className="font-black text-lg leading-tight mt-0.5">
+ <h4 className="font-black text-lg leading-tight mt-1">
  {name || "Seu Cartão Fidelidade"}
  </h4>
  </div>
@@ -388,7 +388,7 @@ export default function LoyaltyDashboardPage() {
  </div>
 
  {/* Grade de Selos */}
- <div className="my-4 py-3 bg-white/10 backdrop-blur-xs rounded-xl p-3">
+ <div className="my-4 py-3 bg-white/10 backdrop-blur-xs rounded-lg p-3">
  <div className="flex items-center justify-between text-xs font-bold mb-2">
  <span>Selos: 3/{targetStamps}</span>
  <span className="text-xs uppercase opacity-80">
@@ -417,7 +417,7 @@ export default function LoyaltyDashboardPage() {
  </div>
 
  {/* QR Code & Token */}
- <div className="bg-white text-black p-3 rounded-xl flex flex-col items-center justify-center space-y-1 shadow-xs">
+ <div className="bg-white text-black p-3 rounded-lg flex flex-col items-center justify-center space-y-1 shadow-xs">
  <div className="size-20 bg-muted/30 border border-border flex items-center justify-center rounded-lg">
  <QrCode className="size-16 text-foreground" />
  </div>
@@ -429,7 +429,7 @@ export default function LoyaltyDashboardPage() {
 
   {/* Compatibilidade de Carteira Digital */}
   <div className="flex items-center justify-center gap-4 text-xs font-semibold text-muted-foreground pt-1">
-  <span className="flex items-center gap-1.5">
+  <span className="flex items-center gap-2">
   <Smartphone className="size-3.5 text-foreground" /> Carteira Digital e QR Code
   </span>
   </div>
@@ -440,7 +440,7 @@ export default function LoyaltyDashboardPage() {
 
  {/* ABA 2: CLIENTES COM CARTÕES ATIVOS */}
  <TabsContent value="customers">
- <div className="bg-card rounded-2xl border border-border/80 overflow-hidden shadow-2xs">
+ <div className="bg-card rounded-lg border border-border/80 overflow-hidden shadow-2xs">
  {customers.length === 0 ? (
  <div className="p-12 text-center text-muted-foreground">
  <Stamp className="size-10 mx-auto text-muted-foreground/40 mb-3" />
@@ -478,7 +478,7 @@ export default function LoyaltyDashboardPage() {
  </Badge>
  </TableCell>
  <TableCell>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="font-black text-sm">{c.current_stamps}</span>
  <span className="text-muted-foreground text-xs">/ {target}</span>
  {canRedeem && (

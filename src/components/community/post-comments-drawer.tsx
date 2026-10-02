@@ -74,15 +74,15 @@ export function PostCommentsDrawer({
 
  {/* Drawer Container */}
  <div
- className="relative w-full max-w-lg mx-auto bg-background sm:rounded-t-3xl rounded-t-2xl border-t border-border flex flex-col h-[75vh] max-h-[600px] overflow-hidden animate-in slide-in-from-bottom duration-300"
+ className="relative w-full max-w-lg mx-auto bg-background sm:rounded-t-lg rounded-t-lg border-t border-border flex flex-col h-[75vh] max-h-[600px] overflow-hidden animate-in slide-in-from-bottom duration-300"
  onClick={(e) => e.stopPropagation()}
  >
  {/* Drag Handle & Header */}
- <div className="pt-2.5 pb-2 px-4 border-b border-border/40 flex items-center justify-between shrink-0">
+ <div className="pt-3 pb-2 px-4 border-b border-border/40 flex items-center justify-between shrink-0">
  <div className="w-8" />
  <div className="flex flex-col items-center">
  <div className="w-10 h-1 rounded-full bg-muted-foreground/30 mb-2" />
- <h3 className="font-display font-bold text-sm text-foreground flex items-center gap-1.5">
+ <h3 className="font-display font-bold text-sm text-foreground flex items-center gap-2">
  <MessageSquare className="size-4 text-primary" />
  <span>{mediaUrl ? "Comentários da Foto" : "Comentários"}</span>
  </h3>
@@ -121,7 +121,7 @@ export function PostCommentsDrawer({
  </div>
  ) : comments.length === 0 ? (
  <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground space-y-2">
- <div className="size-12 rounded-2xl bg-muted/40 flex items-center justify-center">
+ <div className="size-12 rounded-lg bg-muted/40 flex items-center justify-center">
  <Layers className="size-6 text-muted-foreground/60" />
  </div>
  <p className="text-sm font-bold text-foreground">Seja o primeiro a comentar!</p>
@@ -153,7 +153,7 @@ export function PostCommentsDrawer({
  {cmt.content}
  </p>
 
- <div className="flex items-center gap-3 pt-0.5">
+ <div className="flex items-center gap-3 pt-1">
  <button
  onClick={() => {
  setReplyingTo(cmt);
@@ -173,7 +173,7 @@ export function PostCommentsDrawer({
 
  {/* Replying Banner */}
  {replyingTo && (
- <div className="px-4 py-1.5 bg-muted/40 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground shrink-0">
+ <div className="px-4 py-2 bg-muted/40 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground shrink-0">
  <span>
  Respondendo a <strong className="text-foreground">{replyingTo.author.name}</strong>
  </span>
@@ -195,7 +195,7 @@ export function PostCommentsDrawer({
  value={commentText}
  onChange={(e) => setCommentText(e.target.value)}
  placeholder={mediaUrl ? "Comentar nesta foto..." : "Adicione um comentário..."}
- className="flex-1 h-10 rounded-xl bg-muted/50 border-border text-xs sm:text-sm"
+ className="flex-1 h-10 rounded-lg bg-muted/50 border-border text-xs sm:text-sm"
  disabled={addComment.isPending}
  autoFocus
  />
@@ -203,7 +203,7 @@ export function PostCommentsDrawer({
  type="submit"
  size="sm"
  disabled={!commentText.trim() || addComment.isPending}
- className="h-10 px-4 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-1.5"
+ className="h-10 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2"
  >
  {addComment.isPending ? (
  <Loader2 className="size-4 animate-spin" />

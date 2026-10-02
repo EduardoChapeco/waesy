@@ -77,25 +77,25 @@ export function CookieBanner() {
  aria-label="Aviso de Privacidade e Cookies"
  className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-5 pb-safe pb-24 sm:pb-6 pointer-events-none animate-in fade-in slide-in-from-bottom-4 duration-300"
  >
- <div className="mx-auto max-w-4xl bg-card/95 backdrop-blur-md rounded-2xl sm:rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pointer-events-auto ">
+ <div className="mx-auto max-w-4xl bg-card/95 backdrop-blur-md rounded-lg sm:rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pointer-events-auto ">
  <div className="flex items-start gap-3 flex-1 min-w-0">
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 mt-0.5">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 mt-1">
  <Cookie className="size-4" />
  </div>
  <div className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
- <div className="flex items-center gap-2 mb-0.5">
+ <div className="flex items-center gap-2 mb-1">
  <span className="font-bold text-foreground text-xs sm:text-sm">Privacidade e Cookies LGPD</span>
- <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.2 rounded-md">
+ <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.2 rounded-md">
  <ShieldCheck className="size-3" /> Seguro
  </span>
  </div>
  <p className="text-xs">
  Utilizamos cookies essenciais para autenticação, segurança e personalização. Ao navegar, você concorda com nossos{" "}
- <Link to="/termos" className="underline font-semibold hover:text-foreground inline-flex items-center gap-0.5">
+ <Link to="/termos" className="underline font-semibold hover:text-foreground inline-flex items-center gap-1">
  Termos de Uso
  </Link>
  ,{" "}
- <Link to="/privacidade" className="underline font-semibold hover:text-foreground inline-flex items-center gap-0.5">
+ <Link to="/privacidade" className="underline font-semibold hover:text-foreground inline-flex items-center gap-1">
  Privacidade
  </Link>
  ,{" "}
@@ -114,7 +114,7 @@ export function CookieBanner() {
  <div className="flex shrink-0 gap-2 w-full sm:w-auto">
  <Button
  onClick={handleAccept}
- className="w-full sm:w-auto font-bold rounded-xl bg-primary text-primary-foreground text-xs h-9 px-5 hover:scale-[1.02] active:scale-[0.98] transition-all"
+ className="w-full sm:w-auto font-bold rounded-lg bg-primary text-primary-foreground text-xs h-9 px-5 hover:scale-[1.02] active:scale-[0.98] transition-all"
  >
  Entendi e Aceito
  </Button>

@@ -63,7 +63,7 @@ export function MomentsStatusPicker({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6 p-5 space-y-6">
+ <DialogContent className="sm:max-w-md sm:rounded-lg sm:p-6 p-5 space-y-6">
  <DialogHeader className="text-left space-y-1">
  <DialogTitle className="text-lg font-black tracking-tight flex items-center gap-2">
  <Layers className="size-5 text-primary" />
@@ -75,8 +75,8 @@ export function MomentsStatusPicker({
  </DialogHeader>
 
  {/* ── Prévia do Status / Emoji ── */}
- <div className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 border border-border/40">
- <div className="size-14 rounded-2xl bg-background flex items-center justify-center text-3xl shadow-xs border border-border/60">
+ <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 border border-border/40">
+ <div className="size-14 rounded-lg bg-background flex items-center justify-center text-3xl shadow-xs border border-border/60">
  {selectedEmoji}
  </div>
  <div className="flex-1 min-w-0">
@@ -101,7 +101,7 @@ export function MomentsStatusPicker({
  type="button"
  onClick={() => handleSelectPreset(preset)}
  className={cn(
- "h-12 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all text-lg cursor-pointer border",
+ "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all text-lg cursor-pointer border",
  selectedEmoji === preset.emoji
  ? "border-primary bg-primary/10 scale-105 shadow-xs"
  : "border-border/40 bg-card hover:bg-muted/40"
@@ -114,7 +114,7 @@ export function MomentsStatusPicker({
  </div>
 
  {/* ── Mensagem Customizada ── */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="statusText" className="text-xs font-semibold">
  Nota de Status (Opcional)
  </Label>
@@ -123,13 +123,13 @@ export function MomentsStatusPicker({
  value={customText}
  onChange={(e) => setCustomText(e.target.value)}
  placeholder="Ex: No escritório até às 18h..."
- className="rounded-xl h-10 text-xs"
+ className="rounded-lg h-10 text-xs"
  />
  </div>
 
  {/* ── Duração do Status ── */}
  <div className="space-y-2">
- <Label className="text-xs font-semibold flex items-center gap-1.5">
+ <Label className="text-xs font-semibold flex items-center gap-2">
  <Clock className="size-3.5 text-muted-foreground" />
  <span>Duração do Status</span>
  </Label>
@@ -140,7 +140,7 @@ export function MomentsStatusPicker({
  type="button"
  size="sm"
  variant={durationHours === hours ? "default" : "outline"}
- className="rounded-xl text-xs font-bold h-9"
+ className="rounded-lg text-xs font-bold h-9"
  onClick={() => setDurationHours(hours)}
  >
  {hours} Horas
@@ -157,7 +157,7 @@ export function MomentsStatusPicker({
  type="button"
  onClick={() => setAudience("public")}
  className={cn(
- "p-2.5 rounded-xl border text-center transition-all cursor-pointer",
+ "p-3 rounded-lg border text-center transition-all cursor-pointer",
  audience === "public" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border/40 text-muted-foreground"
  )}
  >
@@ -169,7 +169,7 @@ export function MomentsStatusPicker({
  type="button"
  onClick={() => setAudience("close_friends")}
  className={cn(
- "p-2.5 rounded-xl border text-center transition-all cursor-pointer",
+ "p-3 rounded-lg border text-center transition-all cursor-pointer",
  audience === "close_friends" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border/40 text-muted-foreground"
  )}
  >
@@ -181,7 +181,7 @@ export function MomentsStatusPicker({
  type="button"
  onClick={() => setAudience("private")}
  className={cn(
- "p-2.5 rounded-xl border text-center transition-all cursor-pointer",
+ "p-3 rounded-lg border text-center transition-all cursor-pointer",
  audience === "private" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border/40 text-muted-foreground"
  )}
  >
@@ -195,7 +195,7 @@ export function MomentsStatusPicker({
  <div className="pt-2">
  <Button
  onClick={handleSave}
- className="w-full h-11 rounded-2xl font-bold text-sm bg-primary text-primary-foreground shadow-xs cursor-pointer"
+ className="w-full h-11 rounded-lg font-bold text-sm bg-primary text-primary-foreground shadow-xs cursor-pointer"
  >
  Atualizar Momento
  </Button>

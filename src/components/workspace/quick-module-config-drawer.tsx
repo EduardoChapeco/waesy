@@ -78,7 +78,7 @@ export function QuickModuleConfigDrawer({
       <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col bg-background">
         <SheetHeader className="p-6 border-b border-border/60 bg-muted/20">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
               <SlidersHorizontal className="size-4" />
             </div>
             <div>
@@ -104,9 +104,9 @@ export function QuickModuleConfigDrawer({
               </Badge>
             </div>
 
-            <div className="rounded-2xl border border-border/80 bg-card p-4 space-y-3">
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className={`size-10 rounded-xl flex items-center justify-center ${isPaused ? "bg-amber-500/10 text-amber-600" : "bg-emerald-500/10 text-emerald-600"}`}>
+                <div className={`size-10 rounded-lg flex items-center justify-center ${isPaused ? "bg-amber-500/10 text-amber-600" : "bg-emerald-500/10 text-emerald-600"}`}>
                   <Power className="size-5" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -123,7 +123,7 @@ export function QuickModuleConfigDrawer({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full h-10 rounded-xl font-medium border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+                  className="w-full h-10 rounded-lg font-medium border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
                   onClick={() => handleToggleEmergencyPause(null)}
                   disabled={isSaving}
                 >
@@ -135,21 +135,21 @@ export function QuickModuleConfigDrawer({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-10 rounded-xl text-xs font-medium"
+                    className="h-10 rounded-lg text-xs font-medium"
                     onClick={() => handleToggleEmergencyPause(30)}
                     disabled={isSaving}
                   >
-                    <Clock className="size-3.5 mr-1.5" />
+                    <Clock className="size-3.5 mr-2" />
                     Pausar 30m
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-10 rounded-xl text-xs font-medium"
+                    className="h-10 rounded-lg text-xs font-medium"
                     onClick={() => handleToggleEmergencyPause(60)}
                     disabled={isSaving}
                   >
-                    <Clock className="size-3.5 mr-1.5" />
+                    <Clock className="size-3.5 mr-2" />
                     Pausar 1h
                   </Button>
                 </div>
@@ -162,7 +162,7 @@ export function QuickModuleConfigDrawer({
             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Modalidades de Atendimento
             </Label>
-            <div className="rounded-2xl border border-border/80 bg-card divide-y divide-border/60 overflow-hidden">
+            <div className="rounded-lg border border-border/80 bg-card divide-y divide-border/60 overflow-hidden">
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
                   <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -234,7 +234,7 @@ export function QuickModuleConfigDrawer({
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Preferências do Módulo
               </Label>
-              <div className="rounded-2xl border border-border/80 bg-card divide-y divide-border/60 overflow-hidden">
+              <div className="rounded-lg border border-border/80 bg-card divide-y divide-border/60 overflow-hidden">
                 {children}
               </div>
             </div>
@@ -246,7 +246,7 @@ export function QuickModuleConfigDrawer({
               asChild
               variant="ghost"
               size="sm"
-              className="w-full h-10 rounded-xl justify-between text-xs text-muted-foreground hover:text-foreground"
+              className="w-full h-10 rounded-lg justify-between text-xs text-muted-foreground hover:text-foreground"
             >
               <Link to="/workspace/configuracoes">
                 <span>Painel Completo de Configurações</span>
@@ -259,14 +259,14 @@ export function QuickModuleConfigDrawer({
         <SheetFooter className="p-4 border-t border-border/60 bg-muted/20 flex flex-row gap-2">
           <Button
             variant="outline"
-            className="flex-1 h-11 rounded-xl text-xs font-semibold"
+            className="flex-1 h-11 rounded-lg text-xs font-semibold"
             onClick={() => onOpenChange(false)}
           >
             Fechar
           </Button>
           <Button
             variant="default"
-            className="flex-1 h-11 rounded-xl text-xs font-semibold"
+            className="flex-1 h-11 rounded-lg text-xs font-semibold"
             onClick={handleSaveOperationalRules}
             disabled={isSaving}
           >

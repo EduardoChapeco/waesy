@@ -38,7 +38,7 @@ export function TableOrderComandaSection({
  <section className="py-10 bg-background w-full">
  <div className="max-w-md mx-auto px-4">
  {/* Cartão Físico / Digital de Comanda */}
- <div className="p-6 rounded-2xl border border-border/80 bg-card shadow-lg text-center space-y-5 relative overflow-hidden">
+ <div className="p-6 rounded-lg border border-border/80 bg-card shadow-lg text-center space-y-5 relative overflow-hidden">
  <div className="space-y-1">
  <Badge variant="outline" className="text-[10px] font-mono border-border/80 text-muted-foreground uppercase">
  Autoatendimento no Salão
@@ -57,7 +57,7 @@ export function TableOrderComandaSection({
  </div>
 
  {/* QR Code Imersivo para Escaneamento */}
- <div className="p-4 rounded-2xl bg-white border border-border/70 flex flex-col items-center justify-center space-y-2 max-w-[220px] mx-auto shadow-2xs">
+ <div className="p-4 rounded-lg bg-white border border-border/70 flex flex-col items-center justify-center space-y-2 max-w-[220px] mx-auto shadow-2xs">
  <img
  src={activeQrCode}
  alt={`QR Code da Mesa ${tableNumber}`}
@@ -70,7 +70,7 @@ export function TableOrderComandaSection({
 
  {/* Informações de Conectividade do Estabelecimento */}
  {wifiName && (
- <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 text-xs text-left space-y-1">
+ <div className="p-3 rounded-lg bg-muted/40 border border-border/60 text-xs text-left space-y-1">
  <div className="flex items-center justify-between">
  <span className="text-muted-foreground">Wi-Fi:</span>
  <span className="font-semibold text-foreground font-mono">{wifiName}</span>
@@ -91,7 +91,7 @@ export function TableOrderComandaSection({
  variant="outline"
  size="sm"
  onClick={handlePrint}
- className="flex-1 rounded-xl text-xs font-bold gap-1.5 border-border/80 bg-background hover:bg-muted"
+ className="flex-1 rounded-lg text-xs font-bold gap-2 border-border/80 bg-background hover:bg-muted"
  >
  <Printer className="size-3.5" />
  <span>Imprimir Display</span>
@@ -100,7 +100,7 @@ export function TableOrderComandaSection({
  type="button"
  size="sm"
  onClick={() => window.open(orderUrl, "_blank")}
- className="flex-1 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground"
+ className="flex-1 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground"
  >
  <Smartphone className="size-3.5" />
  <span>Abrir Cardápio</span>

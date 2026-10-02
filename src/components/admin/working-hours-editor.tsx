@@ -27,7 +27,7 @@ export function WorkingHoursEditor({ initialData }: { initialData: WorkingHours 
         onChange={(val) => setSchedule(val)}
       />
       <div className="flex justify-end pt-2">
-        <Button onClick={handleSave} disabled={isSaving} className="h-11 px-6 rounded-xl font-bold text-xs">
+        <Button onClick={handleSave} disabled={isSaving} className="h-11 px-6 rounded-lg font-bold text-xs">
           {isSaving ? "Salvando..." : "Salvar Horários"}
         </Button>
       </div>

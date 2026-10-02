@@ -205,7 +205,7 @@ function CustomerChatPage() {
         <p className="text-xs text-muted-foreground">
           Esta conversa pode ter sido finalizada ou excluída.
         </p>
-        <Button variant="outline" size="sm" asChild className="mt-2 rounded-xl">
+        <Button variant="outline" size="sm" asChild className="mt-2 rounded-lg">
           <Link to="/conta/conversas">Voltar</Link>
         </Button>
       </section>
@@ -217,11 +217,11 @@ function CustomerChatPage() {
   return (
     <section className="flex flex-col h-[calc(100dvh-100px)] max-w-4xl mx-auto font-sans text-foreground bg-background">
       {/* ── Header Ultra-Minimalista WhatsApp com Avatar Circular + Online Dot + Typing Indicator ── */}
-      <div className="flex items-center justify-between gap-3 px-3 py-2.5 border-b border-border/40 bg-background sticky top-0 z-10">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex items-center justify-between gap-3 px-3 py-3 border-b border-border/40 bg-background sticky top-0 z-10">
+        <div className="flex items-center gap-3 min-w-0">
           <NativeBackButton fallbackHref="/conta/conversas" />
 
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="relative shrink-0">
               {storeData?.logo_url ? (
                 <img
@@ -266,9 +266,9 @@ function CustomerChatPage() {
               variant="outline"
               size="sm"
               onClick={() => setRmaModalOpen(true)}
-              className="h-8 text-xs font-semibold rounded-xl border border-border/60 text-foreground hover:bg-muted/50 hidden sm:flex"
+              className="h-8 text-xs font-semibold rounded-lg border border-border/60 text-foreground hover:bg-muted/50 hidden sm:flex"
             >
-              <AlertTriangle className="size-3.5 mr-1.5 text-muted-foreground" strokeWidth={1.75} />
+              <AlertTriangle className="size-3.5 mr-2 text-muted-foreground" strokeWidth={1.75} />
               Suporte
             </Button>
           )}
@@ -299,17 +299,17 @@ function CustomerChatPage() {
         role="log"
         aria-live="polite"
         aria-label="Histórico de mensagens"
-        className="flex-1 space-y-2.5 overflow-y-auto no-scrollbar py-3 px-3 sm:px-4"
+        className="flex-1 space-y-3 overflow-y-auto no-scrollbar py-3 px-3 sm:px-4"
       >
         <div className="flex justify-center my-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/40 text-xs text-muted-foreground select-none max-w-sm text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/40 text-xs text-muted-foreground select-none max-w-sm text-center">
             <Lock className="size-3 text-muted-foreground shrink-0" strokeWidth={1.75} />
             <span>Mensagens protegidas de ponta a ponta</span>
           </div>
         </div>
 
         {(!messages || messages.length === 0) && (
-          <div className="text-center py-12 text-muted-foreground space-y-1.5 select-none">
+          <div className="text-center py-12 text-muted-foreground space-y-2 select-none">
             <ShieldCheck className="size-10 mx-auto text-muted-foreground/30" strokeWidth={1.25} />
             <p className="text-xs text-muted-foreground">Envie uma mensagem para iniciar.</p>
           </div>
@@ -352,7 +352,7 @@ function CustomerChatPage() {
                 className={`flex flex-col ${isStaff ? "items-start" : "items-end"} w-full`}
               >
                 <div
-                  className={`max-w-[95%] sm:max-w-md p-3.5 text-xs rounded-2xl ${
+                  className={`max-w-[95%] sm:max-w-md p-4 text-xs rounded-lg ${
                     isStaff
                       ? "bg-card border border-border/80 text-foreground rounded-tl-xs shadow-2xs"
                       : "bg-muted/50 border border-border/70 text-foreground rounded-tr-xs"
@@ -381,16 +381,16 @@ function CustomerChatPage() {
               className={`flex flex-col ${isStaff ? "items-start" : "items-end"}`}
             >
               <div
-                className={`max-w-[85%] sm:max-w-md px-3.5 py-2 text-xs sm:text-sm leading-relaxed ${
+                className={`max-w-[85%] sm:max-w-md px-4 py-2 text-xs sm:text-sm leading-relaxed ${
                   isStaff
-                    ? "bg-muted/70 text-foreground rounded-2xl rounded-tl-xs"
-                    : "bg-primary/10 text-foreground rounded-2xl rounded-tr-xs"
+                    ? "bg-muted/70 text-foreground rounded-lg rounded-tl-xs"
+                    : "bg-primary/10 text-foreground rounded-lg rounded-tr-xs"
                 }`}
               >
                 <p className="whitespace-pre-wrap break-words">{msg.message}</p>
 
                 {msg.attachments && msg.attachments.length > 0 && (
-                  <div className="mt-2 grid grid-cols-2 gap-1.5 overflow-hidden rounded-xl">
+                  <div className="mt-2 grid grid-cols-2 gap-2 overflow-hidden rounded-lg">
                     {msg.attachments.map((url: string, i: number) => (
                       <a
                         key={i}
@@ -434,7 +434,7 @@ function CustomerChatPage() {
       {!isClosed ? (
         <form
           onSubmit={handleSend}
-          className="p-2 sm:p-2.5 border-t border-border/40 bg-background flex items-center gap-1.5 sticky bottom-0 z-10"
+          className="p-2 sm:p-3 border-t border-border/40 bg-background flex items-center gap-2 sticky bottom-0 z-10"
         >
           <Button
             type="button"

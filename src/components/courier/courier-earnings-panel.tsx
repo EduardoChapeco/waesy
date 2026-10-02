@@ -21,7 +21,7 @@ export function CourierEarningsPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 bg-card rounded-2xl border border-border/60">
+      <div className="flex items-center justify-center p-12 bg-card rounded-lg border border-border/60">
         <Loader2 className="size-6 animate-spin text-primary" />
       </div>
     );
@@ -46,10 +46,10 @@ export function CourierEarningsPanel() {
   return (
     <div className="space-y-6">
       {/* Saldo Principal / Ganhos do Mês */}
-      <div className="rounded-2xl bg-card border border-border/80 p-6 shadow-sm relative overflow-hidden">
+      <div className="rounded-lg bg-card border border-border/80 p-6 shadow-sm relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <Wallet className="size-3.5 text-primary" />
               Ganhos Acumulados no Mês
             </span>
@@ -84,9 +84,9 @@ export function CourierEarningsPanel() {
 
       {/* Cards de Decomposição (Corridas, Gorjetas, Bônus Surge) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5 font-medium">
+            <span className="flex items-center gap-2 font-medium">
               <CreditCard className="size-3.5" />
               Tarifa Base
             </span>
@@ -97,9 +97,9 @@ export function CourierEarningsPanel() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5 font-medium text-emerald-600">
+            <span className="flex items-center gap-2 font-medium text-emerald-600">
               <Gift className="size-3.5" />
               Gorjetas Extras
             </span>
@@ -110,9 +110,9 @@ export function CourierEarningsPanel() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5 font-medium text-amber-600">
+            <span className="flex items-center gap-2 font-medium text-amber-600">
               <Zap className="size-3.5" />
               Surge Pricing (Chuva/Pico)
             </span>
@@ -125,7 +125,7 @@ export function CourierEarningsPanel() {
       </div>
 
       {/* Histórico de Repasses e Faturas PIX */}
-      <div className="rounded-2xl bg-card border border-border/80 p-5 space-y-4">
+      <div className="rounded-lg bg-card border border-border/80 p-5 space-y-4">
         <div className="flex items-center justify-between border-b border-border/60 pb-3">
           <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
             <Clock className="size-4 text-primary" />
@@ -146,7 +146,7 @@ export function CourierEarningsPanel() {
             {payouts.map((inv) => (
               <div
                 key={inv.id}
-                className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-background text-xs"
+                className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-background text-xs"
               >
                 <div>
                   <p className="font-semibold text-foreground">

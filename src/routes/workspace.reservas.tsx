@@ -249,7 +249,7 @@ export default function TableReservationsPage() {
  title="Reservas"
  actions={
  <div className="flex items-center gap-2">
- <Button variant="outline" size="sm" onClick={copyShareLink} className="gap-1.5 font-bold text-xs">
+ <Button variant="outline" size="sm" onClick={copyShareLink} className="gap-2 font-bold text-xs">
  <Share2 className="size-3.5" />
  Link Público
  </Button>
@@ -258,19 +258,19 @@ export default function TableReservationsPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsFloorPlanEditorOpen(true)}
- className="gap-1.5 font-bold text-xs"
+ className="gap-2 font-bold text-xs"
  >
  <LayoutGrid className="size-3.5 text-primary" />
  <span>Editar Planta</span>
  </Button>
 
  {/* Toggle vista */}
- <div className="flex items-center bg-muted/60 p-0.5 rounded-xl border border-border/60">
+ <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/60">
  <button
  type="button"
  onClick={() => setActiveView("map")}
  className={cn(
- "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
  activeView === "map"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -283,7 +283,7 @@ export default function TableReservationsPage() {
  type="button"
  onClick={() => setActiveView("list")}
  className={cn(
- "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
  activeView === "list"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -296,7 +296,7 @@ export default function TableReservationsPage() {
 
  <Sheet open={dialogOpen} onOpenChange={setDialogOpen}>
  <SheetTrigger asChild>
- <Button size="sm" className="gap-1.5 font-bold text-xs shadow-xs">
+ <Button size="sm" className="gap-2 font-bold text-xs shadow-xs">
  <Plus className="size-4" />
  Nova Reserva
  </Button>
@@ -352,7 +352,7 @@ export default function TableReservationsPage() {
  <p className="text-xs font-bold text-muted-foreground">Hoje —</p>
  {(Object.entries(TABLE_STATUS_STYLE) as [TableStatus, typeof TABLE_STATUS_STYLE[TableStatus]][]).map(
  ([status, style]) => (
- <div key={status} className="flex items-center gap-1.5">
+ <div key={status} className="flex items-center gap-2">
  <div className={cn("size-2.5 rounded-full", status === "free" ? "bg-emerald-500" : status === "reserved" ? "bg-blue-500" : status === "pending" ? "bg-amber-500" : "bg-purple-500")} />
  <span className="text-xs font-semibold text-muted-foreground">
  {style.label} ({statusCounts[status]})
@@ -360,14 +360,14 @@ export default function TableReservationsPage() {
  </div>
  ),
  )}
- <div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
+ <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
  <MapPin className="size-3.5" />
  {todayReservations.length} reservas hoje
  </div>
  </div>
 
  {/* Grid do Salão */}
- <div className="bg-card rounded-2xl border border-border/80 shadow-2xs p-5 sm:p-8 overflow-auto">
+ <div className="bg-card rounded-lg border border-border/80 shadow-2xs p-5 sm:p-8 overflow-auto">
  {/* Área de layout representando o salão */}
  <div
  className="relative grid gap-4"
@@ -391,7 +391,7 @@ export default function TableReservationsPage() {
  gridRow: "span 1",
  }}
  className={cn(
- "relative flex flex-col items-center justify-center gap-1.5 rounded-2xl border-2 transition-all cursor-pointer group",
+ "relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all cursor-pointer group",
  "p-4 min-h-[110px] text-center",
  style.border,
  style.bg,
@@ -407,7 +407,7 @@ export default function TableReservationsPage() {
  {/* Label + lugares */}
  <div>
  <p className={cn("text-xs font-black leading-none", style.text)}>{table.label}</p>
- <p className="text-xs text-muted-foreground font-mono mt-0.5">
+ <p className="text-xs text-muted-foreground font-mono mt-1">
  {table.seats} lugares
  </p>
  </div>
@@ -415,7 +415,7 @@ export default function TableReservationsPage() {
  {/* Badge de status */}
  <span
  className={cn(
- "absolute top-2 right-2 text-xs font-bold uppercase px-1.5 py-0.5 rounded-full border",
+ "absolute top-2 right-2 text-xs font-bold uppercase px-2 py-1 rounded-full border",
  style.badgeCn,
  )}
  >
@@ -447,20 +447,20 @@ export default function TableReservationsPage() {
  {/* Vista: Lista de Reservas */}
  {activeView === "list" && (
  <Tabs value={listFilter} onValueChange={(v: any) => setListFilter(v)} className="w-full">
- <TabsList className="bg-muted/60 p-1 rounded-xl mb-4">
- <TabsTrigger value="upcoming" className="rounded-lg font-bold text-xs gap-1.5">
+ <TabsList className="bg-muted/60 p-1 rounded-lg mb-4">
+ <TabsTrigger value="upcoming" className="rounded-lg font-bold text-xs gap-2">
  <Clock className="size-3.5" /> Próximas
  </TabsTrigger>
- <TabsTrigger value="past" className="rounded-lg font-bold text-xs gap-1.5">
+ <TabsTrigger value="past" className="rounded-lg font-bold text-xs gap-2">
  <CalendarDays className="size-3.5" /> Passadas
  </TabsTrigger>
- <TabsTrigger value="all" className="rounded-lg font-bold text-xs gap-1.5">
+ <TabsTrigger value="all" className="rounded-lg font-bold text-xs gap-2">
  Todas
  </TabsTrigger>
  </TabsList>
 
  <TabsContent value={listFilter} className="mt-0">
- <div className="bg-card rounded-2xl border border-border/80 overflow-hidden shadow-2xs">
+ <div className="bg-card rounded-lg border border-border/80 overflow-hidden shadow-2xs">
  {isLoading ? (
  <div className="p-12 text-center text-muted-foreground text-sm">Carregando reservas...</div>
  ) : reservations.length === 0 ? (
@@ -499,12 +499,12 @@ export default function TableReservationsPage() {
  </div>
  </TableCell>
  <TableCell>
- <div className="flex items-center gap-1.5 font-bold text-sm">
+ <div className="flex items-center gap-2 font-bold text-sm">
  <Users className="size-3.5 text-muted-foreground" />
  {r.party_size} {r.party_size === 1 ? "pessoa" : "pessoas"}
  </div>
  {r.assigned_table ? (
- <Badge variant="outline" className="text-xs font-mono mt-0.5">
+ <Badge variant="outline" className="text-xs font-mono mt-1">
  {r.assigned_table}
  </Badge>
  ) : (
@@ -523,7 +523,7 @@ export default function TableReservationsPage() {
  ) : "—"}
  </TableCell>
  <TableCell className="text-right">
- <div className="flex items-center justify-end gap-1.5">
+ <div className="flex items-center justify-end gap-2">
  {isPendingR && (
  <Button
  variant="outline"
@@ -596,12 +596,12 @@ export default function TableReservationsPage() {
  <>
  <SheetHeader className="pb-4 border-b border-border/70">
  <SheetTitle className="flex items-center gap-3">
- <div className={cn("size-10 rounded-2xl flex items-center justify-center border-2", style.border, style.bg)}>
+ <div className={cn("size-10 rounded-lg flex items-center justify-center border-2", style.border, style.bg)}>
  <Armchair className={cn("size-5", style.text)} />
  </div>
  <div>
  <p className="font-black text-lg leading-none">{selectedTable.label}</p>
- <p className="text-xs text-muted-foreground font-mono mt-0.5">
+ <p className="text-xs text-muted-foreground font-mono mt-1">
  {selectedTable.seats} lugares · {selectedTable.shape === "round" ? "Redonda" : selectedTable.shape === "wide" ? "Comprida" : "Quadrada"}
  </p>
  </div>
@@ -612,13 +612,13 @@ export default function TableReservationsPage() {
  {/* Badge de status */}
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-muted-foreground">Status agora</span>
- <span className={cn("text-xs font-black uppercase px-2.5 py-1 rounded-xl border", style.badgeCn)}>
+ <span className={cn("text-xs font-black uppercase px-3 py-1 rounded-lg border", style.badgeCn)}>
  {style.label}
  </span>
  </div>
 
  {reservation ? (
- <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border/60">
+ <div className="space-y-3 p-4 rounded-lg bg-muted/30 border border-border/60">
  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Reserva ativa</p>
  <div className="space-y-2">
  <div className="flex justify-between items-start">
@@ -640,7 +640,7 @@ export default function TableReservationsPage() {
  {reservation.special_requests && (
  <div className="pt-2 border-t border-border/50">
  <p className="text-xs text-muted-foreground">Obs</p>
- <p className="text-xs font-medium mt-0.5">{reservation.special_requests}</p>
+ <p className="text-xs font-medium mt-1">{reservation.special_requests}</p>
  </div>
  )}
  </div>
@@ -651,7 +651,7 @@ export default function TableReservationsPage() {
  <Button
  size="sm"
  variant="outline"
- className="w-full font-bold text-xs text-emerald-600 border-emerald-500/40 gap-1.5"
+ className="w-full font-bold text-xs text-emerald-600 border-emerald-500/40 gap-2"
  onClick={() => handleUpdateStatus({ data: { reservation_id: reservation.id, status: "confirmed" } })}
  >
  <CheckCircle2 className="size-3.5" /> Confirmar Reserva
@@ -660,7 +660,7 @@ export default function TableReservationsPage() {
  {["pending", "confirmed"].includes(reservation.status) && (
  <Button
  size="sm"
- className="w-full font-bold text-xs gap-1.5"
+ className="w-full font-bold text-xs gap-2"
  onClick={() => handleUpdateStatus({ data: { reservation_id: reservation.id, status: "seated" } })}
  >
  <Armchair className="size-3.5" /> Acomodar Cliente
@@ -670,7 +670,7 @@ export default function TableReservationsPage() {
  <Button
  size="sm"
  variant="outline"
- className="w-full font-bold text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/5 cursor-pointer"
+ className="w-full font-bold text-xs gap-2 border-primary/40 text-primary hover:bg-primary/5 cursor-pointer"
  onClick={() =>
  handleOpenComanda({
  tableNumber: selectedTable.label,
@@ -687,7 +687,7 @@ export default function TableReservationsPage() {
  <Button
  size="sm"
  variant="ghost"
- className="w-full text-xs text-destructive hover:bg-destructive/10 gap-1.5"
+ className="w-full text-xs text-destructive hover:bg-destructive/10 gap-2"
  onClick={() => handleUpdateStatus({ data: { reservation_id: reservation.id, status: "cancelled" } })}
  >
  Cancelar Reserva
@@ -696,7 +696,7 @@ export default function TableReservationsPage() {
  </div>
  </div>
  ) : (
- <div className="p-4 rounded-xl bg-muted/20 border border-dashed border-border/60 text-center space-y-2">
+ <div className="p-4 rounded-lg bg-muted/20 border border-dashed border-border/60 text-center space-y-2">
  <Armchair className="size-8 mx-auto text-muted-foreground/40" />
  <p className="text-sm font-bold text-muted-foreground">Mesa disponível</p>
  <p className="text-xs text-muted-foreground">Sem reserva ativa para hoje.</p>
@@ -704,7 +704,7 @@ export default function TableReservationsPage() {
  <Button
  size="sm"
  variant="outline"
- className="font-bold text-xs gap-1.5 cursor-pointer"
+ className="font-bold text-xs gap-2 cursor-pointer"
  onClick={() =>
  handleOpenComanda({
  tableNumber: selectedTable.label,
@@ -716,7 +716,7 @@ export default function TableReservationsPage() {
  </Button>
  <Button
  size="sm"
- className="font-bold text-xs gap-1.5 cursor-pointer"
+ className="font-bold text-xs gap-2 cursor-pointer"
  onClick={() => {
  setAssignedTable(selectedTable.label);
  setSheetOpen(false);
@@ -759,7 +759,7 @@ function ReservationStatusBadge({ status }: { status: string }) {
  };
  const cfg = map[status] || { label: status, cn: "bg-muted/60 text-muted-foreground border-border/60" };
  return (
- <span className={cn("text-xs font-bold uppercase px-2 py-0.5 rounded-lg border", cfg.cn)}>
+ <span className={cn("text-xs font-bold uppercase px-2 py-1 rounded-lg border", cfg.cn)}>
  {cfg.label}
  </span>
  );
@@ -855,12 +855,12 @@ function ReservationForm({
 
  {/* Dropdown de Clientes Encontrados */}
  {isDropdownOpen && searchResults.length > 0 && (
- <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-card border border-border/80 rounded-xl shadow-xs max-h-48 overflow-y-auto no-scrollbar divide-y divide-border/40">
+ <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-card border border-border/80 rounded-lg shadow-xs max-h-48 overflow-y-auto no-scrollbar divide-y divide-border/40">
  {searchResults.map((c: any) => (
  <div
  key={c.id}
  onClick={() => handleSelectCustomer(c)}
- className="p-2.5 hover:bg-muted/40 transition-colors cursor-pointer text-xs flex items-center justify-between"
+ className="p-3 hover:bg-muted/40 transition-colors cursor-pointer text-xs flex items-center justify-between"
  >
  <div>
  <p className="font-bold text-foreground">{c.fullName || c.name}</p>

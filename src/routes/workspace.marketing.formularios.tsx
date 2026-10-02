@@ -441,7 +441,7 @@ function WorkspaceLeadFormsPage() {
               variant="outline"
               size="sm"
               onClick={handleExportCsv}
-              className="rounded-xl h-10 gap-1.5"
+              className="rounded-lg h-10 gap-2"
             >
               <Download className="w-4 h-4" />
               <span>Exportar CSV</span>
@@ -450,7 +450,7 @@ function WorkspaceLeadFormsPage() {
           <Button
             size="sm"
             onClick={handleOpenNewForm}
-            className="rounded-xl h-10 gap-1.5 bg-primary text-primary-foreground shadow-sm"
+            className="rounded-lg h-10 gap-2 bg-primary text-primary-foreground shadow-sm"
           >
             <Plus className="w-4 h-4" />
             <span>Criar Formulário</span>
@@ -460,25 +460,25 @@ function WorkspaceLeadFormsPage() {
 
       {/* KPI Cards Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="p-4 rounded-2xl bg-card border border-border/60">
+        <div className="p-4 rounded-lg bg-card border border-border/60">
           <span className="text-xs text-muted-foreground">Formulários Ativos</span>
           <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
             {kpis.totalForms}
           </div>
         </div>
-        <div className="p-4 rounded-2xl bg-card border border-border/60">
+        <div className="p-4 rounded-lg bg-card border border-border/60">
           <span className="text-xs text-muted-foreground">Visualizações Totais</span>
           <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
             {kpis.totalViews}
           </div>
         </div>
-        <div className="p-4 rounded-2xl bg-card border border-border/60">
+        <div className="p-4 rounded-lg bg-card border border-border/60">
           <span className="text-xs text-muted-foreground">Leads Capturados</span>
           <div className="text-2xl font-bold tracking-tight text-foreground mt-1 text-primary">
             {kpis.totalSubmissions}
           </div>
         </div>
-        <div className="p-4 rounded-2xl bg-card border border-border/60">
+        <div className="p-4 rounded-lg bg-card border border-border/60">
           <span className="text-xs text-muted-foreground">Taxa de Conversão</span>
           <div className="text-2xl font-bold tracking-tight text-emerald-600 mt-1">
             {kpis.conversionRate}%
@@ -487,7 +487,7 @@ function WorkspaceLeadFormsPage() {
       </div>
 
       {/* Navegação de Abas Unificadas */}
-      <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-xl border border-border/40 w-fit">
+      <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border/40 w-fit">
         <button
           type="button"
           onClick={() => setActiveTab("formularios")}
@@ -513,7 +513,7 @@ function WorkspaceLeadFormsPage() {
         <button
           type="button"
           onClick={() => setActiveTab("crm")}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all flex items-center gap-2 ${
             activeTab === "crm"
               ? "bg-background text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
@@ -521,7 +521,7 @@ function WorkspaceLeadFormsPage() {
         >
           <span>Caixa de Entrada (CRM)</span>
           {kpis.newLeadsCount > 0 && (
-            <span className="px-1.5 py-0.2 bg-primary text-primary-foreground text-xs font-bold rounded-full">
+            <span className="px-2 py-0.2 bg-primary text-primary-foreground text-xs font-bold rounded-full">
               {kpis.newLeadsCount}
             </span>
           )}
@@ -532,7 +532,7 @@ function WorkspaceLeadFormsPage() {
       {activeTab === "formularios" && (
         <div className="space-y-4">
           {forms.length === 0 ? (
-            <div className="py-16 text-center bg-card rounded-2xl border border-border/60 p-6 flex flex-col items-center">
+            <div className="py-16 text-center bg-card rounded-lg border border-border/60 p-6 flex flex-col items-center">
               <FileText className="w-12 h-12 text-muted-foreground/40 mb-3" />
               <h3 className="text-base font-semibold text-foreground mb-1">
                 Nenhum formulário criado ainda
@@ -540,7 +540,7 @@ function WorkspaceLeadFormsPage() {
               <p className="text-xs text-muted-foreground max-w-sm mb-5 leading-relaxed">
                 Crie seu primeiro formulário personalizado para capturar leads através de campanhas do Facebook, Google ou diretamente nos seus anúncios.
               </p>
-              <Button onClick={handleOpenNewForm} className="rounded-xl h-10 gap-1.5">
+              <Button onClick={handleOpenNewForm} className="rounded-lg h-10 gap-2">
                 <Plus className="w-4 h-4" />
                 <span>Criar Primeiro Formulário</span>
               </Button>
@@ -550,19 +550,19 @@ function WorkspaceLeadFormsPage() {
               {forms.map((form) => (
                 <div
                   key={form.id}
-                  className="bg-card rounded-2xl border border-border/60 p-5 flex flex-col justify-between hover:border-primary/40 transition-colors shadow-xs"
+                  className="bg-card rounded-lg border border-border/60 p-5 flex flex-col justify-between hover:border-primary/40 transition-colors shadow-xs"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <Badge variant="outline" className="text-xs uppercase tracking-wider font-semibold mb-1.5">
+                        <Badge variant="outline" className="text-xs uppercase tracking-wider font-semibold mb-2">
                           {form.niche_id}
                         </Badge>
                         <h4 className="font-semibold text-sm text-foreground line-clamp-1">
                           {form.title}
                         </h4>
                       </div>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${form.status === 'active' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${form.status === 'active' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
                         {form.status === 'active' ? 'Ativo' : 'Pausado'}
                       </span>
                     </div>
@@ -572,7 +572,7 @@ function WorkspaceLeadFormsPage() {
                     </div>
 
                     {/* Métricas do Formulário */}
-                    <div className="grid grid-cols-3 gap-2 py-2 px-3 rounded-xl bg-muted/20 border border-border/30 text-center">
+                    <div className="grid grid-cols-3 gap-2 py-2 px-3 rounded-lg bg-muted/20 border border-border/30 text-center">
                       <div>
                         <div className="text-xs text-muted-foreground">Views</div>
                         <div className="text-xs font-bold text-foreground">{form.views_count}</div>
@@ -612,7 +612,7 @@ function WorkspaceLeadFormsPage() {
                       variant="outline"
                       size="sm"
                       asChild
-                      className="flex-1 h-9 rounded-xl text-xs gap-1"
+                      className="flex-1 h-9 rounded-lg text-xs gap-1"
                     >
                       <a href={`/f/${form.slug}`} target="_blank" rel="noreferrer">
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -645,7 +645,7 @@ function WorkspaceLeadFormsPage() {
 
       {/* ─── ABA 2: CONSTRUTOR DE FORMULÁRIOS ─────────────────────────────────── */}
       {activeTab === "builder" && (
-        <div className="bg-card rounded-2xl border border-border/60 p-5 sm:p-7 space-y-6">
+        <div className="bg-card rounded-lg border border-border/60 p-5 sm:p-7 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border/40 gap-3">
             <div>
               <h3 className="text-base font-semibold text-foreground">
@@ -657,7 +657,7 @@ function WorkspaceLeadFormsPage() {
             </div>
 
             {/* Presets de Nicho */}
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs text-muted-foreground mr-1">Modelos:</span>
               <Button
                 variant="outline"
@@ -703,7 +703,7 @@ function WorkspaceLeadFormsPage() {
                   value={builderTitle}
                   onChange={(e) => setBuilderTitle(e.target.value)}
                   placeholder="Ex: Cotação Viagem Cancun 2026"
-                  className="h-11 rounded-xl text-sm"
+                  className="h-11 rounded-lg text-sm"
                 />
               </div>
 
@@ -713,7 +713,7 @@ function WorkspaceLeadFormsPage() {
                   value={builderHeadline}
                   onChange={(e) => setBuilderHeadline(e.target.value)}
                   placeholder="Ex: Solicite sua Cotação Exclusiva para Cancun"
-                  className="h-11 rounded-xl text-sm"
+                  className="h-11 rounded-lg text-sm"
                 />
               </div>
 
@@ -723,7 +723,7 @@ function WorkspaceLeadFormsPage() {
                   value={builderSubheadline}
                   onChange={(e) => setBuilderSubheadline(e.target.value)}
                   placeholder="Ex: Preencha as informações para receber opções de voo e hotel."
-                  className="rounded-xl text-sm min-h-[70px] resize-none"
+                  className="rounded-lg text-sm min-h-[70px] resize-none"
                 />
               </div>
 
@@ -733,18 +733,18 @@ function WorkspaceLeadFormsPage() {
                   value={builderSubmitButtonText}
                   onChange={(e) => setBuilderSubmitButtonText(e.target.value)}
                   placeholder="Ex: Receber Cotação Grátis"
-                  className="h-11 rounded-xl text-sm"
+                  className="h-11 rounded-lg text-sm"
                 />
               </div>
 
               {/* Automação Pós-Envio */}
-              <div className="p-4 rounded-xl border border-border/50 bg-muted/20 space-y-3">
+              <div className="p-4 rounded-lg border border-border/50 bg-muted/20 space-y-3">
                 <Label className="text-xs font-semibold text-foreground">Automação Pós-Envio</Label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setBuilderAfterSubmitAction("whatsapp_redirect")}
-                    className={`p-2.5 rounded-xl border text-xs font-medium text-left transition-all ${
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all ${
                       builderAfterSubmitAction === "whatsapp_redirect"
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border/50 text-muted-foreground"
@@ -755,7 +755,7 @@ function WorkspaceLeadFormsPage() {
                   <button
                     type="button"
                     onClick={() => setBuilderAfterSubmitAction("show_success_message")}
-                    className={`p-2.5 rounded-xl border text-xs font-medium text-left transition-all ${
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all ${
                       builderAfterSubmitAction === "show_success_message"
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border/50 text-muted-foreground"
@@ -773,7 +773,7 @@ function WorkspaceLeadFormsPage() {
                         value={builderWhatsappPhone}
                         onChange={(e) => setBuilderWhatsappPhone(formatPhone(e.target.value))}
                         placeholder="(00) 00000-0000"
-                        className="h-10 rounded-xl text-xs"
+                        className="h-10 rounded-lg text-xs"
                       />
                     </div>
                     <div>
@@ -781,7 +781,7 @@ function WorkspaceLeadFormsPage() {
                       <Textarea
                         value={builderWhatsappTemplate}
                         onChange={(e) => setBuilderWhatsappTemplate(e.target.value)}
-                        className="rounded-xl text-xs min-h-[60px] resize-none"
+                        className="rounded-lg text-xs min-h-[60px] resize-none"
                       />
                       <span className="text-xs text-muted-foreground">
                         Tags: {"{nome}"}, {"{telefone}"}, {"{formulario}"}
@@ -816,7 +816,7 @@ function WorkspaceLeadFormsPage() {
                       },
                     ]);
                   }}
-                  className="rounded-xl h-8 text-xs gap-1"
+                  className="rounded-lg h-8 text-xs gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Adicionar Campo</span>
@@ -827,7 +827,7 @@ function WorkspaceLeadFormsPage() {
                 {builderFields.map((field, idx) => (
                   <div
                     key={idx}
-                    className="p-3.5 rounded-xl border border-border/50 bg-background space-y-2.5 shadow-2xs"
+                    className="p-4 rounded-lg border border-border/50 bg-background space-y-3 shadow-2xs"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <Input
@@ -863,14 +863,14 @@ function WorkspaceLeadFormsPage() {
                         onClick={() => {
                           setBuilderFields((prev) => prev.filter((_, i) => i !== idx));
                         }}
-                        className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                        className="p-2 text-muted-foreground hover:text-destructive transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                      <label className="flex items-center gap-1.5 cursor-pointer">
+                      <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={field.is_required}
@@ -899,14 +899,14 @@ function WorkspaceLeadFormsPage() {
             <Button
               variant="outline"
               onClick={() => setActiveTab("formularios")}
-              className="rounded-xl h-11 px-5"
+              className="rounded-lg h-11 px-5"
             >
               Cancelar
             </Button>
             <Button
               disabled={isSaving}
               onClick={handleSaveForm}
-              className="rounded-xl h-11 px-6 bg-primary text-primary-foreground font-medium gap-2 shadow-sm"
+              className="rounded-lg h-11 px-6 bg-primary text-primary-foreground font-medium gap-2 shadow-sm"
             >
               {isSaving ? (
                 <>
@@ -928,18 +928,18 @@ function WorkspaceLeadFormsPage() {
       {activeTab === "crm" && (
         <div className="space-y-4">
           {/* Barra de Filtros e Busca */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-card rounded-2xl border border-border/60">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-card rounded-lg border border-border/60">
             <div className="relative flex-1">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={crmSearch}
                 onChange={(e) => setCrmSearch(e.target.value)}
                 placeholder="Buscar por nome, telefone ou e-mail..."
-                className="pl-9 h-10 rounded-xl text-xs"
+                className="pl-9 h-10 rounded-lg text-xs"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
               <span className="text-xs text-muted-foreground whitespace-nowrap mr-1">Status:</span>
               {[
                 { label: "Todos", value: "all" },
@@ -953,7 +953,7 @@ function WorkspaceLeadFormsPage() {
                   key={opt.value}
                   type="button"
                   onClick={() => setCrmStatusFilter(opt.value)}
-                  className={`px-3 py-1.5 text-xs rounded-lg transition-all whitespace-nowrap ${
+                  className={`px-3 py-2 text-xs rounded-lg transition-all whitespace-nowrap ${
                     crmStatusFilter === opt.value
                       ? "bg-primary text-primary-foreground font-medium"
                       : "bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -967,7 +967,7 @@ function WorkspaceLeadFormsPage() {
 
           {/* Lista de Leads */}
           {filteredSubmissions.length === 0 ? (
-            <div className="py-16 text-center bg-card rounded-2xl border border-border/60 p-6 flex flex-col items-center">
+            <div className="py-16 text-center bg-card rounded-lg border border-border/60 p-6 flex flex-col items-center">
               <Users className="w-12 h-12 text-muted-foreground/40 mb-3" />
               <h3 className="text-base font-semibold text-foreground mb-1">
                 Nenhum lead encontrado
@@ -988,11 +988,11 @@ function WorkspaceLeadFormsPage() {
                 return (
                   <div
                     key={sub.id}
-                    className="bg-card rounded-2xl border border-border/60 p-4 sm:p-5 transition-all shadow-2xs hover:border-primary/30"
+                    className="bg-card rounded-lg border border-border/60 p-4 sm:p-5 transition-all shadow-2xs hover:border-primary/30"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
                           {sub.contact_name[0]?.toUpperCase() || "L"}
                         </div>
                         <div>
@@ -1001,7 +1001,7 @@ function WorkspaceLeadFormsPage() {
                               {sub.contact_name}
                             </h4>
                             {sub.is_new_registered_user && (
-                              <span className="text-xs bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <span className="text-xs bg-primary/10 text-primary font-medium px-2 py-1 rounded-full flex items-center gap-1">
                                 <Star className="w-3 h-3" />
                                 Registro Rápido
                               </span>
@@ -1036,7 +1036,7 @@ function WorkspaceLeadFormsPage() {
                         <select
                           value={sub.crm_status}
                           onChange={(e) => handleStatusChange(sub.id, e.target.value)}
-                          className={`h-9 px-2.5 text-xs font-medium rounded-xl border ${
+                          className={`h-9 px-3 text-xs font-medium rounded-lg border ${
                             sub.crm_status === "new"
                               ? "bg-amber-500/10 text-amber-700 border-amber-500/20"
                               : sub.crm_status === "won"
@@ -1056,7 +1056,7 @@ function WorkspaceLeadFormsPage() {
                         <Button
                           asChild
                           size="sm"
-                          className="h-9 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-xs text-xs px-3"
+                          className="h-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-xs text-xs px-3"
                         >
                           <a href={waUrl} target="_blank" rel="noreferrer">
                             <MessageSquare className="w-3.5 h-3.5" />
@@ -1068,7 +1068,7 @@ function WorkspaceLeadFormsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setExpandedSubmissionId(isExpanded ? null : sub.id)}
-                          className="h-9 w-9 p-0 rounded-xl"
+                          className="h-9 w-9 p-0 rounded-lg"
                         >
                           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </Button>
@@ -1079,9 +1079,9 @@ function WorkspaceLeadFormsPage() {
                     {isExpanded && (
                       <div className="mt-4 pt-3 border-t border-border/40 space-y-2 text-xs">
                         <div className="font-semibold text-foreground">Respostas do Lead:</div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-muted/20 rounded-xl">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-muted/20 rounded-lg">
                           {Object.entries(sub.raw_answers || {}).map(([k, v]) => (
-                            <div key={k} className="space-y-0.5">
+                            <div key={k} className="space-y-1">
                               <span className="text-xs text-muted-foreground uppercase font-medium">{k}</span>
                               <div className="font-medium text-foreground">
                                 {typeof v === "object" ? JSON.stringify(v) : String(v)}

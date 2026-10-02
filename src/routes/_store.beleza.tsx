@@ -259,7 +259,7 @@ function BelezaVerticalPage() {
               })()}
             </div>
           ) : (
-            <div className="py-12 text-center bg-card rounded-2xl p-6">
+            <div className="py-12 text-center bg-card rounded-lg p-6">
               <EmptyState
                 title="Nenhum produto de beleza encontrado"
                 description="Tente selecionar outro departamento ou busque por marcas e cosméticos específicos."
@@ -270,7 +270,7 @@ function BelezaVerticalPage() {
  ) : (
  <section aria-label="Vitrine de Produtos">
  {filteredProducts.length === 0 ? (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhum cosmético ou perfume encontrado"
  description="Tente selecionar outro departamento ou busque por marcas específicas."

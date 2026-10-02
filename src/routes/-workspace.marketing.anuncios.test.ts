@@ -32,8 +32,8 @@ describe("Microfase 1A: Validação de Anúncios & Contratos Responsivos", () =>
     expect(mobileGridClass).toContain("lg:grid-cols-4");
   });
 
-  it("assegura que o padding do shell móvel utiliza gutter respirável (px-3.5) sem overflow", () => {
-    const shellGutterClass = "px-3.5 sm:px-6 lg:px-8";
-    expect(shellGutterClass).toContain("px-3.5");
+  it("assegura que o padding do shell móvel utiliza gutter respirável (px-4) sem overflow", () => {
+    const shellGutterClass = "px-4 sm:px-6 lg:px-8";
+    expect(shellGutterClass).toContain("px-4");
   });
 });

@@ -22,7 +22,7 @@ export const Route = createFileRoute("/admin-master/boost-payments")({
     }
   },
   errorComponent: ({ error }) => (
-    <div className="p-6 rounded-xl border border-destructive/30 bg-destructive/5 text-destructive text-sm">
+    <div className="p-6 rounded-lg border border-destructive/30 bg-destructive/5 text-destructive text-sm">
       <strong>Erro ao carregar:</strong>{" "}
       {error instanceof Error ? error.message : "Erro desconhecido."}
     </div>
@@ -131,7 +131,7 @@ function BoostPaymentsAdmin() {
               Boost Payments
             </h1>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Transações de impulsionamento de anúncios classificados. Confirme pagamentos manuais pendentes.
           </p>
         </div>
@@ -139,7 +139,7 @@ function BoostPaymentsAdmin() {
           variant="outline"
           size="sm"
           onClick={() => refetch()}
-          className="rounded-xl h-9 px-3 text-xs gap-1.5 cursor-pointer"
+          className="rounded-lg h-9 px-3 text-xs gap-2 cursor-pointer"
         >
           <RefreshCw className="size-3.5" />
           Atualizar
@@ -156,7 +156,7 @@ function BoostPaymentsAdmin() {
         ].map((card) => (
           <div
             key={card.label}
-            className="rounded-xl border border-border/60 bg-card p-4 space-y-1"
+            className="rounded-lg border border-border/60 bg-card p-4 space-y-1"
           >
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono">{card.label}</p>
             <p className={`text-lg font-black font-mono ${card.className}`}>{card.value}</p>
@@ -172,16 +172,16 @@ function BoostPaymentsAdmin() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por anúncio, usuário ou ref..."
-            className="pl-8 h-9 rounded-xl text-xs border-border/70"
+            className="pl-8 h-9 rounded-lg text-xs border-border/70"
           />
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           {["all", "pending", "paid", "failed", "expired"].map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setFilterStatus(s)}
-              className={`h-9 px-3 rounded-xl text-xs font-medium transition-colors cursor-pointer border ${
+              className={`h-9 px-3 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
                 filterStatus === s
                   ? "bg-foreground text-background border-foreground"
                   : "bg-card text-muted-foreground border-border/60 hover:border-border"
@@ -208,7 +208,7 @@ function BoostPaymentsAdmin() {
           <span className="text-xs">Carregando transações...</span>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-border/60 bg-card p-10 text-center">
+        <div className="rounded-lg border border-border/60 bg-card p-10 text-center">
           <Flame className="size-10 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-sm font-bold text-foreground">Nenhuma transação encontrada</p>
           <p className="text-xs text-muted-foreground mt-1">
@@ -227,17 +227,17 @@ function BoostPaymentsAdmin() {
             return (
               <div
                 key={bp.id}
-                className="rounded-xl border border-border/60 bg-card p-4 flex flex-col sm:flex-row sm:items-center gap-3"
+                className="rounded-lg border border-border/60 bg-card p-4 flex flex-col sm:flex-row sm:items-center gap-3"
               >
                 {/* Info principal */}
-                <div className="flex-1 space-y-0.5 min-w-0">
+                <div className="flex-1 space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-bold text-foreground truncate max-w-[200px]">
+                    <span className="text-sm font-bold text-foreground truncate max-w-52">
                       {classified?.title || "Anúncio removido"}
                     </span>
                     <Badge
                       variant="outline"
-                      className={`text-[9px] font-mono px-1.5 py-0 flex items-center gap-1 ${statusConf.className}`}
+                      className={`text-[9px] font-mono px-2 py-0 flex items-center gap-1 ${statusConf.className}`}
                     >
                       {statusConf.icon}
                       {statusConf.label}
@@ -283,7 +283,7 @@ function BoostPaymentsAdmin() {
                       href={bp.payment_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="h-8 px-3 rounded-xl border border-border/60 bg-card hover:bg-muted/30 text-xs font-medium flex items-center gap-1.5 transition-colors text-muted-foreground"
+                      className="h-8 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 text-xs font-medium flex items-center gap-2 transition-colors text-muted-foreground"
                     >
                       <ExternalLink className="size-3.5" />
                       Link
@@ -294,7 +294,7 @@ function BoostPaymentsAdmin() {
                     <Button
                       size="sm"
                       onClick={() => setConfirmingPayment(bp)}
-                      className="h-8 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-500 gap-1.5 cursor-pointer"
+                      className="h-8 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-500 gap-2 cursor-pointer"
                     >
                       <CheckCheck className="size-3.5" />
                       Confirmar
@@ -312,9 +312,9 @@ function BoostPaymentsAdmin() {
         open={!!confirmingPayment}
         onOpenChange={(open) => !open && setConfirmingPayment(null)}
       >
-        <DialogContent className="max-w-sm rounded-2xl p-6 space-y-4">
-          <DialogHeader className="space-y-1.5 text-left">
-            <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+        <DialogContent className="max-w-sm rounded-lg p-6 space-y-4">
+          <DialogHeader className="space-y-2 text-left">
+            <div className="size-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
               <CheckCircle2 className="size-5 text-emerald-600" />
             </div>
             <DialogTitle className="text-base font-bold">Confirmar Pagamento</DialogTitle>
@@ -324,10 +324,10 @@ function BoostPaymentsAdmin() {
           </DialogHeader>
 
           {confirmingPayment && (
-            <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-1.5 text-xs">
+            <div className="rounded-lg border border-border/60 bg-muted/20 p-3 space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Anúncio</span>
-                <span className="font-medium truncate max-w-[160px]">
+                <span className="font-medium truncate max-w-40">
                   {confirmingPayment.classifieds?.title || "—"}
                 </span>
               </div>
@@ -357,14 +357,14 @@ function BoostPaymentsAdmin() {
             <Button
               variant="outline"
               onClick={() => setConfirmingPayment(null)}
-              className="rounded-xl text-xs h-10 flex-1 cursor-pointer"
+              className="rounded-lg text-xs h-10 flex-1 cursor-pointer"
             >
               Cancelar
             </Button>
             <Button
               onClick={() => confirmingPayment && confirmMutation.mutate(confirmingPayment.id)}
               disabled={confirmMutation.isPending}
-              className="rounded-xl text-xs h-10 flex-1 font-bold bg-emerald-600 text-white hover:bg-emerald-500 gap-1.5 cursor-pointer"
+              className="rounded-lg text-xs h-10 flex-1 font-bold bg-emerald-600 text-white hover:bg-emerald-500 gap-2 cursor-pointer"
             >
               {confirmMutation.isPending ? (
                 <>

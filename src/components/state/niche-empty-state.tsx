@@ -99,7 +99,7 @@ export function NicheEmptyState({
       </span>
       <h3 className="text-base sm:text-lg font-semibold text-foreground tracking-tight">{displayTitle}</h3>
       {displayDesc ? (
-        <p className="mt-1.5 max-w-md text-xs sm:text-sm text-muted-foreground">{displayDesc}</p>
+        <p className="mt-2 max-w-md text-xs sm:text-sm text-muted-foreground">{displayDesc}</p>
       ) : null}
 
       {action ? (

@@ -130,7 +130,7 @@ function AdminDenunciasPage() {
  </div>
 
  {filteredReports.length === 0 ? (
- <div className="border-0 rounded-xl p-12 text-center">
+ <div className="border-0 rounded-lg p-12 text-center">
  <ShieldAlert className="size-12 text-muted-foreground mx-auto mb-3 opacity-40" />
  <h3 className="text-base font-bold text-foreground">Nenhuma denúncia pendente</h3>
  <p className="text-xs text-muted-foreground mt-1">
@@ -142,7 +142,7 @@ function AdminDenunciasPage() {
  {filteredReports.map((r: any) => (
  <div
  key={r.id}
- className=" bg-card rounded-xl p-5 space-y-4"
+ className=" bg-card rounded-lg p-5 space-y-4"
  >
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
  <div className="flex items-center gap-2">
@@ -281,7 +281,7 @@ function AdminDenunciasPage() {
  setSelectedReport(null);
  setActionType(null);
  }}
- className="h-11 px-4 rounded-xl text-xs font-bold"
+ className="h-11 px-4 rounded-lg text-xs font-bold"
  >
  Cancelar
  </Button>
@@ -289,7 +289,7 @@ function AdminDenunciasPage() {
  variant="destructive"
  onClick={handleExecuteAction}
  disabled={isSubmitting || !moderatorNotes.trim()}
- className="h-11 px-6 rounded-xl text-xs font-bold"
+ className="h-11 px-6 rounded-lg text-xs font-bold"
  >
  {isSubmitting ? (
  <>
@@ -304,7 +304,7 @@ function AdminDenunciasPage() {
  >
  <div className="space-y-4">
  {selectedReport && (
- <div className="p-3.5 rounded-xl bg-card space-y-2">
+ <div className="p-4 rounded-lg bg-card space-y-2">
  <div className="flex items-center justify-between text-xs">
  <span className="font-bold text-foreground">Alvo da Denúncia</span>
  <Badge variant="outline">{selectedReport.target_type}</Badge>
@@ -315,14 +315,14 @@ function AdminDenunciasPage() {
  </div>
  )}
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Justificativa & Parecer do Auditor *</Label>
  <Textarea
  value={moderatorNotes}
  onChange={(e) => setModeratorNotes(e.target.value)}
  placeholder="Fundamentação da decisão (violação das diretrizes comunitárias, sanção aplicada...)"
  rows={5}
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  />
  </div>
  </div>

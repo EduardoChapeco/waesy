@@ -169,11 +169,11 @@ export function ProductModifiersModal({
  return (
  <div
  key={group.id}
- className="space-y-2.5 bg-muted/10 p-3.5 rounded-xl"
+ className="space-y-3 bg-muted/10 p-4 rounded-lg"
  >
  <div className="flex items-center justify-between">
- <div className="space-y-0.5">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="space-y-1">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  {group.title}
  {group.is_required && (
  <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">
@@ -200,13 +200,13 @@ export function ProductModifiersModal({
  key={mod.id}
  type="button"
  onClick={() => handleToggleModifier(group, mod)}
- className={`w-full flex items-center justify-between min-h-[48px] px-3.5 py-3 rounded-xl text-sm transition-colors text-left border cursor-pointer ${
+ className={`w-full flex items-center justify-between min-h-12 px-4 py-3 rounded-lg text-sm transition-colors text-left border cursor-pointer ${
  isSelected
  ? "border-primary bg-primary/10 text-primary font-semibold shadow-2xs"
  : "border-border/70 bg-background hover:bg-muted/40 text-foreground"
  }`}
  >
- <span className="flex items-center gap-2.5">
+ <span className="flex items-center gap-3">
  <span
  className={`size-5 rounded-md border flex items-center justify-center text-xs ${
  isSelected
@@ -245,14 +245,14 @@ export function ProductModifiersModal({
  onChange={(e) => setNotes(e.target.value)}
  placeholder={semantics.modifierNotesPlaceholder}
  rows={3}
- className="rounded-xl text-sm bg-background resize-none min-h-[80px]"
+ className="rounded-lg text-sm bg-background resize-none min-h-[80px]"
  />
  </div>
  </div>
  )}
 
  <div className="p-4 sm:p-5 border-t border-border/80 bg-card flex items-center justify-between gap-3 shrink-0">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
  Total Unitário
  </span>
@@ -266,7 +266,7 @@ export function ProductModifiersModal({
  type="button"
  variant="ghost"
  onClick={() => setOpen(false)}
- className="h-11 px-4 rounded-xl text-sm font-medium cursor-pointer"
+ className="h-11 px-4 rounded-lg text-sm font-medium cursor-pointer"
  >
  Cancelar
  </Button>
@@ -275,7 +275,7 @@ export function ProductModifiersModal({
  type="button"
  onClick={handleConfirm}
  disabled={!isValid || isLoading}
- className="h-11 px-5 rounded-xl text-sm font-bold gap-2 bg-primary text-primary-foreground shadow-xs cursor-pointer"
+ className="h-11 px-5 rounded-lg text-sm font-bold gap-2 bg-primary text-primary-foreground shadow-xs cursor-pointer"
  >
  <Plus className="size-4" />
  <span>Adicionar ao Pedido</span>

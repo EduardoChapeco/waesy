@@ -169,7 +169,7 @@ export function ChatListItem({
         onClick={handleRowClick}
         onContextMenu={handleContextMenu}
         style={{ transform: `translate3d(${offsetX}px, 0, 0)` }}
-        className="relative z-10 flex items-center gap-3.5 px-3.5 sm:px-4 py-3 bg-card hover:bg-muted/30 active:bg-muted/50 transition-transform duration-150 ease-out cursor-pointer"
+        className="relative z-10 flex items-center gap-4 px-4 sm:px-4 py-3 bg-card hover:bg-muted/30 active:bg-muted/50 transition-transform duration-150 ease-out cursor-pointer"
       >
         {/* 1. Esquerda: Avatar Circular + Indicador Online na Borda Inferior Direita */}
         <div className="relative shrink-0">
@@ -198,9 +198,9 @@ export function ChatListItem({
         </div>
 
         {/* 2. Meio: Topo (Nome Bold Truncate) + Baixo (Ticks de Leitura + Snippet 1 Linha / Digitando...) */}
-        <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+        <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
           {/* Meio-Topo: Nome do Contato */}
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <span className="text-sm font-bold text-foreground truncate">
               {item.title}
             </span>
@@ -249,7 +249,7 @@ export function ChatListItem({
         </div>
 
         {/* 3. Direita: Timestamp no Topo + Badge Circular de Não Lidas Abaixo */}
-        <div className="shrink-0 flex flex-col items-end justify-between self-stretch py-0.5 gap-1">
+        <div className="shrink-0 flex flex-col items-end justify-between self-stretch py-1 gap-1">
           <span
             className={cn(
               "text-xs font-mono leading-none",
@@ -262,7 +262,7 @@ export function ChatListItem({
           </span>
 
           {hasUnread ? (
-            <span className="min-w-5 h-5 px-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+            <span className="min-w-5 h-5 px-2 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           ) : (

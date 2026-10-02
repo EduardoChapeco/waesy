@@ -73,7 +73,7 @@ export function TaskKanbanBoard({
         />
 
         {/* Ações Rápidas de Mover Coluna (Mobile & Hover) */}
-        <div className="absolute right-2 bottom-2 hidden group-hover/card:flex items-center gap-1 bg-background/95 backdrop-blur-md rounded-lg p-0.5 border border-border shadow-xs">
+        <div className="absolute right-2 bottom-2 hidden group-hover/card:flex items-center gap-1 bg-background/95 backdrop-blur-md rounded-lg p-1 border border-border shadow-xs">
           {colIdx > 0 && (
             <button
               type="button"
@@ -107,7 +107,7 @@ export function TaskKanbanBoard({
       </div>
     ),
     emptyState: (
-      <div className="flex flex-col items-center justify-center text-center text-muted-foreground/60 text-xs gap-1.5">
+      <div className="flex flex-col items-center justify-center text-center text-muted-foreground/60 text-xs gap-2">
         <span>Sem tarefas nesta etapa</span>
         {col.id === "todo" && (
           <Button
@@ -115,7 +115,7 @@ export function TaskKanbanBoard({
             variant="outline"
             size="sm"
             onClick={onNewTaskClick}
-            className="h-7 px-2.5 rounded-lg text-[11px] font-semibold gap-1 mt-1 cursor-pointer"
+            className="h-7 px-3 rounded-lg text-[11px] font-semibold gap-1 mt-1 cursor-pointer"
           >
             <Plus className="size-3" />
             <span>Criar Tarefa</span>

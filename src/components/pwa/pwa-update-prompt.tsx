@@ -116,14 +116,14 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
       <div
         className={cn(
           // Glassmorphism silencioso — fundo neutro, borda ultra-fina, sombra suave
-          "flex items-center gap-3 px-4 py-3 rounded-2xl",
+          "flex items-center gap-3 px-4 py-3 rounded-lg",
           "bg-background/85 backdrop-blur-xl backdrop-saturate-150",
           "border border-border/60 shadow-lg shadow-black/10",
           "max-w-[calc(100vw-2rem)] sm:max-w-sm w-full sm:w-auto"
         )}
       >
         {/* Ícone de atualização */}
-        <div className="shrink-0 size-8 rounded-xl bg-primary/10 flex items-center justify-center">
+        <div className="shrink-0 size-8 rounded-lg bg-primary/10 flex items-center justify-center">
           <ArrowsClockwise
             size={16}
             weight="bold"
@@ -147,7 +147,7 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
           onClick={handleUpdate}
           disabled={isUpdating}
           className={cn(
-            "shrink-0 h-8 px-3 rounded-xl text-xs font-bold",
+            "shrink-0 h-8 px-3 rounded-lg text-xs font-bold",
             "bg-primary text-primary-foreground",
             "hover:bg-primary/90 active:scale-95 transition-all cursor-pointer",
             "disabled:opacity-60 disabled:cursor-not-allowed"

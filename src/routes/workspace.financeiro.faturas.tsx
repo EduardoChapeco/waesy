@@ -203,7 +203,7 @@ function WorkspaceFaturasPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-muted text-foreground">
+            <span className="p-2 rounded-lg bg-muted text-foreground">
               <Receipt className="size-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
@@ -215,7 +215,7 @@ function WorkspaceFaturasPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl border border-border/60">
+        <div className="flex items-center gap-2 p-1 bg-muted/40 rounded-lg border border-border/60">
           <Button
             variant={viewMode === "invoices" ? "default" : "ghost"}
             size="sm"
@@ -228,7 +228,7 @@ function WorkspaceFaturasPage() {
             variant={viewMode === "ledger" ? "default" : "ghost"}
             size="sm"
             onClick={() => setViewMode("ledger")}
-            className="h-8 text-xs font-semibold rounded-lg gap-1.5"
+            className="h-8 text-xs font-semibold rounded-lg gap-2"
           >
             <Scale className="size-3.5" />
             Razão & Microtaxas
@@ -240,7 +240,7 @@ function WorkspaceFaturasPage() {
         <>
           {/* ── 2. Grid de KPIs (Paradigma Clean) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+        <div className="p-5 rounded-lg border border-border/60 bg-card shadow-2xs space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
             Total em Aberto
           </span>
@@ -257,7 +257,7 @@ function WorkspaceFaturasPage() {
           </p>
         </div>
 
-        <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+        <div className="p-5 rounded-lg border border-border/60 bg-card shadow-2xs space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
             Faturas Atrasadas
           </span>
@@ -278,7 +278,7 @@ function WorkspaceFaturasPage() {
           </p>
         </div>
 
-        <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+        <div className="p-5 rounded-lg border border-border/60 bg-card shadow-2xs space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
             Faturas Liquidadas
           </span>
@@ -297,17 +297,17 @@ function WorkspaceFaturasPage() {
       </div>
 
       {/* ── 3. Barra de Filtro e Busca ── */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-muted/20 border border-border/60 rounded-2xl">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-muted/20 border border-border/60 rounded-lg">
         <div className="w-full sm:w-80">
           <Input
             placeholder="Buscar por descrição ou código..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-9 text-xs rounded-xl bg-background"
+            className="h-9 text-xs rounded-lg bg-background"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
           {[
             { id: "all", label: "Todas" },
             { id: "pending", label: "Em Aberto" },
@@ -319,7 +319,7 @@ function WorkspaceFaturasPage() {
               variant={statusFilter === f.id ? "default" : "ghost"}
               size="sm"
               onClick={() => setStatusFilter(f.id)}
-              className="h-8 text-xs font-semibold rounded-xl"
+              className="h-8 text-xs font-semibold rounded-lg"
             >
               {f.label}
             </Button>
@@ -328,7 +328,7 @@ function WorkspaceFaturasPage() {
       </div>
 
       {/* ── 4. Tabela de Faturas ── */}
-      <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-2xs">
+      <div className="rounded-lg border border-border/60 bg-card overflow-hidden shadow-2xs">
         <Table>
           <TableHeader className="bg-muted/40">
             <TableRow>
@@ -364,7 +364,7 @@ function WorkspaceFaturasPage() {
                           ID: {inv.id.slice(0, 8)} · Emissão: {formatDate(inv.created_at)}
                         </span>
                         {inv.notes && (
-                          <span className="text-xs text-muted-foreground/80 block italic mt-0.5">
+                          <span className="text-xs text-muted-foreground/80 block italic mt-1">
                             Nota: {inv.notes}
                           </span>
                         )}
@@ -425,7 +425,7 @@ function WorkspaceFaturasPage() {
                     </TableCell>
 
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                      <div className="flex items-center justify-end gap-2">
                         {!isPaid && (
                           <>
                             <Button
@@ -467,14 +467,14 @@ function WorkspaceFaturasPage() {
         /* ── MODO RAZÃO CONTÁBIL & MICROTAXAS (V141) ── */
         <div className="space-y-6">
           {loadingLedger ? (
-            <div className="p-12 text-center text-xs text-muted-foreground animate-pulse rounded-2xl border border-border/60 bg-card">
+            <div className="p-12 text-center text-xs text-muted-foreground animate-pulse rounded-lg border border-border/60 bg-card">
               Carregando razão contábil e verificando conciliação atômica...
             </div>
           ) : statement ? (
             <>
               {/* KPIs do Razão */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+                <div className="p-5 rounded-lg border border-border/60 bg-card shadow-2xs space-y-1">
                   <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
                     Conciliação Contábil
                   </span>
@@ -491,7 +491,7 @@ function WorkspaceFaturasPage() {
                   </p>
                 </div>
 
-                <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+                <div className="p-5 rounded-lg border border-border/60 bg-card shadow-2xs space-y-1">
                   <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
                     Microtaxas de Pedidos
                   </span>
@@ -508,7 +508,7 @@ function WorkspaceFaturasPage() {
                   </p>
                 </div>
 
-                <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+                <div className="p-5 rounded-lg border border-border/60 bg-card shadow-2xs space-y-1">
                   <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
                     Assinatura Waesy Max
                   </span>
@@ -525,7 +525,7 @@ function WorkspaceFaturasPage() {
                   </p>
                 </div>
 
-                <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+                <div className="p-5 rounded-lg border border-border/60 bg-card shadow-2xs space-y-1">
                   <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-mono">
                     Total Consolidado
                   </span>
@@ -544,7 +544,7 @@ function WorkspaceFaturasPage() {
               </div>
 
               {/* Tabela de Linhas do Razão */}
-              <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-2xs space-y-0">
+              <div className="rounded-lg border border-border/60 bg-card overflow-hidden shadow-2xs space-y-0">
                 <div className="p-4 border-b border-border/60 flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-bold text-foreground">Extrato Detalhado de Lançamentos</h3>
@@ -554,7 +554,7 @@ function WorkspaceFaturasPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => refetchLedger()}
-                    className="h-8 text-xs font-semibold rounded-xl gap-1.5"
+                    className="h-8 text-xs font-semibold rounded-lg gap-2"
                   >
                     <RefreshCw className="size-3.5" />
                     <span>Recarregar</span>
@@ -616,14 +616,14 @@ function WorkspaceFaturasPage() {
               </div>
             </>
           ) : (
-            <div className="p-12 text-center text-xs text-muted-foreground rounded-2xl border border-border/60 bg-card">
+            <div className="p-12 text-center text-xs text-muted-foreground rounded-lg border border-border/60 bg-card">
               Não foi possível carregar o razão contábil. Verifique sua conexão e tente novamente.
             </div>
           )}
         </div>
       )}
       <Dialog open={Boolean(pixModalInvoice)} onOpenChange={(open) => !open && setPixModalInvoice(null)}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <QrCode className="size-5 text-primary" />
@@ -640,7 +640,7 @@ function WorkspaceFaturasPage() {
             </div>
           ) : pixDetails ? (
             <div className="space-y-4 py-2">
-              <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 space-y-1 text-xs">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-1 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Fatura:</span>
                   <span className="font-bold text-foreground">{pixModalInvoice?.description}</span>
@@ -657,7 +657,7 @@ function WorkspaceFaturasPage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Chave PIX Oficial (E-mail)</Label>
                 <div className="flex gap-2">
                   <Input readOnly value={pixDetails.pixKey} className="h-9 font-mono text-xs bg-muted/20" />
@@ -668,21 +668,21 @@ function WorkspaceFaturasPage() {
                       navigator.clipboard.writeText(pixDetails.pixKey);
                       toast.success("Chave PIX copiada!");
                     }}
-                    className="h-9 rounded-xl font-bold"
+                    className="h-9 rounded-lg font-bold"
                   >
                     <Copy className="size-3.5" />
                   </Button>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Código PIX Copia e Cola</Label>
-                <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 text-xs font-mono break-all max-h-20 overflow-y-auto">
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/60 text-xs font-mono break-all max-h-20 overflow-y-auto">
                   {pixDetails.pixCopyPaste}
                 </div>
                 <Button
                   onClick={handleCopyPix}
-                  className="w-full rounded-xl font-bold h-10 text-xs bg-foreground text-background gap-1.5 mt-2"
+                  className="w-full rounded-lg font-bold h-10 text-xs bg-foreground text-background gap-2 mt-2"
                 >
                   <Copy className="size-3.5" />
                   <span>Copiar Código PIX Copia e Cola</span>
@@ -696,7 +696,7 @@ function WorkspaceFaturasPage() {
           ) : null}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPixModalInvoice(null)} className="w-full text-xs font-semibold rounded-xl">
+            <Button variant="outline" onClick={() => setPixModalInvoice(null)} className="w-full text-xs font-semibold rounded-lg">
               Fechar
             </Button>
           </DialogFooter>
@@ -705,7 +705,7 @@ function WorkspaceFaturasPage() {
 
       {/* ── MODAL DE ENVIO DE COMPROVANTE BANCÁRIO ── */}
       <Dialog open={Boolean(proofModalInvoice)} onOpenChange={(open) => !open && setProofModalInvoice(null)}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <UploadCloud className="size-5 text-primary" />
@@ -724,16 +724,16 @@ function WorkspaceFaturasPage() {
                 accept="image/*,application/pdf"
                 onChange={handleFileUpload}
                 disabled={isUploadingProof}
-                className="h-10 text-xs cursor-pointer rounded-xl file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-primary-foreground"
+                className="h-10 text-xs cursor-pointer rounded-lg file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-primary-foreground"
               />
               {isUploadingProof && (
-                <span className="text-xs text-primary flex items-center gap-1.5 animate-pulse">
+                <span className="text-xs text-primary flex items-center gap-2 animate-pulse">
                   <UploadCloud className="size-3.5 animate-spin" />
                   Fazendo upload seguro para o storage...
                 </span>
               )}
               {proofUrl && (
-                <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 flex items-center justify-between">
+                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 flex items-center justify-between">
                   <span className="font-semibold flex items-center gap-1">
                     <CheckCircle2 className="size-3.5" />
                     Arquivo anexado com sucesso!
@@ -745,13 +745,13 @@ function WorkspaceFaturasPage() {
               )}
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Observações (Opcional)</Label>
               <Textarea
                 placeholder="Ex: Transferido da conta PJ Santander em nome de..."
                 value={proofNotes}
                 onChange={(e) => setProofNotes(e.target.value)}
-                className="text-xs rounded-xl h-20"
+                className="text-xs rounded-lg h-20"
               />
             </div>
           </div>
@@ -760,14 +760,14 @@ function WorkspaceFaturasPage() {
             <Button
               variant="outline"
               onClick={() => setProofModalInvoice(null)}
-              className="text-xs font-semibold rounded-xl"
+              className="text-xs font-semibold rounded-lg"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmitProof}
               disabled={!proofUrl || isSubmittingProof}
-              className="text-xs font-bold rounded-xl bg-foreground text-background"
+              className="text-xs font-bold rounded-lg bg-foreground text-background"
             >
               {isSubmittingProof ? "Salvando..." : "Confirmar Envio"}
             </Button>
@@ -777,7 +777,7 @@ function WorkspaceFaturasPage() {
 
       {/* ── MODAL DE PRÉ-VISUALIZAÇÃO DE COMPROVANTE ── */}
       <Dialog open={Boolean(previewReceiptUrl)} onOpenChange={(open) => !open && setPreviewReceiptUrl(null)}>
-        <DialogContent className="sm:max-w-2xl rounded-2xl">
+        <DialogContent className="sm:max-w-2xl rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <FileText className="size-5 text-primary" />
@@ -791,10 +791,10 @@ function WorkspaceFaturasPage() {
                 <iframe
                   src={previewReceiptUrl}
                   title="Comprovante Bancário"
-                  className="w-full h-96 rounded-xl border border-border/60"
+                  className="w-full h-96 rounded-lg border border-border/60"
                 />
               ) : (
-                <div className="max-h-[70vh] overflow-y-auto rounded-xl border border-border/60 bg-muted/20 flex items-center justify-center p-2">
+                <div className="max-h-[70vh] overflow-y-auto rounded-lg border border-border/60 bg-muted/20 flex items-center justify-center p-2">
                   <img
                     src={previewReceiptUrl}
                     alt="Comprovante Bancário"
@@ -807,14 +807,14 @@ function WorkspaceFaturasPage() {
 
           <DialogFooter className="flex justify-between sm:justify-between items-center">
             {previewReceiptUrl && (
-              <Button asChild variant="outline" size="sm" className="text-xs font-semibold rounded-xl">
-                <a href={previewReceiptUrl} target="_blank" rel="noopener noreferrer" className="gap-1.5">
+              <Button asChild variant="outline" size="sm" className="text-xs font-semibold rounded-lg">
+                <a href={previewReceiptUrl} target="_blank" rel="noopener noreferrer" className="gap-2">
                   <ExternalLink className="size-3.5" />
                   <span>Abrir Original</span>
                 </a>
               </Button>
             )}
-            <Button variant="default" size="sm" onClick={() => setPreviewReceiptUrl(null)} className="text-xs font-bold rounded-xl">
+            <Button variant="default" size="sm" onClick={() => setPreviewReceiptUrl(null)} className="text-xs font-bold rounded-lg">
               Fechar
             </Button>
           </DialogFooter>

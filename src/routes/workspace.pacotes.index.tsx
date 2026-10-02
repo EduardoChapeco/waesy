@@ -96,9 +96,9 @@ function WorkspacePackagesPage() {
  actions={
  <Button
  onClick={handleOpenNew}
- className="rounded-xl font-bold bg-foreground text-background hover:bg-foreground/90 h-9 text-xs"
+ className="rounded-lg font-bold bg-foreground text-background hover:bg-foreground/90 h-9 text-xs"
  >
- <Plus className="size-3.5 mr-1.5" />
+ <Plus className="size-3.5 mr-2" />
  Novo Pacote
  </Button>
  }
@@ -109,8 +109,8 @@ function WorkspacePackagesPage() {
  title="Nenhum pacote cadastrado"
  description="Crie passes de aulas, mensalidades ou combos de sessões com desconto."
  action={
- <Button onClick={handleOpenNew} className="rounded-xl font-bold text-xs h-9">
- <Plus className="size-3.5 mr-1.5" /> Criar Primeiro Pacote
+ <Button onClick={handleOpenNew} className="rounded-lg font-bold text-xs h-9">
+ <Plus className="size-3.5 mr-2" /> Criar Primeiro Pacote
  </Button>
  }
  />
@@ -119,12 +119,12 @@ function WorkspacePackagesPage() {
  {packages.map((pkg: any) => (
  <div
  key={pkg.id}
- className="p-5 rounded-2xl bg-card space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-all "
+ className="p-5 rounded-lg bg-card space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-all "
  >
  <div className="space-y-3">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <span className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <span className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Ticket size={16} />
  </span>
  <Badge className="bg-muted text-muted-foreground font-mono text-xs">
@@ -146,7 +146,7 @@ function WorkspacePackagesPage() {
  <h3 className="text-base font-bold text-foreground leading-tight">
  {pkg.title}
  </h3>
- <span className="text-xs text-muted-foreground font-medium block mt-0.5">
+ <span className="text-xs text-muted-foreground font-medium block mt-1">
  Serviço: {pkg.booking_services?.title || "Geral"}
  </span>
  </div>
@@ -157,7 +157,7 @@ function WorkspacePackagesPage() {
  </p>
  )}
 
- <div className="p-3 rounded-2xl bg-muted/40 flex items-center justify-between text-xs font-mono">
+ <div className="p-3 rounded-lg bg-muted/40 flex items-center justify-between text-xs font-mono">
  <div>
  <span className="text-xs text-muted-foreground uppercase block">
  Preço do Pacote
@@ -181,12 +181,12 @@ function WorkspacePackagesPage() {
  <span className="text-xs text-muted-foreground">
  {pkg.is_recurring ? "Assinatura Recorrente" : "Compra Avulsa"}
  </span>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Button
  size="sm"
  variant="outline"
  onClick={() => handleOpenEdit(pkg)}
- className="h-8 px-3 rounded-xl border-border text-xs font-semibold"
+ className="h-8 px-3 rounded-lg border-border text-xs font-semibold"
  >
  <Edit2 className="size-3.5 mr-1" /> Editar
  </Button>
@@ -220,13 +220,13 @@ function WorkspacePackagesPage() {
 
  {editingPkg && (
  <div className="space-y-4 py-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Serviço Vinculado *</Label>
  <Select
  value={editingPkg.service_id}
  onValueChange={(val) => setEditingPkg({ ...editingPkg, service_id: val })}
  >
- <SelectTrigger className="rounded-xl h-10 text-xs">
+ <SelectTrigger className="rounded-lg h-10 text-xs">
  <SelectValue placeholder="Selecione o serviço..." />
  </SelectTrigger>
  <SelectContent>
@@ -239,28 +239,28 @@ function WorkspacePackagesPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Título do Pacote *</Label>
  <Input
  placeholder="ex: Combo 10 Aulas de Pilates, Plano Mensal 2x/Semana"
  value={editingPkg.title || ""}
  onChange={(e) => setEditingPkg({ ...editingPkg, title: e.target.value })}
- className="rounded-xl h-10 text-xs"
+ className="rounded-lg h-10 text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Descrição / Benefícios</Label>
  <Input
  placeholder="ex: Válido para horários matutinos e noturnos com reposição de até 2 aulas."
  value={editingPkg.description || ""}
  onChange={(e) => setEditingPkg({ ...editingPkg, description: e.target.value })}
- className="rounded-xl h-10 text-xs"
+ className="rounded-lg h-10 text-xs"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Qtd. de Aulas / Créditos *</Label>
  <Input
  type="number"
@@ -269,11 +269,11 @@ function WorkspacePackagesPage() {
  onChange={(e) =>
  setEditingPkg({ ...editingPkg, total_credits: Number(e.target.value) })
  }
- className="rounded-xl h-10 text-xs font-mono"
+ className="rounded-lg h-10 text-xs font-mono"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Preço Total (R$) *</Label>
  <CurrencyField
  value={editingPkg.price_cents}
@@ -285,11 +285,11 @@ function WorkspacePackagesPage() {
  }
  placeholder="0,00"
  allowZero={false}
- className="rounded-xl h-10 text-xs font-mono font-bold"
+ className="rounded-lg h-10 text-xs font-mono font-bold"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Validade (Dias) *</Label>
  <Input
  type="number"
@@ -298,12 +298,12 @@ function WorkspacePackagesPage() {
  onChange={(e) =>
  setEditingPkg({ ...editingPkg, validity_days: Number(e.target.value) })
  }
- className="rounded-xl h-10 text-xs font-mono"
+ className="rounded-lg h-10 text-xs font-mono"
  />
  </div>
  </div>
 
- <div className="p-4 rounded-2xl bg-muted/20 border border-border/60 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-3">
  <div className="flex items-center justify-between">
  <div>
  <Label className="text-xs font-bold block">Assinatura Recorrente</Label>
@@ -338,14 +338,14 @@ function WorkspacePackagesPage() {
  <Button
  variant="outline"
  onClick={() => setIsOpen(false)}
- className="rounded-xl text-xs font-bold border-border h-10 px-4 cursor-pointer"
+ className="rounded-lg text-xs font-bold border-border h-10 px-4 cursor-pointer"
  >
  Cancelar
  </Button>
  <Button
  disabled={saveMutation.isPending}
  onClick={() => saveMutation.mutate(editingPkg)}
- className="rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 h-10 px-5 cursor-pointer"
+ className="rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 h-10 px-5 cursor-pointer"
  >
  {saveMutation.isPending ? "Salvando..." : "Salvar Pacote"}
  </Button>

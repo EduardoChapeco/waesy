@@ -143,7 +143,7 @@ export function NewTaskModal({
               <SheetTitle className="text-base font-bold text-foreground">
                 Nova Tarefa
               </SheetTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1">
                 Organize com tags, checklists, prazo e recorrência
               </p>
             </div>
@@ -153,7 +153,7 @@ export function NewTaskModal({
               onClick={() => setIsMyDay((v) => !v)}
               title={isMyDay ? "Remover de Meu Dia" : "Adicionar ao Meu Dia"}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer",
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer",
                 isMyDay
                   ? "bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400"
                   : "bg-muted/30 border-border/60 text-muted-foreground hover:bg-muted"
@@ -169,13 +169,13 @@ export function NewTaskModal({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto no-scrollbar px-6 py-5 space-y-5">
 
           {/* Título */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="text-xs font-semibold text-foreground">Título *</label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Confirmar passagens para excursão de outubro..."
-              className="h-11 rounded-xl text-sm font-medium"
+              className="h-11 rounded-lg text-sm font-medium"
               autoFocus
             />
           </div>
@@ -192,7 +192,7 @@ export function NewTaskModal({
                     type="button"
                     onClick={() => setPriority(p)}
                     className={cn(
-                      "h-9 rounded-xl border text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                      "h-9 rounded-lg border text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2",
                       priority === p
                         ? `ring-1 ${cfg.ring}`
                         : "border-border/60 bg-background text-muted-foreground hover:bg-muted/50"
@@ -208,20 +208,20 @@ export function NewTaskModal({
 
           {/* Vencimento + Estimativa */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-2">
                 <Calendar className="size-3.5 text-muted-foreground" /> Vencimento
               </label>
               <Input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="h-10 rounded-xl text-xs font-mono"
+                className="h-10 rounded-lg text-xs font-mono"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-2">
                 <Clock className="size-3.5 text-muted-foreground" /> Estimativa (min)
               </label>
               <Input
@@ -231,20 +231,20 @@ export function NewTaskModal({
                 value={estimatedMinutes || ""}
                 onChange={(e) => setEstimatedMinutes(parseInt(e.target.value, 10) || 0)}
                 placeholder="Ex: 30"
-                className="h-10 rounded-xl text-xs font-mono"
+                className="h-10 rounded-lg text-xs font-mono"
               />
             </div>
           </div>
 
           {/* Recorrência */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-foreground flex items-center gap-2">
               <Repeat className="size-3.5 text-muted-foreground" /> Recorrência
             </label>
             <select
               value={recurrence}
               onChange={(e) => setRecurrence(e.target.value as any)}
-              className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="none">Sem recorrência (Tarefa única)</option>
               <option value="daily">Diária — Todos os dias</option>
@@ -255,7 +255,7 @@ export function NewTaskModal({
           </div>
 
           {/* Vínculo de Negócio */}
-          <div className="p-4 rounded-xl border border-border/60 bg-muted/20 space-y-3">
+          <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
             <div className="flex items-center gap-2">
               <Briefcase className="size-4 text-primary" />
               <span className="text-xs font-bold text-foreground">Vínculo Comercial</span>
@@ -293,19 +293,19 @@ export function NewTaskModal({
           </div>
 
           {/* Descrição */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="text-xs font-semibold text-foreground">Detalhes e Instruções</label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Observações, links de referência, procedimentos padrão..."
-              className="min-h-20 rounded-xl text-xs resize-none"
+              className="min-h-20 rounded-lg text-xs resize-none"
             />
           </div>
 
           {/* Tags */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-foreground flex items-center gap-2">
               <Tag className="size-3.5 text-muted-foreground" /> Etiquetas
             </label>
             <div className="flex gap-2">
@@ -333,14 +333,14 @@ export function NewTaskModal({
             </div>
 
             {/* Sugestões rápidas */}
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {COMMON_TAGS.map((ct) => (
                 <button
                   key={ct}
                   type="button"
                   onClick={() => handleAddTag(ct)}
                   className={cn(
-                    "text-[11px] px-2.5 py-1 rounded-full border transition-colors cursor-pointer",
+                    "text-[11px] px-3 py-1 rounded-full border transition-colors cursor-pointer",
                     tags.includes(ct)
                       ? "bg-primary text-primary-foreground border-primary font-medium"
                       : "bg-muted/30 text-muted-foreground border-border/60 hover:bg-muted"
@@ -353,12 +353,12 @@ export function NewTaskModal({
 
             {/* Tags selecionadas */}
             {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {tags.map((tag) => (
                   <Badge
                     key={tag}
                     variant="secondary"
-                    className="text-xs py-0.5 pl-2.5 pr-1.5 flex items-center gap-1 rounded-md"
+                    className="text-xs py-1 pl-3 pr-2 flex items-center gap-1 rounded-md"
                   >
                     <span>{tag}</span>
                     <button
@@ -376,7 +376,7 @@ export function NewTaskModal({
 
           {/* Etapas / Checklist */}
           <div className="space-y-2 pt-1">
-            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-foreground flex items-center gap-2">
               <CheckSquare className="size-3.5 text-muted-foreground" /> Etapas do Processo
             </label>
 
@@ -405,11 +405,11 @@ export function NewTaskModal({
             </div>
 
             {checklists.length > 0 && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {checklists.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border/60 text-xs text-foreground"
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/60 text-xs text-foreground"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="size-5 rounded bg-muted flex items-center justify-center font-mono text-[10px] text-muted-foreground shrink-0">
@@ -447,7 +447,7 @@ export function NewTaskModal({
               variant="ghost"
               onClick={() => { reset(); onOpenChange(false); }}
               disabled={submitting}
-              className="h-10 px-4 rounded-xl text-xs cursor-pointer"
+              className="h-10 px-4 rounded-lg text-xs cursor-pointer"
             >
               Cancelar
             </Button>
@@ -455,7 +455,7 @@ export function NewTaskModal({
               type="button"
               onClick={handleSubmit}
               disabled={submitting || !title.trim()}
-              className="h-10 px-6 rounded-xl text-sm font-semibold cursor-pointer shadow-sm"
+              className="h-10 px-6 rounded-lg text-sm font-semibold cursor-pointer shadow-sm"
             >
               {submitting ? "Criando..." : "Criar Tarefa"}
             </Button>

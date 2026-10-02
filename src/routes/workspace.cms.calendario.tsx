@@ -150,12 +150,12 @@ function CalendarioEditorialPage() {
 
  <Dialog open={isOpen} onOpenChange={setIsOpen}>
  <DialogTrigger asChild>
- <Button className="h-11 px-5 rounded-xl font-medium text-xs gap-2 shadow-xs">
+ <Button className="h-11 px-5 rounded-lg font-medium text-xs gap-2 shadow-xs">
  <Plus className="size-4" />
  Agendar Publicação
  </Button>
  </DialogTrigger>
- <DialogContent className="sm:max-w-md sm:rounded-2xl max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-md sm:rounded-lg max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold flex items-center gap-2">
  <CalendarIcon className="size-5 text-primary" />
@@ -167,18 +167,18 @@ function CalendarioEditorialPage() {
  </DialogHeader>
 
  <form onSubmit={handleSchedule} className="space-y-4 pt-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Título ou Chamada *</Label>
  <Input
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Teaser do Evento / Foto dos Produtos"
- className="h-11 text-xs rounded-xl"
+ className="h-11 text-xs rounded-lg"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Tipo de Publicação</Label>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  {Object.entries(TYPE_CONFIG).map(([key, cfg]) => {
@@ -189,7 +189,7 @@ function CalendarioEditorialPage() {
  type="button"
  onClick={() => setType(key)}
  className={cn(
- "min-h-11 p-2.5 rounded-xl border text-left flex items-center gap-2 text-xs font-semibold transition-all",
+ "min-h-11 p-3 rounded-lg border text-left flex items-center gap-2 text-xs font-semibold transition-all",
  type === key
  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
  : "border-border bg-background hover:bg-muted/40",
@@ -204,23 +204,23 @@ function CalendarioEditorialPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Data de Disparo *</Label>
  <Input
  type="date"
  value={dateStr}
  onChange={(e) => setDateStr(e.target.value)}
- className="h-11 text-xs rounded-xl"
+ className="h-11 text-xs rounded-lg"
  required
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Horário *</Label>
  <Input
  type="time"
  value={timeStr}
  onChange={(e) => setTimeStr(e.target.value)}
- className="h-11 text-xs rounded-xl"
+ className="h-11 text-xs rounded-lg"
  required
  />
  </div>
@@ -229,7 +229,7 @@ function CalendarioEditorialPage() {
  <Button
  type="submit"
  disabled={isSubmitting}
- className="w-full h-11 rounded-xl font-medium text-xs gap-2 mt-2 shadow-xs"
+ className="w-full h-11 rounded-lg font-medium text-xs gap-2 mt-2 shadow-xs"
  >
  {isSubmitting ? (
  <>
@@ -250,8 +250,8 @@ function CalendarioEditorialPage() {
 
  {/* Grade de Posts Agendados em Ordem Cronológica */}
  {posts.length === 0 ? (
- <div className="rounded-2xl border border-border/60 bg-card p-8 sm:p-12 text-center space-y-3 shadow-xs">
- <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+ <div className="rounded-lg border border-border/60 bg-card p-8 sm:p-12 text-center space-y-3 shadow-xs">
+ <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
  <CalendarIcon className="size-6" />
  </div>
  <h3 className="text-sm font-bold text-foreground">Nenhuma publicação agendada</h3>
@@ -271,28 +271,28 @@ function CalendarioEditorialPage() {
  <div
  key={post.id}
  className={cn(
- "rounded-2xl border bg-card p-5 space-y-4 transition-all hover:border-primary/40 shadow-xs",
+ "rounded-lg border bg-card p-5 space-y-4 transition-all hover:border-primary/40 shadow-xs",
  config.borderClass,
  )}
  >
  <div className="flex items-start justify-between gap-2">
  <span
  className={cn(
- "px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5",
+ "px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-2",
  config.colorClass,
  )}
  >
  <Icon className="size-3.5" />
  {config.label}
  </span>
- <Badge variant="outline" className="text-xs rounded-md font-medium px-2 py-0.5 uppercase tracking-wide">
+ <Badge variant="outline" className="text-xs rounded-md font-medium px-2 py-1 uppercase tracking-wide">
  {post.status === "scheduled" ? "Programado" : post.status}
  </Badge>
  </div>
 
  <div>
  <h3 className="text-sm font-bold text-foreground leading-snug">{post.title}</h3>
- <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-2">
+ <p className="text-xs text-muted-foreground flex items-center gap-2 mt-2">
  <Clock className="size-3.5 text-primary" />
  {formatDate(post.scheduled_for)} às{" "}
  {postDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}

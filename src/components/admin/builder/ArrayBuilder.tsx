@@ -69,7 +69,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  )}
 
  {items.length === 0 ? (
- <div className="text-xs text-center py-4 bg-muted/50 rounded-xl text-muted-foreground border border-dashed">
+ <div className="text-xs text-center py-4 bg-muted/50 rounded-lg text-muted-foreground border border-dashed">
  Nenhum item adicionado
  </div>
  ) : (
@@ -82,7 +82,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  <AccordionItem
  key={item._id || index}
  value={`item-${index}`}
- className={`border rounded-xl overflow-hidden transition-all ${isDragged ? "opacity-50" : "bg-card"} ${isDragOver ? "border-primary border-t-2" : ""}`}
+ className={`border rounded-lg overflow-hidden transition-all ${isDragged ? "opacity-50" : "bg-card"} ${isDragOver ? "border-primary border-t-2" : ""}`}
  draggable
  onDragStart={(e) => {
  setDraggedIndex(index);
@@ -124,7 +124,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  </div>
  <AccordionContent className="p-3 border-t bg-card space-y-3">
  {arrayFields.map((field) => (
- <div key={field.name} className="flex flex-col gap-1.5">
+ <div key={field.name} className="flex flex-col gap-2">
  {field.type === "image" ? (
  <MediaUploader
  label={field.label}
@@ -132,7 +132,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  onChange={(val) => handleUpdateItem(index, field.name, val)}
  />
  ) : field.type === "color" ? (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold uppercase text-muted-foreground">
  {field.label}
  </label>
@@ -152,7 +152,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  {field.label}
  </label>
  ) : field.type === "select" && field.options ? (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold uppercase text-muted-foreground">
  {field.label}
  </label>
@@ -171,7 +171,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  </div>
  ) : field.type === "textarea" ? (
  <textarea
- className="w-full text-sm p-2 border rounded-xl bg-background min-h-[80px]"
+ className="w-full text-sm p-2 border rounded-lg bg-background min-h-[80px]"
  placeholder={field.label}
  value={item[field.name] || ""}
  onChange={(e) => handleUpdateItem(index, field.name, e.target.value)}

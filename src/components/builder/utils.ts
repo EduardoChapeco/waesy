@@ -30,8 +30,8 @@ export function getSectionStyle(styling?: OmniBlockStyling): {
     sm: "rounded-sm",
     md: "rounded-md",
     lg: "rounded-lg",
-    xl: "rounded-2xl",
-    "2xl": "rounded-3xl",
+    xl: "rounded-lg",
+    "2xl": "rounded-lg",
   };
 
   const pyClass = paddingYMap[styling.paddingY || "md"] || "py-20 lg:py-28";

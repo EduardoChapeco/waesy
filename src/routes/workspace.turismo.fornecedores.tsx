@@ -129,11 +129,11 @@ function WorkspaceSuppliersPage() {
  {isLoading ? (
  <div className="py-12 text-center text-xs text-muted-foreground">Carregando catálogo de fornecedores...</div>
  ) : filtered.length === 0 ? (
- <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-card space-y-3">
+ <div className="p-12 text-center rounded-lg border border-dashed border-border bg-card space-y-3">
  <Building2 className="size-8 text-muted-foreground mx-auto" />
  <p className="text-xs font-bold text-foreground">Nenhum fornecedor encontrado</p>
  <p className="text-xs text-muted-foreground">Cadastre operadoras e DMCs para vincular às propostas e cotações da agência.</p>
- <Button type="button" onClick={() => setWizardOpen(true)} size="sm" className="rounded-xl">
+ <Button type="button" onClick={() => setWizardOpen(true)} size="sm" className="rounded-lg">
  Cadastrar Primeiro Fornecedor
  </Button>
  </div>
@@ -142,11 +142,11 @@ function WorkspaceSuppliersPage() {
  {filtered.map((s) => (
  <div
  key={s.id}
- className="p-5 rounded-2xl bg-card border border-border hover:border-primary/40 transition-all shadow-sm flex flex-col justify-between space-y-4"
+ className="p-5 rounded-lg bg-card border border-border hover:border-primary/40 transition-all shadow-sm flex flex-col justify-between space-y-4"
  >
  <div className="space-y-2">
  <div className="flex items-start justify-between gap-2">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <h3 className="text-sm font-bold text-foreground leading-tight">{s.name}</h3>
  {s.legal_name && (
  <p className="text-xs text-muted-foreground truncate max-w-[220px]">{s.legal_name}</p>
@@ -158,7 +158,7 @@ function WorkspaceSuppliersPage() {
  </div>
 
  <div className="flex items-center gap-2 text-xs pt-1">
- <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center gap-1">
+ <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center gap-1">
  <Percent className="size-3" /> {s.commission_rate}% Comissão
  </span>
  {s.city && (
@@ -169,7 +169,7 @@ function WorkspaceSuppliersPage() {
  </div>
 
  {s.notes && (
- <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 bg-muted/20 p-2.5 rounded-xl">
+ <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 bg-muted/20 p-3 rounded-lg">
  {s.notes}
  </p>
  )}
@@ -180,7 +180,7 @@ function WorkspaceSuppliersPage() {
  {s.phone && (
  <a
  href={`tel:${s.phone}`}
- className="p-1.5 rounded-lg hover:bg-muted text-foreground transition-colors"
+ className="p-2 rounded-lg hover:bg-muted text-foreground transition-colors"
  title={s.phone}
  >
  <Phone className="size-3.5" />
@@ -189,7 +189,7 @@ function WorkspaceSuppliersPage() {
  {s.email && (
  <a
  href={`mailto:${s.email}`}
- className="p-1.5 rounded-lg hover:bg-muted text-foreground transition-colors"
+ className="p-2 rounded-lg hover:bg-muted text-foreground transition-colors"
  title={s.email}
  >
  <Mail className="size-3.5" />

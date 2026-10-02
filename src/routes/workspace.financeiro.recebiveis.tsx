@@ -463,44 +463,44 @@ Assinatura da Loja (Consignante)`;
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           {mainTab === "carnes" && (
             <>
               {selectedInstallmentIds.length > 0 && (
                 <Button
-                  className="rounded-xl bg-primary text-primary-foreground font-medium text-xs h-10 px-3.5 shadow-sm"
+                  className="rounded-lg bg-primary text-primary-foreground font-medium text-xs h-10 px-4 shadow-sm"
                   onClick={() => setIsMassBillingOpen(true)}
                 >
-                  <Send className="h-3.5 w-3.5 mr-1.5" /> Cobrar ({selectedInstallmentIds.length}) Selecionados
+                  <Send className="h-3.5 w-3.5 mr-2" /> Cobrar ({selectedInstallmentIds.length}) Selecionados
                 </Button>
               )}
               <Button
-                className="rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 px-4 shadow-sm"
+                className="rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 px-4 shadow-sm"
                 onClick={() => setIsCreateModalOpen(true)}
               >
-                <Plus className="h-4 w-4 mr-1.5" /> Emitir Novo Carnê
+                <Plus className="h-4 w-4 mr-2" /> Emitir Novo Carnê
               </Button>
             </>
           )}
 
           {mainTab === "condicionais" && (
             <Button
-              className="rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 px-4 shadow-sm"
+              className="rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 px-4 shadow-sm"
               onClick={() => setIsCreateCondicionalOpen(true)}
             >
-              <Plus className="h-4 w-4 mr-1.5" /> Nova Saída em Condicional
+              <Plus className="h-4 w-4 mr-2" /> Nova Saída em Condicional
             </Button>
           )}
         </div>
       </div>
 
       {/* Seletor de Abas Principais (Clean Paradigm) */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-muted/50 border border-border/60 max-w-xl">
+      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 border border-border/60 max-w-xl">
         <button
           type="button"
           onClick={() => setMainTab("carnes")}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 px-3.5 text-xs font-semibold rounded-xl transition-all",
+            "flex-1 flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold rounded-lg transition-all",
             mainTab === "carnes"
               ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
@@ -508,7 +508,7 @@ Assinatura da Loja (Consignante)`;
         >
           <Receipt className="h-4 w-4" />
           <span>Carnês e Caderninho</span>
-          <Badge variant="secondary" className="text-xs text-muted-foreground/75 px-1.5 py-0 h-4">
+          <Badge variant="secondary" className="text-xs text-muted-foreground/75 px-2 py-0 h-4">
             {carnes.length}
           </Badge>
         </button>
@@ -517,7 +517,7 @@ Assinatura da Loja (Consignante)`;
           type="button"
           onClick={() => setMainTab("condicionais")}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 px-3.5 text-xs font-semibold rounded-xl transition-all",
+            "flex-1 flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold rounded-lg transition-all",
             mainTab === "condicionais"
               ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
@@ -527,7 +527,7 @@ Assinatura da Loja (Consignante)`;
           <span>Condicionais e Malas</span>
           <Badge
             variant="outline"
-            className="text-xs text-muted-foreground/75 px-1.5 py-0 h-4 border-indigo-200 text-indigo-600 dark:text-indigo-400"
+            className="text-xs text-muted-foreground/75 px-2 py-0 h-4 border-indigo-200 text-indigo-600 dark:text-indigo-400"
           >
             {condicionaisList.filter((c: any) => c.status !== "closed").length} ativas
           </Badge>
@@ -538,8 +538,8 @@ Assinatura da Loja (Consignante)`;
       {mainTab === "carnes" && (
         <>
           {/* KPI Cards de Carteira (Clean Paradigm) */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Total a Receber
@@ -552,7 +552,7 @@ Assinatura da Loja (Consignante)`;
           <div className="text-xs text-muted-foreground">Carteira ativa em aberto</div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Inadimplência Geral
@@ -567,7 +567,7 @@ Assinatura da Loja (Consignante)`;
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Recebido no Mês
@@ -580,7 +580,7 @@ Assinatura da Loja (Consignante)`;
           <div className="text-xs text-muted-foreground">Liquidações confirmadas</div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Conciliações Pendentes
@@ -597,12 +597,12 @@ Assinatura da Loja (Consignante)`;
       {/* Barra de Filtros e Busca */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
         {/* Tabs de Filtro */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/50 overflow-x-auto">
+        <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto">
           <button
             type="button"
             onClick={() => setActiveFilter("all")}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "all"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -614,7 +614,7 @@ Assinatura da Loja (Consignante)`;
             type="button"
             onClick={() => setActiveFilter("due_soon")}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "due_soon"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -626,7 +626,7 @@ Assinatura da Loja (Consignante)`;
             type="button"
             onClick={() => setActiveFilter("late")}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "late"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -638,7 +638,7 @@ Assinatura da Loja (Consignante)`;
             type="button"
             onClick={() => setActiveFilter("pending_conciliation")}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5",
+              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-2",
               activeFilter === "pending_conciliation"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -646,7 +646,7 @@ Assinatura da Loja (Consignante)`;
           >
             ⏳ Conciliações
             {(report?.pendingConciliationCount || 0) > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-xs text-muted-foreground/75">
+              <span className="px-2 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-xs text-muted-foreground/75">
                 {report?.pendingConciliationCount}
               </span>
             )}
@@ -655,7 +655,7 @@ Assinatura da Loja (Consignante)`;
             type="button"
             onClick={() => setActiveFilter("settled")}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "settled"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -672,14 +672,14 @@ Assinatura da Loja (Consignante)`;
             placeholder="Buscar por cliente, título..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-10 text-xs rounded-xl bg-card"
+            className="pl-9 h-10 text-xs rounded-lg bg-card"
           />
         </div>
       </div>
 
       {/* Lista de Carnês & Parcelas */}
       {carnes.length === 0 ? (
-        <div className="py-16 text-center space-y-3 bg-card rounded-2xl p-8 border border-dashed border-border/60 shadow-xs">
+        <div className="py-16 text-center space-y-3 bg-card rounded-lg p-8 border border-dashed border-border/60 shadow-xs">
           <Receipt size={40} className="text-muted-foreground/40 mx-auto" />
           <h3 className="text-base font-semibold text-foreground">Nenhum carnê encontrado</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -696,7 +696,7 @@ Assinatura da Loja (Consignante)`;
             return (
               <div
                 key={carne.id}
-                className="bg-card rounded-2xl border border-border/60 shadow-xs overflow-hidden space-y-4 p-5"
+                className="bg-card rounded-lg border border-border/60 shadow-xs overflow-hidden space-y-4 p-5"
               >
                 {/* Header do Carnê */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-border/50">
@@ -774,7 +774,7 @@ Assinatura da Loja (Consignante)`;
                             />
                           )}
 
-                          <div className="space-y-0.5">
+                          <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-foreground text-xs sm:text-sm">
                                 Parcela {inst.installment_number}/{carne.installments_count}
@@ -840,7 +840,7 @@ Assinatura da Loja (Consignante)`;
                               {formatMoney(finalAmount)}
                             </div>
                             {isPaid && (
-                              <div className="text-xs text-emerald-600 flex items-center gap-0.5 justify-end">
+                              <div className="text-xs text-emerald-600 flex items-center gap-1 justify-end">
                                 <ShieldCheck className="h-3 w-3" /> Conciliado
                               </div>
                             )}
@@ -852,7 +852,7 @@ Assinatura da Loja (Consignante)`;
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-11 sm:h-8 px-2.5 text-xs rounded-xl font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+                                  className="h-11 sm:h-8 px-3 text-xs rounded-lg font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
                                   onClick={() => handleSendWhatsAppReminder(carne, inst)}
                                   title="Enviar lembrete via WhatsApp"
                                 >
@@ -865,7 +865,7 @@ Assinatura da Loja (Consignante)`;
                                 size="sm"
                                 variant={isPending ? "default" : "outline"}
                                 className={cn(
-                                  "h-11 sm:h-8 px-3.5 text-xs rounded-xl font-medium cursor-pointer shadow-2xs",
+                                  "h-11 sm:h-8 px-4 text-xs rounded-lg font-medium cursor-pointer shadow-2xs",
                                   isPending ? "bg-primary text-primary-foreground" : "text-foreground",
                                 )}
                                 onClick={() => handleOpenConciliation(carne, inst)}
@@ -897,8 +897,8 @@ Assinatura da Loja (Consignante)`;
       {mainTab === "condicionais" && (
         <div className="space-y-6">
           {/* KPI Cards de Condicional */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-            <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Peças na Rua / Em Prova
@@ -916,7 +916,7 @@ Assinatura da Loja (Consignante)`;
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+            <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Valor sob Confiança
@@ -940,7 +940,7 @@ Assinatura da Loja (Consignante)`;
               <div className="text-xs text-muted-foreground">Potencial de faturamento em aberto</div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+            <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Taxa de Conversão
@@ -951,7 +951,7 @@ Assinatura da Loja (Consignante)`;
               <div className="text-xs text-muted-foreground">Média de peças aprovadas na prova</div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+            <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Atenção / Vencimento
@@ -967,7 +967,7 @@ Assinatura da Loja (Consignante)`;
 
           {/* Filtros e Busca de Condicionais */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/50 overflow-x-auto">
+            <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto">
               {(
                 [
                   { key: "all", label: "Todas" },
@@ -982,7 +982,7 @@ Assinatura da Loja (Consignante)`;
                   type="button"
                   onClick={() => setCondicionaisFilter(f.key)}
                   className={cn(
-                    "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+                    "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
                     condicionaisFilter === f.key
                       ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground",
@@ -999,7 +999,7 @@ Assinatura da Loja (Consignante)`;
                 placeholder="Buscar cliente ou mala..."
                 value={condicionaisSearch}
                 onChange={(e) => setCondicionaisSearch(e.target.value)}
-                className="pl-9 h-9 text-xs rounded-xl bg-card border-border/60"
+                className="pl-9 h-9 text-xs rounded-lg bg-card border-border/60"
               />
             </div>
           </div>
@@ -1027,11 +1027,11 @@ Assinatura da Loja (Consignante)`;
                 return (
                   <div
                     key={cond.id}
-                    className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-4 hover:border-border transition-colors"
+                    className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-4 hover:border-border transition-colors"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm shrink-0">
+                        <div className="h-10 w-10 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm shrink-0">
                           {cond.customerName.charAt(0)}
                         </div>
                         <div>
@@ -1059,7 +1059,7 @@ Assinatura da Loja (Consignante)`;
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                          <p className="text-xs text-muted-foreground mt-1">
                             Saída: {formatDate(cond.dispatchDate)} • Devolução prevista: {formatDate(cond.returnDueDate)}
                             {cond.notes && ` • ${cond.notes}`}
                           </p>
@@ -1074,7 +1074,7 @@ Assinatura da Loja (Consignante)`;
                             )}!%20Passando%20para%20saber%20como%20ficaram%20as%20pe%C3%A7as%20da%20sua%20mala%20condicional%20%E2%9C%A8`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3.5 h-11 sm:h-8 text-xs font-medium rounded-xl border border-border/70 hover:bg-muted/50 text-foreground transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-2 px-4 h-11 sm:h-8 text-xs font-medium rounded-lg border border-border/70 hover:bg-muted/50 text-foreground transition-colors cursor-pointer"
                           >
                             <MessageSquare className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-emerald-500" /> WhatsApp
                           </a>
@@ -1083,7 +1083,7 @@ Assinatura da Loja (Consignante)`;
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-11 sm:h-8 px-3 text-xs rounded-xl font-medium border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs"
+                          className="h-11 sm:h-8 px-3 text-xs rounded-lg font-medium border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs"
                           onClick={() => handleGenerateCondicionalContract(cond)}
                           title="Gerar Termo"
                         >
@@ -1094,7 +1094,7 @@ Assinatura da Loja (Consignante)`;
                         {!isClosed && (
                           <Button
                             size="sm"
-                            className="h-11 sm:h-8 px-3.5 text-xs rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium cursor-pointer shadow-2xs"
+                            className="h-11 sm:h-8 px-4 text-xs rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium cursor-pointer shadow-2xs"
                             onClick={() => handleOpenReturnModal(cond)}
                           >
                             <CheckCircle2 className="h-4 w-4 sm:h-3.5 sm:w-3.5 mr-1 text-emerald-400" /> Dar Baixa / Conferir
@@ -1104,7 +1104,7 @@ Assinatura da Loja (Consignante)`;
                     </div>
 
                     {/* Peças da Mala */}
-                    <div className="p-3 rounded-xl bg-muted/40 border border-border/40 space-y-2">
+                    <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
                       <div className="flex items-center justify-between text-xs font-medium text-muted-foreground px-1">
                         <span>Peças Sob Confiança ({cond.items.length})</span>
                         <span>Total da Mala: {formatMoney(totalMalaCents)}</span>
@@ -1113,7 +1113,7 @@ Assinatura da Loja (Consignante)`;
                         {cond.items.map((item: any) => (
                           <div
                             key={item.id}
-                            className="p-2.5 rounded-lg bg-background border border-border/50 flex items-center justify-between text-xs"
+                            className="p-3 rounded-lg bg-background border border-border/50 flex items-center justify-between text-xs"
                           >
                             <div className="truncate pr-2">
                               <p className="font-medium text-foreground truncate">{item.name}</p>
@@ -1151,7 +1151,7 @@ Assinatura da Loja (Consignante)`;
 
       {/* Drawer Lateral / Modal de Conciliação e Aprovação */}
       <Dialog open={isConciliationOpen} onOpenChange={setIsConciliationOpen}>
-        <DialogContent className="max-w-md sm:max-w-lg rounded-2xl p-6 space-y-4">
+        <DialogContent className="max-w-md sm:max-w-lg rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
@@ -1168,7 +1168,7 @@ Assinatura da Loja (Consignante)`;
               <Label className="text-xs font-semibold text-foreground">
                 Comprovante Enviado pelo Cliente
               </Label>
-              <div className="relative rounded-xl border overflow-hidden bg-muted/30 max-h-56 flex items-center justify-center">
+              <div className="relative rounded-lg border overflow-hidden bg-muted/30 max-h-56 flex items-center justify-center">
                 <img
                   src={selectedInstallment.conciliation_proof_url}
                   alt="Comprovante de Pagamento"
@@ -1178,7 +1178,7 @@ Assinatura da Loja (Consignante)`;
                   href={selectedInstallment.conciliation_proof_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-background/80 hover:bg-background text-foreground shadow-xs text-xs flex items-center gap-1"
+                  className="absolute top-2 right-2 p-2 rounded-lg bg-background/80 hover:bg-background text-foreground shadow-xs text-xs flex items-center gap-1"
                 >
                   <ExternalLink className="h-3.5 w-3.5" /> Ampliar
                 </a>
@@ -1190,7 +1190,7 @@ Assinatura da Loja (Consignante)`;
               )}
             </div>
           ) : (
-            <div className="p-3 rounded-xl bg-muted/30 text-xs text-muted-foreground text-center">
+            <div className="p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground text-center">
               Nenhum comprovante anexado pelo cliente. Esta é uma baixa manual direta pela loja.
             </div>
           )}
@@ -1198,7 +1198,7 @@ Assinatura da Loja (Consignante)`;
           {/* Resumo de Valores e Opções de Desconto/Isenção */}
           {!isRejecting ? (
             <div className="space-y-3 pt-1">
-              <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-2 text-xs">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-2 text-xs">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Valor Nominal:</span>
                   <span>
@@ -1244,7 +1244,7 @@ Assinatura da Loja (Consignante)`;
                   </div>
                 )}
 
-                <div className="flex justify-between text-sm font-bold text-foreground pt-1.5 border-t border-border/40">
+                <div className="flex justify-between text-sm font-bold text-foreground pt-2 border-t border-border/40">
                   <span>Valor Final Aprovado:</span>
                   <span className="text-primary">
                     {formatMoney(
@@ -1269,7 +1269,7 @@ Assinatura da Loja (Consignante)`;
               </div>
 
               {/* Toggles de Renegociação */}
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="waive-interest"
@@ -1293,7 +1293,7 @@ Assinatura da Loja (Consignante)`;
                     min="0"
                     placeholder="0.00"
                     onChange={(e) => setDiscountCents(Math.round(Number(e.target.value) * 100))}
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-lg"
                   />
                 </div>
 
@@ -1303,7 +1303,7 @@ Assinatura da Loja (Consignante)`;
                     placeholder="Ex: Pagamento conferido na conta Santander..."
                     value={conciliationNotes}
                     onChange={(e) => setConciliationNotes(e.target.value)}
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-lg"
                   />
                 </div>
               </div>
@@ -1313,7 +1313,7 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-xl text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs h-10"
+                  className="rounded-lg text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs h-10"
                   onClick={() => setIsRejecting(true)}
                 >
                   <XCircle className="h-4 w-4 mr-1" /> Recusar Comprovante
@@ -1322,7 +1322,7 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   disabled={isApproving}
-                  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-10 px-4 font-medium"
+                  className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-10 px-4 font-medium"
                   onClick={handleConfirmApproval}
                 >
                   {isApproving ? "Conciliando..." : "Confirmar Baixa & Espelhar"}
@@ -1332,7 +1332,7 @@ Assinatura da Loja (Consignante)`;
           ) : (
             /* Fluxo de Recusa do Comprovante */
             <div className="space-y-3 pt-1">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">
                   Justificativa da Recusa para o Cliente *
                 </Label>
@@ -1340,7 +1340,7 @@ Assinatura da Loja (Consignante)`;
                   placeholder="Ex: O comprovante está ilegível / Valor transferido inferior ao devido..."
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
-                  className="text-xs min-h-[80px] rounded-xl"
+                  className="text-xs min-h-[80px] rounded-lg"
                 />
               </div>
 
@@ -1348,7 +1348,7 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-xl text-xs h-10"
+                  className="rounded-lg text-xs h-10"
                   onClick={() => setIsRejecting(false)}
                 >
                   Voltar
@@ -1356,7 +1356,7 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   disabled={isRejectingMutation || !rejectReason.trim()}
-                  className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs h-10 px-4"
+                  className="rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs h-10 px-4"
                   onClick={handleConfirmRejection}
                 >
                   {isRejectingMutation ? "Recusando..." : "Confirmar Recusa e Notificar"}
@@ -1369,7 +1369,7 @@ Assinatura da Loja (Consignante)`;
 
       {/* Modal de Cobrança em Massa */}
       <Dialog open={isMassBillingOpen} onOpenChange={setIsMassBillingOpen}>
-        <DialogContent className="max-w-md rounded-2xl p-6 space-y-4">
+        <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold flex items-center gap-2">
               <Send className="h-5 w-5 text-primary" />
@@ -1381,18 +1381,18 @@ Assinatura da Loja (Consignante)`;
           </DialogHeader>
 
           <div className="space-y-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Template de Notificação</Label>
               <div className="space-y-2">
-                <label className="flex items-start gap-2.5 p-3 rounded-xl border bg-card cursor-pointer hover:bg-muted/30">
+                <label className="flex items-start gap-3 p-3 rounded-lg border bg-card cursor-pointer hover:bg-muted/30">
                   <input
                     type="radio"
                     name="massTemplate"
                     checked={massTemplate === "friendly"}
                     onChange={() => setMassTemplate("friendly")}
-                    className="mt-0.5"
+                    className="mt-1"
                   />
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="text-xs font-semibold text-foreground block">
                       Lembrete Amigável
                     </span>
@@ -1402,15 +1402,15 @@ Assinatura da Loja (Consignante)`;
                   </div>
                 </label>
 
-                <label className="flex items-start gap-2.5 p-3 rounded-xl border bg-card cursor-pointer hover:bg-muted/30">
+                <label className="flex items-start gap-3 p-3 rounded-lg border bg-card cursor-pointer hover:bg-muted/30">
                   <input
                     type="radio"
                     name="massTemplate"
                     checked={massTemplate === "due_warning"}
                     onChange={() => setMassTemplate("due_warning")}
-                    className="mt-0.5"
+                    className="mt-1"
                   />
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="text-xs font-semibold text-foreground block">
                       ️ Aviso de Vencimento
                     </span>
@@ -1420,15 +1420,15 @@ Assinatura da Loja (Consignante)`;
                   </div>
                 </label>
 
-                <label className="flex items-start gap-2.5 p-3 rounded-xl border bg-card cursor-pointer hover:bg-muted/30">
+                <label className="flex items-start gap-3 p-3 rounded-lg border bg-card cursor-pointer hover:bg-muted/30">
                   <input
                     type="radio"
                     name="massTemplate"
                     checked={massTemplate === "overdue_discount"}
                     onChange={() => setMassTemplate("overdue_discount")}
-                    className="mt-0.5"
+                    className="mt-1"
                   />
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="text-xs font-semibold text-foreground block">
                       Oferta de Desconto para Quitação
                     </span>
@@ -1449,7 +1449,7 @@ Assinatura da Loja (Consignante)`;
                   max="50"
                   value={massDiscount}
                   onChange={(e) => setMassDiscount(Number(e.target.value))}
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                 />
               </div>
             )}
@@ -1458,7 +1458,7 @@ Assinatura da Loja (Consignante)`;
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-xl text-xs h-10"
+                className="rounded-lg text-xs h-10"
                 onClick={() => setIsMassBillingOpen(false)}
               >
                 Cancelar
@@ -1466,7 +1466,7 @@ Assinatura da Loja (Consignante)`;
               <Button
                 type="button"
                 disabled={isSendingMass}
-                className="rounded-xl bg-primary text-primary-foreground text-xs h-10 px-4 font-medium"
+                className="rounded-lg bg-primary text-primary-foreground text-xs h-10 px-4 font-medium"
                 onClick={() =>
                   sendMassReminders({
                     data: {
@@ -1487,7 +1487,7 @@ Assinatura da Loja (Consignante)`;
 
       {/* Modal de Emissão Direta de Carnê */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="max-w-lg rounded-2xl p-6 space-y-4">
+        <DialogContent className="max-w-lg rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold flex items-center gap-2">
               <Plus className="h-5 w-5 text-primary" />
@@ -1498,12 +1498,12 @@ Assinatura da Loja (Consignante)`;
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreateCarneSubmit} className="space-y-3.5 pt-1">
+          <form onSubmit={handleCreateCarneSubmit} className="space-y-4 pt-1">
             {/* Seleção do Cliente */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Cliente (Devedor) *</Label>
               {selectedCustomer ? (
-                <div className="flex items-center justify-between p-2.5 rounded-xl border bg-muted/20">
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-primary" />
                     <div>
@@ -1526,15 +1526,15 @@ Assinatura da Loja (Consignante)`;
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Input
                     placeholder="Digite nome, e-mail ou telefone do cliente..."
                     value={customerSearch}
                     onChange={(e) => setCustomerSearch(e.target.value)}
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-lg"
                   />
                   {searchedCustomers.length > 0 && (
-                    <div className="rounded-xl border divide-y bg-card max-h-36 overflow-y-auto shadow-xs">
+                    <div className="rounded-lg border divide-y bg-card max-h-36 overflow-y-auto shadow-xs">
                       {searchedCustomers.map((cust: any) => (
                         <div
                           key={cust.id}
@@ -1566,7 +1566,7 @@ Assinatura da Loja (Consignante)`;
                 placeholder="Ex: Compra de Móveis Planejados, Tratamento Dental..."
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="h-9 text-xs rounded-xl"
+                className="h-9 text-xs rounded-lg"
                 required
               />
             </div>
@@ -1582,7 +1582,7 @@ Assinatura da Loja (Consignante)`;
                   placeholder="0.00"
                   value={newTotalReais || ""}
                   onChange={(e) => setNewTotalReais(Number(e.target.value))}
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                   required
                 />
               </div>
@@ -1595,7 +1595,7 @@ Assinatura da Loja (Consignante)`;
                   max="72"
                   value={newInstallmentsCount}
                   onChange={(e) => setNewInstallmentsCount(Number(e.target.value))}
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                   required
                 />
               </div>
@@ -1610,13 +1610,13 @@ Assinatura da Loja (Consignante)`;
                 type="date"
                 value={newFirstDueDate}
                 onChange={(e) => setNewFirstDueDate(e.target.value)}
-                className="h-9 text-xs rounded-xl"
+                className="h-9 text-xs rounded-lg"
                 required
               />
             </div>
 
             {/* Taxas de Encargos */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Juros Mensal (%)</Label>
                 <Input
@@ -1625,7 +1625,7 @@ Assinatura da Loja (Consignante)`;
                   min="0"
                   value={newInterestRate}
                   onChange={(e) => setNewInterestRate(Number(e.target.value))}
-                  className="h-8 text-xs rounded-xl"
+                  className="h-8 text-xs rounded-lg"
                 />
               </div>
 
@@ -1637,7 +1637,7 @@ Assinatura da Loja (Consignante)`;
                   min="0"
                   value={newFinePercent}
                   onChange={(e) => setNewFinePercent(Number(e.target.value))}
-                  className="h-8 text-xs rounded-xl"
+                  className="h-8 text-xs rounded-lg"
                 />
               </div>
 
@@ -1648,7 +1648,7 @@ Assinatura da Loja (Consignante)`;
                   min="0"
                   value={newGraceDays}
                   onChange={(e) => setNewGraceDays(Number(e.target.value))}
-                  className="h-8 text-xs rounded-xl"
+                  className="h-8 text-xs rounded-lg"
                 />
               </div>
             </div>
@@ -1658,7 +1658,7 @@ Assinatura da Loja (Consignante)`;
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-xl text-xs h-10"
+                className="rounded-lg text-xs h-10"
                 onClick={() => setIsCreateModalOpen(false)}
               >
                 Cancelar
@@ -1666,7 +1666,7 @@ Assinatura da Loja (Consignante)`;
               <Button
                 type="submit"
                 disabled={isCreating}
-                className="rounded-xl bg-primary text-primary-foreground text-xs h-10 px-4 font-medium"
+                className="rounded-lg bg-primary text-primary-foreground text-xs h-10 px-4 font-medium"
               >
                 {isCreating ? "Gerando Carnê..." : "Emitir Carnê Digital"}
               </Button>
@@ -1677,7 +1677,7 @@ Assinatura da Loja (Consignante)`;
 
       {/* Modal 1: Nova Saída em Condicional (Mala / Prova em Casa) */}
       <Dialog open={isCreateCondicionalOpen} onOpenChange={setIsCreateCondicionalOpen}>
-        <DialogContent className="max-w-lg rounded-2xl p-6 space-y-4">
+        <DialogContent className="max-w-lg rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold flex items-center gap-2">
               <Shirt className="h-5 w-5 text-indigo-500" />
@@ -1696,7 +1696,7 @@ Assinatura da Loja (Consignante)`;
                   placeholder="Ex: Mariana Silva"
                   value={newCondCustomerName}
                   onChange={(e) => setNewCondCustomerName(e.target.value)}
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                   required
                 />
               </div>
@@ -1706,7 +1706,7 @@ Assinatura da Loja (Consignante)`;
                   placeholder="(49) 99999-9999"
                   value={newCondCustomerPhone}
                   onChange={(e) => setNewCondCustomerPhone(e.target.value)}
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                 />
               </div>
             </div>
@@ -1714,14 +1714,14 @@ Assinatura da Loja (Consignante)`;
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Prazo de Retorno (Dias)</Label>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   {[1, 2, 3, 5].map((d) => (
                     <button
                       key={d}
                       type="button"
                       onClick={() => setNewCondDays(d)}
                       className={cn(
-                        "flex-1 py-1.5 text-xs font-medium rounded-xl border transition-colors",
+                        "flex-1 py-2 text-xs font-medium rounded-lg border transition-colors",
                         newCondDays === d
                           ? "bg-foreground text-background border-foreground font-semibold"
                           : "border-border/60 text-muted-foreground hover:text-foreground",
@@ -1738,7 +1738,7 @@ Assinatura da Loja (Consignante)`;
                   placeholder="Ex: Prova para festa de formatura"
                   value={newCondNotes}
                   onChange={(e) => setNewCondNotes(e.target.value)}
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                 />
               </div>
             </div>
@@ -1751,7 +1751,7 @@ Assinatura da Loja (Consignante)`;
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-7 px-2.5 text-xs rounded-lg"
+                  className="h-7 px-3 text-xs rounded-lg"
                   onClick={() =>
                     setNewCondItems([...newCondItems, { name: "", size: "M", priceReais: 0 }])
                   }
@@ -1771,7 +1771,7 @@ Assinatura da Loja (Consignante)`;
                         updated[idx].name = e.target.value;
                         setNewCondItems(updated);
                       }}
-                      className="h-8 text-xs rounded-xl flex-2"
+                      className="h-8 text-xs rounded-lg flex-2"
                     />
                     <Input
                       placeholder="Tam"
@@ -1781,7 +1781,7 @@ Assinatura da Loja (Consignante)`;
                         updated[idx].size = e.target.value;
                         setNewCondItems(updated);
                       }}
-                      className="h-8 text-xs rounded-xl w-16"
+                      className="h-8 text-xs rounded-lg w-16"
                     />
                     <Input
                       type="number"
@@ -1793,7 +1793,7 @@ Assinatura da Loja (Consignante)`;
                         updated[idx].priceReais = Number(e.target.value);
                         setNewCondItems(updated);
                       }}
-                      className="h-8 text-xs rounded-xl w-24"
+                      className="h-8 text-xs rounded-lg w-24"
                     />
                     {newCondItems.length > 1 && (
                       <Button
@@ -1810,7 +1810,7 @@ Assinatura da Loja (Consignante)`;
                 ))}
               </div>
 
-              <div className="p-2.5 rounded-xl bg-muted/40 text-xs flex justify-between font-medium">
+              <div className="p-3 rounded-lg bg-muted/40 text-xs flex justify-between font-medium">
                 <span className="text-muted-foreground">Valor Total da Mala:</span>
                 <span className="text-foreground font-bold">
                   {formatMoney(
@@ -1826,14 +1826,14 @@ Assinatura da Loja (Consignante)`;
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-xl text-xs h-9"
+                className="rounded-lg text-xs h-9"
                 onClick={() => setIsCreateCondicionalOpen(false)}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                className="rounded-xl bg-foreground text-background hover:bg-foreground/90 text-xs h-9 px-4 font-medium"
+                className="rounded-lg bg-foreground text-background hover:bg-foreground/90 text-xs h-9 px-4 font-medium"
               >
                 Registrar Saída em Condicional
               </Button>
@@ -1844,7 +1844,7 @@ Assinatura da Loja (Consignante)`;
 
       {/* Modal 2: Conferência e Baixa de Condicional */}
       <Dialog open={isReturnCondicionalOpen} onOpenChange={setIsReturnCondicionalOpen}>
-        <DialogContent className="max-w-md sm:max-w-lg rounded-2xl p-6 space-y-4">
+        <DialogContent className="max-w-md sm:max-w-lg rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-emerald-500" />
@@ -1863,7 +1863,7 @@ Assinatura da Loja (Consignante)`;
                   return (
                     <div
                       key={item.id}
-                      className="p-3 rounded-xl border border-border/50 bg-background flex items-center justify-between gap-3 text-xs"
+                      className="p-3 rounded-lg border border-border/50 bg-background flex items-center justify-between gap-3 text-xs"
                     >
                       <div className="truncate">
                         <p className="font-semibold text-foreground truncate">{item.name}</p>
@@ -1872,14 +1872,14 @@ Assinatura da Loja (Consignante)`;
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
                           onClick={() =>
                             setItemReturnDecisions({ ...itemReturnDecisions, [item.id]: "bought" })
                           }
                           className={cn(
-                            "px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
+                            "px-3 py-1 rounded-lg text-xs font-medium border transition-colors",
                             decision === "bought"
                               ? "bg-emerald-600 text-white border-emerald-600 font-semibold"
                               : "border-border/60 text-muted-foreground hover:text-foreground",
@@ -1893,7 +1893,7 @@ Assinatura da Loja (Consignante)`;
                             setItemReturnDecisions({ ...itemReturnDecisions, [item.id]: "returned" })
                           }
                           className={cn(
-                            "px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
+                            "px-3 py-1 rounded-lg text-xs font-medium border transition-colors",
                             decision === "returned"
                               ? "bg-muted text-foreground border-border font-semibold"
                               : "border-border/60 text-muted-foreground hover:text-foreground",
@@ -1908,7 +1908,7 @@ Assinatura da Loja (Consignante)`;
               </div>
 
               {/* Resumo Financeiro da Baixa */}
-              <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1.5 text-xs">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-2 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Peças Compradas:</span>
                   <span className="font-bold text-foreground">
@@ -1947,14 +1947,14 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-xl text-xs h-9"
+                  className="rounded-lg text-xs h-9"
                   onClick={() => setIsReturnCondicionalOpen(false)}
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="button"
-                  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs h-9 px-4"
+                  className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs h-9 px-4"
                   onClick={handleConfirmReturnCondicional}
                 >
                   Confirmar Baixa e Reintegrar Peças

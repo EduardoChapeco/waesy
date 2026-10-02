@@ -175,20 +175,20 @@ function GrowthValuationDashboard() {
 
       {/* Tabs Principais */}
       <Tabs defaultValue="overview" className="w-full space-y-6">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 h-auto p-1 bg-muted/60 rounded-xl">
-          <TabsTrigger value="overview" className="gap-2 py-2.5 text-xs sm:text-sm">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 h-auto p-1 bg-muted/60 rounded-lg">
+          <TabsTrigger value="overview" className="gap-2 py-3 text-xs sm:text-sm">
             <Target className="w-4 h-4" />
             Metas vs Realidade
           </TabsTrigger>
-          <TabsTrigger value="scales" className="gap-2 py-2.5 text-xs sm:text-sm">
+          <TabsTrigger value="scales" className="gap-2 py-3 text-xs sm:text-sm">
             <BarChart3 className="w-4 h-4" />
             Escalas & M&A (500 a 5k)
           </TabsTrigger>
-          <TabsTrigger value="ledger" className="gap-2 py-2.5 text-xs sm:text-sm">
+          <TabsTrigger value="ledger" className="gap-2 py-3 text-xs sm:text-sm">
             <DollarSign className="w-4 h-4" />
             Livro-Caixa Corporativo
           </TabsTrigger>
-          <TabsTrigger value="tech" className="gap-2 py-2.5 text-xs sm:text-sm">
+          <TabsTrigger value="tech" className="gap-2 py-3 text-xs sm:text-sm">
             <Code2 className="w-4 h-4" />
             Ativo Tecnológico (Codebase)
           </TabsTrigger>
@@ -197,7 +197,7 @@ function GrowthValuationDashboard() {
         {/* TAB 1: VISÃO EXECUTIVA (METAS VS REAL) */}
         <TabsContent value="overview" className="space-y-6">
           {/* Seletor de Fase Alvo */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-border/50 bg-card/40 backdrop-blur-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-border/50 bg-card/40 backdrop-blur-sm">
             <div>
               <span className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
                 Fase Alvo em Análise
@@ -322,7 +322,7 @@ function GrowthValuationDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                <div className="p-4 rounded-xl border border-border/50 bg-background/50 space-y-1">
+                <div className="p-4 rounded-lg border border-border/50 bg-background/50 space-y-1">
                   <span className="text-xs text-muted-foreground font-medium uppercase">Cenário Conservador ({activeTarget.label?.split("(")[1]?.replace(")", "") || "Fase"})</span>
                   <div className="text-xl font-bold font-mono text-foreground">
                     {formatMoney(activeTarget.target_valuation_conservative_cents || 0)}
@@ -330,7 +330,7 @@ function GrowthValuationDashboard() {
                   <p className="text-xs text-muted-foreground">Múltiplo de 4,0x a 5,5x sobre o ARR da fase.</p>
                 </div>
 
-                <div className="p-4 rounded-xl border border-border/50 bg-background/50 space-y-1">
+                <div className="p-4 rounded-lg border border-border/50 bg-background/50 space-y-1">
                   <span className="text-xs text-muted-foreground font-medium uppercase">M&A Estratégico (Zucchetti / Senior)</span>
                   <div className="text-xl font-bold font-mono text-emerald-600">
                     {formatMoney(activeTarget.target_valuation_strategic_cents || 0)}
@@ -338,7 +338,7 @@ function GrowthValuationDashboard() {
                   <p className="text-xs text-muted-foreground">Múltiplo de 7,0x a 9,0x ARR com dominância regional.</p>
                 </div>
 
-                <div className="p-4 rounded-xl border border-border/50 bg-background/50 space-y-1">
+                <div className="p-4 rounded-lg border border-border/50 bg-background/50 space-y-1">
                   <span className="text-xs text-muted-foreground font-medium uppercase">Ativo Intelectual Puro (Codebase)</span>
                   <div className="text-xl font-bold font-mono text-foreground">
                     {formatMoney(codebase.techAssetValueCents)}
@@ -493,33 +493,33 @@ function GrowthValuationDashboard() {
                   <table className="w-full text-sm text-left">
                     <thead>
                       <tr className="border-b border-border/40 text-xs uppercase text-muted-foreground">
-                        <th className="py-2.5 px-3">Data</th>
-                        <th className="py-2.5 px-3">Tipo</th>
-                        <th className="py-2.5 px-3">Categoria</th>
-                        <th className="py-2.5 px-3">Descrição</th>
-                        <th className="py-2.5 px-3 text-right">Valor</th>
-                        <th className="py-2.5 px-3 text-right">Ações</th>
+                        <th className="py-3 px-3">Data</th>
+                        <th className="py-3 px-3">Tipo</th>
+                        <th className="py-3 px-3">Categoria</th>
+                        <th className="py-3 px-3">Descrição</th>
+                        <th className="py-3 px-3 text-right">Valor</th>
+                        <th className="py-3 px-3 text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/20 font-mono text-xs">
                       {financialRecords.map((r: any) => (
                         <tr key={r.id}>
-                          <td className="py-2.5 px-3">{r.entry_date}</td>
-                          <td className="py-2.5 px-3 font-sans">
+                          <td className="py-3 px-3">{r.entry_date}</td>
+                          <td className="py-3 px-3 font-sans">
                             <Badge variant={r.entry_type === "investment" ? "default" : "secondary"} className="text-xs">
                               {r.entry_type === "investment" ? "Aporte" : "Gasto"}
                             </Badge>
                           </td>
-                          <td className="py-2.5 px-3 font-sans text-muted-foreground">{r.category}</td>
-                          <td className="py-2.5 px-3 font-sans text-foreground max-w-xs truncate">{r.description}</td>
+                          <td className="py-3 px-3 font-sans text-muted-foreground">{r.category}</td>
+                          <td className="py-3 px-3 font-sans text-foreground max-w-xs truncate">{r.description}</td>
                           <td className={cn(
-                            "py-2.5 px-3 text-right font-bold",
+                            "py-3 px-3 text-right font-bold",
                             r.entry_type === "investment" ? "text-emerald-600" : "text-rose-500"
                           )}>
                             {r.entry_type === "expense" ? "- " : "+ "}
                             {formatMoney(r.amount_cents)}
                           </td>
-                          <td className="py-2.5 px-3 text-right">
+                          <td className="py-3 px-3 text-right">
                             <Button
                               variant="ghost"
                               size="sm"
@@ -599,7 +599,7 @@ function GrowthValuationDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 rounded-xl border border-border/50 bg-background/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="p-4 rounded-lg border border-border/50 bg-background/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <h4 className="font-semibold text-foreground text-sm">Equipe Equivalente Mínima de Engenharia:</h4>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -644,7 +644,7 @@ function GrowthValuationDashboard() {
           </DialogHeader>
 
           <form onSubmit={handleCreateRecord} className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="entryType" className="text-xs">Tipo de Lançamento</Label>
               <Select value={entryType} onValueChange={(val: any) => setEntryType(val)}>
                 <SelectTrigger id="entryType">
@@ -658,7 +658,7 @@ function GrowthValuationDashboard() {
               </Select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="category" className="text-xs">Categoria</Label>
               <Input
                 id="category"
@@ -669,7 +669,7 @@ function GrowthValuationDashboard() {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="amount" className="text-xs">Valor (R$)</Label>
               <Input
                 id="amount"
@@ -682,7 +682,7 @@ function GrowthValuationDashboard() {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="description" className="text-xs">Descrição do Lançamento</Label>
               <Input
                 id="description"

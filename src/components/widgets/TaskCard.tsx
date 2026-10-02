@@ -80,9 +80,9 @@ export function TaskCard({
         }
       }}
       className={cn(
-        "group relative flex flex-col justify-between rounded-xl border bg-card text-card-foreground select-none cursor-pointer transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
-        variant === "board" && "p-3.5 sm:p-4 gap-3 border-border/70 hover:border-primary/40 shadow-2xs hover:shadow-xs",
-        variant === "list" && "p-3.5 gap-2.5 border-border/60 hover:bg-muted/30 min-h-14",
+        "group relative flex flex-col justify-between rounded-lg border bg-card text-card-foreground select-none cursor-pointer transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+        variant === "board" && "p-4 sm:p-4 gap-3 border-border/70 hover:border-primary/40 shadow-2xs hover:shadow-xs",
+        variant === "list" && "p-4 gap-3 border-border/60 hover:bg-muted/30 min-h-14",
         variant === "chat" && "p-3 gap-2 border-border/80 bg-muted/20 hover:bg-muted/40 max-w-sm",
         activeEditor && "border-emerald-500/50 ring-1 ring-emerald-500/30",
         isDone && "opacity-60 bg-muted/10",
@@ -91,10 +91,10 @@ export function TaskCard({
     >
       {/* ── Top Header: Categoria, ID e Presença Real-Time ── */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           <Badge
             variant="outline"
-            className="text-xs font-bold uppercase tracking-wider px-1.5 py-0 rounded-md border-border/60 bg-muted/40 text-muted-foreground truncate"
+            className="text-xs font-bold uppercase tracking-wider px-2 py-0 rounded-md border-border/60 bg-muted/40 text-muted-foreground truncate"
           >
             {category}
           </Badge>
@@ -106,7 +106,7 @@ export function TaskCard({
 
         {/* Indicador de Presença em Tempo Real */}
         {activeEditor ? (
-          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold font-mono animate-in fade-in duration-200">
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold font-mono animate-in fade-in duration-200">
             <span className="size-1.5 rounded-full bg-emerald-500 shrink-0" />
             <span className="truncate max-w-24">
               {activeEditor.name.split(" ")[0]} editando
@@ -115,7 +115,7 @@ export function TaskCard({
         ) : (
           <Badge
             variant="outline"
-            className={cn("text-xs font-bold px-1.5 py-0 h-4 border", priorityInfo.className)}
+            className={cn("text-xs font-bold px-2 py-0 h-4 border", priorityInfo.className)}
           >
             {priorityInfo.label}
           </Badge>
@@ -135,7 +135,7 @@ export function TaskCard({
       {/* ── Footer: Metadados e Cluster de Avatares ── */}
       <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30">
         {/* Metadados Auxiliares (Subtarefas, Vencimento, Comentários) */}
-        <div className="flex items-center gap-2.5 text-xs font-mono text-muted-foreground">
+        <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground">
           {subtasksCount && (
             <span
               className={cn(

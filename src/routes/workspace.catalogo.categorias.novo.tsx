@@ -80,7 +80,7 @@ function NewCategoryPage() {
  />
 
  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
- <div className="bg-card rounded-2xl border border-border/60 p-6 space-y-5">
+ <div className="bg-card rounded-lg border border-border/60 p-6 space-y-5">
  <div className="pb-3 border-b border-border/40">
  <h3 className="text-sm font-bold text-foreground">Dados da Categoria</h3>
  <p className="text-xs text-muted-foreground">
@@ -89,12 +89,12 @@ function NewCategoryPage() {
  </div>
 
  <div className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Nome da Categoria *</Label>
  <Input
  {...register("name", { required: "Obrigatório" })}
  placeholder="Ex: Roupas Femininas ou Calçados"
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  onChange={(e) => {
  register("name").onChange(e);
  const slug = e.target.value
@@ -109,19 +109,19 @@ function NewCategoryPage() {
  {errors.name && <p className="text-xs text-destructive">{String(errors.name.message)}</p>}
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Identificador / Slug *</Label>
- <Input {...register("slug", { required: "Obrigatório" })} placeholder="ex: roupas-femininas" className="rounded-xl text-xs h-9" />
+ <Input {...register("slug", { required: "Obrigatório" })} placeholder="ex: roupas-femininas" className="rounded-lg text-xs h-9" />
  {errors.slug && <p className="text-xs text-destructive">{String(errors.slug.message)}</p>}
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Categoria Pai (Hierarquia)</Label>
  <Select defaultValue="none" onValueChange={(v) => setValue("parent_id", v)}>
- <SelectTrigger className="rounded-xl text-xs h-9">
+ <SelectTrigger className="rounded-lg text-xs h-9">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="none" className="text-xs font-medium">Nenhuma (Categoria Principal / Raiz)</SelectItem>
  {existingCategories.map((cat: any) => (
  <SelectItem key={cat.id} value={cat.id} className="text-xs font-medium">
@@ -132,20 +132,20 @@ function NewCategoryPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Status de Exibição</Label>
  <Select defaultValue="active" onValueChange={(v) => setValue("status", v)}>
- <SelectTrigger className="rounded-xl text-xs h-9">
+ <SelectTrigger className="rounded-lg text-xs h-9">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="active" className="text-xs font-medium">Ativa no Catálogo</SelectItem>
  <SelectItem value="inactive" className="text-xs font-medium">Oculta (Rascunho)</SelectItem>
  </SelectContent>
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Foto de Capa (Opcional)</Label>
  <div className="max-w-sm">
  <ImageUpload onChange={setCoverUrl} value={coverUrl} bucket="product-media" />
@@ -155,10 +155,10 @@ function NewCategoryPage() {
  </div>
 
  <div className="flex justify-end gap-3">
- <Button type="button" variant="outline" size="sm" className="rounded-xl text-xs font-bold" asChild>
+ <Button type="button" variant="outline" size="sm" className="rounded-lg text-xs font-bold" asChild>
  <Link to="/workspace/catalogo/categorias">Cancelar</Link>
  </Button>
- <Button type="submit" size="sm" disabled={isSubmitting} className="rounded-xl text-xs font-bold bg-primary text-primary-foreground">
+ <Button type="submit" size="sm" disabled={isSubmitting} className="rounded-lg text-xs font-bold bg-primary text-primary-foreground">
  {isSubmitting ? "Salvando..." : "Salvar Categoria"}
  </Button>
  </div>

@@ -46,8 +46,8 @@ function PublicPassengerRegistrationPage() {
  if (!formData || formData.error) {
  return (
  <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
- <div className="max-w-md w-full p-6 rounded-2xl bg-card border border-border/80 text-center space-y-4">
- <div className="size-12 rounded-2xl bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
+ <div className="max-w-md w-full p-6 rounded-lg bg-card border border-border/80 text-center space-y-4">
+ <div className="size-12 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
  <AlertCircle className="size-6" />
  </div>
  <h1 className="text-base font-bold text-foreground">Link Indisponível</h1>
@@ -100,8 +100,8 @@ function PublicPassengerRegistrationPage() {
  if (submitted) {
  return (
  <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
- <div className="max-w-md w-full p-8 rounded-2xl bg-card border border-border/80 text-center space-y-4 shadow-sm">
- <div className="size-16 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
+ <div className="max-w-md w-full p-8 rounded-lg bg-card border border-border/80 text-center space-y-4 shadow-sm">
+ <div className="size-16 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
  <CheckCircle2 className="size-8" />
  </div>
 
@@ -113,7 +113,7 @@ function PublicPassengerRegistrationPage() {
  </div>
 
  {formData.passenger_seat_number && (
- <div className="p-3.5 rounded-2xl bg-primary/10 border border-primary/20 text-center">
+ <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
  <span className="text-[11px] font-mono text-primary uppercase font-bold">
  Sua Poltrona Reservada
  </span>
@@ -123,7 +123,7 @@ function PublicPassengerRegistrationPage() {
  </div>
  )}
 
- <div className="p-4 rounded-2xl bg-muted/20 border border-border/60 text-left space-y-1 text-xs">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/60 text-left space-y-1 text-xs">
  <p className="font-bold text-foreground">{formData.tour.title}</p>
  <p className="text-muted-foreground">
  Destino: <strong className="text-foreground">{formData.tour.destination}</strong>
@@ -141,7 +141,7 @@ function PublicPassengerRegistrationPage() {
  <div className="min-h-[100dvh] bg-muted/20 py-8 px-4 flex justify-center">
  <div className="max-w-lg w-full space-y-6">
  {/* Header da Viagem */}
- <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-3 shadow-xs">
+ <div className="p-6 rounded-lg bg-card border border-border/70 space-y-3 shadow-xs">
  <div className="flex items-center justify-between">
  <Badge variant="outline" className="text-[10px] font-mono gap-1 text-primary border-primary/30">
  <Bus className="size-3" /> Ficha de Embarque
@@ -158,11 +158,11 @@ function PublicPassengerRegistrationPage() {
  <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
  {formData.tour.title}
  </h1>
- <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+ <p className="text-xs text-muted-foreground flex items-center gap-2">
  <MapPin className="size-3.5 text-primary shrink-0" />
  {formData.tour.departure_city} ➔ {formData.tour.destination}
  </p>
- <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-mono">
+ <p className="text-xs text-muted-foreground flex items-center gap-2 font-mono">
  <Calendar className="size-3.5 text-muted-foreground shrink-0" />
  Saída: {formData.tour.departure_date} às {formData.tour.departure_time}
  </p>
@@ -172,7 +172,7 @@ function PublicPassengerRegistrationPage() {
  {/* Formulário de Passageiro */}
  <form
  onSubmit={handleSubmit}
- className="p-6 rounded-2xl bg-card border border-border/70 space-y-5 shadow-xs"
+ className="p-6 rounded-lg bg-card border border-border/70 space-y-5 shadow-xs"
  >
  <div className="border-b border-border/60 pb-3">
  <h2 className="text-sm font-bold text-foreground">Identificação do Passageiro</h2>
@@ -183,19 +183,19 @@ function PublicPassengerRegistrationPage() {
 
  {/* Nome e Documento */}
  <div className="space-y-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Nome Completo *</label>
  <Input
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Nome como consta no documento"
- className="h-11 rounded-xl text-base sm:text-xs"
+ className="h-11 rounded-lg text-base sm:text-xs"
  required
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">CPF ou RG *</label>
  <Input
                   type="text"
@@ -203,24 +203,24 @@ function PublicPassengerRegistrationPage() {
                   value={doc}
                   onChange={(e) => setDoc(maskCpfProgressive(e.target.value))}
                   placeholder="000.000.000-00"
- className="h-11 rounded-xl text-base sm:text-xs font-mono"
+ className="h-11 rounded-lg text-base sm:text-xs font-mono"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Data de Nascimento *</label>
  <Input
  type="date"
  value={birthDate}
  onChange={(e) => setBirthDate(e.target.value)}
- className="h-11 rounded-xl text-base sm:text-xs font-mono"
+ className="h-11 rounded-lg text-base sm:text-xs font-mono"
  required
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">WhatsApp / Celular *</label>
  <Input
                   type="tel"
@@ -228,7 +228,7 @@ function PublicPassengerRegistrationPage() {
                   value={phone}
                   onChange={(e) => setPhone(formatPhone(e.target.value))}
                   placeholder="(00) 00000-0000"
- className="h-11 rounded-xl text-base sm:text-xs font-mono"
+ className="h-11 rounded-lg text-base sm:text-xs font-mono"
  required
  />
  </div>
@@ -236,24 +236,24 @@ function PublicPassengerRegistrationPage() {
 
  {/* Contato de Emergência */}
  <div className="border-t border-border/60 pt-4 space-y-3">
- <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+ <div className="flex items-center gap-2 text-xs font-bold text-foreground">
  <HeartPulse className="size-4 text-rose-500" />
  <span>Contato de Emergência</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Nome do Contato *</label>
  <Input
  value={emergencyName}
  onChange={(e) => setEmergencyName(e.target.value)}
  placeholder="Ex: Parente / Amigo"
- className="h-11 rounded-xl text-base sm:text-xs"
+ className="h-11 rounded-lg text-base sm:text-xs"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Telefone de Emergência *</label>
  <Input
                   type="tel"
@@ -261,7 +261,7 @@ function PublicPassengerRegistrationPage() {
                   value={emergencyPhone}
                   onChange={(e) => setEmergencyPhone(formatPhone(e.target.value))}
                   placeholder="(00) 00000-0000"
- className="h-11 rounded-xl text-base sm:text-xs font-mono"
+ className="h-11 rounded-lg text-base sm:text-xs font-mono"
  required
  />
  </div>
@@ -270,7 +270,7 @@ function PublicPassengerRegistrationPage() {
 
  {/* Embarque & Observações */}
  <div className="border-t border-border/60 pt-4 space-y-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">
  Local de Embarque Preferencial
  </label>
@@ -278,11 +278,11 @@ function PublicPassengerRegistrationPage() {
  value={boardingPoint}
  onChange={(e) => setBoardingPoint(e.target.value)}
  placeholder="Ex: Posto Ipiranga Centro, Rodoviária..."
- className="h-11 rounded-xl text-base sm:text-xs"
+ className="h-11 rounded-lg text-base sm:text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">
  Restrições Alimentares / Alergias
  </label>
@@ -290,20 +290,20 @@ function PublicPassengerRegistrationPage() {
  value={dietary}
  onChange={(e) => setDietary(e.target.value)}
  placeholder="Ex: Vegetariano, intolerante a lactose..."
- className="h-11 rounded-xl text-base sm:text-xs"
+ className="h-11 rounded-lg text-base sm:text-xs"
  />
  </div>
  </div>
 
  {/* Termos e Aceite */}
  <div className="border-t border-border/60 pt-4 space-y-3">
- <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+ <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/20 border border-border/60">
  <input
  type="checkbox"
  id="termsCheck"
  checked={termsAccepted}
  onChange={(e) => setTermsAccepted(e.target.checked)}
- className="size-5 rounded border-border text-primary cursor-pointer mt-0.5"
+ className="size-5 rounded border-border text-primary cursor-pointer mt-1"
  required
  />
  <label htmlFor="termsCheck" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
@@ -316,7 +316,7 @@ function PublicPassengerRegistrationPage() {
  <Button
  type="submit"
  disabled={submitting}
- className="w-full h-12 rounded-2xl text-xs font-bold gap-2 cursor-pointer shadow-xs"
+ className="w-full h-12 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
  >
  <Send className="size-4" />
  {submitting ? "Confirmando dados..." : "Confirmar Minhas Informações"}

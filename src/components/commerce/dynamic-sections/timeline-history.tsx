@@ -76,7 +76,7 @@ export function TimelineHistory({ content, design_tokens }: TimelineHistoryProps
  )}
  >
  <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
- <Calendar className="mr-1.5 h-3.5 w-3.5" />
+ <Calendar className="mr-2 h-3.5 w-3.5" />
  {event.year}
  </span>
 
@@ -86,7 +86,7 @@ export function TimelineHistory({ content, design_tokens }: TimelineHistoryProps
  {event.image_url && (
  <div
  className={cn(
- "mt-4 w-full max-w-sm rounded-xl overflow-hidden border ",
+ "mt-4 w-full max-w-sm rounded-lg overflow-hidden border ",
  isEven ? "@md:mr-auto" : "@md:ml-auto",
  )}
  >

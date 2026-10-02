@@ -160,7 +160,7 @@ export function NeighborhoodsManager({
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
  <div>
  <div className="flex items-center gap-2">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <MapPin className="size-3.5 text-primary" />
  <span>Bairros Atendidos & Taxas de Entrega ({cityName})</span>
  </Label>
@@ -168,7 +168,7 @@ export function NeighborhoodsManager({
  {activeCount} de {totalCount} ativos
  </Badge>
  </div>
- <p className="text-[11px] text-muted-foreground mt-0.5">
+ <p className="text-[11px] text-muted-foreground mt-1">
  Defina quais regiões recebem pedidos e configure a taxa de frete cobrada por bairro.
  </p>
  </div>
@@ -179,7 +179,7 @@ export function NeighborhoodsManager({
  variant="outline"
  size="sm"
  onClick={() => setIsAddingNew((prev) => !prev)}
- className="h-8 rounded-xl text-xs font-bold gap-1.5"
+ className="h-8 rounded-lg text-xs font-bold gap-2"
  >
  <Plus className="size-3.5" />
  <span>Novo Bairro</span>
@@ -191,10 +191,10 @@ export function NeighborhoodsManager({
  {isAddingNew && (
  <form
  onSubmit={handleAddNewNeighborhood}
- className="p-4 rounded-2xl bg-muted/30 border border-primary/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200"
+ className="p-4 rounded-lg bg-muted/30 border border-primary/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200"
  >
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Plus className="size-3.5 text-primary" />
  <span>Adicionar Bairro Personalizado</span>
  </span>
@@ -216,7 +216,7 @@ export function NeighborhoodsManager({
  value={newNeighborhoodName}
  onChange={(e) => setNewNeighborhoodName(e.target.value)}
  placeholder="Ex: Jardim América, Loteamento Universitário..."
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  autoFocus
  />
  </div>
@@ -227,7 +227,7 @@ export function NeighborhoodsManager({
  value={newNeighborhoodFee}
  onChange={(cents) => setNewNeighborhoodFee(cents || 0)}
  placeholder="0,00"
- className="h-9 text-xs rounded-xl font-mono"
+ className="h-9 text-xs rounded-lg font-mono"
  />
  </div>
  </div>
@@ -238,14 +238,14 @@ export function NeighborhoodsManager({
  variant="outline"
  size="sm"
  onClick={() => setIsAddingNew(false)}
- className="h-8 rounded-xl text-xs font-semibold"
+ className="h-8 rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  size="sm"
- className="h-8 rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1.5"
+ className="h-8 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2"
  >
  <Check className="size-3.5" />
  <span>Salvar Bairro</span>
@@ -255,7 +255,7 @@ export function NeighborhoodsManager({
  )}
 
  {/* ── BARRA DE FERRAMENTAS RÁPIDAS (POWER BAR) ── */}
- <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-card border border-border/70">
+ <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/70">
  {/* Busca Rápida */}
  <div className="relative w-full sm:w-60 shrink-0">
  <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -263,7 +263,7 @@ export function NeighborhoodsManager({
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Filtrar bairro..."
- className="h-8 pl-8 rounded-xl text-xs bg-background"
+ className="h-8 pl-8 rounded-lg text-xs bg-background"
  />
  {searchQuery && (
  <button
@@ -277,13 +277,13 @@ export function NeighborhoodsManager({
  </div>
 
  {/* Ações em Lote */}
- <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end flex-wrap">
+ <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
  <Button
  type="button"
  variant="ghost"
  size="sm"
  onClick={handleSelectAll}
- className="h-7 px-2.5 rounded-lg text-[11px] font-bold text-muted-foreground hover:text-foreground gap-1"
+ className="h-7 px-3 rounded-lg text-[11px] font-bold text-muted-foreground hover:text-foreground gap-1"
  title="Marcar todos os bairros como atendidos"
  >
  <CheckCheck className="size-3.5 text-success" />
@@ -295,7 +295,7 @@ export function NeighborhoodsManager({
  variant="ghost"
  size="sm"
  onClick={handleDeselectAll}
- className="h-8 px-2.5 rounded-lg text-[11px] font-bold text-muted-foreground hover:text-foreground gap-1"
+ className="h-8 px-3 rounded-lg text-[11px] font-bold text-muted-foreground hover:text-foreground gap-1"
  title="Desmarcar todos os bairros"
  >
  <XSquare className="size-3.5 text-destructive" />
@@ -307,7 +307,7 @@ export function NeighborhoodsManager({
  variant={isBulkFeeOpen ? "secondary" : "outline"}
  size="sm"
  onClick={() => setIsBulkFeeOpen((prev) => !prev)}
- className="h-8 px-2.5 rounded-lg text-[11px] font-bold gap-1"
+ className="h-8 px-3 rounded-lg text-[11px] font-bold gap-1"
  >
  <DollarSign className="size-3.5 text-warning" />
  <span>Taxa em Lote</span>
@@ -317,7 +317,7 @@ export function NeighborhoodsManager({
 
  {/* ── BARRA EXPANSÍVEL DE TAXA EM LOTE ── */}
  {isBulkFeeOpen && (
- <div className="p-3 rounded-2xl bg-warning/10 border border-warning/20 flex items-center justify-between gap-3 animate-in fade-in duration-150">
+ <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 flex items-center justify-between gap-3 animate-in fade-in duration-150">
  <div className="flex items-center gap-2 flex-1">
  <span className="text-xs font-bold text-warning whitespace-nowrap">
  Aplicar taxa fixa para todos os bairros ativos:
@@ -333,12 +333,12 @@ export function NeighborhoodsManager({
  </div>
  </div>
 
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Button
  type="button"
  size="sm"
  onClick={handleApplyBulkFee}
- className="h-8 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white gap-1"
+ className="h-8 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white gap-1"
  >
  <Check className="size-3.5" />
  <span>Aplicar a Todos</span>
@@ -348,7 +348,7 @@ export function NeighborhoodsManager({
  variant="ghost"
  size="sm"
  onClick={() => setIsBulkFeeOpen(false)}
- className="h-8 rounded-xl text-xs"
+ className="h-8 rounded-lg text-xs"
  >
  Cancelar
  </Button>
@@ -357,7 +357,7 @@ export function NeighborhoodsManager({
  )}
 
  {/* ── LISTA DE BAIRROS DE ALTA DENSIDADE ── */}
- <div className="rounded-2xl border border-border/80 bg-background/50 divide-y divide-border/40 max-h-72 overflow-y-auto no-scrollbar shadow-2xs">
+ <div className="rounded-lg border border-border/80 bg-background/50 divide-y divide-border/40 max-h-72 overflow-y-auto no-scrollbar shadow-2xs">
  {filteredList.length === 0 ? (
  <div className="p-8 text-center text-muted-foreground space-y-1">
  <MapPin className="size-6 mx-auto opacity-40 mb-1" />
@@ -390,7 +390,7 @@ export function NeighborhoodsManager({
  />
 
  {isEditing ? (
- <div className="flex items-center gap-1.5 flex-1 max-w-sm">
+ <div className="flex items-center gap-2 flex-1 max-w-sm">
  <Input
  value={editingNameValue}
  onChange={(e) => setEditingNameValue(e.target.value)}
@@ -436,7 +436,7 @@ export function NeighborhoodsManager({
  <button
  type="button"
  onClick={() => handleStartRename(originalIndex, item.name)}
- className="opacity-0 group-hover:opacity-100 hover:opacity-100 text-muted-foreground hover:text-foreground transition-opacity p-0.5"
+ className="opacity-0 group-hover:opacity-100 hover:opacity-100 text-muted-foreground hover:text-foreground transition-opacity p-1"
  title="Editar nome do bairro"
  >
  <Edit2 className="size-3" />
@@ -448,7 +448,7 @@ export function NeighborhoodsManager({
  {/* Taxa de Entrega Individual & Ações */}
  <div className="flex items-center gap-2 shrink-0">
  {item.active && (
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="text-[11px] text-muted-foreground font-mono">Taxa:</span>
  <div className="w-24">
  <CurrencyField

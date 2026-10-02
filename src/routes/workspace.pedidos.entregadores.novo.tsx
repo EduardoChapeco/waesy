@@ -89,14 +89,14 @@ function NovoEntregadorPage() {
 
  <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
  {/* ── Dados Pessoais ── */}
- <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+ <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
  <User className="size-3.5" />
  Dados Pessoais
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="name" className="text-xs font-semibold">
  Nome Completo *
  </Label>
@@ -105,12 +105,12 @@ function NovoEntregadorPage() {
  value={form.name}
  onChange={(e) => update("name", e.target.value)}
  placeholder="Ex: João da Silva"
- className="rounded-xl h-11 border-border/60"
+ className="rounded-lg h-11 border-border/60"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="phone" className="text-xs font-semibold">
  Telefone / WhatsApp
  </Label>
@@ -121,12 +121,12 @@ function NovoEntregadorPage() {
  value={form.phone}
  onChange={(e) => update("phone", e.target.value)}
  placeholder="(49) 99999-0000"
- className="rounded-xl h-11 pl-10 border-border/60"
+ className="rounded-lg h-11 pl-10 border-border/60"
  />
  </div>
  </div>
 
- <div className="space-y-1.5 sm:col-span-2">
+ <div className="space-y-2 sm:col-span-2">
  <Label htmlFor="cpf" className="text-xs font-semibold">
  CPF
  </Label>
@@ -137,7 +137,7 @@ function NovoEntregadorPage() {
  value={form.cpf}
  onChange={(e) => update("cpf", e.target.value)}
  placeholder="000.000.000-00"
- className="rounded-xl h-11 pl-10 border-border/60"
+ className="rounded-lg h-11 pl-10 border-border/60"
  />
  </div>
  </div>
@@ -145,14 +145,14 @@ function NovoEntregadorPage() {
  </div>
 
  {/* ── Veículo ── */}
- <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+ <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
  <Car className="size-3.5" />
  Veículo
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">
  Tipo de Veículo *
  </Label>
@@ -160,10 +160,10 @@ function NovoEntregadorPage() {
  value={form.vehicle_type}
  onValueChange={(v) => update("vehicle_type", v)}
  >
- <SelectTrigger className="rounded-xl h-11 border-border/60">
+ <SelectTrigger className="rounded-lg h-11 border-border/60">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  {VEHICLE_OPTIONS.map((opt) => (
  <SelectItem key={opt.value} value={opt.value}>
  <span className="flex items-center gap-2">
@@ -176,7 +176,7 @@ function NovoEntregadorPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="plate" className="text-xs font-semibold">
  Placa do Veículo
  </Label>
@@ -187,21 +187,21 @@ function NovoEntregadorPage() {
  update("vehicle_plate", e.target.value.toUpperCase())
  }
  placeholder="ABC-1D23"
- className="rounded-xl h-11 uppercase border-border/60"
+ className="rounded-lg h-11 uppercase border-border/60"
  />
  </div>
  </div>
  </div>
 
  {/* ── Financeiro ── */}
- <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+ <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
  <FileText className="size-3.5" />
  Financeiro e Observações
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="fee" className="text-xs font-semibold">
  Taxa Padrão por Entrega (R$)
  </Label>
@@ -218,7 +218,7 @@ function NovoEntregadorPage() {
  )
  }
  placeholder="0,00"
- className="rounded-xl h-11"
+ className="rounded-lg h-11"
  />
  <p className="text-xs text-muted-foreground">
  Valor padrão cobrado por cada entrega realizada
@@ -226,7 +226,7 @@ function NovoEntregadorPage() {
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="notes" className="text-xs font-semibold">
  Observações Internas
  </Label>
@@ -236,7 +236,7 @@ function NovoEntregadorPage() {
  value={form.notes}
  onChange={(e) => update("notes", e.target.value)}
  placeholder="Anotações sobre o entregador, restrições, horários preferenciais..."
- className="w-full rounded-xl border border-border bg-background p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+ className="w-full rounded-lg border border-border bg-background p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary"
  />
  </div>
  </div>
@@ -249,14 +249,14 @@ function NovoEntregadorPage() {
  onClick={() =>
  navigate({ to: "/workspace/pedidos/entregadores" })
  }
- className="rounded-xl"
+ className="rounded-lg"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isSubmitting || !form.name.trim()}
- className="rounded-xl min-w-[140px]"
+ className="rounded-lg min-w-[140px]"
  >
  {isSubmitting ? (
  <>

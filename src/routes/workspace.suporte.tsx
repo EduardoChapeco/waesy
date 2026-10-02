@@ -252,14 +252,14 @@ function WorkspaceSupportPage() {
             <div
               key={t.id}
               onClick={() => handleOpenTicketDetails(t.id)}
-              className="flex items-center justify-between p-3.5 sm:p-4 rounded-xl border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-all shadow-2xs group"
+              className="flex items-center justify-between p-4 sm:p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-all shadow-2xs group"
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <MessageSquare className="size-4" />
                 </div>
 
-                <div className="space-y-0.5 min-w-0 flex-1">
+                <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono font-bold text-muted-foreground">
                       {t.ticket_code || `#${t.ticket_number}`}
@@ -407,7 +407,7 @@ function WorkspaceSupportPage() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as TicketCategory)}
-                    className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
+                    className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
                   >
                     <option value="tourism">Módulo Turismo / Excursões</option>
                     <option value="finance">Financeiro e Pagamentos</option>
@@ -423,7 +423,7 @@ function WorkspaceSupportPage() {
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value as TicketPriority)}
-                    className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs text-foreground focus:outline-none"
+                    className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs text-foreground focus:outline-none"
                   >
                     <option value="low">Baixa</option>
                     <option value="normal">Normal (24h)</option>
@@ -439,14 +439,14 @@ function WorkspaceSupportPage() {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Ex: Dúvida sobre emissão de manifesto ANTT ou erro em reserva"
-                  className="h-10 text-xs rounded-xl"
+                  className="h-10 text-xs rounded-lg"
                   required
                   autoFocus
                 />
               </div>
 
-              <div className="p-4 rounded-xl border border-border/70 bg-muted/10 space-y-3">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <div className="p-4 rounded-lg border border-border/70 bg-muted/10 space-y-3">
+                <span className="text-xs font-bold text-foreground flex items-center gap-2">
                   <LinkIcon className="size-3.5 text-primary" />
                   Vínculo com Operação / Entidade (Opcional)
                 </span>
@@ -521,7 +521,7 @@ function WorkspaceSupportPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Descreva o que aconteceu ou o que precisa de suporte de forma clara..."
-                  className="w-full h-32 p-3 rounded-xl border border-input bg-background text-xs text-foreground focus:outline-none resize-none leading-relaxed"
+                  className="w-full h-32 p-3 rounded-lg border border-input bg-background text-xs text-foreground focus:outline-none resize-none leading-relaxed"
                   required
                 />
               </div>
@@ -532,14 +532,14 @@ function WorkspaceSupportPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setNewModalOpen(false)}
-                className="h-10 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+                className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={submitting || !subject.trim() || !message.trim()}
-                className="h-10 px-5 rounded-xl text-xs font-bold cursor-pointer"
+                className="h-10 px-5 rounded-lg text-xs font-bold cursor-pointer"
               >
                 {submitting ? "Abrindo chamado..." : "Enviar Solicitação"}
               </Button>
@@ -598,7 +598,7 @@ function WorkspaceSupportPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleUpdateStatus("resolved")}
-                    className="h-7 px-2.5 text-xs font-semibold gap-1 text-emerald-600 hover:text-emerald-700 cursor-pointer"
+                    className="h-7 px-3 text-xs font-semibold gap-1 text-emerald-600 hover:text-emerald-700 cursor-pointer"
                   >
                     <CheckCircle2 className="size-3" /> Marcar como Resolvido
                   </Button>
@@ -611,7 +611,7 @@ function WorkspaceSupportPage() {
             {threadMessages.map((m) => (
               <div
                 key={m.id}
-                className={`p-3.5 rounded-xl text-xs space-y-1 max-w-[85%] ${
+                className={`p-4 rounded-lg text-xs space-y-1 max-w-[85%] ${
                   m.is_staff_reply
                     ? "bg-primary/10 text-foreground border border-primary/20 ml-0 mr-auto"
                     : "bg-muted/40 text-foreground border border-border/60 ml-auto mr-0"
@@ -643,12 +643,12 @@ function WorkspaceSupportPage() {
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               placeholder="Digite sua resposta ou atualização..."
-              className="h-11 rounded-xl text-xs flex-1"
+              className="h-11 rounded-lg text-xs flex-1"
             />
             <Button
               type="submit"
               disabled={sendingReply || !replyText.trim()}
-              className="size-11 rounded-xl shrink-0 cursor-pointer shadow-xs"
+              className="size-11 rounded-lg shrink-0 cursor-pointer shadow-xs"
             >
               <Send className="size-4" />
             </Button>

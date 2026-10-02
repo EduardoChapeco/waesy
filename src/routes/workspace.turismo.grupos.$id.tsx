@@ -116,7 +116,7 @@ function WorkspaceGroupTourDetailPage() {
  return (
  <div className="py-20 text-center space-y-4">
  <h2 className="text-sm font-bold text-foreground">ExcursÃ£o nÃ£o encontrada</h2>
- <Button asChild size="sm" variant="outline" className="rounded-xl">
+ <Button asChild size="sm" variant="outline" className="rounded-lg">
  <Link to="/workspace/turismo/grupos">Voltar para Grupos</Link>
  </Button>
  </div>
@@ -143,11 +143,11 @@ function WorkspaceGroupTourDetailPage() {
  return (
  <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* â”€â”€ 1. TOP HEADER DA VIAGEM â”€â”€ */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/80">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/80">
  <div className="flex items-center gap-3">
  <NativeBackButton fallbackHref="/workspace/turismo/grupos" />
 
- <div className="space-y-0.5 min-w-0">
+ <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
  <h1 className="text-sm font-bold text-foreground truncate max-w-xs sm:max-w-md">
  {tour.title}
@@ -175,7 +175,7 @@ function WorkspaceGroupTourDetailPage() {
  <Button
  asChild
  variant="outline"
- className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
  >
  <Link
  to={"/workspace/turismo/grupos/$id/embarque" as any}
@@ -190,7 +190,7 @@ function WorkspaceGroupTourDetailPage() {
  type="button"
  variant="outline"
  onClick={() => setMagicLinkModalOpen(true)}
- className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
  >
  <Link2 className="size-4 sm:size-3.5" />
  <span>Link MÃ¡gico</span>
@@ -201,7 +201,7 @@ function WorkspaceGroupTourDetailPage() {
  variant="outline"
  disabled={isExportingManifest}
  onClick={handleExportManifest}
- className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
  >
  <Download className="size-4 sm:size-3.5" />
  <span>{isExportingManifest ? "Gerando..." : "Manifesto ANTT (PDF)"}</span>
@@ -211,24 +211,24 @@ function WorkspaceGroupTourDetailPage() {
 
  {/* â”€â”€ 2. ABAS DE GESTÃƒO DA VIAGEM â”€â”€ */}
  <Tabs defaultValue="onibus" className="space-y-4">
- <TabsList className="flex items-center gap-1.5 w-full overflow-x-auto no-scrollbar p-1 rounded-xl min-h-[48px] h-auto sm:h-11">
- <TabsTrigger value="onibus" className="min-h-[44px] sm:min-h-[36px] text-xs rounded-xl font-bold gap-1.5 py-2.5 sm:py-2 cursor-pointer flex items-center justify-center">
+ <TabsList className="flex items-center gap-2 w-full overflow-x-auto no-scrollbar p-1 rounded-lg min-h-12 h-auto sm:h-11">
+ <TabsTrigger value="onibus" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
  <Bus className="size-3.5" />
  <span>Mapa do Ã”nibus</span>
  </TabsTrigger>
- <TabsTrigger value="hoteis" className="min-h-[44px] sm:min-h-[36px] text-xs rounded-xl font-bold gap-1.5 py-2.5 sm:py-2 cursor-pointer flex items-center justify-center">
+ <TabsTrigger value="hoteis" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
  <Building className="size-3.5" />
  <span>Rooming List</span>
  </TabsTrigger>
- <TabsTrigger value="orcamento" className="min-h-[44px] sm:min-h-[36px] text-xs rounded-xl font-bold gap-1.5 py-2.5 sm:py-2 cursor-pointer flex items-center justify-center">
+ <TabsTrigger value="orcamento" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
  <DollarSign className="size-3.5" />
  <span>OrÃ§amento</span>
  </TabsTrigger>
- <TabsTrigger value="caixa" className="min-h-[44px] sm:min-h-[36px] text-xs rounded-xl font-bold gap-1.5 py-2.5 sm:py-2 cursor-pointer flex items-center justify-center">
+ <TabsTrigger value="caixa" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
  <Wallet className="size-3.5" />
  <span>Caixa da Viagem</span>
  </TabsTrigger>
- <TabsTrigger value="transporte" className="min-h-[44px] sm:min-h-[36px] text-xs rounded-xl font-bold gap-1.5 py-2.5 sm:py-2 cursor-pointer flex items-center justify-center">
+ <TabsTrigger value="transporte" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
  <ShieldCheck className="size-3.5" />
  <span>VeÃ­culo / ANTT</span>
  </TabsTrigger>
@@ -261,7 +261,7 @@ function WorkspaceGroupTourDetailPage() {
 
  {/* ABA 5: DADOS OPERACIONAIS DO TRANSPORTE */}
  <TabsContent value="transporte" className="space-y-4">
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4 max-w-xl">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4 max-w-xl">
  <h3 className="text-sm font-bold text-foreground">
  IdentificaÃ§Ã£o do Transporte RodoviÃ¡rio
  </h3>
@@ -273,7 +273,7 @@ function WorkspaceGroupTourDetailPage() {
  placeholder="Ex: ViaÃ§Ã£o Catarinense"
  value={busCompany}
  onChange={(e) => setBusCompany(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
@@ -283,7 +283,7 @@ function WorkspaceGroupTourDetailPage() {
  placeholder="ABC-1D23"
  value={busPlate}
  onChange={(e) => setBusPlate(e.target.value)}
- className="h-10 text-xs rounded-xl font-mono uppercase"
+ className="h-10 text-xs rounded-lg font-mono uppercase"
  />
  </div>
 
@@ -293,7 +293,7 @@ function WorkspaceGroupTourDetailPage() {
  placeholder="Nome completo"
  value={driverName}
  onChange={(e) => setDriverName(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
@@ -303,7 +303,7 @@ function WorkspaceGroupTourDetailPage() {
  placeholder="(49) 99999-9999"
  value={driverPhone}
  onChange={(e) => setDriverPhone(e.target.value)}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  </div>
@@ -311,7 +311,7 @@ function WorkspaceGroupTourDetailPage() {
             <Button
               type="button"
               onClick={handleSaveOperational}
-              className="h-11 sm:h-10 px-5 rounded-xl text-xs font-bold bg-foreground text-background cursor-pointer shadow-xs"
+              className="h-11 sm:h-10 px-5 rounded-lg text-xs font-bold bg-foreground text-background cursor-pointer shadow-xs"
             >
               Salvar Dados do Transporte
             </Button>
@@ -334,7 +334,7 @@ function WorkspaceGroupTourDetailPage() {
  </p>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs">
  <div>
  <span className="text-slate-500 block text-xs">Data e Hora SaÃ­da:</span>
  <strong>{tour.departure_date} Ã s {tour.departure_time}</strong>

@@ -107,7 +107,7 @@ export function ContractClauseLibrary({
  };
 
  return (
- <div className={'p-5 rounded-2xl bg-card border border-border shadow-sm space-y-4 ' + className}>
+ <div className={'p-5 rounded-lg bg-card border border-border shadow-sm space-y-4 ' + className}>
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <BookOpen className="w-5 h-5 text-primary" />
@@ -125,18 +125,18 @@ export function ContractClauseLibrary({
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Pesquisar por título, texto ou tag..."
- className="pl-9 h-10 rounded-xl bg-muted/30 border-border text-xs"
+ className="pl-9 h-10 rounded-lg bg-muted/30 border-border text-xs"
  />
  </div>
  </div>
 
- <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 ">
+ <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 ">
  {Object.entries(CATEGORY_LABELS).map(([k, label]) => (
  <button
  key={k}
  type="button"
  onClick={() => setSelectedCategory(k)}
- className={'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ' + (
+ className={'px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ' + (
  selectedCategory === k
  ? 'bg-primary text-primary-foreground shadow-sm'
  : 'bg-muted/40 text-muted-foreground hover:text-foreground'
@@ -156,7 +156,7 @@ export function ContractClauseLibrary({
  filteredClauses.map((clause) => (
  <div
  key={clause.id}
- className="p-3.5 rounded-2xl bg-muted/20 border border-border/60 hover:border-border transition-all space-y-2"
+ className="p-4 rounded-lg bg-muted/20 border border-border/60 hover:border-border transition-all space-y-2"
  >
  <div className="flex items-center justify-between">
  <h4 className="text-xs font-bold text-foreground">{clause.title}</h4>
@@ -198,7 +198,7 @@ export function ContractClauseLibrary({
  {clause.tags.map((t) => (
  <span
  key={t}
- className="px-2 py-0.5 rounded-md bg-muted text-[10px] text-muted-foreground flex items-center gap-1"
+ className="px-2 py-1 rounded-md bg-muted text-[10px] text-muted-foreground flex items-center gap-1"
  >
  <Tag className="w-2.5 h-2.5" />
  {t}

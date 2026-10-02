@@ -169,7 +169,7 @@ function WorkspaceLogisticsPriceTablesPage() {
             onClick={handleSaveAll}
             disabled={isSaving}
             size="sm"
-            className="font-bold text-xs bg-primary text-primary-foreground gap-2 rounded-xl h-10 px-4 cursor-pointer shadow-2xs"
+            className="font-bold text-xs bg-primary text-primary-foreground gap-2 rounded-lg h-10 px-4 cursor-pointer shadow-2xs"
           >
             {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
             <span>{isSaving ? "Salvando no Banco..." : "Salvar Alterações"}</span>
@@ -179,8 +179,8 @@ function WorkspaceLogisticsPriceTablesPage() {
 
       {/* ── 4 KPIS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Gauge className="size-3.5 text-primary" />
             Modais Ativos
           </span>
@@ -192,8 +192,8 @@ function WorkspaceLogisticsPriceTablesPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Coins className="size-3.5 text-emerald-600" />
             Tarifa Base Média
           </span>
@@ -205,8 +205,8 @@ function WorkspaceLogisticsPriceTablesPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Navigation className="size-3.5 text-blue-600" />
             Valor Médio por KM
           </span>
@@ -218,8 +218,8 @@ function WorkspaceLogisticsPriceTablesPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <DollarSign className="size-3.5 text-foreground" />
             Piso Mínimo Médio
           </span>
@@ -233,10 +233,10 @@ function WorkspaceLogisticsPriceTablesPage() {
       </div>
 
       {/* ── SIMULADOR DINÂMICO COMPARATIVO DE ROTAS ── */}
-      <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-2xs">
+      <div className="p-5 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/50">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
               <Calculator className="size-4" />
             </div>
             <div>
@@ -246,7 +246,7 @@ function WorkspaceLogisticsPriceTablesPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Label htmlFor="sim-km" className="text-xs font-bold text-muted-foreground">Distância:</Label>
               <Input
                 id="sim-km"
@@ -255,12 +255,12 @@ function WorkspaceLogisticsPriceTablesPage() {
                 max={500}
                 value={simKm}
                 onChange={(e) => setSimKm(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                className="w-20 h-9 font-mono font-bold text-xs rounded-xl text-center"
+                className="w-20 h-9 font-mono font-bold text-xs rounded-lg text-center"
               />
               <span className="text-xs font-mono text-muted-foreground">km</span>
             </div>
 
-            <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold select-none bg-muted/40 px-3 py-1.5 rounded-xl border border-border/60">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold select-none bg-muted/40 px-3 py-2 rounded-lg border border-border/60">
               <input
                 type="checkbox"
                 checked={simIncludeHelper}
@@ -285,13 +285,13 @@ function WorkspaceLogisticsPriceTablesPage() {
             return (
               <div
                 key={`sim-${table.service_type}`}
-                className={`p-3.5 rounded-xl border transition-all ${
+                className={`p-4 rounded-lg border transition-all ${
                   table.is_active
                     ? "bg-background border-border/80"
                     : "bg-muted/10 border-border/40 opacity-50"
                 }`}
               >
-                <div className="flex items-center justify-between text-xs pb-1.5">
+                <div className="flex items-center justify-between text-xs pb-2">
                   <span className="font-bold truncate text-foreground">{table.name.split("(")[0]}</span>
                   {table.is_active ? (
                     <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30">
@@ -325,11 +325,11 @@ function WorkspaceLogisticsPriceTablesPage() {
         {tables.map((table: PriceTableItem) => (
           <div
             key={table.service_type}
-            className="rounded-2xl bg-card p-6 border border-border/70 space-y-5 shadow-2xs transition-all"
+            className="rounded-lg bg-card p-6 border border-border/70 space-y-5 shadow-2xs transition-all"
           >
             <div className="flex items-center justify-between pb-3 border-b border-border/50">
-              <div className="flex items-center gap-2.5">
-                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
                   {table.service_type === "moving_truck" ? (
                     <Boxes className="size-5" />
                   ) : table.service_type === "freight_van" ? (
@@ -342,13 +342,13 @@ function WorkspaceLogisticsPriceTablesPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground leading-tight">{table.name}</h3>
-                  <Badge variant="outline" className="text-xs uppercase font-mono mt-0.5">
+                  <Badge variant="outline" className="text-xs uppercase font-mono mt-1">
                     {table.service_type}
                   </Badge>
                 </div>
               </div>
 
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold select-none bg-muted/30 px-2.5 py-1 rounded-xl border border-border/60">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold select-none bg-muted/30 px-3 py-1 rounded-lg border border-border/60">
                 <input
                   type="checkbox"
                   checked={table.is_active}
@@ -362,54 +362,54 @@ function WorkspaceLogisticsPriceTablesPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold text-muted-foreground">Tarifa de Saída (Base)</Label>
                 <CurrencyField
                   value={table.base_fee_cents}
                   onChange={(cents) => handleUpdate(table.service_type, "base_fee_cents", cents || 0)}
                   placeholder="0,00"
-                  className="h-10 text-sm font-mono rounded-xl bg-background border-border/80"
+                  className="h-10 text-sm font-mono rounded-lg bg-background border-border/80"
                 />
                 <p className="text-xs text-muted-foreground">Valor fixo de partida</p>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold text-muted-foreground">Valor por KM Rodado</Label>
                 <CurrencyField
                   value={table.km_rate_cents}
                   onChange={(cents) => handleUpdate(table.service_type, "km_rate_cents", cents || 0)}
                   placeholder="0,00"
-                  className="h-10 text-sm font-mono rounded-xl bg-background border-border/80"
+                  className="h-10 text-sm font-mono rounded-lg bg-background border-border/80"
                 />
                 <p className="text-xs text-muted-foreground">Adicional por KM linear</p>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold text-muted-foreground">Corrida Mínima</Label>
                 <CurrencyField
                   value={table.min_fare_cents}
                   onChange={(cents) => handleUpdate(table.service_type, "min_fare_cents", cents || 0)}
                   placeholder="0,00"
-                  className="h-10 text-sm font-mono rounded-xl bg-background border-border/80"
+                  className="h-10 text-sm font-mono rounded-lg bg-background border-border/80"
                 />
                 <p className="text-xs text-muted-foreground">Piso mínimo cobrado</p>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold text-muted-foreground">Taxa de Ajudante / Carga</Label>
                 <CurrencyField
                   value={table.helper_fee_cents}
                   onChange={(cents) => handleUpdate(table.service_type, "helper_fee_cents", cents || 0)}
                   placeholder="0,00"
-                  className="h-10 text-sm font-mono rounded-xl bg-background border-border/80"
+                  className="h-10 text-sm font-mono rounded-lg bg-background border-border/80"
                 />
                 <p className="text-xs text-muted-foreground">Mão de obra extra</p>
               </div>
             </div>
 
             {/* Estimativa de Referência (5 km) */}
-            <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 flex items-center justify-between text-xs">
-              <div className="space-y-0.5">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/60 flex items-center justify-between text-xs">
+              <div className="space-y-1">
                 <span className="text-xs text-muted-foreground font-medium">Estimativa para 5 km:</span>
                 <p className="font-bold text-foreground font-mono">
                   {formatMoney(

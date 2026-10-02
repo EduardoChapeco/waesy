@@ -239,12 +239,12 @@ export function AgencyClausesEditorModal({
 
  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="flex-1 flex flex-col overflow-hidden">
  <div className="px-6 pt-3 border-b border-border/40 bg-muted/20 flex items-center justify-between">
- <TabsList className="bg-muted/60 p-1 rounded-xl h-9">
- <TabsTrigger value="editor" className="text-xs font-bold rounded-lg gap-1.5">
+ <TabsList className="bg-muted/60 p-1 rounded-lg h-9">
+ <TabsTrigger value="editor" className="text-xs font-bold rounded-lg gap-2">
  <FileText className="size-3.5" />
  <span>Editor de Cláusulas ({clauses.length})</span>
  </TabsTrigger>
- <TabsTrigger value="import" className="text-xs font-bold rounded-lg gap-1.5">
+ <TabsTrigger value="import" className="text-xs font-bold rounded-lg gap-2">
  <FileUp className="size-3.5" />
  <span>Colar Minuta Própria</span>
  </TabsTrigger>
@@ -277,7 +277,7 @@ export function AgencyClausesEditorModal({
  {clauses.map((clause, idx) => (
  <div
  key={idx}
- className="p-4 rounded-2xl bg-card border border-border/80 shadow-xs space-y-3 transition-all hover:border-border"
+ className="p-4 rounded-lg bg-card border border-border/80 shadow-xs space-y-3 transition-all hover:border-border"
  >
  <div className="flex items-center justify-between gap-2">
  <div className="flex items-center gap-2 flex-1">
@@ -333,7 +333,7 @@ export function AgencyClausesEditorModal({
  onChange={(e) => handleUpdateClause(idx, "clause_text", e.target.value)}
  placeholder="Texto completo da cláusula contratual..."
  rows={3}
- className="text-xs leading-relaxed rounded-xl bg-background border-border/60 resize-y"
+ className="text-xs leading-relaxed rounded-lg bg-background border-border/60 resize-y"
  />
  </div>
  ))}
@@ -342,7 +342,7 @@ export function AgencyClausesEditorModal({
  type="button"
  variant="outline"
  onClick={handleAddClause}
- className="w-full h-11 border-dashed border-2 rounded-2xl text-xs font-bold gap-2 text-muted-foreground hover:text-foreground cursor-pointer"
+ className="w-full h-11 border-dashed border-2 rounded-lg text-xs font-bold gap-2 text-muted-foreground hover:text-foreground cursor-pointer"
  >
  <Plus className="size-4" />
  <span>Adicionar Nova Cláusula</span>
@@ -353,7 +353,7 @@ export function AgencyClausesEditorModal({
 
  {/* ABA 2: IMPORTADOR / COLAR MINUTA PRÓPRIA */}
  <TabsContent value="import" className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 m-0">
- <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-2">
+ <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
  <div className="flex items-center gap-2">
  <FileText className="size-4 text-primary" />
  <h3 className="text-xs font-bold text-foreground">Importador Inteligente de Minuta Jurídica</h3>
@@ -370,7 +370,7 @@ export function AgencyClausesEditorModal({
  onChange={(e) => setRawTextImport(e.target.value)}
  placeholder={`Cole seu contrato aqui...\n\nExemplo:\nCLÁUSULA 1ª - DO OBJETO\nO presente contrato tem por objeto a intermediação turística...\n\nCLÁUSULA 2ª - DO CANCELAMENTO\nAs regras de cancelamento da operadora e cias aéreas...`}
  rows={12}
- className="text-xs font-mono leading-relaxed rounded-2xl bg-card border-border p-4"
+ className="text-xs font-mono leading-relaxed rounded-lg bg-card border-border p-4"
  />
  </div>
 
@@ -378,7 +378,7 @@ export function AgencyClausesEditorModal({
  type="button"
  onClick={handleParseRawText}
  disabled={!rawTextImport.trim()}
- className="w-full h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer"
+ className="w-full h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer"
  >
  <FileUp className="size-4" />
  <span>Processar Cláusulas</span>
@@ -396,7 +396,7 @@ export function AgencyClausesEditorModal({
  type="button"
  variant="outline"
  onClick={() => onOpenChange(false)}
- className="rounded-xl text-xs font-bold h-10"
+ className="rounded-lg text-xs font-bold h-10"
  >
  Cancelar
  </Button>
@@ -404,7 +404,7 @@ export function AgencyClausesEditorModal({
  type="button"
  disabled={isSaving || clauses.length === 0}
  onClick={handleSaveTemplate}
- className="rounded-xl text-xs font-bold h-10 bg-primary text-primary-foreground gap-2 cursor-pointer"
+ className="rounded-lg text-xs font-bold h-10 bg-primary text-primary-foreground gap-2 cursor-pointer"
  >
  {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
  <span>{isSaving ? "Salvando..." : "Salvar como Minuta Padrão da Agência"}</span>

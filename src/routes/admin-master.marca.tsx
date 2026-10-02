@@ -206,7 +206,7 @@ function AdminMasterMarcaPage() {
  Propagação Bilateral
  </Badge>
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Identidade visual, branding, favicon e assets da rede
  </p>
  </div>
@@ -214,11 +214,11 @@ function AdminMasterMarcaPage() {
  {/* Indicador de Status */}
  <div className="flex items-center gap-2">
  {isDirty ? (
- <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-semibold px-2.5 py-1">
+ <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-semibold px-3 py-1">
  ● Alterações não salvas
  </Badge>
  ) : (
- <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-semibold px-2.5 py-1">
+ <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-semibold px-3 py-1">
  ✓ Sincronizado com o sistema
  </Badge>
  )}
@@ -230,9 +230,9 @@ function AdminMasterMarcaPage() {
  {/* Coluna Esquerda: Formulários de Configuração (7 colunas) */}
  <div className="lg:col-span-7 space-y-6">
  {/* 1. Nome & Exibição na Barra Superior */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <Type className="size-4" />
  </div>
  <div>
@@ -244,7 +244,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  <div className="space-y-3 pt-1">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="platform-name" className="text-xs font-bold text-foreground">
  Nome da Plataforma
  </Label>
@@ -253,12 +253,12 @@ function AdminMasterMarcaPage() {
  value={platformName}
  onChange={(e) => setPlatformName(e.target.value)}
  placeholder="Ex: Waesy"
- className="rounded-xl h-10 text-sm font-semibold bg-background"
+ className="rounded-lg h-10 text-sm font-semibold bg-background"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
- <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/40">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/40">
  <div>
  <p className="text-xs font-semibold text-foreground">Exibir Nome</p>
  <p className="text-[10px] text-muted-foreground">Texto na barra superior</p>
@@ -266,7 +266,7 @@ function AdminMasterMarcaPage() {
  <Switch checked={showName} onCheckedChange={setShowName} id="show-name-toggle" />
  </div>
 
- <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/40">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/40">
  <div>
  <p className="text-xs font-semibold text-foreground">Exibir Logo</p>
  <p className="text-[10px] text-muted-foreground">Imagem da marca no topo</p>
@@ -278,10 +278,10 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 2. Upload de Logomarca Oficial */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-xl bg-info/10 text-info flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-info/10 text-info flex items-center justify-center shrink-0">
  <ImageIcon className="size-4" />
  </div>
  <div>
@@ -304,8 +304,8 @@ function AdminMasterMarcaPage() {
  )}
  </div>
 
- <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl bg-muted/20 border border-dashed border-border/60">
- <div className="size-20 rounded-xl bg-background border border-border/60 flex items-center justify-center p-2 shrink-0 overflow-hidden shadow-xs">
+ <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-muted/20 border border-dashed border-border/60">
+ <div className="size-20 rounded-lg bg-background border border-border/60 flex items-center justify-center p-2 shrink-0 overflow-hidden shadow-xs">
  {logoUrl ? (
  <img src={logoUrl} alt="Logo" className="size-full object-contain" />
  ) : (
@@ -340,7 +340,7 @@ function AdminMasterMarcaPage() {
  size="sm"
  onClick={() => logoInputRef.current?.click()}
  disabled={isUploading.logo}
- className="rounded-xl text-xs font-semibold h-9 gap-2 cursor-pointer w-full sm:w-auto"
+ className="rounded-lg text-xs font-semibold h-9 gap-2 cursor-pointer w-full sm:w-auto"
  >
  {isUploading.logo ? (
  <Loader2 className="size-3.5 animate-spin" />
@@ -354,10 +354,10 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 3. Upload de Favicon */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
  <Palette className="size-4" />
  </div>
  <div>
@@ -380,8 +380,8 @@ function AdminMasterMarcaPage() {
  )}
  </div>
 
- <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl bg-muted/20 border border-dashed border-border/60">
- <div className="size-12 rounded-xl bg-background border border-border/60 flex items-center justify-center p-1.5 shrink-0 overflow-hidden shadow-xs">
+ <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-muted/20 border border-dashed border-border/60">
+ <div className="size-12 rounded-lg bg-background border border-border/60 flex items-center justify-center p-2 shrink-0 overflow-hidden shadow-xs">
  {faviconUrl ? (
  <img src={faviconUrl} alt="Favicon" className="size-full object-contain" />
  ) : (
@@ -411,7 +411,7 @@ function AdminMasterMarcaPage() {
  size="sm"
  onClick={() => faviconInputRef.current?.click()}
  disabled={isUploading.favicon}
- className="rounded-xl text-xs font-semibold h-9 gap-2 cursor-pointer w-full sm:w-auto"
+ className="rounded-lg text-xs font-semibold h-9 gap-2 cursor-pointer w-full sm:w-auto"
  >
  {isUploading.favicon ? (
  <Loader2 className="size-3.5 animate-spin" />
@@ -425,9 +425,9 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 4. Backgrounds Imersivos da Tela de Login (3 Breakpoints) */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <ImageIcon className="size-4" />
  </div>
  <div>
@@ -442,8 +442,8 @@ function AdminMasterMarcaPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
  {/* Breakpoint 1: Desktop (16:9) */}
- <div className="p-3 rounded-xl bg-muted/20 border border-border/40 space-y-2.5 flex flex-col justify-between">
- <div className="space-y-1.5">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-3 flex flex-col justify-between">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-1">
  <Monitor className="size-3.5 text-primary" />
@@ -502,8 +502,8 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* Breakpoint 2: Tablet (4:3) */}
- <div className="p-3 rounded-xl bg-muted/20 border border-border/40 space-y-2.5 flex flex-col justify-between">
- <div className="space-y-1.5">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-3 flex flex-col justify-between">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-1">
  <Tablet className="size-3.5 text-info" />
@@ -562,8 +562,8 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* Breakpoint 3: Mobile (9:16) */}
- <div className="p-3 rounded-xl bg-muted/20 border border-border/40 space-y-2.5 flex flex-col justify-between">
- <div className="space-y-1.5">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-3 flex flex-col justify-between">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-1">
  <Smartphone className="size-3.5 text-emerald-500" />
@@ -624,9 +624,9 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 5. Canais Oficiais de Suporte & Atendimento */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
  <Globe className="size-4" />
  </div>
  <div>
@@ -638,8 +638,8 @@ function AdminMasterMarcaPage() {
  </div>
 
  <div className="space-y-3 pt-1">
- <div className="space-y-1.5">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="space-y-2">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Mail className="size-3.5 text-muted-foreground" />
  <span>E-mail de Atendimento</span>
  </Label>
@@ -647,12 +647,12 @@ function AdminMasterMarcaPage() {
  value={supportEmail}
  onChange={(e) => setSupportEmail(e.target.value)}
  placeholder="Ex: suporte@usewaesy.com"
- className="rounded-xl h-9 text-xs bg-background"
+ className="rounded-lg h-9 text-xs bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="space-y-2">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Phone className="size-3.5 text-muted-foreground" />
  <span>WhatsApp Oficial de Suporte</span>
  </Label>
@@ -660,12 +660,12 @@ function AdminMasterMarcaPage() {
  value={supportWhatsapp}
  onChange={(e) => setSupportWhatsapp(e.target.value)}
  placeholder="Ex: +55 (49) 99999-9999"
- className="rounded-xl h-9 text-xs bg-background"
+ className="rounded-lg h-9 text-xs bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="space-y-2">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Clock className="size-3.5 text-muted-foreground" />
  <span>Horário de Atendimento</span>
  </Label>
@@ -673,13 +673,13 @@ function AdminMasterMarcaPage() {
  value={supportHours}
  onChange={(e) => setSupportHours(e.target.value)}
  placeholder="Ex: Segunda a Sexta, das 08h às 18h"
- className="rounded-xl h-9 text-xs bg-background"
+ className="rounded-lg h-9 text-xs bg-background"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Instagram className="size-3.5 text-primary" />
  <span>Instagram Oficial</span>
  </Label>
@@ -687,12 +687,12 @@ function AdminMasterMarcaPage() {
  value={socialInstagram}
  onChange={(e) => setSocialInstagram(e.target.value)}
  placeholder="@waesy.app"
- className="rounded-xl h-9 text-xs bg-background"
+ className="rounded-lg h-9 text-xs bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Linkedin className="size-3.5 text-info" />
  <span>LinkedIn Oficial</span>
  </Label>
@@ -700,7 +700,7 @@ function AdminMasterMarcaPage() {
  value={socialLinkedin}
  onChange={(e) => setSocialLinkedin(e.target.value)}
  placeholder="https://linkedin.com/company/waesy"
- className="rounded-xl h-9 text-xs bg-background"
+ className="rounded-lg h-9 text-xs bg-background"
  />
  </div>
  </div>
@@ -711,10 +711,10 @@ function AdminMasterMarcaPage() {
  {/* Coluna Direita: Truthful Live Preview Real (5 colunas) */}
  <div className="lg:col-span-5">
  <div className="sticky top-6 space-y-4">
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="flex items-center gap-3">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <Eye className="size-4" />
  </div>
  <div>
@@ -734,7 +734,7 @@ function AdminMasterMarcaPage() {
  onValueChange={(v) => setPreviewTab(v as any)}
  className="w-full"
  >
- <TabsList className="w-full grid grid-cols-3 sm:grid-cols-3 h-8 p-0.5 bg-muted/40 rounded-xl">
+ <TabsList className="w-full grid grid-cols-3 sm:grid-cols-3 h-8 p-1 bg-muted/40 rounded-lg">
  <TabsTrigger value="topbar" className="text-[11px] rounded-lg">
  Barra de Topo
  </TabsTrigger>
@@ -748,9 +748,9 @@ function AdminMasterMarcaPage() {
 
  {/* ── Visualização 1: Barra de Topo Real ── */}
  <TabsContent value="topbar" className="pt-3 space-y-3">
- <div className="rounded-xl bg-background border border-border/60 overflow-hidden shadow-xs">
+ <div className="rounded-lg bg-background border border-border/60 overflow-hidden shadow-xs">
  {/* Header TopBar */}
- <div className="px-3.5 py-2.5 flex items-center justify-between gap-2 border-b border-border/40">
+ <div className="px-4 py-3 flex items-center justify-between gap-2 border-b border-border/40">
  {/* Logo + Nome */}
  <div className="flex items-center gap-2 shrink-0">
  {showLogo && logoUrl ? (
@@ -774,7 +774,7 @@ function AdminMasterMarcaPage() {
 
  {/* Busca Simulada */}
  <div className="hidden sm:flex flex-1 max-w-[140px] mx-1">
- <div className="w-full flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/40 text-[10px] text-muted-foreground border border-border/30">
+ <div className="w-full flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 text-[10px] text-muted-foreground border border-border/30">
  <Search className="size-3" />
  <span>Buscar produtos...</span>
  </div>
@@ -795,22 +795,22 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* Trilho de Chips */}
- <div className="px-3 py-1.5 bg-muted/15 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[10px]">
- <span className="px-2 py-0.5 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
+ <div className="px-3 py-2 bg-muted/15 flex items-center gap-2 overflow-x-auto no-scrollbar text-[10px]">
+ <span className="px-2 py-1 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
  Início
  </span>
- <span className="px-2 py-0.5 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
+ <span className="px-2 py-1 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
  Ofertas
  </span>
- <span className="px-2 py-0.5 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
+ <span className="px-2 py-1 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
  Gastronomia
  </span>
- <span className="px-2 py-0.5 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
+ <span className="px-2 py-1 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
  Mercado
  </span>
  </div>
 
- <div className="p-2.5 text-[10px] text-muted-foreground text-center bg-muted/5">
+ <div className="p-3 text-[10px] text-muted-foreground text-center bg-muted/5">
  Visualização real da barra superior em todas as páginas públicas.
  </div>
  </div>
@@ -855,7 +855,7 @@ function AdminMasterMarcaPage() {
 
  {/* Canvas da Tela de Login */}
  <div
- className={`relative rounded-xl overflow-hidden bg-black border border-border/60 mx-auto transition-all ${
+ className={`relative rounded-lg overflow-hidden bg-black border border-border/60 mx-auto transition-all ${
  loginBreakpoint === "desktop"
  ? "aspect-video w-full"
  : loginBreakpoint === "tablet"
@@ -895,19 +895,19 @@ function AdminMasterMarcaPage() {
 
  {/* Topo do Login */}
  <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
- <div className="px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white text-[9px] font-bold">
+ <div className="px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white text-[9px] font-bold">
  {platformName || "WAESY"}
  </div>
- <div className="px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white/80 text-[8px]">
+ <div className="px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white/80 text-[8px]">
  Voltar
  </div>
  </div>
 
  {/* Card de Autenticação no Canto */}
- <div className="absolute bottom-2 right-2 left-2 sm:left-auto sm:w-56 p-2.5 rounded-xl bg-black/85 backdrop-blur-xl border border-white/25 z-10 space-y-1.5">
+ <div className="absolute bottom-2 right-2 left-2 sm:left-auto sm:w-56 p-3 rounded-lg bg-black/85 backdrop-blur-xl border border-white/25 z-10 space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-[10px] font-bold text-white">Acessar Conta</span>
- <Badge className="bg-primary text-primary-foreground text-[8px] px-1.5 py-0">
+ <Badge className="bg-primary text-primary-foreground text-[8px] px-2 py-0">
  {platformName || "Waesy"}
  </Badge>
  </div>
@@ -922,11 +922,11 @@ function AdminMasterMarcaPage() {
  {/* ── Visualização 3: Aba do Navegador & Canais de Suporte ── */}
  <TabsContent value="browser" className="pt-3 space-y-4">
  {/* Mock da Aba do Navegador */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
  Aba do Navegador
  </p>
- <div className="flex items-center gap-2 bg-muted/40 rounded-xl px-3 py-2 border border-border/50 w-full">
+ <div className="flex items-center gap-2 bg-muted/40 rounded-lg px-3 py-2 border border-border/50 w-full">
  <div className="size-4 rounded overflow-hidden flex items-center justify-center bg-background border border-border/40 shrink-0">
  {faviconUrl ? (
  <img src={faviconUrl} alt="favicon" className="size-full object-contain" />
@@ -942,11 +942,11 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* Card de Suporte & Rodapé */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
  Canais no Rodapé
  </p>
- <div className="p-3.5 rounded-xl bg-background border border-border/60 space-y-2.5 text-xs">
+ <div className="p-4 rounded-lg bg-background border border-border/60 space-y-3 text-xs">
  <div className="flex items-center gap-2 text-foreground font-semibold">
  <Phone className="size-3.5 text-emerald-500" />
  <span>{supportWhatsapp || "Não informado"}</span>
@@ -995,7 +995,7 @@ function AdminMasterMarcaPage() {
  size="sm"
  onClick={() => router.invalidate()}
  disabled={isSubmitting}
- className="rounded-xl text-xs font-semibold h-10 px-4 cursor-pointer"
+ className="rounded-lg text-xs font-semibold h-10 px-4 cursor-pointer"
  >
  Descartar
  </Button>
@@ -1003,7 +1003,7 @@ function AdminMasterMarcaPage() {
  type="button"
  onClick={handleSave}
  disabled={isSubmitting}
- className="rounded-xl text-xs font-bold h-10 px-6 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+ className="rounded-lg text-xs font-bold h-10 px-6 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
  >
  {isSubmitting ? (
  <Loader2 className="size-4 animate-spin" />

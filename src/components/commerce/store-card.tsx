@@ -26,7 +26,7 @@ export function StoreCard({
  to="/diretorio/$id"
  params={{ id }}
  className={cn(
- "group relative flex flex-col justify-between w-full rounded-2xl bg-card border border-border/60 hover:border-primary/50 transition-colors duration-200 content-auto-card overflow-hidden select-none block shadow-2xs",
+ "group relative flex flex-col justify-between w-full rounded-lg bg-card border border-border/60 hover:border-primary/50 transition-colors duration-200 content-auto-card overflow-hidden select-none block shadow-2xs",
  className,
  )}
  >
@@ -62,7 +62,7 @@ export function StoreCard({
  {/* ── Store Info & Large Avatar ───────────────────────── */}
  <div className="p-5 pt-0 relative space-y-3">
  {/* Floating Avatar 64px - 72px */}
- <div className="size-16 sm:size-18 rounded-2xl bg-background overflow-hidden -mt-8 sm:-mt-9 relative z-10 flex items-center justify-center">
+ <div className="size-16 sm:size-18 rounded-lg bg-background overflow-hidden -mt-8 sm:-mt-9 relative z-10 flex items-center justify-center">
  {avatar_url ? (
  <img src={avatar_url} alt={name} className="size-full object-cover" />
  ) : (
@@ -71,17 +71,17 @@ export function StoreCard({
  </div>
 
  <div>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
  {name}
  </h3>
  <ShieldCheck className="size-4 text-primary shrink-0" />
  </div>
- <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{category}</p>
+ <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{category}</p>
  </div>
 
  {/* Badges de Distância, Avaliação e Tempo */}
- <div className="flex items-center justify-between text-xs text-muted-foreground pt-2.5 ">
+ <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 ">
  <div className="flex items-center gap-1 font-bold text-foreground">
  <Star className="size-3.5 fill-amber-400 text-amber-400" />
  <span>{rating.toFixed(1)}</span>

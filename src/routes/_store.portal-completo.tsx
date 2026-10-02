@@ -147,7 +147,7 @@ function PortalCompletoPage() {
       {/* Hero Silencioso Apple HIG */}
       <section className="relative overflow-hidden pt-10 pb-12 border-b border-border/60 bg-muted/20">
         <div className="max-w-4xl mx-auto px-0 sm:px-4 text-center space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background border border-border/70 text-muted-foreground text-xs font-mono font-medium">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-background border border-border/70 text-muted-foreground text-xs font-mono font-medium">
             <Layers className="size-3 text-primary" />
             <span>Módulos Operacionais</span>
           </div>
@@ -160,14 +160,14 @@ function PortalCompletoPage() {
             {pageData?.subtitle || "Sistemas de PDV, catálogo digital, logística de entregas e turismo integrados ao seu perfil comercial."}
           </p>
 
-          <div className="flex items-center justify-center gap-2.5 pt-1">
-            <Button asChild size="sm" className="h-10 px-5 rounded-xl font-bold text-xs gap-1.5 shadow-sm bg-foreground text-background hover:bg-foreground/90">
+          <div className="flex items-center justify-center gap-3 pt-1">
+            <Button asChild size="sm" className="h-10 px-5 rounded-lg font-bold text-xs gap-2 shadow-sm bg-foreground text-background hover:bg-foreground/90">
               <a href="#waitlist">
                 <span>Solicitar Demonstração</span>
                 <ArrowRight className="size-3.5" />
               </a>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-10 px-4 rounded-xl font-semibold text-xs border-border/70">
+            <Button asChild variant="outline" size="sm" className="h-10 px-4 rounded-lg font-semibold text-xs border-border/70">
               <Link to="/conta/empresa">
                 <span>Voltar ao Painel</span>
               </Link>
@@ -180,7 +180,7 @@ function PortalCompletoPage() {
         {/* Grid de Módulos Operacionais Padronizados */}
         <section className="space-y-6">
           <div className="flex items-center justify-between pb-1 border-b border-border/40">
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               <h2 className="text-lg font-bold text-foreground">
                 Arquitetura Setorial
               </h2>
@@ -197,9 +197,9 @@ function PortalCompletoPage() {
             {modules.map((mod: any) => (
               <div
                 key={mod.id}
-                className="bg-card rounded-2xl p-5 border border-border/60 shadow-2xs flex flex-col justify-between space-y-4 hover:border-foreground/30 transition-all"
+                className="bg-card rounded-lg p-5 border border-border/60 shadow-2xs flex flex-col justify-between space-y-4 hover:border-foreground/30 transition-all"
               >
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
                       {mod.category}
@@ -228,12 +228,12 @@ function PortalCompletoPage() {
         </section>
 
         {/* Informação de Sincronização Contida */}
-        <section className="bg-card rounded-2xl p-5 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+        <section className="bg-card rounded-lg p-5 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <Layers className="size-5" />
             </div>
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               <h3 className="text-sm font-bold text-foreground">
                 Sincronização Nativa de Dados
               </h3>
@@ -259,7 +259,7 @@ function PortalCompletoPage() {
           </div>
 
           {isSubmitted ? (
-            <div className="bg-card rounded-2xl p-8 border border-emerald-500/30 shadow-2xs text-center space-y-3">
+            <div className="bg-card rounded-lg p-8 border border-emerald-500/30 shadow-2xs text-center space-y-3">
               <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
                 <Check className="size-6" />
               </div>
@@ -268,7 +268,7 @@ function PortalCompletoPage() {
                 Nossa equipe entrará em contato via WhatsApp para agendar a demonstração exclusiva e liberar seu acesso prioritário.
               </p>
               <div className="pt-2">
-                <Button asChild variant="outline" size="sm" className="h-10 rounded-xl text-xs">
+                <Button asChild variant="outline" size="sm" className="h-10 rounded-lg text-xs">
                   <Link to="/conta/empresa">
                     Voltar ao Meu Painel da Empresa
                   </Link>
@@ -276,46 +276,46 @@ function PortalCompletoPage() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-card rounded-2xl p-6 border border-border/60 shadow-2xs space-y-4">
-              <div className="space-y-1.5">
+            <form onSubmit={handleSubmit} className="bg-card rounded-lg p-6 border border-border/60 shadow-2xs space-y-4">
+              <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Nome Comercial da Empresa *</Label>
                 <Input
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="Ex: Minha Empresa Ltda"
-                  className="h-11 rounded-xl text-xs bg-background"
+                  className="h-11 rounded-lg text-xs bg-background"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-medium text-foreground">WhatsApp de Contato *</Label>
                   <Input
                     value={contactWhatsapp}
                     onChange={(e) => setContactWhatsapp(e.target.value)}
                     placeholder="(49) 99999-9999"
-                    className="h-11 rounded-xl text-xs bg-background font-mono"
+                    className="h-11 rounded-lg text-xs bg-background font-mono"
                     required
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-medium text-foreground">E-mail Corporativo</Label>
                   <Input
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
                     placeholder="contato@empresa.com"
                     type="email"
-                    className="h-11 rounded-xl text-xs bg-background"
+                    className="h-11 rounded-lg text-xs bg-background"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Nicho Principal de Interesse</Label>
                 <Select value={niche} onValueChange={setNiche}>
-                  <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -329,14 +329,14 @@ function PortalCompletoPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Quais módulos você mais precisa hoje? (Opcional)</Label>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                   placeholder="Ex: Preciso de controle de estoque com grade e despacho de motoboy..."
-                  className="rounded-xl text-xs bg-background resize-none leading-relaxed"
+                  className="rounded-lg text-xs bg-background resize-none leading-relaxed"
                 />
               </div>
 
@@ -344,7 +344,7 @@ function PortalCompletoPage() {
                 <Button
                   type="submit"
                   disabled={waitlistMutation.isPending}
-                  className="w-full h-12 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm"
+                  className="w-full h-12 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm"
                 >
                   {waitlistMutation.isPending ? (
                     <>

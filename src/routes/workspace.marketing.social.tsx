@@ -149,7 +149,7 @@ export default function WorkspaceMarketingSocialPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="p-2 rounded-xl bg-primary/10 text-primary">
+            <span className="p-2 rounded-lg bg-primary/10 text-primary">
               <Share2 className="w-5 h-5" />
             </span>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -166,7 +166,7 @@ export default function WorkspaceMarketingSocialPage() {
             variant="outline"
             size="sm"
             onClick={handleOpenWhatsAppTest}
-            className="rounded-xl h-10 px-4 gap-2"
+            className="rounded-lg h-10 px-4 gap-2"
           >
             <MessageCircle className="w-4 h-4 text-emerald-500" />
             <span>Testar no WhatsApp</span>
@@ -175,7 +175,7 @@ export default function WorkspaceMarketingSocialPage() {
             size="sm"
             onClick={handleSave}
             disabled={isSaving}
-            className="rounded-xl h-10 px-5 gap-2 shadow-xs"
+            className="rounded-lg h-10 px-5 gap-2 shadow-xs"
           >
             <Save className="w-4 h-4" />
             <span>{isSaving ? "Salvando..." : "Salvar Configurações"}</span>
@@ -188,7 +188,7 @@ export default function WorkspaceMarketingSocialPage() {
         {/* Left Column: Form Settings (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           {/* Card 1: Open Graph & SEO Tags */}
-          <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-5 shadow-xs">
+          <div className="bg-card border border-border/60 rounded-lg p-6 space-y-5 shadow-xs">
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-primary" />
@@ -211,14 +211,14 @@ export default function WorkspaceMarketingSocialPage() {
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_title}", "title")}
-                    className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
                   >
                     + item_title
                   </button>
                   <button
                     type="button"
                     onClick={() => insertVariable("{store_name}", "title")}
-                    className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
                   >
                     + store_name
                   </button>
@@ -228,7 +228,7 @@ export default function WorkspaceMarketingSocialPage() {
                 value={ogTitleTemplate}
                 onChange={(e) => setOgTitleTemplate(e.target.value)}
                 placeholder="{item_title} | {store_name}"
-                className="h-10 text-sm rounded-xl font-mono"
+                className="h-10 text-sm rounded-lg font-mono"
               />
               <p className="text-xs text-muted-foreground">
                 Define o título em negrito exibido nos cards de link. Limite ideal: 60 caracteres.
@@ -245,14 +245,14 @@ export default function WorkspaceMarketingSocialPage() {
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_title}", "description")}
-                    className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
                   >
                     + item_title
                   </button>
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_description}", "description")}
-                    className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
                   >
                     + item_description
                   </button>
@@ -263,7 +263,7 @@ export default function WorkspaceMarketingSocialPage() {
                 onChange={(e) => setOgDescriptionTemplate(e.target.value)}
                 rows={3}
                 placeholder="Confira {item_title} na {store_name}..."
-                className="text-sm rounded-xl"
+                className="text-sm rounded-lg"
               />
               <p className="text-xs text-muted-foreground">
                 Resumo curto do produto ou página. Limite ideal: 120 caracteres.
@@ -289,7 +289,7 @@ export default function WorkspaceMarketingSocialPage() {
           </div>
 
           {/* Card 2: WhatsApp Share Message Template */}
-          <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-5 shadow-xs">
+          <div className="bg-card border border-border/60 rounded-lg p-6 space-y-5 shadow-xs">
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-emerald-500" />
@@ -311,21 +311,21 @@ export default function WorkspaceMarketingSocialPage() {
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_title}", "whatsapp")}
-                    className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground hover:text-foreground"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground"
                   >
                     + item_title
                   </button>
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_price}", "whatsapp")}
-                    className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground hover:text-foreground"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground"
                   >
                     + item_price
                   </button>
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_url}", "whatsapp")}
-                    className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground hover:text-foreground"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground"
                   >
                     + item_url
                   </button>
@@ -336,14 +336,14 @@ export default function WorkspaceMarketingSocialPage() {
                 onChange={(e) => setWhatsappShareTemplate(e.target.value)}
                 rows={3}
                 placeholder="Olá! Veja o que encontrei..."
-                className="text-sm rounded-xl font-sans"
+                className="text-sm rounded-lg font-sans"
               />
               <p className="text-xs text-muted-foreground">
                 Esse texto é pré-preenchido quando clientes ou vendedores clicam no botão de compartilhar via WhatsApp.
               </p>
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/40 text-xs">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border/40 text-xs">
               <span className="text-muted-foreground">Sufixo de Plataforma</span>
               <Input
                 value={siteNameSuffix}
@@ -356,7 +356,7 @@ export default function WorkspaceMarketingSocialPage() {
 
         {/* Right Column: Live Simulator (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-5 shadow-xs sticky top-6">
+          <div className="bg-card border border-border/60 rounded-lg p-6 space-y-5 shadow-xs sticky top-6">
             {/* Header da Prévia */}
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
               <div className="flex items-center gap-2">
@@ -365,7 +365,7 @@ export default function WorkspaceMarketingSocialPage() {
                   Simulador de Prévia Real
                 </h2>
               </div>
-              <div className="flex gap-1 bg-muted p-0.5 rounded-lg text-xs">
+              <div className="flex gap-1 bg-muted p-1 rounded-lg text-xs">
                 <button
                   type="button"
                   onClick={() => setPreviewScenario("product")}
@@ -392,11 +392,11 @@ export default function WorkspaceMarketingSocialPage() {
             </div>
 
             {/* Plataforma Selector */}
-            <div className="flex items-center justify-center gap-2 p-1 bg-muted/50 rounded-xl">
+            <div className="flex items-center justify-center gap-2 p-1 bg-muted/50 rounded-lg">
               <button
                 type="button"
                 onClick={() => setPreviewPlatform("whatsapp")}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-colors ${
                   previewPlatform === "whatsapp"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -408,7 +408,7 @@ export default function WorkspaceMarketingSocialPage() {
               <button
                 type="button"
                 onClick={() => setPreviewPlatform("twitter")}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-colors ${
                   previewPlatform === "twitter"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -420,7 +420,7 @@ export default function WorkspaceMarketingSocialPage() {
               <button
                 type="button"
                 onClick={() => setPreviewPlatform("facebook")}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-colors ${
                   previewPlatform === "facebook"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -433,9 +433,9 @@ export default function WorkspaceMarketingSocialPage() {
 
             {/* SIMULADOR WHATSAPP */}
             {previewPlatform === "whatsapp" && (
-              <div className="bg-[#EFEAE2] dark:bg-[#0b141a] rounded-2xl p-4 border border-border/40 font-sans shadow-inner">
+              <div className="bg-[#EFEAE2] dark:bg-[#0b141a] rounded-lg p-4 border border-border/40 font-sans shadow-inner">
                 <div className="max-w-[340px] ml-auto">
-                  <div className="bg-[#DCF8C6] dark:bg-[#005c4b] text-foreground rounded-xl rounded-tr-none p-3 shadow-xs space-y-2 text-xs">
+                  <div className="bg-[#DCF8C6] dark:bg-[#005c4b] text-foreground rounded-lg rounded-tr-none p-3 shadow-xs space-y-2 text-xs">
                     {/* Mensagem de texto antes do link */}
                     <p className="text-xs leading-relaxed break-words whitespace-pre-wrap dark:text-[#e9edef] text-[#111b21]">
                       {computedWhatsappMessage}
@@ -450,26 +450,26 @@ export default function WorkspaceMarketingSocialPage() {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-2 right-2">
-                          <Badge className="bg-black/70 text-white border-0 text-xs px-1.5 py-0.5">
+                          <Badge className="bg-black/70 text-white border-0 text-xs px-2 py-1">
                             {storeName}
                           </Badge>
                         </div>
                       </div>
-                      <div className="p-2.5 space-y-1">
+                      <div className="p-3 space-y-1">
                         <h4 className="font-semibold text-xs leading-snug line-clamp-2 dark:text-[#e9edef] text-[#111b21]">
                           {computedTitle}
                         </h4>
                         <p className="text-xs line-clamp-2 text-muted-foreground dark:text-[#8696a0]">
                           {computedDescription}
                         </p>
-                        <p className="text-xs text-muted-foreground/80 dark:text-[#8696a0] font-mono truncate pt-0.5">
+                        <p className="text-xs text-muted-foreground/80 dark:text-[#8696a0] font-mono truncate pt-1">
                           usewaesy.com
                         </p>
                       </div>
                     </div>
 
                     {/* Timestamp do WhatsApp */}
-                    <div className="text-xs text-right text-muted-foreground dark:text-[#8696a0] pt-0.5">
+                    <div className="text-xs text-right text-muted-foreground dark:text-[#8696a0] pt-1">
                       12:45 
                     </div>
                   </div>
@@ -479,7 +479,7 @@ export default function WorkspaceMarketingSocialPage() {
 
             {/* SIMULADOR TWITTER / X */}
             {previewPlatform === "twitter" && (
-              <div className="bg-background border border-border rounded-2xl overflow-hidden shadow-xs">
+              <div className="bg-background border border-border rounded-lg overflow-hidden shadow-xs">
                 <div className="aspect-[1.91/1] w-full bg-muted overflow-hidden relative">
                   <img
                     src={previewProduct.image}
@@ -492,7 +492,7 @@ export default function WorkspaceMarketingSocialPage() {
                     </Badge>
                   </div>
                 </div>
-                <div className="p-3.5 space-y-1.5 border-t border-border/50">
+                <div className="p-4 space-y-2 border-t border-border/50">
                   <p className="text-xs text-muted-foreground font-mono truncate">
                     usewaesy.com
                   </p>
@@ -508,7 +508,7 @@ export default function WorkspaceMarketingSocialPage() {
 
             {/* SIMULADOR FACEBOOK */}
             {previewPlatform === "facebook" && (
-              <div className="bg-card border border-border rounded-xl overflow-hidden shadow-xs">
+              <div className="bg-card border border-border rounded-lg overflow-hidden shadow-xs">
                 <div className="aspect-[1.91/1] w-full bg-muted overflow-hidden">
                   <img
                     src={previewProduct.image}
@@ -537,7 +537,7 @@ export default function WorkspaceMarketingSocialPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleCopyTestLink}
-                className="h-8 gap-1.5 text-xs text-primary"
+                className="h-8 gap-2 text-xs text-primary"
               >
                 {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedLink ? "Copiado" : "Copiar Link"}</span>

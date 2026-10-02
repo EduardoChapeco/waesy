@@ -123,7 +123,7 @@ export function ProfessionSearchDialog({
           </div>
 
           {/* CHIPS DE CATEGORIAS */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-3 -mb-1">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-3 -mb-1">
             {CATEGORY_TABS.map((tab) => (
               <button
                 key={tab.id}
@@ -160,7 +160,7 @@ export function ProfessionSearchDialog({
               <div
                 key={prof.id}
                 onClick={() => handleSelect(prof)}
-                className="group p-4 rounded-xl border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-all cursor-pointer flex flex-col gap-2.5 shadow-sm"
+                className="group p-4 rounded-lg border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-all cursor-pointer flex flex-col gap-3 shadow-sm"
               >
                 {/* TOPO: TÍTULO & CATEGORIA */}
                 <div className="flex items-start justify-between gap-3">
@@ -169,10 +169,10 @@ export function ProfessionSearchDialog({
                       <h4 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                         {prof.title}
                       </h4>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-border/60">
+                      <Badge variant="outline" className="text-[10px] px-2 py-0 h-4 border-border/60">
                         {prof.sector}
                       </Badge>
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                      <Badge variant="secondary" className="text-[10px] px-2 py-0 h-4">
                         {prof.category}
                       </Badge>
                     </div>
@@ -183,7 +183,7 @@ export function ProfessionSearchDialog({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="shrink-0 h-8 px-2.5 text-xs text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                    className="shrink-0 h-8 px-3 text-xs text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all"
                   >
                     Usar
                   </Button>
@@ -219,7 +219,7 @@ export function ProfessionSearchDialog({
 
                 {/* COMPETÊNCIAS & EDUCAÇÃO */}
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
-                  <div className="flex items-center gap-1.5 truncate">
+                  <div className="flex items-center gap-2 truncate">
                     <GraduationCap className="w-3.5 h-3.5 text-muted-foreground/70 shrink-0" />
                     <span className="truncate">{prof.required_education}</span>
                   </div>
@@ -231,11 +231,11 @@ export function ProfessionSearchDialog({
 
                 {/* SKILLS */}
                 {prof.essential_skills && prof.essential_skills.length > 0 && (
-                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-0.5">
+                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
                     {prof.essential_skills.slice(0, 4).map((skill, idx) => (
                       <span
                         key={idx}
-                        className="text-[10px] bg-background border border-border/40 text-muted-foreground px-1.5 py-0.5 rounded whitespace-nowrap"
+                        className="text-[10px] bg-background border border-border/40 text-muted-foreground px-2 py-1 rounded whitespace-nowrap"
                       >
                         {skill}
                       </span>

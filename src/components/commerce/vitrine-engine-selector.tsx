@@ -35,7 +35,7 @@ export function VitrineEngineSelector({
         tabIndex={activeMode === "empresas" ? 0 : -1}
         onClick={() => onModeChange("empresas")}
         className={cn(
-          "group relative flex items-center justify-center sm:justify-start gap-3.5 px-4 py-3 sm:px-5 sm:py-4 rounded-lg border transition-all duration-150 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "group relative flex items-center justify-center sm:justify-start gap-4 px-4 py-3 sm:px-5 sm:py-4 rounded-lg border transition-all duration-150 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           activeMode === "empresas"
             ? "bg-card border-foreground/40 text-foreground ring-1 ring-foreground/20 font-bold"
             : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/60"
@@ -68,7 +68,7 @@ export function VitrineEngineSelector({
         tabIndex={activeMode === "marketplace" ? 0 : -1}
         onClick={() => onModeChange("marketplace")}
         className={cn(
-          "group relative flex items-center justify-center sm:justify-start gap-3.5 px-4 py-3 sm:px-5 sm:py-4 rounded-lg border transition-all duration-150 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "group relative flex items-center justify-center sm:justify-start gap-4 px-4 py-3 sm:px-5 sm:py-4 rounded-lg border transition-all duration-150 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           activeMode === "marketplace"
             ? "bg-card border-foreground/40 text-foreground ring-1 ring-foreground/20 font-bold"
             : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/60"
@@ -101,7 +101,7 @@ export function VitrineEngineSelector({
         tabIndex={activeMode === "classifieds" ? 0 : -1}
         onClick={() => onModeChange("classifieds")}
         className={cn(
-          "group relative flex items-center justify-center sm:justify-start gap-3.5 px-4 py-3 sm:px-5 sm:py-4 rounded-lg border transition-all duration-150 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "group relative flex items-center justify-center sm:justify-start gap-4 px-4 py-3 sm:px-5 sm:py-4 rounded-lg border transition-all duration-150 cursor-pointer select-none min-h-14 sm:min-h-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           activeMode === "classifieds"
             ? "bg-card border-foreground/40 text-foreground ring-1 ring-foreground/20 font-bold"
             : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/60"

@@ -282,11 +282,11 @@ function CarteiraClientesPage() {
 
       {/* ── 5. Carteira de Clientes (Dual View: Mobile Cards & Desktop Table) ── */}
       {filteredCustomers.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl border border-border/40 bg-card/60 space-y-4 px-4">
-          <div className="size-14 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="py-16 text-center rounded-lg border border-border/40 bg-card/60 space-y-4 px-4">
+          <div className="size-14 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Users className="size-6" />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <h3 className="text-base sm:text-lg font-bold text-foreground">
               Nenhum cliente encontrado
             </h3>
@@ -298,7 +298,7 @@ function CarteiraClientesPage() {
           </div>
           <Button
             onClick={() => setIsWizardOpen(true)}
-            className="h-11 px-6 rounded-xl font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+            className="h-11 px-6 rounded-lg font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
           >
             <Plus className="size-4" />
             <span>Cadastrar ${t("client")}</span>
@@ -316,13 +316,13 @@ function CarteiraClientesPage() {
               return (
                 <div
                   key={c.id}
-                  className="px-4 py-3.5 min-h-[56px] space-y-2.5 active:bg-muted/30 transition-colors"
+                  className="px-4 py-4 min-h-[56px] space-y-3 active:bg-muted/30 transition-colors"
                 >
                   {/* Top: Avatar, Nome, Tipo & Status */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <div
-                        className={`size-12 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 border border-border/40 ${
+                        className={`size-12 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 border border-border/40 ${
                           isCompany
                             ? "bg-primary/10 text-primary"
                             : "bg-muted text-muted-foreground"
@@ -354,7 +354,7 @@ function CarteiraClientesPage() {
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       <Badge
                         variant={c.status === "active" ? "secondary" : "outline"}
-                        className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                        className={`text-xs font-semibold px-3 py-1 rounded-full ${
                           c.status === "active"
                             ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
                             : "text-muted-foreground"
@@ -369,7 +369,7 @@ function CarteiraClientesPage() {
                   </div>
 
                   {/* Informações de Contato e Documentos */}
-                  <div className="space-y-1.5 pt-1 text-xs text-muted-foreground">
+                  <div className="space-y-2 pt-1 text-xs text-muted-foreground">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <span className="font-mono text-foreground font-medium">
                         Doc: {c.document || "Não informado"}
@@ -389,12 +389,12 @@ function CarteiraClientesPage() {
                     {(hasExpiredDocs || hasSoonDocs) && (
                       <div className="pt-1">
                         {hasExpiredDocs ? (
-                          <Badge variant="destructive" className="text-xs font-bold gap-1 px-2.5 py-0.5">
+                          <Badge variant="destructive" className="text-xs font-bold gap-1 px-3 py-1">
                             <AlertTriangle className="size-3" />
                             <span>{c.docAlerts.expired} Documento(s) Vencido(s)</span>
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 gap-1 px-2.5 py-0.5">
+                          <Badge variant="secondary" className="text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 gap-1 px-3 py-1">
                             <Clock className="size-3" />
                             <span>{c.docAlerts.soon} Vence em breve</span>
                           </Badge>
@@ -408,7 +408,7 @@ function CarteiraClientesPage() {
                     <Button
                       asChild
                       variant="outline"
-                      className="flex-1 h-11 rounded-xl text-sm font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
+                      className="flex-1 h-11 rounded-lg text-sm font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
                     >
                       <Link to="/workspace/clientes/$id" params={{ id: c.id }}>
                         <FileText className="size-4 text-muted-foreground" />
@@ -421,7 +421,7 @@ function CarteiraClientesPage() {
                         type="button"
                         variant="outline"
                         onClick={() => openWhatsApp(c.phone, c.fullName)}
-                        className="h-11 px-4 rounded-xl border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+                        className="h-11 px-4 rounded-lg border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer shrink-0"
                         title="Conversar no WhatsApp"
                       >
                         <MessageCircle className="size-5" />
@@ -430,7 +430,7 @@ function CarteiraClientesPage() {
 
                     <CrudActionsMenu
  triggerVariant="outline"
- triggerClassName="h-11 px-4 rounded-xl border-border/60 hover:bg-muted shrink-0"
+ triggerClassName="h-11 px-4 rounded-lg border-border/60 hover:bg-muted shrink-0"
  onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
  viewLabel="Ficha Completa 360°"
  onArchive={() => handleArchive(c.id, c.fullName)}
@@ -479,32 +479,32 @@ function CarteiraClientesPage() {
           </div>
 
           {/* ── 2. Desktop High-Density Table Layout ── */}
-          <div className="hidden md:block rounded-2xl border border-border bg-card overflow-hidden shadow-2xs">
+          <div className="hidden md:block rounded-lg border border-border bg-card overflow-hidden shadow-2xs">
             <Table>
               <TableHeader className="bg-muted/40">
                 <TableRow>
-                  <TableHead className="w-[300px] font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                  <TableHead className="w-[300px] font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                     {isTourism ? "Passageiro / Titular" : "Cliente / Razão Social"}
                   </TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                     Tipo
                   </TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                     {isTourism ? "CPF / Passaporte" : "Documento"}
                   </TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                     Contato / WhatsApp
                   </TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                     Localização
                   </TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                     Documentos
                   </TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                     Status
                   </TableHead>
-                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                     Ações
                   </TableHead>
                 </TableRow>
@@ -518,10 +518,10 @@ function CarteiraClientesPage() {
                   return (
                     <TableRow key={c.id} className="hover:bg-muted/20 transition-colors">
                       {/* Nome & Razão Social */}
-                      <TableCell className="py-3.5">
+                      <TableCell className="py-4">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`size-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                            className={`size-9 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
                               isCompany
                                 ? "bg-primary/10 text-primary"
                                 : "bg-muted text-muted-foreground"
@@ -551,22 +551,22 @@ function CarteiraClientesPage() {
                       </TableCell>
 
                       {/* Tipo PF / PJ */}
-                      <TableCell className="py-3.5">
+                      <TableCell className="py-4">
                         <Badge variant="outline" className="text-xs font-bold uppercase">
                           {isCompany ? "PJ (B2B)" : "PF (B2C)"}
                         </Badge>
                       </TableCell>
 
                       {/* Documento CPF / CNPJ */}
-                      <TableCell className="py-3.5">
+                      <TableCell className="py-4">
                         <span className="font-mono text-xs text-muted-foreground">
                           {c.document || "—"}
                         </span>
                       </TableCell>
 
                       {/* Contato & WhatsApp */}
-                      <TableCell className="py-3.5">
-                        <div className="flex flex-col text-xs space-y-0.5">
+                      <TableCell className="py-4">
+                        <div className="flex flex-col text-xs space-y-1">
                           {c.phone ? (
                             <button
                               type="button"
@@ -589,14 +589,14 @@ function CarteiraClientesPage() {
                       </TableCell>
 
                       {/* Localização */}
-                      <TableCell className="py-3.5">
+                      <TableCell className="py-4">
                         <span className="text-xs text-muted-foreground">
                           {c.city ? `${c.city} - ${c.state || "UF"}` : "—"}
                         </span>
                       </TableCell>
 
                       {/* Alertas de Documentos */}
-                      <TableCell className="py-3.5">
+                      <TableCell className="py-4">
                         {hasExpiredDocs ? (
                           <Badge variant="destructive" className="text-xs font-bold py-0 h-5 gap-1">
                             <AlertTriangle className="size-2.5" />
@@ -616,10 +616,10 @@ function CarteiraClientesPage() {
                       </TableCell>
 
                       {/* Status */}
-                      <TableCell className="py-3.5">
+                      <TableCell className="py-4">
                         <Badge
                           variant={c.status === "active" ? "secondary" : "outline"}
-                          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                          className={`text-xs font-semibold px-3 py-1 rounded-full ${
                             c.status === "active"
                               ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
                               : "text-muted-foreground"
@@ -630,12 +630,12 @@ function CarteiraClientesPage() {
                       </TableCell>
 
                       {/* Menu de Ações */}
-                      <TableCell className="text-right py-3.5">
- <div className="flex items-center justify-end gap-1.5">
+                      <TableCell className="text-right py-4">
+ <div className="flex items-center justify-end gap-2">
  <Link
  to="/workspace/clientes/$id"
  params={{ id: c.id }}
- className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted/60 text-foreground hover:bg-muted transition-colors hover:no-underline"
+ className="px-3 py-2 rounded-lg text-xs font-semibold bg-muted/60 text-foreground hover:bg-muted transition-colors hover:no-underline"
  >
  Ficha 360°
  </Link>

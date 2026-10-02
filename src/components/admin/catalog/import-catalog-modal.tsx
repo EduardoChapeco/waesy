@@ -95,10 +95,10 @@ export function ImportCatalogModal({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-2xl w-full p-0 gap-0 overflow-hidden rounded-2xl bg-card border border-border max-h-[90vh] flex flex-col">
+ <DialogContent className="sm:max-w-2xl w-full p-0 gap-0 overflow-hidden rounded-lg bg-card border border-border max-h-[90vh] flex flex-col">
  <DialogHeader className="p-5 border-b border-border/80 bg-muted/20">
- <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Layers className="size-4" />
  </div>
  <div>
@@ -108,7 +108,7 @@ export function ImportCatalogModal({
  iFood / Link / Texto
  </Badge>
  </DialogTitle>
- <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+ <DialogDescription className="text-xs text-muted-foreground mt-1">
  Importe categorias, descrições e preços em lote sem digitação manual
  </DialogDescription>
  </div>
@@ -118,19 +118,19 @@ export function ImportCatalogModal({
  <div className="p-5 space-y-4 flex-1 overflow-y-auto no-scrollbar">
  {!previewData ? (
  <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
- <TabsList className="grid grid-cols-2 h-9 p-1 bg-muted/50 rounded-xl mb-4">
- <TabsTrigger value="url" className="text-xs font-bold gap-1.5 rounded-lg">
+ <TabsList className="grid grid-cols-2 h-9 p-1 bg-muted/50 rounded-lg mb-4">
+ <TabsTrigger value="url" className="text-xs font-bold gap-2 rounded-lg">
  <LinkIcon className="size-3.5" />
  <span>Link da Loja / iFood</span>
  </TabsTrigger>
- <TabsTrigger value="text" className="text-xs font-bold gap-1.5 rounded-lg">
+ <TabsTrigger value="text" className="text-xs font-bold gap-2 rounded-lg">
  <FileText className="size-3.5" />
  <span>Colar Texto / PDF</span>
  </TabsTrigger>
  </TabsList>
 
  <TabsContent value="url" className="space-y-3 mt-0">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">
  Link do cardápio digital ou loja
  </label>
@@ -138,7 +138,7 @@ export function ImportCatalogModal({
  value={urlInput}
  onChange={(e) => setUrlInput(e.target.value)}
  placeholder="https://www.ifood.com.br/delivery/cidade-uf/sua-loja/..."
- className="text-xs rounded-xl h-10 font-mono"
+ className="text-xs rounded-lg h-10 font-mono"
  />
  <p className="text-[11px] text-muted-foreground">
  Suporta links de cardápios públicos do iFood, Anota AI, Goomer, InstaDelivery ou sites próprios.
@@ -147,7 +147,7 @@ export function ImportCatalogModal({
  </TabsContent>
 
  <TabsContent value="text" className="space-y-3 mt-0">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">
  Texto ou lista de produtos
  </label>
@@ -156,7 +156,7 @@ export function ImportCatalogModal({
  onChange={(e) => setRawTextInput(e.target.value)}
  placeholder={`Hambúrgueres Artesanais:\n- Smash Burger: Pão brioche, blend 100g, cheddar - R$ 24,90\n- Bacon Cheddar: Blend 180g, bacon crocante - R$ 34,90\n\nBebidas:\n- Coca-Cola 350ml - R$ 6,50\n- Suco Natural Laranja 400ml - R$ 9,00`}
  rows={7}
- className="text-xs rounded-xl font-mono"
+ className="text-xs rounded-lg font-mono"
  />
  <p className="text-[11px] text-muted-foreground">
  Cole o cardápio em formato de texto, tabela ou tópicos. A IA organizará automaticamente.
@@ -167,7 +167,7 @@ export function ImportCatalogModal({
  ) : (
  /* Visualização da Prévia da Extração */
  <div className="space-y-4">
- <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
+ <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between">
  <div className="flex items-center gap-2">
  <PackageCheck className="size-5 text-primary" />
  <div>
@@ -194,7 +194,7 @@ export function ImportCatalogModal({
  {previewData.categories?.map((cat, cIdx) => (
  <div
  key={cIdx}
- className="p-3 rounded-xl border border-border/70 bg-card space-y-2 text-xs"
+ className="p-3 rounded-lg border border-border/70 bg-card space-y-2 text-xs"
  >
  <div className="flex items-center justify-between">
  <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
@@ -241,7 +241,7 @@ export function ImportCatalogModal({
  variant="ghost"
  size="sm"
  onClick={() => onOpenChange(false)}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
@@ -252,7 +252,7 @@ export function ImportCatalogModal({
  size="sm"
  disabled={parseMutation.isPending}
  onClick={() => parseMutation.mutate()}
- className="h-10 px-4 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
+ className="h-10 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
  >
  {parseMutation.isPending ? (
  <Loader2 className="size-4 animate-spin" />
@@ -267,7 +267,7 @@ export function ImportCatalogModal({
  size="sm"
  disabled={commitMutation.isPending || totalProductsCount === 0}
  onClick={() => commitMutation.mutate()}
- className="h-10 px-5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer shadow-xs"
+ className="h-10 px-5 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer shadow-xs"
  >
  {commitMutation.isPending ? (
  <Loader2 className="size-4 animate-spin" />

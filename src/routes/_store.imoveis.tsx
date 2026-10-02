@@ -83,14 +83,14 @@ export const Route = createFileRoute("/_store/imoveis")({
 function ImoveisErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <House size={32} />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar imóveis</h2>
       <p className="text-sm text-muted-foreground max-w-md mx-auto">
         {error?.message || "Não foi possível carregar os imóveis e oportunidades no momento."}
       </p>
-      <Button onClick={reset} className="rounded-xl font-bold">
+      <Button onClick={reset} className="rounded-lg font-bold">
         Tentar Novamente
       </Button>
     </div>
@@ -173,14 +173,14 @@ function ImoveisVerticalPage() {
       <div className="flex items-center justify-end gap-2 text-xs">
         <Link
           to="/turismo"
-          className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+          className="px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
         >
           Hospedagem & Temporada ↗
         </Link>
         <Link
           to="/classificados"
           search={{ category: "real_estate" }}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+          className="px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
         >
           Direto com Proprietário ↗
         </Link>
@@ -254,7 +254,7 @@ function ImoveisVerticalPage() {
               })()}
             </div>
           ) : (
-            <div className="py-12 text-center bg-card rounded-2xl p-6">
+            <div className="py-12 text-center bg-card rounded-lg p-6">
               <EmptyState
                 title="Nenhum imóvel encontrado"
                 description="Tente ajustar os filtros ou buscar em outras localidades."
@@ -265,7 +265,7 @@ function ImoveisVerticalPage() {
       ) : viewMode === "list" ? (
         <section aria-label="Lista de Imóveis">
           {filteredClassifieds.length === 0 ? (
-            <div className="py-12 text-center bg-card rounded-2xl p-6 border border-border/40">
+            <div className="py-12 text-center bg-card rounded-lg p-6 border border-border/40">
               <EmptyState
                 title="Nenhum imóvel encontrado"
                 description="Tente ajustar os filtros ou buscar em outras localidades."
@@ -282,7 +282,7 @@ function ImoveisVerticalPage() {
       ) : (
         <section aria-label="Grade de Imóveis">
           {filteredClassifieds.length === 0 ? (
-            <div className="py-12 text-center bg-card rounded-2xl p-6">
+            <div className="py-12 text-center bg-card rounded-lg p-6">
               <EmptyState
                 title="Nenhum imóvel encontrado"
                 description="Tente ajustar os filtros ou buscar em outras localidades."
@@ -308,7 +308,7 @@ function PropertyCard({ item }: { item: any }) {
   const isTemporada = item.deal_type === "temporada";
 
   return (
-    <div className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-all flex flex-col justify-between h-full">
+    <div className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-all flex flex-col justify-between h-full">
       <Link to="/classificados/$id" params={{ id: item.id }} className="block flex-1 flex flex-col">
         <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/40 flex items-center justify-center">
           {img ? (
@@ -318,7 +318,7 @@ function PropertyCard({ item }: { item: any }) {
               <House size={32} className="text-muted-foreground/30" />
             </div>
           )}
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
             <Badge variant="secondary" className="bg-background/90 text-[10px] font-bold">
               {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
             </Badge>
@@ -365,9 +365,9 @@ function PropertyListItem({ item }: { item: any }) {
     <Link
       to="/classificados/$id"
       params={{ id: item.id }}
-      className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[136px] pl-32 sm:pl-44 flex items-center justify-between pr-4 py-3.5 gap-3 cursor-pointer w-full"
+      className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[136px] pl-32 sm:pl-44 flex items-center justify-between pr-4 py-4 gap-3 cursor-pointer w-full"
     >
-      <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-2xl overflow-hidden bg-muted/60">
+      <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-lg overflow-hidden bg-muted/60">
         {img ? (
           <img src={img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
         ) : (
@@ -375,13 +375,13 @@ function PropertyListItem({ item }: { item: any }) {
             <House size={24} className="text-muted-foreground/40" />
           </div>
         )}
-        <Badge variant="secondary" className="absolute top-2 left-2 text-[9px] px-1.5 py-0.5 font-bold bg-background/90 backdrop-blur-xs">
+        <Badge variant="secondary" className="absolute top-2 left-2 text-[9px] px-2 py-1 font-bold bg-background/90 backdrop-blur-xs">
           {isTemporada ? "Temp." : isAluguel ? "Aluguel" : "Venda"}
         </Badge>
       </div>
 
       <div className="flex-1 min-w-0 space-y-1 pl-2">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <MapPin size={12} className="text-primary shrink-0" />
           <span className="truncate">{item.location_name || item.city || "Região"}</span>
         </div>

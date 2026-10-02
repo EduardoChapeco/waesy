@@ -78,7 +78,7 @@ export function ProfileBiolinkAnalytics({
           </h3>
         </div>
 
-        <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/50">
+        <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
           <Button
             type="button"
             variant="ghost"
@@ -126,12 +126,12 @@ export function ProfileBiolinkAnalytics({
 
       {/* Grid de 4 KPIs Principais */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-1">
+        <div className="p-4 rounded-lg border border-border/70 bg-card shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
+            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
               <Users className="size-4" />
             </div>
-            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-0.5">
+            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
               <ArrowUpRight className="size-3" /> +14.2%
             </span>
           </div>
@@ -143,12 +143,12 @@ export function ProfileBiolinkAnalytics({
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-1">
+        <div className="p-4 rounded-lg border border-border/70 bg-card shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <MousePointer2 className="size-4" />
             </div>
-            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-0.5">
+            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
               <ArrowUpRight className="size-3" /> +8.5%
             </span>
           </div>
@@ -160,12 +160,12 @@ export function ProfileBiolinkAnalytics({
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-1">
+        <div className="p-4 rounded-lg border border-border/70 bg-card shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500">
+            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500">
               <TrendingUp className="size-4" />
             </div>
-            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-0.5">
+            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
               <ArrowUpRight className="size-3" /> +2.1%
             </span>
           </div>
@@ -177,12 +177,12 @@ export function ProfileBiolinkAnalytics({
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-1">
+        <div className="p-4 rounded-lg border border-border/70 bg-card shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
               <Share2 className="size-4" />
             </div>
-            <Badge variant="outline" className="text-[9px] px-1.5 py-0 font-mono">
+            <Badge variant="outline" className="text-[9px] px-2 py-0 font-mono">
               Ativos
             </Badge>
           </div>
@@ -196,7 +196,7 @@ export function ProfileBiolinkAnalytics({
       </div>
 
       {/* Gráfico Visual de Curva de Engajamento */}
-      <div className="p-5 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-4">
+      <div className="p-5 rounded-lg border border-border/70 bg-card shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h4 className="text-xs font-bold text-foreground">
@@ -207,11 +207,11 @@ export function ProfileBiolinkAnalytics({
             </p>
           </div>
           <div className="flex items-center gap-4 text-[11px] font-semibold">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <div className="size-2.5 rounded-full bg-blue-500" />
               <span className="text-muted-foreground">Visitas</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <div className="size-2.5 rounded-full bg-primary" />
               <span className="text-foreground">Cliques</span>
             </div>
@@ -253,7 +253,7 @@ export function ProfileBiolinkAnalytics({
       </div>
 
       {/* Ranking de Desempenho por Link */}
-      <div className="p-5 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-4">
+      <div className="p-5 rounded-lg border border-border/70 bg-card shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-bold text-foreground">
             Ranking de Cliques por Link da Bio
@@ -278,7 +278,7 @@ export function ProfileBiolinkAnalytics({
                 displayClicks > 0 ? Math.round((linkClicks / displayClicks) * 100) : 0;
 
               return (
-                <div key={link.id || idx} className="space-y-1.5">
+                <div key={link.id || idx} className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="font-mono text-[10px] font-bold text-muted-foreground">
@@ -287,7 +287,7 @@ export function ProfileBiolinkAnalytics({
                       <span className="font-semibold text-foreground truncate">
                         {link.label || "Link sem título"}
                       </span>
-                      <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[200px]">
+                      <span className="text-[10px] text-muted-foreground font-mono truncate max-w-52">
                         {link.url}
                       </span>
                     </div>

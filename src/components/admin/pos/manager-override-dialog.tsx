@@ -62,7 +62,7 @@ export function ManagerOverrideDialog({
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="sm:max-w-md w-full p-6 space-y-6">
         <SheetHeader className="text-center space-y-2">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-2">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2">
             <Lock className="size-6" />
           </div>
           <SheetTitle className="text-base font-bold text-foreground text-center">{title}</SheetTitle>
@@ -80,7 +80,7 @@ export function ManagerOverrideDialog({
               inputMode="numeric"
               pattern="[0-9]*"
               autoFocus
-              className="text-center text-2xl tracking-widest h-12 rounded-xl font-mono"
+              className="text-center text-2xl tracking-widest h-12 rounded-lg font-mono"
               maxLength={6}
               value={pin}
               onChange={(e) => setPin(e.target.value)}
@@ -89,20 +89,20 @@ export function ManagerOverrideDialog({
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 text-xs text-destructive justify-center bg-destructive/10 p-2.5 rounded-xl border border-destructive/20 font-medium">
+            <div className="flex items-center gap-2 text-xs text-destructive justify-center bg-destructive/10 p-3 rounded-lg border border-destructive/20 font-medium">
               <AlertCircle className="size-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           <SheetFooter className="sm:justify-between gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="h-11 rounded-xl text-xs font-semibold">
+            <Button type="button" variant="outline" onClick={onClose} className="h-11 rounded-lg text-xs font-semibold">
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isLoading || pin.length < 4}
-              className="h-11 px-6 rounded-xl font-bold text-xs bg-primary text-primary-foreground"
+              className="h-11 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground"
             >
               {isLoading ? "Validando..." : "Autorizar"}
             </Button>

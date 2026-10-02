@@ -104,13 +104,13 @@ function AdminMasterPortalCompletoPage() {
               BETA MANAGEMENT
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Gerencie a landing page de apresentação dos módulos avançados e aprove a migração de empresas em 1 clique.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="h-9 rounded-xl text-xs gap-1.5">
+          <Button asChild variant="outline" size="sm" className="h-9 rounded-lg text-xs gap-2">
             <a href="/portal-completo" target="_blank" rel="noreferrer">
               <span>Ver Landing Page Pública</span>
               <ExternalLink className="size-3.5" />
@@ -124,7 +124,7 @@ function AdminMasterPortalCompletoPage() {
         <button
           type="button"
           onClick={() => setActiveTab("waitlist")}
-          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "waitlist"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "text-muted-foreground hover:bg-muted/50"
@@ -135,7 +135,7 @@ function AdminMasterPortalCompletoPage() {
         <button
           type="button"
           onClick={() => setActiveTab("content")}
-          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "content"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "text-muted-foreground hover:bg-muted/50"
@@ -149,7 +149,7 @@ function AdminMasterPortalCompletoPage() {
       {activeTab === "waitlist" && (
         <div className="space-y-4">
           {waitlist.length === 0 ? (
-            <div className="bg-card rounded-2xl p-8 border border-border/60 text-center space-y-3">
+            <div className="bg-card rounded-lg p-8 border border-border/60 text-center space-y-3">
               <Users className="size-8 mx-auto text-muted-foreground opacity-40" />
               <h3 className="text-sm font-bold text-foreground">Nenhuma empresa na fila ainda</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -157,7 +157,7 @@ function AdminMasterPortalCompletoPage() {
               </p>
             </div>
           ) : (
-            <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-2xs">
+            <div className="bg-card rounded-lg border border-border/60 overflow-hidden shadow-2xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-muted/40 text-muted-foreground font-semibold uppercase tracking-wider text-[10px] border-b border-border/60">
@@ -178,7 +178,7 @@ function AdminMasterPortalCompletoPage() {
                           <td className="p-4">
                             <p className="font-bold text-foreground">{item.company_name}</p>
                             {item.notes && (
-                              <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                              <p className="text-[11px] text-muted-foreground line-clamp-1 mt-1">
                                 "{item.notes}"
                               </p>
                             )}
@@ -214,7 +214,7 @@ function AdminMasterPortalCompletoPage() {
                                 size="sm"
                                 onClick={() => handleMigrate(item.id, item.store_id)}
                                 disabled={migratingId === item.id}
-                                className="h-8 rounded-lg text-xs font-bold gap-1.5 bg-primary text-primary-foreground shadow-2xs"
+                                className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-2xs"
                               >
                                 {migratingId === item.id ? (
                                   <Loader2 className="size-3.5 animate-spin" />
@@ -243,7 +243,7 @@ function AdminMasterPortalCompletoPage() {
 
       {/* ABA 2: Editor CMS da Landing Page */}
       {activeTab === "content" && (
-        <form onSubmit={handleSaveCMS} className="bg-card rounded-2xl p-6 border border-border/60 shadow-2xs space-y-5 max-w-3xl">
+        <form onSubmit={handleSaveCMS} className="bg-card rounded-lg p-6 border border-border/60 shadow-2xs space-y-5 max-w-3xl">
           <div className="space-y-1 pb-2 border-b border-border/40">
             <h2 className="text-sm font-bold text-foreground">Textos e Mídias Principais</h2>
             <p className="text-xs text-muted-foreground">
@@ -251,28 +251,28 @@ function AdminMasterPortalCompletoPage() {
             </p>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium text-foreground">Título de Impacto (Hero)</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="h-11 rounded-xl text-xs bg-background font-medium"
+              className="h-11 rounded-lg text-xs bg-background font-medium"
               required
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium text-foreground">Subtítulo Explicativo</Label>
             <Textarea
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
               rows={3}
-              className="rounded-xl text-xs bg-background resize-none leading-relaxed"
+              className="rounded-lg text-xs bg-background resize-none leading-relaxed"
               required
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium text-foreground">URL do Vídeo Demonstrativo (Opcional)</Label>
             <div className="relative">
               <Video className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
@@ -280,7 +280,7 @@ function AdminMasterPortalCompletoPage() {
                 value={demoVideoUrl}
                 onChange={(e) => setDemoVideoUrl(e.target.value)}
                 placeholder="https://www.youtube.com/embed/... ou link de mídia"
-                className="pl-8 h-11 rounded-xl text-xs bg-background"
+                className="pl-8 h-11 rounded-lg text-xs bg-background"
               />
             </div>
             <p className="text-[10px] text-muted-foreground">
@@ -292,7 +292,7 @@ function AdminMasterPortalCompletoPage() {
             <Button
               type="submit"
               disabled={isSavingContent}
-              className="h-10 px-5 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm"
+              className="h-10 px-5 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm"
             >
               {isSavingContent ? (
                 <>

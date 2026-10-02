@@ -206,7 +206,7 @@ function OptionGroupsPage() {
  actions={
  <Button
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground "
+ className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground "
  onClick={() => {
  form.reset({
  internal_name: "",
@@ -245,15 +245,15 @@ function OptionGroupsPage() {
  placeholder="Buscar grupos..."
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
- className="pl-9 h-9 text-xs rounded-xl"
+ className="pl-9 h-9 text-xs rounded-lg"
  />
  </div>
  </div>
 
- <div className="rounded-2xl overflow-hidden bg-card border border-border/70">
+ <div className="rounded-lg overflow-hidden bg-card border border-border/70">
  {filteredGroups.length === 0 ? (
  <div className="py-12 text-center space-y-4">
- <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+ <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
  <Plus className="size-6" />
  </div>
  <div className="space-y-1">
@@ -270,7 +270,7 @@ function OptionGroupsPage() {
  </div>
  <Button
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5 bg-foreground text-background hover:bg-foreground/90 h-9"
+ className="rounded-lg font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 h-9"
  onClick={() => {
  form.reset({
  internal_name: "",
@@ -330,7 +330,7 @@ function OptionGroupsPage() {
  variant="ghost"
  onClick={() => setOpen(false)}
  disabled={isSubmitting}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
@@ -338,7 +338,7 @@ function OptionGroupsPage() {
  type="button"
  onClick={form.handleSubmit(onSubmit as any)}
  disabled={isSubmitting}
- className="rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-1.5 h-9"
+ className="rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-2 h-9"
  >
  {isSubmitting ? (
  <>
@@ -359,7 +359,7 @@ function OptionGroupsPage() {
  {/* Presets Rápidos de 1 Clique */}
  {!form.watch("id") && (
  <div className="space-y-2 pb-2 border-b border-border/40">
- <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+ <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
  <Layers className="size-3.5 text-primary" />
  <span>Modelos Prontos (Presets de 1 Clique)</span>
  </div>
@@ -371,9 +371,9 @@ function OptionGroupsPage() {
  key={preset.name}
  type="button"
  onClick={() => applyPreset(preset)}
- className="flex flex-col items-start p-2.5 rounded-xl border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group"
+ className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group"
  >
- <div className="flex items-center gap-1.5 w-full mb-1">
+ <div className="flex items-center gap-2 w-full mb-1">
  <Icon className="size-3.5 text-primary shrink-0" />
  <span className="text-xs font-semibold text-foreground truncate">{preset.name}</span>
  </div>
@@ -387,7 +387,7 @@ function OptionGroupsPage() {
 
  <div className="grid gap-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Nome Interno</Label>
  <Input
  {...form.register("internal_name")}
@@ -400,7 +400,7 @@ function OptionGroupsPage() {
  ? "ex: GRADE_TAMANHO"
  : "ex: ADICIONAIS_PRATO"
  }
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  {form.formState.errors.internal_name && (
  <p className="text-xs text-destructive">
@@ -408,7 +408,7 @@ function OptionGroupsPage() {
  </p>
  )}
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Nome para o Cliente (Vitrine)</Label>
  <Input
  {...form.register("display_name")}
@@ -421,7 +421,7 @@ function OptionGroupsPage() {
  ? "ex: Selecione o Tamanho da Peça"
  : "ex: Turbine seu Prato ou Lanche"
  }
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  {form.formState.errors.display_name && (
  <p className="text-xs text-destructive">
@@ -431,7 +431,7 @@ function OptionGroupsPage() {
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Instrução / Descrição (Opcional)</Label>
  <Input
  {...form.register("description")}
@@ -444,44 +444,44 @@ function OptionGroupsPage() {
  ? "ex: Escolha a cor e tamanho desejados"
  : "ex: Escolha seus adicionais favoritos para turbinar o item"
  }
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Tipo de Seleção</Label>
  <Select
  value={form.watch("selection_type")}
  onValueChange={(val: any) => form.setValue("selection_type", val)}
  >
- <SelectTrigger className="rounded-xl text-xs h-9">
+ <SelectTrigger className="rounded-lg text-xs h-9">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="single">Escolha Única (Radio)</SelectItem>
  <SelectItem value="multiple">Escolha Múltipla (Checkbox)</SelectItem>
  </SelectContent>
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Mínimo de Escolhas</Label>
  <Input
  type="number"
  min={0}
  {...form.register("min_selections", { valueAsNumber: true })}
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Máximo de Escolhas</Label>
  <Input
  type="number"
  min={1}
  {...form.register("max_selections", { valueAsNumber: true })}
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  </div>
  </div>
@@ -511,7 +511,7 @@ function OptionGroupsPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs font-bold gap-1.5 h-8"
+ className="rounded-lg text-xs font-bold gap-2 h-8"
  onClick={() =>
  append({
  label: "",
@@ -530,7 +530,7 @@ function OptionGroupsPage() {
  </div>
 
  {fields.length === 0 ? (
- <div className="text-xs text-muted-foreground p-6 text-center border border-dashed rounded-2xl bg-muted/20">
+ <div className="text-xs text-muted-foreground p-6 text-center border border-dashed rounded-lg bg-muted/20">
  Nenhum adicional incluído neste grupo. Clique em "Adicionar Opção".
  </div>
  ) : (
@@ -607,7 +607,7 @@ function OptionItemCard({
  };
 
  return (
- <div className="flex items-start gap-3 p-3.5 rounded-2xl border border-border/70 bg-card hover:border-border transition-all">
+ <div className="flex items-start gap-3 p-4 rounded-lg border border-border/70 bg-card hover:border-border transition-all">
  {/* Mini Uploader 1:1 */}
  <div className="relative shrink-0">
  <input
@@ -619,7 +619,7 @@ function OptionItemCard({
  />
 
  {imageUrl ? (
- <div className="relative size-14 rounded-xl overflow-hidden border border-border/80 group">
+ <div className="relative size-14 rounded-lg overflow-hidden border border-border/80 group">
  <img src={imageUrl} alt="" className="size-full object-cover" />
  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
  <button
@@ -645,14 +645,14 @@ function OptionItemCard({
  type="button"
  onClick={() => fileInputRef.current?.click()}
  disabled={isUploading}
- className="size-14 rounded-xl border border-dashed border-border/80 bg-muted/20 hover:bg-muted/50 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+ className="size-14 rounded-lg border border-dashed border-border/80 bg-muted/20 hover:bg-muted/50 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer"
  >
  {isUploading ? (
  <Loader2 className="size-4 animate-spin text-primary" />
  ) : (
  <>
  <ImagePlus className="size-4" />
- <span className="text-xs font-semibold mt-0.5">Foto</span>
+ <span className="text-xs font-semibold mt-1">Foto</span>
  </>
  )}
  </button>
@@ -671,20 +671,20 @@ function OptionItemCard({
  </div>
 
  {/* Campos de Dados */}
- <div className="grid flex-1 gap-2.5">
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+ <div className="grid flex-1 gap-3">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
  <Label className="text-xs font-bold text-foreground">Nome do Adicional *</Label>
  <Input
  {...form.register(`values.${index}.label`)}
  placeholder="ex: Bacon Crocante Especial"
- className="h-8 text-xs rounded-xl"
+ className="h-8 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1">
  <Label className="text-xs font-bold text-foreground">Preço Adicional (R$)</Label>
  <CurrencyField
- className="h-8 text-xs rounded-xl"
+ className="h-8 text-xs rounded-lg"
  placeholder="0,00"
  value={form.watch(`values.${index}.price_modifier_cents`)}
  onChange={(val) =>
@@ -702,9 +702,9 @@ function OptionItemCard({
  />
  </div>
 
- <div className="flex items-center justify-between pt-0.5 text-xs">
+ <div className="flex items-center justify-between pt-1 text-xs">
  <div className="flex items-center gap-4">
- <label className="flex items-center gap-1.5 text-xs font-semibold text-foreground cursor-pointer">
+ <label className="flex items-center gap-2 text-xs font-semibold text-foreground cursor-pointer">
  <Checkbox
  checked={form.watch(`values.${index}.is_default`)}
  onCheckedChange={(c) => form.setValue(`values.${index}.is_default`, !!c)}
@@ -712,7 +712,7 @@ function OptionItemCard({
  />
  <span>Marcado por Padrão</span>
  </label>
- <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground cursor-pointer">
+ <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground cursor-pointer">
  <Checkbox
  checked={form.watch(`values.${index}.is_active`)}
  onCheckedChange={(c) => form.setValue(`values.${index}.is_active`, !!c)}
@@ -765,7 +765,7 @@ function OptionGroupTableRow({
  </button>
  </TableCell>
  <TableCell>
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <span className="font-bold text-xs text-foreground block">
  {group.display_name}
  </span>
@@ -775,7 +775,7 @@ function OptionGroupTableRow({
  </div>
  </TableCell>
  <TableCell>
- <Badge variant="outline" className="text-xs font-semibold rounded-lg px-2 py-0.5">
+ <Badge variant="outline" className="text-xs font-semibold rounded-lg px-2 py-1">
  {group.selection_type === "single" ? "Única (Radio)" : "Múltipla (Checkbox)"}
  </Badge>
  </TableCell>
@@ -833,7 +833,7 @@ function OptionGroupTableRow({
  {isExpanded && values.length > 0 && (
  <TableRow className="bg-muted/10 hover:bg-muted/10 border-b">
  <TableCell colSpan={6} className="p-3 pl-10">
- <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+ <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
  <Table className="text-xs">
  <TableHeader>
  <TableRow className="bg-transparent border-b">

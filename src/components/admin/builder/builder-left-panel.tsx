@@ -143,7 +143,7 @@ export function BuilderLeftPanel({
  setDragOverNodeId(null);
  }}
  className={cn(
- "flex items-center gap-1.5 py-2 pr-2 rounded-xl text-xs cursor-pointer transition-all group select-none relative my-0.5",
+ "flex items-center gap-2 py-2 pr-2 rounded-lg text-xs cursor-pointer transition-all group select-none relative my-1",
  isSelected
  ? "bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20"
  : "hover:bg-muted/60 text-foreground",
@@ -157,7 +157,7 @@ export function BuilderLeftPanel({
  <span className="truncate flex-1 text-xs">
  {reg?.name ?? node.block_type}
  </span>
- <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+ <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
  <button
  type="button"
  className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
@@ -194,12 +194,12 @@ export function BuilderLeftPanel({
  return (
  <aside className="w-80 bg-card border-r border-border/80 flex flex-col flex-none overflow-hidden select-none z-20 shadow-2xs">
  {/* ── Abas de Controle: Camadas / Adicionar ── */}
- <div className="flex p-1.5 bg-muted/40 border-b border-border/60 gap-1">
+ <div className="flex p-2 bg-muted/40 border-b border-border/60 gap-1">
  <button
  type="button"
  onClick={() => setActivePanel("layers")}
  className={cn(
- "flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer",
+ "flex-1 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer",
  activePanel === "layers"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -213,7 +213,7 @@ export function BuilderLeftPanel({
  type="button"
  onClick={() => setActivePanel("blocks")}
  className={cn(
- "flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer",
+ "flex-1 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer",
  activePanel === "blocks"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -231,14 +231,14 @@ export function BuilderLeftPanel({
  <Button
  type="button"
  onClick={onAddSection}
- className="w-full h-10 rounded-xl text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs cursor-pointer"
  >
  <LayoutTemplate className="size-4" />
  <span>Explorar Catálogo de Seções</span>
  </Button>
 
  {treeNodes.length === 0 ? (
- <div className="p-8 rounded-2xl bg-muted/30 text-center space-y-2 border border-dashed border-border/80 my-4">
+ <div className="p-8 rounded-lg bg-muted/30 text-center space-y-2 border border-dashed border-border/80 my-4">
  <Layers className="size-8 mx-auto text-muted-foreground/40" />
  <p className="text-xs font-semibold text-foreground">Nenhuma seção inserida</p>
  <p className="text-[11px] text-muted-foreground">
@@ -246,7 +246,7 @@ export function BuilderLeftPanel({
  </p>
  </div>
  ) : (
- <div className="space-y-0.5 pt-1">
+ <div className="space-y-1 pt-1">
  {treeNodes.map((rootNode) => renderLayer(rootNode, 0))}
  </div>
  )}
@@ -259,17 +259,17 @@ export function BuilderLeftPanel({
  <Button
  type="button"
  onClick={onAddSection}
- className="w-full h-10 rounded-xl text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs cursor-pointer"
  >
  <LayoutTemplate className="size-4" />
  <span>Seções Completas Prontas</span>
  </Button>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
  Categorias de Blocos
  </span>
- <div className="grid grid-cols-2 gap-1.5">
+ <div className="grid grid-cols-2 gap-2">
  {BLOCK_CATEGORIES.map((cat) => {
  const Icon = cat.icon;
  return (
@@ -278,7 +278,7 @@ export function BuilderLeftPanel({
  key={cat.id}
  onClick={() => setBlockCategory(cat.id)}
  className={cn(
- "flex items-center gap-2 p-2.5 rounded-xl text-xs transition-all text-left cursor-pointer border",
+ "flex items-center gap-2 p-3 rounded-lg text-xs transition-all text-left cursor-pointer border",
  blockCategory === cat.id
  ? "bg-primary/10 border-primary/30 text-primary font-bold shadow-2xs"
  : "bg-muted/30 border-border/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -293,7 +293,7 @@ export function BuilderLeftPanel({
  </div>
 
  {/* Lista de Blocos da Categoria Selecionada */}
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
  Blocos Disponíveis
  </span>
@@ -307,9 +307,9 @@ export function BuilderLeftPanel({
  type="button"
  key={blockType}
  onClick={() => insertBlock(blockType)}
- className="flex items-center justify-between p-3 bg-muted/20 hover:bg-muted/60 border border-border/50 hover:border-primary/40 rounded-xl transition-all text-left cursor-pointer group"
+ className="flex items-center justify-between p-3 bg-muted/20 hover:bg-muted/60 border border-border/50 hover:border-primary/40 rounded-lg transition-all text-left cursor-pointer group"
  >
- <div className="space-y-0.5 min-w-0 flex-1 pr-2">
+ <div className="space-y-1 min-w-0 flex-1 pr-2">
  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
  {reg.name}
  </p>

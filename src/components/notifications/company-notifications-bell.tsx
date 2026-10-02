@@ -33,7 +33,7 @@ export function CompanyNotificationsBell() {
           type="button"
           variant="outline"
           size="icon"
-          className="relative size-9 rounded-xl border-border/60 hover:bg-muted/50 cursor-pointer"
+          className="relative size-9 rounded-lg border-border/60 hover:bg-muted/50 cursor-pointer"
           aria-label={`Notificações (${unreadCount} não lidas)`}
         >
           <Bell className="size-4 text-foreground" />
@@ -45,7 +45,7 @@ export function CompanyNotificationsBell() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-80 sm:w-96 p-2 rounded-2xl bg-card border border-border/60 shadow-xl">
+      <DropdownMenuContent align="end" className="w-80 sm:w-96 p-2 rounded-lg bg-card border border-border/60 shadow-xl">
         <div className="p-2 border-b border-border/40 flex items-center justify-between">
           <span className="text-xs font-bold text-foreground">Alertas da Empresa</span>
           {unreadCount > 0 && (
@@ -68,7 +68,7 @@ export function CompanyNotificationsBell() {
                   if (!n.is_read) markMutation.mutate(n.id);
                 }}
                 className={cn(
-                  "p-2.5 rounded-xl transition-colors cursor-pointer space-y-1",
+                  "p-3 rounded-lg transition-colors cursor-pointer space-y-1",
                   n.is_read ? "bg-transparent opacity-80" : "bg-muted/40 font-medium"
                 )}
               >
@@ -82,7 +82,7 @@ export function CompanyNotificationsBell() {
                   {n.message}
                 </p>
                 {n.author_name && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground/75 text-muted-foreground pt-0.5">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground/75 text-muted-foreground pt-1">
                     <User className="size-2.5" />
                     <span>{n.author_name}</span>
                   </div>

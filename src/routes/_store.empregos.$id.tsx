@@ -112,7 +112,7 @@ function JobDetailPage() {
  <p className="text-sm text-muted-foreground max-w-md mx-auto">
  Esta oportunidade de emprego pode ter sido preenchida ou pausada pelo recrutador.
  </p>
- <Button asChild className="rounded-xl font-bold">
+ <Button asChild className="rounded-lg font-bold">
  <Link to="/empregos">
  <ArrowLeft size={16} weight="bold" className="mr-2" />
  Ver todas as vagas disponíveis

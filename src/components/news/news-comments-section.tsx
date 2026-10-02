@@ -90,14 +90,14 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  return (
  <section className="mt-10 pt-8 space-y-6">
  {/* ── Header de Interação (Likes + Total Comentários) ── */}
- <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-muted/40 ">
+ <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-muted/40 ">
  <div className="flex items-center gap-3">
  <Button
  variant={isLiked ? "default" : "outline"}
  size="sm"
  onClick={handleToggleLike}
  disabled={isLiking}
- className={`rounded-xl font-bold gap-2 text-xs transition-all ${
+ className={`rounded-lg font-bold gap-2 text-xs transition-all ${
  isLiked ? "bg-destructive hover:bg-destructive text-white border-transparent" : ""
  }`}
  >
@@ -105,7 +105,7 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  <span>{totalLikes > 0 ? `${totalLikes} Curtidas` : "Curtir Matéria"}</span>
  </Button>
 
- <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+ <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
  <MessageSquare className="size-3.5" />
  <span>{comments.length} Comentários</span>
  </span>
@@ -118,14 +118,14 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  </div>
 
  {/* ── Formulário de Comentário ── */}
- <form onSubmit={handleSendComment} className="space-y-2.5">
+ <form onSubmit={handleSendComment} className="space-y-3">
  <div className="relative">
  <textarea
  value={newComment}
  onChange={(e) => setNewComment(e.target.value)}
  placeholder="Deixe sua opinião ou contribuição sobre esta notícia..."
  rows={3}
- className="w-full p-3.5 rounded-2xl bg-card text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none "
+ className="w-full p-4 rounded-lg bg-card text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none "
  />
  </div>
 
@@ -134,7 +134,7 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  type="submit"
  disabled={isSubmitting || !newComment.trim()}
  size="sm"
- className="rounded-xl font-bold gap-2 text-xs bg-primary text-primary-foreground"
+ className="rounded-lg font-bold gap-2 text-xs bg-primary text-primary-foreground"
  >
  {isSubmitting ? (
  <Loader2 className="size-3.5 animate-spin" />
@@ -160,7 +160,7 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  comments.map((c) => (
  <div
  key={c.id}
- className="p-4 rounded-2xl bg-card space-y-1.5"
+ className="p-4 rounded-lg bg-card space-y-2"
  >
  <div className="flex items-center justify-between text-xs">
  <div className="flex items-center gap-2">

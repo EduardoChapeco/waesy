@@ -115,7 +115,7 @@ export function SchemaFormRenderer({
       </div>
 
       {errors.__root && (
-        <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+        <div className="flex items-center gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <span>{errors.__root}</span>
         </div>
@@ -148,7 +148,7 @@ export function SchemaFormRenderer({
                   id={field.id}
                   value={formData[field.id] || ""}
                   onChange={(e) => handleChange(field.id, e.target.value)}
-                  className={`flex h-12 w-full rounded-xl border bg-input px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  className={`flex h-12 w-full rounded-lg border bg-input px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     fieldError ? "border-destructive focus-visible:ring-destructive" : "border-border"
                   }`}
                 >
@@ -204,13 +204,13 @@ export function SchemaFormRenderer({
 
       {/* Consentimento LGPD */}
       {schema.lgpdConsent?.required && (
-        <div className="rounded-xl border border-border/60 bg-muted/30 p-4 space-y-3">
+        <div className="rounded-lg border border-border/60 bg-muted/30 p-4 space-y-3">
           <div className="flex items-start space-x-3">
             <Checkbox
               id="__lgpdConsent"
               checked={!!formData.__lgpdConsent}
               onCheckedChange={(checked) => handleChange("__lgpdConsent", !!checked)}
-              className="mt-0.5"
+              className="mt-1"
             />
             <div className="space-y-1">
               <Label htmlFor="__lgpdConsent" className="text-xs leading-relaxed text-muted-foreground cursor-pointer block">
@@ -234,7 +234,7 @@ export function SchemaFormRenderer({
       <div className="pt-2">
         <Button
           type="submit"
-          className="w-full h-12 text-sm font-semibold rounded-xl"
+          className="w-full h-12 text-sm font-semibold rounded-lg"
           disabled={isSubmitting || submitSuccess}
         >
           {submitSuccess ? (

@@ -149,7 +149,7 @@ function ClaimGiftCardPage() {
  </p>
 
  <div className="bg-muted/40 p-4 flex items-start gap-3">
- <Gift className="size-5 text-primary shrink-0 mt-0.5" />
+ <Gift className="size-5 text-primary shrink-0 mt-1" />
  <div className="text-xs text-muted-foreground font-normal space-y-1">
  <p className="font-semibold text-foreground">Como funciona?</p>
  <p>1. Clique em"Resgatar para minha conta" para vincular o saldo ao seu e-mail.</p>

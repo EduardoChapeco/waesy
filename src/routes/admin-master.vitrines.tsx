@@ -234,7 +234,7 @@ function AdminMasterVitrinesPage() {
  <Button
  onClick={handleOpenNewDialog}
  size="sm"
- className="h-9 px-4 rounded-xl gap-1.5 font-semibold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+ className="h-9 px-4 rounded-lg gap-2 font-semibold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
  >
  <Plus className="size-4" />
  <span>Nova Seção</span>
@@ -277,15 +277,15 @@ function AdminMasterVitrinesPage() {
  {isLoading ? (
  <div className="p-12 text-center text-xs text-muted-foreground">Carregando seções da vitrine...</div>
  ) : sections.length === 0 ? (
- <div className="p-12 border border-dashed border-border rounded-2xl text-center space-y-3 bg-card/30">
+ <div className="p-12 border border-dashed border-border rounded-lg text-center space-y-3 bg-card/30">
  <Layout className="size-8 text-muted-foreground/40 mx-auto" />
  <p className="text-xs text-muted-foreground font-medium">Nenhuma seção configurada para esta vitrine.</p>
- <Button onClick={handleOpenNewDialog} size="sm" variant="outline" className="h-8 rounded-xl text-xs font-bold">
+ <Button onClick={handleOpenNewDialog} size="sm" variant="outline" className="h-8 rounded-lg text-xs font-bold">
  Criar Primeira Seção
  </Button>
  </div>
  ) : (
- <div className="space-y-2.5">
+ <div className="space-y-3">
  {sections.map((sec, index) => {
  const typeConfig = SECTION_TYPE_OPTIONS.find((t) => t.id === sec.type);
  const rankingConfig = RANKING_OPTIONS.find((r) => r.id === sec.ranking_strategy);
@@ -294,12 +294,12 @@ function AdminMasterVitrinesPage() {
  return (
  <div
  key={sec.id}
- className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card ${
+ className={`p-4 rounded-lg border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card ${
  sec.is_active ? "border-border/80 shadow-2xs" : "border-border/40 opacity-60 bg-muted/20"
  }`}
  >
  <div className="flex items-start sm:items-center gap-3 min-w-0">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <Icon className="size-5" />
  </div>
 
@@ -309,12 +309,12 @@ function AdminMasterVitrinesPage() {
  {sec.title}
  </h3>
  {sec.badge_tag && (
- <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-primary/10 text-primary border border-primary/20">
+ <span className="px-2 py-1 rounded-full text-[9px] font-mono font-bold bg-primary/10 text-primary border border-primary/20">
  {sec.badge_tag}
  </span>
  )}
  {!sec.is_active && (
- <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-muted text-muted-foreground">
+ <span className="px-2 py-1 rounded-full text-[9px] font-mono font-bold bg-muted text-muted-foreground">
  Inativa
  </span>
  )}
@@ -330,7 +330,7 @@ function AdminMasterVitrinesPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+ <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
  {/* Botões de Reordenação */}
  <Button
  size="icon"
@@ -382,7 +382,7 @@ function AdminMasterVitrinesPage() {
 
  {/* Dialog de Criação / Edição de Seção */}
  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
- <DialogContent className="sm:max-w-md sm:w-full sm:rounded-2xl">
+ <DialogContent className="sm:max-w-md sm:w-full sm:rounded-lg">
  <DialogHeader>
  <DialogTitle className="text-base font-bold">
  {editingSection ? "Editar Seção da Vitrine" : "Nova Seção Modular"}
@@ -394,57 +394,57 @@ function AdminMasterVitrinesPage() {
 
  <div className="space-y-4 py-2 max-h-[70vh] overflow-y-auto no-scrollbar pr-1">
  {/* Live Truthful Preview */}
- <div className="p-3 bg-muted/30 rounded-xl border border-border/70 space-y-2">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+ <div className="p-3 bg-muted/30 rounded-lg border border-border/70 space-y-2">
+ <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <Eye className="size-3.5 text-primary" />
  Pré-visualização da Seção
  </span>
 
  {type === "banner_single_21_9" ? (
- <div className="aspect-21/9 w-full rounded-xl bg-card border border-border/80 flex flex-col justify-end p-2.5 relative overflow-hidden shadow-xs">
+ <div className="aspect-21/9 w-full rounded-lg bg-card border border-border/80 flex flex-col justify-end p-3 relative overflow-hidden shadow-xs">
  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
  <span className="relative z-10 text-[9px] font-mono font-bold text-primary uppercase">BANNER 21:9</span>
  <p className="relative z-10 text-xs font-bold text-white truncate">{title || "Banner Panorâmico"}</p>
  </div>
  ) : type === "banner_duo_16_9" ? (
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
- <div className="aspect-16/9 rounded-xl bg-card border border-border/80 flex items-end p-2 relative overflow-hidden">
+ <div className="aspect-16/9 rounded-lg bg-card border border-border/80 flex items-end p-2 relative overflow-hidden">
  <span className="text-[9px] font-bold text-white z-10">Banner 1 (16:9)</span>
  </div>
- <div className="aspect-16/9 rounded-xl bg-card border border-border/80 flex items-end p-2 relative overflow-hidden">
+ <div className="aspect-16/9 rounded-lg bg-card border border-border/80 flex items-end p-2 relative overflow-hidden">
  <span className="text-[9px] font-bold text-white z-10">Banner 2 (16:9)</span>
  </div>
  </div>
  ) : type === "custom_buttons_rail" ? (
  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
- <div className="px-3 py-1.5 rounded-xl bg-card border border-border/80 text-[11px] font-bold flex items-center gap-1.5 shadow-xs">
+ <div className="px-3 py-2 rounded-lg bg-card border border-border/80 text-[11px] font-bold flex items-center gap-2 shadow-xs">
  <Layers className="size-3 text-primary" />
  <span>{title || "Atalho Rápido"}</span>
  </div>
- <div className="px-3 py-1.5 rounded-xl bg-card border border-border/80 text-[11px] font-bold flex items-center gap-1.5 shadow-xs opacity-60">
+ <div className="px-3 py-2 rounded-lg bg-card border border-border/80 text-[11px] font-bold flex items-center gap-2 shadow-xs opacity-60">
  <span>Ofertas</span>
  </div>
  </div>
  ) : type === "store_rail" ? (
  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
- <div className="w-28 p-2 rounded-xl bg-card border border-border/80 space-y-1">
+ <div className="w-28 p-2 rounded-lg bg-card border border-border/80 space-y-1">
  <div className="size-6 rounded-full bg-muted" />
  <div className="h-2 w-16 bg-foreground/20 rounded" />
  <div className="h-1.5 w-10 bg-muted-foreground/30 rounded" />
  </div>
- <div className="w-28 p-2 rounded-xl bg-card border border-border/80 space-y-1 opacity-50">
+ <div className="w-28 p-2 rounded-lg bg-card border border-border/80 space-y-1 opacity-50">
  <div className="size-6 rounded-full bg-muted" />
  <div className="h-2 w-16 bg-foreground/20 rounded" />
  </div>
  </div>
  ) : (
  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
- <div className="w-24 p-2 rounded-xl bg-card border border-border/80 space-y-1.5 shadow-xs">
+ <div className="w-24 p-2 rounded-lg bg-card border border-border/80 space-y-2 shadow-xs">
  <div className="aspect-square w-full rounded-lg bg-muted" />
  <div className="h-2 w-16 bg-foreground/20 rounded" />
  <div className="h-2 w-10 bg-primary/40 rounded font-bold" />
  </div>
- <div className="w-24 p-2 rounded-xl bg-card border border-border/80 space-y-1.5 shadow-xs opacity-60">
+ <div className="w-24 p-2 rounded-lg bg-card border border-border/80 space-y-2 shadow-xs opacity-60">
  <div className="aspect-square w-full rounded-lg bg-muted" />
  <div className="h-2 w-16 bg-foreground/20 rounded" />
  </div>
@@ -452,29 +452,29 @@ function AdminMasterVitrinesPage() {
  )}
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Título da Seção *</Label>
  <Input
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Ofertas Relâmpago, Mais Pedidos, Banners Especiais..."
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Subtítulo Opcional</Label>
  <Input
  value={subtitle}
  onChange={(e) => setSubtitle(e.target.value)}
  placeholder="Ex: Descontos especiais com entrega rápida"
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Tipo de Seção</Label>
  <Select
  value={type}
@@ -495,7 +495,7 @@ function AdminMasterVitrinesPage() {
  }
  }}
  >
- <SelectTrigger className="h-9 text-xs rounded-xl">
+ <SelectTrigger className="h-9 text-xs rounded-lg">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -508,10 +508,10 @@ function AdminMasterVitrinesPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Fonte de Dados</Label>
  <Select value={dataSource} onValueChange={(v: any) => setDataSource(v)}>
- <SelectTrigger className="h-9 text-xs rounded-xl">
+ <SelectTrigger className="h-9 text-xs rounded-lg">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -525,10 +525,10 @@ function AdminMasterVitrinesPage() {
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Estratégia de Ranqueamento / Randomização</Label>
  <Select value={rankingStrategy} onValueChange={(v: any) => setRankingStrategy(v)}>
- <SelectTrigger className="h-9 text-xs rounded-xl">
+ <SelectTrigger className="h-9 text-xs rounded-lg">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -542,10 +542,10 @@ function AdminMasterVitrinesPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Layout / Grid</Label>
  <Select value={layoutVariant} onValueChange={(v: any) => setLayoutVariant(v)}>
- <SelectTrigger className="h-9 text-xs rounded-xl">
+ <SelectTrigger className="h-9 text-xs rounded-lg">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -558,7 +558,7 @@ function AdminMasterVitrinesPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Limite de Itens</Label>
  <Input
  type="number"
@@ -566,12 +566,12 @@ function AdminMasterVitrinesPage() {
  max={40}
  value={itemLimit}
  onChange={(e) => setItemLimit(Number(e.target.value))}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  </div>
 
- <div className="flex items-center justify-between p-3 bg-muted/40 rounded-xl border border-border/60">
+ <div className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-border/60">
  <div>
  <span className="text-xs font-bold text-foreground block">Seção Ativa</span>
  <span className="text-[10px] text-muted-foreground">Exibir na vitrine pública imediatamente</span>
@@ -585,7 +585,7 @@ function AdminMasterVitrinesPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsDialogOpen(false)}
- className="h-9 rounded-xl text-xs"
+ className="h-9 rounded-lg text-xs"
  >
  Cancelar
  </Button>
@@ -593,7 +593,7 @@ function AdminMasterVitrinesPage() {
  size="sm"
  disabled={isSubmitting}
  onClick={handleSaveSection}
- className="h-9 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+ className="h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90"
  >
  {isSubmitting ? "Salvando..." : "Salvar Seção"}
  </Button>

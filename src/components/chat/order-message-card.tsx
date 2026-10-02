@@ -42,20 +42,20 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  };
 
  return (
- <div className="my-2 rounded-2xl border border-border/80 bg-card p-4 space-y-3 max-w-sm sm:max-w-md w-full">
+ <div className="my-2 rounded-lg border border-border/80 bg-card p-4 space-y-3 max-w-sm sm:max-w-md w-full">
  {/* Top Header */}
- <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2.5">
+ <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
         <div className="flex items-center gap-2 min-w-0">
           <Package className="size-5 text-foreground shrink-0" strokeWidth={1.75} />
           <div className="min-w-0">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="text-xs font-bold text-foreground truncate">
  Pedido #{order.id.slice(0, 8)}
  </span>
  <button
  onClick={copyOrderId}
  type="button"
- className="text-muted-foreground hover:text-foreground transition-colors p-0.5 cursor-pointer"
+ className="text-muted-foreground hover:text-foreground transition-colors p-1 cursor-pointer"
  title="Copiar ID"
  >
  <Copy className="size-3" />
@@ -73,10 +73,10 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
 
  {/* Itens do Pedido */}
  {order.items && order.items.length > 0 && (
- <div className="space-y-1.5 py-1">
+ <div className="space-y-2 py-1">
  {order.items.slice(0, 3).map((item, idx) => (
  <div key={idx} className="flex items-center justify-between text-xs">
- <span className="text-muted-foreground truncate max-w-[200px]">
+ <span className="text-muted-foreground truncate max-w-52">
  {item.quantity}x {item.product_name}
  </span>
  <span className="font-semibold text-foreground shrink-0">
@@ -85,7 +85,7 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  </div>
  ))}
  {order.items.length > 3 && (
- <p className="text-[10px] text-muted-foreground text-center pt-0.5">
+ <p className="text-[10px] text-muted-foreground text-center pt-1">
  + {order.items.length - 3} outro(s) item(ns)
  </p>
  )}
@@ -101,13 +101,13 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  </p>
  </div>
 
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  {!isStaff && onOpenRmaModal && (
  <Button
  variant="outline"
  size="sm"
  onClick={onOpenRmaModal}
- className="h-8 text-xs font-bold rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10"
+ className="h-8 text-xs font-bold rounded-lg border-destructive/40 text-destructive hover:bg-destructive/10"
  >
  <AlertTriangle className="size-3.5 mr-1" />
  Troca / Ajuda
@@ -118,7 +118,7 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  asChild
  variant="secondary"
  size="sm"
- className="h-8 text-xs font-bold rounded-xl"
+ className="h-8 text-xs font-bold rounded-lg"
  >
  <Link to={`/conta/pedidos/${order.id}` as any}>
  Ver Detalhes

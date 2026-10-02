@@ -111,7 +111,7 @@ export function WorkspaceConformidadePage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-muted text-foreground">
+            <span className="p-2 rounded-lg bg-muted text-foreground">
               <ShieldCheck className="size-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
@@ -126,19 +126,19 @@ export function WorkspaceConformidadePage() {
         {compliance && (
           <div>
             {isApproved && (
-              <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 gap-1.5 text-xs font-mono py-1 px-3">
+              <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 gap-2 text-xs font-mono py-1 px-3">
                 <CheckCircle2 className="size-3.5" />
                 Loja Verificada no Marketplace
               </Badge>
             )}
             {isPending && (
-              <Badge variant="secondary" className="gap-1.5 text-xs font-mono py-1 px-3">
+              <Badge variant="secondary" className="gap-2 text-xs font-mono py-1 px-3">
                 <Clock className="size-3.5" />
                 Homologação em Análise
               </Badge>
             )}
             {isSuspended && (
-              <Badge variant="destructive" className="gap-1.5 text-xs font-mono py-1 px-3">
+              <Badge variant="destructive" className="gap-2 text-xs font-mono py-1 px-3">
                 <AlertTriangle className="size-3.5" />
                 Conformidade Suspensa
               </Badge>
@@ -148,14 +148,14 @@ export function WorkspaceConformidadePage() {
       </div>
 
       {isLoading ? (
-        <div className="p-12 text-center text-xs text-muted-foreground animate-pulse rounded-2xl border border-border/60 bg-card">
+        <div className="p-12 text-center text-xs text-muted-foreground animate-pulse rounded-lg border border-border/60 bg-card">
           Carregando status cadastral e dados fiscais da loja...
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Informações Regulatórias */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-3">
+            <div className="p-5 rounded-lg border border-border/60 bg-card space-y-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <Building2 className="size-4 text-primary" />
                 Segregação de Segurança
@@ -179,7 +179,7 @@ export function WorkspaceConformidadePage() {
 
           {/* Formulário Cadastral */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="p-6 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-5">
+            <form onSubmit={handleSubmit} className="p-6 rounded-lg border border-border/60 bg-card shadow-2xs space-y-5">
               <div className="space-y-1">
                 <h2 className="text-base font-bold text-foreground">
                   Dados da Empresa Titular
@@ -190,18 +190,18 @@ export function WorkspaceConformidadePage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2 space-y-1.5">
+                <div className="sm:col-span-2 space-y-2">
                   <Label htmlFor="legalName" className="text-xs font-semibold">Razão Social *</Label>
                   <Input
                     id="legalName"
                     value={legalName}
                     onChange={(e) => setLegalName(e.target.value)}
                     placeholder="Ex: Comercial de Alimentos Waesy Ltda"
-                    className="h-10 text-xs rounded-xl bg-background"
+                    className="h-10 text-xs rounded-lg bg-background"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="cnpj" className="text-xs font-semibold">CNPJ *</Label>
                   <Input
                     id="cnpj"
@@ -209,33 +209,33 @@ export function WorkspaceConformidadePage() {
                     onChange={handleCnpjChange}
                     placeholder="00.000.000/0000-00"
                     maxLength={18}
-                    className="h-10 text-xs font-mono rounded-xl bg-background"
+                    className="h-10 text-xs font-mono rounded-lg bg-background"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="stateRegistration" className="text-xs font-semibold">Inscrição Estadual (Opcional)</Label>
                   <Input
                     id="stateRegistration"
                     value={stateRegistration}
                     onChange={(e) => setStateRegistration(e.target.value)}
                     placeholder="Isento ou número oficial"
-                    className="h-10 text-xs font-mono rounded-xl bg-background"
+                    className="h-10 text-xs font-mono rounded-lg bg-background"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="sacPhone" className="text-xs font-semibold">Telefone de Atendimento / SAC *</Label>
                   <Input
                     id="sacPhone"
                     value={sacPhone}
                     onChange={(e) => setSacPhone(e.target.value)}
                     placeholder="(49) 99999-9999"
-                    className="h-10 text-xs rounded-xl bg-background"
+                    className="h-10 text-xs rounded-lg bg-background"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="sacEmail" className="text-xs font-semibold">E-mail de SAC Oficial *</Label>
                   <Input
                     id="sacEmail"
@@ -243,22 +243,22 @@ export function WorkspaceConformidadePage() {
                     value={sacEmail}
                     onChange={(e) => setSacEmail(e.target.value)}
                     placeholder="suporte@sualoja.com.br"
-                    className="h-10 text-xs rounded-xl bg-background"
+                    className="h-10 text-xs rounded-lg bg-background"
                   />
                 </div>
 
-                <div className="sm:col-span-2 space-y-1.5">
+                <div className="sm:col-span-2 space-y-2">
                   <Label htmlFor="returnPolicyUrl" className="text-xs font-semibold">Link da Política de Trocas e Reembolso (Opcional)</Label>
                   <Input
                     id="returnPolicyUrl"
                     value={returnPolicyUrl}
                     onChange={(e) => setReturnPolicyUrl(e.target.value)}
                     placeholder="https://sualoja.com.br/politica-trocas"
-                    className="h-10 text-xs rounded-xl bg-background"
+                    className="h-10 text-xs rounded-lg bg-background"
                   />
                 </div>
 
-                <div className="sm:col-span-2 space-y-1.5">
+                <div className="sm:col-span-2 space-y-2">
                   <Label htmlFor="fiscalNotes" className="text-xs font-semibold">Observações Fiscais Adicionais (Opcional)</Label>
                   <Textarea
                     id="fiscalNotes"
@@ -266,7 +266,7 @@ export function WorkspaceConformidadePage() {
                     onChange={(e) => setFiscalNotes(e.target.value)}
                     placeholder="Ex: Empresa optante pelo Simples Nacional; emissão de NFC-e via contingência autorizada."
                     rows={3}
-                    className="text-xs rounded-xl bg-background resize-none"
+                    className="text-xs rounded-lg bg-background resize-none"
                   />
                 </div>
               </div>
@@ -278,7 +278,7 @@ export function WorkspaceConformidadePage() {
                 <Button
                   type="submit"
                   disabled={submitMutation.isPending}
-                  className="h-11 px-6 rounded-xl text-xs font-bold gap-2"
+                  className="h-11 px-6 rounded-lg text-xs font-bold gap-2"
                 >
                   {submitMutation.isPending ? (
                     <>

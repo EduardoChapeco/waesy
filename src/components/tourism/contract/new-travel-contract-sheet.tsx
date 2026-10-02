@@ -307,8 +307,8 @@ export function NewTravelContractSheet({
  {/* Header Premium do Contrato */}
  <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-muted/20">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xs">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xs">
  <Scale className="size-5" />
  </div>
  <div>
@@ -321,7 +321,7 @@ export function NewTravelContractSheet({
  Validade Jurídica
  </Badge>
  </SheetTitle>
- <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+ <SheetDescription className="text-xs text-muted-foreground mt-1">
  Minuta com validade civil (MP 2.200-2/2001), conformidade Cadastur e link de assinatura digital.
  </SheetDescription>
  </div>
@@ -335,26 +335,26 @@ export function NewTravelContractSheet({
  onValueChange={(v) => setActiveTab(v as any)}
  className="w-full"
  >
- <TabsList className="grid grid-cols-3 h-9 rounded-xl bg-muted/70 p-1 text-xs">
+ <TabsList className="grid grid-cols-3 h-9 rounded-lg bg-muted/70 p-1 text-xs">
  <TabsTrigger
  value="proposal"
  className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
  >
- <FileSpreadsheet className="mr-1.5 size-3.5 text-primary" />
+ <FileSpreadsheet className="mr-2 size-3.5 text-primary" />
  Importar Proposta
  </TabsTrigger>
  <TabsTrigger
  value="crm"
  className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
  >
- <User className="mr-1.5 size-3.5" />
+ <User className="mr-2 size-3.5" />
  Buscar no CRM
  </TabsTrigger>
  <TabsTrigger
  value="manual"
  className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
  >
- <FileText className="mr-1.5 size-3.5" />
+ <FileText className="mr-2 size-3.5" />
  Contrato Sob Medida
  </TabsTrigger>
  </TabsList>
@@ -367,7 +367,7 @@ export function NewTravelContractSheet({
  {/* ABA 1: IMPORTAR DE PROPOSTA DO STUDIO */}
  {activeTab === "proposal" && (
  <div className="space-y-4">
- <div className="p-4 rounded-2xl bg-muted/30 border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-1">
  <p className="font-bold text-foreground">Importar Proposta Aprovada do Studio</p>
  <p className="text-muted-foreground text-[11px]">
  Selecione uma proposta já apresentada ao cliente. O contrato será preenchido automaticamente com destino, passageiros, itinerário e preço.
@@ -380,7 +380,7 @@ export function NewTravelContractSheet({
  <p>Carregando propostas da agência...</p>
  </div>
  ) : agencyProposals.length === 0 ? (
- <div className="p-8 text-center bg-card rounded-2xl border border-border/60 space-y-2">
+ <div className="p-8 text-center bg-card rounded-lg border border-border/60 space-y-2">
  <FileText className="size-8 text-muted-foreground mx-auto" />
  <p className="font-bold text-foreground">Nenhuma proposta encontrada</p>
  <p className="text-muted-foreground text-[11px]">
@@ -397,14 +397,14 @@ export function NewTravelContractSheet({
  </Button>
  </div>
  ) : (
- <div className="space-y-2.5">
+ <div className="space-y-3">
  {agencyProposals.map((prop: any) => {
  const price = prop.pricing?.total_price_cents || 0;
  return (
  <div
  key={prop.id}
  onClick={() => handleSelectProposal(prop)}
- className="p-3.5 rounded-2xl border border-border/70 bg-card hover:border-primary/50 hover:bg-muted/30 transition-all cursor-pointer group flex items-center justify-between gap-3 shadow-xs"
+ className="p-4 rounded-lg border border-border/70 bg-card hover:border-primary/50 hover:bg-muted/30 transition-all cursor-pointer group flex items-center justify-between gap-3 shadow-xs"
  >
  <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2">
@@ -434,7 +434,7 @@ export function NewTravelContractSheet({
  <Button
  type="button"
  size="sm"
- className="h-7 px-2.5 rounded-lg text-[10px] font-bold mt-1"
+ className="h-7 px-3 rounded-lg text-[10px] font-bold mt-1"
  >
  Emitir Contrato
  </Button>
@@ -450,7 +450,7 @@ export function NewTravelContractSheet({
  {/* ABA 2: VÍNCULO COM CRM */}
  {activeTab === "crm" && (
  <div className="space-y-4">
- <div className="p-4 rounded-2xl bg-muted/30 border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-1">
  <p className="font-bold text-foreground">Vincular Cliente da Carteira (CRM)</p>
  <p className="text-muted-foreground text-[11px]">
  Pesquise por nome, CPF/CNPJ, WhatsApp ou e-mail para autopreencher todos os dados civis do contratante.
@@ -465,7 +465,7 @@ export function NewTravelContractSheet({
  setIsCustomerDropdownOpen(true);
  }}
  placeholder="🔍 Buscar cliente no CRM (Nome, CPF/CNPJ, WhatsApp)..."
- className="h-10 rounded-xl text-xs bg-muted/20 pl-3 pr-8 border-border/70"
+ className="h-10 rounded-lg text-xs bg-muted/20 pl-3 pr-8 border-border/70"
  />
  {isLoadingCustomers && (
  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 animate-spin text-muted-foreground" />
@@ -485,9 +485,9 @@ export function NewTravelContractSheet({
  handleSelectCustomer(c);
  setActiveTab("manual");
  }}
- className="p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors cursor-pointer flex items-center justify-between gap-3"
+ className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors cursor-pointer flex items-center justify-between gap-3"
  >
- <div className="space-y-0.5 min-w-0">
+ <div className="space-y-1 min-w-0">
  <p className="font-bold text-foreground truncate">{c.fullName || c.name}</p>
  <p className="text-[11px] text-muted-foreground truncate">
  {c.document && `CPF: ${c.document} • `}
@@ -509,7 +509,7 @@ export function NewTravelContractSheet({
  {activeTab === "manual" && (
  <form id="new-contract-form" onSubmit={handleSubmit} className="space-y-5">
  {/* Card 1: Contratante & Qualificação Civil */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <User className="size-4 text-primary" />
@@ -538,11 +538,11 @@ export function NewTravelContractSheet({
 
  {/* Subpainel retrátil de cadastro rápido */}
  {isQuickCreateOpen && (
- <div className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-3 animate-in fade-in zoom-in-95">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border space-y-3 animate-in fade-in zoom-in-95">
  <span className="text-xs font-bold text-foreground">
  Novo Cliente no CRM da Agência
  </span>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1 sm:col-span-2">
  <Label className="text-[11px] font-semibold">Nome Completo *</Label>
  <Input
@@ -601,9 +601,9 @@ export function NewTravelContractSheet({
  className="w-full h-8 text-xs rounded-lg font-bold"
  >
  {quickCreateMutation.isPending ? (
- <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+ <Loader2 className="mr-2 size-3.5 animate-spin" />
  ) : (
- <Check className="mr-1.5 size-3.5" />
+ <Check className="mr-2 size-3.5" />
  )}
  Salvar no CRM e Preencher
  </Button>
@@ -612,7 +612,7 @@ export function NewTravelContractSheet({
 
  {/* Banner de Cliente Vinculado */}
  {selectedCustomer && (
- <div className="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs">
  <div className="flex items-center gap-2">
  <ShieldCheck className="size-4 text-primary shrink-0" />
  <span>
@@ -639,7 +639,7 @@ export function NewTravelContractSheet({
  placeholder="Nome completo do titular"
  value={clientName}
  onChange={(e) => setClientName(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  required
  />
  </div>
@@ -649,7 +649,7 @@ export function NewTravelContractSheet({
  placeholder="000.000.000-00"
  value={clientDocument}
  onChange={(e) => setClientDocument(e.target.value)}
- className="h-9 text-xs rounded-xl font-mono"
+ className="h-9 text-xs rounded-lg font-mono"
  required
  />
  </div>
@@ -659,7 +659,7 @@ export function NewTravelContractSheet({
  placeholder="0.000.000 SSP/SC"
  value={clientRg}
  onChange={(e) => setClientRg(e.target.value)}
- className="h-9 text-xs rounded-xl font-mono"
+ className="h-9 text-xs rounded-lg font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -668,7 +668,7 @@ export function NewTravelContractSheet({
  placeholder="(49) 99999-9999"
  value={clientPhone}
  onChange={(e) => setClientPhone(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  required
  />
  </div>
@@ -679,7 +679,7 @@ export function NewTravelContractSheet({
  placeholder="cliente@email.com"
  value={clientEmail}
  onChange={(e) => setClientEmail(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1 sm:col-span-2">
@@ -688,14 +688,14 @@ export function NewTravelContractSheet({
  placeholder="Rua, Número, Bairro, Cidade - UF, CEP"
  value={clientAddress}
  onChange={(e) => setClientAddress(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  </div>
  </div>
 
  {/* Card 2: Passageiros Acompanhantes */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Users className="size-4 text-primary" />
@@ -718,11 +718,11 @@ export function NewTravelContractSheet({
  Se houver acompanhantes viajando junto com o titular, adicione-os aqui para constarem na minuta oficial.
  </p>
  ) : (
- <div className="space-y-2.5">
+ <div className="space-y-3">
  {passengers.map((p, idx) => (
  <div
  key={idx}
- className="p-2.5 rounded-xl border border-border/60 bg-muted/20 flex items-center gap-2"
+ className="p-3 rounded-lg border border-border/60 bg-muted/20 flex items-center gap-2"
  >
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1">
  <Input
@@ -754,7 +754,7 @@ export function NewTravelContractSheet({
  </div>
 
  {/* Card 3: Viagem & Serviços Inclusos */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Compass className="size-4 text-primary" />
@@ -773,7 +773,7 @@ export function NewTravelContractSheet({
  placeholder="Ex: Contrato de Viagem - Pacote Gramado & Vinhedos"
  value={contractTitle}
  onChange={(e) => setContractTitle(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
 
@@ -784,7 +784,7 @@ export function NewTravelContractSheet({
  placeholder="Ex: Gramado, RS"
  value={destination}
  onChange={(e) => setDestination(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  required
  />
  </div>
@@ -794,7 +794,7 @@ export function NewTravelContractSheet({
  type="date"
  value={travelStartDate}
  onChange={(e) => setTravelStartDate(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1">
@@ -803,7 +803,7 @@ export function NewTravelContractSheet({
  type="date"
  value={travelEndDate}
  onChange={(e) => setTravelEndDate(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  </div>
@@ -815,14 +815,14 @@ export function NewTravelContractSheet({
  placeholder="Descreva detalhadamente: Passagens aéreas ida e volta com bagagem despachada, hospedagem no Hotel X com café da manhã, passeios inclusos, traslados in/out e apólice de seguro viagem..."
  value={packageSummary}
  onChange={(e) => setPackageSummary(e.target.value)}
- className="text-xs rounded-xl leading-relaxed"
+ className="text-xs rounded-lg leading-relaxed"
  required
  />
  </div>
  </div>
 
  {/* Card 4: Condições Financeiras & Pagamento */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <DollarSign className="size-4 text-primary" />
  <span>Condições Financeiras e Pagamento</span>
@@ -835,24 +835,24 @@ export function NewTravelContractSheet({
  type="text"
  value={totalValueFormatted}
  onChange={handleMoneyChange}
- className="h-10 text-sm font-black font-mono rounded-xl bg-muted/20"
+ className="h-10 text-sm font-black font-mono rounded-lg bg-muted/20"
  required
  />
  </div>
  <div className="space-y-1">
  <Label className="text-[11px] font-bold">Forma de Liquidação</Label>
- <div className="h-10 flex items-center px-3 rounded-xl bg-muted/30 border border-border text-xs text-muted-foreground">
+ <div className="h-10 flex items-center px-3 rounded-lg bg-muted/30 border border-border text-xs text-muted-foreground">
  <span>Assinatura Digital + Emissão com Vouchers</span>
  </div>
  </div>
  </div>
 
  {/* Chips de Presets de Condições Comerciais */}
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <Label className="text-[11px] font-bold text-muted-foreground">
  Modelos Rápidos de Pagamento:
  </Label>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {[
  "⚡ Pix à Vista (5% de desconto)",
  "💳 Entrada de 20% + Saldo em até 10x sem juros no Cartão",
@@ -863,7 +863,7 @@ export function NewTravelContractSheet({
  key={preset}
  type="button"
  onClick={() => applyPaymentPreset(preset)}
- className="text-[10px] font-medium px-2.5 py-1 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+ className="text-[10px] font-medium px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
  >
  {preset}
  </button>
@@ -877,14 +877,14 @@ export function NewTravelContractSheet({
  rows={2}
  value={paymentConditions}
  onChange={(e) => setPaymentConditions(e.target.value)}
- className="text-xs rounded-xl"
+ className="text-xs rounded-lg"
  required
  />
  </div>
  </div>
 
  {/* Card 5: Cláusulas Pétreas & Minuta Jurídica */}
- <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-xs">
+ <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-xs">
  <button
  type="button"
  onClick={() => setShowClauses(!showClauses)}
@@ -900,7 +900,7 @@ export function NewTravelContractSheet({
  {showClauses && (
  <div className="p-4 pt-0 space-y-3 divide-y divide-border/40 text-[11px]">
  {CANONICAL_TOURISM_CLAUSES.map((c) => (
- <div key={c.number} className="pt-2.5 space-y-0.5">
+ <div key={c.number} className="pt-3 space-y-1">
  <p className="font-bold text-foreground">
  Art. {c.number} — {c.section}
  </p>
@@ -921,7 +921,7 @@ export function NewTravelContractSheet({
  variant="ghost"
  size="sm"
  onClick={() => onOpenChange(false)}
- className="rounded-xl text-xs font-semibold text-muted-foreground"
+ className="rounded-lg text-xs font-semibold text-muted-foreground"
  >
  Cancelar
  </Button>
@@ -931,7 +931,7 @@ export function NewTravelContractSheet({
  type="submit"
  form="new-contract-form"
  disabled={isSubmitting}
- className="h-10 px-6 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-2"
+ className="h-10 px-6 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-2"
  >
  {isSubmitting ? (
  <>
@@ -949,7 +949,7 @@ export function NewTravelContractSheet({
  <Button
  type="button"
  onClick={() => setActiveTab("manual")}
- className="h-10 px-6 rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1.5"
+ className="h-10 px-6 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2"
  >
  <span>Avançar para Preenchimento</span>
  <ChevronRight className="size-4" />

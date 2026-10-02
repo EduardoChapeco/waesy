@@ -459,21 +459,21 @@ export default function WorkspaceConfiguracoesPage() {
  title="Configurações"
  actions={
  <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold gap-1.5 h-9">
+            <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-9">
               <Link to="/workspace/configuracoes/privacidade-loja">
                 <ShieldCheck className="size-3.5 text-primary" />
                 <span>Privacidade</span>
               </Link>
             </Button>
 
-            <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold gap-1.5 h-9">
+            <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-9">
               <Link to="/workspace/configuracoes/sessoes">
                 <ShieldCheck className="size-3.5 text-primary" />
                 <span>Sessões</span>
               </Link>
             </Button>
 
-            <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold gap-1.5 h-9">
+            <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-9">
               <Link to="/workspace/configuracoes/equipe">
                 <Building2 className="size-3.5" />
                 <span>Equipe</span>
@@ -484,7 +484,7 @@ export default function WorkspaceConfiguracoesPage() {
  onClick={handleSaveAll}
  disabled={isSaving}
  size="sm"
- className="rounded-xl text-xs font-bold gap-1.5 bg-foreground text-background hover:bg-foreground/90 h-9 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 h-9 cursor-pointer"
  >
  {isSaving ? (
  <>
@@ -504,35 +504,35 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ── 2. Abas de Governança Nichadas ── */}
  <Tabs defaultValue="geral" className="w-full space-y-6">
- <TabsList className={cn("grid bg-muted/60 p-1 rounded-2xl", hasDeliveryModule ? "grid-cols-2 sm:grid-cols-7" : "grid-cols-2 sm:grid-cols-6")}>
- <TabsTrigger value="geral" className="rounded-xl text-xs font-semibold">
+ <TabsList className={cn("grid bg-muted/60 p-1 rounded-lg", hasDeliveryModule ? "grid-cols-2 sm:grid-cols-7" : "grid-cols-2 sm:grid-cols-6")}>
+ <TabsTrigger value="geral" className="rounded-lg text-xs font-semibold">
  Vitrine
  </TabsTrigger>
- <TabsTrigger value="nicho" className="rounded-xl text-xs font-semibold">
+ <TabsTrigger value="nicho" className="rounded-lg text-xs font-semibold">
  Nicho
  </TabsTrigger>
- <TabsTrigger value="contato" className="rounded-xl text-xs font-semibold">
+ <TabsTrigger value="contato" className="rounded-lg text-xs font-semibold">
  Contato
  </TabsTrigger>
  {hasDeliveryModule && (
- <TabsTrigger value="entrega" className="rounded-xl text-xs font-semibold">
+ <TabsTrigger value="entrega" className="rounded-lg text-xs font-semibold">
  Entrega
  </TabsTrigger>
  )}
- <TabsTrigger value="horarios" className="rounded-xl text-xs font-semibold">
+ <TabsTrigger value="horarios" className="rounded-lg text-xs font-semibold">
  Horários
  </TabsTrigger>
- <TabsTrigger value="politicas" className="rounded-xl text-xs font-semibold">
+ <TabsTrigger value="politicas" className="rounded-lg text-xs font-semibold">
  Políticas
  </TabsTrigger>
- <TabsTrigger value="checkout" className="rounded-xl text-xs font-semibold">
+ <TabsTrigger value="checkout" className="rounded-lg text-xs font-semibold">
  Checkout
  </TabsTrigger>
  </TabsList>
 
  {/* ABA 1: Marca & Vitrine */}
  <TabsContent value="geral" className="space-y-6">
- <Card className="p-6 rounded-2xl border-border bg-card space-y-6 ">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-6 ">
  <div className=" pb-4">
  <h2 className="text-base font-bold text-foreground">Identidade Visual</h2>
  <p className="text-xs text-muted-foreground">
@@ -602,32 +602,32 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  {/* Nome Comercial */}
- <div className="space-y-1.5 pt-2">
+ <div className="space-y-2 pt-2">
  <Label className="text-xs font-bold text-foreground">Nome Comercial da Loja *</Label>
  <Input
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Waesy Store"
- className="rounded-xl text-xs h-10 font-bold"
+ className="rounded-lg text-xs h-10 font-bold"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Slogan e Bio da Loja</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  placeholder="Apresente sua proposta de valor e diferenciais..."
  rows={3}
- className="rounded-2xl text-xs resize-none"
+ className="rounded-lg text-xs resize-none"
  />
  </div>
 
  {/* Modalidades de Atendimento / Prestação de Serviço Canônicas por Nicho */}
  {isTourism ? (
-   <div className="p-5 rounded-2xl bg-muted/20 border border-border/80 space-y-3">
-     <div className="space-y-0.5">
+   <div className="p-5 rounded-lg bg-muted/20 border border-border/80 space-y-3">
+     <div className="space-y-1">
        <Label className="text-xs font-bold text-foreground">Canais & Modalidades de Atendimento (Turismo & Agência)</Label>
        <p className="text-xs text-muted-foreground">
          Defina as formas que os passageiros e viajantes podem ser atendidos e emitir roteiros com sua agência.
@@ -635,8 +635,8 @@ export default function WorkspaceConfiguracoesPage() {
      </div>
 
      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-       <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
-         <div className="space-y-0.5 pr-2">
+       <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/70">
+         <div className="space-y-1 pr-2">
            <span className="text-xs font-bold text-foreground">Presencial na Agência</span>
            <p className="text-xs text-muted-foreground">Balcão físico com ou sem agendamento</p>
          </div>
@@ -647,8 +647,8 @@ export default function WorkspaceConfiguracoesPage() {
          />
        </div>
 
-       <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
-         <div className="space-y-0.5 pr-2">
+       <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/70">
+         <div className="space-y-1 pr-2">
            <span className="text-xs font-bold text-foreground">Consultoria Online</span>
            <p className="text-xs text-muted-foreground">Atendimento WhatsApp e Vídeo</p>
          </div>
@@ -659,8 +659,8 @@ export default function WorkspaceConfiguracoesPage() {
          />
        </div>
 
-       <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
-         <div className="space-y-0.5 pr-2">
+       <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/70">
+         <div className="space-y-1 pr-2">
            <span className="text-xs font-bold text-foreground">Emissão Autônoma</span>
            <p className="text-xs text-muted-foreground">Reserva e compra direta no portal</p>
          </div>
@@ -671,8 +671,8 @@ export default function WorkspaceConfiguracoesPage() {
          />
        </div>
 
-       <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
-         <div className="space-y-0.5 pr-2">
+       <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/70">
+         <div className="space-y-1 pr-2">
            <span className="text-xs font-bold text-foreground">Corporativo / B2B</span>
            <p className="text-xs text-muted-foreground">Faturamento para empresas e grupos</p>
          </div>
@@ -685,8 +685,8 @@ export default function WorkspaceConfiguracoesPage() {
      </div>
    </div>
  ) : isPhysicalDeliveryNiche ? (
-   <div className="p-5 rounded-2xl bg-muted/20 border border-border/80 space-y-3">
-     <div className="space-y-0.5">
+   <div className="p-5 rounded-lg bg-muted/20 border border-border/80 space-y-3">
+     <div className="space-y-1">
        <Label className="text-xs font-bold text-foreground">Modalidades de Atendimento</Label>
        <p className="text-xs text-muted-foreground">
          Selecione as formas que os clientes podem comprar e receber do seu estabelecimento.
@@ -694,8 +694,8 @@ export default function WorkspaceConfiguracoesPage() {
      </div>
 
      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-       <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
-         <div className="space-y-0.5">
+       <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/70">
+         <div className="space-y-1">
            <span className="text-xs font-bold text-foreground">Delivery</span>
            <p className="text-xs text-muted-foreground">Entrega no endereço</p>
          </div>
@@ -706,8 +706,8 @@ export default function WorkspaceConfiguracoesPage() {
          />
        </div>
 
-       <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
-         <div className="space-y-0.5">
+       <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/70">
+         <div className="space-y-1">
            <span className="text-xs font-bold text-foreground">Retirada</span>
            <p className="text-xs text-muted-foreground">Pegar no balcão</p>
          </div>
@@ -718,8 +718,8 @@ export default function WorkspaceConfiguracoesPage() {
          />
        </div>
 
-       <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
-         <div className="space-y-0.5">
+       <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/70">
+         <div className="space-y-1">
            <span className="text-xs font-bold text-foreground">No Local / Mesas</span>
            <p className="text-xs text-muted-foreground">Consumo presencial</p>
          </div>
@@ -732,8 +732,8 @@ export default function WorkspaceConfiguracoesPage() {
      </div>
    </div>
  ) : (
-   <div className="p-5 rounded-2xl bg-muted/20 border border-border/80 space-y-3">
-     <div className="space-y-0.5">
+   <div className="p-5 rounded-lg bg-muted/20 border border-border/80 space-y-3">
+     <div className="space-y-1">
        <Label className="text-xs font-bold text-foreground">Canais de Atendimento e Prestação de Serviço</Label>
        <p className="text-xs text-muted-foreground">
          Defina as formas de atendimento oferecidas pelo seu negócio.
@@ -741,8 +741,8 @@ export default function WorkspaceConfiguracoesPage() {
      </div>
 
      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-       <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
-         <div className="space-y-0.5">
+       <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/70">
+         <div className="space-y-1">
            <span className="text-xs font-bold text-foreground">Atendimento Presencial</span>
            <p className="text-xs text-muted-foreground">No escritório ou estabelecimento físico</p>
          </div>
@@ -753,8 +753,8 @@ export default function WorkspaceConfiguracoesPage() {
          />
        </div>
 
-       <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70">
-         <div className="space-y-0.5">
+       <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/70">
+         <div className="space-y-1">
            <span className="text-xs font-bold text-foreground">Atendimento Remoto / Online</span>
            <p className="text-xs text-muted-foreground">Via canais digitais e videoconferência</p>
          </div>
@@ -770,7 +770,7 @@ export default function WorkspaceConfiguracoesPage() {
  </Card>
 
  {/* Tema do Workspace */}
- <Card className="p-6 rounded-2xl border-border bg-card space-y-4">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-4">
  <div>
  <h2 className="text-base font-bold text-foreground">Tema do Painel</h2>
  <p className="text-xs text-muted-foreground">
@@ -783,7 +783,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ABA: Nicho & Recursos da Loja */}
  <TabsContent value="nicho" className="space-y-6">
- <Card className="p-6 rounded-2xl border-border bg-card space-y-5">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-5">
  <div className="pb-2">
  <h2 className="text-base font-bold text-foreground">Modelo de Operação</h2>
  <p className="text-xs text-muted-foreground">
@@ -897,13 +897,13 @@ export default function WorkspaceConfiguracoesPage() {
    toast.success(`Nicho alterado para ${n.title}. Módulos recomendados foram ativados.`);
  }}
  className={cn(
- "flex flex-col text-left p-4 rounded-2xl border transition-all cursor-pointer relative",
+ "flex flex-col text-left p-4 rounded-lg border transition-all cursor-pointer relative",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary/40"
  : "border-border/60 bg-muted/20 hover:bg-muted/50 text-muted-foreground"
  )}
  >
- <div className="flex items-center justify-between w-full mb-1.5">
+ <div className="flex items-center justify-between w-full mb-2">
  <span className={cn("text-xs font-bold", isSelected ? "text-primary" : "text-foreground")}>
  {n.title}
  </span>
@@ -919,7 +919,7 @@ export default function WorkspaceConfiguracoesPage() {
  </Card>
 
  {/* ── Gerenciador de Módulos Habilitados ── */}
- <Card className="p-6 rounded-2xl border-border bg-card space-y-5">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-5">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
  <div>
  <h2 className="text-base font-bold text-foreground flex items-center gap-2">
@@ -940,7 +940,7 @@ export default function WorkspaceConfiguracoesPage() {
    setEnabledModules(newDefaults);
    toast.success(`Módulos restaurados para o padrão ${semantics.name}.`);
  }}
- className="text-xs h-7 rounded-xl"
+ className="text-xs h-7 rounded-lg"
  >
  {semantics.nicheId === "tourism"
  ? "Padrão Turismo & Viagens"
@@ -1070,7 +1070,7 @@ export default function WorkspaceConfiguracoesPage() {
  key={mod.id}
  onClick={() => handleToggleModule(mod.id)}
  className={cn(
- "flex items-start justify-between p-3.5 rounded-2xl border transition-all cursor-pointer select-none",
+ "flex items-start justify-between p-4 rounded-lg border transition-all cursor-pointer select-none",
  isEnabled
  ? "border-primary/40 bg-primary/5 dark:bg-primary/10"
  : "border-border/60 bg-muted/20 hover:bg-muted/40 opacity-70"
@@ -1090,7 +1090,7 @@ export default function WorkspaceConfiguracoesPage() {
  <Switch
  checked={isEnabled}
  onCheckedChange={() => handleToggleModule(mod.id)}
- className="shrink-0 mt-0.5"
+ className="shrink-0 mt-1"
  />
  </div>
  );
@@ -1101,7 +1101,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ABA 2: Contato & Endereço */}
  <TabsContent value="contato" className="space-y-6">
- <Card className="p-6 rounded-2xl border-border bg-card space-y-5 ">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-5 ">
  <div className=" pb-4">
  <h2 className="text-base font-bold text-foreground">Contato e Localização</h2>
  <p className="text-xs text-muted-foreground">
@@ -1110,7 +1110,7 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground flex items-center gap-1">
  <Phone className="size-3 text-primary" />
  WhatsApp Comercial
@@ -1119,11 +1119,11 @@ export default function WorkspaceConfiguracoesPage() {
  value={phone}
  onChange={(e) => setPhone(e.target.value)}
  placeholder="(49) 99999-9999"
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground flex items-center gap-1">
  <Mail className="size-3 text-primary" />
  E-mail da Loja
@@ -1133,17 +1133,17 @@ export default function WorkspaceConfiguracoesPage() {
  value={email}
  onChange={(e) => setEmail(e.target.value)}
  placeholder="contato@minhaloja.com.br"
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">CNPJ / CPF</Label>
  <Input
  value={cnpj}
  onChange={(e) => setCnpj(e.target.value)}
  placeholder="00.000.000/0001-00"
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  </div>
  </div>
@@ -1156,13 +1156,13 @@ export default function WorkspaceConfiguracoesPage() {
  onCityChange={setCity}
  />
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Endereço Físico / Balcão</Label>
  <Input
  value={address}
  onChange={(e) => setAddress(e.target.value)}
  placeholder="Rua, número, complemento e bairro"
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  </div>
  </div>
@@ -1171,7 +1171,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ABA: Entrega, Tempo de Preparo & Bairros */}
  <TabsContent value="entrega" className="space-y-6">
- <Card className="p-6 rounded-2xl border-border bg-card space-y-6">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-6">
  <DeliveryTimeAndRadiusMatrix
  value={deliveryConfig}
  onChange={setDeliveryConfig}
@@ -1182,7 +1182,7 @@ export default function WorkspaceConfiguracoesPage() {
  />
  </Card>
 
- <Card className="p-6 rounded-2xl border-border bg-card space-y-5">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-5">
  <div className="pb-2">
  <h3 className="text-sm font-bold text-foreground">Taxas por Bairro</h3>
  <p className="text-xs text-muted-foreground">
@@ -1199,7 +1199,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ABA 3: Horários de Atendimento */}
  <TabsContent value="horarios" className="space-y-6">
- <Card className="p-6 rounded-2xl border-border bg-card space-y-5">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-5">
  <div className="pb-2">
  <h2 className="text-base font-bold text-foreground">Horários de Funcionamento</h2>
  <p className="text-xs text-muted-foreground">
@@ -1224,7 +1224,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ABA 4: Políticas da Loja */}
  <TabsContent value="politicas" className="space-y-6">
- <Card className="p-6 rounded-2xl border-border bg-card space-y-5 ">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-5 ">
  <div className=" pb-4">
  <h2 className="text-base font-bold text-foreground">Políticas Comerciais</h2>
  <p className="text-xs text-muted-foreground">
@@ -1233,36 +1233,36 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  <div className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Termos de Compra e Uso</Label>
  <Textarea
  value={terms}
  onChange={(e) => setTerms(e.target.value)}
  placeholder="Escreva os termos de uso aplicáveis à sua loja..."
  rows={4}
- className="rounded-2xl text-xs"
+ className="rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Política de Trocas e Devoluções</Label>
  <Textarea
  value={returnPolicy}
  onChange={(e) => setReturnPolicy(e.target.value)}
  placeholder="Instruções sobre prazos de 7 dias, condições do produto e reembolso..."
  rows={4}
- className="rounded-2xl text-xs"
+ className="rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Política de Privacidade</Label>
  <Textarea
  value={privacyPolicy}
  onChange={(e) => setPrivacyPolicy(e.target.value)}
  placeholder="Como sua loja trata os dados dos clientes e LGPD..."
  rows={4}
- className="rounded-2xl text-xs"
+ className="rounded-lg text-xs"
  />
  </div>
  </div>
@@ -1272,19 +1272,19 @@ export default function WorkspaceConfiguracoesPage() {
  {/* ABA 5: Checkout & Modalidades de Pagamento */}
  <TabsContent value="checkout" className="space-y-6">
         {/* Super Checkout: Opções Multi-Nicho & Comportamento */}
-        <Card className="p-6 rounded-2xl border-border bg-card space-y-6">
+        <Card className="p-6 rounded-lg border-border bg-card space-y-6">
           <div className="pb-3 border-b border-border/40">
             <h2 className="text-sm font-bold text-foreground">
               Comportamento do Super Checkout Multi-Nicho
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Ative ou adapte os recursos dinâmicos do fechamento de pedido de acordo com o modelo da sua empresa.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Bloco 1: Fiscal / CPF na Nota */}
-            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-foreground">CPF na Nota Fiscal</h3>
@@ -1319,7 +1319,7 @@ export default function WorkspaceConfiguracoesPage() {
             </div>
 
             {/* Bloco 2: Logística & Quem Recebe */}
-            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-foreground">Recebedor</h3>
@@ -1333,7 +1333,7 @@ export default function WorkspaceConfiguracoesPage() {
             </div>
 
             {/* Bloco 3: Hortifrúti & Mercado: Falta de Itens */}
-            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-foreground">Falta de Itens</h3>
@@ -1346,12 +1346,12 @@ export default function WorkspaceConfiguracoesPage() {
               </div>
 
               {substitutionPolicyEnabled && (
-                <div className="pt-2 border-t border-border/30 space-y-1.5 text-xs">
+                <div className="pt-2 border-t border-border/30 space-y-2 text-xs">
                   <Label className="text-xs text-muted-foreground">Opção pré-selecionada sugerida:</Label>
                   <select
                     value={substitutionDefaultOption}
                     onChange={(e) => setSubstitutionDefaultOption(e.target.value as any)}
-                    className="w-full h-8 px-2.5 rounded-lg bg-card border border-border/60 text-xs font-medium"
+                    className="w-full h-8 px-3 rounded-lg bg-card border border-border/60 text-xs font-medium"
                   >
                     <option value="similar">Trocar por similar (mesma categoria)</option>
                     <option value="contact">Confirmar com o cliente via WhatsApp</option>
@@ -1362,7 +1362,7 @@ export default function WorkspaceConfiguracoesPage() {
             </div>
 
             {/* Bloco 4: Gastronomia: Talheres Descartáveis */}
-            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-foreground">Talheres e Descartáveis</h3>
@@ -1376,7 +1376,7 @@ export default function WorkspaceConfiguracoesPage() {
             </div>
 
             {/* Bloco 5: Observações por Item */}
-            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3 md:col-span-2">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3 md:col-span-2">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-foreground">Observações por Item</h3>
@@ -1391,14 +1391,14 @@ export default function WorkspaceConfiguracoesPage() {
           </div>
         </Card>
  {/* ── Modalidade de Processamento de Pagamentos & Gateway ── */}
- <Card className="p-6 rounded-2xl border-border bg-card space-y-6">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-6">
  <div className="pb-2 border-b border-border/40 flex items-center justify-between">
  <div>
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <CreditCard className="size-4 text-primary" />
  <span>Meios de Pagamento</span>
  </h2>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Escolha se sua loja prefere vender via Gateway Integrado da Plataforma ou com Pagamento Direto.
  </p>
  </div>
@@ -1408,7 +1408,7 @@ export default function WorkspaceConfiguracoesPage() {
  <div
  onClick={() => setPaymentProcessingMode("platform_gateway")}
  className={cn(
- "rounded-2xl border p-4 cursor-pointer transition-all space-y-2",
+ "rounded-lg border p-4 cursor-pointer transition-all space-y-2",
  paymentProcessingMode === "platform_gateway"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/70 hover:border-border"
@@ -1428,7 +1428,7 @@ export default function WorkspaceConfiguracoesPage() {
  <div
  onClick={() => setPaymentProcessingMode("direct_store")}
  className={cn(
- "rounded-2xl border p-4 cursor-pointer transition-all space-y-2",
+ "rounded-lg border p-4 cursor-pointer transition-all space-y-2",
  paymentProcessingMode === "direct_store"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/70 hover:border-border"
@@ -1448,23 +1448,23 @@ export default function WorkspaceConfiguracoesPage() {
 
  {paymentProcessingMode === "direct_store" && (
  <div className="space-y-4 pt-2 border-t border-border/40 animate-in fade-in duration-150">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Chave Pix da Loja (Recebimento Direto)</Label>
  <Input
  value={pixKey}
  onChange={(e) => setPixKey(e.target.value)}
  placeholder="CPF, CNPJ, E-mail, Telefone ou Chave Aleatória"
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-xs rounded-lg font-mono"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Instruções de Pagamento aos Clientes</Label>
  <Textarea
  value={paymentInstructions}
  onChange={(e) => setPaymentInstructions(e.target.value)}
  placeholder="Ex: Efetue o Pix e envie o comprovante pelo WhatsApp da loja, ou pague com maquininha no momento da entrega."
- className="min-h-[80px] text-xs rounded-xl"
+ className="min-h-[80px] text-xs rounded-lg"
  />
  </div>
  </div>
@@ -1472,14 +1472,14 @@ export default function WorkspaceConfiguracoesPage() {
  </Card>
 
  {/* ── Formas de Pagamento na Entrega / Balcão (Venda Direta) ── */}
- <Card className="p-6 rounded-2xl border-border bg-card space-y-6">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-6">
  <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/40">
  <div>
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <CreditCard className="size-4 text-primary" />
  <span>Pagamento na Entrega</span>
  </h2>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Opções para o cliente pagar ao motorista/entregador ou no balcão da loja.
  </p>
  </div>
@@ -1488,7 +1488,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  size="sm"
  onClick={() => setIsAddingMethod(!isAddingMethod)}
- className="rounded-xl text-xs font-bold gap-1.5 shrink-0 bg-primary text-primary-foreground cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 shrink-0 bg-primary text-primary-foreground cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Nova Forma</span>
@@ -1496,14 +1496,14 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  {/* Sugestões Rápidas de Presets */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Sugestões Rápidas:</Label>
  <div className="flex flex-wrap gap-2">
  <Button
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => {
  setNewMethodName("Maquininha de Cartão (Débito e Crédito)");
  setNewMethodInstructions("Levamos a maquininha até você. Aceitamos Visa, Master, Elo e Hipercard.");
@@ -1516,7 +1516,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => {
  setNewMethodName("Dinheiro (Informar Troco)");
  setNewMethodInstructions("Pagamento em dinheiro no momento da entrega.");
@@ -1529,7 +1529,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => {
  setNewMethodName("Pix no Balcão");
  setNewMethodInstructions("Pague via QR Code exibido diretamente no balcão da loja.");
@@ -1543,14 +1543,14 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* Formulário de Adicionar Nova Forma */}
  {isAddingMethod && (
- <div className="p-4 rounded-xl bg-muted/40 border border-border/70 space-y-3 animate-in fade-in-50">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/70 space-y-3 animate-in fade-in-50">
  <div className="space-y-1">
  <Label className="text-xs font-bold text-foreground">Nome da Forma *</Label>
  <Input
  value={newMethodName}
  onChange={(e) => setNewMethodName(e.target.value)}
  placeholder="Ex: Maquininha de Cartão na Entrega, Dinheiro..."
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1">
@@ -1559,7 +1559,7 @@ export default function WorkspaceConfiguracoesPage() {
  value={newMethodInstructions}
  onChange={(e) => setNewMethodInstructions(e.target.value)}
  placeholder="Ex: Aceitamos débito, crédito e vale refeição..."
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  <div className="flex justify-end gap-2 pt-1">
@@ -1572,7 +1572,7 @@ export default function WorkspaceConfiguracoesPage() {
  setNewMethodName("");
  setNewMethodInstructions("");
  }}
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  >
  Cancelar
  </Button>
@@ -1580,7 +1580,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  size="sm"
  onClick={handleCreateManualMethod}
- className="rounded-xl text-xs font-bold"
+ className="rounded-lg text-xs font-bold"
  >
  Salvar Opção
  </Button>
@@ -1594,13 +1594,13 @@ export default function WorkspaceConfiguracoesPage() {
  Nenhuma forma presencial cadastrada ainda. Utilize os botões de sugestão rápida acima para adicionar.
  </p>
  ) : (
- <div className="space-y-2.5">
+ <div className="space-y-3">
  {manualMethods.map((method: any) => (
  <div
  key={method.id}
- className="p-3.5 rounded-xl border border-border/70 bg-card flex items-center justify-between gap-3"
+ className="p-4 rounded-lg border border-border/70 bg-card flex items-center justify-between gap-3"
  >
- <div className="space-y-0.5 min-w-0">
+ <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2">
  <span className="text-xs font-bold text-foreground">{method.name}</span>
  <Badge
@@ -1636,14 +1636,14 @@ export default function WorkspaceConfiguracoesPage() {
  )}
  </Card>
 
- <Card className="p-6 rounded-2xl border-border bg-card space-y-6">
+ <Card className="p-6 rounded-lg border-border bg-card space-y-6">
  <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/40">
  <div>
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <ListChecks className="size-4 text-primary" />
  <span>Campos ({currentNiche.name})</span>
  </h2>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Perguntas adicionais que o cliente responde durante o fechamento do pedido.
  </p>
  </div>
@@ -1664,7 +1664,7 @@ export default function WorkspaceConfiguracoesPage() {
  },
  ]);
  }}
- className="rounded-xl text-xs font-bold gap-1.5 shrink-0 bg-primary text-primary-foreground cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 shrink-0 bg-primary text-primary-foreground cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Campo</span>
@@ -1681,7 +1681,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Documento / Passaporte do Titular", placeholder: "RG, CPF ou Passaporte", type: "text", required: true }])}
  >
  + Documento / Passaporte
@@ -1690,7 +1690,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Data de Nascimento dos Passageiros", placeholder: "Ex: Passageiro 1: 15/04/1990", type: "text", required: true }])}
  >
  + Data de Nascimento
@@ -1699,7 +1699,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Preferência de Assento / Acomodação", placeholder: "Ex: Janela, Quarto Casal", type: "text", required: false }])}
  >
  + Preferência de Assento
@@ -1711,7 +1711,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Observações / Alergias", placeholder: "Sem cebola, alergia a glúten...", type: "text", required: false }])}
  >
  + Observações / Alergias
@@ -1720,7 +1720,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Precisa de Troco?", placeholder: "Ex: Troco para R$ 50", type: "text", required: false }])}
  >
  + Troco em Dinheiro
@@ -1729,7 +1729,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Ponto de Referência", placeholder: "Próximo à praça central...", type: "text", required: false }])}
  >
  + Ponto de Referência
@@ -1741,7 +1741,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "CPF na Nota Fiscal", placeholder: "000.000.000-00", type: "text", required: false }])}
  >
  + CPF na Nota
@@ -1750,7 +1750,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-xl text-xs h-8"
+ className="rounded-lg text-xs h-8"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Instruções Especiais", placeholder: "Digite aqui suas orientações...", type: "textarea", required: false }])}
  >
  + Instruções Especiais
@@ -1761,8 +1761,8 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  {customFields.length === 0 ? (
- <div className="py-8 text-center space-y-2 border border-dashed border-border/70 rounded-2xl bg-card/40">
- <div className="size-10 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mx-auto">
+ <div className="py-8 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card/40">
+ <div className="size-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
  <ListChecks className="size-5" />
  </div>
  <h3 className="text-sm font-bold text-foreground">Nenhum campo personalizado ativo</h3>
@@ -1775,7 +1775,7 @@ export default function WorkspaceConfiguracoesPage() {
  {customFields.map((field, idx) => (
  <div
  key={field.id || idx}
- className="p-4 rounded-2xl bg-muted/20 space-y-4"
+ className="p-4 rounded-lg bg-muted/20 space-y-4"
  >
  <div className="flex items-center justify-between">
  <span className="text-xs font-mono font-bold text-foreground">
@@ -1806,7 +1806,7 @@ export default function WorkspaceConfiguracoesPage() {
  );
  }}
  placeholder="ex: Placa do Veículo, Nome para Gravação, etc."
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  </div>
 
@@ -1820,7 +1820,7 @@ export default function WorkspaceConfiguracoesPage() {
  prev.map((f, i) => (i === idx ? { ...f, type: val } : f)),
  );
  }}
- className="w-full h-9 px-2.5 rounded-xl bg-card text-xs font-semibold"
+ className="w-full h-9 px-3 rounded-lg bg-card text-xs font-semibold"
  >
  <option value="text">Texto Curto</option>
  <option value="textarea">Texto Longo (Mensagem)</option>
@@ -1842,11 +1842,11 @@ export default function WorkspaceConfiguracoesPage() {
  );
  }}
  placeholder="ex: ABC-1234 ou Maria & João"
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  />
  </div>
 
- <div className="flex items-center justify-between p-2 rounded-xl bg-card ">
+ <div className="flex items-center justify-between p-2 rounded-lg bg-card ">
  <div>
  <Label className="text-xs font-bold block">Resposta Obrigatória</Label>
  <span className="text-xs text-muted-foreground">

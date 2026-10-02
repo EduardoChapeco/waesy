@@ -36,7 +36,7 @@ export function SizeGuideTableSection({
  return (
  <section className="py-12 bg-muted/20 w-full">
  <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
- <div className="text-center max-w-xl mx-auto space-y-1.5">
+ <div className="text-center max-w-xl mx-auto space-y-2">
  <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
  Tabela de Caimento
  </Badge>
@@ -44,26 +44,26 @@ export function SizeGuideTableSection({
  {subtitle && <p className="text-xs sm:text-sm text-muted-foreground">{subtitle}</p>}
  </div>
 
- <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-2xs">
+ <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs">
  <div className="overflow-x-auto no-scrollbar ">
  <table className="w-full text-left text-xs">
  <thead className="bg-muted/50 border-b border-border/70 text-muted-foreground uppercase font-mono text-[10px]">
  <tr>
- <th className="px-5 py-3.5 font-bold">Tamanho</th>
- <th className="px-5 py-3.5 font-bold">Busto (cm)</th>
- <th className="px-5 py-3.5 font-bold">Cintura (cm)</th>
- <th className="px-5 py-3.5 font-bold">Quadril (cm)</th>
- <th className="px-5 py-3.5 font-bold">Comprimento (cm)</th>
+ <th className="px-5 py-4 font-bold">Tamanho</th>
+ <th className="px-5 py-4 font-bold">Busto (cm)</th>
+ <th className="px-5 py-4 font-bold">Cintura (cm)</th>
+ <th className="px-5 py-4 font-bold">Quadril (cm)</th>
+ <th className="px-5 py-4 font-bold">Comprimento (cm)</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-border/40">
  {rows.map((row, idx) => (
  <tr key={idx} className="hover:bg-muted/30 transition-colors">
- <td className="px-5 py-3.5 font-bold text-foreground">{row.size}</td>
- <td className="px-5 py-3.5 text-muted-foreground font-mono">{row.bustCm}</td>
- <td className="px-5 py-3.5 text-muted-foreground font-mono">{row.waistCm}</td>
- <td className="px-5 py-3.5 text-muted-foreground font-mono">{row.hipCm}</td>
- <td className="px-5 py-3.5 text-muted-foreground font-mono">{row.lengthCm || "-"}</td>
+ <td className="px-5 py-4 font-bold text-foreground">{row.size}</td>
+ <td className="px-5 py-4 text-muted-foreground font-mono">{row.bustCm}</td>
+ <td className="px-5 py-4 text-muted-foreground font-mono">{row.waistCm}</td>
+ <td className="px-5 py-4 text-muted-foreground font-mono">{row.hipCm}</td>
+ <td className="px-5 py-4 text-muted-foreground font-mono">{row.lengthCm || "-"}</td>
  </tr>
  ))}
  </tbody>
@@ -71,7 +71,7 @@ export function SizeGuideTableSection({
  </div>
 
  {tip && (
- <div className="p-4 bg-muted/30 border-t border-border/60 flex items-center gap-2.5 text-xs text-muted-foreground">
+ <div className="p-4 bg-muted/30 border-t border-border/60 flex items-center gap-3 text-xs text-muted-foreground">
  <Ruler className="size-4 text-primary shrink-0" />
  <span>{tip}</span>
  </div>

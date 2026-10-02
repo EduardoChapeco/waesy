@@ -35,16 +35,16 @@ export function PromotionalFlyersRail({
         <div className="flex items-end justify-between px-1">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-black tracking-tight text-foreground flex items-center gap-1.5">
+              <h2 className="text-base sm:text-lg font-black tracking-tight text-foreground flex items-center gap-2">
                 <Flame className="size-4 text-red-500 fill-red-500 shrink-0" />
                 <span>{title}</span>
               </h2>
-              <span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 font-bold text-[10px] tracking-wide uppercase">
+              <span className="px-2 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 font-bold text-[10px] tracking-wide uppercase">
                 Ofertas Válidas
               </span>
             </div>
             {subtitle && (
-              <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+              <p className="text-xs text-muted-foreground mt-1 font-medium">
                 {subtitle}
               </p>
             )}
@@ -58,7 +58,7 @@ export function PromotionalFlyersRail({
 
       {/* ─── Trilho Horizontal com Scroll-Snap (Imagens Verticais Grandinhas) ─── */}
       <div className="relative w-full px-0">
-        <div className="flex gap-3.5 sm:gap-4 overflow-x-auto pb-3 pt-1 snap-x snap-mandatory scrollbar-none">
+        <div className="flex gap-4 sm:gap-4 overflow-x-auto pb-3 pt-1 snap-x snap-mandatory scrollbar-none">
           {flyers.map((flyer, index) => {
             const isRetro = flyer.theme === "retro_mercado";
             const hotspotsCount = Array.isArray(flyer.hotspots) ? flyer.hotspots.length : 0;
@@ -81,10 +81,10 @@ export function PromotionalFlyersRail({
                   "w-44 sm:w-52 h-68 sm:h-76",
                   // Estilo Visual 1: Retrô Mercadista (Cartazista de Supermercado Antigo)
                   isRetro &&
-                    "rounded-2xl bg-amber-300 dark:bg-amber-400 border-3 border-red-600 shadow-[4px_4px_0px_0px_rgba(220,38,38,1)] hover:shadow-[6px_6px_0px_0px_rgba(220,38,38,1)] hover:-translate-y-1",
+                    "rounded-lg bg-amber-300 dark:bg-amber-400 border-3 border-red-600 shadow-[4px_4px_0px_0px_rgba(220,38,38,1)] hover:shadow-[6px_6px_0px_0px_rgba(220,38,38,1)] hover:-translate-y-1",
                   // Estilo Visual 2: Clean & Apple HIG
                   !isRetro &&
-                    "rounded-2xl bg-card border border-border/70 shadow-sm hover:shadow-md hover:border-foreground/30 hover:-translate-y-0.5"
+                    "rounded-lg bg-card border border-border/70 shadow-sm hover:shadow-md hover:border-foreground/30 hover:-translate-y-0.5"
                 )}
               >
                 {/* Imagem do Encarte (Com Zoom Suave no Hover) */}
@@ -102,11 +102,11 @@ export function PromotionalFlyersRail({
                   {/* Ribbon Superior de Destaque */}
                   <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
                     {isRetro ? (
-                      <span className="px-2 py-0.5 rounded bg-red-600 text-amber-100 font-black text-[10px] uppercase tracking-tighter shadow-sm">
+                      <span className="px-2 py-1 rounded bg-red-600 text-amber-100 font-black text-[10px] uppercase tracking-tighter shadow-sm">
                         {flyer.badge_text || "OFERTAÇO"}
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded-md bg-background/90 backdrop-blur-md font-bold text-[10px] text-foreground shadow-xs">
+                      <span className="px-2 py-1 rounded-md bg-background/90 backdrop-blur-md font-bold text-[10px] text-foreground shadow-xs">
                         {flyer.badge_text || "Encarte"}
                       </span>
                     )}
@@ -115,7 +115,7 @@ export function PromotionalFlyersRail({
                     {flyer.time_left_display && (
                       <span
                         className={cn(
-                          "px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs",
+                          "px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs",
                           isRetro
                             ? "bg-amber-400 text-red-950 font-black border border-amber-500"
                             : "bg-black/70 text-amber-300 border border-white/10"
@@ -129,7 +129,7 @@ export function PromotionalFlyersRail({
 
                   {/* Tag Flutuante Central de Ofertas Interativas */}
                   {hotspotsCount > 0 && (
-                    <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/15 text-white text-[10px] font-bold shadow-md">
+                    <div className="absolute bottom-2.5 left-2.5 flex items-center gap-2 px-2 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/15 text-white text-[10px] font-bold shadow-md">
                       <div className="size-2 rounded-full bg-emerald-400 animate-ping" />
                       <span>{hotspotsCount} {hotspotsCount === 1 ? "oferta interativa" : "ofertas interativas"}</span>
                     </div>
@@ -139,7 +139,7 @@ export function PromotionalFlyersRail({
                 {/* Barra Inferior com Título e Ação */}
                 <div
                   className={cn(
-                    "p-2.5 sm:p-3 flex items-center justify-between gap-2 shrink-0",
+                    "p-3 sm:p-3 flex items-center justify-between gap-2 shrink-0",
                     isRetro ? "bg-amber-300 dark:bg-amber-400 text-red-950 border-t-2 border-red-600/30" : "bg-card text-foreground"
                   )}
                 >
@@ -152,7 +152,7 @@ export function PromotionalFlyersRail({
                     >
                       {flyer.title}
                     </h3>
-                    <p className="text-[10px] text-muted-foreground truncate mt-0.5 font-medium">
+                    <p className="text-[10px] text-muted-foreground truncate mt-1 font-medium">
                       Toque para abrir e comprar
                     </p>
                   </div>

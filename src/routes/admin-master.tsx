@@ -36,20 +36,20 @@ export const Route = createFileRoute("/admin-master")({
   },
   errorComponent: ({ error, reset }: { error: any; reset: () => void }) => (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-md w-full p-6 rounded-2xl bg-card border border-border space-y-4 shadow-sm">
-        <div className="size-12 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+      <div className="max-w-md w-full p-6 rounded-lg bg-card border border-border space-y-4 shadow-sm">
+        <div className="size-12 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
           <ShieldAlert className="size-6" />
         </div>
         <h2 className="text-lg font-bold text-foreground">Diagnóstico do Painel Master</h2>
         <p className="text-xs text-muted-foreground">Ocorreu uma instabilidade ao inicializar o módulo administrativo.</p>
-        <div className="p-3 rounded-xl bg-muted/60 text-destructive text-left overflow-x-auto text-[11px] font-mono border border-border/50">
+        <div className="p-3 rounded-lg bg-muted/60 text-destructive text-left overflow-x-auto text-[11px] font-mono border border-border/50">
           {error?.message || String(error)}
         </div>
         <div className="flex gap-2">
-          <Button onClick={reset} variant="default" className="flex-1 rounded-xl">
+          <Button onClick={reset} variant="default" className="flex-1 rounded-lg">
             Tentar Novamente
           </Button>
-          <Button asChild variant="outline" className="flex-1 rounded-xl">
+          <Button asChild variant="outline" className="flex-1 rounded-lg">
             <Link to="/">Início</Link>
           </Button>
         </div>
@@ -125,7 +125,7 @@ function AdminMasterLayout() {
  <aside className="w-64 border-r border-border/50 bg-card/40 backdrop-blur-sm flex-col hidden md:flex shrink-0 h-full">
  {/* Header */}
  <div className="h-14 px-5 border-b border-border/40 flex items-center justify-between shrink-0">
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Shield className="size-4.5" />
  </div>
@@ -134,7 +134,7 @@ function AdminMasterLayout() {
  <span className="text-[10px] text-muted-foreground font-medium">Administração Global</span>
  </div>
  </div>
- <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border/40">
+ <span className="text-[9px] font-mono font-bold px-2 py-1 rounded bg-muted text-muted-foreground border border-border/40">
  ROOT
  </span>
  </div>
@@ -146,7 +146,7 @@ function AdminMasterLayout() {
  <span className="px-3 text-[10px] font-mono font-bold tracking-wider uppercase text-muted-foreground/70 block">
  {section.title}
  </span>
- <div className="space-y-0.5 pt-0.5">
+ <div className="space-y-1 pt-1">
  {section.items.map((item) => {
  const Icon = item.icon;
  return (
@@ -154,7 +154,7 @@ function AdminMasterLayout() {
  key={item.to}
  to={item.to}
  activeOptions={{ exact: (item as any).exact }}
- className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 [&.active]:bg-primary [&.active]:text-primary-foreground transition-colors cursor-pointer"
+ className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 [&.active]:bg-primary [&.active]:text-primary-foreground transition-colors cursor-pointer"
  >
  <Icon className="size-4 shrink-0" />
  <span>{item.label}</span>
@@ -172,7 +172,7 @@ function AdminMasterLayout() {
  asChild
  variant="outline"
  size="sm"
- className="w-full justify-between h-8 px-3 text-xs font-medium rounded-xl bg-card border-border/60 cursor-pointer"
+ className="w-full justify-between h-8 px-3 text-xs font-medium rounded-lg bg-card border-border/60 cursor-pointer"
  >
  <Link to="/workspace">
  <span className="flex items-center gap-2">
@@ -187,7 +187,7 @@ function AdminMasterLayout() {
  asChild
  variant="ghost"
  size="sm"
- className="w-full justify-between h-8 px-3 text-xs font-medium rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ className="w-full justify-between h-8 px-3 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  >
  <Link to="/" target="_blank" rel="noopener noreferrer">
  <span className="flex items-center gap-2">
@@ -227,7 +227,7 @@ function AdminMasterLayout() {
  <span className="px-3 text-[10px] font-mono font-bold tracking-wider uppercase text-muted-foreground/70 block">
  {section.title}
  </span>
- <div className="space-y-0.5 pt-0.5">
+ <div className="space-y-1 pt-1">
  {section.items.map((item) => {
  const Icon = item.icon;
  return (
@@ -236,7 +236,7 @@ function AdminMasterLayout() {
  to={item.to}
  activeOptions={{ exact: (item as any).exact }}
  onClick={() => setIsMobileOpen(false)}
- className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 [&.active]:bg-primary [&.active]:text-primary-foreground transition-colors cursor-pointer"
+ className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 [&.active]:bg-primary [&.active]:text-primary-foreground transition-colors cursor-pointer"
  >
  <Icon className="size-4 shrink-0" />
  <span>{item.label}</span>
@@ -276,7 +276,7 @@ function AdminMasterLayout() {
  asChild
  size="sm"
  variant="outline"
- className="h-8 rounded-xl text-xs font-medium gap-1.5 bg-card hover:bg-muted border-border/60 cursor-pointer"
+ className="h-8 rounded-lg text-xs font-medium gap-2 bg-card hover:bg-muted border-border/60 cursor-pointer"
  >
  <Link to="/workspace">
  <Store className="size-3.5 text-primary" />
@@ -287,11 +287,11 @@ function AdminMasterLayout() {
  asChild
  size="sm"
  variant="ghost"
- className="h-8 rounded-xl text-xs font-medium gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+ className="h-8 rounded-lg text-xs font-medium gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
  >
  <Link to="/" target="_blank" rel="noopener noreferrer">
  <span>Vitrine</span>
- <ExternalLink className="size-3 ml-0.5" />
+ <ExternalLink className="size-3 ml-1" />
  </Link>
  </Button>
  </div>

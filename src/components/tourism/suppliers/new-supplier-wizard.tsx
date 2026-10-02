@@ -81,10 +81,10 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
 
  return (
  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
- <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-2xl bg-card border border-border shadow-2xl">
+ <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-2xl">
  <DialogHeader className="p-5 border-b border-border/70 bg-muted/20">
- <div className="flex items-center gap-2.5">
- <div className="p-2 rounded-xl bg-primary/10 text-primary">
+ <div className="flex items-center gap-3">
+ <div className="p-2 rounded-lg bg-primary/10 text-primary">
  <Building2 className="size-4" />
  </div>
  <div>
@@ -100,14 +100,14 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
 
  <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto no-scrollbar">
  {step === 0 && (
- <div className="space-y-3.5">
+ <div className="space-y-4">
  <div className="space-y-1">
  <label className="text-xs font-bold text-foreground">Nome Fantasia *</label>
  <Input
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Operadora de Turismo, Viagens Promo, LATAM Airlines"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  autoFocus
  />
  </div>
@@ -118,7 +118,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  value={legalName}
  onChange={(e) => setLegalName(e.target.value)}
  placeholder="Ex: Razão Social da Operadora / Parceiro"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
@@ -128,7 +128,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  <select
  value={kind}
  onChange={(e) => setKind(e.target.value as SupplierKind)}
- className="w-full h-10 px-3 rounded-xl border border-border bg-background text-xs text-foreground"
+ className="w-full h-10 px-3 rounded-lg border border-border bg-background text-xs text-foreground"
  >
  {Object.entries(SUPPLIER_KIND_LABELS).map(([k, label]) => (
  <option key={k} value={k}>{label}</option>
@@ -142,7 +142,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  value={document}
  onChange={(e) => setDocument(e.target.value)}
  placeholder="00.000.000/0000-00"
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-xs rounded-lg font-mono"
  />
  </div>
  </div>
@@ -150,7 +150,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  )}
 
  {step === 1 && (
- <div className="space-y-3.5">
+ <div className="space-y-4">
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1">
  <label className="text-xs font-bold text-foreground">Cidade Sede</label>
@@ -158,7 +158,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  value={city}
  onChange={(e) => setCity(e.target.value)}
  placeholder="Ex: São Paulo"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1">
@@ -167,7 +167,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  value={state}
  onChange={(e) => setState(e.target.value)}
  placeholder="Ex: SP"
- className="h-10 text-xs rounded-xl uppercase"
+ className="h-10 text-xs rounded-lg uppercase"
  maxLength={2}
  />
  </div>
@@ -179,14 +179,14 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  value={country}
  onChange={(e) => setCountry(e.target.value)}
  placeholder="Ex: Brasil, Estados Unidos, Portugal"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  </div>
  )}
 
  {step === 2 && (
- <div className="space-y-3.5">
+ <div className="space-y-4">
  <div className="space-y-1">
  <label className="text-xs font-bold text-foreground flex items-center gap-1">
  <Percent className="size-3 text-primary" />
@@ -197,7 +197,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  value={commissionRate}
  onChange={(e) => setCommissionRate(e.target.value)}
  placeholder="Ex: 10, 12, 15"
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-xs rounded-lg font-mono"
  min="0"
  max="100"
  />
@@ -213,16 +213,16 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  onChange={(e) => setNotes(e.target.value)}
  placeholder="Ex: Faturamento quinzenal com vencimento todo dia 15 e 30. Pagamento via boleto com desconto de 1%..."
  rows={4}
- className="text-xs rounded-2xl bg-muted/10 p-3"
+ className="text-xs rounded-lg bg-muted/10 p-3"
  />
  </div>
  </div>
  )}
 
  {step === 3 && (
- <div className="space-y-3.5">
+ <div className="space-y-4">
  <div className="space-y-1">
- <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Mail className="size-3 text-primary" />
  <span>E-mail de Plantão / Reservas</span>
  </label>
@@ -231,12 +231,12 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  value={email}
  onChange={(e) => setEmail(e.target.value)}
  placeholder="reservas@operadora.com.br"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
  <div className="space-y-1">
- <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Phone className="size-3 text-emerald-500" />
  <span>WhatsApp / Telefone 24h Emergencial</span>
  </label>
@@ -244,7 +244,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  value={phone}
  onChange={(e) => setPhone(e.target.value)}
  placeholder="(11) 99999-9999"
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-xs rounded-lg font-mono"
  />
  </div>
  </div>
@@ -257,7 +257,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  variant="outline"
  disabled={step === 0}
  onClick={handleBack}
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  >
  <ChevronLeft className="size-3.5 mr-1" />
  Voltar
@@ -267,7 +267,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  <Button
  type="button"
  onClick={handleNext}
- className="rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1"
+ className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-1"
  >
  Avançar
  <ChevronRight className="size-3.5" />
@@ -277,7 +277,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  type="button"
  disabled={submitting}
  onClick={handleSubmit}
- className="rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1 shadow-md px-5"
+ className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-1 shadow-md px-5"
  >
  <Check className="size-3.5" />
  {submitting ? 'Salvando...' : 'Concluir Cadastro'}

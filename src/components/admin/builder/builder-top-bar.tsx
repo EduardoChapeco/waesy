@@ -62,7 +62,7 @@ export function BuilderTopBar({
  variant="ghost"
  size="sm"
  onClick={handleExit}
- className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer shrink-0"
+ className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer shrink-0"
  >
  <ArrowLeft className="size-4" />
  <span className="hidden sm:inline">Voltar</span>
@@ -78,7 +78,7 @@ export function BuilderTopBar({
  <Badge
  variant="outline"
  className={cn(
- "text-[10px] font-bold px-1.5 py-0 rounded-md",
+ "text-[10px] font-bold px-2 py-0 rounded-md",
  version?.status === "published"
  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
  : "bg-amber-500/10 text-amber-600 border-amber-500/20"
@@ -94,13 +94,13 @@ export function BuilderTopBar({
  </div>
 
  {/* ── Centro: Seletor de Viewport / Responsividade (Apple HIG) ── */}
- <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/60">
+ <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/60">
  <button
  type="button"
  onClick={() => setViewport("desktop")}
  title="Modo Desktop (1440px)"
  className={cn(
- "h-8 px-3 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer",
+ "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer",
  viewport === "desktop"
  ? "bg-background text-foreground shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -115,7 +115,7 @@ export function BuilderTopBar({
  onClick={() => setViewport("mobile")}
  title="Modo Mobile (390px)"
  className={cn(
- "h-8 px-3 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer",
+ "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer",
  viewport === "mobile"
  ? "bg-background text-foreground shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -129,7 +129,7 @@ export function BuilderTopBar({
  {/* ── Direita: Histórico, Pré-visualização e Ações de Salvamento ── */}
  <div className="flex items-center gap-2">
  {/* Undo / Redo */}
- <div className="flex items-center bg-muted/40 p-0.5 rounded-xl border border-border/40 hidden sm:flex">
+ <div className="flex items-center bg-muted/40 p-1 rounded-lg border border-border/40 hidden sm:flex">
  <button
  type="button"
  onClick={undo}
@@ -156,7 +156,7 @@ export function BuilderTopBar({
  variant="outline"
  size="sm"
  onClick={() => setIsTemplateModalOpen(true)}
- className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 hidden lg:inline-flex cursor-pointer"
+ className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 hidden lg:inline-flex cursor-pointer"
  >
  <Layers className="size-3.5 text-primary" />
  <span>Modelos</span>
@@ -167,7 +167,7 @@ export function BuilderTopBar({
  asChild
  variant="outline"
  size="sm"
- className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 hidden md:inline-flex cursor-pointer"
+ className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 hidden md:inline-flex cursor-pointer"
  >
  <a href={publicLink} target="_blank" rel="noopener noreferrer">
  <Eye className="size-3.5 text-muted-foreground" />
@@ -182,7 +182,7 @@ export function BuilderTopBar({
  size="sm"
  onClick={handleSave}
  disabled={isSaving || isPublishing}
- className="h-9 px-3.5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+ className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
  >
  {isSaving ? (
  <Loader2 className="size-3.5 animate-spin" />
@@ -198,7 +198,7 @@ export function BuilderTopBar({
  size="sm"
  onClick={handlePublish}
  disabled={isPublishing || isSaving}
- className="h-9 px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+ className="h-9 px-4 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
  >
  {isPublishing ? (
  <Loader2 className="size-3.5 animate-spin" />

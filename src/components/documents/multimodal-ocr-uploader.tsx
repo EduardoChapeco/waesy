@@ -163,7 +163,7 @@ export function MultimodalOcrUploader({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* ── SELETOR RÁPIDO DE NICHO ── */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
         <span className="text-[11px] font-bold text-muted-foreground shrink-0 mr-1">
           Modo:
         </span>
@@ -172,7 +172,7 @@ export function MultimodalOcrUploader({
             key={n.id}
             type="button"
             onClick={() => setSelectedNiche(n.id as any)}
-            className={`h-7 px-2.5 rounded-lg text-xs font-semibold shrink-0 transition-all cursor-pointer ${
+            className={`h-7 px-3 rounded-lg text-xs font-semibold shrink-0 transition-all cursor-pointer ${
               selectedNiche === n.id
                 ? "bg-primary text-primary-foreground shadow-2xs"
                 : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -188,7 +188,7 @@ export function MultimodalOcrUploader({
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className="relative border-2 border-dashed border-border/80 hover:border-primary/50 bg-card hover:bg-muted/20 rounded-2xl p-6 text-center cursor-pointer transition-all space-y-3 group"
+        className="relative border-2 border-dashed border-border/80 hover:border-primary/50 bg-card hover:bg-muted/20 rounded-lg p-6 text-center cursor-pointer transition-all space-y-3 group"
       >
         <input
           ref={fileInputRef}
@@ -199,7 +199,7 @@ export function MultimodalOcrUploader({
           className="hidden"
         />
 
-        <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto group-hover:scale-105 transition-transform">
+        <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto group-hover:scale-105 transition-transform">
           <UploadCloud className="size-6" />
         </div>
 
@@ -211,7 +211,7 @@ export function MultimodalOcrUploader({
             PDFs ou fotos de vouchers, comprovantes, passagens e contratos (até 20MB cada).
           </p>
           <p className="text-[10px] text-primary font-medium flex items-center justify-center gap-1">
-            <Clipboard className="size-3" /> Pressione <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono font-bold">Ctrl + V</kbd> para colar print direto
+            <Clipboard className="size-3" /> Pressione <kbd className="px-2 py-1 rounded bg-muted font-mono font-bold">Ctrl + V</kbd> para colar print direto
           </p>
         </div>
       </div>
@@ -234,9 +234,9 @@ export function MultimodalOcrUploader({
             {files.map((f) => (
               <div
                 key={f.id}
-                className="flex items-center justify-between p-2.5 rounded-xl border border-border/70 bg-card shadow-2xs"
+                className="flex items-center justify-between p-3 rounded-lg border border-border/70 bg-card shadow-2xs"
               >
-                <div className="flex items-center gap-2.5 overflow-hidden">
+                <div className="flex items-center gap-3 overflow-hidden">
                   {f.previewUrl ? (
                     <img
                       src={f.previewUrl}
@@ -281,7 +281,7 @@ export function MultimodalOcrUploader({
           placeholder="Ex: Voucher da operadora CVC com voos da Latam e hotel em Gramado"
           value={contextHint}
           onChange={(e) => setContextHint(e.target.value)}
-          className="h-9 text-xs rounded-xl"
+          className="h-9 text-xs rounded-lg"
         />
       </div>
 
@@ -290,7 +290,7 @@ export function MultimodalOcrUploader({
         type="button"
         onClick={handleStartExtraction}
         disabled={isProcessing || files.length === 0}
-        className="w-full h-11 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+        className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
       >
         {isProcessing ? (
           <>
@@ -308,7 +308,7 @@ export function MultimodalOcrUploader({
       {/* ── MODAL DE PREVIEW INSTANTÂNEO 9:16 (SE ATIVADO) ── */}
       {showPreviewModal && (
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-2xl">
             <DialogHeader className="sr-only">
               <DialogTitle>Documento Digital Reconhecido</DialogTitle>
             </DialogHeader>
@@ -340,7 +340,7 @@ export function MultimodalOcrUploader({
                             setIsSavingToDb(false);
                           }
                         }}
-                        className="h-8 rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-2xs"
+                        className="h-8 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-2xs"
                       >
                         {isSavingToDb ? (
                           <>
@@ -360,7 +360,7 @@ export function MultimodalOcrUploader({
                       size="sm"
                       variant="outline"
                       onClick={() => setPreviewOpen(false)}
-                      className="h-8 rounded-xl text-xs cursor-pointer"
+                      className="h-8 rounded-lg text-xs cursor-pointer"
                     >
                       Fechar Prévia
                     </Button>

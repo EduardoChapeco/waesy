@@ -96,7 +96,7 @@ function TransactionCertificatesPage() {
  {/* Header */}
  <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm">
  <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Fingerprint className="size-5" />
  </div>
  <div>
@@ -116,7 +116,7 @@ function TransactionCertificatesPage() {
  onClick={handleRefresh}
  disabled={loading}
  id="refresh-certs"
- className="gap-1.5 text-xs"
+ className="gap-2 text-xs"
  >
  <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />
  Atualizar
@@ -134,12 +134,12 @@ function TransactionCertificatesPage() {
  { label: "Alto risco (≥70)", value: highRiskCount, icon: AlertTriangle, color: "text-amber-500" },
  { label: "Válidos", value: certs.filter((c: any) => c.is_valid).length, icon: ShieldCheck, color: "text-green-500" },
  ].map((kpi) => (
- <div key={kpi.label} className="bg-card border border-border/50 rounded-xl p-4">
- <div className={cn("size-8 rounded-lg flex items-center justify-center mb-2.5", kpi.color === "text-primary" ? "bg-primary/10" : kpi.color === "text-destructive" ? "bg-destructive/10" : kpi.color === "text-amber-500" ? "bg-amber-500/10" : "bg-emerald-500/10")}>
+ <div key={kpi.label} className="bg-card border border-border/50 rounded-lg p-4">
+ <div className={cn("size-8 rounded-lg flex items-center justify-center mb-3", kpi.color === "text-primary" ? "bg-primary/10" : kpi.color === "text-destructive" ? "bg-destructive/10" : kpi.color === "text-amber-500" ? "bg-amber-500/10" : "bg-emerald-500/10")}>
  <kpi.icon className={cn("size-4", kpi.color)} />
  </div>
  <div className="text-xl font-bold font-mono">{kpi.value}</div>
- <div className="text-xs text-muted-foreground mt-0.5">{kpi.label}</div>
+ <div className="text-xs text-muted-foreground mt-1">{kpi.label}</div>
  </div>
  ))}
  </div>
@@ -172,7 +172,7 @@ function TransactionCertificatesPage() {
  <Button
  variant={flaggedOnly ? "default" : "outline"}
  size="sm"
- className="text-xs gap-1.5 h-8"
+ className="text-xs gap-2 h-8"
  onClick={() => setFlaggedOnly(!flaggedOnly)}
  id="cert-flagged-filter"
  >
@@ -182,7 +182,7 @@ function TransactionCertificatesPage() {
  </div>
 
  {/* Table */}
- <div className="rounded-xl border border-border/50 overflow-hidden bg-card">
+ <div className="rounded-lg border border-border/50 overflow-hidden bg-card">
  <div className="overflow-x-auto no-scrollbar">
  <table className="w-full text-sm">
  <thead>
@@ -229,7 +229,7 @@ function TransactionCertificatesPage() {
  </td>
 
  <td className="px-4 py-3">
- <code className="text-[11px] font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">
+ <code className="text-[11px] font-mono text-muted-foreground bg-muted/50 px-2 py-1 rounded">
  {truncateHash(cert.certificate_hash)}
  </code>
  </td>
@@ -244,7 +244,7 @@ function TransactionCertificatesPage() {
  </td>
 
  <td className="px-4 py-3">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Globe className="size-3 text-muted-foreground shrink-0" />
  <code className="text-[11px] font-mono">{cert.ip_address}</code>
  {cert.geo_country && (
@@ -254,7 +254,7 @@ function TransactionCertificatesPage() {
  </td>
 
  <td className="px-4 py-3">
- <span className={cn("text-[11px] font-semibold px-2 py-0.5 rounded-full border", risk.color)}>
+ <span className={cn("text-[11px] font-semibold px-2 py-1 rounded-full border", risk.color)}>
  {cert.risk_score}pts · {risk.label}
  </span>
  </td>

@@ -256,19 +256,19 @@ function AdminConvitePage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-2xl border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <span className="text-xs font-mono text-muted-foreground uppercase block">Sorteios Cadastrados</span>
           <span className="text-2xl font-black font-mono text-foreground">{data.raffles.length}</span>
         </div>
-        <div className="rounded-2xl border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <span className="text-xs font-mono text-muted-foreground uppercase block">Cupons Emitidos</span>
           <span className="text-2xl font-black font-mono text-foreground">{totalTicketsAll}</span>
         </div>
-        <div className="rounded-2xl border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <span className="text-xs font-mono text-muted-foreground uppercase block">Prêmios Ativos</span>
           <span className="text-2xl font-black font-mono text-foreground">{data.rewards.length}</span>
         </div>
-        <div className="rounded-2xl border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <span className="text-xs font-mono text-muted-foreground uppercase block">Membros Indicados</span>
           <span className="text-2xl font-black font-mono text-foreground">{data.totalConversions}</span>
         </div>
@@ -279,7 +279,7 @@ function AdminConvitePage() {
         <button
           type="button"
           onClick={() => setActiveTab("sorteios")}
-          className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
             activeTab === "sorteios"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -290,7 +290,7 @@ function AdminConvitePage() {
         <button
           type="button"
           onClick={() => setActiveTab("premios")}
-          className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
             activeTab === "premios"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -301,7 +301,7 @@ function AdminConvitePage() {
         <button
           type="button"
           onClick={() => setActiveTab("conversoes")}
-          className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
             activeTab === "conversoes"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -322,15 +322,15 @@ function AdminConvitePage() {
                   value={raffleSearch}
                   onChange={(e) => setRaffleSearch(e.target.value)}
                   placeholder="Buscar sorteio ou loja..."
-                  className="pl-9 h-9 rounded-xl text-xs bg-card"
+                  className="pl-9 h-9 rounded-lg text-xs bg-card"
                 />
               </div>
 
-              <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/70 text-xs">
+              <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/70 text-xs">
                 <button
                   type="button"
                   onClick={() => setOriginFilter("all")}
-                  className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
+                  className={`px-3 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
                     originFilter === "all" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
                   }`}
                 >
@@ -339,7 +339,7 @@ function AdminConvitePage() {
                 <button
                   type="button"
                   onClick={() => setOriginFilter("platform")}
-                  className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
+                  className={`px-3 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
                     originFilter === "platform" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
                   }`}
                 >
@@ -348,7 +348,7 @@ function AdminConvitePage() {
                 <button
                   type="button"
                   onClick={() => setOriginFilter("store")}
-                  className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
+                  className={`px-3 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
                     originFilter === "store" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
                   }`}
                 >
@@ -360,7 +360,7 @@ function AdminConvitePage() {
             <Button
               type="button"
               onClick={() => setIsRaffleSheetOpen(true)}
-              className="h-9 rounded-xl text-xs font-mono gap-1.5 shrink-0"
+              className="h-9 rounded-lg text-xs font-mono gap-2 shrink-0"
             >
               <Plus className="size-3.5" />
               <span>Novo Sorteio</span>
@@ -369,7 +369,7 @@ function AdminConvitePage() {
 
           <div className="space-y-3">
             {filteredRaffles.length === 0 ? (
-              <div className="p-12 text-center text-xs text-muted-foreground bg-card rounded-2xl border border-border/70">
+              <div className="p-12 text-center text-xs text-muted-foreground bg-card rounded-lg border border-border/70">
                 Nenhum sorteio encontrado com os filtros selecionados.
               </div>
             ) : (
@@ -381,11 +381,11 @@ function AdminConvitePage() {
                 return (
                   <div
                     key={raffle.id}
-                    className="rounded-2xl border border-border/70 bg-card p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                    className="rounded-lg border border-border/70 bg-card p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
                   >
                     <div className="flex items-start gap-4 max-w-2xl">
                       {raffle.image_url ? (
-                        <div className="size-20 sm:size-24 rounded-xl overflow-hidden bg-muted shrink-0 border border-border/60">
+                        <div className="size-20 sm:size-24 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/60">
                           <img
                             src={raffle.image_url}
                             alt={raffle.title}
@@ -393,12 +393,12 @@ function AdminConvitePage() {
                           />
                         </div>
                       ) : (
-                        <div className="size-20 sm:size-24 rounded-xl bg-muted/40 border border-border/60 flex items-center justify-center shrink-0">
+                        <div className="size-20 sm:size-24 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-center shrink-0">
                           <Ticket className="size-7 text-muted-foreground/50" />
                         </div>
                       )}
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge
                             variant={isCompleted ? "secondary" : isCancelled ? "destructive" : "default"}
@@ -461,7 +461,7 @@ function AdminConvitePage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenTickets(raffle)}
-                        className="h-9 rounded-xl text-xs font-mono gap-1.5"
+                        className="h-9 rounded-lg text-xs font-mono gap-2"
                       >
                         <Eye className="size-3.5" />
                         <span>Ver Cupons ({raffle.totalTickets})</span>
@@ -473,7 +473,7 @@ function AdminConvitePage() {
                             type="button"
                             disabled={drawingRaffleId === raffle.id || raffle.totalTickets === 0}
                             onClick={() => setRaffleToDraw(raffle)}
-                            className="h-9 rounded-xl text-xs font-mono font-bold gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground"
+                            className="h-9 rounded-lg text-xs font-mono font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
                             {drawingRaffleId === raffle.id ? (
                               <Loader2 className="size-3.5 animate-spin" />
@@ -488,7 +488,7 @@ function AdminConvitePage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleCancelRaffle(raffle.id, raffle.title)}
-                            className="h-9 rounded-xl text-xs text-destructive hover:bg-destructive/10"
+                            className="h-9 rounded-lg text-xs text-destructive hover:bg-destructive/10"
                           >
                             <Ban className="size-3.5" />
                           </Button>
@@ -513,7 +513,7 @@ function AdminConvitePage() {
             <Button
               type="button"
               onClick={openNewRewardModal}
-              className="h-9 rounded-xl text-xs font-mono gap-1.5"
+              className="h-9 rounded-lg text-xs font-mono gap-2"
             >
               <Plus className="size-3.5" />
               <span>Adicionar Prêmio</span>
@@ -524,9 +524,9 @@ function AdminConvitePage() {
             {data.rewards.map((reward: any) => (
               <div
                 key={reward.id}
-                className="rounded-2xl border border-border/70 bg-card p-4 space-y-3 flex flex-col justify-between"
+                className="rounded-lg border border-border/70 bg-card p-4 space-y-3 flex flex-col justify-between"
               >
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Badge variant="outline" className="font-mono text-[10px]">
                       {reward.reward_type}
@@ -548,13 +548,13 @@ function AdminConvitePage() {
                       {reward.active ? "Ativo" : "Pausado"}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-end gap-1.5 pt-1">
+                  <div className="flex items-center justify-end gap-2 pt-1">
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => openEditRewardModal(reward)}
-                      className="h-8 px-2.5 rounded-lg text-xs gap-1"
+                      className="h-8 px-3 rounded-lg text-xs gap-1"
                     >
                       <Pencil className="size-3" />
                       <span>Editar</span>
@@ -564,7 +564,7 @@ function AdminConvitePage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteReward(reward.id)}
-                      className="h-8 px-2.5 rounded-lg text-xs gap-1 text-destructive hover:bg-destructive/10"
+                      className="h-8 px-3 rounded-lg text-xs gap-1 text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="size-3" />
                       <span>Excluir</span>
@@ -580,7 +580,7 @@ function AdminConvitePage() {
       {/* ── 5. ABA 3: TELEMETRIA DE INDICAÇÕES ── */}
       {activeTab === "conversoes" && (
         <section className="space-y-4">
-          <div className="rounded-2xl border border-border/70 bg-card overflow-hidden">
+          <div className="rounded-lg border border-border/70 bg-card overflow-hidden">
             <div className="divide-y divide-border/60">
               {data.conversions.length === 0 ? (
                 <div className="p-10 text-center text-xs text-muted-foreground">
@@ -589,7 +589,7 @@ function AdminConvitePage() {
               ) : (
                 data.conversions.map((conv: any) => (
                   <div key={conv.id} className="p-4 flex items-center justify-between text-xs">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <span className="font-bold text-foreground">
                         {conv.invited_profile?.full_name || "Membro Registrado"}
                       </span>
@@ -597,7 +597,7 @@ function AdminConvitePage() {
                         Data: {new Date(conv.created_at).toLocaleString("pt-BR")}
                       </span>
                     </div>
-                    <div className="text-right space-y-0.5 font-mono">
+                    <div className="text-right space-y-1 font-mono">
                       <span className="text-emerald-600 font-bold">+{conv.points_awarded} pts</span>
                       <Badge variant="outline" className="text-[9px] block">
                         {conv.status}
@@ -614,7 +614,7 @@ function AdminConvitePage() {
       {/* ── SHEET AUDITORIA DE CUPONS DO SORTEIO ── */}
       <SheetPage open={Boolean(selectedRaffleForTickets)} onOpenChange={(open) => { if (!open) setSelectedRaffleForTickets(null); }} title={`Cupons do Sorteio`} description={selectedRaffleForTickets?.title || "Auditoria de participantes e bilhetes emitidos."} size="default">
         <div className="space-y-4 pt-2">
-          <div className="p-3 bg-muted/40 rounded-xl border border-border/60 flex items-center justify-between text-xs font-mono">
+          <div className="p-3 bg-muted/40 rounded-lg border border-border/60 flex items-center justify-between text-xs font-mono">
             <span>Total de Cupons: <strong>{ticketsList.length}</strong></span>
             <span>Apuração: {selectedRaffleForTickets?.draw_date ? new Date(selectedRaffleForTickets.draw_date).toLocaleDateString("pt-BR") : "—"}</span>
           </div>
@@ -629,11 +629,11 @@ function AdminConvitePage() {
               Nenhum cupom emitido para este sorteio ainda.
             </div>
           ) : (
-            <div className="divide-y divide-border/60 border border-border/60 rounded-xl overflow-hidden bg-card">
+            <div className="divide-y divide-border/60 border border-border/60 rounded-lg overflow-hidden bg-card">
               {ticketsList.map((t: any) => (
                 <div key={t.id} className="p-3 flex items-center justify-between text-xs">
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-1.5">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-foreground">
                         Cupom #{String(t.ticketNumber).padStart(4, "0")}
                       </span>
@@ -677,61 +677,61 @@ function AdminConvitePage() {
             label="Banner Oficial do Sorteio (16:9)"
           />
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium">Título do Sorteio *</Label>
             <Input
               value={newRaffleTitle}
               onChange={(e) => setNewRaffleTitle(e.target.value)}
               placeholder="Ex: Viagem de Fim de Semana com Hospedagem e Aéreos"
-              className="h-10 rounded-xl text-xs"
+              className="h-10 rounded-lg text-xs"
               required
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium">Descrição do Prêmio</Label>
             <Textarea
               value={newRaffleDesc}
               onChange={(e) => setNewRaffleDesc(e.target.value)}
               placeholder="Descreva a experiência, prêmio e o que está incluso..."
-              className="rounded-xl text-xs min-h-24"
+              className="rounded-lg text-xs min-h-24"
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-medium">Regulamento de Participação</Label>
             <Textarea
               value={newRaffleTerms}
               onChange={(e) => setNewRaffleTerms(e.target.value)}
               placeholder="Regras de elegibilidade, data da apuração e entrega do prêmio..."
-              className="rounded-xl text-xs min-h-20"
+              className="rounded-lg text-xs min-h-20"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Data da Apuração *</Label>
               <Input
                 type="date"
                 value={newRaffleDate}
                 onChange={(e) => setNewRaffleDate(e.target.value)}
-                className="h-10 rounded-xl text-xs font-mono"
+                className="h-10 rounded-lg text-xs font-mono"
                 required
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Custo em Pontos (0 = Grátis)</Label>
               <Input
                 type="number"
                 min={0}
                 value={newRafflePoints}
                 onChange={(e) => setNewRafflePoints(parseInt(e.target.value) || 0)}
-                className="h-10 rounded-xl text-xs font-mono"
+                className="h-10 rounded-lg text-xs font-mono"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Máximo por Membro</Label>
               <Input
                 type="number"
@@ -739,7 +739,7 @@ function AdminConvitePage() {
                 max={50}
                 value={newRaffleMaxTickets}
                 onChange={(e) => setNewRaffleMaxTickets(parseInt(e.target.value) || 1)}
-                className="h-10 rounded-xl text-xs font-mono"
+                className="h-10 rounded-lg text-xs font-mono"
               />
             </div>
           </div>
@@ -749,16 +749,16 @@ function AdminConvitePage() {
               type="button"
               variant="outline"
               onClick={() => setIsRaffleSheetOpen(false)}
-              className="h-10 rounded-xl text-xs px-4"
+              className="h-10 rounded-lg text-xs px-4"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isSavingRaffle}
-              className="h-10 rounded-xl text-xs font-mono font-bold px-5"
+              className="h-10 rounded-lg text-xs font-mono font-bold px-5"
             >
-              {isSavingRaffle ? <Loader2 className="size-3.5 animate-spin mr-1.5" /> : null}
+              {isSavingRaffle ? <Loader2 className="size-3.5 animate-spin mr-2" /> : null}
               Cadastrar Sorteio
             </Button>
           </div>
@@ -767,7 +767,7 @@ function AdminConvitePage() {
 
       {/* ── MODAL NOVO / EDITAR PRÊMIO ── */}
       <Dialog open={isRewardModalOpen} onOpenChange={setIsRewardModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               {editingRewardId ? "Editar Recompensa" : "Nova Recompensa"}
@@ -780,7 +780,7 @@ function AdminConvitePage() {
                 value={newRewardTitle}
                 onChange={(e) => setNewRewardTitle(e.target.value)}
                 placeholder="Ex: Ingresso Parque Temático"
-                className="h-10 rounded-xl text-xs"
+                className="h-10 rounded-lg text-xs"
                 required
               />
             </div>
@@ -790,7 +790,7 @@ function AdminConvitePage() {
                 value={newRewardDesc}
                 onChange={(e) => setNewRewardDesc(e.target.value)}
                 placeholder="Instruções de uso e validade..."
-                className="rounded-xl text-xs min-h-20"
+                className="rounded-lg text-xs min-h-20"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -800,7 +800,7 @@ function AdminConvitePage() {
                   type="number"
                   value={newRewardPoints}
                   onChange={(e) => setNewRewardPoints(parseInt(e.target.value) || 0)}
-                  className="h-10 rounded-xl text-xs font-mono"
+                  className="h-10 rounded-lg text-xs font-mono"
                   required
                 />
               </div>
@@ -811,7 +811,7 @@ function AdminConvitePage() {
                   value={newRewardStock ?? ""}
                   onChange={(e) => setNewRewardStock(e.target.value ? parseInt(e.target.value) : undefined)}
                   placeholder="Vazio = Ilimitado"
-                  className="h-10 rounded-xl text-xs font-mono"
+                  className="h-10 rounded-lg text-xs font-mono"
                 />
               </div>
             </div>
@@ -834,16 +834,16 @@ function AdminConvitePage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsRewardModalOpen(false)}
-                className="h-9 rounded-xl text-xs"
+                className="h-9 rounded-lg text-xs"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSavingReward}
-                className="h-9 rounded-xl text-xs font-mono font-bold"
+                className="h-9 rounded-lg text-xs font-mono font-bold"
               >
-                {isSavingReward ? <Loader2 className="size-3.5 animate-spin mr-1.5" /> : null}
+                {isSavingReward ? <Loader2 className="size-3.5 animate-spin mr-2" /> : null}
                 {editingRewardId ? "Salvar Alterações" : "Cadastrar Prêmio"}
               </Button>
             </DialogFooter>
@@ -853,7 +853,7 @@ function AdminConvitePage() {
 
       {/* ── DIÁLOGO DE APURAÇÃO DO SORTEIO (ZERO JARGÃO DE APOSTAS) ── */}
       <AlertDialog open={Boolean(raffleToDraw)} onOpenChange={(open) => { if (!open) setRaffleToDraw(null); }}>
-        <AlertDialogContent className="max-w-md rounded-2xl p-6 border-border/80">
+        <AlertDialogContent className="max-w-md rounded-lg p-6 border-border/80">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-bold">
               Realizar apuração do sorteio?
@@ -866,7 +866,7 @@ function AdminConvitePage() {
           <AlertDialogFooter className="mt-4 gap-2">
             <AlertDialogCancel
               disabled={Boolean(drawingRaffleId)}
-              className="h-10 px-4 rounded-xl text-xs font-semibold"
+              className="h-10 px-4 rounded-lg text-xs font-semibold"
             >
               Cancelar
             </AlertDialogCancel>
@@ -876,7 +876,7 @@ function AdminConvitePage() {
                 confirmDrawRaffle();
               }}
               disabled={Boolean(drawingRaffleId)}
-              className="h-10 px-4 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="h-10 px-4 rounded-lg text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {drawingRaffleId ? "Apurando..." : "Confirmar e Sortear"}
             </AlertDialogAction>

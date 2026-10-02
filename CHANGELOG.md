@@ -7,6 +7,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Principais Marcos & Decisões Arquiteturais (DEC)
 
+- **DEC-151**: Redução Massiva de Débito Visual e Catraca do Design Lint V2
 - **DEC-150**: Conclusão da Fase F24 (Plano de Estabilização E2E) — Selo Final do Plano Mestre e Release v2.0
 - **DEC-149**: Conclusão da Fase F23 (Plano de Estabilização E2E) — Auditoria de Segurança Final e RLS Abrangente
 - **DEC-148**: Conclusão da Fase F22 (Plano de Estabilização E2E) — CI Bloqueante Unificado (5 Gates de Qualidade)
@@ -26,7 +27,6 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - **DEC-134**: Conclusão da Fase F08 (Plano de Estabilização E2E) — Checkout do Marketplace B2C com Wizard de 3 Etapas e Cálculo de Frete
 - **DEC-133**: Conclusão da Fase F07 (Plano de Estabilização E2E) — Vitrine Pública do Marketplace por Loja (SSR e SEO Canônico)
 - **DEC-132**: Conclusão da Fase F06 (Plano de Estabilização E2E) — Testes de Isolamento dos 4 Pilares e Fechamento do Bloco 1
-- **DEC-131**: Conclusão da Fase F05 (Plano de Estabilização E2E) — Assistente de Nativização e Modal de Importação no Workspace
 
 ### Alterações do Repositório (Git Commits Recentes)
 
@@ -67,7 +67,6 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - `0f63f23c`: feat(S07-S09): desacoplamento de lib em modulos de dominio, bff services puro sem UI e rotas finas sem db direto (DEC-106) (2026-10-02)
 - `a13defa4`: feat(Plano-5): re-baseline BigTech S01-S05, contrato de arquitetura em camadas S06 e conclusao homologada Plano 4 R51-R64; 0 erros TS, 1011 testes Vitest verdes, CI canonical aprovado (2026-10-01)
 - `fad07d96`: feat(R45-R50): checkout adaptavel multi-nicho, suporte completo a turismo/embratur, mitigacao DL-04 em checkout.functions; 0 lint violations (2026-10-01)
-- `5eeb1759`: feat(R37-R44): salvar rascunho/publicar, preview fidedigno nos 3 viewports, transacoes multi-nicho, fiscal condicional turismo/varejo e IA com revisao humana; 0 lint violations (2026-10-01)
 
 #### Correções de Estabilidade (Fixes)
 - `fc1b5fa4`: fix(F04): compatibilidade nativa com workspace_entity_id no Supabase (2026-10-02)
@@ -83,8 +82,8 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - `848bece9`: docs(canonico): sincroniza conclusao dos Blocos D e E e ativa Bloco F em BACKLOG_UNICO e PROXIMOS_PLANOS_EXECUCAO (2026-10-02)
 - `fc7ad02b`: docs(decisions): registrar DEC-126 com deploy de producao e auditoria dos 4 pilares (2026-10-02)
 - `caca8dc0`: docs(canonico): adiciona protocolo de execucao dos proximos planos e tipagem serializavel em outbox (2026-10-02)
-- `e39fcd9a`: docs(R37-R44): encerramento Bloco 6 (Editor, Preview e Compra); 44 fases concluidas; DEC-100 registrado (2026-10-01)
 
 #### Tarefas de Infraestrutura e Governança (Chores)
+- `e1358bb8`: chore(ratchet): atualiza design-lint dashboard com homologacao F20-F24 (2026-10-02)
 - `4ee37356`: chore: atualiza hash F19 no plano de execucao (2026-10-02)
 - `92e92b72`: chore: atualiza hash F18 no plano de execucao (2026-10-02)

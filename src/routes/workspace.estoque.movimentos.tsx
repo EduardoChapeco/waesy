@@ -134,7 +134,7 @@ function MovementsPage() {
           <Button
             onClick={handleOpenDialog}
             size="sm"
-            className="rounded-xl font-semibold text-xs h-9 gap-1.5"
+            className="rounded-lg font-semibold text-xs h-9 gap-2"
           >
             <Plus className="size-3.5" />
             Registrar Movimento
@@ -147,14 +147,14 @@ function MovementsPage() {
           title="Nenhum movimento registrado"
           description="Os movimentos de entrada, saída e ajuste de estoque aparecerão aqui."
           action={
-            <Button onClick={handleOpenDialog} size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-9 gap-1.5">
+            <Button onClick={handleOpenDialog} size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-9 gap-2">
               <Plus className="size-3.5" />
               Primeiro Ajuste
             </Button>
           }
         />
       ) : (
-        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+        <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -186,7 +186,7 @@ function MovementsPage() {
                     </TableCell>
                     <TableCell className="text-xs">
                       {mov.location?.name ? (
-                        <span className="font-medium text-foreground flex items-center gap-1.5">
+                        <span className="font-medium text-foreground flex items-center gap-2">
                           <Box className="size-3 text-muted-foreground" />
                           {mov.location.name}
                         </span>
@@ -222,7 +222,7 @@ function MovementsPage() {
 
       {/* ── Modal de Ajuste Manual ── */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">Registrar Movimento de Estoque</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -232,18 +232,18 @@ function MovementsPage() {
 
           <div className="space-y-4 py-2">
             {/* Produto / Variante */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Produto / Variante</Label>
               <Select value={variantId} onValueChange={setVariantId}>
-                <SelectTrigger className="rounded-xl text-xs h-10">
+                <SelectTrigger className="rounded-lg text-xs h-10">
                   <SelectValue placeholder="Selecione um produto..." />
                 </SelectTrigger>
                 <SelectContent>
                   {(Array.isArray(stockLevels) ? stockLevels : []).map((v: any) => (
                     <SelectItem key={v.id} value={v.id} className="text-xs">
                       <span className="font-medium">{v.product?.title || "Produto"}</span>
-                      {v.sku && <span className="text-muted-foreground ml-1.5 font-mono">({v.sku})</span>}
-                      <span className="text-muted-foreground ml-1.5">— {v.stock_on_hand ?? 0} un.</span>
+                      {v.sku && <span className="text-muted-foreground ml-2 font-mono">({v.sku})</span>}
+                      <span className="text-muted-foreground ml-2">— {v.stock_on_hand ?? 0} un.</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -251,10 +251,10 @@ function MovementsPage() {
             </div>
 
             {/* Tipo de Movimento */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Tipo de Movimento</Label>
               <Select value={movementType} onValueChange={(v) => setMovementType(v as AdjustMovementType)}>
-                <SelectTrigger className="rounded-xl text-xs h-10">
+                <SelectTrigger className="rounded-lg text-xs h-10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -268,7 +268,7 @@ function MovementsPage() {
             </div>
 
             {/* Quantidade */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">
                 Quantidade{" "}
                 <span className="text-muted-foreground font-normal">
@@ -280,18 +280,18 @@ function MovementsPage() {
                 value={qty}
                 onChange={(e) => setQty(e.target.value)}
                 placeholder="Ex: 10 ou -5"
-                className="rounded-xl text-xs h-10"
+                className="rounded-lg text-xs h-10"
               />
             </div>
 
             {/* Observação */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Observação (opcional)</Label>
               <Textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Motivo do ajuste, número da NF, etc."
-                className="rounded-xl text-xs resize-none"
+                className="rounded-lg text-xs resize-none"
                 rows={3}
               />
             </div>
@@ -302,14 +302,14 @@ function MovementsPage() {
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
               disabled={isSubmitting}
-              className="rounded-xl text-xs h-9"
+              className="rounded-lg text-xs h-9"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || !variantId}
-              className="rounded-xl text-xs h-9 font-bold gap-1.5"
+              className="rounded-lg text-xs h-9 font-bold gap-2"
             >
               {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
               Registrar

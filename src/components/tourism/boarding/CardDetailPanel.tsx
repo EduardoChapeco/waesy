@@ -274,7 +274,7 @@ export function CardDetailPanel({
           <div className="p-8 text-center space-y-3">
             <AlertTriangle className="size-8 text-amber-500 mx-auto" />
             <p className="text-sm font-bold text-foreground">Embarque não encontrado</p>
-            <Button variant="outline" size="sm" onClick={onClose} className="rounded-xl">
+            <Button variant="outline" size="sm" onClick={onClose} className="rounded-lg">
               Fechar
             </Button>
           </div>
@@ -338,7 +338,7 @@ export function CardDetailPanel({
                   <Button
                     variant="outline"
                     onClick={handleShareBriefing}
-                    className="h-10 sm:h-11 px-4 gap-2 text-xs sm:text-sm font-bold rounded-xl border-emerald-500/30 text-emerald-600 bg-emerald-500/10 hover:bg-emerald-500/20 cursor-pointer shadow-2xs"
+                    className="h-10 sm:h-11 px-4 gap-2 text-xs sm:text-sm font-bold rounded-lg border-emerald-500/30 text-emerald-600 bg-emerald-500/10 hover:bg-emerald-500/20 cursor-pointer shadow-2xs"
                     title="Enviar briefing por WhatsApp"
                   >
                     <Send className="size-4" />
@@ -353,7 +353,7 @@ export function CardDetailPanel({
                       }
                     }}
                     disabled={deleteDepartureMutation.isPending}
-                    className="size-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                    className="size-10 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                     title="Excluir embarque"
                   >
                     <Trash2 className="size-4" />
@@ -372,7 +372,7 @@ export function CardDetailPanel({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer min-h-[44px] whitespace-nowrap ${
+                    className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer min-h-11 whitespace-nowrap ${
                       activeTab === tab.id
                         ? 'border-primary text-primary'
                         : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -399,11 +399,11 @@ export function CardDetailPanel({
                           {items?.filter((i) => i.is_completed).length}/{items?.length} concluídos
                         </span>
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {items?.map((item) => (
                           <div
                             key={item.id}
-                            className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                            className={`p-3 rounded-lg border transition-all flex items-center justify-between gap-3 ${
                               item.is_completed
                                 ? 'bg-emerald-500/[0.04] border-emerald-500/20'
                                 : 'bg-card border-border/70 hover:border-primary/40'
@@ -412,7 +412,7 @@ export function CardDetailPanel({
                             <button
                               type="button"
                               onClick={() => toggleMutation.mutate({ item_id: item.id, is_completed: !item.is_completed })}
-                              className="flex items-center gap-2.5 text-left flex-1 min-w-0 cursor-pointer min-h-[44px] py-1"
+                              className="flex items-center gap-3 text-left flex-1 min-w-0 cursor-pointer min-h-11 py-1"
                             >
                               {item.is_completed ? (
                                 <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
@@ -449,13 +449,13 @@ export function CardDetailPanel({
                   )}
 
                   {/* Adicionar Novo Item */}
-                  <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-muted/20 space-y-3">
+                  <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                     <Label className="text-xs sm:text-sm font-bold text-foreground">Novo Item no Checklist</Label>
-                    <div className="flex flex-col sm:flex-row gap-2.5">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <select
                         value={newItemCategory}
                         onChange={(e) => setNewItemCategory(e.target.value as ChecklistCategory)}
-                        className="h-11 px-3 rounded-xl border border-input bg-background text-sm shrink-0"
+                        className="h-11 px-3 rounded-lg border border-input bg-background text-sm shrink-0"
                       >
                         {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
                           <option key={k} value={k}>
@@ -467,7 +467,7 @@ export function CardDetailPanel({
                         value={newItemLabel}
                         onChange={(e) => setNewItemLabel(e.target.value)}
                         placeholder="Descrição da pendência..."
-                        className="h-11 text-sm flex-1 rounded-xl"
+                        className="h-11 text-sm flex-1 rounded-lg"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') addItemMutation.mutate();
                         }}
@@ -475,9 +475,9 @@ export function CardDetailPanel({
                       <Button
                         disabled={!newItemLabel.trim() || addItemMutation.isPending}
                         onClick={() => addItemMutation.mutate()}
-                        className="h-11 px-5 rounded-xl font-bold text-sm cursor-pointer shrink-0 shadow-2xs"
+                        className="h-11 px-5 rounded-lg font-bold text-sm cursor-pointer shrink-0 shadow-2xs"
                       >
-                        <Plus className="size-4 mr-1.5" />
+                        <Plus className="size-4 mr-2" />
                         Adicionar
                       </Button>
                     </div>
@@ -490,7 +490,7 @@ export function CardDetailPanel({
                 <div className="space-y-4">
                   <div className="space-y-2">
                     {documents.map((doc) => (
-                      <div key={doc.id} className="p-3.5 rounded-xl border border-border/70 bg-card flex items-center justify-between gap-3">
+                      <div key={doc.id} className="p-4 rounded-lg border border-border/70 bg-card flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                             <FileText className="size-4" />
@@ -500,7 +500,7 @@ export function CardDetailPanel({
                             <p className="text-[10px] text-muted-foreground truncate">{doc.file_name || 'Arquivo anexo'}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0">
                           {doc.ocr_status === 'completed' && (
                             <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-500/30">
                               OCR ✓
@@ -537,15 +537,15 @@ export function CardDetailPanel({
                   </div>
 
                   {/* Upload de Novo Documento */}
-                  <div className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-3">
+                  <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                     <Label className="text-xs font-bold text-foreground">Anexar Documento de Viagem</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-[11px] text-muted-foreground">Tipo de Documento</Label>
                         <select
                           value={docType}
                           onChange={(e) => setDocType(e.target.value as DocumentType)}
-                          className="w-full h-9 px-2 rounded-xl border border-input bg-background text-xs"
+                          className="w-full h-9 px-2 rounded-lg border border-input bg-background text-xs"
                         >
                           {Object.entries(DOC_TYPE_LABELS).map(([k, v]) => (
                             <option key={k} value={k}>
@@ -554,7 +554,7 @@ export function CardDetailPanel({
                           ))}
                         </select>
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-[11px] text-muted-foreground">Arquivo</Label>
                         <FileAttachmentUpload
                           value={docUrl}
@@ -566,7 +566,7 @@ export function CardDetailPanel({
                     <Button
                       onClick={() => uploadDocMutation.mutate()}
                       disabled={!docUrl || uploadDocMutation.isPending}
-                      className="w-full rounded-xl font-bold text-xs h-9 gap-1.5 cursor-pointer"
+                      className="w-full rounded-lg font-bold text-xs h-9 gap-2 cursor-pointer"
                     >
                       {uploadDocMutation.isPending ? (
                         <Loader2 className="size-3.5 animate-spin" />
@@ -582,9 +582,9 @@ export function CardDetailPanel({
               {/* ABA 3: VOO & HOSPEDAGEM */}
               {activeTab === 'flight_hotel' && (
                 <div className="space-y-4">
-                  <div className="p-4 rounded-2xl border border-border/70 bg-card space-y-3">
+                  <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                         <Plane className="size-4 text-primary" />
                         Detalhes do Voo e Check-in
                       </h4>
@@ -592,7 +592,7 @@ export function CardDetailPanel({
                         variant="ghost"
                         size="sm"
                         onClick={() => setIsEditing(!isEditing)}
-                        className="h-7 px-2.5 text-[11px] font-bold rounded-lg cursor-pointer"
+                        className="h-7 px-3 text-[11px] font-bold rounded-lg cursor-pointer"
                       >
                         {isEditing ? <Check className="size-3 mr-1 text-emerald-500" /> : <Pencil className="size-3 mr-1" />}
                         {isEditing ? 'Pronto' : 'Editar'}
@@ -635,7 +635,7 @@ export function CardDetailPanel({
 
                     {departure.airline_code && (AIRLINE_CHECKIN_LINKS as any)[departure.airline_code] && (
                       <div className="pt-2">
-                        <Button asChild size="sm" variant="outline" className="w-full text-xs font-bold gap-1.5 rounded-xl">
+                        <Button asChild size="sm" variant="outline" className="w-full text-xs font-bold gap-2 rounded-lg">
                           <a href={(AIRLINE_CHECKIN_LINKS as any)[departure.airline_code]} target="_blank" rel="noreferrer">
                             <ExternalLink className="size-3.5" />
                             Acessar Check-in Oficial da Companhia Aérea
@@ -646,8 +646,8 @@ export function CardDetailPanel({
                   </div>
 
                   {/* Detalhes do Hotel */}
-                  <div className="p-4 rounded-2xl border border-border/70 bg-card space-y-3">
-                    <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
+                    <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                       <Hotel className="size-4 text-primary" />
                       Hospedagem e Hotel
                     </h4>
@@ -670,14 +670,14 @@ export function CardDetailPanel({
                   </div>
 
                   {/* Observações Operacionais */}
-                  <div className="p-4 rounded-2xl border border-border/70 bg-card space-y-2">
+                  <div className="p-4 rounded-lg border border-border/70 bg-card space-y-2">
                     <Label className="text-xs font-bold text-foreground">Observações Operacionais e Cuidados</Label>
                     {isEditing ? (
                       <Textarea
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="Instruções especiais, conexões curtas, bagagem diferenciada..."
-                        className="rounded-xl text-xs resize-none"
+                        className="rounded-lg text-xs resize-none"
                         rows={3}
                       />
                     ) : (
@@ -691,7 +691,7 @@ export function CardDetailPanel({
                     <Button
                       onClick={() => updateMutation.mutate()}
                       disabled={updateMutation.isPending}
-                      className="w-full rounded-xl font-bold text-xs cursor-pointer"
+                      className="w-full rounded-lg font-bold text-xs cursor-pointer"
                     >
                       Salvar Alterações
                     </Button>
@@ -707,11 +707,11 @@ export function CardDetailPanel({
                     value={briefingText}
                     readOnly
                     rows={12}
-                    className="font-mono text-xs bg-muted/30 rounded-xl"
+                    className="font-mono text-xs bg-muted/30 rounded-lg"
                   />
                   <Button
                     onClick={handleShareBriefing}
-                    className="w-full gap-2 font-bold text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                    className="w-full gap-2 font-bold text-xs rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
                   >
                     <Send className="size-3.5" />
                     Enviar Briefing pelo WhatsApp

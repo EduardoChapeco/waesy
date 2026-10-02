@@ -63,9 +63,9 @@ function MemberMetricsPage() {
           </Link>
         </Button>
 
- <Avatar className="size-9 rounded-xl border border-border/60">
+ <Avatar className="size-9 rounded-lg border border-border/60">
  <AvatarImage src={profile.avatar_url || ""} />
- <AvatarFallback className="rounded-xl font-bold bg-primary/10 text-primary text-xs">
+ <AvatarFallback className="rounded-lg font-bold bg-primary/10 text-primary text-xs">
  {profile.full_name?.slice(0, 2).toUpperCase() || "ME"}
  </AvatarFallback>
  </Avatar>
@@ -85,7 +85,7 @@ function MemberMetricsPage() {
  asChild
  size="sm"
  variant="outline"
- className="rounded-xl font-semibold text-xs h-9 gap-1.5"
+ className="rounded-lg font-semibold text-xs h-9 gap-2"
  >
  <Link to="/membro/$id" params={{ id: profile.username || profile.id }}>
  <Eye className="size-3.5" />
@@ -96,7 +96,7 @@ function MemberMetricsPage() {
  <Button
  asChild
  size="sm"
- className="rounded-xl font-bold text-xs h-9 bg-primary text-primary-foreground gap-1.5"
+ className="rounded-lg font-bold text-xs h-9 bg-primary text-primary-foreground gap-2"
  >
  <Link to="/mural">
  <Plus className="size-3.5" />
@@ -109,10 +109,10 @@ function MemberMetricsPage() {
  {/* ── 1. Visão Geral dos Principais KPIs (Estilo Instagram Professional Dashboard) ── */}
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
  {/* Contas Alcançadas */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-2">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-bold">Alcance Total</span>
- <div className="size-7 rounded-xl bg-info/10 text-info flex items-center justify-center">
+ <div className="size-7 rounded-lg bg-info/10 text-info flex items-center justify-center">
  <Eye className="size-3.5" />
  </div>
  </div>
@@ -126,10 +126,10 @@ function MemberMetricsPage() {
  </div>
 
  {/* Taxa de Engajamento */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-2">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-bold">Taxa de Engajamento</span>
- <div className="size-7 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+ <div className="size-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
  <TrendingUp className="size-3.5" />
  </div>
  </div>
@@ -142,10 +142,10 @@ function MemberMetricsPage() {
  </div>
 
  {/* Reações e Curtidas Reais */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-2">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-bold">Curtidas Reais</span>
- <div className="size-7 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+ <div className="size-7 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center">
  <Heart className="size-3.5 fill-rose-500/20" />
  </div>
  </div>
@@ -158,10 +158,10 @@ function MemberMetricsPage() {
  </div>
 
  {/* Comunidade / Seguidores */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-2">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-bold">Seguidores</span>
- <div className="size-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Users className="size-3.5" />
  </div>
  </div>
@@ -177,13 +177,13 @@ function MemberMetricsPage() {
  {/* ── 2. Crescimento e Comunidade ── */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  {/* Card de Crescimento de Seguidores */}
- <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-2xs">
+ <div className="p-5 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs">
  <div className="flex items-center justify-between">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Users className="size-4 text-primary" />
  <span>Crescimento da Audiência</span>
  </h3>
- <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl text-[10px] font-bold">
+ <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg text-[10px] font-bold">
  <button
  onClick={() => setSelectedPeriod("7d")}
  className={cn(
@@ -205,7 +205,7 @@ function MemberMetricsPage() {
  </div>
  </div>
 
- <div className="p-4 rounded-2xl bg-muted/20 border border-border/40 text-center space-y-1">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/40 text-center space-y-1">
  <p className="text-3xl font-black text-foreground tracking-tight">
  +{selectedPeriod === "7d" ? overview.followersGained7d : overview.followersGained30d}
  </p>
@@ -228,12 +228,12 @@ function MemberMetricsPage() {
  key={f.id}
  to="/membro/$id"
  params={{ id: f.username || f.id }}
- className="flex items-center justify-between p-2 rounded-2xl bg-muted/20 hover:bg-muted/50 transition-colors"
+ className="flex items-center justify-between p-2 rounded-lg bg-muted/20 hover:bg-muted/50 transition-colors"
  >
- <div className="flex items-center gap-2.5">
- <Avatar className="size-8 rounded-xl">
+ <div className="flex items-center gap-3">
+ <Avatar className="size-8 rounded-lg">
  <AvatarImage src={f.avatar_url || ""} />
- <AvatarFallback className="rounded-xl text-[10px] font-bold">
+ <AvatarFallback className="rounded-lg text-[10px] font-bold">
  {f.full_name.slice(0, 2).toUpperCase()}
  </AvatarFallback>
  </Avatar>
@@ -255,7 +255,7 @@ function MemberMetricsPage() {
  </div>
 
  {/* Card de Distribuição de Formatos de Conteúdo */}
- <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-2xs">
+ <div className="p-5 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs">
  <div className="flex items-center justify-between">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Layers className="size-4 text-primary" />
@@ -270,7 +270,7 @@ function MemberMetricsPage() {
  {/* Fotos */}
  <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
- <span className="flex items-center gap-1.5 text-muted-foreground">
+ <span className="flex items-center gap-2 text-muted-foreground">
  <ImageIcon className="size-3.5 text-info" /> Fotos Individuais
  </span>
  <span className="font-bold">{formatDistribution.photo}</span>
@@ -288,7 +288,7 @@ function MemberMetricsPage() {
  {/* Galerias / Carrosséis */}
  <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
- <span className="flex items-center gap-1.5 text-muted-foreground">
+ <span className="flex items-center gap-2 text-muted-foreground">
  <Layers className="size-3.5 text-primary" /> Carrosséis e Galerias
  </span>
  <span className="font-bold">{formatDistribution.gallery}</span>
@@ -306,7 +306,7 @@ function MemberMetricsPage() {
  {/* Vídeos */}
  <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
- <span className="flex items-center gap-1.5 text-muted-foreground">
+ <span className="flex items-center gap-2 text-muted-foreground">
  <Film className="size-3.5 text-rose-500" /> Vídeos e Moments
  </span>
  <span className="font-bold">{formatDistribution.video}</span>
@@ -324,7 +324,7 @@ function MemberMetricsPage() {
  {/* Zines Editoriais */}
  <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
- <span className="flex items-center gap-1.5 text-muted-foreground">
+ <span className="flex items-center gap-2 text-muted-foreground">
  <Sliders className="size-3.5 text-amber-500" /> Zines e Notícias
  </span>
  <span className="font-bold">{formatDistribution.zine}</span>
@@ -342,7 +342,7 @@ function MemberMetricsPage() {
  {/* Texto Puro */}
  <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
- <span className="flex items-center gap-1.5 text-muted-foreground">
+ <span className="flex items-center gap-2 text-muted-foreground">
  <FileText className="size-3.5 text-slate-500" /> Textos e Debates
  </span>
  <span className="font-bold">{formatDistribution.text}</span>
@@ -360,20 +360,20 @@ function MemberMetricsPage() {
  </div>
 
  {/* Card de Dicas de Otimização & Crescimento */}
- <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-2xs flex flex-col justify-between">
+ <div className="p-5 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs flex flex-col justify-between">
  <div className="space-y-3">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Sliders className="size-4 text-primary" />
  <span>Dicas de Engajamento</span>
  </h3>
- <div className="space-y-2.5 text-xs text-muted-foreground">
- <div className="p-3 rounded-2xl bg-muted/20 border border-border/40 space-y-1">
+ <div className="space-y-3 text-xs text-muted-foreground">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
  <p className="font-bold text-foreground">💡 Poste com Mídias e Galerias</p>
  <p className="text-[11px]">
  Publicações com carrosséis e fotos de alta qualidade têm 4x mais retenção.
  </p>
  </div>
- <div className="p-3 rounded-2xl bg-muted/20 border border-border/40 space-y-1">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
  <p className="font-bold text-foreground">📍 Marque Sua Localização</p>
  <p className="text-[11px]">
  Posts geolocalizados aparecem automaticamente no Mapa Social da Cidade.
@@ -382,16 +382,16 @@ function MemberMetricsPage() {
  </div>
  </div>
 
- <Button asChild className="w-full rounded-xl font-bold text-xs h-10 bg-primary text-primary-foreground">
+ <Button asChild className="w-full rounded-lg font-bold text-xs h-10 bg-primary text-primary-foreground">
  <Link to="/mural">
- <Plus className="size-4 mr-1.5" /> Publicar Agora
+ <Plus className="size-4 mr-2" /> Publicar Agora
  </Link>
  </Button>
  </div>
  </div>
 
  {/* ── 3. Principais Conteúdos por Engajamento (Top Posts) ── */}
- <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/70 space-y-4 shadow-2xs">
+ <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs">
  <div className="flex items-center justify-between">
  <div>
  <h3 className="text-base font-bold text-foreground flex items-center gap-2">
@@ -405,9 +405,9 @@ function MemberMetricsPage() {
  </div>
 
  {topPosts.length === 0 ? (
- <div className="py-10 text-center space-y-3 bg-muted/10 rounded-2xl border border-border/40">
+ <div className="py-10 text-center space-y-3 bg-muted/10 rounded-lg border border-border/40">
  <p className="text-xs text-muted-foreground">Você ainda não possui publicações ativas no mural.</p>
- <Button asChild size="sm" className="rounded-xl font-bold text-xs">
+ <Button asChild size="sm" className="rounded-lg font-bold text-xs">
  <Link to="/mural">Criar Primeira Publicação</Link>
  </Button>
  </div>
@@ -416,24 +416,24 @@ function MemberMetricsPage() {
  {topPosts.map((post: any, idx: number) => (
  <div
  key={post.id}
- className="group relative p-3.5 rounded-2xl bg-muted/20 border border-border/50 hover:border-primary/40 transition-all flex flex-col justify-between gap-3"
+ className="group relative p-4 rounded-lg bg-muted/20 border border-border/50 hover:border-primary/40 transition-all flex flex-col justify-between gap-3"
  >
  <div className="flex gap-3">
  {post.media_url ? (
  <img
  src={post.media_url}
  alt="Miniatura do post"
- className="size-16 rounded-xl object-cover shrink-0 border border-border/40"
+ className="size-16 rounded-lg object-cover shrink-0 border border-border/40"
  />
  ) : (
- <div className="size-16 rounded-xl bg-muted/50 flex items-center justify-center shrink-0 text-muted-foreground">
+ <div className="size-16 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 text-muted-foreground">
  <FileText className="size-6 text-primary/40" />
  </div>
  )}
 
  <div className="space-y-1 flex-1 min-w-0">
- <div className="flex items-center gap-1.5">
- <Badge variant="outline" className="text-[9px] font-mono py-0 px-1.5">
+ <div className="flex items-center gap-2">
+ <Badge variant="outline" className="text-[9px] font-mono py-0 px-2">
  #{idx + 1} TOP
  </Badge>
  <span className="text-[10px] text-muted-foreground font-mono">
@@ -458,7 +458,7 @@ function MemberMetricsPage() {
 
  <Link
  to="/mural"
- className="text-[11px] font-bold text-primary hover:underline flex items-center gap-0.5"
+ className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
  >
  <span>Ver no Mural</span>
  <ArrowUpRight className="size-3" />

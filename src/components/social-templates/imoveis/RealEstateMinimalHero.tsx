@@ -67,9 +67,9 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
             <span>{promoBadge || "IMÓVEL EXCLUSIVO"}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-medium">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-medium">
             <MapPin className="size-4 text-amber-400 shrink-0" />
-            <span className="truncate max-w-[200px]">{destinationOrLocation || "Localização Nobre"}</span>
+            <span className="truncate max-w-52">{destinationOrLocation || "Localização Nobre"}</span>
           </div>
         </div>
 
@@ -94,7 +94,7 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
             {resolvedSpecs.map((spec, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-black/70 backdrop-blur-md border border-white/20 text-white font-semibold text-xs sm:text-sm shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black/70 backdrop-blur-md border border-white/20 text-white font-semibold text-xs sm:text-sm shadow-sm"
               >
                 <CheckCircle2 className="size-4 text-amber-400 shrink-0" />
                 <span>{spec}</span>
@@ -104,7 +104,7 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
 
           {/* Barra de Preço & Botão CTA de Alto Contraste */}
           <div className="pt-4 border-t border-white/20 flex items-end justify-between gap-4">
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               <span className="text-xs font-semibold text-white/70 uppercase tracking-wider block">
                 {pricingMode === "monthly" ? "Aluguel Mensal" : "Valor de Venda"}
               </span>
@@ -120,14 +120,14 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
             </div>
 
             {/* Botão CTA com Alto Contraste */}
-            <div className="flex flex-col items-end gap-1.5 shrink-0">
-              <div className="h-12 px-6 rounded-2xl bg-amber-400 text-slate-950 font-black text-sm uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-amber-400/20 active:scale-95 transition-all">
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              <div className="h-12 px-6 rounded-lg bg-amber-400 text-slate-950 font-black text-sm uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-amber-400/20 active:scale-95 transition-all">
                 <span>{ctaLabel}</span>
                 <ArrowRight className="size-4 stroke-[3]" />
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-white/70 font-medium">
+              <div className="flex items-center gap-2 text-[11px] text-white/70 font-medium">
                 <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" />
-                <span className="truncate max-w-[160px]">{storeName}</span>
+                <span className="truncate max-w-40">{storeName}</span>
               </div>
             </div>
           </div>

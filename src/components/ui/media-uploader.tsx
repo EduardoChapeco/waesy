@@ -351,18 +351,18 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  <div
  onPaste={handlePaste}
  tabIndex={0}
- className={cn("space-y-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-2xl", className)}
+ className={cn("space-y-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
  >
  {label && <label className="text-xs font-semibold text-foreground">{label}</label>}
 
  {/* Grid de previews existentes */}
  {mediaList.length > 0 && (
- <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+ <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
  {mediaList.map((item, idx) => (
  <div
  key={item.id || idx}
  className={cn(
- "group relative rounded-xl overflow-hidden border border-border bg-card shadow-xs transition-all hover:border-primary/50",
+ "group relative rounded-lg overflow-hidden border border-border bg-card shadow-xs transition-all hover:border-primary/50",
  idx === 0 && "ring-2 ring-primary/60 border-primary",
  computedAspect === 1 ? "aspect-square" : computedAspect === 4 / 3 ? "aspect-[4/3]" : "aspect-video"
  )}
@@ -379,13 +379,13 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  )}
 
  {/* Botões de Ação sobre o Card */}
- <div className="absolute top-1.5 right-1.5 flex items-center gap-1.5 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+ <div className="absolute top-1.5 right-1.5 flex items-center gap-2 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
  {item.type === "image" && enableCrop && (
  <button
  type="button"
  onClick={() => handleOpenRecrop(idx)}
  title="Ajustar e Recortar"
- className="size-8 sm:size-7 flex items-center justify-center rounded-xl bg-black/75 backdrop-blur-xs text-white hover:bg-primary hover:text-white transition-colors cursor-pointer shadow-xs"
+ className="size-8 sm:size-7 flex items-center justify-center rounded-lg bg-black/75 backdrop-blur-xs text-white hover:bg-primary hover:text-white transition-colors cursor-pointer shadow-xs"
  aria-label="Ajustar e Recortar Imagem"
  >
  <Crop className="size-4" />
@@ -395,7 +395,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  type="button"
  onClick={() => removeMedia(idx)}
  title="Remover"
- className="size-8 sm:size-7 flex items-center justify-center rounded-xl bg-black/75 backdrop-blur-xs text-white hover:bg-destructive hover:text-white transition-colors cursor-pointer shadow-xs"
+ className="size-8 sm:size-7 flex items-center justify-center rounded-lg bg-black/75 backdrop-blur-xs text-white hover:bg-destructive hover:text-white transition-colors cursor-pointer shadow-xs"
  aria-label="Remover Mídia"
  >
  <X className="size-4" />
@@ -403,7 +403,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  </div>
 
  {idx === 0 && (
- <span className="absolute bottom-1.5 left-1.5 text-[9px] font-bold bg-primary text-primary-foreground px-1.5 py-0.5 rounded-md shadow-xs">
+ <span className="absolute bottom-1.5 left-1.5 text-[9px] font-bold bg-primary text-primary-foreground px-2 py-1 rounded-md shadow-xs">
  Capa
  </span>
  )}
@@ -429,7 +429,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  }
  }}
  className={cn(
- "relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-2xl cursor-pointer transition-all",
+ "relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg cursor-pointer transition-all",
  "border-border/80 hover:border-primary/70 bg-card hover:bg-muted/30",
  uploading && "pointer-events-none opacity-60",
  )}
@@ -442,8 +442,8 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  </span>
  </div>
  ) : (
- <div className="flex flex-col items-center text-center gap-1.5">
- <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+ <div className="flex flex-col items-center text-center gap-2">
+ <div className="p-3 rounded-lg bg-primary/10 text-primary">
  <UploadCloud className="size-5" />
  </div>
  <p className="text-xs font-semibold text-foreground">

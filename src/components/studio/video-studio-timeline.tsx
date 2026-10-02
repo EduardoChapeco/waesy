@@ -40,7 +40,7 @@ export function VideoStudioTimeline({
  };
 
  return (
- <div className={'p-4 rounded-2xl bg-card border border-border shadow-md space-y-3 ' + className}>
+ <div className={'p-4 rounded-lg bg-card border border-border shadow-md space-y-3 ' + className}>
  {/* Controls Bar */}
  <div className="flex items-center justify-between border-b border-border pb-3">
  <div className="flex items-center gap-2">
@@ -48,7 +48,7 @@ export function VideoStudioTimeline({
  type="button"
  size="sm"
  onClick={onPlayPause}
- className="h-9 w-9 p-0 rounded-xl bg-primary text-primary-foreground"
+ className="h-9 w-9 p-0 rounded-lg bg-primary text-primary-foreground"
  >
  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
  </Button>
@@ -75,14 +75,14 @@ export function VideoStudioTimeline({
  <div className="space-y-2 pt-1">
  {tracks.map((track) => (
  <div key={track.id} className="flex items-center gap-3">
- <div className="w-36 shrink-0 flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+ <div className="w-36 shrink-0 flex items-center gap-2 text-xs text-muted-foreground truncate">
  {track.type === 'video' && <Film className="w-3.5 h-3.5 text-blue-500 shrink-0" />}
  {track.type === 'subtitle' && <Type className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
  {track.type === 'audio' && <Volume2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
  <span className="truncate">{track.name}</span>
  </div>
 
- <div className="flex-1 h-9 rounded-xl bg-muted/40 relative overflow-hidden border border-border/60">
+ <div className="flex-1 h-9 rounded-lg bg-muted/40 relative overflow-hidden border border-border/60">
  <div
  style={{ backgroundColor: track.color }}
  className="h-full w-4/5 rounded-lg opacity-80 flex items-center px-3 text-[10px] font-bold text-white shadow-sm"

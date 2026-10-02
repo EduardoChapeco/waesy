@@ -77,7 +77,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
         {/* Informações da Capa */}
         <div className="absolute inset-0 flex flex-col justify-end p-16 z-10">
           <div className="max-w-4xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full ds-label-caps glass-dark backdrop-blur-md border border-border">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full ds-label-caps glass-dark backdrop-blur-md border border-border">
               <Compass
                 className="w-3.5 h-3.5 text-brand"
                 style={{ color: brand !== "#18181b" ? brand : "#38bdf8" }}
@@ -90,7 +90,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             </h1>
 
             <div className="flex flex-wrap items-center gap-6 text-lg text-slate-200 pt-2 font-medium">
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 opacity-70" />
                 {p.travel_start ? formatDate(p.travel_start) : ""} —{" "}
                 {p.travel_end ? formatDate(p.travel_end) : ""}
@@ -142,7 +142,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                   return (
                     <div
                       key={idx}
-                      className="bg-slate-800/40 border border-slate-800 rounded-2xl p-6 flex flex-col gap-3"
+                      className="bg-slate-800/40 border border-slate-800 rounded-lg p-6 flex flex-col gap-3"
                     >
                       <div className="flex items-center gap-3">
                         <span
@@ -195,10 +195,10 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                 {slideHotels.map((h, i) => (
                   <div
                     key={i}
-                    className="bg-slate-800/30 border border-slate-800 rounded-3xl p-6 flex gap-6"
+                    className="bg-slate-800/30 border border-slate-800 rounded-lg p-6 flex gap-6"
                   >
                     {h.images?.[0] && (
-                      <div className="w-44 h-44 shrink-0 rounded-2xl overflow-hidden border border-slate-700 bg-slate-950">
+                      <div className="w-44 h-44 shrink-0 rounded-lg overflow-hidden border border-slate-700 bg-slate-950">
                         <img
                           src={h.images[0]}
                           crossOrigin="anonymous"
@@ -228,7 +228,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                           </div>
                         </div>
                       </div>
-                      <div className="bg-slate-800/80 px-3 py-1.5 rounded-2xl border border-slate-700/60 text-center text-xs font-bold text-amber-400 self-start mt-2">
+                      <div className="bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700/60 text-center text-xs font-bold text-amber-400 self-start mt-2">
                         Regime: {h.meal_plan || "Café da Manhã"}
                       </div>
                     </div>
@@ -265,12 +265,12 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
 
               <div className="grid grid-cols-2 gap-8">
                 {slideFlights.map((f, i) => (
-                  <div key={i} className="bg-slate-800/30 border border-slate-800 rounded-3xl p-6">
+                  <div key={i} className="bg-slate-800/30 border border-slate-800 rounded-lg p-6">
                     <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
                       <span className="text-xs font-black uppercase tracking-widest text-slate-400">
                         {f.airline || "Companhia Aérea"}
                       </span>
-                      <span className="text-xs font-mono font-bold bg-slate-800 text-blue-400 px-2 py-0.5 rounded border border-slate-700">
+                      <span className="text-xs font-mono font-bold bg-slate-800 text-blue-400 px-2 py-1 rounded border border-slate-700">
                         {f.flight_number || "Voo"}
                       </span>
                     </div>
@@ -286,7 +286,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
 
                       <div className="flex-1 px-6 relative flex flex-col items-center">
                         <div className="w-full border-t border-dashed border-slate-700" />
-                        <span className="absolute -top-3.5 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800 text-[9px] font-black uppercase text-slate-500">
+                        <span className="absolute -top-3.5 bg-slate-900 px-2 py-1 rounded-full border border-slate-800 text-[9px] font-black uppercase text-slate-500">
                           {f.stops === 0 ? "Direto" : `${f.stops} Parada${f.stops > 1 ? "s" : ""}`}
                         </span>
                         <span className="text-[9px] text-slate-500 font-bold mt-2">
@@ -340,8 +340,8 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                 </h4>
                 <ul className="space-y-3">
                   {p.includes?.map((inc, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm text-slate-300">
-                      <Check className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                    <li key={i} className="flex items-start gap-3 text-sm text-slate-300">
+                      <Check className="w-4 h-4 text-emerald-500 mt-1 shrink-0" />
                       {inc}
                     </li>
                   ))}
@@ -358,8 +358,8 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                 </h4>
                 <ul className="space-y-3">
                   {p.excludes?.map((exc, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm text-slate-300">
-                      <X className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+                    <li key={i} className="flex items-start gap-3 text-sm text-slate-300">
+                      <X className="w-4 h-4 text-rose-500 mt-1 shrink-0" />
                       {exc}
                     </li>
                   ))}
@@ -415,7 +415,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
 
             {/* Condições de Pagamento Direita */}
             <div className="col-span-3 grid grid-cols-2 gap-4">
-              <div className="bg-slate-800/40 border border-slate-800 rounded-2xl p-5">
+              <div className="bg-slate-800/40 border border-slate-800 rounded-lg p-5">
                 <span className="ds-label-caps text-slate-400 block mb-2">Cartão de Crédito</span>
                 <div className="text-2xl font-black text-white leading-none">
                   {vm.totals.parcelasCartao}x de
@@ -426,12 +426,12 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               </div>
 
               <div
-                className="bg-white rounded-2xl p-5 text-slate-950 border-2"
+                className="bg-white rounded-lg p-5 text-slate-950 border-2"
                 style={{ borderColor: brand !== "#18181b" ? brand : "#38bdf8" }}
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className="ds-label-caps text-slate-500">Pix (À vista)</span>
-                  <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.5 rounded">
+                  <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-1 rounded">
                     -{vm.totals.descontoPixPercentual}%
                   </span>
                 </div>
@@ -460,12 +460,12 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                 </div>
               )}
               <div>
-                <div className="ds-label-caps text-slate-500 mb-0.5">Consultor Comercial</div>
+                <div className="ds-label-caps text-slate-500 mb-1">Consultor Comercial</div>
                 <div className="font-extrabold text-white text-base leading-snug">
                   {p.agent_name}
                 </div>
                 {p.agent_whatsapp && (
-                  <div className="text-xs text-emerald-400 font-bold flex items-center gap-1.5 mt-0.5">
+                  <div className="text-xs text-emerald-400 font-bold flex items-center gap-2 mt-1">
                     <PhoneCall className="w-3.5 h-3.5" /> {p.agent_whatsapp}
                   </div>
                 )}

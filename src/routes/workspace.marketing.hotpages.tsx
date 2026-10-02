@@ -163,15 +163,15 @@ function WorkspaceStoreHotpagesPage() {
  eyebrow="Vitrine & Divulgação"
  title="Hotpages"
  actions={
- <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+ <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
  <Select
  value={selectedModuleFilter}
  onValueChange={(val: any) => handleModuleFilterChange(val)}
  >
- <SelectTrigger className="w-full sm:w-[200px] rounded-xl text-sm h-11 bg-background shadow-2xs">
+ <SelectTrigger className="w-full sm:w-52 rounded-lg text-sm h-11 bg-background shadow-2xs">
  <SelectValue placeholder="Filtrar por vitrine" />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="home">Home / Perfil da Loja</SelectItem>
  <SelectItem value="gastronomia">Gastronomia</SelectItem>
  <SelectItem value="mercado">Supermercados</SelectItem>
@@ -188,7 +188,7 @@ function WorkspaceStoreHotpagesPage() {
 
  <Button
  onClick={handleOpenCreate}
- className="rounded-xl font-bold text-sm h-11 px-5 bg-primary text-primary-foreground gap-2 shadow-xs cursor-pointer"
+ className="rounded-lg font-bold text-sm h-11 px-5 bg-primary text-primary-foreground gap-2 shadow-xs cursor-pointer"
  >
  <Plus className="size-4" />
  <span>Novo Destaque</span>
@@ -199,31 +199,31 @@ function WorkspaceStoreHotpagesPage() {
 
  {/* ── Grade de Destaques ou Empty State ── */}
  {hotpages.length === 0 ? (
- <div className="py-16 text-center space-y-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
- <div className="size-14 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+ <div className="py-16 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+ <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
  <Layers className="size-7" />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <h3 className="text-base font-bold text-foreground">Nenhum destaque cadastrado</h3>
  <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
  Adicione cartões especiais para promover combos, lançamentos ou seções exclusivas no seu perfil.
  </p>
  </div>
- <Button onClick={handleOpenCreate} className="rounded-xl text-sm font-bold h-11 px-6 shadow-xs cursor-pointer">
- <Plus className="size-4 mr-1.5" />
+ <Button onClick={handleOpenCreate} className="rounded-lg text-sm font-bold h-11 px-6 shadow-xs cursor-pointer">
+ <Plus className="size-4 mr-2" />
  Criar Primeiro Destaque
  </Button>
  </div>
  ) : (
- <div className="flex flex-col gap-3.5 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+ <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3">
  {hotpages.map((h) => (
  <div
  key={h.id}
- className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-2xs flex flex-col justify-between"
+ className="p-4 sm:p-5 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs flex flex-col justify-between"
  >
- <div className="space-y-2.5">
+ <div className="space-y-3">
  <div className="flex items-center justify-between">
- <Badge variant="outline" className="text-xs font-mono font-bold px-2 py-0.5">
+ <Badge variant="outline" className="text-xs font-mono font-bold px-2 py-1">
  {h.badge_label || "Card"}
  </Badge>
  <span className="text-xs text-muted-foreground font-mono">
@@ -255,7 +255,7 @@ function WorkspaceStoreHotpagesPage() {
                 onClick={() => handleOpenEdit(h)}
                 variant="outline"
                 size="sm"
-                className="h-8 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs"
+                className="h-8 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer shadow-2xs"
               >
                 <Pencil className="size-3.5" /> Editar
               </Button>
@@ -281,7 +281,7 @@ function WorkspaceStoreHotpagesPage() {
  >
  <div className="space-y-5 p-1 pb-16">
  {/* Live Preview */}
- <div className="space-y-1.5 p-3 rounded-2xl bg-muted/20 border border-border/50">
+ <div className="space-y-2 p-3 rounded-lg bg-muted/20 border border-border/50">
  <span className="text-xs font-bold text-muted-foreground">Pré-Visualização em Tempo Real</span>
               <DynamicMediaChip
                 label={title || "Nome do Destaque"}
@@ -301,7 +301,7 @@ function WorkspaceStoreHotpagesPage() {
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Combo Família ou Oferta do Dia"
- className="rounded-xl text-sm h-11 bg-background"
+ className="rounded-lg text-sm h-11 bg-background"
  />
  </div>
 
@@ -311,7 +311,7 @@ function WorkspaceStoreHotpagesPage() {
  value={badgeLabel}
  onChange={(e) => setBadgeLabel(e.target.value)}
  placeholder="Ex: 20% OFF, Novo, Combo Especial"
- className="rounded-xl text-sm h-11 bg-background"
+ className="rounded-lg text-sm h-11 bg-background"
  />
  </div>
 
@@ -327,10 +327,10 @@ function WorkspaceStoreHotpagesPage() {
  <div className="space-y-2">
  <Label className="text-xs sm:text-sm font-semibold">Vitrine / Módulo de Exibição</Label>
  <Select value={module} onValueChange={(val: any) => setModule(val)}>
- <SelectTrigger className="rounded-xl text-sm h-11 bg-background">
+ <SelectTrigger className="rounded-lg text-sm h-11 bg-background">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="home">Página Inicial / Perfil da Loja (Home)</SelectItem>
  <SelectItem value="gastronomia">Gastronomia / Restaurantes</SelectItem>
  <SelectItem value="mercado">Supermercados e Empórios</SelectItem>
@@ -356,10 +356,10 @@ function WorkspaceStoreHotpagesPage() {
  value={bgMediaType}
  onValueChange={(val: any) => setBgMediaType(val)}
  >
- <SelectTrigger className="rounded-xl text-sm h-11 bg-background">
+ <SelectTrigger className="rounded-lg text-sm h-11 bg-background">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="none">Nenhuma (Cor padrão)</SelectItem>
  <SelectItem value="image">Imagem</SelectItem>
  <SelectItem value="video">Vídeo MP4</SelectItem>
@@ -390,10 +390,10 @@ function WorkspaceStoreHotpagesPage() {
  value={bgTexture}
  onValueChange={(val: any) => setBgTexture(val)}
  >
- <SelectTrigger className="rounded-xl text-sm h-11 bg-background">
+ <SelectTrigger className="rounded-lg text-sm h-11 bg-background">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="none">Sem Textura</SelectItem>
  <SelectItem value="noise">Noise Gradiente Suave</SelectItem>
  <SelectItem value="dots">Pontilhismo (Dots)</SelectItem>
@@ -421,18 +421,18 @@ function WorkspaceStoreHotpagesPage() {
               </div>
               <Switch checked={showShadow} onCheckedChange={setShowShadow} />
             </div>
-            <div className="space-y-1.5 pt-1">
+            <div className="space-y-2 pt-1">
               <Label className="text-xs sm:text-sm font-semibold">Cor do Texto (Opcional)</Label>
               <div className="flex items-center gap-2">
                 <Input
                   value={textColor}
                   onChange={(e) => setTextColor(e.target.value)}
                   placeholder="Ex: #FFFFFF ou #000000"
-                  className="rounded-xl text-sm h-11 bg-background font-mono"
+                  className="rounded-lg text-sm h-11 bg-background font-mono"
                 />
                 {textColor && (
                   <div
-                    className="size-9 rounded-xl border border-border shrink-0 shadow-xs"
+                    className="size-9 rounded-lg border border-border shrink-0 shadow-xs"
                     style={{ backgroundColor: textColor }}
                   />
                 )}
@@ -440,20 +440,20 @@ function WorkspaceStoreHotpagesPage() {
             </div>
           </div>
 
- <div className="pt-5 flex items-center justify-end gap-2.5">
+ <div className="pt-5 flex items-center justify-end gap-3">
  <Button
  onClick={() => setIsModalOpen(false)}
  variant="outline"
- className="h-11 px-5 rounded-xl text-sm font-medium cursor-pointer"
+ className="h-11 px-5 rounded-lg text-sm font-medium cursor-pointer"
  >
  Cancelar
  </Button>
  <Button
  onClick={handleSave}
  disabled={isSubmitting}
- className="h-11 px-6 rounded-xl text-sm font-bold bg-primary text-primary-foreground min-w-[120px] shadow-xs cursor-pointer"
+ className="h-11 px-6 rounded-lg text-sm font-bold bg-primary text-primary-foreground min-w-[120px] shadow-xs cursor-pointer"
  >
- {isSubmitting ? <Loader2 className="size-4 animate-spin mr-1.5" /> : "Salvar Destaque"}
+ {isSubmitting ? <Loader2 className="size-4 animate-spin mr-2" /> : "Salvar Destaque"}
  </Button>
  </div>
  </div>

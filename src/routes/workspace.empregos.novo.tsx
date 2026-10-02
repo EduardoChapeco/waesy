@@ -158,7 +158,7 @@ function WorkspaceNewJobPage() {
         <div className="flex items-center gap-3">
           <Link
             to="/workspace/empregos"
-            className="size-9 rounded-xl border border-border/60 bg-muted/30 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            className="size-9 rounded-lg border border-border/60 bg-muted/30 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="size-4" />
           </Link>
@@ -175,7 +175,7 @@ function WorkspaceNewJobPage() {
         {/* Badge de Plano */}
         <Badge
           variant="outline"
-          className={`text-xs px-2.5 py-1 font-bold ${
+          className={`text-xs px-3 py-1 font-bold ${
             isPro
               ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
               : "border-amber-500/40 text-amber-600 bg-amber-500/10"
@@ -187,14 +187,14 @@ function WorkspaceNewJobPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Bloco 1: Informações Gerais */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/70 space-y-4">
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/70 space-y-4">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Briefcase className="size-4 text-primary" />
             <span>Dados da Posição e Perfil</span>
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Cargo da Oportunidade *</Label>
               <OccupationAutocomplete
                 value={title}
@@ -203,24 +203,24 @@ function WorkspaceNewJobPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Nome da Empresa Contratante *</Label>
               <Input
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="Ex: Loja Central, Auto Mecânica..."
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
                 required
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Categoria do Negócio</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="h-10 text-xs rounded-xl">
+                <SelectTrigger className="h-10 text-xs rounded-lg">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent className="rounded-lg">
                   <SelectItem value="comercial">Comercial e Vendas</SelectItem>
                   <SelectItem value="operacional">Operacional e Logística</SelectItem>
                   <SelectItem value="tech">Tecnologia e Inovação</SelectItem>
@@ -233,24 +233,24 @@ function WorkspaceNewJobPage() {
               </Select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Localidade (Cidade - UF)</Label>
               <Input
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Ex: São Miguel do Oeste - SC"
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
                 required
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Modelo de Trabalho</Label>
               <Select value={workplaceType} onValueChange={setWorkplaceType}>
-                <SelectTrigger className="h-10 text-xs rounded-xl">
+                <SelectTrigger className="h-10 text-xs rounded-lg">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent className="rounded-lg">
                   <SelectItem value="Presencial">Presencial (No Local)</SelectItem>
                   <SelectItem value="Híbrido">Híbrido</SelectItem>
                   <SelectItem value="Remoto">100% Remoto</SelectItem>
@@ -258,13 +258,13 @@ function WorkspaceNewJobPage() {
               </Select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Regime de Contratação</Label>
               <Select value={contractType} onValueChange={setContractType}>
-                <SelectTrigger className="h-10 text-xs rounded-xl">
+                <SelectTrigger className="h-10 text-xs rounded-lg">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent className="rounded-lg">
                   <SelectItem value="CLT">CLT (Efetivo)</SelectItem>
                   <SelectItem value="PJ">PJ (Pessoa Jurídica)</SelectItem>
                   <SelectItem value="Estágio">Estágio</SelectItem>
@@ -274,30 +274,30 @@ function WorkspaceNewJobPage() {
               </Select>
             </div>
 
-            <div className="space-y-1.5 md:col-span-2">
+            <div className="space-y-2 md:col-span-2">
               <Label className="text-xs font-bold text-foreground">Pretensão / Faixa Salarial</Label>
               <Input
                 value={salaryDisplay}
                 onChange={(e) => setSalaryDisplay(e.target.value)}
                 placeholder="Ex: R$ 3.500 a R$ 4.500, A combinar..."
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
           </div>
         </div>
 
         {/* Bloco 2: Descrição, Requisitos & Benefícios */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/70 space-y-4">
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/70 space-y-4">
           <h2 className="text-sm font-bold text-foreground">Descrição da Vaga</h2>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-bold text-foreground">Descrição Detalhada *</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descreva a rotina da vaga, principais responsabilidades e o ambiente de trabalho..."
               rows={4}
-              className="text-xs rounded-xl resize-none"
+              className="text-xs rounded-lg resize-none"
               required
             />
           </div>
@@ -311,26 +311,26 @@ function WorkspaceNewJobPage() {
                 onChange={(e) => setRequirementDraft(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddRequirement())}
                 placeholder="Ex: Ensino Superior em Administração, CNH B..."
-                className="h-9 text-xs rounded-xl flex-1"
+                className="h-9 text-xs rounded-lg flex-1"
               />
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleAddRequirement}
-                className="h-9 rounded-xl text-xs font-bold px-3 shrink-0"
+                className="h-9 rounded-lg text-xs font-bold px-3 shrink-0"
               >
                 <Plus className="size-3.5 mr-1" /> Adicionar
               </Button>
             </div>
 
             {requirements.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {requirements.map((req, idx) => (
                   <Badge
                     key={idx}
                     variant="outline"
-                    className="text-xs font-medium px-2.5 py-1 rounded-xl bg-muted/30 border-border/60 flex items-center gap-1.5"
+                    className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/30 border-border/60 flex items-center gap-2"
                   >
                     <span>{req}</span>
                     <button
@@ -355,26 +355,26 @@ function WorkspaceNewJobPage() {
                 onChange={(e) => setBenefitDraft(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddBenefit())}
                 placeholder="Ex: Vale Alimentação, Plano de Saúde, Bonificação..."
-                className="h-9 text-xs rounded-xl flex-1"
+                className="h-9 text-xs rounded-lg flex-1"
               />
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleAddBenefit}
-                className="h-9 rounded-xl text-xs font-bold px-3 shrink-0"
+                className="h-9 rounded-lg text-xs font-bold px-3 shrink-0"
               >
                 <Plus className="size-3.5 mr-1" /> Adicionar
               </Button>
             </div>
 
             {benefits.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {benefits.map((ben, idx) => (
                   <Badge
                     key={idx}
                     variant="outline"
-                    className="text-xs font-medium px-2.5 py-1 rounded-xl bg-muted/30 border-border/60 flex items-center gap-1.5"
+                    className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/30 border-border/60 flex items-center gap-2"
                   >
                     <span>{ben}</span>
                     <button
@@ -392,10 +392,10 @@ function WorkspaceNewJobPage() {
         </div>
 
         {/* Bloco 3: Contato Direto */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/70 space-y-4">
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/70 space-y-4">
           <h2 className="text-sm font-bold text-foreground">Canais Diretos de Contato</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">WhatsApp do RH (Opcional)</Label>
               <Input
                 type="tel"
@@ -403,27 +403,27 @@ function WorkspaceNewJobPage() {
                 value={contactWhatsapp}
                 onChange={(e) => setContactWhatsapp(formatPhone(e.target.value))}
                 placeholder="Ex: (49) 99999-9999"
-                className="h-10 text-xs rounded-xl font-mono"
+                className="h-10 text-xs rounded-lg font-mono"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">E-mail para Currículos (Opcional)</Label>
               <Input
                 type="email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 placeholder="Ex: vagas@suaempresa.com.br"
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
           </div>
         </div>
 
         {/* ── Bloco 4: THE LINKEDIN OMNI-BRIDGE (FASE 3 & FASE 4) ── */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/70 space-y-4">
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/70 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="size-11 rounded-2xl bg-muted text-foreground flex items-center justify-center shrink-0 border border-border/60">
+              <div className="size-11 rounded-lg bg-muted text-foreground flex items-center justify-center shrink-0 border border-border/60">
                 <Linkedin className="size-6 fill-current" />
               </div>
               <div>
@@ -432,17 +432,17 @@ function WorkspaceNewJobPage() {
                     Publicar simultaneamente no LinkedIn
                   </h3>
                   {!isPro ? (
-                    <Badge variant="outline" className="text-xs font-bold border-amber-500/40 text-amber-600 bg-amber-500/10 px-1.5 py-0 flex items-center gap-1">
+                    <Badge variant="outline" className="text-xs font-bold border-amber-500/40 text-amber-600 bg-amber-500/10 px-2 py-0 flex items-center gap-1">
                       <Lock className="size-2.5" />
                       <span>Plano PRO</span>
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-xs font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/10 px-1.5 py-0">
+                    <Badge variant="outline" className="text-xs font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/10 px-2 py-0">
                       Disponível 
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Sindicada automaticamente na sua Company Page com link rastreável que devolve os candidatos para o seu funil no Waesy.
                 </p>
               </div>
@@ -456,7 +456,7 @@ function WorkspaceNewJobPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsPaywallOpen(true)}
-                  className="rounded-xl text-xs font-bold gap-1.5 h-9 border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 cursor-pointer"
+                  className="rounded-lg text-xs font-bold gap-2 h-9 border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 cursor-pointer"
                 >
                   <Lock className="size-3.5" />
                   <span>Desbloquear com PRO</span>
@@ -508,7 +508,7 @@ function WorkspaceNewJobPage() {
         {/* Rodapé e Botões de Submissão */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/50">
           <Link to="/workspace/empregos">
-            <Button type="button" variant="outline" className="rounded-xl text-xs h-10 px-4">
+            <Button type="button" variant="outline" className="rounded-lg text-xs h-10 px-4">
               Cancelar
             </Button>
           </Link>
@@ -516,7 +516,7 @@ function WorkspaceNewJobPage() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-xl font-bold text-xs h-10 px-6 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+            className="rounded-lg font-bold text-xs h-10 px-6 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
           >
             <Briefcase className="size-4" />
             <span>{isSubmitting ? "Publicando Vaga..." : "Publicar Vaga de Emprego"}</span>

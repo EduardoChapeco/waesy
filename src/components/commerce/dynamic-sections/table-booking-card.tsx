@@ -57,8 +57,8 @@ export function TableBookingSection({
  return (
  <section className="py-12 bg-muted/20 w-full">
  <div className="max-w-4xl mx-auto px-4 sm:px-6">
- <div className="rounded-2xl border border-border/80 bg-card p-6 sm:p-10 shadow-2xs space-y-6">
- <div className="text-center max-w-xl mx-auto space-y-1.5">
+ <div className="rounded-lg border border-border/80 bg-card p-6 sm:p-10 shadow-2xs space-y-6">
+ <div className="text-center max-w-xl mx-auto space-y-2">
  <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
  Atendimento VIP
  </Badge>
@@ -67,24 +67,24 @@ export function TableBookingSection({
  </div>
 
  <form onSubmit={handleBooking} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">Seu Nome Completo</Label>
  <Input
  required
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Carlos Eduardo"
- className="h-10 rounded-xl bg-background border-border/80 text-xs"
+ className="h-10 rounded-lg bg-background border-border/80 text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">Número de Convidados</Label>
  <Select value={guests} onValueChange={setGuests}>
- <SelectTrigger className="h-10 rounded-xl bg-background border-border/80 text-xs">
+ <SelectTrigger className="h-10 rounded-lg bg-background border-border/80 text-xs">
  <SelectValue placeholder="Selecione" />
  </SelectTrigger>
- <SelectContent className="rounded-xl border-border/80 bg-popover">
+ <SelectContent className="rounded-lg border-border/80 bg-popover">
  {Array.from({ length: maxPartySize }, (_, i) => i + 1).map((num) => (
  <SelectItem key={num} value={String(num)} className="text-xs">
  {num} {num === 1 ? "Pessoa" : "Pessoas"}
@@ -94,35 +94,35 @@ export function TableBookingSection({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">Data da Reserva</Label>
  <Input
  type="date"
  required
  value={date}
  onChange={(e) => setDate(e.target.value)}
- className="h-10 rounded-xl bg-background border-border/80 text-xs"
+ className="h-10 rounded-lg bg-background border-border/80 text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">Horário Pretendido</Label>
  <Input
  type="time"
  required
  value={time}
  onChange={(e) => setTime(e.target.value)}
- className="h-10 rounded-xl bg-background border-border/80 text-xs"
+ className="h-10 rounded-lg bg-background border-border/80 text-xs"
  />
  </div>
 
- <div className="sm:col-span-2 space-y-1.5">
+ <div className="sm:col-span-2 space-y-2">
  <Label className="text-xs font-semibold text-foreground">Observações ou Celebrações (Opcional)</Label>
  <Input
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
  placeholder="Ex: Aniversário de casamento, mesa na varanda..."
- className="h-10 rounded-xl bg-background border-border/80 text-xs"
+ className="h-10 rounded-lg bg-background border-border/80 text-xs"
  />
  </div>
 
@@ -130,7 +130,7 @@ export function TableBookingSection({
  <Button
  type="submit"
  size="lg"
- className="w-full h-11 rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer gap-2"
+ className="w-full h-11 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer gap-2"
  >
  <MessageSquare className="size-4" />
  <span>Solicitar Reserva via WhatsApp</span>

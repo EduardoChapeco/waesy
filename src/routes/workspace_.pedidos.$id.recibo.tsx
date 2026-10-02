@@ -46,7 +46,7 @@ function ReceiptPrintPage() {
       <div className="flex justify-end gap-2 mb-6 print:hidden">
         <button
           onClick={() => window.print()}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-300 text-xs font-sans font-medium text-neutral-800 hover:bg-neutral-100 transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-neutral-300 text-xs font-sans font-medium text-neutral-800 hover:bg-neutral-100 transition-colors shadow-sm"
         >
           <Printer className="w-3.5 h-3.5" />
           Imprimir Recibo
@@ -56,7 +56,7 @@ function ReceiptPrintPage() {
             href={(order as any).danfe_pdf_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-sans font-medium hover:bg-emerald-700 transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-sans font-medium hover:bg-emerald-700 transition-colors shadow-sm"
           >
             <Download className="w-3.5 h-3.5" />
             Baixar DANFE (PDF)
@@ -74,7 +74,7 @@ function ReceiptPrintPage() {
           <div className="text-right">
             <p className="font-bold">{formatDateTime(order.created_at)}</p>
             <span
-              className={`inline-block mt-1 px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider ${
+              className={`inline-block mt-1 px-2 py-1 text-[10px] font-bold rounded uppercase tracking-wider ${
                 hasNFe ? "bg-emerald-100 text-emerald-800" : "bg-neutral-100 text-neutral-700"
               }`}
             >
@@ -86,7 +86,7 @@ function ReceiptPrintPage() {
 
       {/* Banner de Auditoria e DANFE */}
       {hasNFe && (
-        <div className="mb-6 p-3.5 border border-emerald-300 bg-emerald-50/60 rounded text-xs space-y-1.5 font-sans">
+        <div className="mb-6 p-4 border border-emerald-300 bg-emerald-50/60 rounded text-xs space-y-2 font-sans">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-600" />
@@ -228,7 +228,7 @@ function ReceiptPrintPage() {
 
       {/* Totais */}
       <div className="flex justify-end mb-8">
-        <div className="w-64 space-y-1.5 text-xs">
+        <div className="w-64 space-y-2 text-xs">
           <div className="flex justify-between text-neutral-600">
             <span>Subtotal:</span>
             <span>{formatMoney(order.subtotal_cents)}</span>

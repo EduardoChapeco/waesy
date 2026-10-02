@@ -89,8 +89,8 @@ export function MasterCatalogSearchDialog({
         {/* Cabeçalho */}
         <SheetHeader className="p-5 pb-4 border-b border-border/80 bg-muted/20 shrink-0">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <Star className="size-4" />
               </div>
               <div>
@@ -100,7 +100,7 @@ export function MasterCatalogSearchDialog({
                     Reforma Tributária 2026
                   </Badge>
                 </SheetTitle>
-                <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+                <SheetDescription className="text-xs text-muted-foreground mt-1">
                   Pesquise por nome, marca, código de barras (EAN-13) ou NCM para preencher o cadastro completo em 1 toque.
                 </SheetDescription>
               </div>
@@ -114,7 +114,7 @@ export function MasterCatalogSearchDialog({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Digite o nome do produto, marca, NCM ou bipe o código de barras (ex: Arroz, Heineken, 7891149103102)..."
-              className="pl-9 pr-9 h-11 text-xs rounded-xl bg-background border-border/80 shadow-2xs font-medium"
+              className="pl-9 pr-9 h-11 text-xs rounded-lg bg-background border-border/80 shadow-2xs font-medium"
               autoFocus
             />
             {searchQuery && (
@@ -129,13 +129,13 @@ export function MasterCatalogSearchDialog({
           </div>
 
           {/* Categorias / Departamentos */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2.5">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-3">
             {CATEGORY_TABS.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   selectedCategory === cat.id
                     ? "bg-primary text-primary-foreground shadow-2xs"
                     : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -150,12 +150,12 @@ export function MasterCatalogSearchDialog({
         {/* Lista de Resultados */}
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
           {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-2.5 text-muted-foreground">
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
               <Loader2 className="size-6 animate-spin text-primary" />
               <span className="text-xs">Consultando base mestre de produtos...</span>
             </div>
           ) : products.length === 0 ? (
-            <div className="py-20 flex flex-col items-center justify-center text-center p-6 bg-muted/20 rounded-2xl border border-dashed border-border/70">
+            <div className="py-20 flex flex-col items-center justify-center text-center p-6 bg-muted/20 rounded-lg border border-dashed border-border/70">
               <Package className="size-10 text-muted-foreground/50 mb-2" />
               <h4 className="text-sm font-bold text-foreground">Nenhum produto localizado</h4>
               <p className="text-xs text-muted-foreground mt-1 max-w-sm">
@@ -170,11 +170,11 @@ export function MasterCatalogSearchDialog({
                 return (
                   <div
                     key={p.barcode_ean}
-                    className="p-3.5 rounded-2xl bg-card border border-border/70 hover:border-primary/50 transition-all hover:shadow-sm flex flex-col justify-between gap-3 group"
+                    className="p-4 rounded-lg bg-card border border-border/70 hover:border-primary/50 transition-all hover:shadow-sm flex flex-col justify-between gap-3 group"
                   >
                     <div className="flex items-start gap-3">
                       {/* Miniatura do Produto */}
-                      <div className="size-16 rounded-xl bg-muted/30 border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
+                      <div className="size-16 rounded-lg bg-muted/30 border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
                         {p.image_urls?.[0] ? (
                           <img
                             src={p.image_urls[0]}
@@ -189,7 +189,7 @@ export function MasterCatalogSearchDialog({
 
                       {/* Informações Centrais */}
                       <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[10px] uppercase font-bold text-primary tracking-wider">
                             {p.brand_name}
                           </span>
@@ -203,7 +203,7 @@ export function MasterCatalogSearchDialog({
                           {p.name}
                         </h4>
 
-                        <div className="flex items-center gap-2 pt-0.5">
+                        <div className="flex items-center gap-2 pt-1">
                           <span className="text-xs font-mono font-bold text-foreground">
                             {formatMoney(p.suggested_price_cents)}
                           </span>
@@ -215,7 +215,7 @@ export function MasterCatalogSearchDialog({
                     </div>
 
                     {/* Barra de Inteligência Fiscal */}
-                    <div className="p-2 rounded-xl bg-muted/30 border border-border/50 space-y-1 text-[11px]">
+                    <div className="p-2 rounded-lg bg-muted/30 border border-border/50 space-y-1 text-[11px]">
                       <div className="flex items-center justify-between text-muted-foreground">
                         <span className="font-mono">
                           NCM: <strong className="text-foreground">{p.ncm_code}</strong>
@@ -230,8 +230,8 @@ export function MasterCatalogSearchDialog({
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between pt-0.5 border-t border-border/40">
-                        <div className="flex items-center gap-1.5">
+                      <div className="flex items-center justify-between pt-1 border-t border-border/40">
+                        <div className="flex items-center gap-2">
                           {isExempt ? (
                             <Badge className="h-5 text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold">
                               Cesta Básica (IBS/CBS 0%)
@@ -256,7 +256,7 @@ export function MasterCatalogSearchDialog({
                       type="button"
                       size="sm"
                       onClick={() => handleSelect(p)}
-                      className="w-full h-8 rounded-xl text-xs font-bold gap-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20 transition-all cursor-pointer"
+                      className="w-full h-8 rounded-lg text-xs font-bold gap-2 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20 transition-all cursor-pointer"
                     >
                       <CheckCircle2 className="size-3.5" />
                       <span>Usar Este Produto</span>

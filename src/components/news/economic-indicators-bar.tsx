@@ -31,17 +31,17 @@ export function EconomicIndicatorsBar({
     <section
       aria-label="Indicadores Econômicos e Financeiros do Banco Central"
       className={cn(
-        "w-full rounded-2xl bg-card border border-border/60 p-3 sm:p-3.5 space-y-2.5 shadow-xs transition-all",
+        "w-full rounded-lg bg-card border border-border/60 p-3 sm:p-4 space-y-3 shadow-xs transition-all",
         className
       )}
     >
       {/* Cabeçalho Silencioso & Status Live */}
-      <div className="flex items-center justify-between gap-2 px-0.5">
+      <div className="flex items-center justify-between gap-2 px-1">
         <div className="flex items-center gap-2">
           <div className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <Landmark className="size-3.5 stroke-[2]" />
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-foreground tracking-tight">
               Indicadores Financeiros
             </span>
@@ -51,7 +51,7 @@ export function EconomicIndicatorsBar({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="relative flex size-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
@@ -63,7 +63,7 @@ export function EconomicIndicatorsBar({
       </div>
 
       {/* Ticker Horizontal com Snap e Sem Scrollbar */}
-      <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-0.5 px-0.5 focus:outline-none">
+      <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1 px-1 focus:outline-none">
         {indicators.map((ind) => {
           const hasVar = ind.variationPercent !== undefined && ind.variationPercent !== null;
           const isPositive = hasVar && ind.variationPercent! > 0;
@@ -83,7 +83,7 @@ export function EconomicIndicatorsBar({
           return (
             <div
               key={ind.code}
-              className="flex flex-col justify-between shrink-0 min-w-[130px] sm:min-w-[145px] p-2.5 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/40 transition-colors select-none"
+              className="flex flex-col justify-between shrink-0 min-w-[130px] sm:min-w-[145px] p-3 rounded-lg bg-muted/40 hover:bg-muted/70 border border-border/40 transition-colors select-none"
             >
               <div className="flex items-center justify-between gap-1 mb-1">
                 <span className="text-[11px] font-medium text-muted-foreground truncate" title={ind.name}>
@@ -92,7 +92,7 @@ export function EconomicIndicatorsBar({
                 {hasVar && (
                   <span
                     className={cn(
-                      "flex items-center gap-0.5 text-[10px] font-mono font-semibold px-1 py-0.5 rounded",
+                      "flex items-center gap-1 text-[10px] font-mono font-semibold px-1 py-1 rounded",
                       isPositive
                         ? "text-emerald-700 bg-emerald-500/10 dark:text-emerald-400"
                         : isNegative

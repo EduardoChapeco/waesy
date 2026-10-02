@@ -137,8 +137,8 @@ function AdminMasterCarnesPage() {
       </div>
 
       {/* KPIs da Rede */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Volume Emitido na Rede
           </span>
@@ -150,7 +150,7 @@ function AdminMasterCarnesPage() {
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Saldo em Aberto Global
           </span>
@@ -160,7 +160,7 @@ function AdminMasterCarnesPage() {
           <div className="text-xs text-muted-foreground">Em carteira pendente</div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Inadimplência Média
           </span>
@@ -172,7 +172,7 @@ function AdminMasterCarnesPage() {
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Conciliações Pendentes
           </span>
@@ -185,12 +185,12 @@ function AdminMasterCarnesPage() {
 
       {/* Barra de Filtros e Busca */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/50 overflow-x-auto">
+        <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto">
           <button
             type="button"
             onClick={() => setActiveFilter("all")}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "all"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -202,7 +202,7 @@ function AdminMasterCarnesPage() {
             type="button"
             onClick={() => setActiveFilter("active")}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "active"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -214,7 +214,7 @@ function AdminMasterCarnesPage() {
             type="button"
             onClick={() => setActiveFilter("overdue")}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "overdue"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -226,7 +226,7 @@ function AdminMasterCarnesPage() {
             type="button"
             onClick={() => setActiveFilter("pending_conciliation")}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5",
+              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-2",
               activeFilter === "pending_conciliation"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -234,7 +234,7 @@ function AdminMasterCarnesPage() {
           >
             Comprovantes em análise
             {(overview?.pendingConciliationCount || 0) > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-xs text-muted-foreground/75">
+              <span className="px-2 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-xs text-muted-foreground/75">
                 {overview?.pendingConciliationCount}
               </span>
             )}
@@ -243,7 +243,7 @@ function AdminMasterCarnesPage() {
             type="button"
             onClick={() => setActiveFilter("settled")}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "settled"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -259,14 +259,14 @@ function AdminMasterCarnesPage() {
             placeholder="Buscar por loja, cliente, título..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-10 text-xs rounded-xl bg-card"
+            className="pl-9 h-10 text-xs rounded-lg bg-card"
           />
         </div>
       </div>
 
       {/* Tabela Bilateral de Carnês da Rede */}
       {carnes.length === 0 ? (
-        <div className="py-16 text-center space-y-3 bg-card rounded-2xl p-8 border border-dashed border-border/60 shadow-xs">
+        <div className="py-16 text-center space-y-3 bg-card rounded-lg p-8 border border-dashed border-border/60 shadow-xs">
           <Receipt size={40} className="text-muted-foreground/40 mx-auto" />
           <h3 className="text-base font-semibold text-foreground">Nenhum carnê encontrado</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -283,7 +283,7 @@ function AdminMasterCarnesPage() {
             return (
               <div
                 key={carne.id}
-                className="bg-card rounded-2xl border border-border/60 shadow-xs overflow-hidden space-y-3 p-5"
+                className="bg-card rounded-lg border border-border/60 shadow-xs overflow-hidden space-y-3 p-5"
               >
                 {/* Relação Bilateral: Loja ↔ Cliente */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-border/50">
@@ -340,11 +340,11 @@ function AdminMasterCarnesPage() {
                       <div
                         key={inst.id}
                         className={cn(
-                          "py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs transition-colors",
+                          "py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs transition-colors",
                           isPending && "bg-amber-500/5 -mx-5 px-5",
                         )}
                       >
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-foreground">
                               Parcela {inst.installment_number}/{carne.installments_count}
@@ -387,7 +387,7 @@ function AdminMasterCarnesPage() {
                               <span>• Liquidado em: {formatDate(inst.paid_at)}</span>
                             )}
                             {inst.conciliation_proof_url && (
-                              <span className="text-primary font-medium flex items-center gap-0.5">
+                              <span className="text-primary font-medium flex items-center gap-1">
                                 • Tem Comprovante Anexo
                               </span>
                             )}
@@ -409,7 +409,7 @@ function AdminMasterCarnesPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 px-2.5 text-xs rounded-xl text-primary hover:bg-primary/10 border-primary/30"
+                            className="h-8 px-3 text-xs rounded-lg text-primary hover:bg-primary/10 border-primary/30"
                             onClick={() => handleOpenIntervention(carne, inst)}
                           >
                             <ShieldAlert className="h-3.5 w-3.5 mr-1" /> Intervir Master
@@ -427,7 +427,7 @@ function AdminMasterCarnesPage() {
 
       {/* Modal de Intervenção Master */}
       <Dialog open={isInterventionOpen} onOpenChange={setIsInterventionOpen}>
-        <DialogContent className="max-w-lg rounded-2xl p-6 space-y-4">
+        <DialogContent className="max-w-lg rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold flex items-center gap-2">
               <ShieldAlert className="h-5 w-5 text-primary" />
@@ -440,9 +440,9 @@ function AdminMasterCarnesPage() {
 
           {/* Preview de Comprovante se existir */}
           {selectedInstallment?.conciliation_proof_url && (
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Comprovante do Cliente</Label>
-              <div className="relative rounded-xl border overflow-hidden bg-muted/30 max-h-48 flex items-center justify-center">
+              <div className="relative rounded-lg border overflow-hidden bg-muted/30 max-h-48 flex items-center justify-center">
                 <img
                   src={selectedInstallment.conciliation_proof_url}
                   alt="Comprovante"
@@ -452,7 +452,7 @@ function AdminMasterCarnesPage() {
                   href={selectedInstallment.conciliation_proof_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-background/80 hover:bg-background text-foreground shadow-xs text-xs flex items-center gap-1"
+                  className="absolute top-2 right-2 p-2 rounded-lg bg-background/80 hover:bg-background text-foreground shadow-xs text-xs flex items-center gap-1"
                 >
                   <ExternalLink className="h-3.5 w-3.5" /> Ampliar
                 </a>
@@ -460,15 +460,15 @@ function AdminMasterCarnesPage() {
             </div>
           )}
 
-          <form onSubmit={handleConfirmIntervention} className="space-y-3.5 pt-1">
+          <form onSubmit={handleConfirmIntervention} className="space-y-4 pt-1">
             {/* Escolha da Ação Master */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Ação Governamental Master *</Label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <Button
                   type="button"
                   variant={interventionAction === "force_approve" ? "default" : "outline"}
-                  className="h-10 text-xs rounded-xl"
+                  className="h-10 text-xs rounded-lg"
                   onClick={() => setInterventionAction("force_approve")}
                 >
                   Forçar Aprovação
@@ -476,7 +476,7 @@ function AdminMasterCarnesPage() {
                 <Button
                   type="button"
                   variant={interventionAction === "force_reject" ? "default" : "outline"}
-                  className="h-10 text-xs rounded-xl"
+                  className="h-10 text-xs rounded-lg"
                   onClick={() => setInterventionAction("force_reject")}
                 >
                   Forçar Recusa
@@ -484,7 +484,7 @@ function AdminMasterCarnesPage() {
                 <Button
                   type="button"
                   variant={interventionAction === "reopen" ? "default" : "outline"}
-                  className="h-10 text-xs rounded-xl"
+                  className="h-10 text-xs rounded-lg"
                   onClick={() => setInterventionAction("reopen")}
                 >
                   Reabrir Parcela
@@ -500,7 +500,7 @@ function AdminMasterCarnesPage() {
                   step="0.01"
                   value={((customFinalAmountCents || 0) / 100).toFixed(2)}
                   onChange={(e) => setCustomFinalAmountCents(Math.round(Number(e.target.value) * 100))}
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                 />
               </div>
             )}
@@ -513,7 +513,7 @@ function AdminMasterCarnesPage() {
                 placeholder="Ex: Auditoria realizada após comprovante TED legítimo. Loja informada e parcela liquidada..."
                 value={interventionReason}
                 onChange={(e) => setInterventionReason(e.target.value)}
-                className="text-xs min-h-20 rounded-xl"
+                className="text-xs min-h-20 rounded-lg"
                 required
               />
             </div>
@@ -522,7 +522,7 @@ function AdminMasterCarnesPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-xl text-xs h-10"
+                className="rounded-lg text-xs h-10"
                 onClick={() => setIsInterventionOpen(false)}
               >
                 Cancelar
@@ -530,7 +530,7 @@ function AdminMasterCarnesPage() {
               <Button
                 type="submit"
                 disabled={isIntervening || !interventionReason.trim()}
-                className="rounded-xl bg-primary text-primary-foreground text-xs h-10 px-4 font-medium"
+                className="rounded-lg bg-primary text-primary-foreground text-xs h-10 px-4 font-medium"
               >
                 {isIntervening ? "Executando..." : "Confirmar Intervenção Master"}
               </Button>

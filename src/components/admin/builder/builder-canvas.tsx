@@ -85,7 +85,7 @@ export function BuilderCanvas({
  <div className="flex items-center gap-2">
  <Monitor className="size-3.5 text-primary/70" />
  <span className="font-sans font-semibold text-foreground/80">Desktop Canvas</span>
- <span className="text-[10px] px-1.5 py-0.2 bg-muted rounded">1440px</span>
+ <span className="text-[10px] px-2 py-0.2 bg-muted rounded">1440px</span>
  </div>
 
  <div className="text-[10px] text-muted-foreground font-sans truncate max-w-xs">
@@ -108,7 +108,7 @@ export function BuilderCanvas({
  >
  {nodesCount === 0 ? (
  <div className="flex-1 flex flex-col items-center justify-center min-h-[460px] text-muted-foreground gap-3 p-8 text-center animate-in fade-in duration-200">
- <div className="size-12 rounded-xl bg-muted/50 flex items-center justify-center border border-border/50 text-muted-foreground/70">
+ <div className="size-12 rounded-lg bg-muted/50 flex items-center justify-center border border-border/50 text-muted-foreground/70">
  <LayoutTemplate className="size-6" />
  </div>
  <div className="max-w-sm space-y-1">
@@ -120,7 +120,7 @@ export function BuilderCanvas({
  <Button
  onClick={onAddSection}
  size="sm"
- className="mt-2 h-9 px-4 rounded-xl font-semibold text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+ className="mt-2 h-9 px-4 rounded-lg font-semibold text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Seção</span>
@@ -142,7 +142,7 @@ export function BuilderCanvas({
  onClick={onAddSection}
  variant="outline"
  size="sm"
- className="rounded-xl text-xs font-semibold gap-2 bg-background hover:bg-muted border-border/80 cursor-pointer shadow-2xs"
+ className="rounded-lg text-xs font-semibold gap-2 bg-background hover:bg-muted border-border/80 cursor-pointer shadow-2xs"
  >
  <Plus className="size-3.5 text-primary" />
  <span>Adicionar Nova Seção</span>
@@ -162,7 +162,7 @@ export function BuilderCanvas({
  >
  {/* Régua de Precisão Mobile */}
  <div className="h-7 px-3 bg-muted/40 dark:bg-muted/20 border-b border-border/60 flex items-center justify-between select-none shrink-0 text-[10px] font-mono text-muted-foreground">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Smartphone className="size-3 text-primary/70" />
  <span className="font-sans font-semibold text-foreground/80">Mobile Viewport</span>
  </div>
@@ -185,7 +185,7 @@ export function BuilderCanvas({
  <Button
  onClick={onAddSection}
  size="sm"
- className="h-8 px-3 rounded-lg font-semibold text-xs gap-1.5 bg-primary text-primary-foreground"
+ className="h-8 px-3 rounded-lg font-semibold text-xs gap-2 bg-primary text-primary-foreground"
  >
  <Plus className="size-3" />
  <span>Adicionar Seção</span>
@@ -206,7 +206,7 @@ export function BuilderCanvas({
  onClick={onAddSection}
  variant="outline"
  size="sm"
- className="rounded-xl text-xs font-semibold gap-1.5 bg-background"
+ className="rounded-lg text-xs font-semibold gap-2 bg-background"
  >
  <Plus className="size-3 text-primary" />
  <span>Adicionar Seção</span>
@@ -237,7 +237,7 @@ export function BuilderCanvas({
  <Button
  onClick={onAddSection}
  size="sm"
- className="h-8 px-3 rounded-lg font-semibold text-xs gap-1.5 bg-primary text-primary-foreground"
+ className="h-8 px-3 rounded-lg font-semibold text-xs gap-2 bg-primary text-primary-foreground"
  >
  <Plus className="size-3" />
  <span>Adicionar Bloco</span>

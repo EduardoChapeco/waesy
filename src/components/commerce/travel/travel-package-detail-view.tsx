@@ -279,14 +279,14 @@ export function TravelPackageDetailView({
  {activeTab === "destination" && (
  <div className="flex flex-col w-full space-y-6 animate-in fade-in duration-200">
  {/* Hero Panorâmico com Gradiente Editorial */}
- <div className="relative w-full h-[50vh] min-h-[350px] max-h-[500px] overflow-hidden sm:rounded-b-3xl">
+ <div className="relative w-full h-[50vh] min-h-[350px] max-h-[500px] overflow-hidden sm:rounded-b-lg">
  <img src={heroImage} alt={productTitle} className="absolute inset-0 size-full object-cover" />
  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
  <div className="absolute bottom-0 left-0 w-full p-5 sm:p-7 flex flex-col justify-end text-white">
  {(destination.country || destination.region || destination.state) && (
  <div className="flex items-center gap-2 mb-2">
  {destination.country && (
- <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">
+ <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">
  {destination.country}
  </span>
  )}
@@ -314,7 +314,7 @@ export function TravelPackageDetailView({
  {(packageData?.story_highlights || resort.highlights || []).map((hl: any) => (
  <div key={hl.id} className="flex flex-col items-center gap-2 shrink-0 cursor-pointer group">
  <div className="size-16 sm:size-18 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-sky-500 group-hover:scale-105 transition-transform shadow-2xs">
- <div className="size-full rounded-full bg-background p-0.5 overflow-hidden">
+ <div className="size-full rounded-full bg-background p-1 overflow-hidden">
  <img src={hl.imageUrl || hl.image} alt={hl.label || hl.title || "Destaque"} className="size-full object-cover rounded-full" />
  </div>
  </div>
@@ -413,7 +413,7 @@ export function TravelPackageDetailView({
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-bold text-foreground">
                           {opt.label || `Saída ${i + 1}`}
@@ -438,7 +438,7 @@ export function TravelPackageDetailView({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1.5 border-t border-border/40 text-xs">
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
                     <span className="text-muted-foreground">
                       {opt.available_seats !== undefined && opt.available_seats > 0 ? `${opt.available_seats} vagas disponíveis` : "Vagas limitadas"}
                     </span>
@@ -519,7 +519,7 @@ export function TravelPackageDetailView({
  {/* Foto com anel gradiente de viagem */}
  <div className="relative shrink-0">
  <div className="size-20 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-sky-500">
- <div className="size-full bg-background rounded-full p-0.5 overflow-hidden">
+ <div className="size-full bg-background rounded-full p-1 overflow-hidden">
  <img
  src={resort.cover_image_url || heroImage}
  alt={resort.name || "Resort"}
@@ -582,7 +582,7 @@ export function TravelPackageDetailView({
  ? resort.badges.map((b: string, i: number) => (
  <span
  key={i}
- className="px-2.5 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border/50"
+ className="px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border/50"
  >
  {b}
  </span>
@@ -594,7 +594,7 @@ export function TravelPackageDetailView({
 
  {/* Card de Condição Comercial & Preço */}
  <div className="bg-card border border-border/70 rounded-lg p-4 flex items-center justify-between shadow-2xs">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  {totalCents > 0
  ? maxInstallments > 0
@@ -673,7 +673,7 @@ export function TravelPackageDetailView({
  {activeTab === "itinerary" && (
  <div className="px-4 sm:px-6 py-4 space-y-6 animate-in fade-in duration-200">
  <div className="flex items-center justify-between pb-1 border-b border-border/40">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <h3 className="text-sm font-bold text-foreground">Roteiro Completo Dia a Dia</h3>
  <p className="text-xs text-muted-foreground">Programação detalhada das suas férias</p>
  </div>
@@ -770,7 +770,7 @@ export function TravelPackageDetailView({
  <div className="flex items-center justify-between">
  <h5 className="text-xs font-bold text-foreground truncate">{rec.title}</h5>
  {rec.rating && (
- <span className="text-xs font-bold text-amber-500 flex items-center gap-0.5">
+ <span className="text-xs font-bold text-amber-500 flex items-center gap-1">
  <Star className="size-3 fill-amber-500" /> {rec.rating}
  </span>
  )}
@@ -1088,7 +1088,7 @@ export function TravelPackageDetailView({
  <Car className="size-3.5 text-primary" />
  <span>Horários do Transfer Bilateral (In / Out)</span>
  </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground pt-0.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground pt-1">
  {flightDetails.transfer_pickup_time && (
  <div>
  <span className="font-medium text-foreground">Transfer Ida:</span> {flightDetails.transfer_pickup_time}
@@ -1225,7 +1225,7 @@ export function TravelPackageDetailView({
  </main>
 
  {/* ── 3. Barra Fixa Inferior de Conversão (Bottom Booking Bar Dinâmica & Bilateral) ── */}
- <footer className={cn("fixed bottom-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/80 p-3 sm:p-4 shadow-lg pb-safe", isCompact ? "left-0 right-0" : "left-1/2 -translate-x-1/2 w-full max-w-4xl rounded-t-2xl border-x")}>
+ <footer className={cn("fixed bottom-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/80 p-3 sm:p-4 shadow-lg pb-safe", isCompact ? "left-0 right-0" : "left-1/2 -translate-x-1/2 w-full max-w-4xl rounded-t-lg border-x")}>
  <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
  <div className="flex flex-col">
  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">

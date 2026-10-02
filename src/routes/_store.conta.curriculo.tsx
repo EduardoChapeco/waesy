@@ -304,14 +304,14 @@ export default function MeuCurriculoPage() {
   if (!profile) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center space-y-4">
-        <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
+        <div className="size-16 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
           <User className="size-8" />
         </div>
         <h2 className="text-xl font-bold">Faça login para acessar seu currículo digital</h2>
         <p className="text-xs text-muted-foreground max-w-sm">
           Crie seu currículo profissional, exporte em PDF de alta qualidade e compartilhe com recrutadores da região.
         </p>
-        <Button asChild className="rounded-xl h-11 min-h-[44px] px-6 text-xs font-bold">
+        <Button asChild className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold">
           <Link to="/entrar">Acessar Conta</Link>
         </Button>
       </div>
@@ -339,7 +339,7 @@ export default function MeuCurriculoPage() {
               size="sm"
               onClick={handleSave}
               disabled={isSaving}
-              className="h-9 rounded-xl text-xs font-bold bg-primary text-primary-foreground px-3 cursor-pointer"
+              className="h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground px-3 cursor-pointer"
             >
               {isSaving ? "..." : "Salvar"}
             </Button>
@@ -349,12 +349,12 @@ export default function MeuCurriculoPage() {
 
       {/* Barra Secundária Mobile Silenciosa: Alternador Editar / Prévia */}
       <div className="lg:hidden px-4 py-2 border-b border-border/40 bg-card/60 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 p-0.5 rounded-xl bg-muted/60 border border-border/40 text-xs font-semibold flex-1">
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/60 border border-border/40 text-xs font-semibold flex-1">
           <button
             type="button"
             onClick={() => setActiveMobileView("edit")}
             className={cn(
-              "flex-1 py-1.5 rounded-lg transition-colors cursor-pointer min-h-[36px]",
+              "flex-1 py-2 rounded-lg transition-colors cursor-pointer min-h-9",
               activeMobileView === "edit" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground"
             )}
           >
@@ -364,7 +364,7 @@ export default function MeuCurriculoPage() {
             type="button"
             onClick={() => setActiveMobileView("preview")}
             className={cn(
-              "flex-1 py-1.5 rounded-lg transition-colors cursor-pointer min-h-[36px]",
+              "flex-1 py-2 rounded-lg transition-colors cursor-pointer min-h-9",
               activeMobileView === "preview" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground"
             )}
           >
@@ -383,7 +383,7 @@ export default function MeuCurriculoPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsLinkedInImportOpen(true)}
-            className="h-8 rounded-xl text-xs gap-1.5 font-bold border-blue-500/30 text-blue-600 hover:bg-blue-500/10 cursor-pointer"
+            className="h-8 rounded-lg text-xs gap-2 font-bold border-blue-500/30 text-blue-600 hover:bg-blue-500/10 cursor-pointer"
           >
             <Linkedin className="size-3 text-[#0A66C2] fill-current" />
             <span>LinkedIn</span>
@@ -393,7 +393,7 @@ export default function MeuCurriculoPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsToolsSheetOpen(true)}
-            className="h-8 rounded-xl text-xs gap-1.5 font-semibold cursor-pointer"
+            className="h-8 rounded-lg text-xs gap-2 font-semibold cursor-pointer"
           >
             <SlidersHorizontal className="size-3.5" />
             <span>Formato</span>
@@ -405,7 +405,7 @@ export default function MeuCurriculoPage() {
             variant="outline"
             size="sm"
             onClick={handlePrint}
-            className="h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+            className="h-9 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
           >
             <Printer className="size-3.5" />
             <span>Imprimir</span>
@@ -416,7 +416,7 @@ export default function MeuCurriculoPage() {
             size="sm"
             onClick={handleDownloadPdf}
             disabled={isExporting}
-            className="h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+            className="h-9 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
           >
             <Download className="size-3.5" />
             <span>PDF</span>
@@ -426,7 +426,7 @@ export default function MeuCurriculoPage() {
             size="sm"
             onClick={handleSave}
             disabled={isSaving}
-            className="h-9 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shadow-xs cursor-pointer px-4"
+            className="h-9 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-xs cursor-pointer px-4"
           >
             <Save className="size-3.5" />
             <span>{isSaving ? "Salvando..." : "Salvar"}</span>
@@ -436,7 +436,7 @@ export default function MeuCurriculoPage() {
 
       {/* ── MODAL 100dvh DE OPÇÕES E FERRAMENTAS DO CURRÍCULO (V118 Progressive Disclosure) ── */}
       <Dialog open={isToolsSheetOpen} onOpenChange={setIsToolsSheetOpen}>
-        <DialogContent className="w-screen h-[100dvh] max-w-none sm:max-w-md sm:h-auto sm:max-h-[85vh] rounded-none sm:rounded-2xl p-5 space-y-5 overflow-y-auto">
+        <DialogContent className="w-screen h-[100dvh] max-w-none sm:max-w-md sm:h-auto sm:max-h-[85vh] rounded-none sm:rounded-lg p-5 space-y-5 overflow-y-auto">
           <DialogHeader className="pb-2 border-b border-border/40">
             <DialogTitle className="text-base font-bold">Opções do Currículo</DialogTitle>
           </DialogHeader>
@@ -454,7 +454,7 @@ export default function MeuCurriculoPage() {
                     setIsToolsSheetOpen(false);
                     setIsLinkedInImportOpen(true);
                   }}
-                  className="h-11 rounded-xl text-xs font-bold justify-start gap-2.5 border-blue-500/30 text-blue-600 hover:bg-blue-500/10 cursor-pointer"
+                  className="h-11 rounded-lg text-xs font-bold justify-start gap-3 border-blue-500/30 text-blue-600 hover:bg-blue-500/10 cursor-pointer"
                 >
                   <Linkedin className="size-4 text-[#0A66C2] fill-current" />
                   <span>Importar do LinkedIn</span>
@@ -476,7 +476,7 @@ export default function MeuCurriculoPage() {
                       toast.info("Nenhum dado profissional adicional encontrado no perfil.");
                     }
                   }}
-                  className="h-11 rounded-xl text-xs font-semibold justify-start gap-2.5 cursor-pointer"
+                  className="h-11 rounded-lg text-xs font-semibold justify-start gap-3 cursor-pointer"
                 >
                   <RefreshCw className="size-4 text-primary" />
                   <span>Sincronizar</span>
@@ -493,7 +493,7 @@ export default function MeuCurriculoPage() {
                   type="button"
                   onClick={() => setFormat("a4")}
                   className={cn(
-                    "h-11 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer",
+                    "h-11 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer",
                     format === "a4"
                       ? "bg-foreground text-background border-foreground"
                       : "bg-card text-muted-foreground border-border/60"
@@ -505,7 +505,7 @@ export default function MeuCurriculoPage() {
                   type="button"
                   onClick={() => setFormat("story")}
                   className={cn(
-                    "h-11 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer",
+                    "h-11 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer",
                     format === "story"
                       ? "bg-foreground text-background border-foreground"
                       : "bg-card text-muted-foreground border-border/60"
@@ -529,7 +529,7 @@ export default function MeuCurriculoPage() {
                     handleDownloadPdf();
                   }}
                   disabled={isExporting}
-                  className="h-11 rounded-xl text-xs font-bold gap-2 cursor-pointer"
+                  className="h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer"
                 >
                   <Download className="size-4" />
                   <span>Baixar PDF</span>
@@ -541,7 +541,7 @@ export default function MeuCurriculoPage() {
                     setIsToolsSheetOpen(false);
                     handlePrint();
                   }}
-                  className="h-11 rounded-xl text-xs font-bold gap-2 cursor-pointer"
+                  className="h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer"
                 >
                   <Printer className="size-4" />
                   <span>Imprimir</span>
@@ -562,7 +562,7 @@ export default function MeuCurriculoPage() {
           )}
         >
           {/* Seção 1: Dados Pessoais & Contatos */}
-          <div className="space-y-4 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
+          <div className="space-y-4 p-4 rounded-lg bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center justify-between">
               <span>Identificação</span>
               <span className="text-[10px] text-muted-foreground font-mono">Cabeçalho</span>
@@ -573,7 +573,7 @@ export default function MeuCurriculoPage() {
                 <Input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="h-9 rounded-xl text-xs"
+                  className="h-9 rounded-lg text-xs"
                 />
               </div>
               <div className="space-y-1">
@@ -582,7 +582,7 @@ export default function MeuCurriculoPage() {
                   value={occupation}
                   onChange={(e) => setOccupation(e.target.value)}
                   placeholder="Ex: Desenvolvedor Front-end / Vendedor Comercial"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-9 rounded-lg text-xs"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -591,7 +591,7 @@ export default function MeuCurriculoPage() {
                   <Input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="h-9 rounded-xl text-xs"
+                    className="h-9 rounded-lg text-xs"
                   />
                 </div>
                 <div className="space-y-1">
@@ -600,7 +600,7 @@ export default function MeuCurriculoPage() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="Chapecó, SC"
-                    className="h-9 rounded-xl text-xs"
+                    className="h-9 rounded-lg text-xs"
                   />
                 </div>
               </div>
@@ -610,14 +610,14 @@ export default function MeuCurriculoPage() {
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://meusite.com"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-9 rounded-lg text-xs"
                 />
               </div>
             </div>
           </div>
 
           {/* Seção 2: Resumo Executivo / Sobre */}
-          <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
+          <div className="space-y-3 p-4 rounded-lg bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center justify-between">
               <span>Resumo</span>
               
@@ -627,12 +627,12 @@ export default function MeuCurriculoPage() {
               onChange={(e) => setSummary(e.target.value)}
               placeholder="Descreva de forma concisa sua especialidade, principais realizações e objetivos profissionais..."
               rows={4}
-              className="rounded-xl text-xs leading-relaxed"
+              className="rounded-lg text-xs leading-relaxed"
             />
           </div>
 
           {/* Seção 3: Trajetória & Experiências */}
-          <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
+          <div className="space-y-3 p-4 rounded-lg bg-card border border-border/50 shadow-2xs">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Experiências ({experiences.length})
@@ -642,7 +642,7 @@ export default function MeuCurriculoPage() {
                 size="sm"
                 variant="outline"
                 onClick={addExperience}
-                className="h-8 px-2.5 rounded-lg text-[11px] font-semibold gap-1 cursor-pointer min-h-[36px]"
+                className="h-8 px-3 rounded-lg text-[11px] font-semibold gap-1 cursor-pointer min-h-9"
               >
                 <Plus className="size-3" />
                 <span>Adicionar</span>
@@ -651,7 +651,7 @@ export default function MeuCurriculoPage() {
 
             <div className="space-y-3">
               {experiences.map((exp, idx) => (
-                <div key={exp.id || idx} className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-2.5 text-xs">
+                <div key={exp.id || idx} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-3 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <Input
                       value={exp.title}
@@ -695,7 +695,7 @@ export default function MeuCurriculoPage() {
           </div>
 
           {/* Seção 4: Formação Acadêmica */}
-          <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
+          <div className="space-y-3 p-4 rounded-lg bg-card border border-border/50 shadow-2xs">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Formação ({educations.length})
@@ -705,7 +705,7 @@ export default function MeuCurriculoPage() {
                 size="sm"
                 variant="outline"
                 onClick={addEducation}
-                className="h-8 px-2.5 rounded-lg text-[11px] font-semibold gap-1 cursor-pointer min-h-[36px]"
+                className="h-8 px-3 rounded-lg text-[11px] font-semibold gap-1 cursor-pointer min-h-9"
               >
                 <Plus className="size-3" />
                 <span>Adicionar</span>
@@ -714,7 +714,7 @@ export default function MeuCurriculoPage() {
 
             <div className="space-y-3">
               {educations.map((edu, idx) => (
-                <div key={edu.id || idx} className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-2 text-xs">
+                <div key={edu.id || idx} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <Input
                       value={edu.school}
@@ -742,7 +742,7 @@ export default function MeuCurriculoPage() {
           </div>
 
           {/* Seção 5: Competências & Habilidades */}
-          <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
+          <div className="space-y-3 p-4 rounded-lg bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
               Competências
             </h3>
@@ -752,25 +752,25 @@ export default function MeuCurriculoPage() {
                 onChange={(e) => setNewSkill(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
                 placeholder="Ex: Atendimento ao Cliente, React, Vendas..."
-                className="h-8 rounded-xl text-xs flex-1"
+                className="h-8 rounded-lg text-xs flex-1"
               />
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={handleAddSkill}
-                className="h-8 px-3 rounded-xl text-xs font-semibold cursor-pointer"
+                className="h-8 px-3 rounded-lg text-xs font-semibold cursor-pointer"
               >
                 Adicionar
               </Button>
             </div>
             {skills.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {skills.map((skill) => (
                   <Badge
                     key={skill}
                     variant="secondary"
-                    className="text-[11px] gap-1 px-2.5 py-0.5 rounded-lg cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+                    className="text-[11px] gap-1 px-3 py-1 rounded-lg cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
                     onClick={() => handleRemoveSkill(skill)}
                     title="Clique para remover"
                   >
@@ -783,7 +783,7 @@ export default function MeuCurriculoPage() {
           </div>
 
           {/* Seção 6: Personalização Visual */}
-          <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
+          <div className="space-y-3 p-4 rounded-lg bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
               Estilo
             </h3>
@@ -800,7 +800,7 @@ export default function MeuCurriculoPage() {
                     type="button"
                     onClick={() => setTemplate(t.id as any)}
                     className={cn(
-                      "h-9 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer min-h-[36px]",
+                      "h-9 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer min-h-9",
                       template === t.id
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-card border-border text-muted-foreground"
@@ -814,22 +814,22 @@ export default function MeuCurriculoPage() {
           </div>
 
           {/* Links Rápidos do Ecossistema Civil */}
-          <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 flex flex-col gap-2 text-xs">
+          <div className="p-4 rounded-lg bg-muted/30 border border-border/40 flex flex-col gap-2 text-xs">
             <span className="font-bold text-foreground">Ações de Carreira</span>
             <div className="flex flex-wrap gap-2 pt-1">
-              <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-8 gap-1.5">
+              <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-8 gap-2">
                 <Link to="/conta/candidaturas">
                   <Briefcase className="size-3.5" />
                   <span>Minhas Candidaturas</span>
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-8 gap-1.5">
+              <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-8 gap-2">
                 <Link to="/empregos">
                   <ExternalLink className="size-3.5" />
                   <span>Ver Vagas Abertas</span>
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-8 gap-1.5">
+              <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-8 gap-2">
                 <Link to="/membro/$id" params={{ id: profile.username || profile.id }}>
                   <User className="size-3.5" />
                   <span>Perfil Público</span>
@@ -851,8 +851,8 @@ export default function MeuCurriculoPage() {
             className={cn(
               "bg-white text-zinc-900 shadow-xs transition-all select-none overflow-hidden",
               format === "a4"
-                ? "w-full max-w-[650px] min-h-[920px] p-8 sm:p-10 space-y-6 rounded-2xl border border-zinc-200"
-                : "w-full max-w-[400px] aspect-[9/16] p-6 space-y-4 rounded-3xl border border-zinc-200 flex flex-col justify-between"
+                ? "w-full max-w-[650px] min-h-[920px] p-8 sm:p-10 space-y-6 rounded-lg border border-zinc-200"
+                : "w-full max-w-md aspect-[9/16] p-6 space-y-4 rounded-lg border border-zinc-200 flex flex-col justify-between"
             )}
             style={{
               fontFamily:
@@ -881,7 +881,7 @@ export default function MeuCurriculoPage() {
               </div>
 
               {profile?.avatar_url && showPhoto && (
-                <div className="size-16 rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-100 shrink-0">
+                <div className="size-16 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-100 shrink-0">
                   <img src={profile.avatar_url} alt={fullName} className="size-full object-cover" />
                 </div>
               )}
@@ -890,7 +890,7 @@ export default function MeuCurriculoPage() {
             {/* Resumo */}
             {summary && (
               <div className="space-y-1">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-0.5">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-1">
                   Resumo Profissional
                 </h2>
                 <p className="text-xs text-zinc-700 leading-relaxed whitespace-pre-line text-justify">
@@ -902,12 +902,12 @@ export default function MeuCurriculoPage() {
             {/* Experiências */}
             {experiences.length > 0 && (
               <div className="space-y-3">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-0.5">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-1">
                   Trajetória Profissional
                 </h2>
-                <div className="space-y-2.5 divide-y divide-zinc-100">
+                <div className="space-y-3 divide-y divide-zinc-100">
                   {experiences.filter((exp: any) => exp.is_included !== false).map((exp: any, i: number) => (
-                    <div key={exp.id || i} className={cn("space-y-0.5", i > 0 && "pt-2")}>
+                    <div key={exp.id || i} className={cn("space-y-1", i > 0 && "pt-2")}>
                       <div className="flex items-start justify-between text-xs">
                         <span className="font-bold text-zinc-900">{exp.title}</span>
                         <span className="text-zinc-500 font-mono text-[11px]">{exp.start_date}</span>
@@ -927,10 +927,10 @@ export default function MeuCurriculoPage() {
             {/* Formação */}
             {educations.length > 0 && (
               <div className="space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-0.5">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-1">
                   Formação Acadêmica
                 </h2>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {educations.map((edu: any, i: number) => (
                     <div key={edu.id || i} className="flex items-start justify-between text-xs">
                       <div>
@@ -947,10 +947,10 @@ export default function MeuCurriculoPage() {
             {/* Registros de Classe (OAB, CRM, CREA, etc.) */}
             {licenses.length > 0 && (
               <div className="space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-0.5">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-1">
                   Registros de Classe
                 </h2>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {licenses.map((lic: any, i: number) => (
                     <div key={lic.id || i} className="flex items-start justify-between text-xs">
                       <div>
@@ -968,15 +968,15 @@ export default function MeuCurriculoPage() {
 
             {/* Competências */}
             {skills.length > 0 && (
-              <div className="space-y-1.5">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-0.5">
+              <div className="space-y-2">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-1">
                   Competências Principais
                 </h2>
                 <div className="flex flex-wrap gap-1 pt-1">
                   {skills.map((skill) => (
                     <span
                       key={skill}
-                      className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-800 text-[10px] font-medium"
+                      className="px-2 py-1 rounded-md bg-zinc-100 text-zinc-800 text-[10px] font-medium"
                     >
                       {skill}
                     </span>

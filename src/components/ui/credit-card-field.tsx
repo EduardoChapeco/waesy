@@ -39,7 +39,7 @@ export const CreditCardNumberInput = forwardRef<HTMLInputElement, CreditCardNumb
           return <span className="font-black italic text-blue-600 dark:text-blue-400 text-xs tracking-tighter">VISA</span>;
         case "mastercard":
           return (
-            <div className="flex -space-x-1.5 items-center">
+            <div className="flex -space-x-2 items-center">
               <span className="size-3.5 rounded-full bg-red-500 opacity-90" />
               <span className="size-3.5 rounded-full bg-amber-500 opacity-90" />
             </div>

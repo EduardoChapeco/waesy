@@ -73,7 +73,7 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
             <span>{promoBadge || "SUPER OFERTA"}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-400 text-black font-black text-xs sm:text-sm">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-400 text-black font-black text-xs sm:text-sm">
             <span>-{discountPercent}% OFF</span>
           </div>
         </div>
@@ -96,7 +96,7 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
             {resolvedHighlights.map((item, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-semibold"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-semibold"
               >
                 <Check className="size-3.5 text-emerald-400 shrink-0" />
                 <span>{item}</span>
@@ -131,7 +131,7 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold shrink-0">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold shrink-0">
             <ShieldCheck className="size-5 text-emerald-400 shrink-0" />
             <span className="truncate max-w-[180px]">{storeName}</span>
           </div>

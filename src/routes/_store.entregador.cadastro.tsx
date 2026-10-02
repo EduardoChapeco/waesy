@@ -141,9 +141,9 @@ function CourierOnboardingPage() {
 
           {/* Banner de Aprovado */}
           {isApproved && (
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-6 space-y-4">
+            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="size-12 rounded-xl bg-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0">
+                <div className="size-12 rounded-lg bg-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0">
                   <ShieldCheck size={28} weight="bold" />
                 </div>
                 <div>
@@ -157,10 +157,10 @@ function CourierOnboardingPage() {
               </div>
 
               <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                <Button asChild className="rounded-xl h-10 px-5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground flex-1">
+                <Button asChild className="rounded-lg h-10 px-5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground flex-1">
                   <Link to="/mobilidade">Acessar Painel de Corridas</Link>
                 </Button>
-                <Button asChild variant="outline" className="rounded-xl h-10 px-4 font-semibold text-xs border-border flex-1">
+                <Button asChild variant="outline" className="rounded-lg h-10 px-4 font-semibold text-xs border-border flex-1">
                   <Link to="/conta">Minha Conta</Link>
                 </Button>
               </div>
@@ -169,12 +169,12 @@ function CourierOnboardingPage() {
 
           {/* Banner de Divergência Detectada / Análise Manual */}
           {(isDivergent || isManualReview) && (
-            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6 space-y-4">
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-6 space-y-4">
               <div className="flex items-start gap-3">
-                <div className="size-12 rounded-xl bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="size-12 rounded-lg bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0 mt-1">
                   <Warning size={28} weight="bold" />
                 </div>
-                <div className="space-y-1.5 flex-1">
+                <div className="space-y-2 flex-1">
                   <h2 className="text-base font-bold text-amber-700 dark:text-amber-400">
                     Documentação em Revisão de Segurança
                   </h2>
@@ -182,7 +182,7 @@ function CourierOnboardingPage() {
                     Nossa inteligência identificou divergências entre a titularidade da conta principal e a documentação enviada (CNH / Face-Match). Por conformidade de segurança e prevenção ao uso de contas por terceiros ("laranjas"), sua inscrição passará por validação humana por nossa equipe forense.
                   </p>
 
-                  <div className="p-3 rounded-xl bg-background/80 border border-border/40 text-xs space-y-1 font-mono">
+                  <div className="p-3 rounded-lg bg-background/80 border border-border/40 text-xs space-y-1 font-mono">
                     <span className="font-bold text-muted-foreground block text-[11px] uppercase">
                       Protocolo de Segurança:
                     </span>
@@ -194,7 +194,7 @@ function CourierOnboardingPage() {
               </div>
 
               <div className="pt-2 flex justify-end">
-                <Button asChild variant="outline" className="rounded-xl h-9 px-4 text-xs font-semibold">
+                <Button asChild variant="outline" className="rounded-lg h-9 px-4 text-xs font-semibold">
                   <Link to="/conta">Voltar para Minha Conta</Link>
                 </Button>
               </div>
@@ -203,7 +203,7 @@ function CourierOnboardingPage() {
 
           {/* Banner de Fraude Rejeitada */}
           {isRejected && (
-            <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-6 space-y-3">
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 space-y-3">
               <div className="flex items-center gap-3">
                 <ShieldWarning size={32} weight="bold" className="text-destructive shrink-0" />
                 <div>
@@ -224,7 +224,7 @@ function CourierOnboardingPage() {
     <div className="min-h-[100dvh] bg-background pb-28 pt-4 sm:pt-6">
       <div className="mx-auto max-w-2xl px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
         {/* Cabeçalho */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
             <Link to="/mobilidade" className="hover:text-foreground">Mobilidade</Link>
             <span>/</span>
@@ -239,7 +239,7 @@ function CourierOnboardingPage() {
         </div>
 
         {/* Indicador de Passos */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 border-y border-border/40 py-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-y border-border/40 py-3">
           <button
             type="button"
             onClick={() => setStep(1)}
@@ -276,7 +276,7 @@ function CourierOnboardingPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* ── PASSO 1: DADOS DO VEÍCULO & DOCUMENTO ── */}
           {step === 1 && (
-            <div className="space-y-5 rounded-2xl border border-border/60 bg-card p-5">
+            <div className="space-y-5 rounded-lg border border-border/60 bg-card p-5">
               <div className="space-y-1">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <Motorcycle size={18} weight="bold" className="text-primary" />
@@ -301,7 +301,7 @@ function CourierOnboardingPage() {
                       key={m.id}
                       type="button"
                       onClick={() => update("vehicleType", m.id)}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs transition-all cursor-pointer ${
+                      className={`flex flex-col items-center justify-center p-3 rounded-lg border text-xs transition-all cursor-pointer ${
                         form.vehicleType === m.id
                           ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                           : "border-border/60 bg-muted/20 text-muted-foreground hover:text-foreground"
@@ -315,68 +315,68 @@ function CourierOnboardingPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="fullName" className="text-xs font-semibold">Nome Completo (como na CNH)</Label>
                   <Input
                     id="fullName"
                     value={form.fullName}
                     onChange={(e) => update("fullName", e.target.value)}
                     placeholder="Seu nome oficial completo"
-                    className="h-10 rounded-xl text-xs"
+                    className="h-10 rounded-lg text-xs"
                     required
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="cpf" className="text-xs font-semibold">CPF do Condutor *</Label>
                   <DocumentField
                     id="cpf"
                     mode="cpf"
                     value={form.cpf}
                     onChange={(masked) => update("cpf", masked)}
-                    className="h-10 rounded-xl text-xs"
+                    className="h-10 rounded-lg text-xs"
                     required
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="docNumber" className="text-xs font-semibold">Número da CNH / Registro</Label>
                   <Input
                     id="docNumber"
                     value={form.documentNumber}
                     onChange={(e) => update("documentNumber", e.target.value)}
                     placeholder="Número da CNH"
-                    className="h-10 rounded-xl text-xs font-mono"
+                    className="h-10 rounded-lg text-xs font-mono"
                     required
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="plate" className="text-xs font-semibold">Placa do Veículo</Label>
                   <PlateField
                     id="plate"
                     value={form.vehiclePlate}
                     onChange={(masked) => update("vehiclePlate", masked)}
-                    className="h-10 rounded-xl text-xs"
+                    className="h-10 rounded-lg text-xs"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="model" className="text-xs font-semibold">Modelo / Marca</Label>
                   <Input
                     id="model"
                     value={form.vehicleModel}
                     onChange={(e) => update("vehicleModel", e.target.value)}
                     placeholder="Ex: Honda CG 160"
-                    className="h-10 rounded-xl text-xs"
+                    className="h-10 rounded-lg text-xs"
                   />
                 </div>
               </div>
 
               {/* Upload da Frente da CNH */}
-              <div className="space-y-1.5 pt-2">
+              <div className="space-y-2 pt-2">
                 <Label className="text-xs font-semibold">Foto da CNH Aberta ou Frente (Legível)</Label>
                 <ImageUpload
                   value={form.documentFrontUrl}
@@ -395,7 +395,7 @@ function CourierOnboardingPage() {
                     }
                     setStep(2);
                   }}
-                  className="rounded-xl h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1.5 cursor-pointer"
+                  className="rounded-lg h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
                 >
                   <span>Avançar para Biometria</span>
                   <ArrowRight size={14} weight="bold" />
@@ -406,7 +406,7 @@ function CourierOnboardingPage() {
 
           {/* ── PASSO 2: BIOMETRIA FACIAL & MINIVÍDEO DE LIVENESS ── */}
           {step === 2 && (
-            <div className="space-y-5 rounded-2xl border border-border/60 bg-card p-5">
+            <div className="space-y-5 rounded-lg border border-border/60 bg-card p-5">
               <div className="space-y-1">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <Camera size={18} weight="bold" className="text-primary" />
@@ -419,7 +419,7 @@ function CourierOnboardingPage() {
 
               {/* Selfie do Rosto */}
               <div className="space-y-2">
-                <Label className="text-xs font-semibold flex items-center gap-1.5">
+                <Label className="text-xs font-semibold flex items-center gap-2">
                   <Camera size={14} />
                   <span>Selfie ao Vivo (Sem óculos escuros ou boné)</span>
                 </Label>
@@ -432,7 +432,7 @@ function CourierOnboardingPage() {
 
               {/* Minivídeo de Liveness */}
               <div className="space-y-2 pt-2">
-                <Label className="text-xs font-semibold flex items-center gap-1.5">
+                <Label className="text-xs font-semibold flex items-center gap-2">
                   <VideoCamera size={14} />
                   <span>Minivídeo de Liveness (3 a 5 segundos gravado com a câmera)</span>
                 </Label>
@@ -443,7 +443,7 @@ function CourierOnboardingPage() {
                 />
               </div>
 
-              <div className="p-3 rounded-xl bg-muted/40 border border-border/40 text-xs text-muted-foreground space-y-1">
+              <div className="p-3 rounded-lg bg-muted/40 border border-border/40 text-xs text-muted-foreground space-y-1">
                 <span className="font-bold text-foreground block">
                   Inteligência de Cross-Check Automatizado:
                 </span>
@@ -457,7 +457,7 @@ function CourierOnboardingPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setStep(1)}
-                  className="rounded-xl h-10 px-4 font-semibold text-xs gap-1.5"
+                  className="rounded-lg h-10 px-4 font-semibold text-xs gap-2"
                 >
                   <ArrowLeft size={14} weight="bold" />
                   <span>Voltar</span>
@@ -472,7 +472,7 @@ function CourierOnboardingPage() {
                     }
                     setStep(3);
                   }}
-                  className="rounded-xl h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1.5 cursor-pointer"
+                  className="rounded-lg h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
                 >
                   <span>Avançar para Termos de Autonomia</span>
                   <ArrowRight size={14} weight="bold" />
@@ -483,7 +483,7 @@ function CourierOnboardingPage() {
 
           {/* ── PASSO 3: TERMOS DE AUTONOMIA, NÃO-VÍNCULO & SEGURANÇA ── */}
           {step === 3 && (
-            <div className="space-y-5 rounded-2xl border border-border/60 bg-card p-5">
+            <div className="space-y-5 rounded-lg border border-border/60 bg-card p-5">
               <div className="space-y-1">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <Scales size={18} weight="bold" className="text-primary" />
@@ -495,7 +495,7 @@ function CourierOnboardingPage() {
               </div>
 
               {/* Caixa com o Texto Legal Canônico */}
-              <div className="h-64 overflow-y-auto rounded-xl border border-border/60 bg-muted/20 p-4 text-xs space-y-3 leading-relaxed text-foreground/90 font-mono">
+              <div className="h-64 overflow-y-auto rounded-lg border border-border/60 bg-muted/20 p-4 text-xs space-y-3 leading-relaxed text-foreground/90 font-mono">
                 <p className="font-bold text-foreground">
                   TERMOS E CONDIÇÕES PARA ENTREGADORES E MOTORISTAS PARCEIROS (v4.0)
                 </p>
@@ -514,12 +514,12 @@ function CourierOnboardingPage() {
               </div>
 
               {/* Checkbox de Aceite */}
-              <label className="flex items-start gap-3 p-3 rounded-xl border border-border/60 bg-muted/10 cursor-pointer hover:bg-muted/20 transition-all">
+              <label className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-muted/10 cursor-pointer hover:bg-muted/20 transition-all">
                 <input
                   type="checkbox"
                   checked={form.termsAccepted}
                   onChange={(e) => update("termsAccepted", e.target.checked)}
-                  className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                  className="mt-1 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                 />
                 <span className="text-xs text-foreground leading-relaxed">
                   Declaro que li, compreendi e concordo integralmente com os <strong>Termos de Parceria e Autonomia</strong>, reconhecendo a ausência de vínculo empregatício e autorizando a verificação dos meus dados e antecedentes criminais.
@@ -531,7 +531,7 @@ function CourierOnboardingPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setStep(2)}
-                  className="rounded-xl h-10 px-4 font-semibold text-xs gap-1.5"
+                  className="rounded-lg h-10 px-4 font-semibold text-xs gap-2"
                 >
                   <ArrowLeft size={14} weight="bold" />
                   <span>Voltar</span>
@@ -540,7 +540,7 @@ function CourierOnboardingPage() {
                 <Button
                   type="submit"
                   disabled={isPending || !form.termsAccepted}
-                  className="rounded-xl h-11 px-6 font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer shadow-sm"
+                  className="rounded-lg h-11 px-6 font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer shadow-sm"
                 >
                   {isPending ? (
                     <span>Processando Biometria...</span>

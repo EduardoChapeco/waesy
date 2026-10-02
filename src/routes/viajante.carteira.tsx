@@ -82,7 +82,7 @@ export default function ViajanteCarteiraPage() {
         <div className="flex items-center justify-between">
           <Link
             to="/conta/viagens"
-            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="size-3.5" />
             <span>Viagens</span>
@@ -107,7 +107,7 @@ export default function ViajanteCarteiraPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Phone className="size-3.5 mr-1.5 text-muted-foreground" />
+                <Phone className="size-3.5 mr-2 text-muted-foreground" />
                 <span>Suporte</span>
               </a>
             </Button>
@@ -120,12 +120,12 @@ export default function ViajanteCarteiraPage() {
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Documentos de Embarque
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Bilhetes, confirmações e apólices emitidos
             </p>
           </div>
 
-          <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/60">
+          <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/60">
             <button
               type="button"
               onClick={() => setViewMode("cards")}
@@ -153,7 +153,7 @@ export default function ViajanteCarteiraPage() {
 
         {/* ── CONTEÚDO: CARTÕES OU LISTA ── */}
         {passes.length === 0 ? (
-          <div className="w-full rounded-2xl border border-border/60 bg-card p-10 sm:p-14 text-center space-y-2">
+          <div className="w-full rounded-lg border border-border/60 bg-card p-10 sm:p-14 text-center space-y-2">
             <Ticket className="size-8 text-muted-foreground/40 mx-auto" />
             <p className="text-sm font-semibold text-foreground">Nenhum documento disponível</p>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -177,7 +177,7 @@ export default function ViajanteCarteiraPage() {
                   id={`pass-card-${pass.id}`}
                   onClick={() => setSelectedPass(isSelected ? null : pass)}
                   className={`
-                    w-full rounded-2xl p-6 text-white cursor-pointer transition-all duration-300 border border-border/40
+                    w-full rounded-lg p-6 text-white cursor-pointer transition-all duration-300 border border-border/40
                     ${config.bg}
                     ${isSelected ? "relative z-50 min-h-[500px]" : "h-48 mb-[-105px] hover:-translate-y-2"}
                   `}
@@ -189,7 +189,7 @@ export default function ViajanteCarteiraPage() {
                   }}
                 >
                   <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-300 font-medium">
+                    <div className="flex items-center gap-2 text-xs text-zinc-300 font-medium">
                       <Icon className="size-3.5" />
                       <span>{config.label}</span>
                     </div>
@@ -224,18 +224,18 @@ export default function ViajanteCarteiraPage() {
 
                   <div className="mt-4">
                     <h2 className="text-lg sm:text-xl font-bold leading-tight">{pass.title}</h2>
-                    <p className="text-zinc-400 text-xs mt-0.5">{pass.subtitle}</p>
+                    <p className="text-zinc-400 text-xs mt-1">{pass.subtitle}</p>
                   </div>
 
                   {isSelected ? (
-                    <div className="mt-6 bg-card text-card-foreground rounded-xl p-5 flex flex-col items-center border border-border/60">
+                    <div className="mt-6 bg-card text-card-foreground rounded-lg p-5 flex flex-col items-center border border-border/60">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setFullscreenQrPass(pass);
                         }}
-                        className="p-2.5 rounded-2xl bg-white border border-border/40 hover:shadow-sm transition-all cursor-pointer"
+                        className="p-3 rounded-lg bg-white border border-border/40 hover:shadow-sm transition-all cursor-pointer"
                         title="Toque para tela cheia de embarque"
                       >
                         <img
@@ -250,7 +250,7 @@ export default function ViajanteCarteiraPage() {
                         <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-wider">
                           Código de Embarque
                         </span>
-                        <p className="font-mono text-base font-bold text-foreground mt-0.5">
+                        <p className="font-mono text-base font-bold text-foreground mt-1">
                           {pass.barcode_value}
                         </p>
                       </div>
@@ -275,7 +275,7 @@ export default function ViajanteCarteiraPage() {
           </div>
         ) : (
           /* ── VISUALIZAÇÃO EM LISTA ── */
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {passes.map((pass) => {
               const config = getPassConfig(pass.pass_type);
               const Icon = config.icon;
@@ -284,7 +284,7 @@ export default function ViajanteCarteiraPage() {
                 <div
                   key={pass.id}
                   id={`pass-card-${pass.id}`}
-                  className="rounded-xl border border-border/60 bg-card p-4 flex items-center justify-between gap-4"
+                  className="rounded-lg border border-border/60 bg-card p-4 flex items-center justify-between gap-4"
                 >
                   <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -304,12 +304,12 @@ export default function ViajanteCarteiraPage() {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => handleDownloadPdf(pass)}
-                      className="h-8 px-2.5 rounded-lg text-xs font-medium"
+                      className="h-8 px-3 rounded-lg text-xs font-medium"
                     >
                       <Download className="size-3.5 mr-1" />
                       PDF
@@ -334,7 +334,7 @@ export default function ViajanteCarteiraPage() {
         open={Boolean(fullscreenQrPass)}
         onOpenChange={(open) => !open && setFullscreenQrPass(null)}
       >
-        <DialogContent className="max-w-sm p-6 bg-card text-foreground rounded-2xl border border-border/60 shadow-xs text-center">
+        <DialogContent className="max-w-sm p-6 bg-card text-foreground rounded-lg border border-border/60 shadow-xs text-center">
           <DialogHeader className="w-full text-center">
             <DialogTitle className="text-base font-bold text-foreground">
               Apresentação para Embarque
@@ -345,7 +345,7 @@ export default function ViajanteCarteiraPage() {
           </DialogHeader>
 
           {fullscreenQrPass && (
-            <div className="my-4 p-5 bg-white rounded-2xl border border-border/60 flex flex-col items-center shadow-xs">
+            <div className="my-4 p-5 bg-white rounded-lg border border-border/60 flex flex-col items-center shadow-xs">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=${encodeURIComponent(fullscreenQrPass.barcode_value)}`}
                 alt={`QR Code ${fullscreenQrPass.barcode_value}`}

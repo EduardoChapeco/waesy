@@ -195,7 +195,7 @@ export function RmaRequestWizard({
  </div>
 
  <div className="flex items-start gap-3 p-3 bg-warning/10 text-warning dark:text-warning border border-warning/20 text-sm">
- <AlertCircle className="size-4 shrink-0 mt-0.5" />
+ <AlertCircle className="size-4 shrink-0 mt-1" />
  <p>
  O status do pedido mudará para <strong>return_requested</strong>. O faturamento não
  será abatido até que a doca realize a inspeção dos itens (`inspect_rma_item`).

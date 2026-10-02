@@ -126,9 +126,9 @@ export function PublishMomentModal({
 
  return (
  <Dialog open={isModalOpen} onOpenChange={(v) => { if (!v) handleClose(); }}>
- <DialogContent className="sm:max-w-[480px] sm:rounded-2xl bg-card sm:p-6 p-5 max-h-[90vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-[480px] sm:rounded-lg bg-card sm:p-6 p-5 max-h-[90vh] overflow-y-auto no-scrollbar">
  <DialogHeader className="space-y-1">
- <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-1">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-1">
  <Camera size={20} weight="bold" />
  </div>
  <DialogTitle className="text-base font-bold text-foreground">
@@ -141,7 +141,7 @@ export function PublishMomentModal({
 
  <form onSubmit={handleSubmit} className="space-y-4 pt-2">
  {/* 1. Foto do Momento */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">
  Foto Real do Momento <span className="text-destructive">*</span>
  </Label>
@@ -160,7 +160,7 @@ export function PublishMomentModal({
  </div>
 
  {/* 2. O que você está fazendo? */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">
  O que você está fazendo agora? <span className="text-destructive">*</span>
  </Label>
@@ -169,15 +169,15 @@ export function PublishMomentModal({
  onChange={(e) => setCaption(e.target.value)}
  placeholder="Ex: Tomando um chimarrão e curtindo o pôr do sol no parque... Cheguem mais!"
  rows={2}
- className="w-full p-3 rounded-xl bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+ className="w-full p-3 rounded-lg bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
  required
  />
  </div>
 
  {/* 3. Vibe / Categoria */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Qual é a vibe?</Label>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {VIBE_OPTIONS.map((v) => {
  const isSelected = vibe === v.id;
  const Icon = v.icon;
@@ -189,7 +189,7 @@ export function PublishMomentModal({
  setVibe(v.id as any);
  if (v.id === "mesa_aberta") setIsBillSplitOpen(true);
  }}
- className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border cursor-pointer ${
+ className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all border cursor-pointer ${
  isSelected
  ? "bg-foreground text-background border-foreground font-bold "
  : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted/70"
@@ -204,7 +204,7 @@ export function PublishMomentModal({
  </div>
 
  {/* 4. Localização */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">
  Onde você está? <span className="text-destructive">*</span>
@@ -223,13 +223,13 @@ export function PublishMomentModal({
  value={locationName}
  onChange={(e) => setLocationName(e.target.value)}
  placeholder="Ex: Ecoparque, Calçadão da Getúlio, Mirante da Serra..."
- className="h-10 rounded-xl bg-background border-border text-xs focus-visible:ring-1 focus-visible:ring-primary"
+ className="h-10 rounded-lg bg-background border-border text-xs focus-visible:ring-1 focus-visible:ring-primary"
  required
  />
  </div>
 
  {/* 5. Mesa Aberta / Dividir Conta */}
- <div className="p-3.5 rounded-2xl bg-muted/30 space-y-2">
+ <div className="p-4 rounded-lg bg-muted/30 space-y-2">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <BeerBottle size={18} weight="bold" className="text-primary" />
@@ -276,14 +276,14 @@ export function PublishMomentModal({
  type="button"
  variant="outline"
  onClick={onClose}
- className="rounded-xl text-xs font-bold border-border"
+ className="rounded-lg text-xs font-bold border-border"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isSubmitting}
- className="rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-1.5"
+ className="rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-2"
  >
  {isSubmitting ? "Publicando..." : "Publicar no Mapa"}
  </Button>

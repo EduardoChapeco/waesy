@@ -95,14 +95,14 @@ export const TourismServicesGrid: React.FC<TourismServicesGridProps> = ({
  <div
  key={idx}
  onClick={() => handleServiceClick(srv.title)}
- className="group p-5 rounded-2xl bg-card border border-border/70 hover:border-sky-500/60 transition-all cursor-pointer hover:shadow-md flex flex-col justify-between space-y-4"
+ className="group p-5 rounded-lg bg-card border border-border/70 hover:border-sky-500/60 transition-all cursor-pointer hover:shadow-md flex flex-col justify-between space-y-4"
  >
  <div className="space-y-3">
  <div className="flex items-center justify-between">
- <div className="size-10 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+ <div className="size-10 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
  <Icon className="size-5" />
  </div>
- <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/50">
+ <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-muted text-muted-foreground border border-border/50">
  {srv.badge}
  </span>
  </div>

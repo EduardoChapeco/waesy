@@ -104,7 +104,7 @@ function RegisterPage() {
 
  <div className="relative z-10 flex flex-col h-full justify-between">
  <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold tracking-tight">
- <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded-lg text-sm font-black">Waesy</span>
+ <span className="bg-primary text-primary-foreground px-2 py-1 rounded-lg text-sm font-black">Waesy</span>
  </Link>
  <div className="max-w-md">
  <h2 className="text-3xl font-bold tracking-tight leading-tight">
@@ -121,12 +121,12 @@ function RegisterPage() {
  <div className="flex items-center justify-between">
  <Link
  to="/"
- className="size-10 rounded-xl bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all"
+ className="size-10 rounded-lg bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all"
  aria-label="Voltar para o início"
  >
  <ArrowLeft className="size-4" />
  </Link>
- <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl text-xs">
+ <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg text-xs">
  <Link
  to="/entrar"
  search={{ returnUrl }}
@@ -162,7 +162,7 @@ function RegisterPage() {
  <Input
  placeholder="Seu nome"
  autoComplete="name"
- className="h-11 rounded-xl border-border bg-card/50 text-sm focus-visible:ring-primary/20"
+ className="h-11 rounded-lg border-border bg-card/50 text-sm focus-visible:ring-primary/20"
  {...field}
  />
  </FormControl>
@@ -184,7 +184,7 @@ function RegisterPage() {
  type="email"
  placeholder="seu.email@exemplo.com"
  autoComplete="email"
- className="h-11 rounded-xl border-border bg-card/50 text-sm focus-visible:ring-primary/20"
+ className="h-11 rounded-lg border-border bg-card/50 text-sm focus-visible:ring-primary/20"
  {...field}
  />
  </FormControl>
@@ -207,7 +207,7 @@ function RegisterPage() {
  type={showPassword ? "text" : "password"}
  placeholder="••••••••"
  autoComplete="new-password"
- className="h-11 rounded-xl border-border bg-card/50 text-sm pr-10 focus-visible:ring-primary/20"
+ className="h-11 rounded-lg border-border bg-card/50 text-sm pr-10 focus-visible:ring-primary/20"
  {...field}
  />
  <button
@@ -275,7 +275,7 @@ function RegisterPage() {
  <Button
  type="submit"
  size="lg"
- className="w-full h-11 min-h-[44px] rounded-xl font-bold bg-primary text-primary-foreground gap-2 text-sm mt-2"
+ className="w-full h-11 min-h-11 rounded-lg font-bold bg-primary text-primary-foreground gap-2 text-sm mt-2"
  disabled={form.formState.isSubmitting}
  >
  {form.formState.isSubmitting ? "Criando..." : "Criar Conta"}

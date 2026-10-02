@@ -26,7 +26,7 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
           <div className="lg:col-span-7 flex flex-col items-start text-left">
             {/* Pílula de Contexto Superior */}
             {data.badgeText && (
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-6">
                 <Star className="size-3.5 text-primary" />
                 <span>{data.badgeText}</span>
               </div>
@@ -43,10 +43,10 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
             </p>
 
             {/* Cluster de Ações Primária e Secundária */}
-            <div className="flex flex-wrap items-center gap-3.5 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
               <Button
                 size="lg"
-                className="h-12 px-7 text-base font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group shadow-sm"
+                className="h-12 px-7 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group shadow-sm"
                 onClick={(data.primaryCta as any)?.onClick}
                 asChild={!(data.primaryCta as any)?.onClick}
               >
@@ -67,7 +67,7 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-12 px-6 text-base font-medium rounded-xl border-border hover:bg-muted/50 transition-colors"
+                  className="h-12 px-6 text-base font-medium rounded-lg border-border hover:bg-muted/50 transition-colors"
                   onClick={(data.secondaryCta as any)?.onClick}
                   asChild={!(data.secondaryCta as any)?.onClick}
                 >
@@ -89,7 +89,7 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
 
           {/* Lado Direito: 40% da Largura Útil (5 de 12 colunas) */}
           <div className="lg:col-span-5 relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none rounded-3xl overflow-hidden border border-border/60 bg-muted/20 shadow-xs aspect-[4/5] sm:aspect-square lg:aspect-[4/5]">
+            <div className="relative mx-auto max-w-md lg:max-w-none rounded-lg overflow-hidden border border-border/60 bg-muted/20 shadow-xs aspect-[4/5] sm:aspect-square lg:aspect-[4/5]">
               {data.imageUrl ? (
                 <img
                   src={data.imageUrl}
@@ -98,7 +98,7 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-muted/50 to-muted/20 text-muted-foreground p-8 text-center">
-                  <div className="size-16 rounded-2xl bg-background border border-border/80 flex items-center justify-center mb-3">
+                  <div className="size-16 rounded-lg bg-background border border-border/80 flex items-center justify-center mb-3">
                     <Star className="size-8 text-primary" />
                   </div>
                   <span className="text-sm font-semibold text-foreground">Vitrine Digital Waesy</span>
@@ -108,10 +108,10 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
 
               {/* Card Flutuante de Vidro Fosco com Indicador Pulsante */}
               {data.floatingStat && (
-                <div className="absolute bottom-6 left-6 right-6 sm:right-auto sm:min-w-[240px] bg-background/85 backdrop-blur-md border border-border/80 rounded-2xl p-4 shadow-lg">
+                <div className="absolute bottom-6 left-6 right-6 sm:right-auto sm:min-w-60 bg-background/85 backdrop-blur-md border border-border/80 rounded-lg p-4 shadow-lg">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground block mb-0.5">
+                      <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground block mb-1">
                         {data.floatingStat.label}
                       </span>
                       <span className="text-xl font-black text-foreground">

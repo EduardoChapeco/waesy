@@ -38,10 +38,10 @@ describe('ONDA 5: AUDITORIA SILENCIOSA DE DESIGN APPLE HIG & RADIX UI', () => {
  it('devem impor touch targets mínimos de 44px para conformidade móvel Apple HIG', () => {
  for (const routePath of routesToCheck) {
  const content = fs.readFileSync(path.resolve(routePath), 'utf8');
- // Deve conter declarações explícitas de min-h-[44px] ou h-11 / h-14 / min-h-[48px] / min-h-[52px]
+ // Deve conter declarações explícitas de min-h-11 ou h-11 / h-14 / min-h-12 / min-h-[52px]
  const hasTouchTargetStandard = 
- content.includes('min-h-[44px]') || 
- content.includes('min-h-[48px]') || 
+ content.includes('min-h-11') || 
+ content.includes('min-h-12') || 
  content.includes('min-h-[52px]') || 
  content.includes('min-h-[56px]') ||
  content.includes('h-11') ||
@@ -51,7 +51,7 @@ describe('ONDA 5: AUDITORIA SILENCIOSA DE DESIGN APPLE HIG & RADIX UI', () => {
  }
  });
 
- it('devem seguir a hierarquia de camadas Apple HIG (bg-card, rounded-2xl/3xl, border-border)', () => {
+ it('devem seguir a hierarquia de camadas Apple HIG (bg-card, rounded-lg/3xl, border-border)', () => {
  for (const routePath of routesToCheck) {
  const content = fs.readFileSync(path.resolve(routePath), 'utf8');
  expect(content).toContain('bg-card');

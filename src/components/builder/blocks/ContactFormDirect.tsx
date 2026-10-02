@@ -39,9 +39,9 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
     sm: "rounded-sm",
     md: "rounded-md",
     lg: "rounded-lg",
-    xl: "rounded-xl",
-    "2xl": "rounded-2xl",
-    full: "rounded-3xl",
+    xl: "rounded-lg",
+    "2xl": "rounded-lg",
+    full: "rounded-lg",
   }[styling?.borderRadius || "xl"];
 
   const customStyle: React.CSSProperties = {
@@ -123,7 +123,7 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 max-w-xl mx-auto">
               <div>
-                <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
                   Nome Completo *
                 </label>
                 <Input
@@ -131,26 +131,26 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Seu nome ou razão social"
                   required
-                  className="h-11 rounded-xl"
+                  className="h-11 rounded-lg"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {data.showPhoneField !== false && (
                   <div>
-                    <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
                       Telefone / WhatsApp *
                     </label>
                     <Input
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="(00) 00000-0000"
-                      className="h-11 rounded-xl"
+                      className="h-11 rounded-lg"
                     />
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
                     E-mail
                   </label>
                   <Input
@@ -158,14 +158,14 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="seu@email.com"
-                    className="h-11 rounded-xl"
+                    className="h-11 rounded-lg"
                   />
                 </div>
               </div>
 
               {data.showMessageField !== false && (
                 <div>
-                  <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
                     Mensagem ou Dúvida
                   </label>
                   <Textarea
@@ -173,7 +173,7 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Como podemos te ajudar?"
                     rows={4}
-                    className="rounded-xl resize-none"
+                    className="rounded-lg resize-none"
                   />
                 </div>
               )}
@@ -182,7 +182,7 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
                 type="submit"
                 disabled={isSending}
                 size="lg"
-                className="w-full h-12 text-base font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 shadow-sm mt-2"
+                className="w-full h-12 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 shadow-sm mt-2"
               >
                 <span className="flex items-center justify-center gap-2">
                   <Send className="size-4" />

@@ -74,10 +74,10 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
   };
 
   return (
-    <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
+    <div className="p-5 rounded-lg border border-border bg-card space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-primary/10 text-primary">
+          <div className="p-2 rounded-lg bg-primary/10 text-primary">
             <Sparkles className="size-4" />
           </div>
           <div>
@@ -110,7 +110,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
             <Button
               type="submit"
               disabled={isProcessing}
-              className="w-full sm:w-auto h-10 px-4 text-xs font-semibold gap-1.5 shrink-0"
+              className="w-full sm:w-auto h-10 px-4 text-xs font-semibold gap-2 shrink-0"
             >
               {isProcessing ? (
                 <>
@@ -128,7 +128,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
 
           {/* Estado de Processamento Silencioso */}
           {isProcessing && (
-            <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 space-y-2">
+            <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2">
               <div className="flex items-center gap-2 text-xs text-foreground font-medium">
                 <Loader2 className="size-3.5 animate-spin text-primary shrink-0" />
                 <span>{currentStageText}</span>
@@ -141,8 +141,8 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
 
           {/* Erro em Linha Única */}
           {errorMessage && !isProcessing && (
-            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-between gap-2 text-xs text-destructive">
-              <div className="flex items-center gap-1.5 min-w-0">
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-between gap-2 text-xs text-destructive">
+              <div className="flex items-center gap-2 min-w-0">
                 <AlertCircle className="size-4 shrink-0" />
                 <span className="truncate">{errorMessage}</span>
               </div>
@@ -159,9 +159,9 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
         </form>
       ) : (
         /* Resultado Silencioso e Pronto para Edição */
-        <div className="p-4 rounded-xl bg-background border border-border space-y-3">
+        <div className="p-4 rounded-lg bg-background border border-border space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="size-4" />
               <span>Configuração concluída</span>
             </div>
@@ -206,25 +206,25 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
 
           {/* Atalhos Rápidos para os Módulos Criados */}
           <div className="pt-3 border-t border-border/60 grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-1.5 justify-start">
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start">
               <Link to="/workspace/marketing/brand-kit">
                 <Palette className="size-3.5 text-primary" />
                 <span>Brand Kit</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-1.5 justify-start">
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start">
               <Link to="/workspace/marketing/canvas-bmc">
                 <LayoutGrid className="size-3.5 text-primary" />
                 <span>Modelo BMC</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-1.5 justify-start">
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start">
               <Link to="/workspace/marketing/swot">
                 <Compass className="size-3.5 text-primary" />
                 <span>Matriz SWOT</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-1.5 justify-start">
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start">
               <Link to="/workspace/marketing/canvas-pecados">
                 <Flame className="size-3.5 text-primary" />
                 <span>7 Pecados</span>

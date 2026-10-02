@@ -67,18 +67,18 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             {promoBadge ? (
-              <span className="px-4 py-1.5 rounded-full bg-amber-400 text-black font-black uppercase tracking-wider text-xs sm:text-sm shadow-md">
+              <span className="px-4 py-2 rounded-full bg-amber-400 text-black font-black uppercase tracking-wider text-xs sm:text-sm shadow-md">
                 {promoBadge}
               </span>
             ) : (
-              <span className="px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-bold uppercase tracking-wider text-xs sm:text-sm">
+              <span className="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-bold uppercase tracking-wider text-xs sm:text-sm">
                 Oportunidade Única
               </span>
             )}
 
-            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-medium">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-medium">
               <MapPin className="size-4 text-primary shrink-0" />
-              <span className="truncate max-w-[240px]">
+              <span className="truncate max-w-60">
                 {destinationOrLocation || "Localização Privilegiada"}
               </span>
             </div>
@@ -103,7 +103,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
           {resolvedSpecs.map((spec, i) => (
             <div
               key={i}
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-black/60 backdrop-blur-md border border-white/20 text-white font-semibold text-sm sm:text-base shadow-sm"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white font-semibold text-sm sm:text-base shadow-sm"
             >
               <CheckCircle2 className="size-5 text-primary shrink-0" />
               <span className="truncate">{spec}</span>
@@ -130,7 +130,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold shrink-0">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold shrink-0">
             <ShieldCheck className="size-5 text-emerald-400 shrink-0" />
             <span className="truncate max-w-[180px]">{storeName}</span>
           </div>

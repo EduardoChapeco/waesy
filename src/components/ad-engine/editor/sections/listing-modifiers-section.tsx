@@ -91,7 +91,7 @@ export function ListingModifiersSection({
   };
 
   return (
-    <div className={cn("bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4", className)}>
+    <div className={cn("bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4", className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <SlidersHorizontal className="size-4 text-primary shrink-0" />
@@ -102,7 +102,7 @@ export function ListingModifiersSection({
           variant="outline"
           size="sm"
           onClick={handleAddGroup}
-          className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+          className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
         >
           <Plus className="size-3.5" />
           <span>Criar Grupo</span>
@@ -110,7 +110,7 @@ export function ListingModifiersSection({
       </div>
 
       {groups.length === 0 ? (
-        <div className="p-6 text-center rounded-xl bg-muted/20 border border-border/40 space-y-2">
+        <div className="p-6 text-center rounded-lg bg-muted/20 border border-border/40 space-y-2">
           <SlidersHorizontal className="size-8 text-muted-foreground mx-auto" />
           <p className="text-xs font-semibold text-foreground">Nenhum adicional configurado</p>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -122,7 +122,7 @@ export function ListingModifiersSection({
           {groups.map((group, gIdx) => (
             <div
               key={group.id}
-              className="p-4 rounded-xl border border-border/60 bg-background space-y-3"
+              className="p-4 rounded-lg border border-border/60 bg-background space-y-3"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
                 <div className="flex-1 space-y-1">

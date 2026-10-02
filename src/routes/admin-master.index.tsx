@@ -152,7 +152,7 @@ function AdminMasterDashboard() {
           return (
             <div
               key={i}
-              className="bg-card rounded-2xl p-4 border border-border/60 shadow-2xs space-y-2 flex flex-col justify-between"
+              className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-2 flex flex-col justify-between"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium text-muted-foreground">{card.label}</span>
@@ -169,8 +169,8 @@ function AdminMasterDashboard() {
       {/* Lists Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Stores Table */}
-        <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-2xs">
-          <div className="p-3.5 border-b border-border/40 bg-muted/20 flex items-center justify-between">
+        <div className="bg-card rounded-lg border border-border/60 overflow-hidden shadow-2xs">
+          <div className="p-4 border-b border-border/40 bg-muted/20 flex items-center justify-between">
             <span className="text-xs font-bold text-foreground">Lojas Recentes</span>
             <span className="text-xs text-muted-foreground font-mono">{stores.length} lojas</span>
           </div>
@@ -178,9 +178,9 @@ function AdminMasterDashboard() {
             <table className="w-full text-xs text-left">
               <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-[10px]">
                 <tr>
-                  <th className="px-4 py-2.5">Loja</th>
-                  <th className="px-4 py-2.5">Status</th>
-                  <th className="px-4 py-2.5 text-right">Ação</th>
+                  <th className="px-4 py-3">Loja</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-right">Ação</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -194,7 +194,7 @@ function AdminMasterDashboard() {
                       <Badge
                         variant={store.is_active ? "default" : "destructive"}
                         className={cn(
-                          "text-[10px] font-medium px-2 py-0.5",
+                          "text-[10px] font-medium px-2 py-1",
                           store.is_active ? "bg-emerald-600/90 text-white" : ""
                         )}
                       >
@@ -205,7 +205,7 @@ function AdminMasterDashboard() {
                       <Button
                         size="sm"
                         variant={store.is_active ? "outline" : "default"}
-                        className="h-7 px-2.5 rounded-lg text-xs font-medium"
+                        className="h-7 px-3 rounded-lg text-xs font-medium"
                         disabled={loadingId === store.id}
                         onClick={() => handleToggleStore(store.id, store.is_active)}
                       >
@@ -220,8 +220,8 @@ function AdminMasterDashboard() {
         </div>
 
         {/* Invoices Table */}
-        <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-2xs">
-          <div className="p-3.5 border-b border-border/40 bg-muted/20 flex items-center justify-between">
+        <div className="bg-card rounded-lg border border-border/60 overflow-hidden shadow-2xs">
+          <div className="p-4 border-b border-border/40 bg-muted/20 flex items-center justify-between">
             <span className="text-xs font-bold text-foreground">Faturas</span>
             <span className="text-xs text-muted-foreground font-mono">{invoices.length} faturas</span>
           </div>
@@ -229,10 +229,10 @@ function AdminMasterDashboard() {
             <table className="w-full text-xs text-left">
               <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-[10px]">
                 <tr>
-                  <th className="px-4 py-2.5">Descrição</th>
-                  <th className="px-4 py-2.5">Loja</th>
-                  <th className="px-4 py-2.5">Valor</th>
-                  <th className="px-4 py-2.5">Status</th>
+                  <th className="px-4 py-3">Descrição</th>
+                  <th className="px-4 py-3">Loja</th>
+                  <th className="px-4 py-3">Valor</th>
+                  <th className="px-4 py-3">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -247,7 +247,7 @@ function AdminMasterDashboard() {
                       <Badge
                         variant={inv.status === "paid" ? "default" : "secondary"}
                         className={cn(
-                          "text-[10px] font-medium px-2 py-0.5",
+                          "text-[10px] font-medium px-2 py-1",
                           inv.status === "paid" ? "bg-emerald-600/90 text-white" : ""
                         )}
                       >
@@ -270,7 +270,7 @@ function AdminMasterDashboard() {
       </div>
 
       {/* ── V113 DEEP CORE: TAXONOMIAS DINÂMICAS DO DOMÍNIO (platform_domain_taxonomies) ── */}
-      <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-2xs">
+      <div className="bg-card rounded-lg border border-border/60 overflow-hidden shadow-2xs">
         <div className="p-4 border-b border-border/40 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Layers className="size-4 text-primary" />
@@ -283,7 +283,7 @@ function AdminMasterDashboard() {
             <select
               value={newTaxGroup}
               onChange={(e) => setNewTaxGroup(e.target.value as any)}
-              className="h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-medium"
+              className="h-9 rounded-lg border border-border bg-background px-3 text-xs font-medium"
             >
               <option value="store_niche">Nicho de Loja</option>
               <option value="classified_category">Classificados</option>
@@ -296,19 +296,19 @@ function AdminMasterDashboard() {
               value={newTaxSlug}
               onChange={(e) => setNewTaxSlug(e.target.value)}
               placeholder="slug (ex: nautica)"
-              className="h-9 w-36 rounded-xl text-xs font-mono"
+              className="h-9 w-36 rounded-lg text-xs font-mono"
             />
             <Input
               value={newTaxLabel}
               onChange={(e) => setNewTaxLabel(e.target.value)}
               placeholder="Rótulo (ex: Náutica)"
-              className="h-9 w-40 rounded-xl text-xs"
+              className="h-9 w-40 rounded-lg text-xs"
             />
             <Button
               type="submit"
               size="sm"
               disabled={isSavingTax}
-              className="h-9 rounded-xl text-xs font-bold gap-1"
+              className="h-9 rounded-lg text-xs font-bold gap-1"
             >
               <Plus className="size-3.5" />
               <span>Adicionar</span>

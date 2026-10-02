@@ -39,7 +39,7 @@ export function JobDetailMobile({
             variant="outline"
             size="sm"
             onClick={onShare}
-            className="rounded-full font-semibold text-xs gap-1.5 h-11 px-4 border-border/60"
+            className="rounded-full font-semibold text-xs gap-2 h-11 px-4 border-border/60"
           >
             <ShareNetwork size={16} weight="bold" />
             <span>Compartilhar</span>
@@ -51,7 +51,7 @@ export function JobDetailMobile({
         {/* ── 2. Card de Identidade da Empresa e Vaga ── */}
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <div className="size-14 rounded-2xl bg-muted flex items-center justify-center text-foreground font-black text-lg shrink-0 overflow-hidden border border-border/50 shadow-xs">
+            <div className="size-14 rounded-lg bg-muted flex items-center justify-center text-foreground font-black text-lg shrink-0 overflow-hidden border border-border/50 shadow-xs">
               {job.company_logo_url ? (
                 <img
                   src={job.company_logo_url}
@@ -69,19 +69,19 @@ export function JobDetailMobile({
                   {job.company_name}
                 </span>
                 {job.is_featured && (
-                  <Badge variant="default" className="rounded-md font-mono text-[9px] uppercase px-1.5 py-0 shrink-0">
+                  <Badge variant="default" className="rounded-md font-mono text-[9px] uppercase px-2 py-0 shrink-0">
                     Destaque
                   </Badge>
                 )}
               </div>
-              <h1 className="text-xl font-black text-foreground tracking-tight leading-tight mt-0.5">
+              <h1 className="text-xl font-black text-foreground tracking-tight leading-tight mt-1">
                 {job.title}
               </h1>
             </div>
           </div>
 
           {/* Remuneração */}
-          <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
+          <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-between">
             <span className="text-[11px] font-mono text-muted-foreground uppercase font-bold tracking-wider">
               Remuneração Prevista
             </span>
@@ -109,18 +109,18 @@ export function JobDetailMobile({
           </div>
 
           {/* Tags de Contratação */}
-          <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <Badge variant="secondary" className="rounded-lg px-2.5 py-0.5 text-xs font-semibold gap-1">
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <Badge variant="secondary" className="rounded-lg px-3 py-1 text-xs font-semibold gap-1">
               <Briefcase size={12} weight="bold" />
               {job.contract_type}
             </Badge>
             {job.work_model && (
-              <Badge variant="outline" className="rounded-lg px-2 py-0.5 text-xs font-medium">
+              <Badge variant="outline" className="rounded-lg px-2 py-1 text-xs font-medium">
                 {job.work_model === "remote" ? "Remoto" : job.work_model === "hybrid" ? "Híbrido" : "Presencial"}
               </Badge>
             )}
             {job.experience_level && (
-              <Badge variant="outline" className="rounded-lg px-2 py-0.5 text-xs font-medium capitalize">
+              <Badge variant="outline" className="rounded-lg px-2 py-1 text-xs font-medium capitalize">
                 {job.experience_level}
               </Badge>
             )}
@@ -128,7 +128,7 @@ export function JobDetailMobile({
         </div>
 
         {/* ── 3. Descrição da Oportunidade ── */}
-        <div className="p-4 rounded-xl border border-border/70 bg-card space-y-2">
+        <div className="p-4 rounded-lg border border-border/70 bg-card space-y-2">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sobre a Vaga</h2>
           <p className="text-sm text-foreground/85 leading-relaxed whitespace-pre-line">
             {job.description}
@@ -137,12 +137,12 @@ export function JobDetailMobile({
 
         {/* ── 4. Requisitos e Benefícios ── */}
         {job.requirements && job.requirements.length > 0 && (
-          <div className="p-4 rounded-xl border border-border/70 bg-card space-y-2.5">
+          <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
             <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Requisitos</h2>
-            <ul className="space-y-1.5 text-xs text-foreground/85">
+            <ul className="space-y-2 text-xs text-foreground/85">
               {job.requirements.map((req: string, i: number) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="size-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                  <span className="size-1.5 rounded-full bg-primary mt-2 shrink-0" />
                   <span>{req}</span>
                 </li>
               ))}
@@ -151,11 +151,11 @@ export function JobDetailMobile({
         )}
 
         {job.benefits && job.benefits.length > 0 && (
-          <div className="p-4 rounded-xl border border-border/70 bg-card space-y-2.5">
+          <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
             <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Benefícios Oferecidos</h2>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {job.benefits.map((benefit: string, i: number) => (
-                <Badge key={i} variant="outline" className="text-xs py-1 px-2.5 rounded-lg border-border/60 bg-muted/20">
+                <Badge key={i} variant="outline" className="text-xs py-1 px-3 rounded-lg border-border/60 bg-muted/20">
                   {benefit}
                 </Badge>
               ))}
@@ -165,14 +165,14 @@ export function JobDetailMobile({
 
         {/* ── 5. Inteligência Salarial & Guia de Carreira (se match) ── */}
         {matchedProfession && (
-          <div className="p-4 rounded-xl border border-border/70 bg-card space-y-3">
+          <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Média Salarial Regional
               </span>
               <span className="text-[10px] font-mono text-muted-foreground">Guia de Mercado</span>
             </div>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-2">
               <div className="p-2 rounded-lg bg-muted/30 border border-border/40 text-center">
                 <span className="text-[9px] text-muted-foreground block font-medium">Júnior</span>
                 <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.junior_salary_cents)}</span>
@@ -191,7 +191,7 @@ export function JobDetailMobile({
 
         {/* ── 6. Perfil do Empregador (Employer Insights) ── */}
         {employerInsights && employerInsights.total_reviews > 0 && (
-          <div className="p-4 rounded-xl border border-border/70 bg-card space-y-2.5">
+          <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Perfil do Empregador
@@ -218,7 +218,7 @@ export function JobDetailMobile({
             variant="outline"
             size="lg"
             label="Falar com o Recrutador no WhatsApp"
-            className="w-full rounded-xl font-bold h-11 text-xs border-border/80 gap-2"
+            className="w-full rounded-lg font-bold h-11 text-xs border-border/80 gap-2"
           />
         )}
 
@@ -245,7 +245,7 @@ export function JobDetailMobile({
             href={job.external_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-1.5 h-12 px-5 rounded-xl bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors shadow-sm shrink-0"
+            className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors shadow-sm shrink-0"
           >
             <span>Site Oficial</span>
             <LinkSimple size={14} weight="bold" />
@@ -253,7 +253,7 @@ export function JobDetailMobile({
         ) : (
           <Button
             onClick={onOpenApply}
-            className="h-12 px-6 rounded-xl font-bold text-xs bg-foreground text-background gap-1.5 shadow-sm shrink-0"
+            className="h-12 px-6 rounded-lg font-bold text-xs bg-foreground text-background gap-2 shadow-sm shrink-0"
           >
             <PaperPlaneTilt size={16} weight="bold" />
             <span>Candidatar-se</span>

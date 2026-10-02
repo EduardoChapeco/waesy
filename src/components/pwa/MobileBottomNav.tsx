@@ -27,7 +27,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   return (
     <nav
       aria-label="Navegação do Aplicativo"
-      className="w-full bg-card/95 backdrop-blur-md border-t border-border/60 px-2 py-1.5 flex items-center justify-around shrink-0 select-none safe-area-bottom"
+      className="w-full bg-card/95 backdrop-blur-md border-t border-border/60 px-2 py-2 flex items-center justify-around shrink-0 select-none safe-area-bottom"
     >
       {tabs.map((tab) => {
         const Icon = tab.icon;
@@ -57,7 +57,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
             {showLabels && (
               <span
-                className="text-xs font-medium tracking-tight mt-0.5 truncate max-w-14"
+                className="text-xs font-medium tracking-tight mt-1 truncate max-w-14"
                 style={{
                   color: isActive ? accentColor : undefined,
                   fontWeight: isActive ? 600 : 500,

@@ -130,16 +130,16 @@ export function NoticiasFeedPage() {
             placeholder="Buscar matérias, autores..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="rounded-2xl h-11 bg-card text-xs border-border px-4"
+            className="rounded-lg h-11 bg-card text-xs border-border px-4"
           />
-          <Button type="submit" size="icon" className="size-11 rounded-2xl shrink-0 font-bold">
+          <Button type="submit" size="icon" className="size-11 rounded-lg shrink-0 font-bold">
             <MagnifyingGlass size={18} weight="bold" />
           </Button>
         </form>
       </div>
 
       <section aria-label="Editorias de Notícias" className="space-y-2">
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full px-0.5 focus:outline-none">
+        <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full px-1 focus:outline-none">
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.id;
 
@@ -149,7 +149,7 @@ export function NoticiasFeedPage() {
                 type="button"
                 onClick={() => handleFilterCategory(cat.id)}
                 className={cn(
-                  "h-11 px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+                  "h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                     : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -207,7 +207,7 @@ export function NoticiasFeedPage() {
 
       {/* ── 5. Manchete Principal em Destaque (Layout Vertical Apple HIG sem espremer) ── */}
       {featuredArticle && !searchQuery && (
-        <section className="relative rounded-2xl overflow-hidden bg-card border border-border/60 group hover-elevate transition-all">
+        <section className="relative rounded-lg overflow-hidden bg-card border border-border/60 group hover-elevate transition-all">
           <Link
             to="/noticias/$slug"
             params={{ slug: featuredArticle.slug }}
@@ -247,7 +247,7 @@ export function NoticiasFeedPage() {
                 <span className="text-xs font-bold text-foreground/80">
                   {featuredArticle.store_name || "Redação Waesy"}
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                <span className="inline-flex items-center gap-2 text-xs font-bold text-foreground group-hover:text-primary transition-colors">
                   <span>Ler Matéria Completa</span>
                   <ArrowRight className="size-4" />
                 </span>
@@ -305,7 +305,7 @@ export function NoticiasFeedPage() {
 
       {/* ── 8. Lista de Notícias Mais Recentes com Injeção Randômica de Anúncios ── */}
       {articles.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl border bg-card/50 space-y-3">
+        <div className="py-16 text-center rounded-lg border bg-card/50 space-y-3">
           <NewspaperClipping className="size-10 text-muted-foreground/40 mx-auto" />
           <h3 className="text-base font-bold text-foreground">Nenhuma notícia encontrada</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">

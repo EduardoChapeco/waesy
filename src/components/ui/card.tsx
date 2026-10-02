@@ -10,9 +10,9 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, windowVariant = "auto", ...props }, ref) => {
     const variantClasses = {
-      compact: "p-3.5 rounded-xl border border-border/60",
-      expanded: "p-6 rounded-2xl border border-border/50",
-      auto: "p-3.5 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl border border-border/50",
+      compact: "p-4 rounded-lg border border-border/60",
+      expanded: "p-6 rounded-lg border border-border/50",
+      auto: "p-4 sm:p-5 lg:p-6 rounded-lg sm:rounded-lg border border-border/50",
     }[windowVariant];
 
     return (

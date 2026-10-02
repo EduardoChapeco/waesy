@@ -214,19 +214,19 @@ function WorkspaceNoticiasIndexPage() {
                     size="sm"
                     variant="ghost"
                     onClick={() => setIsUpgradeModalOpen(true)}
-                    className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="h-8 px-3 rounded-lg text-xs font-semibold gap-2 text-muted-foreground hover:text-foreground cursor-pointer"
                     title="Configurar Chave IA"
                   >
                     <Star className="size-3.5 text-primary" />
                     <span>Curadoria IA (BYOK)</span>
                   </Button>
- <Button asChild variant="outline" size="sm" className="rounded-xl font-bold text-xs gap-1.5">
+ <Button asChild variant="outline" size="sm" className="rounded-lg font-bold text-xs gap-2">
  <Link to="/workspace/marketing/patrocinadores">
  <Megaphone className="size-3.5" />
  Patrocinadores e Ads
  </Link>
  </Button>
- <Button asChild size="sm" className="rounded-xl font-bold gap-1.5 text-xs">
+ <Button asChild size="sm" className="rounded-lg font-bold gap-2 text-xs">
  <Link to="/workspace/noticias/novo">
  <Plus className="size-3.5" />
  <span>Nova Matéria</span>
@@ -239,15 +239,15 @@ function WorkspaceNoticiasIndexPage() {
  {/* Abas */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
  <TabsList className="grid grid-cols-3 sm:grid-cols-3 h-10 w-full max-w-md mb-6 p-1">
-   <TabsTrigger value="materias" className="text-xs font-semibold gap-1.5 px-2">
+   <TabsTrigger value="materias" className="text-xs font-semibold gap-2 px-2">
      <Newspaper className="size-3.5 shrink-0" />
      <span className="truncate">Matérias ({articles.length})</span>
    </TabsTrigger>
-   <TabsTrigger value="mineradas" className="text-xs font-semibold gap-1.5 px-2">
+   <TabsTrigger value="mineradas" className="text-xs font-semibold gap-2 px-2">
      <Radio className="size-3.5 shrink-0" />
      <span className="truncate">Mineradas ({minedArticles.length})</span>
    </TabsTrigger>
-   <TabsTrigger value="pautas" className="text-xs font-semibold gap-1.5 px-2">
+   <TabsTrigger value="pautas" className="text-xs font-semibold gap-2 px-2">
      <Inbox className="size-3.5 shrink-0" />
      <span className="truncate">Pautas ({tips.length})</span>
    </TabsTrigger>
@@ -265,11 +265,11 @@ function WorkspaceNoticiasIndexPage() {
  {articles.map((art) => (
  <div
  key={art.id}
- className="p-4 sm:p-5 rounded-2xl bg-card border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+ className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
  >
  <div className="flex items-start gap-4 min-w-0">
  {art.cover_media_url && (
- <div className="size-16 rounded-xl overflow-hidden bg-muted shrink-0">
+ <div className="size-16 rounded-lg overflow-hidden bg-muted shrink-0">
  <img
  src={art.cover_media_url}
  alt={art.title}
@@ -341,7 +341,7 @@ function WorkspaceNoticiasIndexPage() {
           ) : (
             <div className="space-y-3">
               {/* Barra de Ações em Lote do OpenSquad */}
-              <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:px-4 rounded-xl bg-card border border-border/60 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:px-4 rounded-lg bg-card border border-border/60 shadow-2xs">
                 <div className="flex items-center gap-3">
                   <Checkbox
                     id="select-all-mined"
@@ -370,7 +370,7 @@ function WorkspaceNoticiasIndexPage() {
                     size="sm"
                     disabled={selectedMinedIds.length === 0 || isBatchProcessing}
                     onClick={() => handleBatchCurate("approve")}
-                    className="h-8 px-3 rounded-xl font-bold text-xs gap-1.5 shadow-2xs cursor-pointer"
+                    className="h-8 px-3 rounded-lg font-bold text-xs gap-2 shadow-2xs cursor-pointer"
                   >
                     {isBatchProcessing ? (
                       <Loader2 className="size-3.5 animate-spin" />
@@ -385,7 +385,7 @@ function WorkspaceNoticiasIndexPage() {
                     variant="outline"
                     disabled={selectedMinedIds.length === 0 || isBatchProcessing}
                     onClick={() => handleBatchCurate("reject")}
-                    className="h-8 px-3 rounded-xl font-bold text-xs gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10 cursor-pointer"
+                    className="h-8 px-3 rounded-lg font-bold text-xs gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 cursor-pointer"
                   >
                     <ThumbsDown className="size-3.5" />
                     Rejeitar
@@ -397,7 +397,7 @@ function WorkspaceNoticiasIndexPage() {
                 {minedArticles.map((mined) => (
  <div
                     key={mined.id}
-                    className={`p-4 sm:p-5 rounded-2xl bg-card border transition-colors space-y-3 ${
+                    className={`p-4 sm:p-5 rounded-lg bg-card border transition-colors space-y-3 ${
                       selectedMinedIds.includes(mined.id)
                         ? "border-primary/50 bg-primary/5 shadow-2xs"
                         : "border-border/60"
@@ -412,7 +412,7 @@ function WorkspaceNoticiasIndexPage() {
                             aria-label="Selecionar notícia"
                           />
                         </div>
-                  <div className="relative size-14 rounded-xl overflow-hidden bg-muted shrink-0">
+                  <div className="relative size-14 rounded-lg overflow-hidden bg-muted shrink-0">
                     <img
                       src={mined.ai_suggested_cover_url || getFallbackThematicImage(mined.ai_suggested_category)}
                       alt=""
@@ -437,7 +437,7 @@ function WorkspaceNoticiasIndexPage() {
  <span className="text-xs font-mono text-muted-foreground">
  {mined.source_domain}
  </span>
- <span className="text-xs font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+ <span className="text-xs font-bold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded">
  Score {mined.quality_score || 75}/100
  </span>
  </div>
@@ -460,7 +460,7 @@ function WorkspaceNoticiasIndexPage() {
                     size="sm"
                     onClick={() => handleGenerateCarouselFromMined(mined)}
                     disabled={isGeneratingCarousel}
-                    className="rounded-xl font-bold text-xs border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 gap-1 h-8"
+                    className="rounded-lg font-bold text-xs border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 gap-1 h-8"
                     title="Gerar Carrossel"
                   >
                     <Star className="size-3.5" />
@@ -470,7 +470,7 @@ function WorkspaceNoticiasIndexPage() {
                     size="sm"
                     disabled={curatingId === mined.id}
                     onClick={() => handleApproveMined(mined)}
-                    className="rounded-xl font-bold text-xs gap-1 h-8"
+                    className="rounded-lg font-bold text-xs gap-1 h-8"
                   >
                     {curatingId === mined.id ? (
                       <Loader2 className="size-3.5 animate-spin" />
@@ -484,7 +484,7 @@ function WorkspaceNoticiasIndexPage() {
  size="sm"
  disabled={curatingId === mined.id}
  onClick={() => handleRejectMined(mined.id)}
- className="rounded-xl font-bold text-xs border-destructive/30 text-destructive hover:bg-destructive/10 gap-1 h-8"
+ className="rounded-lg font-bold text-xs border-destructive/30 text-destructive hover:bg-destructive/10 gap-1 h-8"
  >
  <ThumbsDown className="size-3.5" />
  Rejeitar
@@ -510,7 +510,7 @@ function WorkspaceNoticiasIndexPage() {
  {tips.map((tip: any) => (
  <div
  key={tip.id}
- className="p-4 sm:p-5 rounded-2xl bg-card border border-border/60 space-y-3"
+ className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3"
  >
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs text-muted-foreground">

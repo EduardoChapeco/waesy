@@ -74,7 +74,7 @@ export function RestaurantHoursDeliverySection({
  return (
  <section className="py-12 bg-background w-full">
  <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
- <div className="text-center max-w-xl mx-auto space-y-1.5">
+ <div className="text-center max-w-xl mx-auto space-y-2">
  <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
  Operação
  </Badge>
@@ -83,14 +83,14 @@ export function RestaurantHoursDeliverySection({
 
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
  {/* Card 1: Horários de Cozinha */}
- <div className="p-5 rounded-2xl border border-border/80 bg-card space-y-3 shadow-2xs">
+ <div className="p-5 rounded-lg border border-border/80 bg-card space-y-3 shadow-2xs">
  <div className="flex items-center gap-2 text-foreground font-bold text-sm">
  <Clock className="size-4 text-primary" />
  <span>Horários da Cozinha</span>
  </div>
  <div className="space-y-2 text-xs">
  {activeOpeningHours.map((h, idx) => (
- <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-1.5 last:border-0 last:pb-0">
+ <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-2 last:border-0 last:pb-0">
  <span className="text-muted-foreground">{h.days}</span>
  <span className="font-semibold text-foreground font-mono">{h.hours}</span>
  </div>
@@ -99,17 +99,17 @@ export function RestaurantHoursDeliverySection({
  </div>
 
  {/* Card 2: Delivery & Prazos */}
- <div className="p-5 rounded-2xl border border-border/80 bg-card space-y-3 shadow-2xs">
+ <div className="p-5 rounded-lg border border-border/80 bg-card space-y-3 shadow-2xs">
  <div className="flex items-center gap-2 text-foreground font-bold text-sm">
  <Truck className="size-4 text-primary" />
  <span>Prazos e Taxas de Entrega</span>
  </div>
  <div className="space-y-2 text-xs">
- <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
+ <div className="flex items-center justify-between border-b border-border/40 pb-2">
  <span className="text-muted-foreground">Tempo Médio:</span>
  <span className="font-semibold text-foreground font-mono">{activeEstimatedTime}</span>
  </div>
- <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
+ <div className="flex items-center justify-between border-b border-border/40 pb-2">
  <span className="text-muted-foreground">Raio de Atendimento:</span>
  <span className="font-semibold text-foreground font-mono">Até {activeRadiusKm} km</span>
  </div>
@@ -130,7 +130,7 @@ export function RestaurantHoursDeliverySection({
  </div>
 
  {/* Card 3: Retirada no Balcão / Endereço */}
- <div className="p-5 rounded-2xl border border-border/80 bg-card space-y-3 shadow-2xs">
+ <div className="p-5 rounded-lg border border-border/80 bg-card space-y-3 shadow-2xs">
  <div className="flex items-center gap-2 text-foreground font-bold text-sm">
  <MapPin className="size-4 text-primary" />
  <span>Retirada e Local</span>
@@ -138,7 +138,7 @@ export function RestaurantHoursDeliverySection({
  <p className="text-xs text-muted-foreground leading-relaxed">
  Você também pode fazer seu pedido online e retirar no balcão sem fila e sem custo de entrega.
  </p>
- <div className="p-2.5 rounded-xl bg-muted/50 border border-border/60 text-xs font-semibold text-foreground truncate">
+ <div className="p-3 rounded-lg bg-muted/50 border border-border/60 text-xs font-semibold text-foreground truncate">
  {activeAddress}
  </div>
  </div>

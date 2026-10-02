@@ -40,7 +40,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
       {/* Safe Zone Superior: Cabeçalho Boarding Pass */}
       <div className="relative z-10 flex items-center justify-between pt-6 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-lg bg-sky-500/20 border border-sky-400/40 flex items-center justify-center">
             <Plane className="w-6 h-6 text-sky-400 rotate-45" />
           </div>
           <div>
@@ -54,7 +54,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
         </div>
 
         {data.verifiedPartner && (
-          <div className="flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 px-4 py-1.5 rounded-full text-sm font-semibold">
+          <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 px-4 py-2 rounded-full text-sm font-semibold">
             <ShieldCheck className="w-4 h-4" />
             <span>Agência Verificada</span>
           </div>
@@ -62,7 +62,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
       </div>
 
       {/* Cartão de Embarque Central (Ticket com Recortes Laterais) */}
-      <div className="relative z-10 bg-white text-slate-950 rounded-3xl overflow-hidden shadow-2xl flex-1 flex flex-col justify-between my-4 border border-slate-200">
+      <div className="relative z-10 bg-white text-slate-950 rounded-lg overflow-hidden shadow-2xl flex-1 flex flex-col justify-between my-4 border border-slate-200">
         {/* Bloco Superior do Ticket: Imagem do Destino */}
         <div className="relative h-[48%] overflow-hidden bg-slate-900">
           <img
@@ -84,7 +84,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
               </h2>
             </div>
             {data.promoBadge && (
-              <span className="bg-amber-400 text-slate-950 px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-wider shadow">
+              <span className="bg-amber-400 text-slate-950 px-4 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow">
                 {data.promoBadge}
               </span>
             )}
@@ -115,9 +115,9 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
                 {data.highlights.slice(0, 3).map((item, idx) => (
                   <div
                     key={idx}
-                    className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center"
+                    className="bg-slate-50 border border-slate-200/80 rounded-lg p-3 text-center"
                   >
-                    <span className="text-xs text-slate-400 uppercase font-bold block mb-0.5">
+                    <span className="text-xs text-slate-400 uppercase font-bold block mb-1">
                       Item {idx + 1}
                     </span>
                     <span className="text-sm font-bold text-slate-800 line-clamp-1">
@@ -132,7 +132,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
           {/* Rodapé Financeiro e Código de Embarque */}
           <div className="flex items-end justify-between pt-4 border-t border-slate-200">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
                 Investimento por Pessoa
               </span>
               <div className="text-4xl font-black text-slate-950 tracking-tight">
@@ -148,7 +148,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
             <div className="flex items-center gap-3">
               <div className="hidden sm:flex flex-col items-center opacity-70">
                 <QrCode className="w-12 h-12 text-slate-800" />
-                <span className="text-[10px] font-mono text-slate-500 uppercase mt-0.5">AUTH-W3Y</span>
+                <span className="text-[10px] font-mono text-slate-500 uppercase mt-1">AUTH-W3Y</span>
               </div>
             </div>
           </div>
@@ -157,7 +157,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
 
       {/* Safe Zone Inferior: Botão de Ação CTA em Destaque */}
       <div className="relative z-10 pt-2 pb-6">
-        <div className="w-full bg-gradient-to-r from-sky-400 to-emerald-400 hover:from-sky-300 hover:to-emerald-300 text-slate-950 py-5 px-8 rounded-2xl font-black text-2xl flex items-center justify-center gap-3 shadow-xl shadow-sky-500/20 transition-transform active:scale-98">
+        <div className="w-full bg-gradient-to-r from-sky-400 to-emerald-400 hover:from-sky-300 hover:to-emerald-300 text-slate-950 py-5 px-8 rounded-lg font-black text-2xl flex items-center justify-center gap-3 shadow-xl shadow-sky-500/20 transition-transform active:scale-98">
           <span>{data.ctaLabel || "Embarcar Agora"}</span>
           <ArrowRight className="w-7 h-7 text-slate-950" />
         </div>

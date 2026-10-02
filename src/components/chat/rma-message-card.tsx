@@ -43,8 +43,8 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
  const statusInfo = STATUS_CONFIG[payload.status] || { label: payload.status, variant: "outline" };
 
  return (
- <div className="my-2 rounded-2xl border border-destructive/20 bg-card p-4 space-y-3 max-w-sm sm:max-w-md w-full">
- <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2.5">
+ <div className="my-2 rounded-lg border border-destructive/20 bg-card p-4 space-y-3 max-w-sm sm:max-w-md w-full">
+ <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
  <div className="flex items-center gap-2">
  <ShieldAlert className="size-5 text-destructive shrink-0" strokeWidth={1.75} />
  <div>
@@ -63,13 +63,13 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
 
  <div className="space-y-1">
  <p className="text-xs font-bold text-foreground">{payload.title}</p>
- <p className="text-xs text-muted-foreground leading-relaxed bg-muted/30 p-2.5 rounded-xl">
+ <p className="text-xs text-muted-foreground leading-relaxed bg-muted/30 p-3 rounded-lg">
  "{payload.description}"
  </p>
  </div>
 
  {payload.photo_urls && payload.photo_urls.length > 0 && (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <span className="text-[10px] font-semibold text-muted-foreground flex items-center gap-1">
  <ImageIcon className="size-3" />
  Evidências anexadas ({payload.photo_urls.length})
@@ -81,7 +81,7 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
  href={url}
  target="_blank"
  rel="noopener noreferrer"
- className="size-14 shrink-0 rounded-xl overflow-hidden border border-border/80 hover:border-primary transition-colors group"
+ className="size-14 shrink-0 rounded-lg overflow-hidden border border-border/80 hover:border-primary transition-colors group"
  >
  <img src={url} alt="Evidência" className="size-full object-cover group-hover:scale-105 transition-transform" />
  </a>
@@ -91,7 +91,7 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
  )}
 
  {payload.resolution_notes && (
- <div className="rounded-xl bg-primary/5 border border-primary/20 p-2.5 text-xs text-foreground">
+ <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs text-foreground">
  <span className="font-bold text-primary block text-[10px] uppercase">Parecer da Empresa:</span>
  {payload.resolution_notes}
  </div>
@@ -102,7 +102,7 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
  <Button
  size="sm"
  onClick={onReviewTicket}
- className="h-8 text-xs font-bold rounded-xl"
+ className="h-8 text-xs font-bold rounded-lg"
  >
  Gerenciar Ocorrência
  </Button>

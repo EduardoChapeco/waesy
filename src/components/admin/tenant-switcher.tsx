@@ -39,7 +39,7 @@ export function TenantSwitcher({ identity }: TenantSwitcherProps) {
  // Só bloqueamos se houver 0 memberships (não deveria estar no admin, mas apenas por segurança).
  if (identity.memberships.length === 0) {
  return (
- <div className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-muted-foreground">
+ <div className="flex items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground">
  <Building className="h-4 w-4" />
  Perfil Pessoal
  </div>
@@ -58,7 +58,7 @@ export function TenantSwitcher({ identity }: TenantSwitcherProps) {
  variant="outline"
  role="combobox"
  aria-expanded={open}
- className="w-full justify-between sm:w-[240px]"
+ className="w-full justify-between sm:w-60"
  disabled={setContextMutation.isPending}
  >
  <div className="flex items-center gap-2 truncate">
@@ -68,7 +68,7 @@ export function TenantSwitcher({ identity }: TenantSwitcherProps) {
  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
  </Button>
  </PopoverTrigger>
- <PopoverContent className="w-[240px] p-0" align="start">
+ <PopoverContent className="w-60 p-0" align="start">
  <Command>
  <CommandInput placeholder="Buscar contexto..." />
  <CommandList>

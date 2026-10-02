@@ -203,7 +203,7 @@ export function StoreVitrineSectionsEditor({
                 return (
                   <div
                     key={section.id}
-                    className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
                       section.enabled
                         ? "bg-card border-border/70 shadow-2xs"
                         : "bg-muted/30 border-border/30 opacity-60"
@@ -288,20 +288,20 @@ export function StoreVitrineSectionsEditor({
                   });
                   setIsEditingCardOpen(true);
                 }}
-                className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1 cursor-pointer"
+                className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
               >
                 <Plus className="size-3.5" />
                 <span>Adicionar Card</span>
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 gap-2.5">
+            <div className="grid grid-cols-1 gap-3">
               {(cardsSection?.cards || []).map((card) => (
                 <div
                   key={card.id}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-muted/40 border border-border/60 gap-3"
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border/60 gap-3"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     {card.imageUrl ? (
                       <img
                         src={card.imageUrl}
@@ -351,13 +351,13 @@ export function StoreVitrineSectionsEditor({
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="h-10 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSaveAll}
-              className="h-10 px-5 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+              className="h-10 px-5 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
             >
               Salvar Vitrine
             </Button>
@@ -368,7 +368,7 @@ export function StoreVitrineSectionsEditor({
       {/* Sub-Modal para Edição de Card de Destaque */}
       {editingCard && (
         <Sheet open={isEditingCardOpen} onOpenChange={setIsEditingCardOpen}>
-          <SheetContent side="bottom" className="rounded-t-3xl p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+          <SheetContent side="bottom" className="rounded-t-lg p-6 space-y-4 max-h-[85vh] overflow-y-auto">
             <SheetHeader className="text-left border-b border-border/40 pb-2">
               <SheetTitle className="text-base font-bold">Editar Card de Destaque</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">
@@ -377,7 +377,7 @@ export function StoreVitrineSectionsEditor({
             </SheetHeader>
 
             <div className="space-y-4 text-xs">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="font-semibold">Imagem do Card</Label>
                 <ImageUpload
                   bucket="store-assets"
@@ -387,7 +387,7 @@ export function StoreVitrineSectionsEditor({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="font-semibold">Título do Card</Label>
                   <Input
                     value={editingCard.title}
@@ -395,11 +395,11 @@ export function StoreVitrineSectionsEditor({
                       setEditingCard((prev) => (prev ? { ...prev, title: e.target.value } : null))
                     }
                     placeholder="Ex: Coleção Inverno 2026"
-                    className="h-10 rounded-xl text-xs"
+                    className="h-10 rounded-lg text-xs"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="font-semibold">Badge / Etiqueta</Label>
                   <Input
                     value={editingCard.tag || ""}
@@ -407,12 +407,12 @@ export function StoreVitrineSectionsEditor({
                       setEditingCard((prev) => (prev ? { ...prev, tag: e.target.value } : null))
                     }
                     placeholder="Ex: Novo, Exclusivo, Oferta"
-                    className="h-10 rounded-xl text-xs"
+                    className="h-10 rounded-lg text-xs"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="font-semibold">Subtítulo / Descrição Rápida</Label>
                 <Input
                   value={editingCard.subtitle || ""}
@@ -420,11 +420,11 @@ export function StoreVitrineSectionsEditor({
                     setEditingCard((prev) => (prev ? { ...prev, subtitle: e.target.value } : null))
                   }
                   placeholder="Ex: Produtos selecionados com até 20% de desconto"
-                  className="h-10 rounded-xl text-xs"
+                  className="h-10 rounded-lg text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="font-semibold">Link ou Ação ao Clicar</Label>
                 <Input
                   value={editingCard.linkUrl || ""}
@@ -432,7 +432,7 @@ export function StoreVitrineSectionsEditor({
                     setEditingCard((prev) => (prev ? { ...prev, linkUrl: e.target.value } : null))
                   }
                   placeholder="Ex: whatsapp, #catalogo ou https://..."
-                  className="h-10 rounded-xl text-xs font-mono"
+                  className="h-10 rounded-lg text-xs font-mono"
                 />
               </div>
             </div>
@@ -441,14 +441,14 @@ export function StoreVitrineSectionsEditor({
               <Button
                 variant="outline"
                 onClick={() => setIsEditingCardOpen(false)}
-                className="h-10 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+                className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={() => handleSaveCard(editingCard)}
                 disabled={!editingCard.title.trim()}
-                className="h-10 px-5 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                className="h-10 px-5 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
               >
                 Salvar Card
               </Button>

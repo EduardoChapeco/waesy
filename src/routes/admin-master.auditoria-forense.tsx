@@ -153,7 +153,7 @@ function AdminMasterAuditoriaForensePage() {
         <Button
           onClick={handleRunFullAudit}
           disabled={isCheckingIntegrity}
-          className="rounded-xl h-10 px-4 text-xs font-bold gap-2 cursor-pointer shadow-sm"
+          className="rounded-lg h-10 px-4 text-xs font-bold gap-2 cursor-pointer shadow-sm"
         >
           <RefreshCw className={`size-3.5 ${isCheckingIntegrity ? "animate-spin" : ""}`} />
           <span>Auditar Cadeia Agora</span>
@@ -163,7 +163,7 @@ function AdminMasterAuditoriaForensePage() {
       {/* ── Cards de Status e Métricas de Segurança ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Status da Cadeia Criptográfica */}
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-2 shadow-2xs">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">Cadeia Criptográfica</span>
             {integrity?.isValid ? (
@@ -183,7 +183,7 @@ function AdminMasterAuditoriaForensePage() {
         </div>
 
         {/* Total de Blocos / Transações */}
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-2 shadow-2xs">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">Blocos no Ledger</span>
             <Layers className="size-5 text-primary" />
@@ -200,7 +200,7 @@ function AdminMasterAuditoriaForensePage() {
         </div>
 
         {/* RLS Zero-Trust Enforcement */}
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-2 shadow-2xs">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">Políticas RLS</span>
             <Lock className="size-5 text-indigo-600 dark:text-indigo-400" />
@@ -217,7 +217,7 @@ function AdminMasterAuditoriaForensePage() {
         </div>
 
         {/* Rastreabilidade IP & Telemetria */}
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-2 shadow-2xs">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">Telemetria de Origem</span>
             <Globe className="size-5 text-amber-600 dark:text-amber-400" />
@@ -236,12 +236,12 @@ function AdminMasterAuditoriaForensePage() {
 
       {/* ── Toolbar: Abas e Busca Unificada ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1">
           <button
             type="button"
             onClick={() => setActiveTab("ledger")}
             className={cn(
-              "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
+              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "ledger"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -253,7 +253,7 @@ function AdminMasterAuditoriaForensePage() {
             type="button"
             onClick={() => setActiveTab("events")}
             className={cn(
-              "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
+              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "events"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -265,7 +265,7 @@ function AdminMasterAuditoriaForensePage() {
             type="button"
             onClick={() => setActiveTab("defense")}
             className={cn(
-              "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
+              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "defense"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -281,7 +281,7 @@ function AdminMasterAuditoriaForensePage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Filtrar por hash, IP ou ação..."
-            className="pl-9 h-9 rounded-xl text-xs bg-background"
+            className="pl-9 h-9 rounded-lg text-xs bg-background"
           />
         </div>
       </div>
@@ -292,7 +292,7 @@ function AdminMasterAuditoriaForensePage() {
       {activeTab === "ledger" && (
         <div className="space-y-3">
           {filteredEntries.length === 0 ? (
-            <div className="p-8 sm:p-12 text-center rounded-2xl bg-card border border-border/70 space-y-2">
+            <div className="p-8 sm:p-12 text-center rounded-lg bg-card border border-border/70 space-y-2">
               <Database className="size-8 text-muted-foreground mx-auto" />
               <p className="text-sm font-semibold text-foreground">Nenhuma entrada no ledger ainda</p>
               <p className="text-xs text-muted-foreground">
@@ -300,7 +300,7 @@ function AdminMasterAuditoriaForensePage() {
               </p>
             </div>
           ) : (
-            <div className="border border-border/70 rounded-2xl overflow-hidden bg-card shadow-2xs">
+            <div className="border border-border/70 rounded-lg overflow-hidden bg-card shadow-2xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
@@ -335,14 +335,14 @@ function AdminMasterAuditoriaForensePage() {
                           {!e.amount_cents && !e.token_amount && "—"}
                         </td>
                         <td className="p-3">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-2">
                             <span className="text-muted-foreground font-mono" title={e.entry_hash}>
                               {(e.entry_hash || "").slice(0, 10)}...{(e.entry_hash || "").slice(-8)}
                             </span>
                             <button
                               type="button"
                               onClick={() => handleCopy(e.entry_hash, "Hash")}
-                              className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5"
+                              className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
                             >
                               <Copy className="size-3" />
                             </button>
@@ -380,12 +380,12 @@ function AdminMasterAuditoriaForensePage() {
       {activeTab === "events" && (
         <div className="space-y-3">
           {filteredEvents.length === 0 ? (
-            <div className="p-8 sm:p-12 text-center rounded-2xl bg-card border border-border/70 space-y-2">
+            <div className="p-8 sm:p-12 text-center rounded-lg bg-card border border-border/70 space-y-2">
               <FileCheck2 className="size-8 text-muted-foreground mx-auto" />
               <p className="text-sm font-semibold text-foreground">Nenhum evento forense encontrado</p>
             </div>
           ) : (
-            <div className="border border-border/70 rounded-2xl overflow-hidden bg-card shadow-2xs">
+            <div className="border border-border/70 rounded-lg overflow-hidden bg-card shadow-2xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
@@ -434,7 +434,7 @@ function AdminMasterAuditoriaForensePage() {
       {/* ABA 3: BLINDAGEM ANTI-DDOS & SEGURANÇA */}
       {activeTab === "defense" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs">
+          <div className="p-5 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs">
             <div className="flex items-center gap-2 text-primary font-bold text-sm">
               <ShieldCheck className="size-5" />
               <span>Diretrizes de Segurança de Nível Militar (Bacen / Zero-Trust)</span>
@@ -455,7 +455,7 @@ function AdminMasterAuditoriaForensePage() {
             </ul>
           </div>
 
-          <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs">
+          <div className="p-5 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs">
             <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
               <Terminal className="size-5" />
               <span>Proteção Anti-DDoS e Rate Limiting Ativo</span>
@@ -464,7 +464,7 @@ function AdminMasterAuditoriaForensePage() {
               <p>
                 As rotas de autenticação, pagamentos e propostas contam com rate limiting por IP (`extractClientIp`) e prevenção contra ataques de força bruta.
               </p>
-              <div className="p-3 rounded-xl bg-muted/25 border border-border/40 space-y-1 font-mono text-[11px] text-foreground">
+              <div className="p-3 rounded-lg bg-muted/25 border border-border/40 space-y-1 font-mono text-[11px] text-foreground">
                 <p>• Auth / Login: 10 requisições / minuto por IP</p>
                 <p>• Checkout & PIX: 20 requisições / minuto por IP</p>
                 <p>• Propostas & Negociações: 30 requisições / minuto por IP</p>

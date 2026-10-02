@@ -325,7 +325,7 @@ export default function TurismoRadarPage() {
               variant="ghost"
               size="sm"
               onClick={() => setIsAddAlertOpen(true)}
-              className="text-xs text-primary h-10 sm:h-7 px-3 gap-1 rounded-xl cursor-pointer"
+              className="text-xs text-primary h-10 sm:h-7 px-3 gap-1 rounded-lg cursor-pointer"
             >
               <Plus className="size-3.5" /> Adicionar Alerta
             </Button>
@@ -334,19 +334,19 @@ export default function TurismoRadarPage() {
             {topAlerts.map((alert: TravelAlert) => {
               const cfg = getAlertConfig(alert.severity);
               return (
-                <div key={alert.id} className={`flex items-start gap-3 p-4 rounded-2xl border ${cfg.bg}`}>
-                  <div className={`size-2 rounded-full mt-1.5 shrink-0 ${cfg.dot} animate-pulse`} />
+                <div key={alert.id} className={`flex items-start gap-3 p-4 rounded-lg border ${cfg.bg}`}>
+                  <div className={`size-2 rounded-full mt-2 shrink-0 ${cfg.dot} animate-pulse`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`text-xs font-semibold uppercase tracking-wide ${cfg.text}`}>
                         {alert.destination}
                       </span>
-                      <Badge variant="outline" className="text-xs uppercase px-1.5 py-0.5 font-bold">
+                      <Badge variant="outline" className="text-xs uppercase px-2 py-1 font-bold">
                         {alert.category}
                       </Badge>
                     </div>
-                    <p className="text-sm font-bold text-foreground mt-0.5">{alert.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{alert.description}</p>
+                    <p className="text-sm font-bold text-foreground mt-1">{alert.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{alert.description}</p>
                   </div>
                 </div>
               );
@@ -357,7 +357,7 @@ export default function TurismoRadarPage() {
 
       {/* ── Grid de Cards de Destino ── */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border/80 p-8 sm:p-12 text-center bg-card/40 space-y-4">
+        <div className="rounded-lg border border-dashed border-border/80 p-8 sm:p-12 text-center bg-card/40 space-y-4">
           <Globe className="size-12 mx-auto text-muted-foreground/40" />
           <div className="space-y-1">
             <h3 className="text-sm font-bold text-foreground">Nenhum destino monitorado neste filtro</h3>
@@ -365,12 +365,12 @@ export default function TurismoRadarPage() {
               Você pode cadastrar novos destinos sob demanda ou carregar a base canônica recomendada.
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Button
               variant="outline"
               size="default"
               onClick={handleSeedCanonical}
-              className="h-11 sm:h-9 px-4 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+              className="h-11 sm:h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
             >
               <TrendingUp className="size-3.5 text-amber-500" />
               <span>Semear Destinos Recomendados</span>
@@ -378,7 +378,7 @@ export default function TurismoRadarPage() {
             <Button
               size="default"
               onClick={() => setIsAddDestOpen(true)}
-              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer "
+              className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer "
             >
               <Plus className="size-3.5" />
               <span>Novo Destino</span>
@@ -398,7 +398,7 @@ export default function TurismoRadarPage() {
               <div
                 key={dest.id}
                 onClick={() => setSelectedDest(isSelected ? null : dest)}
-                className={`relative p-5 rounded-2xl border cursor-pointer transition-all duration-300  ${
+                className={`relative p-5 rounded-lg border cursor-pointer transition-all duration-300  ${
                   isSelected
                     ? 'border-primary bg-primary/5 ring-1 ring-primary/20 '
                     : 'border-border/70 bg-card hover:border-primary/40'
@@ -406,11 +406,11 @@ export default function TurismoRadarPage() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1">
+                    <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-semibold text-muted-foreground">{dest.continent}</span>
                       {dest.is_featured && <Star className="size-3 text-amber-400 fill-amber-400" />}
                       {dest.is_visa_required && (
-                        <Badge variant="destructive" className="text-xs px-1.5 py-0 font-bold">
+                        <Badge variant="destructive" className="text-xs px-2 py-0 font-bold">
                           VISTO
                         </Badge>
                       )}
@@ -418,12 +418,12 @@ export default function TurismoRadarPage() {
                     <h3 className="font-bold text-foreground text-base leading-tight truncate">
                       {dest.destination}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Melhor época: {dest.peak_season || 'Ano todo'}
                     </p>
                   </div>
 
-                  <div className={`shrink-0 p-2 rounded-xl border text-xs font-bold flex items-center gap-1 ${trend.bg} ${trend.color}`}>
+                  <div className={`shrink-0 p-2 rounded-lg border text-xs font-bold flex items-center gap-1 ${trend.bg} ${trend.color}`}>
                     <TrendIcon className="size-3.5" />
                     <span className="hidden sm:inline">{trend.label}</span>
                   </div>
@@ -439,32 +439,32 @@ export default function TurismoRadarPage() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 mt-4">
-                  <div className="text-center p-2 rounded-xl bg-muted/20 border border-border/40">
+                  <div className="text-center p-2 rounded-lg bg-muted/20 border border-border/40">
                     <p className="text-xs text-muted-foreground">Pacote Médio</p>
-                    <p className="text-xs font-semibold tabular-nums text-foreground mt-0.5">
+                    <p className="text-xs font-semibold tabular-nums text-foreground mt-1">
                       {dest.avg_package_brl ? `R$ ${(dest.avg_package_brl / 1000).toFixed(1)}k` : '—'}
                     </p>
                   </div>
-                  <div className="text-center p-2 rounded-xl bg-muted/20 border border-border/40">
+                  <div className="text-center p-2 rounded-lg bg-muted/20 border border-border/40">
                     <p className="text-xs text-muted-foreground">Diária Média</p>
-                    <p className="text-xs font-semibold tabular-nums text-foreground mt-0.5">
+                    <p className="text-xs font-semibold tabular-nums text-foreground mt-1">
                       {dest.avg_daily_rate_brl ? `R$ ${dest.avg_daily_rate_brl}` : '—'}
                     </p>
                   </div>
-                  <div className="text-center p-2 rounded-xl bg-muted/20 border border-border/40">
+                  <div className="text-center p-2 rounded-lg bg-muted/20 border border-border/40">
                     <p className="text-xs text-muted-foreground">Moeda / Câmbio</p>
-                    <p className="text-xs font-semibold tabular-nums text-foreground mt-0.5 font-mono">
+                    <p className="text-xs font-semibold tabular-nums text-foreground mt-1 font-mono">
                       {dest.currency_code || 'BRL'}
                     </p>
                   </div>
                 </div>
 
                 {Array.isArray(dest.tags) && dest.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-3">
+                  <div className="flex flex-wrap gap-2 mt-3">
                     {dest.tags.slice(0, 4).map((tag: string) => (
                       <span
                         key={tag}
-                        className="text-xs font-semibold px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground capitalize border border-border/40"
+                        className="text-xs font-semibold px-2 py-1 rounded-full bg-muted/40 text-muted-foreground capitalize border border-border/40"
                       >
                         {tag}
                       </span>
@@ -473,7 +473,7 @@ export default function TurismoRadarPage() {
                 )}
 
                 <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
-                  <span className={`flex items-center gap-1 text-xs font-bold rounded-full px-2 py-0.5 border ${safety.bg}`}>
+                  <span className={`flex items-center gap-1 text-xs font-bold rounded-full px-2 py-1 border ${safety.bg}`}>
                     <SafetyIcon className="size-3" />
                     {safety.label}
                   </span>
@@ -489,7 +489,7 @@ export default function TurismoRadarPage() {
                   <div className="mt-4 pt-4 border-t border-border/50 space-y-3 animate-in fade-in duration-200">
                     {Array.isArray(dest.highlights) && dest.highlights.length > 0 && (
                       <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-foreground mb-2 flex items-center gap-1.5">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-foreground mb-2 flex items-center gap-2">
                           <Zap className="size-3.5 text-amber-500" /> Destaques e Passeios
                         </h4>
                         <ul className="space-y-1">
@@ -512,7 +512,7 @@ export default function TurismoRadarPage() {
                           e.stopPropagation();
                           navigate({ to: '/workspace/turismo/destinos' });
                         }}
-                        className="flex-1 rounded-xl text-xs font-semibold h-11 sm:h-9 cursor-pointer"
+                        className="flex-1 rounded-lg text-xs font-semibold h-11 sm:h-9 cursor-pointer"
                       >
                         <Eye className="size-3.5 mr-1" />
                         CMS do Destino
@@ -526,7 +526,7 @@ export default function TurismoRadarPage() {
                             to: '/workspace/turismo/cotacoes',
                           });
                         }}
-                        className="flex-1 rounded-xl text-xs font-bold h-11 sm:h-9 bg-primary text-primary-foreground cursor-pointer "
+                        className="flex-1 rounded-lg text-xs font-bold h-11 sm:h-9 bg-primary text-primary-foreground cursor-pointer "
                       >
                         <Plane className="size-3.5 mr-1" />
                         Criar Cotação
@@ -564,23 +564,23 @@ export default function TurismoRadarPage() {
 
           <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Nome do Destino *</Label>
                 <Input
                   value={formDestination}
                   onChange={(e) => setFormDestination(e.target.value)}
                   placeholder="Ex: Porto de Galinhas, PE ou Roma, Itália"
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Continente</Label>
                 <Select value={formContinent} onValueChange={setFormContinent}>
-                  <SelectTrigger className="h-10 rounded-xl">
+                  <SelectTrigger className="h-10 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="América do Sul">América do Sul</SelectItem>
                     <SelectItem value="América do Norte">América do Norte</SelectItem>
                     <SelectItem value="América Central">América Central</SelectItem>
@@ -592,24 +592,24 @@ export default function TurismoRadarPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Código País (ISO 2)</Label>
                 <Input
                   value={formCountryCode}
                   onChange={(e) => setFormCountryCode(e.target.value)}
                   placeholder="BR, US, PT, AR..."
                   maxLength={2}
-                  className="h-10 rounded-xl uppercase font-mono"
+                  className="h-10 rounded-lg uppercase font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Tendência de Procura</Label>
                 <Select value={formTrend} onValueChange={(v) => setFormTrend(v as DestinationTrend)}>
-                  <SelectTrigger className="h-10 rounded-xl">
+                  <SelectTrigger className="h-10 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="rising">Alta Demanda (Subindo)</SelectItem>
                     <SelectItem value="stable">Estável</SelectItem>
                     <SelectItem value="falling">Queda / Baixa Temporada</SelectItem>
@@ -617,7 +617,7 @@ export default function TurismoRadarPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Índice de Demanda (0 a 100)</Label>
                 <Input
                   type="number"
@@ -625,17 +625,17 @@ export default function TurismoRadarPage() {
                   max="100"
                   value={formDemandScore}
                   onChange={(e) => setFormDemandScore(Number(e.target.value))}
-                  className="h-10 rounded-xl font-mono"
+                  className="h-10 rounded-lg font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Nível de Segurança</Label>
                 <Select value={formSafetyLevel} onValueChange={(v) => setFormSafetyLevel(v as SafetyLevel)}>
-                  <SelectTrigger className="h-10 rounded-xl">
+                  <SelectTrigger className="h-10 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="safe">Seguro</SelectItem>
                     <SelectItem value="moderate">Atenção Moderada</SelectItem>
                     <SelectItem value="caution">Cautela Recomendada</SelectItem>
@@ -644,65 +644,65 @@ export default function TurismoRadarPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Pacote Médio Sugerido (R$)</Label>
                 <Input
                   value={formAvgPackageBrl}
                   onChange={(e) => setFormAvgPackageBrl(e.target.value)}
                   placeholder="Ex: 4500"
-                  className="h-10 rounded-xl font-mono"
+                  className="h-10 rounded-lg font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Diária Média Hotel (R$)</Label>
                 <Input
                   value={formAvgDailyRateBrl}
                   onChange={(e) => setFormAvgDailyRateBrl(e.target.value)}
                   placeholder="Ex: 450"
-                  className="h-10 rounded-xl font-mono"
+                  className="h-10 rounded-lg font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Melhor Época / Sazonalidade</Label>
                 <Input
                   value={formPeakSeason}
                   onChange={(e) => setFormPeakSeason(e.target.value)}
                   placeholder="Ex: Outubro a Março"
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Temperatura Média (°C)</Label>
                 <Input
                   type="number"
                   value={formAvgTemp}
                   onChange={(e) => setFormAvgTemp(e.target.value)}
                   placeholder="Ex: 27"
-                  className="h-10 rounded-xl font-mono"
+                  className="h-10 rounded-lg font-mono"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Tags e Perfis (separados por vírgula)</Label>
               <Input
                 value={formTags}
                 onChange={(e) => setFormTags(e.target.value)}
                 placeholder="Ex: praia, família, compras, luxo, lua de mel"
-                className="h-10 rounded-xl"
+                className="h-10 rounded-lg"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Destaques e Atrativos Principais</Label>
               <Textarea
                 value={formHighlights}
                 onChange={(e) => setFormHighlights(e.target.value)}
                 placeholder="Ex: Centro histórico, Piscinas naturais, Museus..."
-                className="rounded-xl min-h-[80px]"
+                className="rounded-lg min-h-[80px]"
               />
             </div>
 
@@ -721,13 +721,13 @@ export default function TurismoRadarPage() {
           </div>
 
           <SheetFooter className="p-4 border-t border-border bg-card/60 flex items-center justify-end gap-2 shrink-0">
-            <Button variant="outline" onClick={() => setIsAddDestOpen(false)} className="h-11 sm:h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer">
+            <Button variant="outline" onClick={() => setIsAddDestOpen(false)} className="h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer">
               Cancelar
             </Button>
             <Button
               onClick={() => createDestMutation.mutate()}
               disabled={createDestMutation.isPending || !formDestination.trim()}
-              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer "
+              className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold cursor-pointer "
             >
               {createDestMutation.isPending ? 'Salvando...' : 'Salvar no Radar'}
             </Button>
@@ -753,24 +753,24 @@ export default function TurismoRadarPage() {
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Destino Afetado *</Label>
               <Input
                 value={alertDestName}
                 onChange={(e) => setAlertDestName(e.target.value)}
                 placeholder="Ex: Fernando de Noronha, BR ou Paris, França"
-                className="h-10 rounded-xl"
+                className="h-10 rounded-lg"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Gravidade</Label>
                 <Select value={alertSeverity} onValueChange={(v: any) => setAlertSeverity(v)}>
-                  <SelectTrigger className="h-10 rounded-xl">
+                  <SelectTrigger className="h-10 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="info">Informativo</SelectItem>
                     <SelectItem value="warning">Atenção / Moderado</SelectItem>
                     <SelectItem value="critical">Crítico / Urgente</SelectItem>
@@ -778,13 +778,13 @@ export default function TurismoRadarPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Categoria</Label>
                 <Select value={alertCategory} onValueChange={(v: any) => setAlertCategory(v)}>
-                  <SelectTrigger className="h-10 rounded-xl">
+                  <SelectTrigger className="h-10 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="operational">Operacional / Taxas</SelectItem>
                     <SelectItem value="currency">Câmbio / Economia</SelectItem>
                     <SelectItem value="weather">Clima / Meteorologia</SelectItem>
@@ -796,35 +796,35 @@ export default function TurismoRadarPage() {
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Título do Alerta *</Label>
               <Input
                 value={alertTitle}
                 onChange={(e) => setAlertTitle(e.target.value)}
                 placeholder="Ex: TPA Reajustada para 2026 / Dólar em Alta"
-                className="h-10 rounded-xl"
+                className="h-10 rounded-lg"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Instrução / Detalhes para a Equipe *</Label>
               <Textarea
                 value={alertDescription}
                 onChange={(e) => setAlertDescription(e.target.value)}
                 placeholder="Descreva a orientação aos consultores para aviso aos passageiros..."
-                className="rounded-xl min-h-[100px]"
+                className="rounded-lg min-h-[100px]"
               />
             </div>
           </div>
 
           <SheetFooter className="p-4 border-t border-border bg-card/60 flex items-center justify-end gap-2 shrink-0">
-            <Button variant="outline" onClick={() => setIsAddAlertOpen(false)} className="h-11 sm:h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer">
+            <Button variant="outline" onClick={() => setIsAddAlertOpen(false)} className="h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer">
               Cancelar
             </Button>
             <Button
               onClick={() => createAlertMutation.mutate()}
               disabled={createAlertMutation.isPending || !alertDestName.trim() || !alertTitle.trim()}
-              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer "
+              className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold cursor-pointer "
             >
               {createAlertMutation.isPending ? 'Salvando...' : 'Publicar Alerta'}
             </Button>

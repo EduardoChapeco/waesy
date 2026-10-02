@@ -193,12 +193,12 @@ export function ImageUpload({
  <div
  onPaste={handlePaste}
  tabIndex={0}
- className={cn("relative shrink-0 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-2xl", className)}
+ className={cn("relative shrink-0 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
  >
  {value ? (
- <div className="relative size-full rounded-2xl overflow-hidden border border-border bg-card group shadow-xs">
+ <div className="relative size-full rounded-lg overflow-hidden border border-border bg-card group shadow-xs">
  <img src={value} alt="Logo/Avatar" className="size-full object-cover" />
- <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+ <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
  <Button
  variant="secondary"
  size="icon"
@@ -231,7 +231,7 @@ export function ImageUpload({
  type="button"
  onClick={() => inputRef.current?.click()}
  disabled={isUploading}
- className="size-full rounded-2xl border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-2 text-muted-foreground group cursor-pointer"
+ className="size-full rounded-lg border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-2 text-muted-foreground group cursor-pointer"
  title="Enviar imagem 1:1"
  >
  {isUploading ? (
@@ -241,7 +241,7 @@ export function ImageUpload({
  <ImagePlus className="size-5 text-muted-foreground group-hover:text-foreground transition-colors mb-1" />
  <span className="text-[10px] font-bold tracking-tight text-center leading-none">
  Logo 1:1
- <span className="block text-[8px] font-normal text-muted-foreground mt-0.5">Ctrl+V</span>
+ <span className="block text-[8px] font-normal text-muted-foreground mt-1">Ctrl+V</span>
  </span>
  </>
  )}
@@ -278,11 +278,11 @@ export function ImageUpload({
  <div
  onPaste={handlePaste}
  tabIndex={0}
- className={cn("w-full flex flex-col gap-2 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-2xl", className)}
+ className={cn("w-full flex flex-col gap-2 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
  >
  {value ? (
  <div
- className="relative w-full rounded-2xl overflow-hidden border border-border/80 bg-muted/30 group shadow-xs"
+ className="relative w-full rounded-lg overflow-hidden border border-border/80 bg-muted/30 group shadow-xs"
  style={previewStyle}
  >
  <img src={value} alt="Capa" className="size-full object-cover" />
@@ -290,7 +290,7 @@ export function ImageUpload({
  <Button
  variant="secondary"
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5 bg-background/95 text-foreground"
+ className="rounded-lg font-bold text-xs gap-2 bg-background/95 text-foreground"
  onClick={() => {
  setCurrentImageSrc(value);
  setCropModalOpen(true);
@@ -304,7 +304,7 @@ export function ImageUpload({
  <Button
  variant="destructive"
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5"
+ className="rounded-lg font-bold text-xs gap-2"
  onClick={onRemove}
  type="button"
  >
@@ -319,7 +319,7 @@ export function ImageUpload({
  type="button"
  onClick={() => inputRef.current?.click()}
  disabled={isUploading}
- className="w-full rounded-2xl border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-4 text-muted-foreground group cursor-pointer gap-2"
+ className="w-full rounded-lg border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-4 text-muted-foreground group cursor-pointer gap-2"
  style={previewStyle}
  >
  {isUploading ? (
@@ -329,14 +329,14 @@ export function ImageUpload({
  </div>
  ) : (
  <>
- <div className="size-10 rounded-xl bg-background border border-border flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+ <div className="size-10 rounded-lg bg-background border border-border flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
  <ImagePlus className="size-5 text-foreground" />
  </div>
  <div className="text-center">
  <p className="text-xs font-bold text-foreground">
  Carregar Capa / Banner
  </p>
- <p className="text-[11px] text-muted-foreground mt-0.5">
+ <p className="text-[11px] text-muted-foreground mt-1">
  Proporção {getPresetLabel()} — clique ou cole com Ctrl+V.
  </p>
  </div>
@@ -373,11 +373,11 @@ export function ImageUpload({
  <div
  onPaste={handlePaste}
  tabIndex={0}
- className={cn("space-y-2 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-2xl", className)}
+ className={cn("space-y-2 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
  >
  {value ? (
  <div
- className="relative rounded-2xl overflow-hidden border border-border/80 bg-muted/30 group shadow-xs"
+ className="relative rounded-lg overflow-hidden border border-border/80 bg-muted/30 group shadow-xs"
  style={defaultStyle}
  >
  <img
@@ -389,7 +389,7 @@ export function ImageUpload({
  <Button
  variant="secondary"
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5 bg-background/95 text-foreground"
+ className="rounded-lg font-bold text-xs gap-2 bg-background/95 text-foreground"
  onClick={() => {
  setCurrentImageSrc(value);
  setCropModalOpen(true);
@@ -403,7 +403,7 @@ export function ImageUpload({
  <Button
  variant="destructive"
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5"
+ className="rounded-lg font-bold text-xs gap-2"
  onClick={onRemove}
  type="button"
  >
@@ -418,28 +418,28 @@ export function ImageUpload({
  onClick={() => inputRef.current?.click()}
  style={defaultStyle}
  className={cn(
- "border-2 border-dashed border-border/80 rounded-2xl flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-all bg-muted/40 hover:bg-muted/70 hover:border-foreground/30",
+ "border-2 border-dashed border-border/80 rounded-lg flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-all bg-muted/40 hover:bg-muted/70 hover:border-foreground/30",
  isUploading && "pointer-events-none opacity-60",
  )}
  >
- <div className="p-3 bg-background border border-border rounded-xl mb-2 text-muted-foreground shadow-xs">
+ <div className="p-3 bg-background border border-border rounded-lg mb-2 text-muted-foreground shadow-xs">
  <Upload className="size-5 text-foreground" />
  </div>
  <p className="text-xs font-bold text-foreground">
  {isUploading ? "Processando Imagem..." : "Adicionar Imagem"}
  </p>
- <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[240px]">
+ <p className="text-[11px] text-muted-foreground mt-1 max-w-60">
  {helperText ? `${helperText} • Cole com Ctrl+V` : `Enquadramento ${getPresetLabel()} • Cole com Ctrl+V`}
  </p>
  <Button
  type="button"
  variant="outline"
  size="sm"
- className="mt-1 rounded-xl text-xs font-bold h-8"
+ className="mt-1 rounded-lg text-xs font-bold h-8"
  onClick={() => inputRef.current?.click()}
  disabled={isUploading}
  >
- {isUploading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : "Selecionar e Recortar"}
+ {isUploading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : "Selecionar e Recortar"}
  </Button>
  </div>
  )}

@@ -271,11 +271,11 @@ export default function AgencyQuotesPage() {
 
         {/* ── 4. Alternador de Visualização: Funil Kanban vs Grade + Importar OCR ── */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-          <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-xl border border-border/40">
+          <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-lg border border-border/40">
             <button
               type="button"
               onClick={() => setViewMode("kanban")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                 viewMode === "kanban"
                   ? "bg-background text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -287,7 +287,7 @@ export default function AgencyQuotesPage() {
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                 viewMode === "grid"
                   ? "bg-background text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -340,7 +340,7 @@ export default function AgencyQuotesPage() {
               size="sm"
               disabled={isOcrLoading}
               onClick={() => document.getElementById("quote-ocr-file-input")?.click()}
-              className="h-8 rounded-xl text-xs font-bold gap-1.5 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer"
+              className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer"
             >
               <FileText size={14} />
               <span>{isOcrLoading ? "Lendo..." : " Importar Operadora (OCR)"}</span>
@@ -354,7 +354,7 @@ export default function AgencyQuotesPage() {
 
         {/* ── 5. Conteúdo: Funil Kanban ou Lista ── */}
         {filteredQuotes.length === 0 ? (
-          <div className="py-20 text-center space-y-3 bg-card rounded-2xl border border-border/60 p-8">
+          <div className="py-20 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
             <AirplaneTilt size={40} className="mx-auto text-muted-foreground" />
             <h3 className="text-sm font-bold text-foreground">Nenhuma cotação encontrada</h3>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -364,7 +364,7 @@ export default function AgencyQuotesPage() {
               type="button"
               size="sm"
               onClick={() => setIsNewSheetOpen(true)}
-              className="rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1.5"
+              className="rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2"
             >
               <Plus size={16} weight="bold" />
               <span>Cadastrar Primeira Cotação</span>
@@ -385,16 +385,16 @@ export default function AgencyQuotesPage() {
               return (
                 <div
                   key={col.id}
-                  className="flex-none w-80 bg-muted/20 border border-border/70 rounded-2xl flex flex-col shadow-2xs"
+                  className="flex-none w-80 bg-muted/20 border border-border/70 rounded-lg flex flex-col shadow-2xs"
                   style={{ borderTop: `3px solid ${col.color}` }}
                 >
                   {/* Cabeçalho da Coluna */}
-                  <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0 bg-card/60 rounded-t-2xl">
+                  <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0 bg-card/60 rounded-t-lg">
                     <div className="flex items-center gap-2">
                       <ColIcon size={16} style={{ color: col.color }} weight="bold" />
                       <h3 className="text-xs font-bold text-foreground">{col.title}</h3>
                     </div>
-                    <Badge variant="outline" className="font-mono text-xs h-5 px-1.5">
+                    <Badge variant="outline" className="font-mono text-xs h-5 px-2">
                       {colQuotes.length}
                     </Badge>
                   </div>
@@ -402,7 +402,7 @@ export default function AgencyQuotesPage() {
                   {/* Cards da Coluna */}
                   <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
                     {colQuotes.length === 0 ? (
-                      <div className="h-28 rounded-xl border border-dashed border-border/60 flex items-center justify-center text-xs text-muted-foreground/75 text-muted-foreground text-center p-3">
+                      <div className="h-28 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-xs text-muted-foreground/75 text-muted-foreground text-center p-3">
                         Nenhum lead nesta etapa
                       </div>
                     ) : (
@@ -414,11 +414,11 @@ export default function AgencyQuotesPage() {
                         return (
                           <Card
                             key={q.id}
-                            className="p-3.5 rounded-xl border border-border/70 bg-card space-y-2.5 hover:border-primary/50 transition-all shadow-none flex flex-col justify-between"
+                            className="p-4 rounded-lg border border-border/70 bg-card space-y-3 hover:border-primary/50 transition-all shadow-none flex flex-col justify-between"
                           >
-                            <div className="space-y-1.5">
+                            <div className="space-y-2">
                               <div className="flex items-center justify-between gap-1">
-                                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-primary/10 text-primary truncate max-w-44">
+                                <span className="text-xs font-mono font-bold px-2 py-1 rounded bg-primary/10 text-primary truncate max-w-44">
                                   {q.destination_city}
                                 </span>
                                 {q.quote_amount_cents && q.quote_amount_cents > 0 ? (
@@ -457,7 +457,7 @@ export default function AgencyQuotesPage() {
                             {/* Ações Rápidas no Card */}
                             <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-1">
                               {/* Mover para trás */}
-                              <div className="flex items-center gap-0.5">
+                              <div className="flex items-center gap-1">
                                 {col.id !== "new" && (
                                   <button
                                     type="button"
@@ -512,7 +512,7 @@ export default function AgencyQuotesPage() {
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => createProposalMutation.mutate(q)}
-                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 rounded-xl sm:rounded-lg font-bold text-primary hover:bg-primary/10"
+                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 rounded-lg sm:rounded-lg font-bold text-primary hover:bg-primary/10"
                                   title="Criar Proposta no Studio"
                                 >
                                   Lâmina
@@ -522,7 +522,7 @@ export default function AgencyQuotesPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => openManageModal(q)}
-                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 rounded-xl sm:rounded-lg font-bold gap-1 cursor-pointer"
+                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 rounded-lg sm:rounded-lg font-bold gap-1 cursor-pointer"
                                 >
                                   Gerenciar
                                 </Button>
@@ -581,30 +581,30 @@ export default function AgencyQuotesPage() {
  return (
  <Card
  key={q.id}
- className="p-5 rounded-2xl border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-all flex flex-col justify-between shadow-none"
+ className="p-5 rounded-lg border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-all flex flex-col justify-between shadow-none"
  >
  <div className="space-y-3">
  {/* Top Header do Card */}
  <div className="flex items-center justify-between gap-2">
- <span className="text-xs text-muted-foreground/75 font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary">
+ <span className="text-xs text-muted-foreground/75 font-mono font-bold px-2 py-1 rounded-md bg-primary/10 text-primary">
  {tripTypeLabel}
  </span>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  {q.quote_amount_cents && q.quote_amount_cents > 0 && (
- <span className="text-xs font-mono font-black text-foreground px-2 py-0.5 rounded-md bg-muted/60">
+ <span className="text-xs font-mono font-black text-foreground px-2 py-1 rounded-md bg-muted/60">
  {formatMoney(q.quote_amount_cents)}
  </span>
  )}
- <span className={`text-xs font-mono uppercase font-bold px-2 py-0.5 rounded-md border ${statusBadgeVariant}`}>
+ <span className={`text-xs font-mono uppercase font-bold px-2 py-1 rounded-md border ${statusBadgeVariant}`}>
  {statusLabel}
  </span>
  </div>
  </div>
 
  {/* Rota da Viagem: Origem -> Destino */}
- <div className="p-3 rounded-xl bg-muted/40 border border-border/40 space-y-1">
+ <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-1">
  <div className="flex items-center justify-between text-xs font-bold text-foreground">
- <span className="flex items-center gap-1.5">
+ <span className="flex items-center gap-2">
  <MapPin size={14} className="text-muted-foreground" />
  <span>{q.origin_city} {q.origin_iata && `(${q.origin_iata})`}</span>
  </span>
@@ -622,7 +622,7 @@ export default function AgencyQuotesPage() {
  {q.return_date ? formatDate(q.return_date) : "Data a definir"}
  </span>
  {q.flexible_dates && (
- <Badge variant="secondary" className="text-xs py-0 px-1.5">
+ <Badge variant="secondary" className="text-xs py-0 px-2">
  +/- 3 dias
  </Badge>
  )}
@@ -631,7 +631,7 @@ export default function AgencyQuotesPage() {
  </div>
 
  {/* Detalhes de Passageiros */}
- <div className="space-y-1.5 text-xs text-muted-foreground">
+ <div className="space-y-2 text-xs text-muted-foreground">
  <div className="flex items-center gap-2">
  <Users size={14} className="text-foreground shrink-0" />
  <span className="font-bold text-foreground">
@@ -652,13 +652,13 @@ export default function AgencyQuotesPage() {
  </div>
 
  {q.special_notes && (
- <p className="text-xs text-muted-foreground/75 italic bg-muted/20 p-2.5 rounded-xl border border-border/40 text-muted-foreground line-clamp-2">
+ <p className="text-xs text-muted-foreground/75 italic bg-muted/20 p-3 rounded-lg border border-border/40 text-muted-foreground line-clamp-2">
  "{q.special_notes}"
  </p>
  )}
 
  {q.agency_notes && (
- <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground/75 text-muted-foreground">
+ <div className="p-3 rounded-lg bg-muted/40 border border-border/60 text-xs text-muted-foreground/75 text-muted-foreground">
  <span className="font-semibold block text-xs uppercase text-foreground">Nota Interna:</span>
  <span>{q.agency_notes}</span>
  </div>
@@ -667,7 +667,7 @@ export default function AgencyQuotesPage() {
  </div>
 
  {/* Rodapé & Ações do Lead */}
- <div className="pt-3 border-t border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+ <div className="pt-3 border-t border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div className="min-w-0">
  <span className="text-xs font-bold text-foreground block truncate">
  {q.contact_name}
@@ -677,14 +677,14 @@ export default function AgencyQuotesPage() {
  </span>
  </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 w-full sm:w-auto pt-2 sm:pt-0 border-t border-border/40 sm:border-0">
-                    <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t border-border/40 sm:border-0">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
                       <Button
                         type="button"
                         size="sm"
                         variant="outline"
                         onClick={() => openManageModal(q)}
-                        className="flex-1 sm:flex-none rounded-xl font-bold text-xs h-11 sm:h-8 px-3.5 sm:px-2.5 border-border gap-1 cursor-pointer"
+                        className="flex-1 sm:flex-none rounded-lg font-bold text-xs h-11 sm:h-8 px-4 sm:px-3 border-border gap-1 cursor-pointer"
                       >
                         <PencilSimple size={13} weight="bold" />
                         <span>Gerenciar</span>
@@ -696,7 +696,7 @@ export default function AgencyQuotesPage() {
                         variant="outline"
                         disabled={createProposalMutation.isPending}
                         onClick={() => createProposalMutation.mutate(q)}
-                        className="flex-1 sm:flex-none rounded-xl font-bold text-xs h-11 sm:h-8 px-3.5 sm:px-2.5 border-border gap-1 cursor-pointer text-primary"
+                        className="flex-1 sm:flex-none rounded-lg font-bold text-xs h-11 sm:h-8 px-4 sm:px-3 border-border gap-1 cursor-pointer text-primary"
                       >
                         <FileText size={13} weight="bold" />
                         <span>Criar Lâmina</span>
@@ -706,7 +706,7 @@ export default function AgencyQuotesPage() {
                     <Button
                       asChild
                       size="sm"
-                      className="w-full sm:w-auto rounded-xl font-bold text-xs h-11 sm:h-8 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer"
+                      className="w-full sm:w-auto rounded-lg font-bold text-xs h-11 sm:h-8 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer"
                     >
                       <a
                         href={`https://wa.me/55${cleanWhatsapp}?text=${waMessage}`}
@@ -759,7 +759,7 @@ export default function AgencyQuotesPage() {
            <Button
              variant="outline"
              size="sm"
-             className="h-9 px-3 gap-1.5 text-xs text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-xl"
+             className="h-9 px-3 gap-2 text-xs text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg"
              asChild
            >
              <a
@@ -777,7 +777,7 @@ export default function AgencyQuotesPage() {
 
      <div className="flex-1 p-6 space-y-6 overflow-y-auto no-scrollbar">
        {/* Card Resumo do Lead */}
-       <div className="p-4 rounded-2xl bg-muted/40 border border-border/40 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+       <div className="p-4 rounded-lg bg-muted/40 border border-border/40 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
          <div>
            <span className="text-xs uppercase font-bold text-muted-foreground block">Destino Desejado</span>
            <strong className="text-foreground text-sm font-semibold">{managingQuote?.destination_city || "A Definir"}</strong>
@@ -793,7 +793,7 @@ export default function AgencyQuotesPage() {
          </div>
          <div>
            <span className="text-xs uppercase font-bold text-muted-foreground block">WhatsApp / Contato</span>
-           <div className="flex items-center gap-2 mt-0.5">
+           <div className="flex items-center gap-2 mt-1">
              <strong className="text-foreground text-sm font-mono font-medium">{managingQuote?.contact_whatsapp || "Não informado"}</strong>
              {managingQuote?.contact_whatsapp && (
                <button
@@ -817,8 +817,8 @@ export default function AgencyQuotesPage() {
        </div>
 
        {managingQuote?.special_notes && (
-         <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1.5">
-           <span className="text-xs uppercase font-bold text-muted-foreground block flex items-center gap-1.5">
+         <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-2">
+           <span className="text-xs uppercase font-bold text-muted-foreground block flex items-center gap-2">
              <FileText size={12} className="text-primary" />
              <span>Dossiê Completo da Cotação</span>
            </span>
@@ -827,13 +827,13 @@ export default function AgencyQuotesPage() {
        )}
 
        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-         <div className="space-y-1.5">
+         <div className="space-y-2">
            <Label className="text-xs font-bold">Fase / Status no Funil de Vendas</Label>
            <Select value={editStatus} onValueChange={(v: any) => setEditStatus(v)}>
-             <SelectTrigger className="h-11 text-xs rounded-xl">
+             <SelectTrigger className="h-11 text-xs rounded-lg">
                <SelectValue />
              </SelectTrigger>
-             <SelectContent className="rounded-xl">
+             <SelectContent className="rounded-lg">
                <SelectItem value="new">Nova Cotação (Não iniciada)</SelectItem>
                <SelectItem value="analyzing">Em Análise / Montando Roteiro</SelectItem>
                <SelectItem value="quoted">Orçamento Enviado ao Cliente</SelectItem>
@@ -843,23 +843,23 @@ export default function AgencyQuotesPage() {
            </Select>
          </div>
 
-         <div className="space-y-1.5">
+         <div className="space-y-2">
            <Label className="text-xs font-bold">Valor do Orçamento Final (R$)</Label>
            <Input
              value={editQuoteAmount}
              onChange={(e) => setEditQuoteAmount(e.target.value)}
              placeholder="Ex: 5890.00"
-             className="h-11 rounded-xl text-xs font-mono"
+             className="h-11 rounded-lg text-xs font-mono"
            />
          </div>
 
-         <div className="space-y-1.5 md:col-span-2">
+         <div className="space-y-2 md:col-span-2">
            <Label className="text-xs font-bold">Notas Internas da Negociação e Preferências</Label>
            <Textarea
              value={editAgencyNotes}
              onChange={(e) => setEditAgencyNotes(e.target.value)}
              placeholder="Ex: Cliente prefere voo direto pela manhã. Hotel com café incluso e seguro viagem internacional."
-             className="rounded-xl text-xs resize-none"
+             className="rounded-lg text-xs resize-none"
              rows={4}
            />
          </div>
@@ -883,7 +883,7 @@ export default function AgencyQuotesPage() {
              },
            });
          }}
-         className="text-destructive text-xs rounded-xl h-10 hover:bg-destructive/10 cursor-pointer"
+         className="text-destructive text-xs rounded-lg h-10 hover:bg-destructive/10 cursor-pointer"
        >
          <Trash size={14} className="mr-1" />
          <span>Excluir Cotação</span>
@@ -895,7 +895,7 @@ export default function AgencyQuotesPage() {
            variant="outline"
            size="sm"
            onClick={() => setManagingQuote(null)}
-           className="rounded-xl text-xs h-10 px-4 cursor-pointer"
+           className="rounded-lg text-xs h-10 px-4 cursor-pointer"
          >
            Cancelar
          </Button>
@@ -904,7 +904,7 @@ export default function AgencyQuotesPage() {
            size="sm"
            disabled={updateQuoteMutation.isPending}
            onClick={() => updateQuoteMutation.mutate()}
-           className="rounded-xl text-xs h-10 px-5 font-bold bg-primary text-primary-foreground cursor-pointer"
+           className="rounded-lg text-xs h-10 px-5 font-bold bg-primary text-primary-foreground cursor-pointer"
          >
            {updateQuoteMutation.isPending ? "Salvando..." : "Salvar Alterações"}
          </Button>

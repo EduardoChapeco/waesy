@@ -40,9 +40,9 @@ export function TokenEconomyBanner() {
   const mechanicalTotal = metrics?.totalMechanicalExtractions || 81;
 
   return (
-    <div className="w-full rounded-2xl border border-border/60 bg-card p-4 sm:p-5 relative overflow-hidden">
+    <div className="w-full rounded-lg border border-border/60 bg-card p-4 sm:p-5 relative overflow-hidden">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="space-y-1.5 max-w-2xl">
+        <div className="space-y-2 max-w-2xl">
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 rounded-full bg-primary" />
             <Badge variant="outline" className="text-[10px] font-mono border-border/80 text-foreground bg-muted/40">
@@ -62,8 +62,8 @@ export function TokenEconomyBanner() {
         </div>
 
         {/* Big KPI Numbers */}
-        <div className="flex items-center gap-3 sm:gap-6 bg-muted/20 border border-border/50 p-3 rounded-xl shrink-0 self-stretch md:self-auto justify-between sm:justify-start">
-          <div className="space-y-0.5">
+        <div className="flex items-center gap-3 sm:gap-6 bg-muted/20 border border-border/50 p-3 rounded-lg shrink-0 self-stretch md:self-auto justify-between sm:justify-start">
+          <div className="space-y-1">
             <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Tokens Economizados
             </div>
@@ -78,7 +78,7 @@ export function TokenEconomyBanner() {
 
           <div className="h-10 w-px bg-border/40" />
 
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Importações Diretas
             </div>
@@ -128,14 +128,14 @@ export function DataJudMiningPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="p-4 rounded-xl border border-border/40 bg-card space-y-3">
+      <div className="p-4 rounded-lg border border-border/40 bg-card space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
               <Scale className="w-4 h-4 text-primary" />
               Mineração de Processos Judiciais (DataJud CNJ)
             </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Consulte e indexe qualquer processo do Brasil via protocolo unificado do CNJ (TJSC, TJSP, TRF4, TRT12, etc.).
             </p>
           </div>
@@ -149,22 +149,22 @@ export function DataJudMiningPanel() {
             value={processNumber}
             onChange={(e) => setProcessNumber(e.target.value)}
             placeholder="0001234-56.2024.8.24.0018 ou 20 dígitos"
-            className="h-10 text-xs font-mono rounded-xl bg-background"
+            className="h-10 text-xs font-mono rounded-lg bg-background"
             disabled={isMining}
           />
           <Button
             type="submit"
             disabled={isMining || !processNumber.trim()}
-            className="h-10 px-5 rounded-xl font-medium shrink-0"
+            className="h-10 px-5 rounded-lg font-medium shrink-0"
           >
             {isMining ? (
               <>
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Consultando CNJ...
               </>
             ) : (
               <>
-                <Search className="w-4 h-4 mr-1.5" />
+                <Search className="w-4 h-4 mr-2" />
                 Minerar Processo
               </>
             )}
@@ -193,7 +193,7 @@ export function DataJudMiningPanel() {
 
       {/* Resultado da Mineração */}
       {result && (
-        <div className="p-4 sm:p-5 rounded-xl border border-border/40 bg-card space-y-4 animate-in fade-in-50">
+        <div className="p-4 sm:p-5 rounded-lg border border-border/40 bg-card space-y-4 animate-in fade-in-50">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
             <div>
               <div className="flex items-center gap-2">
@@ -219,20 +219,20 @@ export function DataJudMiningPanel() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="space-y-1.5 p-3 rounded-lg bg-muted/30 border border-border/30">
+            <div className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border/30">
               <div className="font-semibold text-foreground">Classe & Assunto:</div>
               <div><strong className="text-muted-foreground">Classe:</strong> {result.class_name}</div>
               <div><strong className="text-muted-foreground">Assunto:</strong> {result.subject_name}</div>
               <div><strong className="text-muted-foreground">Órgão Julgador:</strong> {result.organ_name || "Vara Regional"}</div>
             </div>
 
-            <div className="space-y-1.5 p-3 rounded-lg bg-muted/30 border border-border/30">
+            <div className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border/30">
               <div className="font-semibold text-foreground">Partes Envolvidas:</div>
               {Array.isArray(result.parties) && result.parties.length > 0 ? (
                 result.parties.map((p: any, idx: number) => (
                   <div key={idx} className="flex justify-between">
                     <span className="text-muted-foreground">{p.role}:</span>
-                    <span className="font-medium text-foreground truncate max-w-[200px]">{p.name}</span>
+                    <span className="font-medium text-foreground truncate max-w-52">{p.name}</span>
                   </div>
                 ))
               ) : (
@@ -244,7 +244,7 @@ export function DataJudMiningPanel() {
           {/* Última Movimentação */}
           <div className="p-3 rounded-lg bg-background border border-border/40 space-y-1">
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-              <span className="font-medium text-foreground flex items-center gap-1.5">
+              <span className="font-medium text-foreground flex items-center gap-2">
                 <Clock className="w-3.5 h-3.5 text-primary" />
                 Última Movimentação Processual
               </span>
@@ -297,14 +297,14 @@ export function PlacesMiningPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="p-4 rounded-xl border border-border/40 bg-card space-y-3">
+      <div className="p-4 rounded-lg border border-border/40 bg-card space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary" />
               Mineração de Empresas Locais (Places / Diretório)
             </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Enriqueça o diretório urbano e pré-cadastre estabelecimentos comerciais da região sem custos de APIs do Google Cloud.
             </p>
           </div>
@@ -318,29 +318,29 @@ export function PlacesMiningPanel() {
             value={queryTerm}
             onChange={(e) => setQueryTerm(e.target.value)}
             placeholder="Nicho (ex: Restaurantes, Hotéis, Academias)"
-            className="h-10 text-xs rounded-xl bg-background"
+            className="h-10 text-xs rounded-lg bg-background"
             disabled={isMining}
           />
           <Input
             value={city}
             onChange={(e) => setCity(e.target.value)}
             placeholder="Cidade (ex: Chapecó, Florianópolis)"
-            className="h-10 text-xs rounded-xl bg-background"
+            className="h-10 text-xs rounded-lg bg-background"
             disabled={isMining}
           />
           <Button
             type="submit"
             disabled={isMining || !queryTerm.trim()}
-            className="h-10 px-5 rounded-xl font-medium"
+            className="h-10 px-5 rounded-lg font-medium"
           >
             {isMining ? (
               <>
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Minerando Locais...
               </>
             ) : (
               <>
-                <Building2 className="w-4 h-4 mr-1.5" />
+                <Building2 className="w-4 h-4 mr-2" />
                 Minerar Empresas
               </>
             )}
@@ -354,7 +354,7 @@ export function PlacesMiningPanel() {
               key={n}
               type="button"
               onClick={() => setQueryTerm(n)}
-              className="px-2 py-0.5 rounded-md bg-muted/50 hover:bg-muted text-foreground text-[10px]"
+              className="px-2 py-1 rounded-md bg-muted/50 hover:bg-muted text-foreground text-[10px]"
             >
               {n}
             </button>
@@ -364,7 +364,7 @@ export function PlacesMiningPanel() {
 
       {/* Lista de Empresas Mineradas */}
       {harvestResult && harvestResult.places && (
-        <div className="p-4 rounded-xl border border-border/40 bg-card space-y-3">
+        <div className="p-4 rounded-lg border border-border/40 bg-card space-y-3">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-foreground">
               {harvestResult.places.length} Empresas Encontradas em {city}
@@ -376,11 +376,11 @@ export function PlacesMiningPanel() {
 
           <div className="divide-y divide-border/30">
             {harvestResult.places.map((place: any, idx: number) => (
-              <div key={idx} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                <div className="space-y-0.5">
-                  <div className="font-medium text-foreground flex items-center gap-1.5">
+              <div key={idx} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                <div className="space-y-1">
+                  <div className="font-medium text-foreground flex items-center gap-2">
                     <span>{place.businessName}</span>
-                    <Badge variant="secondary" className="text-[9px] uppercase px-1.5 py-0 font-mono">
+                    <Badge variant="secondary" className="text-[9px] uppercase px-2 py-0 font-mono">
                       {place.category}
                     </Badge>
                   </div>
@@ -445,14 +445,14 @@ export function SpecializedUrlMiningPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="p-4 rounded-xl border border-border/40 bg-card space-y-3">
+      <div className="p-4 rounded-lg border border-border/40 bg-card space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
               <Utensils className="w-4 h-4 text-primary" />
               Extrator Mecânico de Receitas, Eventos e Notícias
             </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Insira qualquer URL de culinária, ingressos/eventos ou portais jornalísticos para extração determinística com Zero Tokens.
             </p>
           </div>
@@ -466,22 +466,22 @@ export function SpecializedUrlMiningPanel() {
             value={targetUrl}
             onChange={(e) => setTargetUrl(e.target.value)}
             placeholder="https://tudogostoso.com.br/receita/... ou https://sympla.com.br/evento/..."
-            className="h-10 text-xs rounded-xl bg-background"
+            className="h-10 text-xs rounded-lg bg-background"
             disabled={isMining}
           />
           <Button
             type="submit"
             disabled={isMining || !targetUrl.trim()}
-            className="h-10 px-5 rounded-xl font-medium shrink-0"
+            className="h-10 px-5 rounded-lg font-medium shrink-0"
           >
             {isMining ? (
               <>
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Extraindo Metadados...
               </>
             ) : (
               <>
-                <Zap className="w-4 h-4 mr-1.5" />
+                <Zap className="w-4 h-4 mr-2" />
                 Extrair Mecanicamente
               </>
             )}
@@ -491,9 +491,9 @@ export function SpecializedUrlMiningPanel() {
 
       {/* Resultado da Extração */}
       {extractionResult && (
-        <div className="p-4 sm:p-5 rounded-xl border border-border/40 bg-card space-y-4 animate-in fade-in-50">
+        <div className="p-4 sm:p-5 rounded-lg border border-border/40 bg-card space-y-4 animate-in fade-in-50">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="font-mono text-[10px] uppercase">
                   {extractionResult.extraction?.contentType}
@@ -526,8 +526,8 @@ export function SpecializedUrlMiningPanel() {
           {/* Dados Específicos de Receitas */}
           {extractionResult.extraction?.recipeData && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2">
-              <div className="space-y-1.5 p-3 rounded-lg bg-muted/30 border border-border/30">
-                <div className="font-semibold text-foreground flex items-center gap-1.5">
+              <div className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border/30">
+                <div className="font-semibold text-foreground flex items-center gap-2">
                   <Utensils className="w-3.5 h-3.5 text-primary" />
                   Ingredientes ({extractionResult.extraction.recipeData.ingredients?.length || 0})
                 </div>
@@ -538,8 +538,8 @@ export function SpecializedUrlMiningPanel() {
                 </ul>
               </div>
 
-              <div className="space-y-1.5 p-3 rounded-lg bg-muted/30 border border-border/30">
-                <div className="font-semibold text-foreground flex items-center gap-1.5">
+              <div className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border/30">
+                <div className="font-semibold text-foreground flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5 text-primary" />
                   Preparo e Rendimento
                 </div>
@@ -555,8 +555,8 @@ export function SpecializedUrlMiningPanel() {
 
           {/* Dados Específicos de Eventos */}
           {extractionResult.extraction?.eventData && (
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/30 space-y-1.5 text-xs">
-              <div className="font-semibold text-foreground flex items-center gap-1.5">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/30 space-y-2 text-xs">
+              <div className="font-semibold text-foreground flex items-center gap-2">
                 <Calendar className="w-3.5 h-3.5 text-primary" />
                 Dados do Evento
               </div>

@@ -128,11 +128,11 @@ export default function WorkspaceOnboardingPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. HEADER DE ATIVAÇÃO APPLE HIG ── */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-card via-card to-muted/30 p-6 sm:p-8 space-y-6">
+      <div className="relative overflow-hidden rounded-lg border border-border/70 bg-gradient-to-br from-card via-card to-muted/30 p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs font-semibold px-2.5 py-0.5">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs font-semibold px-3 py-1">
                 {niche.badgeLabel}
               </Badge>
               {onboarding.isStoreReadyToSell ? (
@@ -150,12 +150,12 @@ export default function WorkspaceOnboardingPage() {
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
               {niche.title}
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
+            <p className="text-xs text-muted-foreground mt-1 max-w-xl">
               {niche.subtitle}
             </p>
           </div>
 
-          <div className="flex flex-col items-end gap-2 shrink-0 bg-background/80 backdrop-blur-sm p-5 rounded-2xl border border-border/60">
+          <div className="flex flex-col items-end gap-2 shrink-0 bg-background/80 backdrop-blur-sm p-5 rounded-lg border border-border/60">
             <div className="flex items-baseline gap-1">
               <span className="text-3xl sm:text-4xl font-black text-foreground">
                 {onboarding.progressPercentage}%
@@ -172,13 +172,13 @@ export default function WorkspaceOnboardingPage() {
         </div>
 
         {/* Banner de Ação Rápida: Ingestão Semântica por Nicho */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="size-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+        <div className="p-4 sm:p-5 rounded-lg bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="size-11 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0">
               <Camera className="size-5" />
             </div>
             <div>
-              <h3 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+              <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                 {niche.multimodalTitle}
                 <Badge variant="outline" className="text-xs uppercase font-mono">1-Clique</Badge>
               </h3>
@@ -187,7 +187,7 @@ export default function WorkspaceOnboardingPage() {
               </p>
             </div>
           </div>
-          <Button asChild className="h-9 px-4 rounded-xl text-xs font-bold gap-1.5 shrink-0 w-full sm:w-auto">
+          <Button asChild className="h-9 px-4 rounded-lg text-xs font-bold gap-2 shrink-0 w-full sm:w-auto">
             <Link to="/workspace/onboarding/revisao">
               <span>Abrir Ingestão Inteligente</span>
               <ArrowRight className="size-3.5" />
@@ -214,7 +214,7 @@ export default function WorkspaceOnboardingPage() {
             return (
               <div
                 key={step.id}
-                className={`p-5 rounded-2xl border transition-all flex flex-col justify-between gap-4 ${
+                className={`p-5 rounded-lg border transition-all flex flex-col justify-between gap-4 ${
                   isDone
                     ? "bg-card/40 border-border/50"
                     : "bg-card border-border/80 hover:border-primary/40 shadow-xs"
@@ -223,7 +223,7 @@ export default function WorkspaceOnboardingPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${
                         isDone
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                           : "bg-muted text-foreground"
@@ -233,7 +233,7 @@ export default function WorkspaceOnboardingPage() {
                     </div>
                     <div>
                       <h4 className="font-bold text-sm text-foreground">{step.label}</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                      <p className="text-xs text-muted-foreground leading-relaxed mt-1">
                         {step.description}
                       </p>
                     </div>

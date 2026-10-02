@@ -130,12 +130,12 @@ function CustomerSupportPage() {
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 flex flex-col h-[calc(100dvh-10rem)] min-h-[550px]">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3 pt-1">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Atendimento
           </h1>
           {Array.isArray(tickets) && tickets.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {tickets.length}
             </Badge>
           )}
@@ -144,19 +144,19 @@ function CustomerSupportPage() {
         <Button
           size="sm"
           onClick={() => setIsNewTicketOpen(true)}
-          className="font-bold gap-1.5 h-8 sm:h-9 rounded-xl text-xs"
+          className="font-bold gap-2 h-8 sm:h-9 rounded-lg text-xs"
         >
           <Plus className="size-3.5" />
           <span>Novo Chamado</span>
         </Button>
       </div>
 
-      <div className="flex-1 bg-card rounded-2xl border border-border/60 overflow-hidden flex flex-col md:flex-row">
+      <div className="flex-1 bg-card rounded-lg border border-border/60 overflow-hidden flex flex-col md:flex-row">
         {/* Ticket List - Responsive hide when a ticket is selected on mobile */}
         <div
           className={`w-full md:w-80 border-r border-border/40 bg-muted/5 flex flex-col ${selectedTicketId ? "hidden md:flex" : "flex"}`}
         >
-          <div className="p-3.5 border-b border-border/40 text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+          <div className="p-4 border-b border-border/40 text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
             Chamados Abertos
           </div>
           <div className="flex-1 overflow-y-auto no-scrollbar">
@@ -167,7 +167,7 @@ function CustomerSupportPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsNewTicketOpen(true)}
-                  className="rounded-xl text-xs font-semibold gap-1.5"
+                  className="rounded-lg text-xs font-semibold gap-2"
                 >
                   <Plus className="size-3.5" />
                   <span>Abrir Chamado</span>
@@ -179,34 +179,34 @@ function CustomerSupportPage() {
                   <button
                     key={t.id}
                     onClick={() => setSelectedTicketId(t.id)}
-                    className={`w-full text-left p-3.5 hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer ${
+                    className={`w-full text-left p-4 hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer ${
                       selectedTicketId === t.id ? "bg-muted/60 border-l-2 border-l-primary" : "border-l-2 border-l-transparent"
                     }`}
                   >
                     <div className="flex justify-between items-start mb-1">
                       <span className="font-semibold text-xs text-foreground truncate pr-2">{t.subject}</span>
                     </div>
-                    <div className="flex justify-between items-center mt-1.5">
+                    <div className="flex justify-between items-center mt-2">
                       <span className="text-[10px] text-muted-foreground">
                         {formatDate(t.updated_at)}
                       </span>
                       {t.status === "open" && (
-                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
+                        <Badge variant="secondary" className="text-[9px] px-2 py-0">
                           Aguardando Loja
                         </Badge>
                       )}
                       {t.status === "pending" && (
-                        <Badge variant="destructive" className="text-[9px] px-1.5 py-0 font-bold">
+                        <Badge variant="destructive" className="text-[9px] px-2 py-0 font-bold">
                           Sua Vez
                         </Badge>
                       )}
                       {t.status === "resolved" && (
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-emerald-600 border-emerald-500/30">
+                        <Badge variant="outline" className="text-[9px] px-2 py-0 text-emerald-600 border-emerald-500/30">
                           Resolvido
                         </Badge>
                       )}
                       {t.status === "closed" && (
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                        <Badge variant="outline" className="text-[9px] px-2 py-0">
                           Encerrado
                         </Badge>
                       )}
@@ -273,7 +273,7 @@ function CustomerSupportPage() {
               <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3">
                 {/* Indicativo de Segurança Visual */}
                 <div className="flex justify-center my-2">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/40 text-[11px] text-muted-foreground select-none">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/40 text-[11px] text-muted-foreground select-none">
                     <Lock className="size-3 text-muted-foreground shrink-0" strokeWidth={1.75} />
                     <span>As mensagens são protegidas com criptografia de ponta a ponta</span>
                   </div>
@@ -284,10 +284,10 @@ function CustomerSupportPage() {
                   .map((m: any) => (
                     <div key={m.id} className={`flex ${m.isMe ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-[85%] md:max-w-[70%] px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed border-none ${
+                        className={`max-w-[85%] md:max-w-[70%] px-4 py-3 text-xs sm:text-sm leading-relaxed border-none ${
                           m.isMe
-                            ? "bg-primary/10 text-foreground rounded-2xl rounded-tr-xs"
-                            : "bg-muted/70 text-foreground rounded-2xl rounded-tl-xs"
+                            ? "bg-primary/10 text-foreground rounded-lg rounded-tr-xs"
+                            : "bg-muted/70 text-foreground rounded-lg rounded-tl-xs"
                         }`}
                       >
                         <p className="whitespace-pre-wrap break-words">{m.content}</p>
@@ -307,7 +307,7 @@ function CustomerSupportPage() {
 
               {/* Message Input */}
               {thread?.ticketStatus !== "closed" ? (
-                <div className="p-2 sm:p-2.5 border-t border-border/40 bg-background flex items-center gap-2">
+                <div className="p-2 sm:p-3 border-t border-border/40 bg-background flex items-center gap-2">
                   <input
                     placeholder="Digite sua resposta..."
                     value={message}
@@ -329,7 +329,7 @@ function CustomerSupportPage() {
                   </button>
                 </div>
               ) : (
-                <div className="p-3 bg-muted/20 border-t border-border/30 text-center text-xs text-muted-foreground font-medium flex items-center justify-center gap-1.5">
+                <div className="p-3 bg-muted/20 border-t border-border/30 text-center text-xs text-muted-foreground font-medium flex items-center justify-center gap-2">
                   <CheckCircle2 className="size-3.5 text-emerald-500" />
                   <span>Este atendimento foi encerrado.</span>
                 </div>
@@ -350,7 +350,7 @@ function CustomerSupportPage() {
           </DialogHeader>
 
           <form onSubmit={handleCreateTicket} className="space-y-4 pt-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="ticket-subject" className="text-xs font-semibold">
                 Assunto do Chamado *
               </Label>
@@ -364,7 +364,7 @@ function CustomerSupportPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="ticket-category" className="text-xs font-semibold">
                 Tipo de Atendimento
               </Label>
@@ -372,7 +372,7 @@ function CustomerSupportPage() {
                 id="ticket-category"
                 value={newContextType}
                 onChange={(e) => setNewContextType(e.target.value as any)}
-                className="w-full h-9 px-3 rounded-xl border border-border bg-background text-xs"
+                className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs"
               >
                 <option value="general">Geral / Dúvidas</option>
                 <option value="order">Referente a um Pedido</option>
@@ -380,7 +380,7 @@ function CustomerSupportPage() {
               </select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="ticket-message" className="text-xs font-semibold">
                 Mensagem Inicial *
               </Label>

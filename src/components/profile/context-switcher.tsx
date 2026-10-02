@@ -194,7 +194,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           <button
             type="button"
             className={cn(
-              "inline-flex items-center gap-1.5 p-1 rounded-full hover:bg-muted/60 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20",
+              "inline-flex items-center gap-2 p-1 rounded-full hover:bg-muted/60 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20",
               className
             )}
             title="Alternar Perfil ou Empresa"
@@ -240,7 +240,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
 
       <DropdownMenuContent
         align="end"
-        className="w-80 p-2 rounded-2xl bg-card border border-border/80 shadow-2xl font-sans animate-in fade-in zoom-in-95 duration-100 z-50"
+        className="w-80 p-2 rounded-lg bg-card border border-border/80 shadow-2xl font-sans animate-in fade-in zoom-in-95 duration-100 z-50"
       >
         <div className="px-3 py-2 flex items-center justify-between border-b border-border/40 mb-1">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -258,7 +258,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
         {/* ══════════════════════════════════════════════════════════════
             1. CONTA CIVIL (ROOT TRANSACIONAL / COMPRAS)
         ══════════════════════════════════════════════════════════════ */}
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
             Conta Pessoal (Root)
           </span>
@@ -266,22 +266,22 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           <DropdownMenuItem
             onClick={handleSwitchToCivil}
             className={cn(
-              "p-2.5 rounded-xl cursor-pointer flex items-center justify-between gap-3 transition-colors",
+              "p-3 rounded-lg cursor-pointer flex items-center justify-between gap-3 transition-colors",
               currentContextType === "civil"
                 ? "bg-primary/10 text-primary font-bold border border-primary/20"
                 : "hover:bg-muted/60 text-foreground"
             )}
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="size-9 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
+              <div className="size-9 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
                 {civilUser.avatarUrl ? (
                   <img src={civilUser.avatarUrl} alt={civilUser.name} className="size-full object-cover" />
                 ) : (
                   <User className="size-4" />
                 )}
               </div>
-              <div className="min-w-0 space-y-0.5">
-                <div className="flex items-center gap-1.5">
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center gap-2">
                   <span className="text-xs font-bold truncate text-foreground">{civilUser.name}</span>
                   <Badge variant="outline" className="text-[9px] px-1 py-0 font-medium">
                     Civil
@@ -302,7 +302,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             2. PERSONAS DE CRIADOR (VITRINES / BIOLINKS / ARTISTAS)
         ══════════════════════════════════════════════════════════════ */}
         {resolvedPersonas.length > 0 && (
-          <div className="mt-2 space-y-0.5">
+          <div className="mt-2 space-y-1">
             <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
               Personas e Marcas Pessoais
             </span>
@@ -317,22 +317,22 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                   key={persona.id}
                   onClick={() => handleSwitchToCreator(persona)}
                   className={cn(
-                    "p-2.5 rounded-xl cursor-pointer flex items-center justify-between gap-3 transition-colors",
+                    "p-3 rounded-lg cursor-pointer flex items-center justify-between gap-3 transition-colors",
                     isSelected
                       ? "bg-amber-500/10 text-amber-600 font-bold border border-amber-500/20"
                       : "hover:bg-muted/60 text-foreground"
                   )}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="size-9 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center justify-center shrink-0 overflow-hidden">
                       {persona.avatarUrl ? (
                         <img src={persona.avatarUrl} alt={persona.name} className="size-full object-cover" />
                       ) : (
                         <Star className="size-4" />
                       )}
                     </div>
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-1.5">
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
                         <span className="text-xs font-bold truncate text-foreground">{persona.name}</span>
                         <Badge
                           variant="outline"
@@ -359,7 +359,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             3. EMPRESAS & LOJAS (WORKSPACES OPERACIONAIS)
         ══════════════════════════════════════════════════════════════ */}
         {stores.length > 0 && (
-          <div className="mt-2 space-y-0.5">
+          <div className="mt-2 space-y-1">
             <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
               Minhas Empresas e Lojas
             </span>
@@ -374,22 +374,22 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                   key={store.store_id}
                   onClick={() => handleSwitchToStore(store)}
                   className={cn(
-                    "p-2.5 rounded-xl cursor-pointer flex items-center justify-between gap-3 transition-colors",
+                    "p-3 rounded-lg cursor-pointer flex items-center justify-between gap-3 transition-colors",
                     isSelected
                       ? "bg-muted font-bold text-foreground border border-border"
                       : "hover:bg-muted/60 text-foreground"
                   )}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="size-9 rounded-xl bg-muted border border-border/80 overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="size-9 rounded-lg bg-muted border border-border/80 overflow-hidden flex items-center justify-center shrink-0">
                       {store.logo_url ? (
                         <img src={store.logo_url} alt={store.name} className="size-full object-cover" />
                       ) : (
                         <Building2 className="size-4 text-primary" />
                       )}
                     </div>
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-1.5">
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
                         <span className="text-xs font-bold truncate text-foreground">{store.name}</span>
                         <Badge variant="outline" className="text-[9px] px-1 py-0 font-medium">
                           {store.role === "owner" ? "Dono" : store.role}
@@ -409,18 +409,18 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           </div>
         )}
 
-        <DropdownMenuSeparator className="my-1.5" />
+        <DropdownMenuSeparator className="my-2" />
 
         {/* ══════════════════════════════════════════════════════════════
             4. AÇÕES DE EXPANSÃO DE ENTIDADE (CRIAR LOJA OU PERSONA)
         ══════════════════════════════════════════════════════════════ */}
-        <div className="space-y-0.5 pt-0.5">
+        <div className="space-y-1 pt-1">
           <DropdownMenuItem
             onClick={() => {
               navigate({ to: "/criar-negocio" });
               setIsOpen(false);
             }}
-            className="p-2 rounded-xl text-xs font-semibold text-primary hover:bg-primary/10 cursor-pointer flex items-center gap-2"
+            className="p-2 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 cursor-pointer flex items-center gap-2"
           >
             <Plus className="size-3.5" />
             <span>+ Criar Nova Empresa ou Loja</span>
@@ -431,7 +431,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               navigate({ to: "/conta/criadores" });
               setIsOpen(false);
             }}
-            className="p-2 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-muted/60 cursor-pointer flex items-center gap-2"
+            className="p-2 rounded-lg text-xs font-semibold text-muted-foreground hover:bg-muted/60 cursor-pointer flex items-center gap-2"
           >
             <Star className="size-3.5 text-amber-500" />
             <span>+ Criar Nova Persona de Criador</span>

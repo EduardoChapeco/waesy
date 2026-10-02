@@ -34,7 +34,7 @@ export const Route = createFileRoute('/workspace/turismo/embarques')({
     }
   },
   errorComponent: ({ error }: { error: any }) => (
-    <div className="p-6 m-4 rounded-2xl border border-destructive/30 bg-destructive/5 text-destructive space-y-2">
+    <div className="p-6 m-4 rounded-lg border border-destructive/30 bg-destructive/5 text-destructive space-y-2">
       <div className="flex items-center gap-2 font-bold text-sm">
         <AlertTriangle className="size-4" />
         <span>Falha ao carregar a página de Embarques</span>
@@ -551,7 +551,7 @@ function WorkspaceBoardingPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`h-11 sm:h-9 px-4 sm:px-3 rounded-xl text-xs sm:text-xs text-muted-foreground/75 font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
+                className={`h-11 sm:h-9 px-4 sm:px-3 rounded-lg text-xs sm:text-xs text-muted-foreground/75 font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
                   activeTab === tab.id
                     ? 'bg-primary text-primary-foreground font-bold '
                     : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -571,12 +571,12 @@ function WorkspaceBoardingPage() {
             {/* Calendar header */}
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-foreground capitalize">{monthName}</h2>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   aria-label="Mês anterior"
-                  className="size-11 sm:size-8 p-0 rounded-xl cursor-pointer"
+                  className="size-11 sm:size-8 p-0 rounded-lg cursor-pointer"
                   onClick={() => {
                     if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
                     else setCalMonth(m => m - 1);
@@ -587,7 +587,7 @@ function WorkspaceBoardingPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-11 sm:h-8 px-4 sm:px-3 text-xs font-bold rounded-xl cursor-pointer"
+                  className="h-11 sm:h-8 px-4 sm:px-3 text-xs font-bold rounded-lg cursor-pointer"
                   onClick={() => { setCalYear(today.getFullYear()); setCalMonth(today.getMonth()); }}
                 >
                   Hoje
@@ -596,7 +596,7 @@ function WorkspaceBoardingPage() {
                   variant="outline"
                   size="sm"
                   aria-label="Próximo mês"
-                  className="size-11 sm:size-8 p-0 rounded-xl cursor-pointer"
+                  className="size-11 sm:size-8 p-0 rounded-lg cursor-pointer"
                   onClick={() => {
                     if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
                     else setCalMonth(m => m + 1);
@@ -608,7 +608,7 @@ function WorkspaceBoardingPage() {
             </div>
 
             {/* Calendar grid */}
-            <div className="rounded-2xl border border-border overflow-hidden bg-card">
+            <div className="rounded-lg border border-border overflow-hidden bg-card">
               {/* Day headers */}
               <div className="grid grid-cols-7 sm:grid-cols-7 border-b border-border/60 bg-muted/30">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
@@ -637,7 +637,7 @@ function WorkspaceBoardingPage() {
                     <div
                       key={day}
                       onClick={() => setSelectedDay(isSelected ? null : dayDate)}
-                      className={`min-h-20 sm:min-h-24 border-b border-r border-border/40 p-1.5 cursor-pointer transition-colors ${
+                      className={`min-h-20 sm:min-h-24 border-b border-r border-border/40 p-2 cursor-pointer transition-colors ${
                         isSelected ? 'bg-primary/5 border-primary/30' :
                         isWeekend ? 'bg-muted/10' : 'bg-card hover:bg-muted/20'
                       }`}
@@ -649,19 +649,19 @@ function WorkspaceBoardingPage() {
                           {day}
                         </span>
                         {dayCards.length > 0 && (
-                          <span className="text-xs font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                          <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
                             {dayCards.length}
                           </span>
                         )}
                       </div>
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         {dayCards.slice(0, 2).map(card => {
                           const days = Math.ceil((new Date(card.departure_date).getTime() - Date.now()) / 86400000);
                           return (
                             <div
                               key={card.id}
                               onClick={(e) => { e.stopPropagation(); setSelectedDepartureId(card.id); }}
-                              className={`text-xs font-medium px-1.5 py-0.5 rounded truncate cursor-pointer ${
+                              className={`text-xs font-medium px-2 py-1 rounded truncate cursor-pointer ${
                                 days <= 0 ? 'bg-emerald-500/15 text-emerald-700' :
                                 days <= 2 ? 'bg-red-500/15 text-red-700 animate-pulse' :
                                 days <= 7 ? 'bg-amber-500/15 text-amber-700' :
@@ -722,18 +722,18 @@ function WorkspaceBoardingPage() {
                 return (
                   <div
                     key={col.id}
-                    className="flex-none w-80 sm:w-80 bg-muted/20 border border-border rounded-2xl flex flex-col"
+                    className="flex-none w-80 sm:w-80 bg-muted/20 border border-border rounded-lg flex flex-col"
                   >
                     <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0">
                       <div>
                         <h3 className="text-xs font-bold text-foreground">{col.label}</h3>
                         <p className="text-xs text-muted-foreground">{col.desc}</p>
                       </div>
-                      <Badge variant="outline" className="font-mono text-xs h-5 px-1.5">{colCards.length}</Badge>
+                      <Badge variant="outline" className="font-mono text-xs h-5 px-2">{colCards.length}</Badge>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-3 space-y-2.5 no-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
                       {colCards.length === 0 ? (
-                        <div className="h-24 rounded-xl border border-dashed border-border/60 flex items-center justify-center text-xs text-muted-foreground/75 text-muted-foreground">
+                        <div className="h-24 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-xs text-muted-foreground/75 text-muted-foreground">
                           Sem viagens
                         </div>
                       ) : (
@@ -779,10 +779,10 @@ function WorkspaceBoardingPage() {
           >
             <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-4">
               {crmCustomers.length > 0 && (
-                <div className="space-y-1.5 p-3 rounded-xl border border-border/70 bg-muted/20">
+                <div className="space-y-2 p-3 rounded-lg border border-border/70 bg-muted/20">
                   <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">Vincular Cliente da Carteira (CRM)</Label>
                   <select
-                    className="w-full h-9 px-2.5 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none"
+                    className="w-full h-9 px-3 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none"
                     onChange={e => {
                       const sel = crmCustomers.find((c: any) => c.id === e.target.value);
                       if (sel) {
@@ -805,22 +805,22 @@ function WorkspaceBoardingPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1 sm:col-span-2">
                   <Label className="text-xs font-semibold">Passageiro Titular *</Label>
-                  <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Nome do passageiro" className="h-10 text-xs rounded-xl" required autoFocus />
+                  <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Nome do passageiro" className="h-10 text-xs rounded-lg" required autoFocus />
                 </div>
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">WhatsApp</Label>
-                  <Input value={clientPhone} onChange={e => setClientPhone(e.target.value)} placeholder="(49) 99999-9999" className="h-10 text-xs rounded-xl font-mono" />
+                  <Input value={clientPhone} onChange={e => setClientPhone(e.target.value)} placeholder="(49) 99999-9999" className="h-10 text-xs rounded-lg font-mono" />
                 </div>
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Nº Passageiros</Label>
-                  <Input type="number" value={passengersCount} onChange={e => setPassengersCount(e.target.value)} min="1" className="h-10 text-xs rounded-xl font-mono" />
+                  <Input type="number" value={passengersCount} onChange={e => setPassengersCount(e.target.value)} min="1" className="h-10 text-xs rounded-lg font-mono" />
                 </div>
 
                 <div className="space-y-1 sm:col-span-2">
                   <Label className="text-xs font-semibold">Destino Principal *</Label>
-                  <Input value={destination} onChange={e => setDestination(e.target.value)} placeholder="Ex: Gramado, RS ou Cancún, México" className="h-10 text-xs rounded-xl" required />
+                  <Input value={destination} onChange={e => setDestination(e.target.value)} placeholder="Ex: Gramado, RS ou Cancún, México" className="h-10 text-xs rounded-lg" required />
                 </div>
 
                 <div className="space-y-1">
@@ -828,7 +828,7 @@ function WorkspaceBoardingPage() {
                   <select
                     value={destinationType}
                     onChange={e => setDestinationType(e.target.value as any)}
-                    className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs font-medium focus:outline-none"
+                    className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none"
                   >
                     <option value="domestic">Nacional</option>
                     <option value="international">Internacional</option>
@@ -838,12 +838,12 @@ function WorkspaceBoardingPage() {
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Embarque *</Label>
-                  <Input type="date" value={departureDate} onChange={e => setDepartureDate(e.target.value)} className="h-10 text-xs rounded-xl" required />
+                  <Input type="date" value={departureDate} onChange={e => setDepartureDate(e.target.value)} className="h-10 text-xs rounded-lg" required />
                 </div>
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Retorno</Label>
-                  <Input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="h-10 text-xs rounded-xl" />
+                  <Input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="h-10 text-xs rounded-lg" />
                 </div>
 
                 <div className="space-y-1 sm:col-span-2 border-t border-border/60 pt-3">
@@ -856,7 +856,7 @@ function WorkspaceBoardingPage() {
                     value={airlineCode}
                     onChange={e => setAirlineCode(e.target.value.toUpperCase())}
                     placeholder="LA, G3, AD..."
-                    className="h-10 text-xs rounded-xl font-mono"
+                    className="h-10 text-xs rounded-lg font-mono"
                     maxLength={3}
                     list="airlines-list"
                   />
@@ -867,32 +867,32 @@ function WorkspaceBoardingPage() {
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Nº do Voo</Label>
-                  <Input value={flightNumber} onChange={e => setFlightNumber(e.target.value.toUpperCase())} placeholder="LA3214" className="h-10 text-xs rounded-xl font-mono" />
+                  <Input value={flightNumber} onChange={e => setFlightNumber(e.target.value.toUpperCase())} placeholder="LA3214" className="h-10 text-xs rounded-lg font-mono" />
                 </div>
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Localizador / PNR</Label>
-                  <Input value={airlineLocator} onChange={e => setAirlineLocator(e.target.value.toUpperCase())} placeholder="XYZABC" className="h-10 text-xs rounded-xl font-mono" />
+                  <Input value={airlineLocator} onChange={e => setAirlineLocator(e.target.value.toUpperCase())} placeholder="XYZABC" className="h-10 text-xs rounded-lg font-mono" />
                 </div>
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Hotel / Pousada</Label>
-                  <Input value={hotelName} onChange={e => setHotelName(e.target.value)} placeholder="Nome do hotel" className="h-10 text-xs rounded-xl" />
+                  <Input value={hotelName} onChange={e => setHotelName(e.target.value)} placeholder="Nome do hotel" className="h-10 text-xs rounded-lg" />
                 </div>
               </div>
 
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs text-muted-foreground/75 text-emerald-700 dark:text-emerald-400">
-                <Star className="size-3 inline mr-1.5" />
+              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs text-muted-foreground/75 text-emerald-700 dark:text-emerald-400">
+                <Star className="size-3 inline mr-2" />
                 Checklist automático de <strong>{destinationType === 'domestic' ? 'destino nacional' : destinationType === 'international' ? 'destino internacional' : 'cruzeiro'}</strong> será criado com {destinationType === 'domestic' ? '6' : destinationType === 'international' ? '13' : '7'} itens.
               </div>
             </div>
 
             <div className="px-5 py-4 border-t border-border/60 bg-muted/20 flex items-center justify-end gap-2 shrink-0">
-              <Button type="button" variant="outline" onClick={() => setNewOpen(false)} className="h-11 sm:h-10 px-4 rounded-xl text-xs font-semibold cursor-pointer">
+              <Button type="button" variant="outline" onClick={() => setNewOpen(false)} className="h-11 sm:h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={createMutation.isPending || !clientName.trim() || !destination.trim() || !departureDate} className="h-11 sm:h-10 px-5 rounded-xl text-xs font-bold cursor-pointer ">
-                {createMutation.isPending ? <><Loader2 className="size-3.5 animate-spin mr-1.5" />Criando...</> : 'Criar Embarque'}
+              <Button type="submit" disabled={createMutation.isPending || !clientName.trim() || !destination.trim() || !departureDate} className="h-11 sm:h-10 px-5 rounded-lg text-xs font-bold cursor-pointer ">
+                {createMutation.isPending ? <><Loader2 className="size-3.5 animate-spin mr-2" />Criando...</> : 'Criar Embarque'}
               </Button>
             </div>
           </form>
@@ -901,7 +901,7 @@ function WorkspaceBoardingPage() {
 
       {/* Modal do Cartão Digital 9:16 */}
       <Dialog open={companionCardOpen} onOpenChange={setCompanionCardOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-card rounded-2xl sm:max-w-lg">
+        <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-card rounded-lg sm:max-w-lg">
           <DialogHeader className="p-4 border-b border-border/70 bg-muted/30">
             <DialogTitle className="text-sm font-bold flex items-center gap-2">
               <Smartphone className="size-4 text-emerald-600" />
@@ -918,7 +918,7 @@ function WorkspaceBoardingPage() {
 
       {/* Modal de Scanner Multimodal OCR */}
       <Dialog open={ocrModalOpen} onOpenChange={setOcrModalOpen}>
-        <DialogContent className="max-w-lg p-0 overflow-hidden border-border bg-card rounded-2xl">
+        <DialogContent className="max-w-lg p-0 overflow-hidden border-border bg-card rounded-lg">
           <DialogHeader className="p-4 border-b border-border/70 bg-muted/30">
             <DialogTitle className="text-sm font-bold flex items-center gap-2">
               <Star className="size-4 text-primary" />
@@ -960,16 +960,16 @@ function DepartureCard({
   return (
     <div
       onClick={onOpen}
-      className={`p-4 sm:p-3.5 rounded-2xl border cursor-pointer hover:border-primary/40 transition-all ${urgencyClass}`}
+      className={`p-4 sm:p-4 rounded-lg border cursor-pointer hover:border-primary/40 transition-all ${urgencyClass}`}
     >
       <div className="flex items-start justify-between gap-1 mb-2">
         <div>
           <h4 className="text-xs font-bold text-foreground leading-tight">{card.client_name}</h4>
-          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
             <MapPin className="size-2.5" />{card.destination}
           </p>
         </div>
-        <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
+        <span className={`text-xs font-mono font-bold px-2 py-1 rounded shrink-0 ${
           daysUntil <= 0 ? 'bg-emerald-500/20 text-emerald-700' :
           daysUntil <= 2 ? 'bg-red-500/20 text-red-700 animate-pulse' :
           daysUntil <= 7 ? 'bg-amber-500/20 text-amber-700' :

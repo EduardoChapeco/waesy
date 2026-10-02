@@ -71,7 +71,7 @@ export const RmaTicketModal: React.FC<RmaTicketModalProps> = ({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-lg sm:rounded-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-lg sm:rounded-lg max-h-[90vh] overflow-y-auto no-scrollbar">
  <DialogHeader>
  <div className="flex items-center gap-2 text-destructive">
  <AlertCircle className="size-5" />
@@ -83,13 +83,13 @@ export const RmaTicketModal: React.FC<RmaTicketModalProps> = ({
  </DialogHeader>
 
  <form onSubmit={handleSubmit} className="space-y-4 py-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Motivo do Chamado *</Label>
  <Select value={ticketType} onValueChange={(val: any) => setTicketType(val)}>
- <SelectTrigger className="h-10 rounded-xl text-xs">
+ <SelectTrigger className="h-10 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="return_exchange">Troca ou Devolução de Produto</SelectItem>
  <SelectItem value="defect_complaint">Produto com Defeito / Avaria</SelectItem>
  <SelectItem value="missing_item">Item Faltante ou Pedido Incorreto</SelectItem>
@@ -100,30 +100,30 @@ export const RmaTicketModal: React.FC<RmaTicketModalProps> = ({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Resumo do Problema *</Label>
  <Input
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Tamanho errado, produto com rasgo, faltou refrigerante..."
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Detalhes da Ocorrência *</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  placeholder="Explique o que aconteceu para que a equipe possa resolver o mais rápido possível..."
  rows={3}
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Fotos do Produto / Comprovante (Opcional)</Label>
  <MediaUploader
  value={photos}
@@ -141,7 +141,7 @@ export const RmaTicketModal: React.FC<RmaTicketModalProps> = ({
  type="button"
  variant="ghost"
  onClick={() => onOpenChange(false)}
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  disabled={isSubmitting}
  >
  Cancelar
@@ -149,11 +149,11 @@ export const RmaTicketModal: React.FC<RmaTicketModalProps> = ({
  <Button
  type="submit"
  disabled={isSubmitting}
- className="rounded-xl text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
+ className="rounded-lg text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-4 animate-spin mr-1.5" />
+ <Loader2 className="size-4 animate-spin mr-2" />
  Enviando...
  </>
  ) : (

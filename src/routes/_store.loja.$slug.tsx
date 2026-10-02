@@ -177,7 +177,7 @@ function StoreSlugCanonicalPage() {
           title="Empresa Não Encontrada"
           description="A loja ou vitrine que você está procurando não existe ou teve seu endereço alterado."
         />
-        <Button asChild variant="outline" className="rounded-xl font-bold text-xs h-11 px-4 gap-1.5">
+        <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-11 px-4 gap-2">
           <Link to="/">
             <ArrowLeft size={16} weight="bold" />
             <span>Voltar para o Início</span>
@@ -192,14 +192,14 @@ function StoreSlugCanonicalPage() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4 py-16 text-center">
         <div className="max-w-sm w-full space-y-4">
-          <div className="size-16 rounded-3xl bg-muted/60 border border-border/80 flex items-center justify-center mx-auto text-primary">
+          <div className="size-16 rounded-lg bg-muted/60 border border-border/80 flex items-center justify-center mx-auto text-primary">
             <LockKey size={30} weight="duotone" />
           </div>
           <h2 className="text-lg font-bold text-foreground">Acesso Restrito por Senha</h2>
           <p className="text-xs text-muted-foreground">
             Esta vitrine é privada e requer a senha fornecida pelo lojista.
           </p>
-          <Button asChild className="w-full h-11 rounded-xl font-bold text-xs">
+          <Button asChild className="w-full h-11 rounded-lg font-bold text-xs">
             <Link to="/loja/$slug/senha" params={{ slug }}>
               Digitar Senha de Acesso
             </Link>

@@ -81,7 +81,7 @@ export function PropertyFeaturesGridSection({
  <section className="py-12 bg-background w-full">
  <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border/60 pb-6">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase">
  <Home className="size-3.5 text-primary" />
  <span>{features.propertyType || "Imóvel"}</span>
@@ -100,7 +100,7 @@ export function PropertyFeaturesGridSection({
 
  {/* Grade de 4 Pilares Estruturais */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
- <div className="p-4 rounded-2xl border border-border/80 bg-card text-center space-y-1 shadow-2xs">
+ <div className="p-4 rounded-lg border border-border/80 bg-card text-center space-y-1 shadow-2xs">
  <Maximize2 className="size-5 mx-auto text-primary" />
  <span className="text-xl font-bold text-foreground font-mono block">
  {features.areaM2 || 0} m²
@@ -108,7 +108,7 @@ export function PropertyFeaturesGridSection({
  <span className="text-[11px] text-muted-foreground">Área Privativa</span>
  </div>
 
- <div className="p-4 rounded-2xl border border-border/80 bg-card text-center space-y-1 shadow-2xs">
+ <div className="p-4 rounded-lg border border-border/80 bg-card text-center space-y-1 shadow-2xs">
  <Bed className="size-5 mx-auto text-primary" />
  <span className="text-xl font-bold text-foreground font-mono block">
  {features.bedrooms || 0} ({features.suites || 0} Suítes)
@@ -116,7 +116,7 @@ export function PropertyFeaturesGridSection({
  <span className="text-[11px] text-muted-foreground">Dormitórios</span>
  </div>
 
- <div className="p-4 rounded-2xl border border-border/80 bg-card text-center space-y-1 shadow-2xs">
+ <div className="p-4 rounded-lg border border-border/80 bg-card text-center space-y-1 shadow-2xs">
  <Bath className="size-5 mx-auto text-primary" />
  <span className="text-xl font-bold text-foreground font-mono block">
  {features.bathrooms || 0}
@@ -124,7 +124,7 @@ export function PropertyFeaturesGridSection({
  <span className="text-[11px] text-muted-foreground">Banheiros</span>
  </div>
 
- <div className="p-4 rounded-2xl border border-border/80 bg-card text-center space-y-1 shadow-2xs">
+ <div className="p-4 rounded-lg border border-border/80 bg-card text-center space-y-1 shadow-2xs">
  <Car className="size-5 mx-auto text-primary" />
  <span className="text-xl font-bold text-foreground font-mono block">
  {features.parkingSpots || 0}
@@ -135,7 +135,7 @@ export function PropertyFeaturesGridSection({
 
  {/* Diferenciais e Lazer */}
  {features.amenities && features.amenities.length > 0 && (
- <div className="p-6 rounded-2xl border border-border/80 bg-card space-y-4 shadow-2xs">
+ <div className="p-6 rounded-lg border border-border/80 bg-card space-y-4 shadow-2xs">
  <h3 className="text-sm font-bold text-foreground">Diferenciais e Infraestrutura</h3>
  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
  {features.amenities.map((item, idx) => (
@@ -154,7 +154,7 @@ export function PropertyFeaturesGridSection({
  type="button"
  size="lg"
  onClick={handleWhatsApp}
- className="rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer gap-2 h-11 px-6"
+ className="rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer gap-2 h-11 px-6"
  >
  <MessageSquare className="size-4" />
  <span>Agendar Visita no WhatsApp</span>

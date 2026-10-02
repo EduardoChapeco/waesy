@@ -90,7 +90,7 @@ export function ShareModal({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6 p-5">
+ <DialogContent className="sm:max-w-md sm:rounded-lg sm:p-6 p-5">
  <DialogHeader className="space-y-1">
  <DialogTitle className="text-lg font-bold flex items-center gap-2">
  <Share2 className="size-5 text-primary" />
@@ -103,7 +103,7 @@ export function ShareModal({
 
  <div className="space-y-5 py-2">
  {/* Card de Preview */}
- <div className=" rounded-xl p-3.5 bg-muted/20 flex gap-3 items-center">
+ <div className=" rounded-lg p-4 bg-muted/20 flex gap-3 items-center">
  {imageUrl && (
  <img
  src={imageUrl}
@@ -113,7 +113,7 @@ export function ShareModal({
  )}
  <div className="min-w-0 flex-1">
  <h4 className="text-xs font-bold text-foreground truncate">{title}</h4>
- <p className="text-[11px] text-muted-foreground truncate font-mono mt-0.5">
+ <p className="text-[11px] text-muted-foreground truncate font-mono mt-1">
  {canonicalUrl}
  </p>
  </div>
@@ -124,7 +124,7 @@ export function ShareModal({
  <button
  type="button"
  onClick={shareWhatsApp}
- className="flex flex-col items-center justify-center p-3 rounded-xl bg-card hover:bg-muted/40 transition-colors gap-1.5 group cursor-pointer"
+ className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer"
  >
  <div className="size-9 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
  <MessageCircle className="size-5" />
@@ -135,7 +135,7 @@ export function ShareModal({
  <button
  type="button"
  onClick={shareTelegram}
- className="flex flex-col items-center justify-center p-3 rounded-xl bg-card hover:bg-muted/40 transition-colors gap-1.5 group cursor-pointer"
+ className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer"
  >
  <div className="size-9 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
  <Send className="size-4" />
@@ -146,7 +146,7 @@ export function ShareModal({
  <button
  type="button"
  onClick={shareTwitter}
- className="flex flex-col items-center justify-center p-3 rounded-xl bg-card hover:bg-muted/40 transition-colors gap-1.5 group cursor-pointer"
+ className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer"
  >
  <div className="size-9 rounded-full bg-foreground/10 text-foreground flex items-center justify-center group-hover:scale-105 transition-transform">
  <span className="font-bold text-xs font-mono">X</span>
@@ -157,7 +157,7 @@ export function ShareModal({
  <button
  type="button"
  onClick={shareEmail}
- className="flex flex-col items-center justify-center p-3 rounded-xl bg-card hover:bg-muted/40 transition-colors gap-1.5 group cursor-pointer"
+ className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer"
  >
  <div className="size-9 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
  <Mail className="size-4" />
@@ -167,19 +167,19 @@ export function ShareModal({
  </div>
 
  {/* Campo Copiar Link */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Link Direto</label>
  <div className="flex items-center gap-2">
  <Input
  readOnly
  value={canonicalUrl}
- className="h-10 rounded-xl text-xs bg-background font-mono text-muted-foreground selection:bg-primary/20"
+ className="h-10 rounded-lg text-xs bg-background font-mono text-muted-foreground selection:bg-primary/20"
  />
  <Button
  type="button"
  onClick={handleCopyLink}
  size="sm"
- className="h-10 px-4 rounded-xl text-xs font-bold gap-1.5 shrink-0"
+ className="h-10 px-4 rounded-lg text-xs font-bold gap-2 shrink-0"
  >
  {copied ? (
  <Check className="size-4 text-emerald-400" />

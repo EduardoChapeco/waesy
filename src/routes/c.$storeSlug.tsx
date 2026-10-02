@@ -85,16 +85,16 @@ function CustomerPortalWhitelabelPage() {
  <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
  <div className="flex items-center gap-3">
  {storeLogo ? (
- <img src={storeLogo} alt={store.name} className="w-9 h-9 rounded-xl object-contain border border-border/60" />
+ <img src={storeLogo} alt={store.name} className="w-9 h-9 rounded-lg object-contain border border-border/60" />
  ) : (
- <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-base border border-primary/20">
+ <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-base border border-primary/20">
  {store.name?.[0] || "E"}
  </div>
  )}
  <div>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <h1 className="font-bold text-sm sm:text-base leading-tight text-foreground">{store.name}</h1>
- <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+ <Badge variant="outline" className="text-[10px] px-2 py-0 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
  Verificado
  </Badge>
  </div>
@@ -114,7 +114,7 @@ function CustomerPortalWhitelabelPage() {
  variant="ghost"
  size="sm"
  onClick={handleLogout}
- className="min-h-[44px] px-3 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+ className="min-h-11 px-3 text-xs gap-2 text-muted-foreground hover:text-foreground"
  >
  <LogOut className="w-4 h-4" />
  <span className="hidden sm:inline">Sair</span>
@@ -128,9 +128,9 @@ function CustomerPortalWhitelabelPage() {
  <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8">
  {!isAuthenticated ? (
  /* Tela de Login Sem Senha (Magic Link / CPF) */
- <div className="max-w-md mx-auto my-12 p-6 sm:p-8 rounded-2xl border border-border/80 bg-card shadow-xs space-y-6">
+ <div className="max-w-md mx-auto my-12 p-6 sm:p-8 rounded-lg border border-border/80 bg-card shadow-xs space-y-6">
  <div className="text-center space-y-2">
- <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
+ <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary mx-auto flex items-center justify-center">
  <ShieldCheck className="w-6 h-6" />
  </div>
  <h2 className="text-xl font-bold text-foreground">Acesse sua Área do Cliente</h2>
@@ -140,28 +140,28 @@ function CustomerPortalWhitelabelPage() {
  </div>
 
  <Tabs defaultValue="cpf" className="w-full">
- <TabsList className="grid grid-cols-2 w-full min-h-[44px] p-1 bg-muted/60 rounded-xl">
- <TabsTrigger value="cpf" className="rounded-lg text-xs font-medium min-h-[36px]">
+ <TabsList className="grid grid-cols-2 w-full min-h-11 p-1 bg-muted/60 rounded-lg">
+ <TabsTrigger value="cpf" className="rounded-lg text-xs font-medium min-h-9">
  Acesso com CPF
  </TabsTrigger>
- <TabsTrigger value="magic" className="rounded-lg text-xs font-medium min-h-[36px]">
+ <TabsTrigger value="magic" className="rounded-lg text-xs font-medium min-h-9">
  Magic Link E-mail
  </TabsTrigger>
  </TabsList>
 
  <TabsContent value="cpf" className="mt-4">
  <form onSubmit={handleLogin} className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Digite seu CPF:</label>
  <Input
  type="text"
  placeholder="000.000.000-00"
  value={clientCpf}
  onChange={(e) => setClientCpf(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
- <Button type="submit" disabled={isLoading} className="w-full min-h-[44px] font-medium gap-2">
+ <Button type="submit" disabled={isLoading} className="w-full min-h-11 font-medium gap-2">
  {isLoading ? "Validando Acesso..." : "Entrar no Portal"}
  <ArrowRight className="w-4 h-4" />
  </Button>
@@ -170,17 +170,17 @@ function CustomerPortalWhitelabelPage() {
 
  <TabsContent value="magic" className="mt-4">
  <form onSubmit={handleLogin} className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Digite seu E-mail cadastrado:</label>
  <Input
  type="email"
  placeholder="seuemail@exemplo.com"
  value={clientEmail}
  onChange={(e) => setClientEmail(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
  </div>
- <Button type="submit" disabled={isLoading} className="w-full min-h-[44px] font-medium gap-2">
+ <Button type="submit" disabled={isLoading} className="w-full min-h-11 font-medium gap-2">
  {isLoading ? "Enviando Link..." : "Receber Acesso Rápido"}
  <Mail className="w-4 h-4" />
  </Button>
@@ -188,7 +188,7 @@ function CustomerPortalWhitelabelPage() {
  </TabsContent>
  </Tabs>
 
- <div className="pt-2 text-center border-t border-border/50 text-[11px] text-muted-foreground flex items-center justify-center gap-1.5">
+ <div className="pt-2 text-center border-t border-border/50 text-[11px] text-muted-foreground flex items-center justify-center gap-2">
  <Lock className="w-3.5 h-3.5 text-muted-foreground/80" />
  Ambiente protegido com criptografia de ponta a ponta
  </div>
@@ -196,7 +196,7 @@ function CustomerPortalWhitelabelPage() {
  ) : (
  /* Painel do Cliente Autenticado (Multi-Módulos 360) */
  <div className="space-y-6">
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30 p-4 rounded-2xl border border-border/40">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30 p-4 rounded-lg border border-border/40">
  <div>
  <h2 className="text-lg font-bold text-foreground">Espaço do Cliente</h2>
  <p className="text-xs text-muted-foreground">
@@ -210,7 +210,7 @@ function CustomerPortalWhitelabelPage() {
  <TabsList className="flex flex-wrap w-full justify-start h-auto gap-2 bg-transparent p-0">
  <TabsTrigger
  value="carnes"
- className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-[44px] px-4 rounded-xl text-xs font-medium border border-border/60 bg-card gap-2"
+ className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-11 px-4 rounded-lg text-xs font-medium border border-border/60 bg-card gap-2"
  >
  <QrCode className="w-4 h-4" />
  Carnês e PIX
@@ -218,7 +218,7 @@ function CustomerPortalWhitelabelPage() {
 
  <TabsTrigger
  value="contratos"
- className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-[44px] px-4 rounded-xl text-xs font-medium border border-border/60 bg-card gap-2"
+ className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-11 px-4 rounded-lg text-xs font-medium border border-border/60 bg-card gap-2"
  >
  <FileText className="w-4 h-4" />
  Contratos
@@ -226,7 +226,7 @@ function CustomerPortalWhitelabelPage() {
 
  <TabsTrigger
  value="agendamentos"
- className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-[44px] px-4 rounded-xl text-xs font-medium border border-border/60 bg-card gap-2"
+ className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-11 px-4 rounded-lg text-xs font-medium border border-border/60 bg-card gap-2"
  >
  <Calendar className="w-4 h-4" />
  Agendamentos
@@ -234,7 +234,7 @@ function CustomerPortalWhitelabelPage() {
 
  <TabsTrigger
  value="compras"
- className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-[44px] px-4 rounded-xl text-xs font-medium border border-border/60 bg-card gap-2"
+ className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-11 px-4 rounded-lg text-xs font-medium border border-border/60 bg-card gap-2"
  >
  <Package className="w-4 h-4" />
  Compras e Locações

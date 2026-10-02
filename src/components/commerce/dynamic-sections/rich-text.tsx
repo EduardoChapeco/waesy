@@ -69,7 +69,7 @@ export function RichText({ content, design_tokens }: RichTextProps) {
       }
       if (line.startsWith("### ")) {
         return (
-          <h3 key={idx} className="text-xl sm:text-2xl font-bold text-foreground mt-2 mb-1.5 tracking-tight">
+          <h3 key={idx} className="text-xl sm:text-2xl font-bold text-foreground mt-2 mb-2 tracking-tight">
             {line.replace("### ", "")}
           </h3>
         );
@@ -95,7 +95,7 @@ export function RichText({ content, design_tokens }: RichTextProps) {
         return <div key={idx} className="h-3" />;
       }
       return (
-        <p key={idx} className="text-base sm:text-lg text-foreground/80 leading-relaxed my-1.5">
+        <p key={idx} className="text-base sm:text-lg text-foreground/80 leading-relaxed my-2">
           {parseInlineMarkdown(line)}
         </p>
       );
@@ -141,7 +141,7 @@ export function RichText({ content, design_tokens }: RichTextProps) {
       <div className={cn("mx-auto flex flex-col space-y-4", maxWidthClass, alignClass)}>
         {badge && (
           <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
               <Star className="size-3" />
               {badge}
             </span>
@@ -168,7 +168,7 @@ export function RichText({ content, design_tokens }: RichTextProps) {
 
         {buttonText && (
           <div className="pt-4">
-            <Button asChild size="lg" className="rounded-xl h-11 px-6 font-bold text-xs gap-2">
+            <Button asChild size="lg" className="rounded-lg h-11 px-6 font-bold text-xs gap-2">
               <Link to={buttonLink || "/explorar"}>
                 <span>{buttonText}</span>
                 <ArrowRight className="size-4" />

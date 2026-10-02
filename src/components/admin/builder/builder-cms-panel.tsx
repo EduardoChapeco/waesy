@@ -80,7 +80,7 @@ export function BuilderCmsPanel({
       {/* Header */}
       <div className="p-4 border-b border-border flex items-center justify-between bg-muted/20">
         <div className="flex items-center gap-2">
-          <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+          <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <Database className="size-4" />
           </div>
           <div>
@@ -90,8 +90,8 @@ export function BuilderCmsPanel({
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-3.5 space-y-3 text-xs">
-        <div className="p-3 rounded-2xl bg-muted/30 border border-border space-y-1 mb-2">
+      <ScrollArea className="flex-1 p-4 space-y-3 text-xs">
+        <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-1 mb-2">
           <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
             <Sliders className="size-3 text-primary" />
             Live Data Binding
@@ -107,11 +107,11 @@ export function BuilderCmsPanel({
             return (
               <div
                 key={col.id}
-                className="p-3.5 rounded-2xl border border-border bg-card hover:border-primary/40 transition-colors space-y-2.5 group"
+                className="p-4 rounded-lg border border-border bg-card hover:border-primary/40 transition-colors space-y-3 group"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <div className="size-8 rounded-xl bg-muted flex items-center justify-center text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                       <Icon className="size-4" />
                     </div>
                     <div>
@@ -122,7 +122,7 @@ export function BuilderCmsPanel({
                     </div>
                   </div>
 
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[9px] font-medium py-0 px-1.5 shrink-0">
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[9px] font-medium py-0 px-2 shrink-0">
                     Ativo
                   </Badge>
                 </div>
@@ -147,7 +147,7 @@ export function BuilderCmsPanel({
                       onInsertDynamicBlock(col.blockType, col.bindingSource, col.title);
                       toast.success(`Bloco dinâmico de "${col.title}" inserido na página!`);
                     }}
-                    className="rounded-xl text-[10px] font-medium h-7 px-3 gap-1 bg-primary text-primary-foreground cursor-pointer"
+                    className="rounded-lg text-[10px] font-medium h-7 px-3 gap-1 bg-primary text-primary-foreground cursor-pointer"
                   >
                     <Plus className="size-3" />
                     <span>{col.actionLabel}</span>

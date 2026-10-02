@@ -106,7 +106,7 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
   return (
     <div className="space-y-6">
       {/* Topo do Módulo Apple HIG */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">
@@ -116,14 +116,14 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
               {subpanels.length} {subpanels.length === 1 ? "ponto ativo" : "pontos ativos"}
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Gere terminais independentes tokenizados para Bar, Portaria, Foodtruck ou VIP sem expor a conta master.
           </p>
         </div>
 
         <Sheet open={isNewOpen} onOpenChange={setIsNewOpen}>
           <SheetTrigger asChild>
-            <Button className="h-11 px-4 rounded-xl text-xs font-bold gap-2">
+            <Button className="h-11 px-4 rounded-lg text-xs font-bold gap-2">
               <Plus className="size-4" />
               <span>Novo Subpainel</span>
             </Button>
@@ -137,10 +137,10 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
             </SheetHeader>
 
             <form onSubmit={handleCreate} className="space-y-4 mt-6">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Tipo de Terminal Operacional</Label>
                 <Select value={panelType} onValueChange={(v) => setPanelType(v)}>
-                  <SelectTrigger className="h-11 rounded-xl text-xs">
+                  <SelectTrigger className="h-11 rounded-lg text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -153,45 +153,45 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Nome do Terminal *</Label>
                 <Input
                   required
                   placeholder="Ex: Bar Principal - Pista 1"
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Responsável / Gerente</Label>
                   <Input
                     placeholder="Ex: Fernando Barman"
-                    className="h-11 rounded-xl text-xs"
+                    className="h-11 rounded-lg text-xs"
                     value={managerName}
                     onChange={(e) => setManagerName(e.target.value)}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Contato WhatsApp</Label>
                   <Input
                     placeholder="(49) 99999-9999"
-                    className="h-11 rounded-xl text-xs"
+                    className="h-11 rounded-lg text-xs"
                     value={managerContact}
                     onChange={(e) => setManagerContact(e.target.value)}
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Validade do Token de Acesso</Label>
                 <Select
                   value={expireDays.toString()}
                   onValueChange={(v) => setExpireDays(parseInt(v))}
                 >
-                  <SelectTrigger className="h-11 rounded-xl text-xs">
+                  <SelectTrigger className="h-11 rounded-lg text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -203,7 +203,7 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
                 </Select>
               </div>
 
-              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-xl text-xs font-bold mt-4">
+              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-lg text-xs font-bold mt-4">
                 {isPending ? "Ativando..." : "Criar Subpainel"}
               </Button>
             </form>
@@ -213,7 +213,7 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
 
       {/* Grid de Subpainéis */}
       {subpanels.length === 0 ? (
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center bg-card/40">
+        <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <Store className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhum ponto operacional configurado</p>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -229,12 +229,12 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
             return (
               <Card
                 key={p.id}
-                className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
+                className="rounded-lg border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-xl bg-muted/60 ${tipoInfo.color}`}>
+                      <div className={`p-2 rounded-lg bg-muted/60 ${tipoInfo.color}`}>
                         <TipoIcon className="size-4" />
                       </div>
                       <div>
@@ -259,15 +259,15 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
                   </p>
 
                   {(p.manager_name || p.manager_contact) && (
-                    <div className="pt-2 border-t border-border/50 text-[11px] text-muted-foreground space-y-0.5">
+                    <div className="pt-2 border-t border-border/50 text-[11px] text-muted-foreground space-y-1">
                       {p.manager_name && (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <User className="size-3 text-muted-foreground" />
                           <span>{p.manager_name}</span>
                         </div>
                       )}
                       {p.manager_contact && (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <Phone className="size-3 text-muted-foreground" />
                           <span>{p.manager_contact}</span>
                         </div>
@@ -282,7 +282,7 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
                     size="sm"
                     variant="outline"
                     onClick={() => handleCopyLink(p.access_token)}
-                    className="h-8 rounded-xl text-xs font-bold gap-1.5 flex-1"
+                    className="h-8 rounded-lg text-xs font-bold gap-2 flex-1"
                   >
                     <Key className="size-3 text-primary" />
                     <span>Copiar Link Operacional</span>
@@ -293,7 +293,7 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
                       size="sm"
                       variant="ghost"
                       asChild
-                      className="size-8 p-0 rounded-xl"
+                      className="size-8 p-0 rounded-lg"
                     >
                       <a
                         href={`/p/evento/subpainel/${p.access_token}`}

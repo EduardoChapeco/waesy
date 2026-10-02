@@ -170,8 +170,8 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       {/* Coluna Esquerda: Formulário de Entrada Ágil (7 cols) */}
       <div className="lg:col-span-7 space-y-6">
-        <div className="space-y-1.5">
-          <Badge variant="outline" className="text-xs font-bold gap-1.5 border-primary/30 text-primary bg-primary/5">
+        <div className="space-y-2">
+          <Badge variant="outline" className="text-xs font-bold gap-2 border-primary/30 text-primary bg-primary/5">
             <Zap className="size-3.5" />
             <span>Cadastro Rápido de Presença Comercial</span>
           </Badge>
@@ -183,11 +183,11 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 rounded-3xl bg-card border border-border/60 shadow-sm space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 rounded-lg bg-card border border-border/60 shadow-sm space-y-5">
           {/* Nome da Empresa & Botão IA */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <label className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Building2 className="size-3.5 text-primary" />
                 <span>Nome Fantasia da Empresa *</span>
               </label>
@@ -197,7 +197,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 size="sm"
                 onClick={handleAiAutoFill}
                 disabled={isGeneratingAi || !name.trim()}
-                className="h-7 px-2.5 rounded-lg text-[11px] font-semibold text-primary hover:bg-primary/10 gap-1 cursor-pointer"
+                className="h-7 px-3 rounded-lg text-[11px] font-semibold text-primary hover:bg-primary/10 gap-1 cursor-pointer"
                 title="Auto-preencher bio e apresentação com IA"
               >
                 {isGeneratingAi ? (
@@ -212,17 +212,17 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Agência Serra Sol Turismo, Estúdio Som & Luz..."
-              className="h-11 rounded-xl text-xs sm:text-sm font-medium"
+              className="h-11 rounded-lg text-xs sm:text-sm font-medium"
               required
             />
           </div>
 
           {/* Segmento & WhatsApp */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground">Segmento de Atuação *</label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -241,7 +241,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
               </Select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground flex items-center gap-1">
                 <Phone className="size-3.5 text-primary" />
                 <span>WhatsApp Comercial *</span>
@@ -250,7 +250,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="(49) 99999-9999"
-                className="h-11 rounded-xl text-xs sm:text-sm font-medium"
+                className="h-11 rounded-lg text-xs sm:text-sm font-medium"
                 required
               />
             </div>
@@ -258,7 +258,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
           {/* Endereço e Localização Interativa com CEP e Mapa */}
           <div className="space-y-2 pt-1 border-t border-border/40">
-            <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <label className="text-xs font-bold text-foreground flex items-center gap-2">
               <MapPin className="size-3.5 text-primary" />
               <span>Endereço e Ponto no Mapa</span>
             </label>
@@ -269,7 +269,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           </div>
 
           {/* Bio / Apresentação da Empresa */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-foreground">Apresentação e Diferenciais (Bio)</label>
               <span className="text-[11px] text-muted-foreground font-mono">{bio.length}/600</span>
@@ -278,7 +278,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Descreva os diferenciais da sua empresa, horários de atendimento ou serviços principais..."
-              className="min-h-[85px] rounded-xl text-xs resize-none"
+              className="min-h-[85px] rounded-lg text-xs resize-none"
               maxLength={600}
             />
           </div>
@@ -323,7 +323,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://suaempresa.com.br"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-9 rounded-lg text-xs"
                 />
               </div>
 
@@ -336,7 +336,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value)}
                   placeholder="@suaempresa"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-9 rounded-lg text-xs"
                 />
               </div>
             </div>
@@ -346,7 +346,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 rounded-xl text-xs sm:text-sm font-black gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-md active:scale-[0.99] transition-all cursor-pointer"
+              className="w-full h-12 rounded-lg text-xs sm:text-sm font-black gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-md active:scale-[0.99] transition-all cursor-pointer"
             >
               {isSubmitting ? (
                 <>
@@ -366,7 +366,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
       {/* Coluna Direita: Live Truthful Public Profile Preview (5 cols) */}
       <div className="lg:col-span-5 sticky top-24 space-y-4">
-        <div className="p-3.5 bg-muted/40 rounded-2xl border border-border/60 flex items-center justify-between">
+        <div className="p-4 bg-muted/40 rounded-lg border border-border/60 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Store className="size-4 text-primary" />
             <span className="text-xs font-bold text-foreground">Prévia Real do Perfil Público</span>
@@ -377,7 +377,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         </div>
 
         {/* Card do Perfil Público (Fiel à CanonicalStoreProfileView) */}
-        <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm space-y-0">
+        <div className="rounded-lg border border-border/60 bg-card overflow-hidden shadow-sm space-y-0">
           {/* Capa Panorâmica Canônica 21:9 */}
           <div className="relative aspect-[21/9] w-full bg-muted overflow-hidden flex items-center justify-center">
             {bannerUrl ? (
@@ -398,7 +398,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           {/* Foto de Perfil 1:1 com Sobreposição Elegante + Stats */}
           <div className="p-4 sm:p-5 pt-0 relative space-y-3">
             <div className="flex items-end justify-between -mt-8 sm:-mt-10 mb-1">
-              <div className="size-16 sm:size-20 rounded-2xl border-4 border-card bg-background overflow-hidden flex items-center justify-center shadow-md shrink-0">
+              <div className="size-16 sm:size-20 rounded-lg border-4 border-card bg-background overflow-hidden flex items-center justify-center shadow-md shrink-0">
                 {logoUrl ? (
                   <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover" />
                 ) : (
@@ -426,7 +426,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
             {/* Identidade: Nome, @slug limpo, Endereço */}
             <div className="space-y-1">
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-black text-base text-foreground tracking-tight truncate">
                   {name || "Nome da Sua Empresa"}
                 </h3>
@@ -452,7 +452,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
               <span className="text-[11px] font-mono text-muted-foreground">
                 {phone || "(49) 99999-9999"}
               </span>
-              <div className="px-3.5 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs">
+              <div className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs">
                 Falar no WhatsApp
               </div>
             </div>
@@ -468,8 +468,8 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         </div>
 
         {/* Garantia do Sistema */}
-        <div className="p-4 rounded-2xl bg-muted/20 border border-border/40 space-y-1.5 text-xs text-muted-foreground">
-          <p className="font-bold text-foreground flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2 text-xs text-muted-foreground">
+          <p className="font-bold text-foreground flex items-center gap-2">
             <CheckCircle2 className="size-3.5 text-emerald-500" />
             <span>Perfil Oficial no Diretório e Guia</span>
           </p>

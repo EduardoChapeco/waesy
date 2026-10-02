@@ -131,7 +131,7 @@ export function CommunityFeedCard({
  };
 
  return (
- <article className={cn("group relative flex gap-3.5 select-none", !isChildReply && "pt-4 pb-3")}>
+ <article className={cn("group relative flex gap-4 select-none", !isChildReply && "pt-4 pb-3")}>
  {/* ── Coluna Esquerda: Avatar + Linha Contínua de Thread ── */}
  <div className="flex flex-col items-center flex-shrink-0">
  <Link
@@ -139,7 +139,7 @@ export function CommunityFeedCard({
  params={{ id: post.author.username || post.author.id }}
  className="relative transition-transform active:scale-95 flex-shrink-0"
  >
- <Avatar className="size-10 sm:size-11 rounded-2xl ring-2 ring-background bg-muted">
+ <Avatar className="size-10 sm:size-11 rounded-lg ring-2 ring-background bg-muted">
  <AvatarImage src={post.author.avatar_url || ""} alt={post.author.full_name} className="object-cover" />
  <AvatarFallback className="text-xs font-bold bg-muted text-foreground">
  {post.author.full_name?.slice(0, 2)?.toUpperCase() || "WD"}
@@ -149,7 +149,7 @@ export function CommunityFeedCard({
 
  {/* Linha vertical de conexão se houver respostas encadeadas */}
  {(post.replies?.length || 0) > 0 && (
- <div className="w-0.5 flex-1 bg-border/60 my-1.5 rounded-full" />
+ <div className="w-0.5 flex-1 bg-border/60 my-2 rounded-full" />
  )}
  </div>
 
@@ -157,7 +157,7 @@ export function CommunityFeedCard({
  <div className="flex-1 min-w-0 space-y-2">
  {/* Header do Post: Nome, Handle, Timestamp e Menu */}
  <div className="flex items-center justify-between gap-2">
- <div className="flex items-center gap-1.5 min-w-0">
+ <div className="flex items-center gap-2 min-w-0">
  <Link
  to="/membro/$id"
  params={{ id: post.author.username || post.author.id }}
@@ -183,25 +183,25 @@ export function CommunityFeedCard({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground opacity-70 group-hover:opacity-100 transition-opacity"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground opacity-70 group-hover:opacity-100 transition-opacity"
  >
  <MoreHorizontal className="size-4" />
  </Button>
  </DropdownMenuTrigger>
- <DropdownMenuContent align="end" className="w-48 rounded-2xl p-1.5">
+ <DropdownMenuContent align="end" className="w-48 rounded-lg p-2">
  <DropdownMenuItem
  onClick={() => {
  setBookmarked(!bookmarked);
  toast.success(bookmarked ? "Removido dos salvos" : "Item salvo com sucesso!");
  }}
- className="rounded-xl cursor-pointer text-xs font-semibold gap-2"
+ className="rounded-lg cursor-pointer text-xs font-semibold gap-2"
  >
  <Bookmark className="size-3.5" />
  <span>{bookmarked ? "Remover dos Salvos" : "Salvar Publicação"}</span>
  </DropdownMenuItem>
  <DropdownMenuItem
  onClick={handleShare}
- className="rounded-xl cursor-pointer text-xs font-semibold gap-2"
+ className="rounded-lg cursor-pointer text-xs font-semibold gap-2"
  >
  <Share2 className="size-3.5" />
  <span>Copiar Link do Post</span>
@@ -216,7 +216,7 @@ export function CommunityFeedCard({
  },
  });
  }}
- className="rounded-xl cursor-pointer text-xs font-semibold gap-2 text-rose-500"
+ className="rounded-lg cursor-pointer text-xs font-semibold gap-2 text-rose-500"
  >
  <EyeOff className="size-3.5" />
  <span>Ocultar do Feed</span>
@@ -234,7 +234,7 @@ export function CommunityFeedCard({
 
  {/* ── Renderizador de Enquete de Interação (Poll) ── */}
  {pollData && (
- <div className="mt-3 space-y-2 rounded-2xl bg-muted/20 border border-border/40 p-3.5">
+ <div className="mt-3 space-y-2 rounded-lg bg-muted/20 border border-border/40 p-4">
  {pollData.question && (
  <p className="text-xs font-bold text-foreground mb-2">{pollData.question}</p>
  )}
@@ -251,7 +251,7 @@ export function CommunityFeedCard({
  onClick={() => handleVotePoll(option.id)}
  disabled={!!pollData.user_voted_option}
  className={cn(
- "w-full relative h-10 rounded-xl overflow-hidden text-left flex items-center justify-between px-3 text-xs font-bold transition-all border",
+ "w-full relative h-10 rounded-lg overflow-hidden text-left flex items-center justify-between px-3 text-xs font-bold transition-all border",
  isSelected
  ? "border-primary bg-primary/10 text-primary"
  : "border-border/60 bg-card hover:bg-muted/40 text-foreground"
@@ -261,13 +261,13 @@ export function CommunityFeedCard({
  {pollData.user_voted_option && (
  <div
  className={cn(
- "absolute top-0 bottom-0 left-0 transition-all duration-500 rounded-xl opacity-20",
+ "absolute top-0 bottom-0 left-0 transition-all duration-500 rounded-lg opacity-20",
  isSelected ? "bg-primary" : "bg-foreground"
  )}
  style={{ width: `${percent}%` }}
  />
  )}
- <span className="relative z-10 truncate flex items-center gap-1.5">
+ <span className="relative z-10 truncate flex items-center gap-2">
  {option.text}
  {isSelected && <Check className="size-3 text-primary" />}
  </span>
@@ -290,8 +290,8 @@ export function CommunityFeedCard({
  {post.media_urls && post.media_urls.length > 0 && (
  <div
  className={cn(
- "mt-3 rounded-2xl overflow-hidden border border-border/40",
- post.media_urls.length === 1 ? "max-h-[480px] bg-black/5" : "grid grid-cols-2 gap-1.5"
+ "mt-3 rounded-lg overflow-hidden border border-border/40",
+ post.media_urls.length === 1 ? "max-h-[480px] bg-black/5" : "grid grid-cols-2 gap-2"
  )}
  >
  {post.media_urls.map((url, idx) => (
@@ -323,7 +323,7 @@ export function CommunityFeedCard({
  type="button"
  onClick={handleLikeClick}
  className={cn(
- "h-9 px-2.5 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-90",
+ "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer active:scale-90",
  liked ? "text-rose-500" : "hover:text-foreground hover:bg-muted/40"
  )}
  aria-label="Curtir"
@@ -336,7 +336,7 @@ export function CommunityFeedCard({
  <button
  type="button"
  onClick={() => onReply && onReply(post)}
- className="h-9 px-2.5 rounded-xl flex items-center gap-1.5 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer active:scale-90"
+ className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer active:scale-90"
  aria-label="Comentar"
  >
  <MessageCircle className="size-4" />
@@ -348,7 +348,7 @@ export function CommunityFeedCard({
  type="button"
  onClick={handleRepostClick}
  className={cn(
- "h-9 px-2.5 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-90",
+ "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer active:scale-90",
  reposted ? "text-emerald-500" : "hover:text-foreground hover:bg-muted/40"
  )}
  aria-label="Republicar"
@@ -361,7 +361,7 @@ export function CommunityFeedCard({
  <button
  type="button"
  onClick={handleShare}
- className="h-9 px-2.5 rounded-xl flex items-center gap-1.5 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer active:scale-90"
+ className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer active:scale-90"
  aria-label="Compartilhar"
  >
  <Send className="size-4" />
@@ -371,7 +371,7 @@ export function CommunityFeedCard({
  {/* ── Resumo de Interações com Avatar Stack ── */}
  {(likesCount > 0 || post.replies_count > 0) && (
  <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground font-normal">
- <div className="flex -space-x-1.5 overflow-hidden">
+ <div className="flex -space-x-2 overflow-hidden">
  <Avatar className="size-4.5 rounded-full ring-1 ring-background">
  <AvatarImage src={post.author.avatar_url || ""} />
  <AvatarFallback className="text-[8px]">WD</AvatarFallback>

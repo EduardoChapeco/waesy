@@ -609,7 +609,7 @@ export function NewGroupTourWizard({
                               : [...current, amenity];
                             setValue("hotelAmenities", next, { shouldValidate: true });
                           }}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 cursor-pointer ${
+                          className={`px-3 py-2 rounded-full text-xs font-medium border transition-all duration-200 cursor-pointer ${
                             selected
                               ? "bg-brand/10 border-brand text-brand shadow-sm shadow-brand/10"
                               : "bg-surface-alt/55 border-border text-muted-foreground hover:border-muted-foreground/30"
@@ -729,12 +729,12 @@ export function NewGroupTourWizard({
                     watchPricingTiers.map((tier, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-3 rounded-2xl border border-border bg-surface text-xs"
+                        className="flex items-center justify-between p-3 rounded-lg border border-border bg-surface text-xs"
                       >
                         <div>
                           <strong className="text-sm font-semibold">{tier.name}</strong>
                           {tier.description && (
-                            <p className="text-muted-foreground mt-0.5">{tier.description}</p>
+                            <p className="text-muted-foreground mt-1">{tier.description}</p>
                           )}
                         </div>
                         <div className="flex items-center gap-3">
@@ -758,7 +758,7 @@ export function NewGroupTourWizard({
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-4 border border-dashed border-border rounded-2xl text-xs text-muted-foreground">
+                    <div className="text-center py-4 border border-dashed border-border rounded-lg text-xs text-muted-foreground">
                       Nenhuma tarifa adicionada. Clientes usarão o preço base do pacote.
                     </div>
                   )}
@@ -840,12 +840,12 @@ export function NewGroupTourWizard({
                     watchExtraOptions.map((ext, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-3 rounded-2xl border border-border bg-surface text-xs"
+                        className="flex items-center justify-between p-3 rounded-lg border border-border bg-surface text-xs"
                       >
                         <div>
                           <strong className="text-sm font-semibold">{ext.name}</strong>
                           {ext.description && (
-                            <p className="text-muted-foreground mt-0.5">{ext.description}</p>
+                            <p className="text-muted-foreground mt-1">{ext.description}</p>
                           )}
                         </div>
                         <div className="flex items-center gap-3">
@@ -869,7 +869,7 @@ export function NewGroupTourWizard({
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-4 border border-dashed border-border rounded-2xl text-xs text-muted-foreground">
+                    <div className="text-center py-4 border border-dashed border-border rounded-lg text-xs text-muted-foreground">
                       Nenhum serviço opcional cadastrado.
                     </div>
                   )}
@@ -935,13 +935,13 @@ export function NewGroupTourWizard({
                         </Button>
                       </div>
                     </Field>
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-2">
                       {watchIncludes.map((inc, i) => (
                         <div
                           key={i}
-                          className="flex items-center justify-between bg-success/10 text-success text-xs py-1.5 px-3 rounded-full border border-success/20"
+                          className="flex items-center justify-between bg-success/10 text-success text-xs py-2 px-3 rounded-full border border-success/20"
                         >
-                          <span className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-2">
                             <Check className="h-3 w-3" /> {inc}
                           </span>
                           <Button
@@ -1003,13 +1003,13 @@ export function NewGroupTourWizard({
                         </Button>
                       </div>
                     </Field>
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-2">
                       {watchExcludes.map((exc, i) => (
                         <div
                           key={i}
-                          className="flex items-center justify-between bg-danger/10 text-danger text-xs py-1.5 px-3 rounded-full border border-danger/20"
+                          className="flex items-center justify-between bg-danger/10 text-danger text-xs py-2 px-3 rounded-full border border-danger/20"
                         >
-                          <span className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-2">
                             <X className="h-3 w-3" /> {exc}
                           </span>
                           <Button
@@ -1049,7 +1049,7 @@ export function NewGroupTourWizard({
                         <Button
                           type="button"
                           onClick={() => setValue("coverUrl", "", { shouldValidate: true })}
-                          className="text-danger flex items-center gap-2 text-sm font-bold bg-surface px-4 py-2 rounded-2xl border border-danger/30 hover:bg-danger hover:text-white transition-colors"
+                          className="text-danger flex items-center gap-2 text-sm font-bold bg-surface px-4 py-2 rounded-lg border border-danger/30 hover:bg-danger hover:text-white transition-colors"
                         >
                           <Trash2 className="h-4 w-4" /> Remover Imagem
                         </Button>
@@ -1101,7 +1101,7 @@ export function NewGroupTourWizard({
                           { shouldValidate: true },
                         )
                       }
-                      className="h-8 text-xs gap-1.5 border border-border"
+                      className="h-8 text-xs gap-2 border border-border"
                     >
                       <Plus className="h-3.5 w-3.5" /> Adicionar Dia
                     </Button>
@@ -1184,10 +1184,10 @@ export function NewGroupTourWizard({
                     <img
                       src={watchCoverUrl}
                       alt="Cover"
-                      className="w-full h-40 sm:w-32 sm:h-32 rounded-2xl object-cover shrink-0"
+                      className="w-full h-40 sm:w-32 sm:h-32 rounded-lg object-cover shrink-0"
                     />
                   ) : (
-                    <div className="w-full h-40 sm:w-32 sm:h-32 rounded-2xl bg-surface flex items-center justify-center border border-dashed border-border shrink-0">
+                    <div className="w-full h-40 sm:w-32 sm:h-32 rounded-lg bg-surface flex items-center justify-center border border-dashed border-border shrink-0">
                       <Map className="h-8 w-8 text-muted-foreground/30" />
                     </div>
                   )}
@@ -1245,7 +1245,7 @@ export function NewGroupTourWizard({
 
                 {watchPricingTiers && watchPricingTiers.length > 0 && (
                   <div className="space-y-2 rounded-card border border-border bg-surface p-5">
-                    <h4 className="ds-label-caps text-muted-foreground mb-2 flex items-center gap-1.5">
+                    <h4 className="ds-label-caps text-muted-foreground mb-2 flex items-center gap-2">
                       <BedDouble className="h-4 w-4" /> Tarifas de Acomodação (
                       {watchPricingTiers.length})
                     </h4>
@@ -1253,7 +1253,7 @@ export function NewGroupTourWizard({
                       {watchPricingTiers.map((t, idx) => (
                         <div
                           key={idx}
-                          className="bg-surface-alt/40 p-2.5 rounded-2xl flex justify-between items-center"
+                          className="bg-surface-alt/40 p-3 rounded-lg flex justify-between items-center"
                         >
                           <span>{t.name}</span>
                           <strong className="font-mono text-brand">
@@ -1267,7 +1267,7 @@ export function NewGroupTourWizard({
 
                 {watchExtraOptions && watchExtraOptions.length > 0 && (
                   <div className="space-y-2 rounded-card border border-border bg-surface p-5">
-                    <h4 className="ds-label-caps text-muted-foreground mb-2 flex items-center gap-1.5">
+                    <h4 className="ds-label-caps text-muted-foreground mb-2 flex items-center gap-2">
                       <Layers className="h-4 w-4" /> Opcionais Cadastrados (
                       {watchExtraOptions.length})
                     </h4>
@@ -1275,7 +1275,7 @@ export function NewGroupTourWizard({
                       {watchExtraOptions.map((e, idx) => (
                         <div
                           key={idx}
-                          className="bg-surface-alt/40 p-2.5 rounded-2xl flex justify-between items-center"
+                          className="bg-surface-alt/40 p-3 rounded-lg flex justify-between items-center"
                         >
                           <span>{e.name}</span>
                           <strong className="font-mono text-success">

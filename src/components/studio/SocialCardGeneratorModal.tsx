@@ -222,7 +222,7 @@ export function SocialCardGeneratorModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl rounded-2xl p-6">
+      <DialogContent className="max-w-2xl rounded-lg p-6">
         <DialogHeader>
           <DialogTitle className="text-base font-bold flex items-center gap-2">
             <Star className="size-4 text-amber-500" /> Gerador Social Studio
@@ -245,7 +245,7 @@ export function SocialCardGeneratorModal({
                 type="button"
                 onClick={() => setFormat(f)}
                 className={cn(
-                  "p-3 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer",
+                  "p-3 rounded-lg border text-center transition-all flex flex-col items-center gap-2 cursor-pointer",
                   isSelected
                     ? "border-foreground bg-foreground/5 shadow-xs"
                     : "border-border/60 hover:border-border text-muted-foreground"
@@ -262,11 +262,11 @@ export function SocialCardGeneratorModal({
         </div>
 
         {/* Preview do Canvas */}
-        <div className="flex items-center justify-center p-4 bg-muted/30 rounded-2xl border border-border/60 min-h-[320px] max-h-[440px] overflow-hidden">
+        <div className="flex items-center justify-center p-4 bg-muted/30 rounded-lg border border-border/60 min-h-[320px] max-h-[440px] overflow-hidden">
           <canvas
             ref={canvasRef}
             className={cn(
-              "shadow-xl rounded-xl object-contain max-h-[380px] w-auto transition-all",
+              "shadow-xl rounded-lg object-contain max-h-[380px] w-auto transition-all",
               format === "stories" ? "aspect-[9/16]" : format === "feed" ? "aspect-square" : "aspect-[16/9]"
             )}
           />
@@ -276,7 +276,7 @@ export function SocialCardGeneratorModal({
         <div className="flex items-center justify-between pt-3 border-t border-border/60">
           <Button
             variant="outline"
-            className="h-10 rounded-xl text-xs font-medium cursor-pointer"
+            className="h-10 rounded-lg text-xs font-medium cursor-pointer"
             onClick={handleCopy}
           >
             {isCopied ? <Check className="size-3.5 mr-1 text-emerald-500" /> : <Copy className="size-3.5 mr-1" />}
@@ -286,13 +286,13 @@ export function SocialCardGeneratorModal({
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              className="h-10 rounded-xl text-xs font-medium cursor-pointer"
+              className="h-10 rounded-lg text-xs font-medium cursor-pointer"
               onClick={handleNativeShare}
             >
               <Share2 className="size-3.5 mr-1" /> Compartilhar
             </Button>
             <Button
-              className="h-10 rounded-xl text-xs font-semibold bg-foreground text-background cursor-pointer"
+              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
               onClick={handleDownload}
             >
               <Download className="size-3.5 mr-1" /> Baixar PNG

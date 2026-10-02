@@ -141,7 +141,7 @@ function WorkspaceSessionsAndAuditPage() {
             <h1 className="text-xl font-bold tracking-tight text-foreground">
               Sessões e Auditoria da Loja
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Governança bilateral: consulte o histórico de alterações da equipe e gerencie dispositivos conectados.
             </p>
           </div>
@@ -152,7 +152,7 @@ function WorkspaceSessionsAndAuditPage() {
           size="sm"
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="self-start sm:self-auto gap-2 rounded-xl text-xs cursor-pointer"
+          className="self-start sm:self-auto gap-2 rounded-lg text-xs cursor-pointer"
         >
           <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
           Sincronizar
@@ -164,7 +164,7 @@ function WorkspaceSessionsAndAuditPage() {
         <button
           onClick={() => setActiveTab("store_audit")}
           className={cn(
-            "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer",
+            "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
             activeTab === "store_audit"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "text-muted-foreground hover:bg-muted/50"
@@ -175,7 +175,7 @@ function WorkspaceSessionsAndAuditPage() {
           <Badge
             variant="secondary"
             className={cn(
-              "text-xs px-1.5 py-0 h-4 font-mono",
+              "text-xs px-2 py-0 h-4 font-mono",
               activeTab === "store_audit" ? "bg-primary-foreground/20 text-primary-foreground" : ""
             )}
           >
@@ -186,7 +186,7 @@ function WorkspaceSessionsAndAuditPage() {
         <button
           onClick={() => setActiveTab("sessions")}
           className={cn(
-            "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer",
+            "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
             activeTab === "sessions"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "text-muted-foreground hover:bg-muted/50"
@@ -197,7 +197,7 @@ function WorkspaceSessionsAndAuditPage() {
           <Badge
             variant="secondary"
             className={cn(
-              "text-xs px-1.5 py-0 h-4 font-mono",
+              "text-xs px-2 py-0 h-4 font-mono",
               activeTab === "sessions" ? "bg-primary-foreground/20 text-primary-foreground" : ""
             )}
           >
@@ -212,13 +212,13 @@ function WorkspaceSessionsAndAuditPage() {
       {activeTab === "store_audit" && (
         <section className="space-y-4">
           {/* Barra de Filtro e Busca */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-muted/10 p-3 rounded-2xl border border-border/60">
-            <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-muted/10 p-3 rounded-lg border border-border/60">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-semibold text-muted-foreground mr-1">Entidade:</span>
               <button
                 onClick={() => setEntityFilter("all")}
                 className={cn(
-                  "px-2.5 py-1 rounded-lg text-xs transition-colors cursor-pointer",
+                  "px-3 py-1 rounded-lg text-xs transition-colors cursor-pointer",
                   entityFilter === "all"
                     ? "bg-primary text-primary-foreground font-semibold"
                     : "text-muted-foreground hover:bg-muted/50"
@@ -231,7 +231,7 @@ function WorkspaceSessionsAndAuditPage() {
                   key={ent}
                   onClick={() => setEntityFilter(ent)}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg text-xs transition-colors cursor-pointer capitalize",
+                    "px-3 py-1 rounded-lg text-xs transition-colors cursor-pointer capitalize",
                     entityFilter === ent
                       ? "bg-primary text-primary-foreground font-semibold"
                       : "text-muted-foreground hover:bg-muted/50"
@@ -246,45 +246,45 @@ function WorkspaceSessionsAndAuditPage() {
               value={auditSearch}
               onChange={(e) => setAuditSearch(e.target.value)}
               placeholder="Buscar por colaborador ou ação..."
-              className="h-8 sm:w-64 text-xs rounded-xl bg-background"
+              className="h-8 sm:w-64 text-xs rounded-lg bg-background"
             />
           </div>
 
           {/* Lista de Registros Forenses da Loja */}
           {filteredAuditLogs.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-border/70 bg-muted/20">
+            <div className="p-12 text-center rounded-lg border border-dashed border-border/70 bg-muted/20">
               <History className="size-8 mx-auto text-muted-foreground/60 mb-2" />
               <p className="text-xs font-semibold text-foreground">
                 Nenhuma ação operacional registrada ainda.
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1">
                 Alterações de catálogo, pedidos, preços e permissões executadas por membros da equipe serão logadas aqui com integridade forense.
               </p>
             </div>
           ) : (
-            <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+            <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
               <div className="divide-y divide-border/60">
                 {filteredAuditLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
+                    className="p-4 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="size-8 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary mt-0.5">
+                      <div className="size-8 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary mt-1">
                         <Layers className="size-4" />
                       </div>
 
                       <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="text-xs font-bold text-foreground">
                             {log.user_name || "Membro da Equipe"}
                           </span>
-                          <Badge variant="outline" className="text-xs px-1.5 py-0 capitalize">
+                          <Badge variant="outline" className="text-xs px-2 py-0 capitalize">
                             {log.entity_type}
                           </Badge>
                           <Badge
                             className={cn(
-                              "text-xs px-1.5 py-0 font-medium",
+                              "text-xs px-2 py-0 font-medium",
                               log.action.includes("delete") || log.action.includes("block")
                                 ? "bg-destructive/90 text-white"
                                 : log.action.includes("create")
@@ -317,7 +317,7 @@ function WorkspaceSessionsAndAuditPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => setSelectedPayloadLog(log)}
-                          className="h-7 px-2.5 rounded-lg text-xs gap-1 cursor-pointer"
+                          className="h-7 px-3 rounded-lg text-xs gap-1 cursor-pointer"
                         >
                           <Eye className="size-3" />
                           <span>Detalhes</span>
@@ -345,8 +345,8 @@ function WorkspaceSessionsAndAuditPage() {
             </h2>
 
             {devices.length === 0 ? (
-              <div className="p-6 text-center rounded-2xl border border-dashed border-border/70 bg-muted/20">
-                <Laptop className="size-6 mx-auto text-muted-foreground mb-1.5" />
+              <div className="p-6 text-center rounded-lg border border-dashed border-border/70 bg-muted/20">
+                <Laptop className="size-6 mx-auto text-muted-foreground mb-2" />
                 <p className="text-xs text-muted-foreground">Nenhum dispositivo catalogado registrado.</p>
               </div>
             ) : (
@@ -356,10 +356,10 @@ function WorkspaceSessionsAndAuditPage() {
                   return (
                     <div
                       key={dev.id}
-                      className="p-4 rounded-2xl border border-border/70 bg-card flex flex-col justify-between gap-3 shadow-2xs"
+                      className="p-4 rounded-lg border border-border/70 bg-card flex flex-col justify-between gap-3 shadow-2xs"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-3">
                           <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                             {isMobile ? <Smartphone className="size-4" /> : <Laptop className="size-4" />}
                           </div>
@@ -420,17 +420,17 @@ function WorkspaceSessionsAndAuditPage() {
             </h2>
 
             {logs.length === 0 ? (
-              <div className="p-8 text-center rounded-2xl border border-dashed border-border/70 bg-muted/20">
+              <div className="p-8 text-center rounded-lg border border-dashed border-border/70 bg-muted/20">
                 <Shield className="size-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-xs font-semibold text-muted-foreground">Nenhum evento registrado recentemente.</p>
               </div>
             ) : (
-              <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+              <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
                 <div className="divide-y divide-border/60">
                   {logs.map((log: any) => (
                     <div
                       key={log.id}
-                      className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
+                      className="p-4 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
                     >
                       <div className="flex items-start gap-3">
                         <div
@@ -459,7 +459,7 @@ function WorkspaceSessionsAndAuditPage() {
                             )}
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-0.5">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-1">
                             <span className="flex items-center gap-1 font-mono">
                               <Globe className="size-3" />
                               {log.ip_address && log.ip_address !== "127.0.0.1" ? log.ip_address : "127.0.0.1 (Local)"}
@@ -492,7 +492,7 @@ function WorkspaceSessionsAndAuditPage() {
 
       {/* Dialog de Inspeção Forense de Alterações (JSON) */}
       <Dialog open={Boolean(selectedPayloadLog)} onOpenChange={(open) => !open && setSelectedPayloadLog(null)}>
-        <DialogContent className="sm:max-w-xl rounded-2xl">
+        <DialogContent className="sm:max-w-xl rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold flex items-center gap-2">
               <FileCode2 className="size-4 text-primary" />
@@ -505,14 +505,14 @@ function WorkspaceSessionsAndAuditPage() {
 
           {selectedPayloadLog && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs bg-muted/30 p-2.5 rounded-xl border border-border/60">
+              <div className="flex items-center justify-between text-xs bg-muted/30 p-3 rounded-lg border border-border/60">
                 <span className="font-semibold text-foreground">Autor: {selectedPayloadLog.user_name}</span>
                 <Badge variant="outline" className="text-xs capitalize">
                   {selectedPayloadLog.action}
                 </Badge>
               </div>
 
-              <div className="bg-muted/40 p-3 rounded-xl border border-border/60 overflow-x-auto max-h-80">
+              <div className="bg-muted/40 p-3 rounded-lg border border-border/60 overflow-x-auto max-h-80">
                 <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap">
                   {JSON.stringify(selectedPayloadLog.payload_snapshot, null, 2)}
                 </pre>

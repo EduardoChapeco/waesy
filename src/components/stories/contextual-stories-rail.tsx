@@ -40,17 +40,17 @@ export function ContextualStoriesRail({
  <>
  <section
  aria-label="Stories e Momentos das Empresas"
- className={`w-full py-1.5 focus:outline-none ${className}`}
+ className={`w-full py-2 focus:outline-none ${className}`}
  >
  <div
- className="flex items-center gap-3.5 sm:gap-4 overflow-x-auto no-scrollbar pb-1 focus:outline-none px-0.5"
+ className="flex items-center gap-4 sm:gap-4 overflow-x-auto no-scrollbar pb-1 focus:outline-none px-1"
  tabIndex={0}
  >
  {/* Botão de Adicionar Story (se habilitado) */}
  {showCreateButton && (
  <button
  onClick={onCreateStory}
- className="flex flex-col items-center gap-1.5 shrink-0 group focus:outline-none"
+ className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none"
  aria-label="Criar novo story"
  >
  <div className="relative size-[68px] sm:size-[74px] rounded-full p-[2.5px] border-2 border-dashed border-border group-hover:border-primary transition-colors flex items-center justify-center bg-card">
@@ -87,7 +87,7 @@ export function ContextualStoriesRail({
  <button
  key={group.groupId}
  onClick={() => setSelectedGroupIndex(idx)}
- className="flex flex-col items-center gap-1.5 shrink-0 group focus:outline-none cursor-pointer select-none transition-transform duration-200 active:scale-95"
+ className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none cursor-pointer select-none transition-transform duration-200 active:scale-95"
  aria-label={`Ver stories de ${group.entityName}`}
  >
  <div

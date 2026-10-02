@@ -147,7 +147,7 @@ export function LeadFlightGridSheet({
               variant="outline"
               size="sm"
               onClick={handleAddSegment}
-              className="h-8 rounded-lg text-xs gap-1.5 min-h-[44px]"
+              className="h-8 rounded-lg text-xs gap-2 min-h-11"
             >
               <Plus className="size-3.5" /> Adicionar Trecho
             </Button>
@@ -157,7 +157,7 @@ export function LeadFlightGridSheet({
             {segments.map((seg, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3 relative group"
+                className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-3 relative group"
               >
                 <div className="flex items-center justify-between">
                   <Badge variant="outline" className="text-[10px] font-mono font-bold">
@@ -284,13 +284,13 @@ export function LeadFlightGridSheet({
         </div>
 
         <SheetFooter className="gap-2 sm:gap-0 pt-4 border-t border-border">
-          <Button variant="outline" onClick={onClose} className="rounded-xl min-h-[44px]">
+          <Button variant="outline" onClick={onClose} className="rounded-lg min-h-11">
             Fechar
           </Button>
           <Button
             onClick={handleSaveFlights}
             disabled={isSaving}
-            className="rounded-xl min-h-[44px] gap-2 bg-primary text-primary-foreground font-bold"
+            className="rounded-lg min-h-11 gap-2 bg-primary text-primary-foreground font-bold"
           >
             <ShieldCheck className="size-4" />
             {isSaving ? "Gravando..." : "Salvar Malha Aérea"}

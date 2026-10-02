@@ -334,7 +334,7 @@ export function LocationMasterPill({ className = "" }: { className?: string }) {
  onPointerUp={handlePointerUp}
  onPointerCancel={handlePointerCancel}
  title="Alterar Localização"
- className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 h-8 sm:h-9 rounded-2xl text-xs font-bold transition-all border select-none cursor-pointer shrink-0 ${
+ className={`inline-flex items-center gap-2 px-3 sm:px-3 h-8 sm:h-9 rounded-lg text-xs font-bold transition-all border select-none cursor-pointer shrink-0 ${
  isHolding
  ? "scale-95 bg-primary/20 border-primary text-primary"
  : "bg-muted/60 hover:bg-muted text-foreground border-border/80 hover:border-primary/40"
@@ -485,8 +485,8 @@ export function LocationPickerModal({
  <DialogContent
  className={`p-0 overflow-hidden bg-background transition-all duration-300 ${
  isMapFullscreen || activeTab === "map"
- ? "max-w-4xl w-[95vw] h-[85vh] rounded-2xl flex flex-col"
- : "max-w-xl rounded-2xl"
+ ? "max-w-4xl w-[95vw] h-[85vh] rounded-lg flex flex-col"
+ : "max-w-xl rounded-lg"
  }`}
  >
  <DialogHeader className="p-5 sm:p-6 pb-3 bg-muted/20 shrink-0">
@@ -497,7 +497,7 @@ export function LocationPickerModal({
  </DialogTitle>
 
  {/* Toggle Tabs */}
- <div className="flex items-center gap-1 bg-muted/80 p-1 rounded-xl ">
+ <div className="flex items-center gap-1 bg-muted/80 p-1 rounded-lg ">
  <button
  type="button"
  onClick={() => setActiveTab("quick")}
@@ -512,7 +512,7 @@ export function LocationPickerModal({
  <button
  type="button"
  onClick={() => setActiveTab("map")}
- className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+ className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
  activeTab === "map"
  ? "bg-primary text-primary-foreground "
  : "text-muted-foreground hover:text-foreground"
@@ -539,7 +539,7 @@ export function LocationPickerModal({
  onTriggerGPS();
  onOpenChange(false);
  }}
- className="w-full h-12 rounded-2xl border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary font-bold text-xs gap-2"
+ className="w-full h-12 rounded-lg border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary font-bold text-xs gap-2"
  >
  <Navigation className="size-4" />
  <span>Usar minha localização atual (GPS)</span>
@@ -556,12 +556,12 @@ export function LocationPickerModal({
  value={cep}
  onChange={(e) => setCep(e.target.value)}
  maxLength={9}
- className="h-11 rounded-xl bg-card text-sm"
+ className="h-11 rounded-lg bg-card text-sm"
  />
  <Button
  type="submit"
  disabled={isSearchingCep}
- className="h-11 px-5 rounded-xl font-bold bg-primary text-primary-foreground text-xs"
+ className="h-11 px-5 rounded-lg font-bold bg-primary text-primary-foreground text-xs"
  >
  {isSearchingCep ? <Loader2 className="size-4 animate-spin" /> : "Buscar"}
  </Button>
@@ -569,7 +569,7 @@ export function LocationPickerModal({
  </form>
 
  {/* Popular Cities Quick Select */}
- <div className="space-y-2.5">
+ <div className="space-y-3">
  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Cidades em Destaque
  </label>
@@ -591,7 +591,7 @@ export function LocationPickerModal({
  source: c.city === "Global" ? "default" : "manual",
  })
  }
- className={`flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all ${
+ className={`flex items-center justify-between p-3 rounded-lg border text-xs font-semibold transition-all ${
  isSelected
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
  : "bg-card hover:bg-muted text-foreground border-border/80"
@@ -644,16 +644,16 @@ export function LocationPickerModal({
  <div className="relative flex items-center justify-center">
  <MapPin className="size-10 text-primary fill-primary drop- animate-bounce" />
  </div>
- <div className="size-3 bg-black/40 rounded-full blur-[2px] mt-0.5" />
+ <div className="size-3 bg-black/40 rounded-full blur-[2px] mt-1" />
  </div>
 
  {/* Coordinates Indicator */}
- <div className="absolute top-3 left-3 z-30 bg-background/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-[11px] font-mono text-muted-foreground ">
+ <div className="absolute top-3 left-3 z-30 bg-background/90 backdrop-blur-md px-3 py-2 rounded-lg text-[11px] font-mono text-muted-foreground ">
  Lat: {pinLat.toFixed(5)} · Lng: {pinLng.toFixed(5)}
  </div>
 
  {/* Fullscreen Map Toggle & Recenter GPS */}
- <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5">
+ <div className="absolute top-3 right-3 z-30 flex items-center gap-2">
  <Button
  size="sm"
  variant="outline"
@@ -661,7 +661,7 @@ export function LocationPickerModal({
  e.stopPropagation();
  onTriggerGPS();
  }}
- className="rounded-xl font-bold text-xs bg-background/90 backdrop-blur-md gap-1.5 "
+ className="rounded-lg font-bold text-xs bg-background/90 backdrop-blur-md gap-2 "
  >
  <Crosshair className="size-3.5 text-primary" />
  <span>GPS Atual</span>
@@ -671,7 +671,7 @@ export function LocationPickerModal({
 
  {/* Bottom Bar: Resolved Address & Confirm Button */}
  <div className="p-4 sm:p-5 bg-card flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
- <div className="w-full sm:flex-1 space-y-0.5">
+ <div className="w-full sm:flex-1 space-y-1">
  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
  Endereço Selecionado
  </span>
@@ -685,7 +685,7 @@ export function LocationPickerModal({
  type="button"
  variant="outline"
  onClick={() => setActiveTab("quick")}
- className="w-1/3 sm:w-auto rounded-xl font-semibold text-xs"
+ className="w-1/3 sm:w-auto rounded-lg font-semibold text-xs"
  >
  Voltar
  </Button>
@@ -693,12 +693,12 @@ export function LocationPickerModal({
  type="button"
  onClick={handleConfirmMapPin}
  disabled={isResolvingPin}
- className="flex-1 sm:flex-none rounded-xl font-bold text-xs bg-primary text-primary-foreground px-6 "
+ className="flex-1 sm:flex-none rounded-lg font-bold text-xs bg-primary text-primary-foreground px-6 "
  >
  {isResolvingPin ? (
- <Loader2 className="size-3.5 animate-spin mr-1.5" />
+ <Loader2 className="size-3.5 animate-spin mr-2" />
  ) : (
- <Check className="size-3.5 mr-1.5" />
+ <Check className="size-3.5 mr-2" />
  )}
  <span>Definir Este Ponto</span>
  </Button>

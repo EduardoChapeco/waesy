@@ -197,13 +197,13 @@ function AdminAdsNetworkPage() {
               <Zap className="size-3" /> Arbitragem {Math.round((globalConfig?.take_rate ?? 0.20) * 100)}/{(100 - Math.round((globalConfig?.take_rate ?? 0.20) * 100))}
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Gestão da câmara de compensação de anúncios pagos e distribuição de tráfego Meta e Google.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold h-9 px-3.5">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold h-9 px-4">
             <Link to="/admin-master/boost-payments">
               <DollarSign className="size-3.5 mr-1 text-emerald-600" />
               Pagamentos Boost
@@ -215,7 +215,7 @@ function AdminAdsNetworkPage() {
             variant="outline"
             size="sm"
             onClick={handleOpenConfig}
-            className="rounded-xl text-xs font-semibold h-9 px-3.5 cursor-pointer"
+            className="rounded-lg text-xs font-semibold h-9 px-4 cursor-pointer"
           >
             <Sliders className="size-3.5 mr-1 text-primary" />
             Configurar Hub Ads
@@ -224,9 +224,9 @@ function AdminAdsNetworkPage() {
       </div>
 
       {/* ── 2. Bento Grid de Métricas de Tesouraria ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 px-4 sm:px-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-4 sm:px-0">
         {/* KPI 1: Volume Processado */}
-        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
             <span>Volume Total Processado</span>
             <DollarSign className="size-4 text-primary" />
@@ -240,7 +240,7 @@ function AdminAdsNetworkPage() {
         </div>
 
         {/* KPI 2: Receita Waesy (Arbitragem) */}
-        <div className="p-4 sm:p-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-2">
           <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
             <span>Receita Waesy (Software Fee)</span>
             <TrendingUp className="size-4 text-emerald-600" />
@@ -254,7 +254,7 @@ function AdminAdsNetworkPage() {
         </div>
 
         {/* KPI 3: Injeção em APIs Externas (Meta/Google) */}
-        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
             <span>Gasto em APIs (Meta / Google)</span>
             <ExternalLink className="size-4 text-primary" />
@@ -268,14 +268,14 @@ function AdminAdsNetworkPage() {
         </div>
 
         {/* KPI 4: Campanhas Ativas */}
-        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
             <span>Campanhas Ativas</span>
             <Radio className="size-4 text-amber-500 animate-pulse" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {metrics?.active_campaigns_count || 0}
-            <span className="text-sm font-normal text-muted-foreground ml-1.5">
+            <span className="text-sm font-normal text-muted-foreground ml-2">
               / {metrics?.total_campaigns_count || 0}
             </span>
           </div>
@@ -286,11 +286,11 @@ function AdminAdsNetworkPage() {
       </div>
 
       {/* ── 3. Hub de Integração Global (Bento Card Spatial UI) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 px-4 sm:px-0">
-        <div className="md:col-span-2 p-5 rounded-2xl border border-border/60 bg-card space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-4 sm:px-0">
+        <div className="md:col-span-2 p-5 rounded-lg border border-border/60 bg-card space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <Sliders className="size-4" />
               </div>
               <div>
@@ -302,7 +302,7 @@ function AdminAdsNetworkPage() {
               variant="outline"
               size="sm"
               onClick={handleOpenConfig}
-              className="rounded-xl text-xs font-semibold h-8.5 gap-1.5 cursor-pointer"
+              className="rounded-lg text-xs font-semibold h-8.5 gap-2 cursor-pointer"
             >
               <Settings className="size-3.5" /> Configurar Credenciais
             </Button>
@@ -310,7 +310,7 @@ function AdminAdsNetworkPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
             {/* Take Rate */}
-            <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-1">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
               <span className="text-[11px] text-muted-foreground font-medium">Taxa de Arbitragem</span>
               <p className="text-base font-bold font-mono text-foreground">
                 {Math.round((globalConfig?.take_rate ?? 0.20) * 100)}% Waesy
@@ -321,11 +321,11 @@ function AdminAdsNetworkPage() {
             </div>
 
             {/* Meta Marketing API */}
-            <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-1">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
               <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
                 <Instagram className="size-3 text-pink-500" /> Meta Marketing API
               </span>
-              <div className="flex items-center gap-1.5 pt-0.5">
+              <div className="flex items-center gap-2 pt-1">
                 <span className={`size-2 rounded-full ${globalConfig?.meta_configured ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/40"}`} />
                 <span className="text-xs font-semibold text-foreground">
                   {globalConfig?.meta_configured ? "Conectado" : "Não configurado"}
@@ -337,11 +337,11 @@ function AdminAdsNetworkPage() {
             </div>
 
             {/* Google Ads API */}
-            <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-1">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
               <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
                 <Globe className="size-3 text-blue-500" /> Google Ads API
               </span>
-              <div className="flex items-center gap-1.5 pt-0.5">
+              <div className="flex items-center gap-2 pt-1">
                 <span className={`size-2 rounded-full ${globalConfig?.google_configured ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/40"}`} />
                 <span className="text-xs font-semibold text-foreground">
                   {globalConfig?.google_configured ? "Conectado" : "Não configurado"}
@@ -355,9 +355,9 @@ function AdminAdsNetworkPage() {
         </div>
 
         {/* Card de Regra de Desvio do Split Engine */}
-        <div className="p-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 space-y-3 flex flex-col justify-between">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs uppercase tracking-wider">
+        <div className="p-5 rounded-lg border border-amber-500/20 bg-amber-500/5 space-y-3 flex flex-col justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-xs uppercase tracking-wider">
               <Zap className="size-3.5 fill-current" /> Split Engine Server-Side
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -382,26 +382,26 @@ function AdminAdsNetworkPage() {
                 setActiveViewTab("campaigns");
                 setSelectedCampaignForLedger(null);
               }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeViewTab === "campaigns"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted/60 text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Radio className="size-3.5 inline mr-1.5" />
+              <Radio className="size-3.5 inline mr-2" />
               Campanhas em Execução ({campaigns.length})
             </button>
 
             <button
               type="button"
               onClick={() => setActiveViewTab("ledger")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeViewTab === "ledger"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted/60 text-muted-foreground hover:text-foreground"
               }`}
             >
-              <BookOpen className="size-3.5 inline mr-1.5" />
+              <BookOpen className="size-3.5 inline mr-2" />
               Livro-Razão (Ad-Ledger)
             </button>
           </div>
@@ -426,7 +426,7 @@ function AdminAdsNetworkPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={activeViewTab === "campaigns" ? "Filtrar por loja ou campanha..." : "Filtrar lançamentos..."}
-                className="pl-8.5 h-9 rounded-xl text-base sm:text-xs"
+                className="pl-8.5 h-9 rounded-lg text-base sm:text-xs"
               />
             </div>
           </div>
@@ -451,10 +451,10 @@ function AdminAdsNetworkPage() {
                           {c.store_name}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         <Badge
                           variant={c.status === "active" ? "default" : "outline"}
-                          className="text-[10px] px-2 py-0.5 capitalize"
+                          className="text-[10px] px-2 py-1 capitalize"
                         >
                           {c.status === "active" ? "Rodando" : c.status}
                         </Badge>
@@ -491,7 +491,7 @@ function AdminAdsNetworkPage() {
                             setSelectedCampaignForLedger(c.id);
                             setActiveViewTab("ledger");
                           }}
-                          className="h-6 px-1.5 text-[10px] text-primary cursor-pointer"
+                          className="h-6 px-2 text-[10px] text-primary cursor-pointer"
                         >
                           Razão
                         </Button>
@@ -507,7 +507,7 @@ function AdminAdsNetworkPage() {
             </div>
 
             {/* Desktop View: Tabela Limpa */}
-            <div className="hidden sm:block rounded-2xl border border-border/60 overflow-hidden bg-card">
+            <div className="hidden sm:block rounded-lg border border-border/60 overflow-hidden bg-card">
               <div className="divide-y divide-border/30">
                 <div className="grid grid-cols-12 px-4 py-3 bg-muted/20 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <span className="col-span-4">Campanha / Loja</span>
@@ -521,7 +521,7 @@ function AdminAdsNetworkPage() {
                   filteredCampaigns.map((c: any) => (
                     <div
                       key={c.id}
-                      className="grid grid-cols-12 px-4 py-3.5 items-center text-xs hover:bg-muted/20 transition-colors"
+                      className="grid grid-cols-12 px-4 py-4 items-center text-xs hover:bg-muted/20 transition-colors"
                     >
                       <div className="col-span-4 min-w-0 pr-3">
                         <p className="font-bold text-foreground truncate">{c.title}</p>
@@ -544,10 +544,10 @@ function AdminAdsNetworkPage() {
                         +{formatMoney(c.waesy_revenue_cents)}
                       </div>
 
-                      <div className="col-span-2 flex items-center justify-center gap-1.5">
+                      <div className="col-span-2 flex items-center justify-center gap-2">
                         <Badge
                           variant={c.status === "active" ? "default" : "outline"}
-                          className="text-[10px] px-2 py-0.5"
+                          className="text-[10px] px-2 py-1"
                         >
                           {c.status === "active" ? "Em Leilão" : c.status}
                         </Badge>
@@ -600,7 +600,7 @@ function AdminAdsNetworkPage() {
               <button
                 type="button"
                 onClick={() => setLedgerTypeFilter("all")}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
                   ledgerTypeFilter === "all" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                 }`}
               >
@@ -609,7 +609,7 @@ function AdminAdsNetworkPage() {
               <button
                 type="button"
                 onClick={() => setLedgerTypeFilter("boost_payment")}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
                   ledgerTypeFilter === "boost_payment" ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
                 }`}
               >
@@ -618,7 +618,7 @@ function AdminAdsNetworkPage() {
               <button
                 type="button"
                 onClick={() => setLedgerTypeFilter("waesy_fee_retention")}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
                   ledgerTypeFilter === "waesy_fee_retention" ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
                 }`}
               >
@@ -627,7 +627,7 @@ function AdminAdsNetworkPage() {
               <button
                 type="button"
                 onClick={() => setLedgerTypeFilter("external_ad_spend")}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
                   ledgerTypeFilter === "external_ad_spend" ? "bg-sky-600 text-white" : "bg-muted text-muted-foreground"
                 }`}
               >
@@ -636,7 +636,7 @@ function AdminAdsNetworkPage() {
             </div>
 
             {/* Desktop Table do Ad-Ledger */}
-            <div className="rounded-2xl border border-border/60 overflow-hidden bg-card">
+            <div className="rounded-lg border border-border/60 overflow-hidden bg-card">
               <div className="divide-y divide-border/30">
                 <div className="grid grid-cols-12 px-4 py-3 bg-muted/20 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <span className="col-span-3">Data / Hora</span>
@@ -706,7 +706,7 @@ function AdminAdsNetworkPage() {
 
       {/* ── 5. Modal de Configuração de Credenciais Globais (Hub de Ads) ── */}
       <Dialog open={isConfigModalOpen} onOpenChange={setIsConfigModalOpen}>
-        <DialogContent className="max-w-lg rounded-3xl p-6 bg-card border border-border/70 shadow-2xl space-y-4">
+        <DialogContent className="max-w-lg rounded-lg p-6 bg-card border border-border/70 shadow-2xl space-y-4">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <Sliders className="size-4 text-primary" />
@@ -719,7 +719,7 @@ function AdminAdsNetworkPage() {
 
           <div className="space-y-4 py-2">
             {/* Taxa de Arbitragem */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground">
                 Taxa de Retenção Waesy (Take Rate %):
               </label>
@@ -730,7 +730,7 @@ function AdminAdsNetworkPage() {
                   max={99}
                   value={takeRateInput}
                   onChange={(e) => setTakeRateInput(Number(e.target.value))}
-                  className="w-28 h-10 rounded-xl font-mono text-base font-bold"
+                  className="w-28 h-10 rounded-lg font-mono text-base font-bold"
                 />
                 <span className="text-xs text-muted-foreground">
                   {takeRateInput}% fica na tesouraria do Waesy, {100 - takeRateInput}% é injetado nas APIs externas.
@@ -739,19 +739,19 @@ function AdminAdsNetworkPage() {
             </div>
 
             {/* Meta Marketing API */}
-            <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/40 space-y-3">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Instagram className="size-3.5 text-pink-500" /> Credenciais Globais Meta Ads
               </span>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <span className="text-[11px] text-muted-foreground font-medium">Meta Access Token (System User):</span>
                 <Input
                   type="password"
                   placeholder={globalConfig?.meta_access_token_masked || "EAAB..."}
                   value={metaTokenInput}
                   onChange={(e) => setMetaTokenInput(e.target.value)}
-                  className="h-10 rounded-xl text-base sm:text-xs font-mono"
+                  className="h-10 rounded-lg text-base sm:text-xs font-mono"
                 />
               </div>
 
@@ -762,7 +762,7 @@ function AdminAdsNetworkPage() {
                     placeholder="act_123456789"
                     value={metaAdAccountInput}
                     onChange={(e) => setMetaAdAccountInput(e.target.value)}
-                    className="h-10 rounded-xl text-base sm:text-xs font-mono"
+                    className="h-10 rounded-lg text-base sm:text-xs font-mono"
                   />
                 </div>
                 <div className="space-y-1">
@@ -771,26 +771,26 @@ function AdminAdsNetworkPage() {
                     placeholder="1234567890"
                     value={metaPixelInput}
                     onChange={(e) => setMetaPixelInput(e.target.value)}
-                    className="h-10 rounded-xl text-base sm:text-xs font-mono"
+                    className="h-10 rounded-lg text-base sm:text-xs font-mono"
                   />
                 </div>
               </div>
             </div>
 
             {/* Google Ads API */}
-            <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/40 space-y-3">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Globe className="size-3.5 text-blue-500" /> Credenciais Globais Google Ads
               </span>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <span className="text-[11px] text-muted-foreground font-medium">Developer Token:</span>
                 <Input
                   type="password"
                   placeholder={globalConfig?.google_developer_token_masked || "Dev Token"}
                   value={googleDevTokenInput}
                   onChange={(e) => setGoogleDevTokenInput(e.target.value)}
-                  className="h-10 rounded-xl text-base sm:text-xs font-mono"
+                  className="h-10 rounded-lg text-base sm:text-xs font-mono"
                 />
               </div>
 
@@ -800,7 +800,7 @@ function AdminAdsNetworkPage() {
                   placeholder="123-456-7890"
                   value={googleCustomerInput}
                   onChange={(e) => setGoogleCustomerInput(e.target.value)}
-                  className="h-10 rounded-xl text-base sm:text-xs font-mono"
+                  className="h-10 rounded-lg text-base sm:text-xs font-mono"
                 />
               </div>
             </div>
@@ -811,7 +811,7 @@ function AdminAdsNetworkPage() {
               type="button"
               variant="outline"
               onClick={() => setIsConfigModalOpen(false)}
-              className="rounded-xl h-10 px-4 text-xs font-semibold cursor-pointer"
+              className="rounded-lg h-10 px-4 text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
@@ -819,7 +819,7 @@ function AdminAdsNetworkPage() {
               type="button"
               disabled={saveConfigMutation.isPending}
               onClick={() => saveConfigMutation.mutate()}
-              className="rounded-xl h-10 px-5 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-xs"
+              className="rounded-lg h-10 px-5 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-xs"
             >
               {saveConfigMutation.isPending ? "Salvando..." : "Salvar Credenciais Globais"}
             </Button>

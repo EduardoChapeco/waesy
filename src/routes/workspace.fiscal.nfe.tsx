@@ -143,7 +143,7 @@ function FiscalNFePage() {
           {!config?.api_token && (
             <Badge
               variant="outline"
-              className="border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 text-xs font-semibold gap-1.5 py-1.5 px-3 rounded-xl"
+              className="border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 text-xs font-semibold gap-2 py-2 px-3 rounded-lg"
               title="Configurar Provedor Fiscal"
             >
               <AlertCircle className="size-3.5 text-amber-600" />
@@ -151,7 +151,7 @@ function FiscalNFePage() {
             </Badge>
           )}
           <Button
-            className="h-10 rounded-xl text-xs font-semibold bg-foreground text-background"
+            className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background"
             onClick={() => setIssueModalOpen(true)}
           >
             <Plus className="size-4 mr-1" /> Emitir NF-e
@@ -165,7 +165,7 @@ function FiscalNFePage() {
           type="button"
           onClick={() => setActiveTab("invoices")}
           className={cn(
-            "px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors",
+            "px-4 py-2 rounded-lg text-xs font-medium transition-colors",
             activeTab === "invoices" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
           )}
         >
@@ -175,7 +175,7 @@ function FiscalNFePage() {
           type="button"
           onClick={() => setActiveTab("config")}
           className={cn(
-            "px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors",
+            "px-4 py-2 rounded-lg text-xs font-medium transition-colors",
             activeTab === "config" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
           )}
         >
@@ -187,19 +187,19 @@ function FiscalNFePage() {
         <div className="space-y-4">
           {/* Métricas e Filtros de Tipo */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-card border border-border/60 rounded-xl p-3.5 space-y-1">
+            <div className="bg-card border border-border/60 rounded-lg p-4 space-y-1">
               <span className="text-xs text-muted-foreground font-medium">Total Faturado em Notas</span>
               <p className="text-base font-bold text-foreground">
                 {(invoices.reduce((acc: number, cur: any) => acc + (cur.valor_total_cents || 0), 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
               </p>
             </div>
-            <div className="bg-card border border-border/60 rounded-xl p-3.5 space-y-1">
+            <div className="bg-card border border-border/60 rounded-lg p-4 space-y-1">
               <span className="text-xs text-muted-foreground font-medium">NF-e (Mercadorias)</span>
               <p className="text-base font-bold text-blue-600">
                 {invoices.filter((i: any) => i.invoice_type === "nfe" || !i.invoice_type).length} emitidas
               </p>
             </div>
-            <div className="bg-card border border-border/60 rounded-xl p-3.5 space-y-1">
+            <div className="bg-card border border-border/60 rounded-lg p-4 space-y-1">
               <span className="text-xs text-muted-foreground font-medium">NFS-e (Serviços e Turismo)</span>
               <p className="text-base font-bold text-purple-600">
                 {invoices.filter((i: any) => i.invoice_type === "nfse").length} emitidas
@@ -213,7 +213,7 @@ function FiscalNFePage() {
               type="button"
               onClick={() => setDocTypeFilter("all")}
               className={cn(
-                "px-3 py-1.5 rounded-lg font-medium transition-colors",
+                "px-3 py-2 rounded-lg font-medium transition-colors",
                 docTypeFilter === "all" ? "bg-muted text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -223,7 +223,7 @@ function FiscalNFePage() {
               type="button"
               onClick={() => setDocTypeFilter("nfe")}
               className={cn(
-                "px-3 py-1.5 rounded-lg font-medium transition-colors",
+                "px-3 py-2 rounded-lg font-medium transition-colors",
                 docTypeFilter === "nfe" ? "bg-blue-500/15 text-blue-600 font-semibold" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -233,7 +233,7 @@ function FiscalNFePage() {
               type="button"
               onClick={() => setDocTypeFilter("nfse")}
               className={cn(
-                "px-3 py-1.5 rounded-lg font-medium transition-colors",
+                "px-3 py-2 rounded-lg font-medium transition-colors",
                 docTypeFilter === "nfse" ? "bg-purple-500/15 text-purple-600 font-semibold" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -243,7 +243,7 @@ function FiscalNFePage() {
               type="button"
               onClick={() => setDocTypeFilter("nfce")}
               className={cn(
-                "px-3 py-1.5 rounded-lg font-medium transition-colors",
+                "px-3 py-2 rounded-lg font-medium transition-colors",
                 docTypeFilter === "nfce" ? "bg-emerald-500/15 text-emerald-600 font-semibold" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -252,7 +252,7 @@ function FiscalNFePage() {
           </div>
 
           {invoices.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border p-12 text-center bg-card">
+            <div className="rounded-lg border border-dashed border-border p-12 text-center bg-card">
               <FileText className="size-10 text-muted-foreground mx-auto mb-3 opacity-40" />
               <h3 className="text-sm font-semibold text-foreground">Nenhuma nota fiscal emitida</h3>
               <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
@@ -260,14 +260,14 @@ function FiscalNFePage() {
               </p>
               <Button
                 variant="outline"
-                className="mt-4 h-9 rounded-xl text-xs font-medium"
+                className="mt-4 h-9 rounded-lg text-xs font-medium"
                 onClick={() => setActiveTab("config")}
               >
                 Configurar Dados Fiscais
               </Button>
             </div>
           ) : (
-            <div className="rounded-2xl border border-border/70 overflow-hidden bg-card">
+            <div className="rounded-lg border border-border/70 overflow-hidden bg-card">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
                   <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-medium">
@@ -323,7 +323,7 @@ function FiscalNFePage() {
                             {inv.status === "issued" ? "Emitida" : inv.status}
                           </Badge>
                         </td>
-                        <td className="py-3 px-4 text-right space-x-1.5">
+                        <td className="py-3 px-4 text-right space-x-2">
                           {inv.danfe_pdf_url && (
                             <a href={inv.danfe_pdf_url} target="_blank" rel="noreferrer">
                               <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
@@ -349,51 +349,51 @@ function FiscalNFePage() {
         </div>
       ) : (
         /* Configurações Fiscais */
-        <div className="max-w-2xl rounded-2xl border border-border/70 p-6 bg-card space-y-5">
+        <div className="max-w-2xl rounded-lg border border-border/70 p-6 bg-card space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">CNPJ da Empresa</Label>
               <Input
                 placeholder="00.000.000/0000-00"
                 value={cnpj}
                 onChange={(e) => setCnpj(e.target.value)}
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Razão Social</Label>
               <Input
                 placeholder="Nome empresarial oficial"
                 value={razaoSocial}
                 onChange={(e) => setRazaoSocial(e.target.value)}
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Nome Fantasia</Label>
               <Input
                 placeholder="Nome de vitrine"
                 value={nomeFantasia}
                 onChange={(e) => setNomeFantasia(e.target.value)}
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Inscrição Estadual (IE)</Label>
               <Input
                 placeholder="Número da IE ou ISENTO"
                 value={inscricaoEstadual}
                 onChange={(e) => setInscricaoEstadual(e.target.value)}
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-border/50">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Provedor de Emissão</Label>
               <Select value={provider} onValueChange={(v: NFeProvider) => setProvider(v)}>
-                <SelectTrigger className="h-10 text-xs rounded-xl">
+                <SelectTrigger className="h-10 text-xs rounded-lg">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -407,10 +407,10 @@ function FiscalNFePage() {
               </Select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Regime Tributário</Label>
               <Select value={regime} onValueChange={(v: TaxRegime) => setRegime(v)}>
-                <SelectTrigger className="h-10 text-xs rounded-xl">
+                <SelectTrigger className="h-10 text-xs rounded-lg">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -422,10 +422,10 @@ function FiscalNFePage() {
               </Select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Ambiente SEFAZ</Label>
               <Select value={environment} onValueChange={(v: "sandbox" | "production") => setEnvironment(v)}>
-                <SelectTrigger className="h-10 text-xs rounded-xl">
+                <SelectTrigger className="h-10 text-xs rounded-lg">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -436,14 +436,14 @@ function FiscalNFePage() {
             </div>
           </div>
 
-          <div className="space-y-1.5 pt-2">
+          <div className="space-y-2 pt-2">
             <Label className="text-xs font-medium">API Token do Provedor</Label>
             <Input
               type="password"
               placeholder="Cole seu token de autenticação..."
               value={apiToken}
               onChange={(e) => setApiToken(e.target.value)}
-              className="h-10 text-xs rounded-xl font-mono"
+              className="h-10 text-xs rounded-lg font-mono"
             />
           </div>
 
@@ -453,8 +453,8 @@ function FiscalNFePage() {
               Automação e Inteligência Fiscal
             </h4>
             
-            <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/70 bg-muted/20">
-              <div className="space-y-0.5">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-border/70 bg-muted/20">
+              <div className="space-y-1">
                 <p className="text-xs font-semibold text-foreground">Emissão Automatizada ao Mudar para "Em Separação"</p>
                 <p className="text-xs text-muted-foreground">
                   Gera a nota em segundo plano, salva XML e DANFE no Storage e vincula ao comprovante do cliente.
@@ -468,8 +468,8 @@ function FiscalNFePage() {
               />
             </div>
 
-            <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/70 bg-muted/20">
-              <div className="space-y-0.5">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-border/70 bg-muted/20">
+              <div className="space-y-1">
                 <p className="text-xs font-semibold text-foreground">Obrigatoriedade de Marketplaces (ML / Amazon / iFood)</p>
                 <p className="text-xs text-muted-foreground">
                   Emite a nota fiscal automaticamente para pedidos de canais integrados que exigem NF-e para despacho.
@@ -495,28 +495,28 @@ function FiscalNFePage() {
                   Permita que seu contador acesse a DRE, notas e extratos diretamente pelo portal contábil.
                 </p>
               </div>
-              <Button asChild size="sm" variant="outline" className="rounded-xl h-8 text-xs font-semibold">
+              <Button asChild size="sm" variant="outline" className="rounded-lg h-8 text-xs font-semibold">
                 <Link to="/workspace/contador">
                   Abrir Portal do Contador
                 </Link>
               </Button>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">E-mail do Escritório Contábil</Label>
               <Input
                 type="email"
                 placeholder="contato@contabilidade.com.br"
                 value={accountantEmail}
                 onChange={(e) => setAccountantEmail(e.target.value)}
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
           </div>
 
           <div className="pt-4 flex justify-end">
             <Button
-              className="h-10 rounded-xl text-xs font-semibold bg-foreground text-background"
+              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background"
               onClick={handleSaveConfig}
               disabled={saveConfigMutation.isPending}
             >
@@ -528,7 +528,7 @@ function FiscalNFePage() {
 
       {/* Modal Emitir Documento Fiscal */}
       <Dialog open={issueModalOpen} onOpenChange={setIssueModalOpen}>
-        <DialogContent className="max-w-md rounded-2xl p-6">
+        <DialogContent className="max-w-md rounded-lg p-6">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               {invoiceType === "nfse" ? "Emitir NFS-e (Serviços & Turismo)" : invoiceType === "nfce" ? "Emitir NFC-e (Cupom PDV)" : "Emitir NF-e (Mercadorias)"}
@@ -541,15 +541,15 @@ function FiscalNFePage() {
           </DialogHeader>
 
           {/* Seletor do Tipo de Documento */}
-          <div className="space-y-3.5 py-2">
-            <div className="space-y-1.5">
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Tipo de Documento Fiscal</Label>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setInvoiceType("nfe")}
                   className={cn(
-                    "p-2 rounded-xl text-xs font-medium border text-center transition-all",
+                    "p-2 rounded-lg text-xs font-medium border text-center transition-all",
                     invoiceType === "nfe"
                       ? "border-blue-500 bg-blue-500/10 text-blue-600 font-semibold"
                       : "border-border/70 hover:bg-muted/40 text-muted-foreground"
@@ -561,7 +561,7 @@ function FiscalNFePage() {
                   type="button"
                   onClick={() => setInvoiceType("nfse")}
                   className={cn(
-                    "p-2 rounded-xl text-xs font-medium border text-center transition-all",
+                    "p-2 rounded-lg text-xs font-medium border text-center transition-all",
                     invoiceType === "nfse"
                       ? "border-purple-500 bg-purple-500/10 text-purple-600 font-semibold"
                       : "border-border/70 hover:bg-muted/40 text-muted-foreground"
@@ -573,7 +573,7 @@ function FiscalNFePage() {
                   type="button"
                   onClick={() => setInvoiceType("nfce")}
                   className={cn(
-                    "p-2 rounded-xl text-xs font-medium border text-center transition-all",
+                    "p-2 rounded-lg text-xs font-medium border text-center transition-all",
                     invoiceType === "nfce"
                       ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 font-semibold"
                       : "border-border/70 hover:bg-muted/40 text-muted-foreground"
@@ -586,63 +586,63 @@ function FiscalNFePage() {
 
             {invoiceType === "nfse" && (
               <>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-medium">Código do Serviço Municipal (LC 116/03)</Label>
                   <Input
                     placeholder="Ex: 09.01 (Turismo/Hospedagem) ou 01.07 (Tecnologia)"
                     value={codigoServicoMunicipal}
                     onChange={(e) => setCodigoServicoMunicipal(e.target.value)}
-                    className="h-10 text-xs rounded-xl font-mono"
+                    className="h-10 text-xs rounded-lg font-mono"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-medium">Discriminação do Serviço Prestado</Label>
                   <Input
                     placeholder="Ex: Intermediação turística, hospedagem e passeios..."
                     value={discriminacaoServico}
                     onChange={(e) => setDiscriminacaoServico(e.target.value)}
-                    className="h-10 text-xs rounded-xl"
+                    className="h-10 text-xs rounded-lg"
                   />
                 </div>
               </>
             )}
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Nome do Cliente / Razão Social</Label>
               <Input
                 placeholder="Ex: Maria dos Santos"
                 value={tomadorNome}
                 onChange={(e) => setTomadorNome(e.target.value)}
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">CPF ou CNPJ do Destinatário</Label>
               <Input
                 placeholder="000.000.000-00"
                 value={tomadorDoc}
                 onChange={(e) => setTomadorDoc(e.target.value)}
-                className="h-10 text-xs rounded-xl font-mono"
+                className="h-10 text-xs rounded-lg font-mono"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">E-mail para envio do DANFE/XML</Label>
               <Input
                 type="email"
                 placeholder="cliente@email.com"
                 value={tomadorEmail}
                 onChange={(e) => setTomadorEmail(e.target.value)}
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Valor Total da Nota (R$)</Label>
               <Input
                 type="number"
                 step="0.01"
                 value={valorTotalReais}
                 onChange={(e) => setValorTotalReais(e.target.value)}
-                className="h-10 text-xs rounded-xl font-mono"
+                className="h-10 text-xs rounded-lg font-mono"
               />
             </div>
           </div>
@@ -650,13 +650,13 @@ function FiscalNFePage() {
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">
             <Button
               variant="outline"
-              className="h-10 rounded-xl text-xs"
+              className="h-10 rounded-lg text-xs"
               onClick={() => setIssueModalOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="h-10 rounded-xl text-xs font-semibold bg-foreground text-background"
+              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background"
               onClick={handleEmit}
               disabled={emitInvoiceMutation.isPending}
             >

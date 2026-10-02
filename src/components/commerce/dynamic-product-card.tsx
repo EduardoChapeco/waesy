@@ -85,27 +85,27 @@ export function DynamicProductCard({ product }: DynamicProductCardProps) {
  </h3>
 
  {/* Dynamic Meta Info */}
- <div className="flex flex-col gap-1.5 mt-auto mb-4 text-sm text-muted-foreground font-medium">
+ <div className="flex flex-col gap-2 mt-auto mb-4 text-sm text-muted-foreground font-medium">
  {tipo === "event_producer" && attrs.data_evento && (
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Calendar className="size-4" />
  <span>{formattedDate}</span>
  </div>
  )}
  {tipo === "event_producer" && attrs.local && (
- <div className="flex items-center gap-1.5 line-clamp-1">
+ <div className="flex items-center gap-2 line-clamp-1">
  <MapPin className="size-4 shrink-0" />
  <span className="truncate">{attrs.local}</span>
  </div>
  )}
  {tipo === "creator" && attrs.duracao_min && (
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Clock className="size-4" />
  <span>{attrs.duracao_min} min</span>
  </div>
  )}
  {tipo === "creator" && attrs.formato && (
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Briefcase className="size-4" />
  <span className="capitalize">{attrs.formato}</span>
  </div>

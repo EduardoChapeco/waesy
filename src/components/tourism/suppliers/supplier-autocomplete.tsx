@@ -42,7 +42,7 @@ export function SupplierAutocomplete({
  <div className="relative w-full">
  <div
  onClick={() => setIsOpen(!isOpen)}
- className="w-full h-10 px-3 rounded-xl border border-border bg-background text-xs flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors"
+ className="w-full h-10 px-3 rounded-lg border border-border bg-background text-xs flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors"
  >
  <div className="flex items-center gap-2 truncate">
  <Building2 className="size-3.5 text-muted-foreground shrink-0" />
@@ -54,7 +54,7 @@ export function SupplierAutocomplete({
  </div>
 
  {isOpen && (
- <div className="absolute left-0 right-0 top-11 z-50 rounded-2xl border border-border bg-card shadow-2xl p-2 space-y-1.5 animate-in fade-in zoom-in-95">
+ <div className="absolute left-0 right-0 top-11 z-50 rounded-lg border border-border bg-card shadow-2xl p-2 space-y-2 animate-in fade-in zoom-in-95">
  <Input
  value={search}
  onChange={(e) => setSearch(e.target.value)}
@@ -76,11 +76,11 @@ export function SupplierAutocomplete({
  onChange(s);
  setIsOpen(false);
  }}
- className={'p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer hover:bg-muted transition-all ' + (
+ className={'p-2 rounded-lg text-xs flex items-center justify-between cursor-pointer hover:bg-muted transition-all ' + (
  selectedSupplier?.id === s.id ? 'bg-primary/10 font-bold text-primary' : 'text-foreground'
  )}
  >
- <div className="space-y-0.5 truncate">
+ <div className="space-y-1 truncate">
  <p className="truncate">{s.name}</p>
  <span className="text-[10px] text-muted-foreground">{s.country} · {s.commission_rate}% comissão</span>
  </div>
@@ -99,7 +99,7 @@ export function SupplierAutocomplete({
  setIsOpen(false);
  onOpenCreate();
  }}
- className="w-full h-8 text-xs rounded-xl border-dashed gap-1 text-primary"
+ className="w-full h-8 text-xs rounded-lg border-dashed gap-1 text-primary"
  >
  <Plus className="size-3" /> Cadastrar Novo Fornecedor
  </Button>

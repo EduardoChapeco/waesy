@@ -24,7 +24,7 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
     <div className="relative w-full min-w-0 max-w-full overflow-hidden space-y-3">
       {/* Botões de navegação no desktop */}
       <div className="hidden sm:flex items-center justify-between px-1">
-        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+        <span className="text-xs font-bold text-foreground flex items-center gap-2">
           <Star className="size-3.5 text-primary" />
           Atrações Confirmadas e Destaques do Circuito
         </span>
@@ -58,7 +58,7 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
         {slides.map((slide) => (
           <div
             key={slide.id}
-            className="snap-start shrink-0 w-[82vw] sm:w-[320px] rounded-2xl overflow-hidden border border-border/80 bg-card shadow-xs group transition-all duration-300 hover:border-border"
+            className="snap-start shrink-0 w-[82vw] sm:w-80 rounded-lg overflow-hidden border border-border/80 bg-card shadow-xs group transition-all duration-300 hover:border-border"
           >
             {/* Imagem com proporção 16:10 proporcional */}
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted flex items-center justify-center">

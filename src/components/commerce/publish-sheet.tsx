@@ -18,7 +18,7 @@ export function PublishSheet() {
  <DropdownMenuTrigger asChild>
  <Button
  variant="default"
- className="bg-foreground text-background font-semibold hover:opacity-90 w-full text-xs h-11 rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+ className="bg-foreground text-background font-semibold hover:opacity-90 w-full text-xs h-11 rounded-lg uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
  >
  <PlusCircle className="size-4" />
  PUBLICAR
@@ -31,12 +31,12 @@ export function PublishSheet() {
  <DropdownMenuSeparator />
 
  {/* Funcionalidade livre para todos */}
- <DropdownMenuItem asChild className="p-3 cursor-pointer rounded-xl">
+ <DropdownMenuItem asChild className="p-3 cursor-pointer rounded-lg">
  <Link to="/conta/classificados/novo">
  <Tag className="size-4 mr-3 text-primary" />
  <div>
  <p className="font-bold text-sm">Novo Classificado</p>
- <p className="text-[11px] text-muted-foreground mt-0.5">
+ <p className="text-[11px] text-muted-foreground mt-1">
  Anuncie desapego, serviço ou vaga
  </p>
  </div>
@@ -51,14 +51,14 @@ export function PublishSheet() {
  <DropdownMenuItem
  asChild
  disabled={!hasBusiness}
- className="p-3 cursor-pointer rounded-xl focus:bg-muted"
+ className="p-3 cursor-pointer rounded-lg focus:bg-muted"
  >
  {hasBusiness ? (
  <Link to="/workspace/catalogo/produtos/novo">
  <Package className="size-4 mr-3 text-primary" />
  <div>
  <p className="font-bold text-sm">Mercadoria / Produto</p>
- <p className="text-[11px] text-muted-foreground mt-0.5">
+ <p className="text-[11px] text-muted-foreground mt-1">
  Cadastrar no catálogo da loja
  </p>
  </div>
@@ -68,7 +68,7 @@ export function PublishSheet() {
  <Package className="size-4 mr-3 text-muted-foreground" />
  <div>
  <p className="font-bold text-sm">Mercadoria / Produto</p>
- <p className="text-[11px] text-muted-foreground mt-0.5">Requer uma loja ativa</p>
+ <p className="text-[11px] text-muted-foreground mt-1">Requer uma loja ativa</p>
  </div>
  </div>
  )}
@@ -77,14 +77,14 @@ export function PublishSheet() {
  <DropdownMenuItem
  asChild
  disabled={!hasBusiness}
- className="p-3 cursor-pointer rounded-xl focus:bg-muted"
+ className="p-3 cursor-pointer rounded-lg focus:bg-muted"
  >
  {hasBusiness ? (
  <Link to="/workspace/agenda">
  <Calendar className="size-4 mr-3 text-primary" />
  <div>
  <p className="font-bold text-sm">Evento ou Festa</p>
- <p className="text-[11px] text-muted-foreground mt-0.5">
+ <p className="text-[11px] text-muted-foreground mt-1">
  Criar lotes e vender ingressos
  </p>
  </div>
@@ -94,14 +94,14 @@ export function PublishSheet() {
  <Calendar className="size-4 mr-3 text-muted-foreground" />
  <div>
  <p className="font-bold text-sm">Evento ou Festa</p>
- <p className="text-[11px] text-muted-foreground mt-0.5">Requer um coletivo</p>
+ <p className="text-[11px] text-muted-foreground mt-1">Requer um coletivo</p>
  </div>
  </div>
  )}
  </DropdownMenuItem>
 
  {!hasBusiness && (
- <div className="p-3 mt-2 bg-primary/5 border border-primary/20 rounded-xl">
+ <div className="p-3 mt-2 bg-primary/5 border border-primary/20 rounded-lg">
  <Button
  variant="default"
  size="sm"

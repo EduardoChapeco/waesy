@@ -89,7 +89,7 @@ export function OccupationAutocomplete({
   };
 
   return (
-    <div ref={wrapperRef} className={cn("relative w-full space-y-1.5", className)}>
+    <div ref={wrapperRef} className={cn("relative w-full space-y-2", className)}>
       <div className="relative">
         <Input
           value={query}
@@ -99,7 +99,7 @@ export function OccupationAutocomplete({
           }}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          className="h-10 rounded-xl text-xs pr-8 bg-background border-border/60 focus:border-primary transition-all"
+          className="h-10 rounded-lg text-xs pr-8 bg-background border-border/60 focus:border-primary transition-all"
         />
         {matchedProfession && (
           <div
@@ -113,8 +113,8 @@ export function OccupationAutocomplete({
 
       {/* Floating Suggestions Dropdown (Apple HIG Polish) */}
       {isOpen && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-2xl bg-popover/95 backdrop-blur-md border border-border shadow-xl p-1.5 space-y-1 max-h-64 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
-          <div className="px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center justify-between">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg bg-popover/95 backdrop-blur-md border border-border shadow-xl p-2 space-y-1 max-h-64 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
+          <div className="px-3 py-1 text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center justify-between">
             <span>Cargos e Funções Sugeridos</span>
             <span className="font-normal lowercase">Toque para selecionar</span>
           </div>
@@ -124,10 +124,10 @@ export function OccupationAutocomplete({
               key={p.id}
               type="button"
               onClick={() => handleSelect(p)}
-              className="w-full text-left p-2.5 rounded-xl hover:bg-muted/70 transition-colors flex items-center justify-between gap-3 group cursor-pointer"
+              className="w-full text-left p-3 rounded-lg hover:bg-muted/70 transition-colors flex items-center justify-between gap-3 group cursor-pointer"
             >
-              <div className="min-w-0 space-y-0.5">
-                <div className="flex items-center gap-1.5">
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center gap-2">
                   <Briefcase className="size-3.5 text-primary shrink-0" />
                   <span className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
                     {p.title}

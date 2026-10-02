@@ -49,7 +49,7 @@ export function FluidNoiseSurface({
  return (
  <div
  className={cn(
- "relative overflow-hidden rounded-2xl bg-gradient-to-br transition-all duration-500",
+ "relative overflow-hidden rounded-lg bg-gradient-to-br transition-all duration-500",
  getGradientClasses(),
  className
  )}
@@ -68,7 +68,7 @@ export function FluidNoiseSurface({
  )}
 
  {/* Content wrapper */}
- <div className={cn("relative z-10", withGlassCard && "p-6 sm:p-8 bg-card rounded-2xl border border-border/70")}>
+ <div className={cn("relative z-10", withGlassCard && "p-6 sm:p-8 bg-card rounded-lg border border-border/70")}>
  {children}
  </div>
  </div>

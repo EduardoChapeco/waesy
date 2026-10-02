@@ -117,7 +117,7 @@ function MatchTimePage() {
  </div>
  )}
 
- <div className="absolute top-4 right-4 bg-primary text-primary-foreground font-semibold px-3 py-1.5 rounded-full text-sm">
+ <div className="absolute top-4 right-4 bg-primary text-primary-foreground font-semibold px-3 py-2 rounded-full text-sm">
  -{currentOffer.discountPercentage}%
  </div>
  </div>

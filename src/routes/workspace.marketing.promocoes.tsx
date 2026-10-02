@@ -216,7 +216,7 @@ function WorkspacePromotionsPage() {
               }
             }}
             size="sm"
-            className="rounded-xl font-bold bg-primary text-primary-foreground text-xs gap-1.5 h-9 px-4 cursor-pointer"
+            className="rounded-lg font-bold bg-primary text-primary-foreground text-xs gap-2 h-9 px-4 cursor-pointer"
           >
             <Plus className="size-3.5" />
             <span>{activeTab === "promotions" ? "Nova Promoção" : "Novo Cupom"}</span>
@@ -229,7 +229,7 @@ function WorkspacePromotionsPage() {
         <button
           type="button"
           onClick={() => setActiveTab("promotions")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
             activeTab === "promotions"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -237,7 +237,7 @@ function WorkspacePromotionsPage() {
         >
           <Flame className="size-3.5" />
           <span>Ofertas e Promoções</span>
-          <Badge variant="secondary" className="text-xs ml-1 px-1.5 py-0 h-4">
+          <Badge variant="secondary" className="text-xs ml-1 px-2 py-0 h-4">
             {promos.length}
           </Badge>
         </button>
@@ -245,7 +245,7 @@ function WorkspacePromotionsPage() {
         <button
           type="button"
           onClick={() => setActiveTab("coupons")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
             activeTab === "coupons"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -253,7 +253,7 @@ function WorkspacePromotionsPage() {
         >
           <Ticket className="size-3.5" />
           <span>Cupons de Desconto</span>
-          <Badge variant="secondary" className="text-xs ml-1 px-1.5 py-0 h-4">
+          <Badge variant="secondary" className="text-xs ml-1 px-2 py-0 h-4">
             {couponsList.length}
           </Badge>
         </button>
@@ -264,7 +264,7 @@ function WorkspacePromotionsPage() {
         <div className="space-y-6">
           {/* Métricas de Promoções */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+            <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Promoções Ativas
               </span>
@@ -273,14 +273,14 @@ function WorkspacePromotionsPage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+            <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Total de Ofertas Criadas
               </span>
               <div className="text-2xl font-mono font-bold text-foreground">{promos.length}</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+            <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Desconto Médio Aplicado
               </span>
@@ -298,8 +298,8 @@ function WorkspacePromotionsPage() {
           {/* Lista de Promoções */}
           <div className="space-y-3">
             {promos.length === 0 ? (
-              <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
-                <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+              <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+                <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
                   <Tag className="size-6" />
                 </div>
                 <div className="space-y-1">
@@ -308,7 +308,7 @@ function WorkspacePromotionsPage() {
                     Crie sua primeira oferta relâmpago para aparecer em destaque na vitrine e atrair mais pedidos.
                   </p>
                 </div>
-                <Button onClick={() => setIsPromoOpen(true)} size="sm" variant="outline" className="rounded-xl text-xs font-bold h-9">
+                <Button onClick={() => setIsPromoOpen(true)} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
                   <Plus className="size-3.5 mr-1" />
                   Criar Primeira Promoção
                 </Button>
@@ -317,11 +317,11 @@ function WorkspacePromotionsPage() {
               promos.map((promo) => (
                 <div
                   key={promo.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-card border border-border/70 gap-4 hover:border-border transition-all shadow-2xs"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-4 hover:border-border transition-all shadow-2xs"
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex items-center gap-4 min-w-0">
                     <div
-                      className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${
                         promo.type === "flash_offer"
                           ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
                           : "bg-primary/10 text-primary border border-primary/20"
@@ -334,10 +334,10 @@ function WorkspacePromotionsPage() {
                       )}
                     </div>
 
-                    <div className="space-y-0.5 min-w-0">
+                    <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm font-bold text-foreground truncate">{promo.title}</h3>
-                        <span className="px-2 py-0.5 rounded-full text-xs font-black uppercase font-mono bg-primary/10 text-primary">
+                        <span className="px-2 py-1 rounded-full text-xs font-black uppercase font-mono bg-primary/10 text-primary">
                           {promo.discount_percent ? `${promo.discount_percent}% OFF` : "COMBO"}
                         </span>
                       </div>
@@ -360,7 +360,7 @@ function WorkspacePromotionsPage() {
 
                     <CrudActionsMenu
                       triggerVariant="outline"
-                      triggerClassName="h-9 px-3 rounded-xl border-border/60 hover:bg-muted"
+                      triggerClassName="h-9 px-3 rounded-lg border-border/60 hover:bg-muted"
                       onToggleStatus={() => handleTogglePromo(promo.id, promo.is_active)}
                       statusLabel={promo.is_active ? "Pausar Promoção" : "Ativar Promoção"}
                     />
@@ -377,7 +377,7 @@ function WorkspacePromotionsPage() {
         <div className="space-y-6">
           {/* Métricas de Cupons */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+            <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Cupons Ativos
               </span>
@@ -386,14 +386,14 @@ function WorkspacePromotionsPage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+            <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Total de Cupons
               </span>
               <div className="text-2xl font-mono font-bold text-foreground">{couponsList.length}</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+            <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Total de Resgates
               </span>
@@ -409,7 +409,7 @@ function WorkspacePromotionsPage() {
             <Button
               onClick={() => setIsCouponOpen(true)}
               size="sm"
-              className="gap-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground h-9 px-4 cursor-pointer"
+              className="gap-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground h-9 px-4 cursor-pointer"
             >
               <Plus className="size-4" />
               <span>Novo Cupom</span>
@@ -419,13 +419,13 @@ function WorkspacePromotionsPage() {
           {/* Lista de Cupons */}
           <div className="space-y-3">
             {couponsList.length === 0 ? (
-              <div className="p-12 text-center rounded-2xl border border-dashed border-border flex flex-col items-center justify-center gap-3">
+              <div className="p-12 text-center rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-3">
                 <Ticket className="size-8 text-muted-foreground/40" />
                 <div className="space-y-1">
                   <p className="text-sm font-semibold text-foreground">Nenhum cupom cadastrado</p>
                   <p className="text-xs text-muted-foreground">Crie cupons de desconto fixo, percentual ou frete grátis para sua loja.</p>
                 </div>
-                <Button onClick={() => setIsCouponOpen(true)} size="sm" variant="outline" className="rounded-xl text-xs font-bold h-9">
+                <Button onClick={() => setIsCouponOpen(true)} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
                   <Plus className="size-3.5 mr-1" />
                   Criar Primeiro Cupom
                 </Button>
@@ -434,16 +434,16 @@ function WorkspacePromotionsPage() {
               couponsList.map((coupon) => (
                 <div
                   key={coupon.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-card border border-border/70 gap-4 hover:border-border transition-all shadow-2xs"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-4 hover:border-border transition-all shadow-2xs"
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="size-10 rounded-xl flex items-center justify-center shrink-0 bg-primary/10 text-primary border border-primary/20">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="size-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary border border-primary/20">
                       <Ticket className="size-5" />
                     </div>
 
-                    <div className="space-y-0.5 min-w-0">
+                    <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-sm bg-muted/70 px-2 py-0.5 rounded-lg text-foreground border border-border/60">
+                        <span className="font-mono font-bold text-sm bg-muted/70 px-2 py-1 rounded-lg text-foreground border border-border/60">
                           {coupon.code}
                         </span>
                         <Badge variant={coupon.is_active ? "outline" : "secondary"} className="text-xs font-bold">
@@ -475,7 +475,7 @@ function WorkspacePromotionsPage() {
 
                     <CrudActionsMenu
                       triggerVariant="outline"
-                      triggerClassName="h-9 px-3 rounded-xl border-border/60 hover:bg-muted"
+                      triggerClassName="h-9 px-3 rounded-lg border-border/60 hover:bg-muted"
                       onToggleStatus={() => handleToggleCoupon(coupon)}
                       statusLabel={coupon.is_active ? "Pausar Cupom" : "Ativar Cupom"}
                       onDelete={() => handleDeleteCoupon(coupon.id, coupon.code)}
@@ -509,14 +509,14 @@ function WorkspacePromotionsPage() {
               type="button"
               variant="outline"
               onClick={() => setIsPromoOpen(false)}
-              className="h-10 px-4 rounded-xl text-xs font-bold"
+              className="h-10 px-4 rounded-lg text-xs font-bold"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleCreatePromo}
               disabled={isPromoSubmitting}
-              className="h-10 px-5 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-1.5"
+              className="h-10 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2"
             >
               {isPromoSubmitting ? (
                 <>
@@ -532,23 +532,23 @@ function WorkspacePromotionsPage() {
       >
         <form onSubmit={handleCreatePromo} className="space-y-6 py-4">
           <div className="space-y-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="font-semibold text-xs text-foreground">Título da Promoção *</label>
               <Input
                 placeholder="Ex: Terça do Burger 20% OFF, Combo Família..."
                 value={promoTitle}
                 onChange={(e) => setPromoTitle(e.target.value)}
-                className="rounded-xl text-xs h-10"
+                className="rounded-lg text-xs h-10"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="font-semibold text-xs text-foreground">Mecânica Promocional</label>
               <Select value={promoType} onValueChange={(val: any) => setPromoType(val)}>
-                <SelectTrigger className="rounded-xl text-xs h-10">
+                <SelectTrigger className="rounded-lg text-xs h-10">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl text-xs">
+                <SelectContent className="rounded-lg text-xs">
                   <SelectItem value="flash_offer">Oferta Relâmpago (Contagem Regressiva)</SelectItem>
                   <SelectItem value="percentage_discount">Desconto Percentual Direto (%)</SelectItem>
                   <SelectItem value="buy_x_get_y">Compre X e Leve Y (Combo)</SelectItem>
@@ -560,7 +560,7 @@ function WorkspacePromotionsPage() {
             {(promoType === "flash_offer" || promoType === "percentage_discount") && (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <label className="font-semibold text-xs text-foreground">Desconto (%)</label>
                     <Input
                       type="number"
@@ -568,10 +568,10 @@ function WorkspacePromotionsPage() {
                       max={90}
                       value={promoDiscountPercent}
                       onChange={(e) => setPromoDiscountPercent(Number(e.target.value))}
-                      className="rounded-xl text-xs h-10"
+                      className="rounded-lg text-xs h-10"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <label className="font-semibold text-xs text-foreground">Duração (Horas)</label>
                     <Input
                       type="number"
@@ -579,13 +579,13 @@ function WorkspacePromotionsPage() {
                       max={168}
                       value={promoDurationHours}
                       onChange={(e) => setPromoDurationHours(Number(e.target.value))}
-                      className="rounded-xl text-xs h-10"
+                      className="rounded-lg text-xs h-10"
                     />
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 space-y-2">
-                  <label className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+                  <label className="font-bold text-xs text-foreground flex items-center gap-2">
                     <RefreshCw className="size-3.5 text-primary" />
                     <span>Auto-Renovação de Estoque Promocional</span>
                   </label>
@@ -598,37 +598,37 @@ function WorkspacePromotionsPage() {
 
             {promoType === "buy_x_get_y" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="font-semibold text-xs text-foreground">Compre Quantidade</label>
                   <Input
                     type="number"
                     min={1}
                     value={promoBuyQty}
                     onChange={(e) => setPromoBuyQty(Number(e.target.value))}
-                    className="rounded-xl text-xs h-10"
+                    className="rounded-lg text-xs h-10"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="font-semibold text-xs text-foreground">Pague Quantidade</label>
                   <Input
                     type="number"
                     min={1}
                     value={promoGetQty}
                     onChange={(e) => setPromoGetQty(Number(e.target.value))}
-                    className="rounded-xl text-xs h-10"
+                    className="rounded-lg text-xs h-10"
                   />
                 </div>
               </div>
             )}
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="font-semibold text-xs text-foreground">Regulamento / Descrição Curta</label>
               <Textarea
                 placeholder="Válido enquanto durarem os estoques. Limite de 2 por cliente."
                 value={promoDescription}
                 onChange={(e) => setPromoDescription(e.target.value)}
                 rows={2}
-                className="rounded-xl text-xs"
+                className="rounded-lg text-xs"
               />
             </div>
           </div>
@@ -647,14 +647,14 @@ function WorkspacePromotionsPage() {
               type="button"
               variant="outline"
               onClick={() => setIsCouponOpen(false)}
-              className="h-10 px-4 rounded-xl text-xs font-bold"
+              className="h-10 px-4 rounded-lg text-xs font-bold"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleCreateCoupon}
               disabled={isCouponSubmitting}
-              className="h-10 px-5 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-1.5"
+              className="h-10 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2"
             >
               {isCouponSubmitting ? (
                 <>
@@ -669,24 +669,24 @@ function WorkspacePromotionsPage() {
         }
       >
         <form onSubmit={handleCreateCoupon} className="space-y-5 py-4">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="font-semibold text-xs text-foreground">Código do Cupom *</label>
             <Input
               placeholder="Ex: PROMO10, BEMVINDO, BLACKFRIDAY"
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase().replace(/\s/g, ""))}
-              className="rounded-xl text-xs h-10 font-mono uppercase font-bold"
+              className="rounded-lg text-xs h-10 font-mono uppercase font-bold"
             />
             <p className="text-xs text-muted-foreground">O código que o cliente digitará no carrinho.</p>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="font-semibold text-xs text-foreground">Tipo de Desconto</label>
             <Select value={discountType} onValueChange={(val: any) => setDiscountType(val)}>
-              <SelectTrigger className="rounded-xl text-xs h-10">
+              <SelectTrigger className="rounded-lg text-xs h-10">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="rounded-xl text-xs">
+              <SelectContent className="rounded-lg text-xs">
                 <SelectItem value="percentage">Porcentagem (%)</SelectItem>
                 <SelectItem value="fixed_amount">Valor Fixo (R$)</SelectItem>
                 <SelectItem value="free_shipping">Frete Grátis</SelectItem>
@@ -695,7 +695,7 @@ function WorkspacePromotionsPage() {
           </div>
 
           {discountType !== "free_shipping" && (
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="font-semibold text-xs text-foreground">
                 {discountType === "percentage" ? "Porcentagem de Desconto (%)" : "Valor do Desconto (R$)"} *
               </label>
@@ -705,13 +705,13 @@ function WorkspacePromotionsPage() {
                 max={discountType === "percentage" ? 90 : 10000}
                 value={discountValue}
                 onChange={(e) => setDiscountValue(Number(e.target.value))}
-                className="rounded-xl text-xs h-10 font-mono"
+                className="rounded-lg text-xs h-10 font-mono"
               />
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="font-semibold text-xs text-foreground">Pedido Mínimo (R$ opcional)</label>
               <Input
                 type="number"
@@ -720,11 +720,11 @@ function WorkspacePromotionsPage() {
                 placeholder="Ex: 50.00"
                 value={minOrderReais}
                 onChange={(e) => setMinOrderReais(e.target.value)}
-                className="rounded-xl text-xs h-10 font-mono"
+                className="rounded-lg text-xs h-10 font-mono"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="font-semibold text-xs text-foreground">Limite de Usos (opcional)</label>
               <Input
                 type="number"
@@ -732,23 +732,23 @@ function WorkspacePromotionsPage() {
                 placeholder="Ex: 100 (vazio = ilimitado)"
                 value={maxUses}
                 onChange={(e) => setMaxUses(e.target.value)}
-                className="rounded-xl text-xs h-10 font-mono"
+                className="rounded-lg text-xs h-10 font-mono"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="font-semibold text-xs text-foreground">Data de Expiração (opcional)</label>
             <Input
               type="date"
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
-              className="rounded-xl text-xs h-10"
+              className="rounded-lg text-xs h-10"
             />
           </div>
 
-          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-muted/40 border border-border/60">
-            <div className="space-y-0.5">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/40 border border-border/60">
+            <div className="space-y-1">
               <span className="text-xs font-bold text-foreground block">Cupom Ativo Imediatamente</span>
               <span className="text-xs text-muted-foreground">Clientes poderão aplicar este código no checkout.</span>
             </div>

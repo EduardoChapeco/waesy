@@ -69,20 +69,20 @@ function CustomerMobilityHistoryPage() {
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
   <MobilityQuickButton />
- <Badge variant="outline" className="font-mono text-[10px] uppercase font-bold px-2.5 py-0.5">
+ <Badge variant="outline" className="font-mono text-[10px] uppercase font-bold px-3 py-1">
  Mobilidade
  </Badge>
  <span className="text-xs text-muted-foreground font-mono">Trajetos e Entregas</span>
  </div>
 
  <div className="flex items-center gap-2">
- <Button asChild variant="outline" size="sm" className="rounded-xl h-9 px-3.5 font-semibold text-xs border-border/80 hover:bg-muted">
+ <Button asChild variant="outline" size="sm" className="rounded-lg h-9 px-4 font-semibold text-xs border-border/80 hover:bg-muted">
  <Link to="/entregador/cadastro">
  <span>{courierApp ? "Status de Parceiro" : "Seja um Parceiro"}</span>
  </Link>
  </Button>
 
- <Button asChild size="sm" className="rounded-xl h-9 px-4 font-bold text-xs bg-primary text-primary-foreground gap-1.5">
+ <Button asChild size="sm" className="rounded-lg h-9 px-4 font-bold text-xs bg-primary text-primary-foreground gap-2">
  <Link to="/mobilidade">
  <Plus className="size-3.5" />
  <span>Novo Chamado</span>
@@ -93,7 +93,7 @@ function CustomerMobilityHistoryPage() {
 
  {/* Banner de Status de Parceiro se houver inscrição */}
  {courierApp && (
- <div className={`p-4 rounded-2xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+ <div className={`p-4 rounded-lg border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
  courierApp.crosscheck_status === "match_approved"
  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-950 dark:text-emerald-300"
  : courierApp.crosscheck_status === "divergence_flagged"
@@ -102,7 +102,7 @@ function CustomerMobilityHistoryPage() {
  ? "bg-destructive/10 border-destructive/20 text-destructive"
  : "bg-muted/40 border-border/60 text-foreground"
  }`}>
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <div className="flex items-center gap-2">
  <span className="font-bold">
  {courierApp.crosscheck_status === "match_approved"
@@ -125,7 +125,7 @@ function CustomerMobilityHistoryPage() {
  : "Seus documentos e minivídeo de prova de vida estão sendo auditados."}
  </p>
  </div>
- <Button asChild size="sm" variant="outline" className="rounded-xl h-8 px-3 text-xs shrink-0 self-start sm:self-auto">
+ <Button asChild size="sm" variant="outline" className="rounded-lg h-8 px-3 text-xs shrink-0 self-start sm:self-auto">
  <Link to="/entregador/cadastro">Ver Dossiê</Link>
  </Button>
  </div>
@@ -138,7 +138,7 @@ function CustomerMobilityHistoryPage() {
  )}
 
  {!isLoading && requests && requests.length === 0 && (
- <div className="py-20 text-center space-y-3 bg-muted/20 rounded-2xl p-8">
+ <div className="py-20 text-center space-y-3 bg-muted/20 rounded-lg p-8">
  <Car className="size-10 text-muted-foreground/50 mx-auto" />
  <div className="space-y-1">
  <h2 className="text-sm font-semibold text-foreground">Nenhuma corrida solicitada</h2>
@@ -146,7 +146,7 @@ function CustomerMobilityHistoryPage() {
  Precisa transportar um pacote, se deslocar pela cidade ou fazer uma mudança?
  </p>
  </div>
- <Button asChild className="rounded-xl h-10 px-5 font-semibold text-xs bg-foreground text-background hover:opacity-90">
+ <Button asChild className="rounded-lg h-10 px-5 font-semibold text-xs bg-foreground text-background hover:opacity-90">
  <Link to="/mobilidade">Chamar Agora</Link>
  </Button>
  </div>
@@ -163,7 +163,7 @@ function CustomerMobilityHistoryPage() {
  return (
  <div
  key={req.id}
- className="rounded-2xl bg-card p-5 space-y-3 hover:border-foreground/20 transition-colors"
+ className="rounded-lg bg-card p-5 space-y-3 hover:border-foreground/20 transition-colors"
  >
  <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
  <div className="flex items-center gap-2">
@@ -183,16 +183,16 @@ function CustomerMobilityHistoryPage() {
 
  {/* Route Information */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
- <div className="space-y-0.5">
- <span className="font-medium text-muted-foreground flex items-center gap-1.5">
+ <div className="space-y-1">
+ <span className="font-medium text-muted-foreground flex items-center gap-2">
  <MapPin className="size-3.5 text-muted-foreground" />
  <span>Origem / Coleta:</span>
  </span>
  <p className="text-foreground pl-5">{req.origin_address}</p>
  </div>
 
- <div className="space-y-0.5">
- <span className="font-medium text-muted-foreground flex items-center gap-1.5">
+ <div className="space-y-1">
+ <span className="font-medium text-muted-foreground flex items-center gap-2">
  <MapPin className="size-3.5 text-muted-foreground" />
  <span>Destino / Entrega:</span>
  </span>
@@ -202,7 +202,7 @@ function CustomerMobilityHistoryPage() {
 
  {/* Assigned Driver (if any) */}
  {req.courier_profiles && (
- <div className="p-3 rounded-xl bg-muted/30 flex items-center justify-between gap-3 text-xs">
+ <div className="p-3 rounded-lg bg-muted/30 flex items-center justify-between gap-3 text-xs">
  <div className="flex items-center gap-3">
  <div className="size-8 rounded-lg bg-foreground text-background flex items-center justify-center font-bold">
  {req.courier_profiles.full_name.charAt(0)}
@@ -219,7 +219,7 @@ function CustomerMobilityHistoryPage() {
  href={`https://wa.me/55${req.courier_profiles.phone.replace(/\D/g, "")}`}
  target="_blank"
  rel="noreferrer"
- className="px-3 py-1.5 rounded-lg bg-background hover:bg-muted text-foreground font-medium text-xs flex items-center gap-1.5 transition-colors"
+ className="px-3 py-2 rounded-lg bg-background hover:bg-muted text-foreground font-medium text-xs flex items-center gap-2 transition-colors"
  >
  <Phone className="size-3.5" />
  <span>WhatsApp</span>

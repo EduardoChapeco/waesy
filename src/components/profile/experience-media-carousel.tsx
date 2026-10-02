@@ -74,7 +74,7 @@ export function ExperienceMediaCarousel({
   return (
     <>
       <div className={cn("pt-2 space-y-2", className)}>
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
           <Star className="size-3.5 text-primary" />
           <span>Portfólio & Evidências Visuais ({normalizedItems.length})</span>
         </div>
@@ -91,11 +91,11 @@ export function ExperienceMediaCarousel({
                   e.stopPropagation();
                   setSelectedMediaIndex(idx);
                 }}
-                className="group relative shrink-0 w-44 sm:w-56 aspect-video rounded-2xl overflow-hidden border border-border/60 bg-muted/20 snap-start shadow-xs hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer"
+                className="group relative shrink-0 w-44 sm:w-56 aspect-video rounded-lg overflow-hidden border border-border/60 bg-muted/20 snap-start shadow-xs hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer"
               >
                 {isPdf ? (
                   <div className="size-full flex flex-col items-center justify-center p-3 text-center bg-card">
-                    <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                    <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                       <FileText className="size-5" />
                     </div>
                     <span className="text-[11px] font-bold text-foreground line-clamp-1">
@@ -113,7 +113,7 @@ export function ExperienceMediaCarousel({
                       className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                       <span className="text-[10px] font-medium text-white truncate flex items-center gap-1">
                         <Maximize2 className="size-3" />
                         {item.title || "Ver em alta resolução"}
@@ -123,7 +123,7 @@ export function ExperienceMediaCarousel({
                 )}
 
                 {/* Badge indicador discreto */}
-                <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[9px] font-mono text-white/90">
+                <div className="absolute top-2 right-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[9px] font-mono text-white/90">
                   {idx + 1}/{normalizedItems.length}
                 </div>
               </div>
@@ -145,7 +145,7 @@ export function ExperienceMediaCarousel({
             className="w-full max-w-5xl flex items-center justify-between text-white z-10 py-2"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="space-y-0.5 max-w-[70%]">
+            <div className="space-y-1 max-w-[70%]">
               <h4 className="text-sm sm:text-base font-bold truncate">
                 {activeItem.title || itemTitle || "Evidência Profissional"}
               </h4>
@@ -211,8 +211,8 @@ export function ExperienceMediaCarousel({
 
             {/* Conteúdo da Mídia */}
             {activeItem.type === "pdf" || activeItem.url.toLowerCase().endsWith(".pdf") ? (
-              <div className="w-full max-w-2xl h-[65vh] rounded-2xl bg-card p-6 flex flex-col items-center justify-center text-center space-y-4 border border-border shadow-2xl">
-                <div className="size-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+              <div className="w-full max-w-2xl h-[65vh] rounded-lg bg-card p-6 flex flex-col items-center justify-center text-center space-y-4 border border-border shadow-2xl">
+                <div className="size-16 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                   <FileText className="size-8" />
                 </div>
                 <div className="space-y-1">
@@ -223,7 +223,7 @@ export function ExperienceMediaCarousel({
                     Certificado ou anexo de comprovação técnica
                   </p>
                 </div>
-                <Button asChild className="rounded-xl gap-2 font-bold">
+                <Button asChild className="rounded-lg gap-2 font-bold">
                   <a href={activeItem.url} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="size-4" />
                     <span>Visualizar Documento Completo</span>
@@ -234,7 +234,7 @@ export function ExperienceMediaCarousel({
               <img
                 src={activeItem.url}
                 alt={activeItem.title || "Visualização ampliada"}
-                className="max-h-[75vh] max-w-full object-contain rounded-2xl shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200"
+                className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200"
               />
             )}
 
@@ -267,7 +267,7 @@ export function ExperienceMediaCarousel({
             )}
 
             {normalizedItems.length > 1 && (
-              <div className="flex items-center justify-center gap-1.5">
+              <div className="flex items-center justify-center gap-2">
                 {normalizedItems.map((_, dotIdx) => (
                   <button
                     key={dotIdx}

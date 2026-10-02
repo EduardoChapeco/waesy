@@ -63,13 +63,13 @@ export function WorkspaceSidebarFlyout({
  <Link
  to={singleItem.path}
  className={cn(
- "group flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
+ "group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
  isSingleActive
  ? "text-primary bg-primary/10 font-bold border border-primary/20 shadow-2xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  )}
  >
- <div className="flex items-center gap-2.5 min-w-0">
+ <div className="flex items-center gap-3 min-w-0">
  <Icon
  className={cn(
  "size-4 shrink-0 transition-colors",
@@ -81,7 +81,7 @@ export function WorkspaceSidebarFlyout({
  {group.badge !== undefined && (
  <span
  className={cn(
- "px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold shrink-0",
+ "px-2 py-1 rounded-md text-[10px] font-mono font-bold shrink-0",
  isSingleActive
  ? "bg-primary/20 text-primary"
  : "bg-muted text-muted-foreground"
@@ -97,18 +97,18 @@ export function WorkspaceSidebarFlyout({
  // No mobile, usamos o accordion nativo simples e direto
  if (isMobile) {
  return (
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <button
  type="button"
  onClick={onToggleExpand}
  className={cn(
- "flex w-full items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer",
+ "flex w-full items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
  isGroupActive
  ? "text-primary bg-primary/10 font-bold"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  )}
  >
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <Icon className="size-4 shrink-0" />
  <span>{group.label}</span>
  </div>
@@ -120,7 +120,7 @@ export function WorkspaceSidebarFlyout({
  </button>
 
  {isExpanded && (
- <div className="ml-3 pl-3 space-y-0.5 pt-0.5 border-l border-border/40">
+ <div className="ml-3 pl-3 space-y-1 pt-1 border-l border-border/40">
  {group.items.map((item) => {
  const isItemActive =
  item.path === "/workspace"
@@ -132,7 +132,7 @@ export function WorkspaceSidebarFlyout({
  key={item.path}
  to={item.path}
  className={cn(
- "flex items-center px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors",
+ "flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors",
  isItemActive
  ? "bg-primary/10 text-primary font-bold border border-primary/20"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
@@ -152,7 +152,7 @@ export function WorkspaceSidebarFlyout({
  // No Desktop: Accordion + Flyout Flutuante à Direita (Padrão Meta Studio)
  return (
  <div
- className="relative space-y-0.5"
+ className="relative space-y-1"
  onMouseEnter={handleMouseEnter}
  onMouseLeave={handleMouseLeave}
  ref={flyoutRef}
@@ -161,14 +161,14 @@ export function WorkspaceSidebarFlyout({
  type="button"
  onClick={onToggleExpand}
  className={cn(
- "group flex w-full items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer relative",
+ "group flex w-full items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer relative",
  isGroupActive
  ? "text-primary bg-primary/10 font-bold"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
  isFlyoutOpen && "bg-muted/80 text-foreground"
  )}
  >
- <div className="flex items-center gap-2.5 min-w-0">
+ <div className="flex items-center gap-3 min-w-0">
  <Icon
  className={cn(
  "size-4 shrink-0 transition-colors",
@@ -177,11 +177,11 @@ export function WorkspaceSidebarFlyout({
  />
  <span className="truncate">{group.label}</span>
  </div>
- <div className="flex items-center gap-1.5 shrink-0">
+ <div className="flex items-center gap-2 shrink-0">
  {group.badge !== undefined && (
  <span
  className={cn(
- "px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold",
+ "px-2 py-1 rounded-md text-[9px] font-mono font-bold",
  isGroupActive
  ? "bg-primary/20 text-primary"
  : "bg-muted text-muted-foreground"
@@ -202,7 +202,7 @@ export function WorkspaceSidebarFlyout({
 
  {/* Accordion Expandido Inline (Clean, sem efeito pill preto) */}
  {isExpanded && (
- <div className="ml-3 pl-2.5 space-y-0.5 pt-0.5 border-l border-border/50">
+ <div className="ml-3 pl-3 space-y-1 pt-1 border-l border-border/50">
  {group.items.map((item) => {
  const isItemActive =
  item.path === "/workspace"
@@ -214,7 +214,7 @@ export function WorkspaceSidebarFlyout({
  key={item.path}
  to={item.path}
  className={cn(
- "flex items-center px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all",
+ "flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-all",
  isItemActive
  ? "bg-primary/10 text-primary font-bold border border-primary/20 shadow-2xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -236,16 +236,16 @@ export function WorkspaceSidebarFlyout({
  {/* Flyout Flutuante à Direita (Hover / Apenas quando recolhido) */}
  {isFlyoutOpen && !isExpanded && (
  <div
- className="absolute left-full top-0 ml-2 w-56 rounded-2xl border border-border/80 bg-background/98 backdrop-blur-xl shadow-xl p-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
+ className="absolute left-full top-0 ml-2 w-56 rounded-lg border border-border/80 bg-background/98 backdrop-blur-xl shadow-xl p-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
  style={{ minWidth: "220px" }}
  >
- <div className="px-2.5 py-1.5 pb-2 border-b border-border/40 mb-1">
+ <div className="px-3 py-2 pb-2 border-b border-border/40 mb-1">
  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
  {group.label}
  </span>
  </div>
 
- <div className="space-y-0.5">
+ <div className="space-y-1">
  {group.items.map((item) => {
  const isItemActive =
  item.path === "/workspace"
@@ -260,7 +260,7 @@ export function WorkspaceSidebarFlyout({
  to={item.path}
  onClick={() => setIsFlyoutOpen(false)}
  className={cn(
- "flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer",
+ "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer",
  isItemActive
  ? "bg-primary/10 text-primary font-bold border border-primary/20 shadow-2xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"

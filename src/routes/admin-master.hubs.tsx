@@ -241,7 +241,7 @@ function AdminMasterHubsPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6">
  <div>
  <div className="flex items-center gap-2">
- <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold uppercase bg-primary text-primary-foreground">
+ <span className="px-3 py-1 rounded-lg text-[10px] font-mono font-bold uppercase bg-primary text-primary-foreground">
  Governança Global
  </span>
  </div>
@@ -255,7 +255,7 @@ function AdminMasterHubsPage() {
 
  <Button
  onClick={handleOpenNew}
- className="h-11 px-5 rounded-xl font-medium text-xs bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs"
+ className="h-11 px-5 rounded-lg font-medium text-xs bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs"
  >
  <Plus className="size-4 mr-2" />
  Nova Categoria Global
@@ -269,7 +269,7 @@ function AdminMasterHubsPage() {
  <button
  key={m.id}
  onClick={() => setSelectedModule(m.id)}
- className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border shrink-0 cursor-pointer min-h-[36px] flex items-center justify-center ${
+ className={`px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border shrink-0 cursor-pointer min-h-9 flex items-center justify-center ${
  selectedModule === m.id
  ? "bg-foreground text-background border-foreground font-bold "
  : "bg-card text-muted-foreground border-border hover:bg-muted/70 hover:text-foreground"
@@ -285,7 +285,7 @@ function AdminMasterHubsPage() {
  placeholder="Filtrar por nome, slug ou tag..."
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
- className="max-w-md h-10 rounded-xl bg-card border-border text-xs"
+ className="max-w-md h-10 rounded-lg bg-card border-border text-xs"
  />
  <span className="text-xs text-muted-foreground font-mono">
  {filteredHubs.length} de {hubs.length} categorias
@@ -298,13 +298,13 @@ function AdminMasterHubsPage() {
  {filteredHubs.map((hub) => (
  <div
  key={hub.id}
- className="p-5 rounded-2xl bg-card space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-all group"
+ className="p-5 rounded-lg bg-card space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-all group"
  >
  <div className="space-y-3">
  {/* Header com Ícone e Status */}
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="size-11 rounded-xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
+ <div className="size-11 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
  {hub.custom_icon_url || hub.icon_url ? (
  <img
  src={hub.custom_icon_url || hub.icon_url!}
@@ -344,7 +344,7 @@ function AdminMasterHubsPage() {
 
  {/* Preview de Capa (se houver) */}
  {hub.cover_image_url && (
- <div className="relative aspect-16/9 rounded-xl overflow-hidden bg-muted ">
+ <div className="relative aspect-16/9 rounded-lg overflow-hidden bg-muted ">
  <img
  src={hub.cover_image_url}
  alt={hub.title}
@@ -354,7 +354,7 @@ function AdminMasterHubsPage() {
  }}
  />
  {hub.badge_label && (
- <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase bg-black/60 backdrop-blur-md text-white border border-white/20">
+ <span className="absolute top-2 left-2 px-2 py-1 rounded-md text-[9px] font-mono font-bold uppercase bg-black/60 backdrop-blur-md text-white border border-white/20">
  {hub.badge_label}
  </span>
  )}
@@ -371,7 +371,7 @@ function AdminMasterHubsPage() {
  {/* Ações de Edição e Ordenação */}
  <div className="pt-3 flex items-center justify-between text-xs">
  <span className="font-mono text-muted-foreground">Ordem: #{hub.sort_order}</span>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Button
  size="sm"
  variant="outline"
@@ -396,7 +396,7 @@ function AdminMasterHubsPage() {
 
  {/* ── Modal de Criação / Edição de Categoria Global ── */}
  <Dialog open={isOpen} onOpenChange={setIsOpen}>
- <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto no-scrollbar sm:rounded-2xl">
+ <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto no-scrollbar sm:rounded-lg">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold">
  {editingHub?.id ? "Editar Categoria Global" : "Nova Categoria Global"}
@@ -406,13 +406,13 @@ function AdminMasterHubsPage() {
  {editingHub && (
  <div className="space-y-4 py-2">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Módulo da Plataforma *</Label>
  <Select
  value={editingHub.module || "home"}
  onValueChange={(val) => setEditingHub({ ...editingHub, module: val as HotpageModule })}
  >
- <SelectTrigger className="rounded-xl h-10 text-xs">
+ <SelectTrigger className="rounded-lg h-10 text-xs">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -425,57 +425,57 @@ function AdminMasterHubsPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Slug (URL) *</Label>
  <Input
  placeholder="ex: gastronomia, eletronicos"
  value={editingHub.slug || ""}
  onChange={(e) => setEditingHub({ ...editingHub, slug: e.target.value })}
- className="rounded-xl h-10 text-xs"
+ className="rounded-lg h-10 text-xs"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Título de Exibição *</Label>
  <Input
  placeholder="ex: Gastronomia & Delivery"
  value={editingHub.title || ""}
  onChange={(e) => setEditingHub({ ...editingHub, title: e.target.value })}
- className="rounded-xl h-10 text-xs"
+ className="rounded-lg h-10 text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Badge / Tag Promocional</Label>
  <Input
  placeholder="ex: Até 40% OFF, Sabor Local"
  value={editingHub.badge_label || ""}
  onChange={(e) => setEditingHub({ ...editingHub, badge_label: e.target.value })}
- className="rounded-xl h-10 text-xs"
+ className="rounded-lg h-10 text-xs"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Descrição Curta</Label>
  <Input
  placeholder="ex: Pizzas, lanches, cafés especiais e pratos locais."
  value={editingHub.description || ""}
  onChange={(e) => setEditingHub({ ...editingHub, description: e.target.value })}
- className="rounded-xl h-10 text-xs"
+ className="rounded-lg h-10 text-xs"
  />
  </div>
 
  {/* Upload de Ícone Customizado */}
- <div className="p-4 rounded-2xl bg-muted/20 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/20 space-y-3">
  <Label className="text-xs font-bold flex items-center gap-2">
  <ImageIcon className="size-4 text-primary" />
  Ícone Customizado da Categoria (PNG / SVG Transparente)
  </Label>
  <div className="flex items-center gap-3">
- <div className="size-14 rounded-xl bg-card flex items-center justify-center overflow-hidden shrink-0">
+ <div className="size-14 rounded-lg bg-card flex items-center justify-center overflow-hidden shrink-0">
  {editingHub.custom_icon_url || editingHub.icon_url ? (
  <img
  src={editingHub.custom_icon_url || editingHub.icon_url!}
@@ -486,7 +486,7 @@ function AdminMasterHubsPage() {
  <Tag className="size-6 text-muted-foreground/40" />
  )}
  </div>
- <div className="flex-1 space-y-1.5">
+ <div className="flex-1 space-y-2">
  <input
  ref={iconInputRef}
  type="file"
@@ -500,9 +500,9 @@ function AdminMasterHubsPage() {
  size="sm"
  disabled={isUploadingIcon}
  onClick={() => iconInputRef.current?.click()}
- className="rounded-xl text-xs font-semibold border-border"
+ className="rounded-lg text-xs font-semibold border-border"
  >
- <UploadCloud className="size-3.5 mr-1.5" />
+ <UploadCloud className="size-3.5 mr-2" />
  {isUploadingIcon ? "Enviando..." : "Fazer Upload do Ícone"}
  </Button>
  <p className="text-[11px] text-muted-foreground">
@@ -513,14 +513,14 @@ function AdminMasterHubsPage() {
  </div>
 
  {/* Upload de Capa / Banner Panorâmico */}
- <div className="p-4 rounded-2xl bg-muted/20 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/20 space-y-3">
  <Label className="text-xs font-bold flex items-center gap-2">
  <ImageIcon className="size-4 text-primary" />
  Foto de Capa do Hub (Hero Card / Carrossel)
  </Label>
  <div className="space-y-2">
  {editingHub.cover_image_url && (
- <div className="relative aspect-16/9 rounded-xl overflow-hidden bg-muted ">
+ <div className="relative aspect-16/9 rounded-lg overflow-hidden bg-muted ">
  <img
  src={editingHub.cover_image_url}
  alt="Capa"
@@ -541,9 +541,9 @@ function AdminMasterHubsPage() {
  size="sm"
  disabled={isUploadingCover}
  onClick={() => coverInputRef.current?.click()}
- className="rounded-xl text-xs font-semibold border-border"
+ className="rounded-lg text-xs font-semibold border-border"
  >
- <UploadCloud className="size-3.5 mr-1.5" />
+ <UploadCloud className="size-3.5 mr-2" />
  {isUploadingCover ? "Enviando..." : "Fazer Upload da Capa"}
  </Button>
  </div>
@@ -551,17 +551,17 @@ function AdminMasterHubsPage() {
 
  {/* Ordem e Opções de Exibição */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Ordem de Exibição</Label>
  <Input
  type="number"
  value={editingHub.sort_order ?? 0}
  onChange={(e) => setEditingHub({ ...editingHub, sort_order: Number(e.target.value) })}
- className="rounded-xl h-10 text-xs font-mono"
+ className="rounded-lg h-10 text-xs font-mono"
  />
  </div>
 
- <div className="flex items-center justify-between p-3 rounded-xl bg-card">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-card">
  <div>
  <Label className="text-xs font-bold block">Status Ativo</Label>
  <span className="text-[10px] text-muted-foreground">Visível no app</span>
@@ -579,14 +579,14 @@ function AdminMasterHubsPage() {
  <Button
  variant="outline"
  onClick={() => setIsOpen(false)}
- className="rounded-xl text-xs font-bold border-border"
+ className="rounded-lg text-xs font-bold border-border"
  >
  Cancelar
  </Button>
  <Button
  onClick={handleSave}
  disabled={isSaving}
- className="rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90"
+ className="rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90"
  >
  {isSaving ? "Salvando..." : "Salvar Categoria"}
  </Button>

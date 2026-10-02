@@ -62,11 +62,11 @@ function StorePasswordGatePage() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-sm mx-auto space-y-6 text-center">
         {/* Ícone Minimalista de Cadeado */}
-        <div className="size-16 rounded-3xl bg-muted/60 border border-border/80 flex items-center justify-center mx-auto text-foreground shadow-xs">
+        <div className="size-16 rounded-lg bg-muted/60 border border-border/80 flex items-center justify-center mx-auto text-foreground shadow-xs">
           <LockKey size={30} weight="duotone" className="text-primary" />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <h1 className="text-xl font-bold tracking-tight text-foreground">
             Catálogo com Acesso Restrito
           </h1>
@@ -77,7 +77,7 @@ function StorePasswordGatePage() {
 
         {/* Formulário de Senha */}
         <form onSubmit={handleUnlock} className="space-y-4 text-left">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="storePassword" className="text-xs font-semibold text-foreground">
               Senha de Acesso
             </Label>
@@ -87,7 +87,7 @@ function StorePasswordGatePage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Digite a senha da loja"
-              className="h-11 rounded-xl text-center text-sm font-mono tracking-widest"
+              className="h-11 rounded-lg text-center text-sm font-mono tracking-widest"
               autoFocus
               required
             />
@@ -96,7 +96,7 @@ function StorePasswordGatePage() {
           <Button
             type="submit"
             disabled={isPending}
-            className="w-full h-11 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 transition-all gap-2 cursor-pointer shadow-xs"
+            className="w-full h-11 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 transition-all gap-2 cursor-pointer shadow-xs"
           >
             {isPending ? (
               <span>Validando...</span>
@@ -114,7 +114,7 @@ function StorePasswordGatePage() {
             variant="ghost"
             size="icon"
             onClick={() => navigate({ to: "/" })}
-            className="size-11 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+            className="size-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
             aria-label="Voltar ao início"
           >
             <ArrowLeft className="size-5" />

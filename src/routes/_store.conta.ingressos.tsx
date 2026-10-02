@@ -37,7 +37,7 @@ export const Route = createFileRoute("/_store/conta/ingressos")({
 function CustomerTicketsErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <Ticket className="size-8" />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar ingressos</h2>
@@ -45,10 +45,10 @@ function CustomerTicketsErrorComponent({ error, reset }: { error: any; reset: ()
         {error?.message || "Não foi possível carregar seus ingressos no momento."}
       </p>
       <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-xl font-bold">
+        <Button onClick={reset} className="rounded-lg font-bold">
           Tentar Novamente
         </Button>
-        <Button asChild variant="outline" className="rounded-xl font-bold">
+        <Button asChild variant="outline" className="rounded-lg font-bold">
           <Link to="/conta">Voltar para Conta</Link>
         </Button>
       </div>
@@ -62,7 +62,7 @@ function QrDisplay({ code }: { code: string }) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=10&data=${encodeURIComponent(code)}`;
 
   return (
-    <div className="inline-flex flex-col items-center p-2.5 bg-white border border-border/40 rounded-2xl shadow-xs">
+    <div className="inline-flex flex-col items-center p-3 bg-white border border-border/40 rounded-lg shadow-xs">
       <img
         src={qrUrl}
         alt={`QR Code para validação do ingresso ${code}`}
@@ -97,7 +97,7 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
 
   return (
     <div
-      className={`bg-card border rounded-2xl overflow-hidden transition-all ${
+      className={`bg-card border rounded-lg overflow-hidden transition-all ${
         ticket.isUsed
           ? "border-border/30 opacity-70"
           : isCancelled
@@ -117,10 +117,10 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
       )}
 
       {/* Header */}
-      <div className="px-4 py-3.5 border-b border-border/30 flex items-start justify-between gap-3">
+      <div className="px-4 py-4 border-b border-border/30 flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0 flex-1">
           <div
-            className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${
+            className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${
               ticket.isUsed
                 ? "bg-muted/50 text-muted-foreground/50"
                 : isValid
@@ -135,7 +135,7 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
               {ticket.eventTitle}
             </h4>
             {ticket.lotName && (
-              <p className="text-[10px] text-muted-foreground mt-0.5">{ticket.lotName}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{ticket.lotName}</p>
             )}
           </div>
         </div>
@@ -195,7 +195,7 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
             type="button"
             id={`qr-toggle-${ticket.id}`}
             onClick={() => setShowQr(!showQr)}
-            className="w-full flex items-center justify-between text-xs font-semibold text-foreground cursor-pointer py-0.5"
+            className="w-full flex items-center justify-between text-xs font-semibold text-foreground cursor-pointer py-1"
           >
             <div className="flex items-center gap-2">
               <QrCode className="size-3.5 text-muted-foreground" strokeWidth={1.75} />
@@ -207,7 +207,7 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
           {showQr && (
             <div className="flex flex-col items-center gap-2 pt-3 animate-in fade-in duration-200">
               <QrDisplay code={ticket.qrHash} />
-              <p className="text-[10px] text-muted-foreground text-center max-w-[200px]">
+              <p className="text-[10px] text-muted-foreground text-center max-w-52">
                 Mostre este QR Code na entrada do evento
               </p>
             </div>
@@ -221,7 +221,7 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
           asChild
           size="sm"
           variant="outline"
-          className="flex-1 rounded-xl text-xs font-semibold h-9 cursor-pointer"
+          className="flex-1 rounded-lg text-xs font-semibold h-9 cursor-pointer"
         >
           <Link to="/conta/pedidos/$id" params={{ id: ticket.orderId }}>
             <ChevronRight className="size-3.5 mr-1" strokeWidth={2} />
@@ -234,7 +234,7 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
             size="sm"
             variant="outline"
             onClick={handleShare}
-            className="h-9 w-9 rounded-xl cursor-pointer p-0 shrink-0"
+            className="h-9 w-9 rounded-lg cursor-pointer p-0 shrink-0"
             aria-label="Compartilhar ingresso"
           >
             <Share2 className="size-3.5" strokeWidth={1.75} />
@@ -295,13 +295,13 @@ function CustomerTicketsPage() {
         fallbackHref="/conta"
         badge={
           tickets.length > 0 ? (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-md">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-md">
               {tickets.length}
             </Badge>
           ) : null
         }
         rightActions={
-          <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8.5 px-3 cursor-pointer">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8.5 px-3 cursor-pointer">
             <Link to="/agenda">Agenda</Link>
           </Button>
         }
@@ -317,7 +317,7 @@ function CustomerTicketsPage() {
               Seus ingressos para shows, festivais e eventos culturais aparecerão aqui com QR Code de acesso digital.
             </p>
           </div>
-          <Button asChild className="rounded-xl h-10 px-6 text-xs font-bold mt-2">
+          <Button asChild className="rounded-lg h-10 px-6 text-xs font-bold mt-2">
             <Link to="/agenda">Explorar</Link>
           </Button>
         </div>
@@ -333,7 +333,7 @@ function CustomerTicketsPage() {
                 placeholder="Buscar por evento ou local..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8.5 h-10 text-xs rounded-xl border-border/60 bg-muted/30 focus:bg-background transition-colors"
+                className="pl-8.5 h-10 text-xs rounded-lg border-border/60 bg-muted/30 focus:bg-background transition-colors"
               />
             </div>
           </div>
@@ -351,7 +351,7 @@ function CustomerTicketsPage() {
                     id={`ticket-filter-${chip.id}`}
                     type="button"
                     onClick={() => setActiveFilter(chip.id)}
-                    className={`flex items-center gap-1.5 h-8 px-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer ${
+                    className={`flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer ${
                       isActive
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-background text-muted-foreground border-border/60 hover:border-border hover:text-foreground"

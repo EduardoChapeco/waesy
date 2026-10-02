@@ -287,7 +287,7 @@ export function ClassifiedDetailDesktop({
               variant="outline"
               size="sm"
               onClick={onOpenCompanion}
-              className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-1.5 cursor-pointer active:scale-98"
+              className="h-10 px-4 rounded-lg text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-2 cursor-pointer active:scale-98"
             >
               <Smartphone className="size-4 text-primary" />
               <span>Guia Digital</span>
@@ -298,7 +298,7 @@ export function ClassifiedDetailDesktop({
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-1.5 cursor-pointer"
+            className="h-10 px-4 rounded-lg text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-2 cursor-pointer"
           >
             <Share2 className="size-4" />
             <span>Compartilhar</span>
@@ -307,7 +307,7 @@ export function ClassifiedDetailDesktop({
           <FavoriteButton
             itemId={classified.id}
             itemType="classified"
-            className="size-10 rounded-xl border border-border/70 bg-card hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground"
+            className="size-10 rounded-lg border border-border/70 bg-card hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground"
           />
 
           {isOwner && onEdit && (
@@ -315,7 +315,7 @@ export function ClassifiedDetailDesktop({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-10 px-3 rounded-xl border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-bold flex items-center gap-1.5"
+              className="h-10 px-3 rounded-lg border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-bold flex items-center gap-2"
             >
               <Edit3 className="size-3.5 text-amber-600" />
               <span>Editar Anúncio</span>
@@ -327,7 +327,7 @@ export function ClassifiedDetailDesktop({
       {/* ── MODO PROPRIETÁRIO (Banner Desktop) ── */}
       {isOwner && (
         <div className="w-full max-w-7xl mx-auto px-6 mb-4">
-          <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-100">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-100">
             <div className="flex items-center gap-2 font-medium">
               <span className="size-2 rounded-full bg-amber-500 shrink-0" />
               <span><strong>Modo Proprietário Ativo:</strong> Você está visualizando seu anúncio como os compradores o veem.</span>
@@ -348,12 +348,12 @@ export function ClassifiedDetailDesktop({
       {/* ── MOSAICO BENTO DE MÍDIA (Desktop Airbnb Layout) ── */}
       <div className="w-full max-w-7xl mx-auto px-6 mb-8">
         {images.length === 0 ? (
-          <div className="w-full aspect-[21/9] max-h-[420px] rounded-2xl bg-muted/20 border border-border/40 flex flex-col items-center justify-center text-muted-foreground gap-2">
+          <div className="w-full aspect-[21/9] max-h-[420px] rounded-lg bg-muted/20 border border-border/40 flex flex-col items-center justify-center text-muted-foreground gap-2">
             <Package className="size-12 stroke-[1.5]" />
             <span className="text-sm">Nenhuma foto cadastrada para este anúncio</span>
           </div>
         ) : images.length === 1 ? (
-          <div className="w-full aspect-[16/9] max-h-[480px] rounded-2xl overflow-hidden bg-muted/20 border border-border/40 relative group">
+          <div className="w-full aspect-[16/9] max-h-[480px] rounded-lg overflow-hidden bg-muted/20 border border-border/40 relative group">
             <img
               src={images[0]}
               alt={classified.title}
@@ -363,14 +363,14 @@ export function ClassifiedDetailDesktop({
             <button
               type="button"
               onClick={() => setFullscreenImage(images[0])}
-              className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-1.5 transition-all shadow-sm"
+              className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-all shadow-sm"
             >
               <Maximize2 className="size-4" />
               <span>Ver em tela cheia</span>
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-12 gap-3 aspect-[16/9] max-h-[500px] rounded-2xl overflow-hidden border border-border/40 bg-muted/20 relative group">
+          <div className="grid grid-cols-12 gap-3 aspect-[16/9] max-h-[500px] rounded-lg overflow-hidden border border-border/40 bg-muted/20 relative group">
             {/* Foto Principal Hero (8 colunas) */}
             <div className="col-span-8 relative overflow-hidden bg-muted/30 h-full">
               <img
@@ -400,7 +400,7 @@ export function ClassifiedDetailDesktop({
                 <button
                   type="button"
                   onClick={() => setFullscreenImage(images[0])}
-                  className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-1.5 shadow-md hover:bg-background cursor-pointer active:scale-95"
+                  className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 shadow-md hover:bg-background cursor-pointer active:scale-95"
                 >
                   <Maximize2 className="size-3.5" />
                   <span>Ver todas ({images.length})</span>
@@ -427,7 +427,7 @@ export function ClassifiedDetailDesktop({
                 </Badge>
               )}
               {attrs.delivery_available && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-md">
                   <Truck className="size-3.5" /> Envio Disponível
                 </span>
               )}
@@ -438,12 +438,12 @@ export function ClassifiedDetailDesktop({
             </h1>
 
             <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <MapPin className="size-3.5 text-muted-foreground/80" />
                 <span>{locationText}</span>
               </div>
               {classified.created_at && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <Clock className="size-3.5 text-muted-foreground/80" />
                   <span>Publicado {formatRelativeTime(classified.created_at)}</span>
                 </div>
@@ -457,7 +457,7 @@ export function ClassifiedDetailDesktop({
               <h2 className="text-sm font-bold text-foreground">Especificações em Destaque</h2>
               <div className="grid grid-cols-3 gap-3">
                 {featureList.map((item, idx) => (
-                  <div key={idx} className="rounded-xl border border-border/50 bg-card p-3 space-y-1">
+                  <div key={idx} className="rounded-lg border border-border/50 bg-card p-3 space-y-1">
                     <span className="text-[11px] text-muted-foreground uppercase font-medium block">
                       {item.label}
                     </span>
@@ -474,14 +474,14 @@ export function ClassifiedDetailDesktop({
           {classified.content && (
             <div className="space-y-3 pt-2">
               <h2 className="text-sm font-bold text-foreground">Descrição do Anúncio</h2>
-              <div className="rounded-2xl border border-border/50 bg-card p-5 text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
+              <div className="rounded-lg border border-border/50 bg-card p-5 text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
                 {classified.content}
               </div>
             </div>
           )}
 
           {/* Card do Anunciante Desktop */}
-          <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-4">
+          <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
             <h2 className="text-sm font-bold text-foreground">Sobre o Anunciante</h2>
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -492,11 +492,11 @@ export function ClassifiedDetailDesktop({
                     <span>{(author?.full_name || classified.store_name || "A").charAt(0).toUpperCase()}</span>
                   )}
                 </div>
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   <span className="text-base font-bold text-foreground block">
                     {classified.store_name || author?.full_name || "Anunciante Comunitário"}
                   </span>
-                  <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                  <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
                     <ShieldCheck className="size-4 shrink-0" />
                     <span>Perfil Verificado</span>
                   </div>
@@ -508,7 +508,7 @@ export function ClassifiedDetailDesktop({
                   type="button"
                   variant="outline"
                   onClick={handleWhatsApp}
-                  className="h-10 px-4 rounded-xl border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 text-xs font-bold flex items-center gap-2 cursor-pointer"
+                  className="h-10 px-4 rounded-lg border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 text-xs font-bold flex items-center gap-2 cursor-pointer"
                 >
                   <MessageCircle className="size-4 text-emerald-500" />
                   <span>WhatsApp</span>
@@ -521,7 +521,7 @@ export function ClassifiedDetailDesktop({
           {!classified.hide_location && !attrs.hide_location && classified.location_lat && classified.location_lng && (
             <div className="space-y-3 pt-2">
               <h2 className="text-sm font-bold text-foreground">Localização no Mapa</h2>
-              <div className="rounded-2xl border border-border/50 overflow-hidden h-64 bg-muted/20">
+              <div className="rounded-lg border border-border/50 overflow-hidden h-64 bg-muted/20">
                 <MapLibreCanvas
                   initialCenter={[classified.location_lng, classified.location_lat]}
                   initialZoom={14}
@@ -534,9 +534,9 @@ export function ClassifiedDetailDesktop({
 
         {/* ══ COLUNA DIREITA: Card Sticky de Preço & Conversão (5 Colunas) ══ */}
         <div className="col-span-5">
-          <div className="sticky top-20 rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-6">
+          <div className="sticky top-20 rounded-lg border border-border/60 bg-card p-6 shadow-sm space-y-6">
             {/* Bloco de Preço */}
-            <div className="space-y-1.5 pb-4 border-b border-border/50">
+            <div className="space-y-2 pb-4 border-b border-border/50">
               {isDonation ? (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -570,7 +570,7 @@ export function ClassifiedDetailDesktop({
               ) : (
                 <div className="space-y-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <div className="flex items-baseline gap-1.5">
+                    <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-extrabold text-foreground font-mono">
                         {priceCents > 0 ? formatMoney(priceCents) : "Sob Consulta"}
                       </span>
@@ -596,21 +596,21 @@ export function ClassifiedDetailDesktop({
               )}
 
               {/* Formas de Pagamento Rápidas */}
-              <div className="flex flex-wrap gap-1.5 pt-2">
+              <div className="flex flex-wrap gap-2 pt-2">
                 {acceptsPix && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                     <QrCode className="size-3.5 text-emerald-600" />
                     PIX {pixDiscountPercent > 0 ? `(${pixDiscountPercent}% off)` : "à vista"}
                   </span>
                 )}
                 {acceptsCard && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-[11px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300">
                     <CreditCard className="size-3.5 text-blue-600" />
                     Cartão até {maxInstallments}x
                   </span>
                 )}
                 {acceptsBoleto && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-muted text-foreground">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-[11px] font-semibold bg-muted text-foreground">
                     <Receipt className="size-3.5 text-muted-foreground" />
                     Boleto
                   </span>
@@ -624,7 +624,7 @@ export function ClassifiedDetailDesktop({
                 type="button"
                 onClick={primaryCta.action}
                 disabled={isBooking || isBuyingDirect || isDownloadingDigital}
-                className="h-12 w-full rounded-xl text-sm font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer"
+                className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer"
               >
                 {primaryCta.label}
               </Button>
@@ -634,7 +634,7 @@ export function ClassifiedDetailDesktop({
                   type="button"
                   variant="outline"
                   onClick={onOpenProposalModal}
-                  className="h-11 w-full rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/40"
+                  className="h-11 w-full rounded-lg text-xs font-semibold border-border/70 text-foreground hover:bg-muted/40"
                 >
                   Enviar Proposta
                 </Button>
@@ -645,7 +645,7 @@ export function ClassifiedDetailDesktop({
                   type="button"
                   variant="outline"
                   onClick={handleWhatsApp}
-                  className="h-11 w-full rounded-xl text-xs font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 flex items-center justify-center gap-2"
+                  className="h-11 w-full rounded-lg text-xs font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 flex items-center justify-center gap-2"
                 >
                   <MessageCircle className="size-4 text-emerald-600" />
                   <span>WhatsApp</span>

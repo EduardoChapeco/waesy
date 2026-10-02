@@ -45,7 +45,7 @@ function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? { label: status, variant: "outline", icon: FileText, color: "" };
   const Icon = cfg.icon;
   return (
-    <Badge variant={cfg.variant} className="gap-1.5 text-xs font-semibold rounded-lg px-2 py-0.5">
+    <Badge variant={cfg.variant} className="gap-2 text-xs font-semibold rounded-lg px-2 py-1">
       <Icon className="size-3" />
       {cfg.label}
     </Badge>
@@ -158,15 +158,15 @@ function QuotesListPage() {
       )}
 
       {isError && (
-        <div className="flex items-center gap-3 p-4 bg-destructive/5 border border-destructive/20 rounded-xl text-sm text-destructive">
+        <div className="flex items-center gap-3 p-4 bg-destructive/5 border border-destructive/20 rounded-lg text-sm text-destructive">
           <XCircle className="size-5 shrink-0" />
           Erro ao carregar orçamentos. Tente novamente.
         </div>
       )}
 
       {!isLoading && !isError && quotes.length === 0 && (
-        <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
-          <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+          <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
             <FileText className="size-6" />
           </div>
           <div className="space-y-1">
@@ -175,7 +175,7 @@ function QuotesListPage() {
               Crie propostas e orçamentos para enviar a clientes e negociar pedidos.
             </p>
           </div>
-          <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold h-9">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
             <Link to="/workspace/orcamentos/novo">
               <Plus className="size-3.5 mr-1" />
               Criar Primeiro Orçamento
@@ -185,7 +185,7 @@ function QuotesListPage() {
       )}
 
       {!isLoading && !isError && quotes.length > 0 && viewMode === "list" && (
-        <div className="divide-y divide-border/60 bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
+        <div className="divide-y divide-border/60 bg-card border border-border/70 rounded-lg overflow-hidden shadow-2xs">
           {quotes.map((q: QuoteSummaryDTO) => (
             <QuoteRow key={q.id} quote={q} />
           ))}
@@ -201,13 +201,13 @@ function QuotesListPage() {
             return (
               <div
                 key={col.id}
-                className="bg-card/60 border border-border/70 rounded-xl p-3.5 flex flex-col w-[310px] min-w-[310px] sm:w-[330px] sm:min-w-[330px] shrink-0 h-full shadow-2xs overflow-hidden"
+                className="bg-card/60 border border-border/70 rounded-lg p-4 flex flex-col w-[310px] min-w-[310px] sm:w-[330px] sm:min-w-[330px] shrink-0 h-full shadow-2xs overflow-hidden"
               >
                 {/* Header da Coluna */}
                 <div className="flex items-center justify-between pb-2 border-b border-border/50 shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-foreground">{col.title}</span>
-                    <Badge variant="secondary" className="text-xs font-mono px-1.5 py-0 h-4">
+                    <Badge variant="secondary" className="text-xs font-mono px-2 py-0 h-4">
                       {colQuotes.length}
                     </Badge>
                   </div>
@@ -217,16 +217,16 @@ function QuotesListPage() {
                 </div>
 
                 {/* Cards com scroll interno */}
-                <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-2.5 pt-1">
+                <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-3 pt-1">
                   {colQuotes.length === 0 ? (
-                    <div className="h-28 flex items-center justify-center text-xs text-muted-foreground border border-dashed border-border/50 rounded-xl">
+                    <div className="h-28 flex items-center justify-center text-xs text-muted-foreground border border-dashed border-border/50 rounded-lg">
                       Nenhum orçamento
                     </div>
                   ) : (
                     colQuotes.map((q: QuoteSummaryDTO) => (
                       <div
                         key={q.id}
-                        className="bg-card border border-border/60 hover:border-border rounded-xl p-3 space-y-2 transition-shadow shadow-2xs group"
+                        className="bg-card border border-border/60 hover:border-border rounded-lg p-3 space-y-2 transition-shadow shadow-2xs group"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <Link
@@ -253,7 +253,7 @@ function QuotesListPage() {
                         </div>
 
                         {/* Ações Rápidas de Estágio */}
-                        <div className="flex items-center justify-end gap-1.5 pt-1">
+                        <div className="flex items-center justify-end gap-2 pt-1">
                           {q.status === "draft" && (
                             <Button
                               variant="ghost"
@@ -378,7 +378,7 @@ function QuoteRow({ quote }: { quote: QuoteSummaryDTO }) {
     <Link
       to="/workspace/orcamentos/$id"
       params={{ id: quote.id }}
-      className="flex items-center gap-4 px-4 py-3.5 bg-card hover:bg-muted/30 transition-colors group"
+      className="flex items-center gap-4 px-4 py-4 bg-card hover:bg-muted/30 transition-colors group"
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">

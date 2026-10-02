@@ -78,9 +78,9 @@ export function LeadPushNotificationPrompt({ storeId }: LeadPushNotificationProm
 
   if (permission === "granted") {
     return (
-      <div className="flex items-center justify-between p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs">
+      <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs">
         <div className="flex items-center gap-2">
-          <div className="size-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+          <div className="size-8 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
             <BellRing className="size-4" />
           </div>
           <div>
@@ -98,12 +98,12 @@ export function LeadPushNotificationPrompt({ storeId }: LeadPushNotificationProm
   }
 
   return (
-    <div className="relative flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-card border border-border/60 shadow-xs gap-3">
+    <div className="relative flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg bg-card border border-border/60 shadow-xs gap-3">
       <div className="flex items-start gap-3">
-        <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+        <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
           <Bell className="size-4.5" />
         </div>
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h4 className="font-bold text-xs sm:text-sm text-foreground">
               Receber Notificações de Novos Leads
@@ -124,7 +124,7 @@ export function LeadPushNotificationPrompt({ storeId }: LeadPushNotificationProm
           variant="ghost"
           size="sm"
           onClick={() => setDismissed(true)}
-          className="h-9 px-2.5 text-xs text-muted-foreground rounded-xl"
+          className="h-9 px-3 text-xs text-muted-foreground rounded-lg"
         >
           Agora Não
         </Button>
@@ -133,7 +133,7 @@ export function LeadPushNotificationPrompt({ storeId }: LeadPushNotificationProm
           size="sm"
           onClick={handleEnablePush}
           disabled={isRegistering}
-          className="h-9 px-4 text-xs font-bold rounded-xl bg-foreground text-background hover:bg-foreground/90 shadow-sm"
+          className="h-9 px-4 text-xs font-bold rounded-lg bg-foreground text-background hover:bg-foreground/90 shadow-sm"
         >
           {isRegistering ? "Ativando..." : "Ativar Alertas"}
         </Button>

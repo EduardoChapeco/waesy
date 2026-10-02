@@ -77,11 +77,11 @@ export function StockAuditDialog({
  setCountedQty(variant.stock_on_hand.toString());
  setOpen(true);
  }}
- className={className || "text-xs h-8 rounded-xl font-medium"}
+ className={className || "text-xs h-8 rounded-lg font-medium"}
  >
  {children || (
  <>
- <ClipboardCheck className="mr-1.5 size-3.5" /> Balanço
+ <ClipboardCheck className="mr-2 size-3.5" /> Balanço
  </>
  )}
  </Button>
@@ -97,18 +97,18 @@ export function StockAuditDialog({
  <Button
  variant="outline"
  onClick={() => setOpen(false)}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
  <Button
  onClick={handleAudit}
  disabled={isSubmitting || parseInt(countedQty, 10) === variant.stock_on_hand}
- className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+ className="rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  {isSubmitting ? (
  <>
- <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+ <Loader2 className="mr-2 size-3.5 animate-spin" />
  Gravando...
  </>
  ) : (
@@ -120,29 +120,29 @@ export function StockAuditDialog({
  >
  <div className="space-y-4 py-2">
  <div className="flex gap-4">
- <div className="flex-1 space-y-1.5">
+ <div className="flex-1 space-y-2">
  <Label className="text-xs font-bold">Sistema Acusa</Label>
- <Input disabled value={variant.stock_on_hand} className="bg-muted h-10 rounded-xl text-xs font-mono" />
+ <Input disabled value={variant.stock_on_hand} className="bg-muted h-10 rounded-lg text-xs font-mono" />
  </div>
- <div className="flex-1 space-y-1.5">
+ <div className="flex-1 space-y-2">
  <Label className="text-xs font-bold">Contado na Prateleira *</Label>
  <Input
  type="number"
  min="0"
  value={countedQty}
  onChange={(e) => setCountedQty(e.target.value)}
- className="font-bold text-foreground h-10 rounded-xl text-xs font-mono"
+ className="font-bold text-foreground h-10 rounded-lg text-xs font-mono"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Motivo do Ajuste</Label>
  <Select value={reason} onValueChange={(val: any) => setReason(val)}>
- <SelectTrigger className="h-10 rounded-xl text-xs">
+ <SelectTrigger className="h-10 rounded-lg text-xs">
  <SelectValue placeholder="Selecione..." />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="recount">Recontagem Simples (Ajuste)</SelectItem>
  <SelectItem value="loss">Perda de Estoque / Sumiço</SelectItem>
  <SelectItem value="damage">Quebra / Avaria Logística</SelectItem>
@@ -151,13 +151,13 @@ export function StockAuditDialog({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Observações (Opcional)</Label>
  <Textarea
  placeholder="Ex: Tênis esquerdo sumiu, ajustado no inventário..."
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
- className="rounded-xl text-xs resize-none"
+ className="rounded-lg text-xs resize-none"
  rows={3}
  />
  </div>

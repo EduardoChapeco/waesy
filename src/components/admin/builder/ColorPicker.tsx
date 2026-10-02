@@ -9,10 +9,10 @@ interface ColorPickerProps {
 
 export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
  return (
- <div className="flex flex-col gap-1.5">
+ <div className="flex flex-col gap-2">
  {label && <label className="text-xs font-medium">{label}</label>}
  <div className="flex items-center gap-2">
- <div className="relative w-8 h-8 rounded-xl overflow-hidden border shrink-0">
+ <div className="relative w-8 h-8 rounded-lg overflow-hidden border shrink-0">
  <input
  type="color"
  value={value || "#000000"}

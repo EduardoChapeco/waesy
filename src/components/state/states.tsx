@@ -42,7 +42,7 @@ function StateShell({
  <div
  className={cn(
  "flex flex-col items-center justify-center text-center",
- minimal ? "bg-transparent py-8 px-4" : "rounded-xl bg-card px-6 py-12",
+ minimal ? "bg-transparent py-8 px-4" : "rounded-lg bg-card px-6 py-12",
  className,
  )}
  role="status"
@@ -52,7 +52,7 @@ function StateShell({
  </span>
  <h3 className="text-lg font-semibold text-foreground">{title}</h3>
  {description ? (
- <p className="mt-1.5 max-w-md text-sm text-muted-foreground">{description}</p>
+ <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>
  ) : null}
  {action ? <div className="mt-5">{action}</div> : null}
  </div>
@@ -172,7 +172,7 @@ export function StatusBadge({
  return (
  <span
  className={cn(
- "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+ "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium",
  cfg.className,
  className,
  )}

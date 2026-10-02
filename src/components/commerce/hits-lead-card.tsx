@@ -23,7 +23,7 @@ export function HitsLeadCard({
  <Link
  to={actionTo as any}
  aria-label={ariaLabel}
- className="group relative overflow-hidden rounded-2xl bg-card w-[150px] sm:w-[170px] h-[145px] sm:h-[155px] transition-transform duration-200 active:scale-[0.98] select-none block shrink-0 snap-start"
+ className="group relative overflow-hidden rounded-lg bg-card w-[150px] sm:w-[170px] h-[145px] sm:h-[155px] transition-transform duration-200 active:scale-[0.98] select-none block shrink-0 snap-start"
  >
  {coverImage ? (
  <img
@@ -34,7 +34,7 @@ export function HitsLeadCard({
  />
  ) : (
  <div className={`size-full bg-linear-to-br ${gradient} flex items-center justify-center`}>
- <div className="size-16 rounded-2xl bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+ <div className="size-16 rounded-lg bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:scale-105 transition-transform">
  <span className="text-white font-black text-xl font-mono">#1</span>
  </div>
  </div>

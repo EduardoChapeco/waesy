@@ -107,7 +107,7 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">Compliance, Alvarás</h3>
@@ -115,14 +115,14 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
               {docs.length} {docs.length === 1 ? "documento anexado" : "documentos anexados"}
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Central de controle regulatório: AVCB dos Bombeiros, alvará da prefeitura, ECAD e seguros.
           </p>
         </div>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Button className="h-11 px-4 rounded-xl text-xs font-bold gap-2">
+            <Button className="h-11 px-4 rounded-lg text-xs font-bold gap-2">
               <Plus className="size-4" />
               <span>Anexar Documento</span>
             </Button>
@@ -136,10 +136,10 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
             </SheetHeader>
 
             <form onSubmit={handleCreate} className="space-y-4 mt-6">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Tipo de Documento</Label>
                 <Select value={tipo} onValueChange={setTipo}>
-                  <SelectTrigger className="h-11 rounded-xl text-xs">
+                  <SelectTrigger className="h-11 rounded-lg text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -152,50 +152,50 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Título / Número do Protocolo *</Label>
                 <Input
                   required
                   placeholder="Ex: AVCB nº 83921/2026 - Aprovado"
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Link do Arquivo / PDF Digitalizado *</Label>
                 <Input
                   required
                   placeholder="https://... ou caminho do arquivo"
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={arquivoUrl}
                   onChange={(e) => setArquivoUrl(e.target.value)}
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Data de Validade / Vencimento</Label>
                 <Input
                   type="date"
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={dataValidade}
                   onChange={(e) => setDataValidade(e.target.value)}
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Observações / Condicionantes</Label>
                 <Textarea
                   rows={3}
                   placeholder="Exigências técnicas para vistoria final..."
-                  className="rounded-xl text-xs"
+                  className="rounded-lg text-xs"
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
                 />
               </div>
 
-              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-xl text-xs font-bold mt-4">
+              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-lg text-xs font-bold mt-4">
                 {isPending ? "Salvando..." : "Salvar Documento"}
               </Button>
             </form>
@@ -204,7 +204,7 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
       </div>
 
       {docs.length === 0 ? (
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center bg-card/40">
+        <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <FileText className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhum documento protocolado</p>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -220,12 +220,12 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
             return (
               <Card
                 key={d.id}
-                className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
+                className="rounded-lg border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="size-9 rounded-xl bg-muted/60 flex items-center justify-center font-bold text-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="size-9 rounded-lg bg-muted/60 flex items-center justify-center font-bold text-xs">
                         <FileText className={`size-4 ${tipoInfo.color}`} />
                       </div>
                       <div>
@@ -250,7 +250,7 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
                   )}
 
                   {d.data_validade && (
-                    <div className="flex items-center gap-1.5 text-[11px]">
+                    <div className="flex items-center gap-2 text-[11px]">
                       {isVencido ? (
                         <span className="text-rose-600 font-bold flex items-center gap-1">
                           <AlertTriangle className="size-3" />
@@ -271,7 +271,7 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
                     href={d.arquivo_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+                    className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:underline"
                   >
                     <Download className="size-3" />
                     <span>Visualizar Arquivo Anexo</span>

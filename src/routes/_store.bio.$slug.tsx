@@ -157,7 +157,7 @@ function BiolinkPage() {
  )}
  </div>
 
- <div className="space-y-1.5 max-w-sm">
+ <div className="space-y-2 max-w-sm">
  <h1 className="text-xl font-black tracking-tight text-foreground font-display">{bio.title}</h1>
  {bio.subtitle && (
  <p className="text-[11px] font-bold tracking-widest text-sky-700 dark:text-sky-300 uppercase">
@@ -172,7 +172,7 @@ function BiolinkPage() {
 
  {/* Badge de Horário de Funcionamento em Tempo Real */}
  <div className="pt-1 flex items-center justify-center">
- <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
+ <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
  <span className="size-2 rounded-full bg-emerald-500" />
  <span>Aberto agora · 08h às 18h</span>
  </div>
@@ -233,10 +233,10 @@ function BiolinkPage() {
  return (
  <div
  key={block.id || index}
- className={`w-full p-5 rounded-2xl border border-sky-200/80 dark:border-sky-800/60 bg-card shadow-sm space-y-3.5 text-left`}
+ className={`w-full p-5 rounded-lg border border-sky-200/80 dark:border-sky-800/60 bg-card shadow-sm space-y-4 text-left`}
  >
- <div className="flex items-center gap-2.5">
- <div className="size-8 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-600 shrink-0">
+ <div className="flex items-center gap-3">
+ <div className="size-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-600 shrink-0">
  <Send className="size-4" />
  </div>
  <div>
@@ -250,19 +250,19 @@ function BiolinkPage() {
  </div>
 
  {leadSubmitted ? (
- <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold text-center space-y-1">
+ <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold text-center space-y-1">
  <p> Dados recebidos com sucesso!</p>
  <p className="text-[11px] font-normal opacity-80">Nossa equipe entrará em contato em instantes.</p>
  </div>
  ) : (
- <form onSubmit={handleLeadSubmit} className="space-y-2.5 pt-1">
+ <form onSubmit={handleLeadSubmit} className="space-y-3 pt-1">
  <div className="space-y-1">
  <label className="text-[10px] font-bold text-muted-foreground uppercase">Seu nome</label>
  <Input
  value={leadName}
  onChange={(e) => setLeadName(e.target.value)}
  placeholder="Como devemos te chamar?"
- className="h-9.5 text-xs rounded-xl bg-background"
+ className="h-9.5 text-xs rounded-lg bg-background"
  required
  />
  </div>
@@ -272,14 +272,14 @@ function BiolinkPage() {
  value={leadPhone}
  onChange={(e) => setLeadPhone(e.target.value)}
  placeholder="(99) 99999-9999"
- className="h-9.5 text-xs rounded-xl bg-background"
+ className="h-9.5 text-xs rounded-lg bg-background"
  required
  />
  </div>
  <Button
  type="submit"
  disabled={isSubmittingLead}
- className="w-full h-10 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
  >
  {isSubmittingLead ? "Enviando..." : (block.buttonText || "Quero ser chamado(a)")}
  </Button>
@@ -297,14 +297,14 @@ function BiolinkPage() {
  const galleryImages: string[] = block.images || [];
  return (
  <div key={block.id || index} className="w-full space-y-2 text-center pt-2">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <p className="text-[10px] font-bold uppercase tracking-widest text-sky-600">Nossa Loja</p>
  <h3 className="text-sm font-serif font-bold text-foreground">
  {block.label || "Um espaço pensado para você sonhar"}
  </h3>
  </div>
  {galleryImages.length >= 1 ? (
- <div className="grid grid-cols-2 gap-2 h-44 rounded-2xl overflow-hidden border border-border/60">
+ <div className="grid grid-cols-2 gap-2 h-44 rounded-lg overflow-hidden border border-border/60">
  <div className="h-full">
  <img src={galleryImages[0]} alt="Fachada da Agência" className="size-full object-cover" />
  </div>
@@ -314,7 +314,7 @@ function BiolinkPage() {
  </div>
  </div>
  ) : (
- <div className="h-44 rounded-2xl border border-dashed border-border/60 flex flex-col items-center justify-center gap-1.5 text-muted-foreground">
+ <div className="h-44 rounded-lg border border-dashed border-border/60 flex flex-col items-center justify-center gap-2 text-muted-foreground">
  <span className="text-xs">Nenhuma foto cadastrada</span>
  <span className="text-[10px]">Adicione fotos da loja pelo painel administrativo</span>
  </div>
@@ -337,8 +337,8 @@ function BiolinkPage() {
  ];
 
  return (
- <div key={block.id || index} className="w-full space-y-2.5 text-center pt-3">
- <div className="space-y-0.5">
+ <div key={block.id || index} className="w-full space-y-3 text-center pt-3">
+ <div className="space-y-1">
  <p className="text-[10px] font-bold uppercase tracking-widest text-sky-600">O Que Oferecemos</p>
  <h3 className="text-sm font-serif font-bold text-foreground">
  {block.label || "Serviços Especializados"}
@@ -351,7 +351,7 @@ function BiolinkPage() {
  return (
  <div
  key={srvIdx}
- className="p-3 rounded-xl bg-card border border-border/70 hover:border-sky-400 transition-all space-y-1"
+ className="p-3 rounded-lg bg-card border border-border/70 hover:border-sky-400 transition-all space-y-1"
  >
  <div className="size-7 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-600">
  <IconComp className="size-3.5" />
@@ -371,9 +371,9 @@ function BiolinkPage() {
  return (
  <div
  key={block.id || index}
- className="w-full p-4 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-xs space-y-2.5 text-left"
+ className="w-full p-4 rounded-lg bg-slate-900 text-white border border-slate-800 shadow-xs space-y-3 text-left"
  >
- <div className="flex items-start gap-2.5">
+ <div className="flex items-start gap-3">
  <div className="size-7 rounded-lg bg-white/10 flex items-center justify-center text-sky-300 shrink-0">
  <Clock className="size-3.5" />
  </div>
@@ -418,14 +418,14 @@ function BiolinkPage() {
  href={targetUrl}
  target="_blank"
  rel="noopener noreferrer"
- className="block w-full aspect-[16/9] rounded-2xl overflow-hidden border border-border/60 shadow-xs relative group select-none hover:border-border transition-all"
+ className="block w-full aspect-[16/9] rounded-lg overflow-hidden border border-border/60 shadow-xs relative group select-none hover:border-border transition-all"
  >
  <img
  src={block.imageUrl}
  alt={block.label || "Banner"}
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-3.5">
+ <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-4">
  <span className="text-xs font-bold text-white drop-shadow-sm truncate flex items-center justify-between gap-2">
  <span>{block.label}</span>
  <ExternalLink className="size-3.5 text-white/80 shrink-0" />
@@ -446,7 +446,7 @@ function BiolinkPage() {
  href={targetUrl}
  target="_blank"
  rel="noopener noreferrer"
- className={`w-full p-3.5 rounded-2xl flex items-center justify-between gap-3 text-sm font-semibold transition-all hover:scale-[1.015] active:scale-[0.99] ${
+ className={`w-full p-4 rounded-lg flex items-center justify-between gap-3 text-sm font-semibold transition-all hover:scale-[1.015] active:scale-[0.99] ${
  isHighlighted
  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm font-bold border border-emerald-500"
  : theme.card
@@ -454,7 +454,7 @@ function BiolinkPage() {
  >
  <div className="flex items-center gap-3 min-w-0 text-left">
  <div
- className={`size-8 rounded-xl flex items-center justify-center shrink-0 ${
+ className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
  isHighlighted ? "bg-white/20 text-white" : "bg-sky-500/10 text-sky-600"
  }`}
  >
@@ -474,9 +474,9 @@ function BiolinkPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-1.5 shrink-0">
+ <div className="flex items-center gap-2 shrink-0">
  {block.badge && (
- <span className="px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-amber-500 text-white">
+ <span className="px-2 py-1 rounded-md text-[9px] font-mono font-bold bg-amber-500 text-white">
  {block.badge}
  </span>
  )}

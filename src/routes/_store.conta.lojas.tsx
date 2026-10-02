@@ -51,13 +51,13 @@ export default function ContaLojasPage() {
             Lojas
           </h1>
           {stores.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {stores.length}
             </Badge>
           )}
         </div>
 
-        <Button asChild size="sm" className="rounded-xl h-8 px-3.5 text-xs font-semibold gap-1.5 bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer">
+        <Button asChild size="sm" className="rounded-lg h-8 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer">
           <Link to="/criar-negocio">
             <Plus className="size-3.5" />
             <span>Nova Loja</span>
@@ -67,11 +67,11 @@ export default function ContaLojasPage() {
 
       {/* ── Grid de Lojas / Empty State ── */}
       {stores.length === 0 ? (
-        <Card className="w-full p-5 sm:p-12 text-center rounded-2xl border border-dashed border-border/80 bg-card space-y-4 my-4">
- <div className="size-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+        <Card className="w-full p-5 sm:p-12 text-center rounded-lg border border-dashed border-border/80 bg-card space-y-4 my-4">
+ <div className="size-16 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
  <Store className="size-8" />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <h3 className="text-base font-bold text-foreground">
  Nenhum negócio vinculado ao seu perfil
  </h3>
@@ -80,7 +80,7 @@ export default function ContaLojasPage() {
  </p>
  </div>
  <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
- <Button asChild className="rounded-xl text-xs font-bold gap-2">
+ <Button asChild className="rounded-lg text-xs font-bold gap-2">
  <Link to="/criar-negocio">
  <Plus className="size-4" />
  Cadastrar Meu Negócio
@@ -97,7 +97,7 @@ export default function ContaLojasPage() {
  return (
  <Card
  key={st.id}
- className={`p-5 rounded-2xl border transition-all flex flex-col justify-between relative overflow-hidden bg-card ${
+ className={`p-5 rounded-lg border transition-all flex flex-col justify-between relative overflow-hidden bg-card ${
  isCurrentActive
  ? "border-primary/50 ring-1 ring-primary/20"
  : "border-border hover:border-foreground/20"
@@ -105,7 +105,7 @@ export default function ContaLojasPage() {
  >
  {isCurrentActive && (
  <div className="absolute top-3 right-3">
- <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold px-2 py-0.5">
+ <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold px-2 py-1">
  ● Painel Ativo
  </Badge>
  </div>
@@ -113,8 +113,8 @@ export default function ContaLojasPage() {
 
  <div className="space-y-4">
  {/* Header do Card */}
- <div className="flex items-start gap-3.5 pr-20">
- <div className="size-12 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
+ <div className="flex items-start gap-4 pr-20">
+ <div className="size-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
  {st.logo_url ? (
  <img
  src={st.logo_url}
@@ -132,7 +132,7 @@ export default function ContaLojasPage() {
  <p className="text-xs text-muted-foreground font-mono">
  /{st.slug}
  </p>
- <div className="flex items-center gap-1.5 mt-1 text-[11px] text-muted-foreground">
+ <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
  <MapPin className="size-3 text-muted-foreground shrink-0" />
  <span className="truncate">{st.city ? `${st.city} - ${st.state}` : "Brasil"}</span>
  </div>
@@ -167,7 +167,7 @@ export default function ContaLojasPage() {
  onClick={() => handleSelectStore(st.id, st.name)}
  disabled={isCurrentSwitching}
  variant={isCurrentActive ? "default" : "secondary"}
- className="flex-1 rounded-xl text-xs font-bold h-9 gap-1.5"
+ className="flex-1 rounded-lg text-xs font-bold h-9 gap-2"
  >
  {isCurrentSwitching ? (
  "Carregando..."
@@ -183,7 +183,7 @@ export default function ContaLojasPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-xl shrink-0"
+ className="size-9 rounded-lg shrink-0"
  title="Ver Vitrine Pública"
  >
  <Link to={`/destaques/${st.slug}` as any}>

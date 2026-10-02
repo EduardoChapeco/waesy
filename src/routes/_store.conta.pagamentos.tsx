@@ -180,7 +180,7 @@ function CustomerInstallmentsPage() {
           type="button"
           onClick={() => setActiveMainTab("history")}
           className={cn(
-            "h-10 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+            "h-10 px-4 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
             activeMainTab === "history"
               ? "bg-foreground text-background shadow-xs"
               : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
@@ -194,7 +194,7 @@ function CustomerInstallmentsPage() {
           type="button"
           onClick={() => setActiveMainTab("pix_settings")}
           className={cn(
-            "h-10 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+            "h-10 px-4 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
             activeMainTab === "pix_settings"
               ? "bg-emerald-600 text-white shadow-xs"
               : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
@@ -207,7 +207,7 @@ function CustomerInstallmentsPage() {
 
       {activeMainTab === "pix_settings" ? (
         <div className="px-4 sm:px-0 max-w-xl space-y-5 animate-in fade-in duration-200">
-          <div className="p-5 rounded-3xl bg-card border border-border/60 space-y-5">
+          <div className="p-5 rounded-lg bg-card border border-border/60 space-y-5">
             <div className="space-y-1">
               <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <QrCode className="size-5 text-emerald-600" />
@@ -219,12 +219,12 @@ function CustomerInstallmentsPage() {
             </div>
 
             <div className="space-y-4 pt-1">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Tipo de Chave PIX</Label>
                 <select
                   value={pixKeyType}
                   onChange={(e) => setPixKeyType(e.target.value)}
-                  className="w-full h-11 rounded-xl border border-border/60 bg-background text-xs px-3 font-medium"
+                  className="w-full h-11 rounded-lg border border-border/60 bg-background text-xs px-3 font-medium"
                 >
                   <option value="cpf_cnpj">CPF / CNPJ</option>
                   <option value="email">E-mail</option>
@@ -233,34 +233,34 @@ function CustomerInstallmentsPage() {
                 </select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Chave PIX *</Label>
                 <Input
                   placeholder="Ex: 000.000.000-00, seuemail@dominio.com ou (49) 99999-9999"
                   value={pixKey}
                   onChange={(e) => setPixKey(e.target.value)}
-                  className="h-11 rounded-xl text-xs bg-background font-mono"
+                  className="h-11 rounded-lg text-xs bg-background font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Nome do Titular / Favorecido *</Label>
                 <Input
                   placeholder="Nome completo de quem vai receber o valor"
                   value={pixReceiverName}
                   onChange={(e) => setPixReceiverName(e.target.value)}
-                  className="h-11 rounded-xl text-xs bg-background"
+                  className="h-11 rounded-lg text-xs bg-background"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Instruções para o Comprador (Opcional)</Label>
                 <Textarea
                   placeholder="Ex: Após a transferência, envie o comprovante diretamente pelo chat ou WhatsApp para liberação imediata."
                   value={paymentInstructions}
                   onChange={(e) => setPaymentInstructions(e.target.value)}
                   rows={3}
-                  className="text-xs bg-background resize-none rounded-xl"
+                  className="text-xs bg-background resize-none rounded-lg"
                 />
               </div>
 
@@ -268,7 +268,7 @@ function CustomerInstallmentsPage() {
                 type="button"
                 onClick={() => savePixMutation.mutate()}
                 disabled={savePixMutation.isPending || !pixKey.trim()}
-                className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2 cursor-pointer transition-all active:scale-[0.99]"
+                className="w-full h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2 cursor-pointer transition-all active:scale-[0.99]"
               >
                 {savePixMutation.isPending ? (
                   <>
@@ -299,7 +299,7 @@ function CustomerInstallmentsPage() {
                   <CreditCard className="size-4 text-primary" />
                   Pagamentos de Pedidos
                 </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Histórico de transações dos seus pedidos recentes.
                 </p>
               </div>
@@ -318,7 +318,7 @@ function CustomerInstallmentsPage() {
                         <span className="font-mono text-xs font-semibold text-foreground">
                           #{order.public_token}
                         </span>
-                        <Badge variant={statusInfo.variant} className="text-[10px] px-2 py-0.5">
+                        <Badge variant={statusInfo.variant} className="text-[10px] px-2 py-1">
                           {statusInfo.label}
                         </Badge>
                       </div>
@@ -351,7 +351,7 @@ function CustomerInstallmentsPage() {
               </div>
 
               {/* Desktop View: Table */}
-              <div className="hidden md:block rounded-2xl border border-border/60 overflow-hidden bg-card">
+              <div className="hidden md:block rounded-lg border border-border/60 overflow-hidden bg-card">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -379,7 +379,7 @@ function CustomerInstallmentsPage() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button asChild size="sm" variant="outline" className="h-8 text-xs rounded-xl">
+                            <Button asChild size="sm" variant="outline" className="h-8 text-xs rounded-lg">
                               <Link to="/conta/pedidos" search={{ orderId: order.id } as any}>
                                 Detalhes
                               </Link>
@@ -402,20 +402,20 @@ function CustomerInstallmentsPage() {
                   <Handshake className="size-4 text-primary" />
                   Contratos e Parcelas de Negociações
                 </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Parcelas decorrentes de contratos, acordos de aluguel ou compras diretas.
                 </p>
               </div>
 
               <div className="space-y-4">
                 {safeReceivables.map((rec: any) => (
-                  <div key={rec.id} className="bg-card border-y border-border/40 sm:border sm:rounded-2xl overflow-hidden">
+                  <div key={rec.id} className="bg-card border-y border-border/40 sm:border sm:rounded-lg overflow-hidden">
                     <div className="flex flex-row items-center justify-between p-4 bg-muted/20 border-b border-border/40">
                       <div>
                         <h3 className="text-sm font-bold text-foreground">
                           {rec.contract?.title || rec.title || "Contrato de Negociação"}
                         </h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Total: <strong className="text-foreground">{formatMoney(rec.total_amount_cents)}</strong> • {rec.total_installments} parcelas
                         </p>
                       </div>
@@ -439,8 +439,8 @@ function CustomerInstallmentsPage() {
                         const isLate = inst.status === "pending" && new Date(inst.due_date) < new Date();
                         const isPaid = inst.status === "paid";
                         return (
-                          <div key={inst.id} className="p-3.5 flex items-center justify-between gap-3 text-xs">
-                            <div className="space-y-0.5">
+                          <div key={inst.id} className="p-4 flex items-center justify-between gap-3 text-xs">
+                            <div className="space-y-1">
                               <p className="font-medium text-foreground">
                                 {inst.installment_number}ª Parcela • {formatDate(inst.due_date)}
                               </p>
@@ -465,7 +465,7 @@ function CustomerInstallmentsPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleOpenPay(inst)}
-                                  className="h-8 text-xs font-semibold rounded-xl"
+                                  className="h-8 text-xs font-semibold rounded-lg"
                                 >
                                   Quitar
                                 </Button>
@@ -517,7 +517,7 @@ function CustomerInstallmentsPage() {
                                       size="sm"
                                       variant="outline"
                                       onClick={() => handleOpenPay(inst)}
-                                      className="h-8 text-xs font-semibold rounded-xl"
+                                      className="h-8 text-xs font-semibold rounded-lg"
                                     >
                                       Quitar Parcela
                                     </Button>
@@ -543,20 +543,20 @@ function CustomerInstallmentsPage() {
                   <Receipt className="size-4 text-primary" />
                   Carnês e Crediário
                 </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Parcelamentos ativos via crediário e faturas de carnê.
                 </p>
               </div>
 
               <div className="space-y-4">
                 {safePlans.map((plan: any) => (
-                  <div key={plan.id} className="bg-card border-y border-border/40 sm:border sm:rounded-2xl overflow-hidden">
+                  <div key={plan.id} className="bg-card border-y border-border/40 sm:border sm:rounded-lg overflow-hidden">
                     <div className="flex flex-row items-center justify-between p-4 bg-muted/20 border-b border-border/40">
                       <div>
                         <h3 className="text-sm font-bold text-foreground">
                           Pedido #{plan.orderToken}
                         </h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Gerado em {formatDate(plan.createdAt)} — Total: {formatMoney(plan.totalCents)}
                         </p>
                       </div>
@@ -579,7 +579,7 @@ function CustomerInstallmentsPage() {
                         {plan.installments.map((inst: any, idx: number) => {
                           const isLate = inst.status === "pending" && new Date(inst.dueDate) < new Date();
                           return (
-                            <div key={inst.id} className="py-2.5 flex items-center justify-between text-xs">
+                            <div key={inst.id} className="py-3 flex items-center justify-between text-xs">
                               <div>
                                 <p className="font-medium text-foreground">{idx + 1}ª Parcela • {formatDate(inst.dueDate)}</p>
                                 <p className="font-mono font-semibold">{formatMoney(inst.amountCents)}</p>
@@ -641,7 +641,7 @@ function CustomerInstallmentsPage() {
       {/* Modal de Quitação de Parcela (16px Mandate para evitar iOS Zoom) */}
       {selectedInstallment && (
         <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
-          <DialogContent className="sm:max-w-md rounded-2xl p-5 sm:p-6">
+          <DialogContent className="sm:max-w-md rounded-lg p-5 sm:p-6">
             <DialogHeader className="space-y-1">
               <DialogTitle className="text-base font-bold text-foreground">
                 Quitar {selectedInstallment.installment_number}ª Parcela
@@ -656,7 +656,7 @@ function CustomerInstallmentsPage() {
             </DialogHeader>
 
             <div className="space-y-4 py-2">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">
                   Comprovante de Pagamento (Foto / Anexo)
                 </Label>
@@ -671,14 +671,14 @@ function CustomerInstallmentsPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Observações / Código da Transação</Label>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Ex: Pago via PIX pelo banco às 14:30"
                   rows={3}
-                  className="rounded-xl text-base sm:text-xs bg-background resize-none"
+                  className="rounded-lg text-base sm:text-xs bg-background resize-none"
                 />
               </div>
 
@@ -688,7 +688,7 @@ function CustomerInstallmentsPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setPaymentModalOpen(false)}
-                  className="rounded-xl text-xs h-10 px-4"
+                  className="rounded-lg text-xs h-10 px-4"
                 >
                   Cancelar
                 </Button>
@@ -697,7 +697,7 @@ function CustomerInstallmentsPage() {
                   type="button"
                   onClick={handleConfirmPay}
                   disabled={payInstallmentMutation.isPending}
-                  className="rounded-xl text-xs font-bold gap-1.5 h-10 px-4 bg-primary text-primary-foreground"
+                  className="rounded-lg text-xs font-bold gap-2 h-10 px-4 bg-primary text-primary-foreground"
                 >
                   {payInstallmentMutation.isPending ? (
                     <>

@@ -116,7 +116,7 @@ export function BannerHeroCarousel({
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-2xl bg-card group select-none ${className}`}
+      className={`relative w-full overflow-hidden rounded-lg bg-card group select-none ${className}`}
       onMouseEnter={() => setIsPlaying(false)}
       onMouseLeave={() => setIsPlaying(true)}
       onTouchStart={handleTouchStart}
@@ -141,9 +141,9 @@ export function BannerHeroCarousel({
             currentBanner.badge_text ||
             currentBanner.cta_label) && (
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent sm:bg-gradient-to-r sm:from-black/90 sm:via-black/50 sm:to-transparent flex flex-col justify-end sm:justify-center p-4 sm:p-8 lg:p-12 text-white pointer-events-none z-10">
-              <div className="max-w-xl space-y-1.5 sm:space-y-3 z-10 pointer-events-auto">
+              <div className="max-w-xl space-y-2 sm:space-y-3 z-10 pointer-events-auto">
                 {currentBanner.show_badge === true && currentBanner.badge_text && (
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-xs font-bold uppercase tracking-wider text-white border border-white/30">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-xs font-bold uppercase tracking-wider text-white border border-white/30">
                     <Layers className="size-3 text-amber-300" />
                     <span>{currentBanner.badge_text}</span>
                   </div>
@@ -162,10 +162,10 @@ export function BannerHeroCarousel({
                 )}
 
                 {currentBanner.show_cta === true && (
-                  <div className="pt-1.5 sm:pt-2">
+                  <div className="pt-2 sm:pt-2">
                     <Link
                       to={targetLink as any}
-                      className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl bg-white text-black font-bold text-xs sm:text-sm hover:bg-zinc-100 hover:scale-105 active:scale-95 transition-all"
+                      className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-3 rounded-lg sm:rounded-lg bg-white text-black font-bold text-xs sm:text-sm hover:bg-zinc-100 hover:scale-105 active:scale-95 transition-all"
                     >
                       <span>{currentBanner.cta_label || "Conferir"}</span>
                       <ArrowRight className="size-3.5 sm:size-4" />
@@ -195,7 +195,7 @@ export function BannerHeroCarousel({
             </button>
 
             {/* Indicadores de Paginação Suaves (Dots) */}
-            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20 pointer-events-none">
+            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20 pointer-events-none">
               {activeBanners.map((_, i) => (
                 <span
                   key={i}

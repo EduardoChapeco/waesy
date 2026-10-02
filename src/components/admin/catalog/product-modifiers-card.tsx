@@ -69,14 +69,14 @@ export function ProductModifiersCard({
  };
 
  return (
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/60 ">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/60 ">
  {/* CABEÇALHO */}
  <div className="flex items-center justify-between gap-3">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <SlidersHorizontal className="size-4 text-primary" />
  <span>Adicionais e Modificadores</span>
  {groups.length > 0 && (
- <Badge variant="secondary" className="text-[10px] font-mono px-1.5 py-0 h-4.5">
+ <Badge variant="secondary" className="text-[10px] font-mono px-2 py-0 h-4.5">
  {selectedGroupIds.length}/{groups.length} ativos
  </Badge>
  )}
@@ -88,7 +88,7 @@ export function ProductModifiersCard({
  variant="outline"
  size="sm"
  onClick={handleCreateNew}
- className="h-7 text-xs gap-1.5 font-medium border-dashed text-primary hover:text-primary hover:bg-primary/5"
+ className="h-7 text-xs gap-2 font-medium border-dashed text-primary hover:text-primary hover:bg-primary/5"
  >
  <Plus className="size-3.5" />
  Novo Grupo
@@ -111,7 +111,7 @@ export function ProductModifiersCard({
 
  {/* CONTEÚDO PRINCIPAL: LISTA OU EMPTY STATE PROATIVO */}
  {groups.length > 0 ? (
- <div className="grid grid-cols-1 gap-2.5 pt-1">
+ <div className="grid grid-cols-1 gap-3 pt-1">
  {groups.map((grp: any) => {
  const isChecked = selectedGroupIds.includes(grp.id);
  const values = grp.values || [];
@@ -121,14 +121,14 @@ export function ProductModifiersCard({
  key={grp.id}
  onClick={() => toggleGroup(grp.id)}
  className={cn(
- "relative flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all text-xs select-none group",
+ "relative flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all text-xs select-none group",
  isChecked
  ? "border-primary/80 bg-primary/[0.03] text-foreground shadow-xs ring-1 ring-primary/20"
  : "border-border/80 bg-background text-muted-foreground hover:border-foreground/30 hover:bg-muted/20",
  )}
  >
  {/* CHECKBOX */}
- <div className="pt-0.5">
+ <div className="pt-1">
  <input
  type="checkbox"
  className="rounded border-border text-primary focus:ring-primary size-4.5 cursor-pointer accent-primary"
@@ -147,11 +147,11 @@ export function ProductModifiersCard({
  </div>
 
  {/* REGRAS & BADGES */}
- <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+ <div className="flex flex-wrap items-center gap-2 text-[10px]">
  <Badge
  variant={grp.is_required ? "default" : "secondary"}
  className={cn(
- "text-[9px] px-1.5 py-0 h-4 font-semibold uppercase tracking-wider",
+ "text-[9px] px-2 py-0 h-4 font-semibold uppercase tracking-wider",
  grp.is_required ? "bg-warning text-warning-foreground hover:bg-warning/90" : "text-muted-foreground",
  )}
  >
@@ -177,7 +177,7 @@ export function ProductModifiersCard({
  {values.slice(0, 4).map((val: any) => (
  <span
  key={val.id || val.label}
- className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/60 text-[10px] text-muted-foreground font-medium"
+ className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/60 text-[10px] text-muted-foreground font-medium"
  >
  <span>{val.label}</span>
  {val.price_modifier_cents > 0 && (
@@ -201,7 +201,7 @@ export function ProductModifiersCard({
  type="button"
  onClick={(e) => handleEdit(grp, e)}
  title="Editar este grupo de adicionais"
- className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors opacity-80 group-hover:opacity-100"
+ className="absolute top-3 right-3 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors opacity-80 group-hover:opacity-100"
  >
  <Edit2 className="size-3.5" />
  </button>
@@ -213,9 +213,9 @@ export function ProductModifiersCard({
  /* EMPTY STATE PROATIVO COM BOTÃO '+' CENTRAL */
  <div
  onClick={handleCreateNew}
- className="group relative flex flex-col items-center justify-center p-8 text-center rounded-2xl border-2 border-dashed border-border/80 hover:border-primary/50 bg-muted/10 hover:bg-primary/[0.02] cursor-pointer transition-all space-y-3"
+ className="group relative flex flex-col items-center justify-center p-8 text-center rounded-lg border-2 border-dashed border-border/80 hover:border-primary/50 bg-muted/10 hover:bg-primary/[0.02] cursor-pointer transition-all space-y-3"
  >
- <div className="size-12 rounded-2xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center text-primary transition-all group-hover:scale-110 shadow-xs ring-4 ring-primary/5">
+ <div className="size-12 rounded-lg bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center text-primary transition-all group-hover:scale-110 shadow-xs ring-4 ring-primary/5">
  <Plus className="size-6 stroke-[2.5]" />
  </div>
 
@@ -236,7 +236,7 @@ export function ProductModifiersCard({
  e.stopPropagation();
  handleCreateNew();
  }}
- className="h-8 text-xs font-bold gap-1.5 shadow-xs"
+ className="h-8 text-xs font-bold gap-2 shadow-xs"
  >
  <Plus className="size-3.5" />
  Adicionar Rapidamente

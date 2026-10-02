@@ -10,9 +10,9 @@ export interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
 const Table = React.forwardRef<HTMLTableElement, TableProps>(
   ({ className, windowVariant = "auto", ...props }, ref) => {
     const containerClasses = {
-      compact: "relative w-full overflow-x-auto no-scrollbar snap-x rounded-xl border border-border/60",
-      expanded: "relative w-full overflow-x-auto rounded-2xl border border-border/50",
-      auto: "relative w-full overflow-x-auto no-scrollbar sm:overflow-visible rounded-xl sm:rounded-2xl border border-border/50",
+      compact: "relative w-full overflow-x-auto no-scrollbar snap-x rounded-lg border border-border/60",
+      expanded: "relative w-full overflow-x-auto rounded-lg border border-border/50",
+      auto: "relative w-full overflow-x-auto no-scrollbar sm:overflow-visible rounded-lg sm:rounded-lg border border-border/50",
     }[windowVariant];
 
     const tableTypography = {
@@ -107,7 +107,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "px-3 py-2.5 sm:py-2 align-middle text-foreground [&:has([role=checkbox])]:pr-0",
+      "px-3 py-3 sm:py-2 align-middle text-foreground [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}

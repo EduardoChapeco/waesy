@@ -426,13 +426,13 @@ export function PostCreationDrawer({
 
  return (
  <Drawer open={open} onOpenChange={onOpenChange}>
- <DrawerContent className="h-[100dvh] max-h-[100dvh] rounded-none sm:rounded-2xl sm:h-auto sm:max-h-[90vh] border-none sm: bg-background p-0 flex flex-col overflow-hidden max-w-2xl mx-auto ">
+ <DrawerContent className="h-[100dvh] max-h-[100dvh] rounded-none sm:rounded-lg sm:h-auto sm:max-h-[90vh] border-none sm: bg-background p-0 flex flex-col overflow-hidden max-w-2xl mx-auto ">
  {/* ── Top Header Fixo (Silêncio Operacional) ── */}
  <DrawerHeader className="p-4 flex items-center justify-between shrink-0 bg-background/95 backdrop-blur-md">
  <div className="flex items-center gap-3">
  <button
  onClick={() => onOpenChange(false)}
- className="size-10 rounded-xl flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-10 rounded-lg flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
  aria-label="Fechar"
  >
  <X size={20} weight="bold" />
@@ -445,7 +445,7 @@ export function PostCreationDrawer({
  <Button
  onClick={handlePublish}
  disabled={isSubmitting || isUploadingMedia}
- className="bg-primary text-primary-foreground font-bold rounded-xl h-10 sm:h-11 px-6 text-sm hover:scale-102 active:scale-98 transition-all shadow-xs cursor-pointer"
+ className="bg-primary text-primary-foreground font-bold rounded-lg h-10 sm:h-11 px-6 text-sm hover:scale-102 active:scale-98 transition-all shadow-xs cursor-pointer"
  >
  {isSubmitting ? (
  <>
@@ -469,7 +469,7 @@ export function PostCreationDrawer({
  key={fmt.id}
  type="button"
  onClick={() => setActiveFormat(fmt.id)}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-[38px] ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-[38px] ${
  isActive
  ? "bg-foreground text-background shadow-xs scale-102"
  : "bg-card text-muted-foreground hover:text-foreground hover:bg-card/80 border border-border/50"
@@ -495,7 +495,7 @@ export function PostCreationDrawer({
  </Avatar>
  <div>
  <p className="text-xs font-bold text-foreground leading-none">{userName}</p>
- <p className="text-[11px] text-muted-foreground mt-0.5">Mural Comunitário</p>
+ <p className="text-[11px] text-muted-foreground mt-1">Mural Comunitário</p>
  </div>
  </div>
 
@@ -519,11 +519,11 @@ export function PostCreationDrawer({
 
  {/* Previews de Mídia */}
  {mediaPreviews.length > 0 && (
- <div className="grid grid-cols-3 gap-2.5 pt-2">
+ <div className="grid grid-cols-3 gap-3 pt-2">
  {mediaPreviews.map((media, idx) => (
  <div
  key={idx}
- className="relative aspect-square rounded-2xl overflow-hidden bg-muted/40 group"
+ className="relative aspect-square rounded-lg overflow-hidden bg-muted/40 group"
  >
  {media.type === "video" ? (
  <video
@@ -561,10 +561,10 @@ export function PostCreationDrawer({
  {threadNodes.map((node, index) => (
  <div
  key={node.id}
- className="p-3.5 rounded-2xl bg-card space-y-2 relative "
+ className="p-4 rounded-lg bg-card space-y-2 relative "
  >
  <div className="flex items-center justify-between text-xs text-muted-foreground font-bold">
- <span className="flex items-center gap-1.5 text-primary">
+ <span className="flex items-center gap-2 text-primary">
  <span className="size-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px]">
  {index + 1}
  </span>
@@ -595,7 +595,7 @@ export function PostCreationDrawer({
  variant="outline"
  size="sm"
  onClick={handleAddThreadNode}
- className="w-full rounded-xl text-xs font-bold border-dashed border-border gap-1.5 h-10 hover:border-primary/50"
+ className="w-full rounded-lg text-xs font-bold border-dashed border-border gap-2 h-10 hover:border-primary/50"
  >
  <Plus size={14} weight="bold" /> Adicionar Card à Sequência
  </Button>
@@ -604,8 +604,8 @@ export function PostCreationDrawer({
  </div>
 
  {/* ── Barra Inferior de Ações e Anexos ── */}
- <div className="p-3.5 sm:p-4 bg-background/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-2.5 shrink-0 border-t border-border/50">
- <div className="flex flex-wrap items-center gap-2.5">
+ <div className="p-4 sm:p-4 bg-background/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-3 shrink-0 border-t border-border/50">
+ <div className="flex flex-wrap items-center gap-3">
  <input
  ref={fileInputRef}
  type="file"
@@ -618,7 +618,7 @@ export function PostCreationDrawer({
  variant="outline"
  onClick={() => fileInputRef.current?.click()}
  disabled={isUploadingMedia || mediaPreviews.length >= 6}
- className="rounded-xl text-sm font-semibold h-11 gap-2 px-4 cursor-pointer shadow-2xs"
+ className="rounded-lg text-sm font-semibold h-11 gap-2 px-4 cursor-pointer shadow-2xs"
  >
  {isUploadingMedia ? (
  <>
@@ -642,14 +642,14 @@ export function PostCreationDrawer({
  type="button"
  variant="outline"
  onClick={handleInsertHighlight}
- className="rounded-xl text-sm font-semibold h-11 gap-2 px-4 hover:bg-amber-300/20 hover:text-amber-800 dark:hover:text-amber-200 transition-colors cursor-pointer shadow-2xs"
+ className="rounded-lg text-sm font-semibold h-11 gap-2 px-4 hover:bg-amber-300/20 hover:text-amber-800 dark:hover:text-amber-200 transition-colors cursor-pointer shadow-2xs"
  title="Destacar com marca-texto estilo Threads (==texto==)"
  >
  <Highlighter size={18} className="text-amber-500" />
  <span>Destaque</span>
  </Button>
 
- <div className="flex items-center gap-2 bg-muted/40 px-3.5 h-11 rounded-xl border border-border/40">
+ <div className="flex items-center gap-2 bg-muted/40 px-4 h-11 rounded-lg border border-border/40">
  <MapPin size={16} className="text-muted-foreground shrink-0" />
  <Input
  value={locationName}

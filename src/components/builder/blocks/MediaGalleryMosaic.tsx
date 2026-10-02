@@ -30,9 +30,9 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
     sm: "rounded-sm",
     md: "rounded-md",
     lg: "rounded-lg",
-    xl: "rounded-xl",
-    "2xl": "rounded-2xl",
-    full: "rounded-3xl",
+    xl: "rounded-lg",
+    "2xl": "rounded-lg",
+    full: "rounded-lg",
   }[styling?.borderRadius || "xl"];
 
   const customStyle: React.CSSProperties = {
@@ -67,8 +67,8 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
 
         {/* Grade Mosaico Dinâmica ou Estado Vazio Honesto */}
         {items.length === 0 ? (
-          <div className="rounded-3xl border-2 border-dashed border-border/80 p-12 text-center flex flex-col items-center justify-center bg-muted/10">
-            <div className="size-14 rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
+          <div className="rounded-lg border-2 border-dashed border-border/80 p-12 text-center flex flex-col items-center justify-center bg-muted/10">
+            <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
               <ImageIcon className="size-7" />
             </div>
             <h3 className="text-sm font-bold text-foreground">Galeria de Mídia Pronta</h3>
@@ -127,7 +127,7 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
           <img
             src={selectedImage}
             alt="Visualização ampliada"
-            className="max-w-full max-h-[85vh] rounded-2xl object-contain shadow-2xl"
+            className="max-w-full max-h-[85vh] rounded-lg object-contain shadow-2xl"
           />
         </div>
       )}

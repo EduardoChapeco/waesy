@@ -295,7 +295,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5 border-border bg-card hover:bg-muted"
+ className="rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
  >
  <Link to="/workspace/turismo/grupos">
  <Users className="size-3.5 text-primary" />
@@ -305,7 +305,7 @@ function AdminOrdersPage() {
  <Button
  asChild
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground"
+ className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
  >
  <Link to="/workspace/turismo/propostas" search={{ new: true }}>
  <Layers className="size-3.5" />
@@ -317,7 +317,7 @@ function AdminOrdersPage() {
  <Button
  asChild
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground"
+ className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
  >
  <Link to="/workspace/agenda">
  <Calendar className="size-3.5" />
@@ -329,7 +329,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5 border-border bg-card hover:bg-muted"
+ className="rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
  >
  <Link to="/workspace/pdv">
  <Store className="size-3.5 text-primary" />
@@ -346,14 +346,14 @@ function AdminOrdersPage() {
  variant="outline"
  size="sm"
  onClick={() => setSoundEnabled(!soundEnabled)}
- className={`rounded-xl text-xs gap-1.5 font-bold ${soundEnabled ? "border-primary/40 text-primary" : "text-muted-foreground"}`}
+ className={`rounded-lg text-xs gap-2 font-bold ${soundEnabled ? "border-primary/40 text-primary" : "text-muted-foreground"}`}
  >
  {soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
  <span>{soundEnabled ? "Notificações On" : "Mudo"}</span>
  </Button>
 
  {availableViewModes.length > 1 && (
- <div className="flex items-center rounded-xl p-0.5 bg-muted/40 border border-border/60 overflow-x-auto no-scrollbar max-w-full">
+ <div className="flex items-center rounded-lg p-1 bg-muted/40 border border-border/60 overflow-x-auto no-scrollbar max-w-full">
  {availableViewModes.map((mode) => {
  const Icon = mode.icon;
  const isActive = viewMode === mode.id;
@@ -361,7 +361,7 @@ function AdminOrdersPage() {
  <button
  key={mode.id}
  onClick={() => setViewMode(mode.id)}
- className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+ className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
  isActive
  ? "bg-card text-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground"
@@ -382,7 +382,7 @@ function AdminOrdersPage() {
  <div className="space-y-4">
  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
  {/* Coluna 1: Novas Reservas & Pendentes de Pagamento */}
- <div className="space-y-3 p-4 rounded-2xl border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
  <div className="space-y-3">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
@@ -408,7 +408,7 @@ function AdminOrdersPage() {
  return (
  <div
  key={order.id}
- className="p-4 rounded-2xl border border-border bg-card space-y-3 hover:border-primary/50 transition-colors shadow-2xs"
+ className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors shadow-2xs"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -423,7 +423,7 @@ function AdminOrdersPage() {
  <p className="font-bold text-xs text-foreground mt-1">
  {order.customer_snapshot?.name || "Passageiro Titular"}
  </p>
- <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+ <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
  {firstItem}
  </p>
  </div>
@@ -432,7 +432,7 @@ function AdminOrdersPage() {
  <span className="text-xs font-black text-foreground">
  {formatMoney(order.total_cents)}
  </span>
- <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground mt-0.5">
+ <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground mt-1">
  <Clock className="size-3" />
  <span>Hoje</span>
  </div>
@@ -444,7 +444,7 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleQuickApprove(order.id)}
  disabled={isProcessing}
- className="flex-1 rounded-xl font-bold bg-foreground text-background text-xs h-9"
+ className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-9"
  >
  Confirmar Reserva
  </Button>
@@ -453,7 +453,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-xl shrink-0"
+ className="size-9 rounded-lg shrink-0"
  title="WhatsApp do Cliente"
  >
  <a
@@ -469,7 +469,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-xl shrink-0"
+ className="size-9 rounded-lg shrink-0"
  title="Ver Ficha do Passageiro"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -486,7 +486,7 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 2: Em Emissão (Aéreo & Hospedagem) */}
- <div className="space-y-3 p-4 rounded-2xl border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
  <div className="space-y-3">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
@@ -511,7 +511,7 @@ function AdminOrdersPage() {
  return (
  <div
  key={order.id}
- className="p-4 rounded-2xl border border-border bg-card space-y-3 hover:border-primary/50 transition-colors shadow-2xs"
+ className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors shadow-2xs"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -519,14 +519,14 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  #{order.public_token || order.id.slice(0, 6)}
  </span>
- <span className="inline-block px-1.5 py-0.5 rounded text-xs font-bold bg-primary/10 text-primary uppercase">
+ <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-primary/10 text-primary uppercase">
  Emitindo Bilhetes
  </span>
  </div>
  <p className="font-bold text-xs text-foreground mt-1">
  {order.customer_snapshot?.name || "Passageiro"}
  </p>
- <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+ <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
  {firstItem}
  </p>
  </div>
@@ -541,7 +541,7 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
  disabled={isProcessing}
- className="flex-1 rounded-xl font-bold bg-primary text-primary-foreground text-xs h-9 gap-1"
+ className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-9 gap-1"
  >
  <span>Liberar Voucher</span>
  <ArrowRight className="size-3.5" />
@@ -550,7 +550,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-xl shrink-0"
+ className="size-9 rounded-lg shrink-0"
  title="Imprimir Contrato"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
@@ -567,7 +567,7 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 3: Vouchers Emitidos & Prontos p/ Embarque */}
- <div className="space-y-3 p-4 rounded-2xl border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
  <div className="space-y-3">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
@@ -588,7 +588,7 @@ function AdminOrdersPage() {
  readyOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-2xl border border-border bg-card space-y-3 shadow-2xs"
+ className="p-4 rounded-lg border border-border bg-card space-y-3 shadow-2xs"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -596,7 +596,7 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  #{order.public_token || order.id.slice(0, 6)}
  </span>
- <span className="inline-block px-1.5 py-0.5 rounded text-xs font-bold bg-emerald-500/10 text-emerald-600 uppercase">
+ <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-emerald-500/10 text-emerald-600 uppercase">
  Pronto p/ Embarque
  </span>
  </div>
@@ -616,7 +616,7 @@ function AdminOrdersPage() {
  variant="outline"
  onClick={() => handleStatusChange(order.id, "delivered")}
  disabled={isProcessing}
- className="flex-1 rounded-xl font-bold text-xs h-9 border-success/40 text-success hover:bg-success/10"
+ className="flex-1 rounded-lg font-bold text-xs h-9 border-success/40 text-success hover:bg-success/10"
  >
  <CheckCircle2 className="size-3.5 mr-1" />
  Concluir Viagem
@@ -625,7 +625,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-xl shrink-0"
+ className="size-9 rounded-lg shrink-0"
  title="Ver Voucher Digital"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -641,7 +641,7 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 4: Viagens Concluídas & Pós-Venda */}
- <div className="space-y-3 p-4 rounded-2xl border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
  <div className="space-y-3">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
@@ -662,14 +662,14 @@ function AdminOrdersPage() {
  completedOrders.slice(0, 5).map((order) => (
  <div
  key={order.id}
- className="p-3.5 rounded-2xl border border-border bg-card space-y-2 opacity-90 hover:opacity-100 transition-opacity"
+ className="p-4 rounded-lg border border-border bg-card space-y-2 opacity-90 hover:opacity-100 transition-opacity"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
  <span className="font-mono font-bold text-xs text-muted-foreground">
  {order.order_number || ("#" + (order.public_token || order.id.slice(0, 6)))}
  </span>
- <p className="font-bold text-xs text-foreground mt-0.5">
+ <p className="font-bold text-xs text-foreground mt-1">
  {order.customer_snapshot?.name || "Passageiro"}
  </p>
  </div>
@@ -700,7 +700,7 @@ function AdminOrdersPage() {
  {viewMode === "kitchen" && isGastro ? (
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
  {/* Coluna 1: Novos Pedidos */}
- <div className="space-y-3 p-4 rounded-2xl border border-border/70 bg-card/60">
+ <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-destructive animate-pulse" />
@@ -720,7 +720,7 @@ function AdminOrdersPage() {
  newOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-2xl border border-border bg-card space-y-3 hover:border-primary/50 transition-colors"
+ className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -732,7 +732,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-xs font-bold bg-primary/10 text-primary uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-primary/10 text-primary uppercase">
  {order.shipping_method === "pickup" ? "Retirada Balcão" : "Entrega Parceira"}
  </span>
  </div>
@@ -741,7 +741,7 @@ function AdminOrdersPage() {
  <span className="text-xs font-black text-foreground">
  {formatMoney(order.total_cents)}
  </span>
- <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+ <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
  <Clock className="size-3" />
  <span>Hoje</span>
  </div>
@@ -753,7 +753,7 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleQuickApprove(order.id)}
  disabled={isProcessing}
- className="flex-1 rounded-xl font-bold bg-foreground text-background text-xs h-9"
+ className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-9"
  >
  Aceitar Pedido
  </Button>
@@ -761,7 +761,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-xl shrink-0"
+ className="size-9 rounded-lg shrink-0"
  title="Ver Comanda"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
@@ -776,7 +776,7 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 2: Em Preparo na Cozinha */}
- <div className="space-y-3 p-4 rounded-2xl border border-border/70 bg-card/60">
+ <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-amber-500" />
@@ -796,7 +796,7 @@ function AdminOrdersPage() {
  processingOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-2xl border border-border bg-card space-y-3 hover:border-primary/50 transition-colors"
+ className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -808,7 +808,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-xs font-bold bg-amber-500/10 text-amber-600 uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-amber-500/10 text-amber-600 uppercase">
  Cozinha Produzindo
  </span>
  </div>
@@ -828,7 +828,7 @@ function AdminOrdersPage() {
  )
  }
  disabled={isProcessing}
- className="flex-1 rounded-xl font-bold bg-primary text-primary-foreground text-xs h-9 gap-1"
+ className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-9 gap-1"
  >
  <span>Pronto p/ Despacho</span>
  <ArrowRight className="size-3.5" />
@@ -837,7 +837,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-xl shrink-0"
+ className="size-9 rounded-lg shrink-0"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
  <Printer className="size-4" />
@@ -848,7 +848,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-xl shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10"
+ className="size-9 rounded-lg shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10"
  title="Baixar DANFE (PDF da Nota Fiscal)"
  >
  <a href={(order as any).danfe_pdf_url} target="_blank" rel="noopener noreferrer">
@@ -864,7 +864,7 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 3: Prontos / Em Rota */}
- <div className="space-y-3 p-4 rounded-2xl border border-border/70 bg-card/60">
+ <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-emerald-500" />
@@ -884,7 +884,7 @@ function AdminOrdersPage() {
  readyOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-2xl border border-border bg-card space-y-3"
+ className="p-4 rounded-lg border border-border bg-card space-y-3"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -896,7 +896,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-600 uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-600 uppercase">
  {order.status === "ready_for_pickup"
  ? "Aguardando Retirada"
  : "Entregador a Caminho"}
@@ -914,7 +914,7 @@ function AdminOrdersPage() {
  variant="outline"
  onClick={() => handleStatusChange(order.id, "delivered")}
  disabled={isProcessing}
- className="flex-1 rounded-xl font-bold text-xs h-9 border-success/40 text-success hover:bg-success/10"
+ className="flex-1 rounded-lg font-bold text-xs h-9 border-success/40 text-success hover:bg-success/10"
  >
  Confirmar Entrega
  </Button>
@@ -922,7 +922,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-xl shrink-0"
+ className="size-9 rounded-lg shrink-0"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
  <Eye className="size-4" />
@@ -940,9 +940,9 @@ function AdminOrdersPage() {
  {/* ── MODO 3: SEPARAÇÃO & PICKING WMS (EXCLUSIVO PARA VAREJO / MERCADO) ── */}
  {viewMode === "picking" && isRetail ? (
  <div className="space-y-6">
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border">
  <div className="flex items-center gap-3">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
  <ShoppingBag className="size-5" />
  </div>
  <div>
@@ -962,7 +962,7 @@ function AdminOrdersPage() {
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {[...newOrders, ...processingOrders].length === 0 ? (
- <div className="col-span-2 py-16 text-center space-y-2 bg-muted/10 rounded-2xl p-8">
+ <div className="col-span-2 py-16 text-center space-y-2 bg-muted/10 rounded-lg p-8">
  <PackageCheck className="size-10 text-muted-foreground/40 mx-auto" />
  <p className="text-sm font-bold text-foreground">Todos os pedidos foram separados!</p>
  <p className="text-xs text-muted-foreground">Nenhuma encomenda pendente de conferência no momento.</p>
@@ -978,7 +978,7 @@ function AdminOrdersPage() {
  return (
  <div
  key={order.id}
- className="p-5 rounded-2xl bg-card border border-border space-y-4 flex flex-col justify-between"
+ className="p-5 rounded-lg bg-card border border-border space-y-4 flex flex-col justify-between"
  >
  <div className="space-y-3">
  <div className="flex items-start justify-between gap-3 pb-3 border-b border-border/40">
@@ -1003,7 +1003,7 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  {formatMoney(order.total_cents)}
  </span>
- <p className="text-xs text-muted-foreground font-mono mt-0.5">
+ <p className="text-xs text-muted-foreground font-mono mt-1">
  {checkedCount}/{totalItems} itens conferidos
  </p>
  </div>
@@ -1024,13 +1024,13 @@ function AdminOrdersPage() {
  [itemKey]: !prev[itemKey],
  }))
  }
- className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer select-none ${
+ className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer select-none ${
  isChecked
  ? "bg-emerald-500/10 border-emerald-500/30 text-foreground"
  : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/60"
  }`}
  >
- <div className="flex items-center gap-2.5 min-w-0">
+ <div className="flex items-center gap-3 min-w-0">
  <div
  className={`size-5 rounded-md border flex items-center justify-center transition-colors shrink-0 ${
  isChecked
@@ -1077,7 +1077,7 @@ function AdminOrdersPage() {
  );
  })
  ) : (
- <div className="p-3 bg-muted/20 rounded-xl text-xs text-muted-foreground text-center">
+ <div className="p-3 bg-muted/20 rounded-lg text-xs text-muted-foreground text-center">
  Ver detalhes do pedido na comanda
  </div>
  )}
@@ -1089,13 +1089,13 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
  disabled={isProcessing}
- className={`flex-1 rounded-xl font-bold text-xs h-10 transition-all ${
+ className={`flex-1 rounded-lg font-bold text-xs h-10 transition-all ${
  isAllChecked
  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
  : "bg-foreground text-background"
  }`}
  >
- <CheckCircle2 className="size-4 mr-1.5" />
+ <CheckCircle2 className="size-4 mr-2" />
  <span>
  {isAllChecked
  ? "Concluir Separação & Despachar"
@@ -1107,7 +1107,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-10 rounded-xl shrink-0"
+ className="size-10 rounded-lg shrink-0"
  title="Ver Comanda Completa"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -1127,7 +1127,7 @@ function AdminOrdersPage() {
  {viewMode === "table" ? (
  <div className="space-y-4">
  {/* Barra de Filtros e Busca */}
- <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border rounded-2xl px-4 py-3">
+ <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border rounded-lg px-4 py-3">
  <Tabs
  defaultValue="all"
  value={statusTab}
@@ -1157,7 +1157,7 @@ function AdminOrdersPage() {
               <select
                 value={channelFilter}
                 onChange={(e) => setChannelFilter(e.target.value)}
-                className="hidden sm:inline-flex h-8 rounded-xl border border-border bg-card px-2.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-40 shrink-0"
+                className="hidden sm:inline-flex h-8 rounded-lg border border-border bg-card px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-40 shrink-0"
               >
                 <option value="all">Todos os Canais</option>
                 <option value="waesy_app">App Waesy</option>
@@ -1178,7 +1178,7 @@ function AdminOrdersPage() {
                   placeholder={isTourism ? "Buscar passageiro ou token..." : "Buscar por código ou cliente..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-8 text-xs rounded-xl w-full"
+                  className="pl-9 h-8 text-xs rounded-lg w-full"
                 />
               </div>
 
@@ -1187,13 +1187,13 @@ function AdminOrdersPage() {
                 <FilterTriggerButton
                   onClick={() => setIsChannelSheetOpen(true)}
                   activeCount={channelFilter !== "all" ? 1 : 0}
-                  className="h-8 px-2.5 text-xs rounded-xl border border-border shrink-0 shadow-none"
+                  className="h-8 px-3 text-xs rounded-lg border border-border shrink-0 shadow-none"
                 />
               </div>
             </div>
           </div>
 
- <div className="bg-card overflow-hidden rounded-2xl border border-border">
+ <div className="bg-card overflow-hidden rounded-lg border border-border">
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/40">
@@ -1248,7 +1248,7 @@ function AdminOrdersPage() {
  </TableCell>
 
  <TableCell className="text-xs text-muted-foreground">
- <div className="flex flex-col max-w-[200px]">
+ <div className="flex flex-col max-w-52">
  <span className="font-semibold text-foreground truncate">
  {firstItem}
  </span>

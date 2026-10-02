@@ -151,7 +151,7 @@ export function MediaLightboxModal({
  <img
  src={currentMediaUrl}
  alt={`Mídia ${currentIndex + 1}`}
- className="max-h-[75vh] max-w-full rounded-2xl object-contain transition-all duration-300"
+ className="max-h-[75vh] max-w-full rounded-lg object-contain transition-all duration-300"
  />
 
  {/* Next Button */}
@@ -166,13 +166,13 @@ export function MediaLightboxModal({
  </div>
 
   {/* Bottom Floating Interaction Bar */}
-  <div className="px-4 py-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] bg-black/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-white shrink-0">
-    <div className="flex items-center gap-2.5">
+  <div className="px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-black/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-white shrink-0">
+    <div className="flex items-center gap-3">
       {/* Curtir foto específica */}
       <Button
         variant="ghost"
         onClick={() => toggleLikeMutation.mutate()}
-        className={`h-11 px-4 rounded-xl gap-2 text-sm font-semibold transition-all cursor-pointer shadow-2xs ${
+        className={`h-11 px-4 rounded-lg gap-2 text-sm font-semibold transition-all cursor-pointer shadow-2xs ${
           currentStat.user_liked
             ? "bg-destructive/20 text-destructive hover:bg-destructive/30"
             : "bg-white/10 hover:bg-white/20 text-white"
@@ -189,7 +189,7 @@ export function MediaLightboxModal({
       <Button
         variant="ghost"
         onClick={() => setIsCommentDrawerOpen(true)}
-        className="h-11 px-4 rounded-xl gap-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer shadow-2xs"
+        className="h-11 px-4 rounded-lg gap-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer shadow-2xs"
       >
         <MessageSquare className="size-4.5" />
         <span className="hidden sm:inline">
@@ -203,7 +203,7 @@ export function MediaLightboxModal({
 
  {/* Dots de navegação */}
  {post.media_urls.length > 1 && (
- <div className="hidden sm:flex items-center gap-1.5">
+ <div className="hidden sm:flex items-center gap-2">
  {post.media_urls.map((_, idx) => (
  <button
  key={idx}

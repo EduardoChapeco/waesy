@@ -33,7 +33,7 @@ export function TravelHotelSlider({
  <section className="space-y-4 py-4">
  <div className="flex items-end justify-between">
  <div className="space-y-1">
- <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+ <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
  <Hotel className="size-4" />
  <span>Hospedagens Parceiras</span>
  </div>
@@ -48,7 +48,7 @@ export function TravelHotelSlider({
  <div
  key={hotel.id}
  onClick={() => onHotelClick?.(hotel)}
- className="w-[280px] sm:w-[320px] shrink-0 bg-card rounded-2xl overflow-hidden border border-border/70 hover:border-primary/50 transition-all cursor-pointer group flex flex-col shadow-2xs"
+ className="w-72 sm:w-80 shrink-0 bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/50 transition-all cursor-pointer group flex flex-col shadow-2xs"
  >
  {/* Imagem de Capa */}
  <div className="relative aspect-[16/10] w-full bg-muted/40 overflow-hidden">
@@ -59,7 +59,7 @@ export function TravelHotelSlider({
  />
  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
 
- <div className="absolute top-3 left-3 flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-amber-400 text-xs">
+ <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-amber-400 text-xs">
  {Array.from({ length: hotel.stars || 4 }).map((_, i) => (
  <Star key={i} className="size-3 fill-amber-400" />
  ))}
@@ -83,17 +83,17 @@ export function TravelHotelSlider({
  </div>
 
  {/* Informações */}
- <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between text-xs">
- <div className="flex flex-wrap items-center gap-1.5">
+ <div className="p-4 space-y-2 flex-1 flex flex-col justify-between text-xs">
+ <div className="flex flex-wrap items-center gap-2">
  {hotel.mealPlan && (
- <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-semibold">
+ <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-semibold">
  {hotel.mealPlan}
  </span>
  )}
  {(hotel.badges || []).map((badge, idx) => (
  <span
  key={idx}
- className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] border border-border/50"
+ className="px-2 py-1 rounded-full bg-muted text-muted-foreground text-[10px] border border-border/50"
  >
  {badge}
  </span>

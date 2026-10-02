@@ -15,7 +15,7 @@ export interface PlacesHighlightBadgeProps {
  */
 export function PlacesHighlightBadge({ className, subtle = false, style }: PlacesHighlightBadgeProps) {
   return (
-    <span style={style} className={cn("inline-flex items-center gap-1.5 font-bold tracking-tight text-foreground", className)}>
+    <span style={style} className={cn("inline-flex items-center gap-2 font-bold tracking-tight text-foreground", className)}>
       <span>Places</span>
       <span className="relative inline-block px-1 text-neutral-950 dark:text-neutral-950 font-bold text-[0.82em] leading-tight select-none">
         <span

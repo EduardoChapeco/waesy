@@ -66,22 +66,22 @@ export function ReputationTimelineFeed({ content, design_tokens }: ReputationTim
  <p className="text-xs text-muted-foreground">Histórico auditado de reclamações e soluções oficiais.</p>
  </div>
 
- <div className="flex items-center gap-1.5 bg-muted/50 p-1 rounded-xl border border-border/50">
+ <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg border border-border/50">
  <button
  onClick={() => setFilter("all")}
- className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all min-h-[36px]", filter === "all" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}
+ className={cn("px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9", filter === "all" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}
  >
  Todas ({complaints.length})
  </button>
  <button
  onClick={() => setFilter("resolved")}
- className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all min-h-[36px]", filter === "resolved" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}
+ className={cn("px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9", filter === "resolved" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}
  >
  Resolvidas
  </button>
  <button
  onClick={() => setFilter("open")}
- className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all min-h-[36px]", filter === "open" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}
+ className={cn("px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9", filter === "open" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}
  >
  Em Aberto
  </button>
@@ -90,7 +90,7 @@ export function ReputationTimelineFeed({ content, design_tokens }: ReputationTim
 
  <div className="space-y-4">
  {filtered.map((item) => (
- <div key={item.id} className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card shadow-sm space-y-4">
+ <div key={item.id} className="p-5 sm:p-6 rounded-lg border border-border/60 bg-card shadow-sm space-y-4">
  <div className="flex items-center justify-between gap-2 flex-wrap">
  <div className="flex items-center gap-2">
  <span className="font-mono text-xs font-bold text-muted-foreground">{item.protocol}</span>
@@ -110,18 +110,18 @@ export function ReputationTimelineFeed({ content, design_tokens }: ReputationTim
  </div>
 
  {/* Pergunta do Consumidor */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <h4 className="font-bold text-sm sm:text-base text-foreground">{item.title}</h4>
  <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
- <div className="text-[11px] text-muted-foreground/80 flex items-center gap-1 pt-0.5">
+ <div className="text-[11px] text-muted-foreground/80 flex items-center gap-1 pt-1">
  <User className="w-3 h-3" /> {item.consumer_name_masked}
  </div>
  </div>
 
  {/* Resposta Oficial da Empresa */}
  {item.company_reply && (
- <div className="p-4 rounded-xl bg-muted/40 border-l-4 border-primary space-y-1.5">
- <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+ <div className="p-4 rounded-lg bg-muted/40 border-l-4 border-primary space-y-2">
+ <div className="flex items-center gap-2 text-xs font-bold text-foreground">
  <Building2 className="w-3.5 h-3.5 text-primary" />
  Resposta Oficial da Empresa:
  </div>

@@ -39,7 +39,7 @@ export const Route = createFileRoute("/admin-master/banners")({
 function AdminMasterBannersErrorComponent({ error }: { error: any }) {
   return (
     <div className="mx-auto max-w-xl px-4 py-12 text-center space-y-4">
-      <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-1">
         <ImageIcon className="size-7" />
       </div>
       <div className="space-y-1">
@@ -49,7 +49,7 @@ function AdminMasterBannersErrorComponent({ error }: { error: any }) {
         </p>
       </div>
       {error?.message && (
-        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
           {error.message}
         </pre>
       )}
@@ -57,7 +57,7 @@ function AdminMasterBannersErrorComponent({ error }: { error: any }) {
         <Button
           variant="default"
           size="sm"
-          className="rounded-xl text-xs h-10 px-5 font-bold cursor-pointer"
+          className="rounded-lg text-xs h-10 px-5 font-bold cursor-pointer"
           onClick={() => window.location.reload()}
         >
           Recarregar Página
@@ -312,7 +312,7 @@ function AdminMasterBannersPage() {
         <Button
           onClick={() => handleOpenCreate()}
           size="sm"
-          className="rounded-xl font-medium gap-1.5 h-9 px-4 cursor-pointer"
+          className="rounded-lg font-medium gap-2 h-9 px-4 cursor-pointer"
         >
           <Plus className="size-4" />
           <span>Novo Banner</span>
@@ -321,7 +321,7 @@ function AdminMasterBannersPage() {
 
       {/* Clean Niche Tabs */}
       <div className="space-y-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           {PLACEMENT_OPTIONS.map((opt) => {
             const count =
               opt.id === "all"
@@ -334,7 +334,7 @@ function AdminMasterBannersPage() {
                 key={opt.id}
                 onClick={() => setSelectedPlacementTab(opt.id)}
                 className={cn(
-                  "px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 border",
+                  "px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer shrink-0 border",
                   isActive
                     ? "bg-primary text-primary-foreground border-primary shadow-xs"
                     : "bg-card hover:bg-muted/60 text-muted-foreground hover:text-foreground border-border/60"
@@ -363,14 +363,14 @@ function AdminMasterBannersPage() {
             placeholder="Buscar banners..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-9 rounded-xl bg-card text-xs border-border/60"
+            className="pl-9 h-9 rounded-lg bg-card text-xs border-border/60"
           />
         </div>
 
         {/* Seletor de Filtro de Cidade na Listagem */}
         <div className="flex items-center gap-2">
           <Select value={selectedCityFilter} onValueChange={setSelectedCityFilter}>
-            <SelectTrigger className="h-9 w-full sm:w-56 rounded-xl bg-card text-xs border-border/60">
+            <SelectTrigger className="h-9 w-full sm:w-56 rounded-lg bg-card text-xs border-border/60">
               <SelectValue placeholder="Filtrar por Cidade" />
             </SelectTrigger>
             <SelectContent className="max-h-60">
@@ -388,8 +388,8 @@ function AdminMasterBannersPage() {
 
       {/* Banners Grid */}
       {filteredBanners.length === 0 ? (
-        <div className="py-12 px-6 text-center rounded-2xl bg-card/50 border border-border/60 space-y-3">
-          <div className="size-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center mx-auto">
+        <div className="py-12 px-6 text-center rounded-lg bg-card/50 border border-border/60 space-y-3">
+          <div className="size-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
             <ImageIcon className="size-5" />
           </div>
           <div className="space-y-1">
@@ -405,7 +405,7 @@ function AdminMasterBannersPage() {
             onClick={() => handleOpenCreate(selectedPlacementTab)}
             size="sm"
             variant="outline"
-            className="rounded-xl text-xs font-medium gap-1.5"
+            className="rounded-lg text-xs font-medium gap-2"
           >
             <Plus className="size-3.5" /> Adicionar Banner
           </Button>
@@ -415,7 +415,7 @@ function AdminMasterBannersPage() {
           {filteredBanners.map((banner) => (
             <div
               key={banner.id}
-              className="group relative rounded-2xl bg-card border border-border/60 overflow-hidden flex flex-col hover:border-primary/40 transition-colors shadow-2xs"
+              className="group relative rounded-lg bg-card border border-border/60 overflow-hidden flex flex-col hover:border-primary/40 transition-colors shadow-2xs"
             >
               {/* Media Preview com Escala Proporcional Verdadeira */}
               <div className="relative aspect-[2.35/1] sm:aspect-[2.6/1] md:aspect-21/9 w-full bg-muted overflow-hidden">
@@ -445,22 +445,22 @@ function AdminMasterBannersPage() {
                 )}
 
                 {/* Placement & City Tags */}
-                <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 flex-wrap max-w-[85%]">
-                  <span className="bg-black/75 text-white backdrop-blur-md text-[10px] font-mono px-2 py-0.5 rounded-md border border-white/10">
+                <div className="absolute top-2 left-2 z-10 flex items-center gap-2 flex-wrap max-w-[85%]">
+                  <span className="bg-black/75 text-white backdrop-blur-md text-[10px] font-mono px-2 py-1 rounded-md border border-white/10">
                     {banner.placement.toUpperCase()}
                   </span>
                   {banner.city_filter ? (
-                    <span className="bg-primary text-primary-foreground backdrop-blur-md text-[9px] font-semibold px-2 py-0.5 rounded-md flex items-center gap-1 shadow-xs">
+                    <span className="bg-primary text-primary-foreground backdrop-blur-md text-[9px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 shadow-xs">
                       <MapPin className="size-2.5" />
                       {banner.city_filter}
                     </span>
                   ) : (
-                    <span className="bg-zinc-800/80 text-zinc-300 text-[9px] font-medium px-1.5 py-0.5 rounded-md border border-white/10">
+                    <span className="bg-zinc-800/80 text-zinc-300 text-[9px] font-medium px-2 py-1 rounded-md border border-white/10">
                       Global
                     </span>
                   )}
                   {banner.show_overlay && (
-                    <span className="bg-emerald-600/90 text-white text-[9px] font-medium px-1.5 py-0.5 rounded-md">
+                    <span className="bg-emerald-600/90 text-white text-[9px] font-medium px-2 py-1 rounded-md">
                       Texto Ativo
                     </span>
                   )}
@@ -477,16 +477,16 @@ function AdminMasterBannersPage() {
               </div>
 
               {/* Card Footer */}
-              <div className="p-3.5 flex flex-col justify-between gap-3 text-xs flex-1">
+              <div className="p-4 flex flex-col justify-between gap-3 text-xs flex-1">
                 <div>
                   <p className="font-semibold text-foreground truncate">{banner.title}</p>
-                  <p className="text-muted-foreground truncate text-[11px] font-mono mt-0.5">
+                  <p className="text-muted-foreground truncate text-[11px] font-mono mt-1">
                     {banner.target_url || "/"}
                   </p>
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <span className="text-[10px] text-muted-foreground">Texto:</span>
                     <Switch
                       checked={banner.show_overlay === true}
@@ -533,10 +533,10 @@ function AdminMasterBannersPage() {
         description="Configure a mídia, localidade e direcionamentos do banner."
       >
         <form onSubmit={handleSave} className="space-y-5 p-1">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold">Vitrine / Nicho</Label>
             <Select value={placement} onValueChange={(v) => setPlacement(v as BannerPlacement)}>
-              <SelectTrigger className="h-9 rounded-xl bg-card text-xs">
+              <SelectTrigger className="h-9 rounded-lg bg-card text-xs">
                 <SelectValue placeholder="Selecione o nicho" />
               </SelectTrigger>
               <SelectContent>
@@ -550,10 +550,10 @@ function AdminMasterBannersPage() {
           </div>
 
           {/* Seletor de Cidade / Localidade Alvo */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold">Localidade / Cidade Alvo</Label>
             <Select value={cityFilter} onValueChange={setCityFilter}>
-              <SelectTrigger className="h-9 rounded-xl bg-card text-xs">
+              <SelectTrigger className="h-9 rounded-lg bg-card text-xs">
                 <SelectValue placeholder="Selecione a cidade do público" />
               </SelectTrigger>
               <SelectContent className="max-h-60">
@@ -570,7 +570,7 @@ function AdminMasterBannersPage() {
             </p>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold">Mídia do Banner (Imagem / Vídeo)</Label>
             <MediaUploader
               value={mediaUrl ? [mediaUrl] : []}
@@ -588,13 +588,13 @@ function AdminMasterBannersPage() {
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold">Título Interno</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Campanha de Primavera"
-              className="h-9 rounded-xl bg-card text-xs"
+              className="h-9 rounded-lg bg-card text-xs"
             />
           </div>
 
@@ -609,7 +609,7 @@ function AdminMasterBannersPage() {
           />
 
           {/* Overlay Text Settings */}
-          <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold">Exibir Textos sobre o Banner</p>
@@ -659,7 +659,7 @@ function AdminMasterBannersPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsModalOpen(false)}
-              className="rounded-xl text-xs"
+              className="rounded-lg text-xs"
             >
               Cancelar
             </Button>
@@ -667,7 +667,7 @@ function AdminMasterBannersPage() {
               type="submit"
               size="sm"
               disabled={isSubmitting}
-              className="rounded-xl text-xs font-semibold px-4"
+              className="rounded-lg text-xs font-semibold px-4"
             >
               {isSubmitting ? (
                 <Loader2 className="size-3.5 animate-spin" />

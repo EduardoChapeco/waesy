@@ -84,7 +84,7 @@ export function NativeMobileHeader({
             <button
               type="button"
               onClick={handleBack}
-              className="size-11 min-h-[44px] min-w-[44px] -ml-2 rounded-full flex items-center justify-center text-foreground/85 hover:text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-all cursor-pointer"
+              className="size-11 min-h-11 min-w-[44px] -ml-2 rounded-full flex items-center justify-center text-foreground/85 hover:text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-all cursor-pointer"
               aria-label="Voltar"
             >
               <CaretLeft className="size-5 stroke-[2.5]" weight="bold" />
@@ -117,7 +117,7 @@ export function NativeMobileHeader({
                   }
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full h-9 pl-8 pr-8 rounded-xl bg-muted/60 border border-border/60 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full h-9 pl-8 pr-8 rounded-lg bg-muted/60 border border-border/60 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               />
               <button
                 type="button"
@@ -143,7 +143,7 @@ export function NativeMobileHeader({
           >
             <div
               className={cn(
-                "flex items-center gap-1.5 min-w-0 max-w-full",
+                "flex items-center gap-2 min-w-0 max-w-full",
                 centerTitle ? "justify-center" : "justify-start"
               )}
             >
@@ -157,7 +157,7 @@ export function NativeMobileHeader({
               {badge && <div className="shrink-0">{badge}</div>}
             </div>
             {subtitle && (
-              <div className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
+              <div className="text-[11px] text-muted-foreground truncate leading-tight mt-1">
                 {subtitle}
               </div>
             )}
@@ -165,7 +165,7 @@ export function NativeMobileHeader({
         )}
 
         {/* ── Lado Direito: Lupa Contextual + Funil ML-Filter + Ações Extras (44x44px) ── */}
-        <div className="flex items-center gap-0.5 shrink-0 min-w-[44px] justify-end z-10">
+        <div className="flex items-center gap-1 shrink-0 min-w-[44px] justify-end z-10">
           {onSearchChange && !isSearchOpen && (
             <button
               type="button"
@@ -174,7 +174,7 @@ export function NativeMobileHeader({
                 setIsSearchOpen(true);
               }}
               aria-label="Buscar"
-              className="size-11 min-h-[44px] min-w-[44px] rounded-full inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
+              className="size-11 min-h-11 min-w-[44px] rounded-full inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
             >
               <MagnifyingGlass size={20} weight="bold" />
             </button>
@@ -188,7 +188,7 @@ export function NativeMobileHeader({
                 onFilterClick();
               }}
               aria-label="Filtrar"
-              className="relative size-11 min-h-[44px] min-w-[44px] rounded-full inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
+              className="relative size-11 min-h-11 min-w-[44px] rounded-full inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
             >
               <Funnel
                 size={20}
@@ -209,7 +209,7 @@ export function NativeMobileHeader({
 
       {/* ── Slot Inferior (Tabs, Chips de Filtro) ── */}
       {bottomSlot && (
-        <div className="px-4 pb-2.5 pt-0.5 w-full border-t border-border/20">
+        <div className="px-4 pb-3 pt-1 w-full border-t border-border/20">
           {bottomSlot}
         </div>
       )}

@@ -92,7 +92,7 @@ export function CampaignDraftCard({
 
   if (isApproved) {
     return (
-      <div className="p-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 text-center space-y-3 animate-in fade-in">
+      <div className="p-6 rounded-lg border border-emerald-500/30 bg-emerald-500/5 text-center space-y-3 animate-in fade-in">
         <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
           <CheckCircle2 className="size-6" />
         </div>
@@ -107,22 +107,22 @@ export function CampaignDraftCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border/80 bg-card overflow-hidden text-foreground space-y-0",
+        "rounded-lg border border-border/80 bg-card overflow-hidden text-foreground space-y-0",
         className
       )}
     >
       {/* ── 1. HEADER DO BLOCO DINÂMICO MCP ── */}
-      <div className="p-4 px-5 border-b border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="p-4 px-5 border-b border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="size-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+          <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <Star className="size-4" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-foreground">
                 Proposta de Campanha Gerada por IA (MCP)
               </span>
-              <Badge variant="outline" className="text-[9px] font-mono py-0 px-1.5 h-4">
+              <Badge variant="outline" className="text-[9px] font-mono py-0 px-2 h-4">
                 {payload.platform === "meta_instagram" ? "Instagram Feed" : "Meta Ads"}
               </Badge>
             </div>
@@ -145,10 +145,10 @@ export function CampaignDraftCard({
             Mockup em Tempo Real (Feed do Instagram)
           </span>
 
-          <div className="w-full max-w-[340px] rounded-2xl border border-border/90 bg-background overflow-hidden text-xs">
+          <div className="w-full max-w-[340px] rounded-lg border border-border/90 bg-background overflow-hidden text-xs">
             {/* Top Bar do Anúncio Instagram */}
             <div className="p-3 flex items-center justify-between border-b border-border/40">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <div className="size-8 rounded-full border border-primary/40 p-[1.5px]">
                   <div className="size-full rounded-full bg-background flex items-center justify-center overflow-hidden">
                     <span className="text-[11px] font-bold text-foreground">
@@ -176,8 +176,8 @@ export function CampaignDraftCard({
             </div>
 
             {/* Barra de Ação Patrocinada Instantânea (CTA Bar) */}
-            <div className="p-2.5 px-3 bg-muted/60 border-t border-b border-border/40 flex items-center justify-between">
-              <span className="font-bold text-xs text-foreground truncate max-w-[200px]">
+            <div className="p-3 px-3 bg-muted/60 border-t border-b border-border/40 flex items-center justify-between">
+              <span className="font-bold text-xs text-foreground truncate max-w-52">
                 {ctaLabel}
               </span>
               <ChevronRight className="size-4 text-muted-foreground" />
@@ -196,11 +196,11 @@ export function CampaignDraftCard({
             {/* Legenda Autêntica do Anúncio */}
             <div className="p-3 pt-1 space-y-1">
               <p className="text-[11px] leading-relaxed text-foreground">
-                <span className="font-bold mr-1.5">{payload.creative.sponsorHandle || "Sua Loja"}</span>
+                <span className="font-bold mr-2">{payload.creative.sponsorHandle || "Sua Loja"}</span>
                 <span className="font-semibold">{headline}</span> — {bodyCopy}
               </p>
               {payload.creative.displayUrlText && (
-                <p className="text-[10px] font-mono text-muted-foreground pt-0.5">
+                <p className="text-[10px] font-mono text-muted-foreground pt-1">
                   <span className="inline-flex items-center gap-1"><ExternalLink className="size-3" /> {payload.creative.displayUrlText}</span>
                 </p>
               )}
@@ -222,7 +222,7 @@ export function CampaignDraftCard({
               variant="outline"
               size="sm"
               onClick={() => setIsEditing((prev) => !prev)}
-              className="h-8 text-xs rounded-xl gap-1.5 cursor-pointer"
+              className="h-8 text-xs rounded-lg gap-2 cursor-pointer"
             >
               <Sliders className="size-3.5" />
               <span>{isEditing ? "Ver Resumo" : "Editar"}</span>
@@ -231,13 +231,13 @@ export function CampaignDraftCard({
 
           {/* MODO DE EDIÇÃO RÁPIDA (SE ATIVO) */}
           {isEditing ? (
-            <div className="space-y-3 p-4 rounded-2xl bg-muted/30 border border-border/70 text-xs">
+            <div className="space-y-3 p-4 rounded-lg bg-muted/30 border border-border/70 text-xs">
               <div className="space-y-1">
                 <Label className="text-[11px] font-semibold">Título Interno</Label>
                 <Input
                   value={campaignTitle}
                   onChange={(e) => setCampaignTitle(e.target.value)}
-                  className="h-8 text-xs rounded-xl"
+                  className="h-8 text-xs rounded-lg"
                 />
               </div>
 
@@ -251,7 +251,7 @@ export function CampaignDraftCard({
                     onChange={(e) =>
                       setDailyBudgetCents(Math.round(parseFloat(e.target.value) * 100 || 1000))
                     }
-                    className="h-8 text-xs font-mono rounded-xl"
+                    className="h-8 text-xs font-mono rounded-lg"
                   />
                 </div>
                 <div className="space-y-1">
@@ -262,7 +262,7 @@ export function CampaignDraftCard({
                     max={60}
                     value={durationDays}
                     onChange={(e) => setDurationDays(parseInt(e.target.value, 10) || 7)}
-                    className="h-8 text-xs font-mono rounded-xl"
+                    className="h-8 text-xs font-mono rounded-lg"
                   />
                 </div>
               </div>
@@ -272,7 +272,7 @@ export function CampaignDraftCard({
                 <Input
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
-                  className="h-8 text-xs rounded-xl"
+                  className="h-8 text-xs rounded-lg"
                 />
               </div>
 
@@ -282,7 +282,7 @@ export function CampaignDraftCard({
                   value={bodyCopy}
                   onChange={(e) => setBodyCopy(e.target.value)}
                   rows={3}
-                  className="text-xs rounded-xl resize-none"
+                  className="text-xs rounded-lg resize-none"
                 />
               </div>
 
@@ -292,7 +292,7 @@ export function CampaignDraftCard({
                   <Input
                     value={ctaLabel}
                     onChange={(e) => setCtaLabel(e.target.value as any)}
-                    className="h-8 text-xs rounded-xl"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1">
@@ -302,7 +302,7 @@ export function CampaignDraftCard({
                     min={5}
                     value={radiusKm}
                     onChange={(e) => setRadiusKm(parseInt(e.target.value, 10) || 25)}
-                    className="h-8 text-xs font-mono rounded-xl"
+                    className="h-8 text-xs font-mono rounded-lg"
                   />
                 </div>
               </div>
@@ -311,7 +311,7 @@ export function CampaignDraftCard({
             /* RESUMO DE ORÇAMENTO & TELEMETRIA SIMLAB */
             <div className="space-y-3">
               {/* Card de Investimento */}
-              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/30 grid grid-cols-3 gap-2 text-center">
+              <div className="p-4 rounded-lg border border-border/80 bg-muted/30 grid grid-cols-3 gap-2 text-center">
                 <div>
                   <p className="text-[10px] text-muted-foreground font-medium">Orçamento Diário</p>
                   <p className="text-sm font-black font-mono text-foreground">
@@ -331,7 +331,7 @@ export function CampaignDraftCard({
               </div>
 
               {/* Segmentação & Alcance */}
-              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2 text-xs">
+              <div className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-2 text-xs">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="size-3.5 text-primary shrink-0" />
                   <span className="font-semibold text-foreground">{locationLabel}</span>
@@ -355,7 +355,7 @@ export function CampaignDraftCard({
               </div>
 
               {/* Projeção de Performance Estimada */}
-              <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between text-xs">
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <Eye className="size-4 text-primary shrink-0" />
                   <div>
@@ -379,12 +379,12 @@ export function CampaignDraftCard({
           )}
 
           {/* ── 3. GOVERNANÇA HUMANA (BOTAO DE APROVAÇÃO E ATIVAÇÃO) ── */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
+          <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
             <Button
               type="button"
               onClick={handleApprove}
               disabled={isSubmitting}
-              className="w-full sm:flex-1 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2 cursor-pointer active:scale-95 shadow-sm transition-all"
+              className="w-full sm:flex-1 h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2 cursor-pointer active:scale-95 shadow-sm transition-all"
             >
               {isSubmitting ? (
                 <>
@@ -405,7 +405,7 @@ export function CampaignDraftCard({
                 variant="ghost"
                 onClick={onDiscard}
                 disabled={isSubmitting}
-                className="w-full sm:w-auto h-11 px-4 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer"
+                className="w-full sm:w-auto h-11 px-4 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
               >
                 <Trash2 className="size-3.5 mr-1" />
                 Descartar

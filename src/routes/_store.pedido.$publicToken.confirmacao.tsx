@@ -182,18 +182,18 @@ function ConfirmationPage() {
  </div>
 
  {/* ── LIVE ORDER TRACKER: Régua Visual de Acompanhamento em Tempo Real ── */}
- <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/80 shadow-xs space-y-4">
+ <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/80 shadow-xs space-y-4">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
  Acompanhamento do Pedido
  </span>
- <span className="text-[11px] font-medium text-primary flex items-center gap-1.5">
+ <span className="text-[11px] font-medium text-primary flex items-center gap-2">
  <span className="size-1.5 rounded-full bg-primary animate-pulse" />
  Tempo real
  </span>
  </div>
 
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
  {[
  {
  step: 1,
@@ -226,9 +226,9 @@ function ConfirmationPage() {
  ].map((st) => {
  const StepIcon = st.icon;
  return (
- <div key={st.step} className="flex flex-col items-center text-center space-y-1.5">
+ <div key={st.step} className="flex flex-col items-center text-center space-y-2">
  <div
- className={`size-10 rounded-2xl flex items-center justify-center border transition-all ${
+ className={`size-10 rounded-lg flex items-center justify-center border transition-all ${
  st.isDone
  ? "bg-primary text-primary-foreground border-primary shadow-xs"
  : st.isActive
@@ -324,7 +324,7 @@ function ConfirmationPage() {
  <p className="text-muted-foreground">
  Faça uma transferência ou depósito para a conta oficial da loja:
  </p>
- <div className="bg-muted/40 p-4 rounded-xl space-y-1 font-mono text-xs border border-border/60">
+ <div className="bg-muted/40 p-4 rounded-lg space-y-1 font-mono text-xs border border-border/60">
  {bankInfo.bank_name && (
  <p>
  <strong>Banco:</strong> {bankInfo.bank_name}
@@ -353,7 +353,7 @@ function ConfirmationPage() {
  </div>
  </>
  ) : (
- <div className="p-4 rounded-xl bg-muted/30 border border-border/50 text-xs text-muted-foreground space-y-2">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/50 text-xs text-muted-foreground space-y-2">
  <p className="font-medium text-foreground">
  Dados bancários para transferência:
  </p>
@@ -364,13 +364,13 @@ function ConfirmationPage() {
  <Button
  size="sm"
  variant="outline"
- className="rounded-xl text-xs h-9"
+ className="rounded-lg text-xs h-9"
  onClick={() => {
  const msg = `Olá! Gostaria dos dados bancários para pagar o pedido #${order.public_token?.slice(0, 8).toUpperCase()}`;
  window.open(`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(msg)}`, "_blank");
  }}
  >
- <MessageCircle className="size-3.5 mr-1.5" />
+ <MessageCircle className="size-3.5 mr-2" />
  Solicitar Dados Bancários
  </Button>
  )}
@@ -380,7 +380,7 @@ function ConfirmationPage() {
  )}
 
  <div className="flex items-start gap-2 text-xs text-muted-foreground bg-primary/5 p-3 border border-primary/10">
- <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+ <Info className="h-4 w-4 text-primary shrink-0 mt-1" />
  <p>
  Após pagar, você pode acessar os detalhes do pedido em sua conta para anexar e
  enviar o comprovante de pagamento.
@@ -418,7 +418,7 @@ function ConfirmationPage() {
  return (
  <span
  key={oIdx}
- className="text-[10px] font-bold bg-muted/70 text-foreground/80 border border-border/60 px-1.5 py-0.5 rounded-md"
+ className="text-[10px] font-bold bg-muted/70 text-foreground/80 border border-border/60 px-2 py-1 rounded-md"
  >
  + {label}
  </span>
@@ -462,13 +462,13 @@ function ConfirmationPage() {
 
  {/* Campos Personalizados & Observações */}
  {order.custom_fields && Object.keys(order.custom_fields).length > 0 && (
- <div className="mt-4 p-4 rounded-2xl bg-muted/30 space-y-2">
+ <div className="mt-4 p-4 rounded-lg bg-muted/30 space-y-2">
  <span className="text-xs font-bold text-foreground block">
  Informações Adicionais / Personalização:
  </span>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
  {Object.entries(order.custom_fields).map(([k, v]: [string, any]) => (
- <div key={k} className="p-2.5 rounded-xl bg-card ">
+ <div key={k} className="p-3 rounded-lg bg-card ">
  <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider block">
  {k}
  </span>
@@ -480,17 +480,17 @@ function ConfirmationPage() {
  )}
 
  {order.notes && (
- <div className="mt-3 p-3 rounded-xl bg-muted/20 text-xs">
+ <div className="mt-3 p-3 rounded-lg bg-muted/20 text-xs">
  <span className="text-[10px] text-muted-foreground font-bold uppercase block">
  Observações para a Loja:
  </span>
- <p className="text-foreground mt-0.5">{order.notes}</p>
+ <p className="text-foreground mt-1">{order.notes}</p>
  </div>
  )}
 
  {/* Detalhes de Atendimento e Entrega do Nicho */}
  {(order.cpf_on_receipt?.requested || order.receiver_info?.isOtherPerson || order.substitution_policy || order.checkout_niche_metadata?.utensilsRequested) && (
- <div className="mt-4 p-3.5 rounded-xl bg-muted/20 border border-border/40 space-y-1.5 text-xs">
+ <div className="mt-4 p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2 text-xs">
  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider block">
  Detalhes do Pedido & Entrega:
  </span>
@@ -530,9 +530,9 @@ function ConfirmationPage() {
  </div>
 
   {/* Card de Contrato Digital do Pedido */}
-  <div className="border border-border/80 bg-card rounded-2xl p-5 sm:p-6 space-y-4 shadow-2xs">
+  <div className="border border-border/80 bg-card rounded-lg p-5 sm:p-6 space-y-4 shadow-2xs">
     <div className="flex items-center justify-between">
-      <div className="space-y-0.5">
+      <div className="space-y-1">
         <h3 className="text-sm font-bold text-foreground">Contrato Digital do Pedido</h3>
         <p className="text-xs text-muted-foreground">Documento com validade jurídica nacional e hash SHA-256</p>
       </div>
@@ -542,24 +542,24 @@ function ConfirmationPage() {
     </div>
 
     {contractInfo ? (
-      <div className="p-4 rounded-xl bg-muted/20 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="space-y-0.5">
+      <div className="p-4 rounded-lg bg-muted/20 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="space-y-1">
           <p className="text-xs font-bold text-foreground">Contrato Pronto para Assinatura</p>
           <p className="text-[11px] text-muted-foreground">Assine pelo celular no WhatsApp ou diretamente na tela.</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {contractInfo.whatsappLink && (
-            <Button asChild size="sm" className="rounded-xl text-xs h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+            <Button asChild size="sm" className="rounded-lg text-xs h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
               <a href={contractInfo.whatsappLink} target="_blank" rel="noreferrer">
-                <MessageCircle className="size-3.5 mr-1.5" />
+                <MessageCircle className="size-3.5 mr-2" />
                 Assinar no WhatsApp
               </a>
             </Button>
           )}
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-9 px-4">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-9 px-4">
             <Link to={contractInfo.signingUrl}>
               Assinar Agora
-              <ArrowRight className="size-3.5 ml-1.5" />
+              <ArrowRight className="size-3.5 ml-2" />
             </Link>
           </Button>
         </div>
@@ -575,9 +575,9 @@ function ConfirmationPage() {
           disabled={isGeneratingContract}
           variant="outline"
           size="sm"
-          className="rounded-xl text-xs font-semibold h-9 px-4 shrink-0 min-h-[44px] sm:min-h-[36px]"
+          className="rounded-lg text-xs font-semibold h-9 px-4 shrink-0 min-h-11 sm:min-h-9"
         >
-          <ShieldCheck className="size-3.5 mr-1.5 text-primary" />
+          <ShieldCheck className="size-3.5 mr-2 text-primary" />
           {isGeneratingContract ? "Gerando..." : "Emitir Contrato Digital"}
         </Button>
       </div>
@@ -585,9 +585,9 @@ function ConfirmationPage() {
   </div>
 
  {/* Bloco de Auditoria e Conformidade de Tags */}
- <div className=" bg-muted/20 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+ <div className=" bg-muted/20 rounded-lg p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
  <div className="flex items-center gap-3">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <ShieldCheck className="size-5" />
  </div>
  <div>
@@ -603,7 +603,7 @@ function ConfirmationPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsAuditOpen(true)}
- className="rounded-xl text-xs font-bold shrink-0 border-border cursor-pointer hover:bg-background"
+ className="rounded-lg text-xs font-bold shrink-0 border-border cursor-pointer hover:bg-background"
  >
  Avaliar Tags do Pedido
  </Button>
@@ -614,7 +614,7 @@ function ConfirmationPage() {
  <Button
  asChild
  size="lg"
- className="bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-xl text-sm gap-2"
+ className="bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-lg text-sm gap-2"
  >
  <a
  href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
@@ -628,10 +628,10 @@ function ConfirmationPage() {
  </a>
  </Button>
  )}
- <Button asChild size="lg" variant="outline" className="rounded-xl font-bold text-sm">
+ <Button asChild size="lg" variant="outline" className="rounded-lg font-bold text-sm">
  <Link to="/conta/pedidos">Acompanhar Pedido</Link>
  </Button>
- <Button asChild size="lg" className="rounded-xl font-bold text-sm bg-foreground text-background hover:bg-foreground/90">
+ <Button asChild size="lg" className="rounded-lg font-bold text-sm bg-foreground text-background hover:bg-foreground/90">
  <Link to="/mercado">
  Continuar Comprando <ArrowRight className="ml-2 size-4" />
  </Link>

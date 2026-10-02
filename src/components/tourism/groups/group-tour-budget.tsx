@@ -132,7 +132,7 @@ export function GroupTourBudgetManager({
  {/* ── 1. Painel de Indicadores de Rentabilidade ── */}
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
  {/* Custos Fixos Totais */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-semibold">Custos Fixos</span>
  <Calculator className="size-4 text-sky-500" />
@@ -144,7 +144,7 @@ export function GroupTourBudgetManager({
  </div>
 
  {/* Custo Variável por Passageiro */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-semibold">Custo / Passageiro</span>
  <Users className="size-4 text-indigo-500" />
@@ -156,7 +156,7 @@ export function GroupTourBudgetManager({
  </div>
 
  {/* Ponto de Equilíbrio (Break-Even) */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-semibold">Break-Even (Mínimo)</span>
  <ShieldCheck className="size-4 text-amber-500" />
@@ -170,7 +170,7 @@ export function GroupTourBudgetManager({
  </div>
 
  {/* Lucro Líquido Atual */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-semibold">Resultado Atual</span>
  <TrendingUp
@@ -191,7 +191,7 @@ export function GroupTourBudgetManager({
  </div>
 
  {/* ── 2. Lista de Custos & Ação de Adicionar ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/70 space-y-4">
  <div className="flex items-center justify-between">
  <div>
  <h3 className="text-sm font-bold text-foreground">Detalhamento dos Custos da Viagem</h3>
@@ -203,7 +203,7 @@ export function GroupTourBudgetManager({
  <Button
  type="button"
  onClick={() => setModalOpen(true)}
- className="h-9 px-3.5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+ className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
  >
  <Plus className="size-3.5" /> Adicionar Custo
  </Button>
@@ -216,14 +216,14 @@ export function GroupTourBudgetManager({
  return (
  <div
  key={item.id}
- className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/15 hover:bg-muted/30 transition-colors"
+ className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/15 hover:bg-muted/30 transition-colors"
  >
  <div className="flex items-center gap-3 min-w-0 flex-1">
- <Badge variant="outline" className={`text-[10px] px-2 py-0.5 border ${cat.className}`}>
+ <Badge variant="outline" className={`text-[10px] px-2 py-1 border ${cat.className}`}>
  {cat.label}
  </Badge>
 
- <div className="space-y-0.5 min-w-0 flex-1">
+ <div className="space-y-1 min-w-0 flex-1">
  <p className="text-xs font-semibold text-foreground truncate">
  {item.description}
  </p>
@@ -253,7 +253,7 @@ export function GroupTourBudgetManager({
  })}
 
  {costs.length === 0 && (
- <div className="p-8 text-center rounded-xl border border-dashed border-border/70 text-xs text-muted-foreground">
+ <div className="p-8 text-center rounded-lg border border-dashed border-border/70 text-xs text-muted-foreground">
  Nenhum custo cadastrado. Adicione a locação do ônibus, diárias do hotel e ingressos para calcular a margem.
  </div>
  )}
@@ -262,7 +262,7 @@ export function GroupTourBudgetManager({
 
  {/* ── 3. Modal de Adicionar Custo ── */}
  <Dialog open={modalOpen} onOpenChange={setModalOpen}>
- <DialogContent className="sm:max-w-md rounded-2xl border-border/70 bg-card p-5 space-y-4">
+ <DialogContent className="sm:max-w-md rounded-lg border-border/70 bg-card p-5 space-y-4">
  <DialogHeader>
  <DialogTitle className="text-base font-bold text-foreground">
  Novo Custo Operacional
@@ -270,12 +270,12 @@ export function GroupTourBudgetManager({
  </DialogHeader>
 
  <form onSubmit={handleCreateCost} className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Categoria</label>
  <select
  value={category}
  onChange={(e) => setCategory(e.target.value)}
- className="w-full h-11 px-3 rounded-xl border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
+ className="w-full h-11 px-3 rounded-lg border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
  >
  <option value="transport">Transporte / Ônibus</option>
  <option value="hotel">Hospedagem / Hotel</option>
@@ -287,30 +287,30 @@ export function GroupTourBudgetManager({
  </select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Descrição do Item *</label>
  <Input
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  placeholder="Ex: Fretamento de Ônibus Leito Marcopolo (3 dias)"
- className="h-11 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  autoFocus
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-foreground">Valor (R$) *</label>
  <Input
  type="text"
  value={amountStr}
  onChange={(e) => setAmountStr(e.target.value)}
  placeholder="Ex: 4500,00"
- className="h-11 rounded-xl text-xs font-mono"
+ className="h-11 rounded-lg text-xs font-mono"
  />
  </div>
 
- <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60">
- <div className="space-y-0.5">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/60">
+ <div className="space-y-1">
  <p className="text-xs font-semibold text-foreground">Tipo de Custo</p>
  <p className="text-[10px] text-muted-foreground">
  {isFixed
@@ -335,14 +335,14 @@ export function GroupTourBudgetManager({
  variant="ghost"
  onClick={() => setModalOpen(false)}
  disabled={submitting}
- className="h-10 px-4 rounded-xl text-xs cursor-pointer"
+ className="h-10 px-4 rounded-lg text-xs cursor-pointer"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={submitting || !description.trim() || !amountStr.trim()}
- className="h-10 px-5 rounded-xl text-xs font-semibold cursor-pointer"
+ className="h-10 px-5 rounded-lg text-xs font-semibold cursor-pointer"
  >
  {submitting ? "Adicionando..." : "Salvar Custo"}
  </Button>

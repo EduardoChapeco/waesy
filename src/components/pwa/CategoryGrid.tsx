@@ -49,7 +49,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
 }) => {
   return (
     <div className="w-full space-y-2 select-none">
-      <div className="flex items-center justify-between px-0.5">
+      <div className="flex items-center justify-between px-1">
         <span className="text-xs font-bold text-foreground tracking-tight">Categorias</span>
         <span className="text-xs text-muted-foreground font-medium">Ver todas</span>
       </div>
@@ -62,7 +62,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
               key={cat.id}
               type="button"
               onClick={() => onSelectCategory?.(cat.id)}
-              className="flex items-center gap-2.5 p-2.5 rounded-xl border border-border/70 bg-card hover:bg-muted/50 transition-colors text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="flex items-center gap-3 p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/50 transition-colors text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               <div
                 style={{ backgroundColor: `${themeColor}15`, color: themeColor }}

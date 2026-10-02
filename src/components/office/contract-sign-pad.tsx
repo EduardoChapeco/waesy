@@ -134,7 +134,7 @@ export function ContractSignPad({
  };
 
  return (
- <div className={'p-6 rounded-2xl bg-card border border-border shadow-xl space-y-5 ' + className}>
+ <div className={'p-6 rounded-lg bg-card border border-border shadow-xl space-y-5 ' + className}>
  <div className="flex items-start justify-between">
  <div>
  <div className="flex items-center gap-2 text-primary font-semibold text-xs tracking-wider uppercase">
@@ -144,24 +144,24 @@ export function ContractSignPad({
  <h3 className="text-lg font-bold text-foreground mt-1">
  {documentTitle || 'Documento Oficial'}
  </h3>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Signatário: <span className="font-medium text-foreground">{signerName}</span> ({signerCpf})
  </p>
  </div>
- <div className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-1.5">
+ <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-2">
  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
  MP 2.200-2/2001
  </div>
  </div>
 
- <div className="p-3 rounded-xl bg-muted/40 border border-border/50 text-xs text-muted-foreground flex items-center gap-2.5">
+ <div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-xs text-muted-foreground flex items-center gap-3">
  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
  <span>
  Desenhe sua assinatura no quadro abaixo utilizando o mouse ou a tela touch do seu celular.
  </span>
  </div>
 
- <div className="relative border-2 border-dashed border-border/80 rounded-2xl bg-white overflow-hidden shadow-inner">
+ <div className="relative border-2 border-dashed border-border/80 rounded-lg bg-white overflow-hidden shadow-inner">
  <canvas
  ref={canvasRef}
  width={500}
@@ -187,7 +187,7 @@ export function ContractSignPad({
  variant="outline"
  size="sm"
  onClick={clearCanvas}
- className="min-h-[44px] px-4 rounded-xl border-border text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground"
+ className="min-h-11 px-4 rounded-lg border-border text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground"
  >
  <Eraser className="w-4 h-4" />
  Limpar Traçado
@@ -199,7 +199,7 @@ export function ContractSignPad({
  type="button"
  variant="ghost"
  onClick={onCancel}
- className="min-h-[44px] px-4 rounded-xl text-xs text-muted-foreground"
+ className="min-h-11 px-4 rounded-lg text-xs text-muted-foreground"
  >
  Cancelar
  </Button>
@@ -208,7 +208,7 @@ export function ContractSignPad({
  type="button"
  disabled={!hasDrawn || isSubmitting}
  onClick={handleConfirm}
- className="min-h-[44px] px-6 rounded-xl bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 shadow-md hover:opacity-90 disabled:opacity-50 transition-all"
+ className="min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 shadow-md hover:opacity-90 disabled:opacity-50 transition-all"
  >
  <CheckCircle2 className="w-4 h-4" />
  {isSubmitting ? 'Gravando Hash...' : 'Concluir Assinatura Digital'}

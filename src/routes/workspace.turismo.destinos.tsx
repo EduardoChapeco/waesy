@@ -612,7 +612,7 @@ export default function WorkspaceDestinationsPage() {
 
  {/* ── 4. GRID DE DESTINOS ── */}
  {filtered.length === 0 ? (
- <div className="py-20 text-center space-y-3 bg-card rounded-2xl border border-border/60 p-8 shadow-xs">
+ <div className="py-20 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8 shadow-xs">
  <Compass className="size-12 mx-auto text-muted-foreground/40" />
  <h3 className="text-sm font-bold text-foreground">Nenhum destino encontrado</h3>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -621,7 +621,7 @@ export default function WorkspaceDestinationsPage() {
  <Button
  size="sm"
  onClick={handleOpenCreate}
- className="rounded-xl text-xs font-bold gap-1.5 h-9 mt-2"
+ className="rounded-lg text-xs font-bold gap-2 h-9 mt-2"
  >
  <Plus className="size-4" />
  <span>Cadastrar Primeiro Destino com Base Canônica</span>
@@ -632,7 +632,7 @@ export default function WorkspaceDestinationsPage() {
  {filtered.map((dest: DestinationDTO) => (
  <Card
  key={dest.id}
- className="rounded-2xl border border-border/70 bg-card overflow-hidden hover:border-primary/50 transition-all flex flex-col justify-between shadow-2xs group"
+ className="rounded-lg border border-border/70 bg-card overflow-hidden hover:border-primary/50 transition-all flex flex-col justify-between shadow-2xs group"
  >
  {/* Capa do Destino */}
  <div className="h-44 w-full relative bg-muted overflow-hidden">
@@ -648,7 +648,7 @@ export default function WorkspaceDestinationsPage() {
  </div>
  )}
 
- <div className="absolute top-3 left-3 flex items-center gap-1.5">
+ <div className="absolute top-3 left-3 flex items-center gap-2">
  <Badge className="bg-background/95 text-foreground border border-border/80 text-xs font-semibold shadow-xs">
  {dest.state ? `${dest.state} • ${dest.country}` : dest.country}
  </Badge>
@@ -664,13 +664,13 @@ export default function WorkspaceDestinationsPage() {
 
  <div className="absolute bottom-2 left-2 flex items-center gap-1">
  {dest.average_rating > 0 && (
- <Badge className="bg-primary text-primary-foreground text-xs font-bold border-none gap-0.5 py-0.5 font-mono">
+ <Badge className="bg-primary text-primary-foreground text-xs font-bold border-none gap-1 py-1 font-mono">
  <span>Nota {dest.average_rating.toFixed(1)}</span>
  </Badge>
  )}
 
  {dest.sections && dest.sections.length > 0 && (
- <Badge variant="secondary" className="bg-background/95 text-foreground border border-border/80 text-xs font-mono gap-1 py-0.5 shadow-xs">
+ <Badge variant="secondary" className="bg-background/95 text-foreground border border-border/80 text-xs font-mono gap-1 py-1 shadow-xs">
  <Layers className="size-2.5 text-primary" />
  <span>{dest.sections.length} seções</span>
  </Badge>
@@ -679,7 +679,7 @@ export default function WorkspaceDestinationsPage() {
 
  {dest.gallery_urls && dest.gallery_urls.length > 0 && (
  <div className="absolute bottom-2 right-2">
- <Badge variant="secondary" className="bg-background/95 text-foreground border border-border/80 text-xs font-mono gap-1 py-0.5 shadow-xs">
+ <Badge variant="secondary" className="bg-background/95 text-foreground border border-border/80 text-xs font-mono gap-1 py-1 shadow-xs">
  <ImageIcon className="size-2.5" />
  <span>+{dest.gallery_urls.length} fotos</span>
  </Badge>
@@ -689,7 +689,7 @@ export default function WorkspaceDestinationsPage() {
 
  {/* Conteúdo do Card */}
  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <h3 className="text-base font-bold text-foreground leading-tight line-clamp-1">
  {dest.name}
@@ -707,9 +707,9 @@ export default function WorkspaceDestinationsPage() {
  </p>
  )}
 
- <div className="space-y-1 pt-1.5 text-xs text-muted-foreground/75 text-muted-foreground border-t border-border/40">
+ <div className="space-y-1 pt-2 text-xs text-muted-foreground/75 text-muted-foreground border-t border-border/40">
  {dest.best_season && (
- <p className="flex items-center gap-1.5 truncate">
+ <p className="flex items-center gap-2 truncate">
  <Sun className="size-3 text-amber-500 shrink-0" />
  <span className="truncate">{dest.best_season}</span>
  </p>
@@ -730,14 +730,14 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  {/* Ações */}
- <div className="pt-2.5 border-t border-border/50 flex items-center justify-between gap-1">
+ <div className="pt-3 border-t border-border/50 flex items-center justify-between gap-1">
  <div className="flex items-center gap-1">
  <Button
  type="button"
  size="sm"
  variant="ghost"
  onClick={() => handleOpenEdit(dest)}
- className="rounded-xl text-xs gap-1.5 h-10 sm:h-8 px-2.5 font-bold cursor-pointer"
+ className="rounded-lg text-xs gap-2 h-10 sm:h-8 px-3 font-bold cursor-pointer"
  >
  <Edit2 className="size-3.5" />
  <span>Editar Studio</span>
@@ -748,7 +748,7 @@ export default function WorkspaceDestinationsPage() {
  size="sm"
  variant="ghost"
  onClick={() => setPreviewModalDest(dest)}
- className="rounded-xl text-xs gap-1 h-10 sm:h-8 px-2 font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+ className="rounded-lg text-xs gap-1 h-10 sm:h-8 px-2 font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
  title="Visualizar Página Completa do Destino"
  >
  <Eye className="size-3.5" />
@@ -782,8 +782,8 @@ export default function WorkspaceDestinationsPage() {
  {/* Header */}
  <SheetHeader className="p-5 pb-4 border-b border-border/80 bg-muted/20">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-xs">
+ <div className="flex items-center gap-3">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shadow-xs">
  <Compass className="size-5" />
  </div>
  <div>
@@ -817,28 +817,28 @@ export default function WorkspaceDestinationsPage() {
  className="flex-1 flex flex-col overflow-hidden"
  >
  <div className="px-5 pt-3 pb-2 border-b border-border/60 bg-card overflow-x-auto no-scrollbar ">
- <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-6 h-9 rounded-xl p-1 bg-muted/50">
- <TabsTrigger value="identificacao" className="text-xs font-bold rounded-lg gap-1.5 py-1">
+ <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-6 h-9 rounded-lg p-1 bg-muted/50">
+ <TabsTrigger value="identificacao" className="text-xs font-bold rounded-lg gap-2 py-1">
  <MapPin className="size-3.5" />
  <span>1. Localização</span>
  </TabsTrigger>
- <TabsTrigger value="midias" className="text-xs font-bold rounded-lg gap-1.5 py-1">
+ <TabsTrigger value="midias" className="text-xs font-bold rounded-lg gap-2 py-1">
  <ImageIcon className="size-3.5" />
  <span>2. Mídias</span>
  </TabsTrigger>
- <TabsTrigger value="secoes" className="text-xs font-bold rounded-lg gap-1.5 py-1">
+ <TabsTrigger value="secoes" className="text-xs font-bold rounded-lg gap-2 py-1">
  <Layers className="size-3.5" />
  <span>3. Seções CMS ({sections.length})</span>
  </TabsTrigger>
- <TabsTrigger value="avaliacoes" className="text-xs font-bold rounded-lg gap-1.5 py-1">
+ <TabsTrigger value="avaliacoes" className="text-xs font-bold rounded-lg gap-2 py-1">
  <Award className="size-3.5" />
  <span>4. Avaliações ({reviews.length})</span>
  </TabsTrigger>
- <TabsTrigger value="tags" className="text-xs font-bold rounded-lg gap-1.5 py-1">
+ <TabsTrigger value="tags" className="text-xs font-bold rounded-lg gap-2 py-1">
  <Tag className="size-3.5" />
  <span>5. Tags e SEO</span>
  </TabsTrigger>
- <TabsTrigger value="preview" className="text-xs font-bold rounded-lg gap-1.5 py-1">
+ <TabsTrigger value="preview" className="text-xs font-bold rounded-lg gap-2 py-1">
  <Eye className="size-3.5" />
  <span>6. Live Preview</span>
  </TabsTrigger>
@@ -849,9 +849,9 @@ export default function WorkspaceDestinationsPage() {
  {/* ── ABA 1: IDENTIFICAÇÃO CANÔNICA & LOCALIZAÇÃO PADRONIZADA ── */}
  <TabsContent value="identificacao" className="m-0 space-y-5">
  {/* Seletor Canônico em Cascata Oficial */}
- <div className="p-4 rounded-2xl bg-muted/40 border border-border/70 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/70 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+ <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <Compass className="size-3.5 text-primary" />
  Autopreenchimento Canônico Oficial (Garante Mensuração Sem Duplicidade)
  </span>
@@ -867,7 +867,7 @@ export default function WorkspaceDestinationsPage() {
  <select
  value={state}
  onChange={(e) => setState(e.target.value)}
- className="w-full h-10 rounded-xl bg-background border border-border px-3 text-xs font-medium cursor-pointer"
+ className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs font-medium cursor-pointer"
  >
  {BRAZIL_STATES.map((st) => (
  <option key={st.uf} value={st.uf}>
@@ -886,7 +886,7 @@ export default function WorkspaceDestinationsPage() {
  if (found) handleApplyPreset(found);
  }}
  defaultValue=""
- className="w-full h-10 rounded-xl bg-background border border-border px-3 text-xs font-medium cursor-pointer"
+ className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs font-medium cursor-pointer"
  >
  <option value="" disabled>
  {canonicalDestinationsForState.length > 0
@@ -903,7 +903,7 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  {/* Busca Global Instantânea em todos os 120+ Destinos */}
- <div className="pt-2 border-t border-border/40 space-y-1.5">
+ <div className="pt-2 border-t border-border/40 space-y-2">
  <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground flex items-center gap-1">
  <Search className="size-3" />
  <span>Ou busque em toda a base nacional/internacional por nome ou aeroporto:</span>
@@ -912,10 +912,10 @@ export default function WorkspaceDestinationsPage() {
  value={canonicalSearch}
  onChange={(e) => setCanonicalSearch(e.target.value)}
  placeholder="Ex: Gramado, Beto Carrero, Porto Seguro, MCZ, Bariloche..."
- className="h-9 text-xs rounded-xl bg-background"
+ className="h-9 text-xs rounded-lg bg-background"
  />
  {filteredCanonicalSearchResults.length > 0 && (
-                  <div className="max-h-36 overflow-y-auto no-scrollbar rounded-xl border border-border/80 bg-background p-1 space-y-1 shadow-xs">
+                  <div className="max-h-36 overflow-y-auto no-scrollbar rounded-lg border border-border/80 bg-background p-1 space-y-1 shadow-xs">
  {filteredCanonicalSearchResults.map((dest) => (
  <div
  key={dest.id}
@@ -939,7 +939,7 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  {/* Campos Estruturados de Identificação */}
- <div className="space-y-3.5">
+ <div className="space-y-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
  <Label className="text-xs font-bold">Nome do Destino Turístico *</Label>
@@ -947,7 +947,7 @@ export default function WorkspaceDestinationsPage() {
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Gramado & Canela / Serra Gaúcha"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
@@ -958,7 +958,7 @@ export default function WorkspaceDestinationsPage() {
  value={city}
  onChange={(e) => setCity(e.target.value)}
  placeholder="Ex: Gramado"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
@@ -970,7 +970,7 @@ export default function WorkspaceDestinationsPage() {
  <select
  value={state}
  onChange={(e) => setState(e.target.value)}
- className="w-full h-10 rounded-xl bg-background border border-border px-3 text-xs"
+ className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs"
  >
  {BRAZIL_STATES.map((st) => (
  <option key={st.uf} value={st.uf}>
@@ -986,7 +986,7 @@ export default function WorkspaceDestinationsPage() {
  value={country}
  onChange={(e) => setCountry(e.target.value)}
  placeholder="Brasil"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
@@ -999,7 +999,7 @@ export default function WorkspaceDestinationsPage() {
  <select
  value={iataGateway}
  onChange={(e) => setIataGateway(e.target.value)}
- className="w-full h-10 rounded-xl bg-background border border-border px-3 text-xs font-mono uppercase"
+ className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs font-mono uppercase"
  >
  <option value="">Sem aeroporto fixo</option>
  {MAJOR_IATA_AIRPORTS.map((a) => (
@@ -1018,7 +1018,7 @@ export default function WorkspaceDestinationsPage() {
  value={bestSeason}
  onChange={(e) => setBestSeason(e.target.value)}
  placeholder="Ex: Outubro a Janeiro (Natal Luz)"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
 
@@ -1027,7 +1027,7 @@ export default function WorkspaceDestinationsPage() {
  <select
  value={timezone}
  onChange={(e) => setTimezone(e.target.value)}
- className="w-full h-10 rounded-xl bg-background border border-border px-3 text-xs"
+ className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs"
  >
  <option value="America/Sao_Paulo (UTC-3)">Brasília / São Paulo (UTC-3)</option>
  <option value="America/Manaus (UTC-4)">Manaus / Pantanal (UTC-4)</option>
@@ -1044,7 +1044,7 @@ export default function WorkspaceDestinationsPage() {
  value={climateType}
  onChange={(e) => setClimateType(e.target.value)}
  placeholder="Ex: Subtropical de Altitude, Tropical Praiano"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </div>
  </div>
@@ -1053,7 +1053,7 @@ export default function WorkspaceDestinationsPage() {
 
  {/* ── ABA 2: MÍDIAS & GALERIA PANORÂMICA ── */}
  <TabsContent value="midias" className="m-0 space-y-5">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Foto de Capa do Destino (Panorâmica 16:9) *</Label>
  <ImageUpload
  value={coverImageUrl}
@@ -1070,7 +1070,7 @@ export default function WorkspaceDestinationsPage() {
  {/* Galeria de Fotos Múltiplas */}
  <div className="space-y-3">
  <div className="flex items-center justify-between">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <Label className="text-xs font-bold">Galeria de Mídias e Fotos do Destino</Label>
  <p className="text-xs text-muted-foreground/75 text-muted-foreground">
  Imagens em alta resolução de praias, pontos turísticos, hotéis e passeios para ilustrar roteiros.
@@ -1096,7 +1096,7 @@ export default function WorkspaceDestinationsPage() {
  variant="secondary"
  onClick={() => galleryInputRef.current?.click()}
  disabled={isUploadingGallery}
- className="rounded-xl text-xs font-bold h-10 gap-2 cursor-pointer shrink-0 shadow-2xs"
+ className="rounded-lg text-xs font-bold h-10 gap-2 cursor-pointer shrink-0 shadow-2xs"
  >
  {isUploadingGallery ? (
  <>
@@ -1116,7 +1116,7 @@ export default function WorkspaceDestinationsPage() {
  value={newGalleryUrlInput}
  onChange={(e) => setNewGalleryUrlInput(e.target.value)}
  placeholder="Ou cole a URL direta de uma foto (https://...)"
- className="h-10 text-xs rounded-xl flex-1"
+ className="h-10 text-xs rounded-lg flex-1"
  onKeyDown={(e) => {
  if (e.key === "Enter") {
  e.preventDefault();
@@ -1129,7 +1129,7 @@ export default function WorkspaceDestinationsPage() {
  size="sm"
  variant="outline"
  onClick={handleAddGalleryUrl}
- className="rounded-xl text-xs font-bold h-10 px-4 gap-1 shrink-0"
+ className="rounded-lg text-xs font-bold h-10 px-4 gap-1 shrink-0"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
@@ -1142,11 +1142,11 @@ export default function WorkspaceDestinationsPage() {
  {galleryUrls.map((url, idx) => (
  <div
  key={idx}
- className="group relative rounded-2xl overflow-hidden border border-border/70 bg-muted aspect-video shadow-2xs"
+ className="group relative rounded-lg overflow-hidden border border-border/70 bg-muted aspect-video shadow-2xs"
  >
  <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
  <div className="absolute top-1 left-1">
- <Badge className="bg-black/60 text-xs text-white border-none py-0 px-1.5 font-mono">
+ <Badge className="bg-black/60 text-xs text-white border-none py-0 px-2 font-mono">
  #{idx + 1}
  </Badge>
  </div>
@@ -1163,7 +1163,7 @@ export default function WorkspaceDestinationsPage() {
  ) : (
  <div
  onClick={() => galleryInputRef.current?.click()}
- className="p-8 rounded-2xl bg-muted/20 border-2 border-dashed border-border/80 text-center text-muted-foreground text-xs hover:border-border hover:bg-muted/30 transition-all cursor-pointer flex flex-col items-center gap-1.5"
+ className="p-8 rounded-lg bg-muted/20 border-2 border-dashed border-border/80 text-center text-muted-foreground text-xs hover:border-border hover:bg-muted/30 transition-all cursor-pointer flex flex-col items-center gap-2"
  >
  <UploadCloud className="size-8 text-muted-foreground/60" />
  <span className="font-semibold text-foreground">Nenhuma foto adicional na galeria</span>
@@ -1176,9 +1176,9 @@ export default function WorkspaceDestinationsPage() {
  {/* ── ABA 3: SEÇÕES DO DESTINO (CMS STUDIO MODULAR) ── */}
  <TabsContent value="secoes" className="m-0 space-y-6">
  {/* Seletor de Tipo de Seção para Adicionar */}
- <div className="p-4 rounded-2xl bg-muted/30 border border-border/70 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <ListPlus className="size-4 text-primary" />
  Adicionar Bloco de Conteúdo Rico ao Destino
  </span>
@@ -1200,7 +1200,7 @@ export default function WorkspaceDestinationsPage() {
  key={item.type}
  type="button"
  onClick={() => handleAddSection(item.type as any)}
- className="p-3 rounded-xl border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all text-left space-y-0.5 cursor-pointer shadow-2xs"
+ className="p-3 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all text-left space-y-1 cursor-pointer shadow-2xs"
  >
  <span className="text-xs font-bold text-foreground block">{item.label}</span>
  <span className="text-xs text-muted-foreground block leading-tight">{item.desc}</span>
@@ -1211,7 +1211,7 @@ export default function WorkspaceDestinationsPage() {
 
  {/* Lista de Seções Adicionadas */}
  {sections.length === 0 ? (
- <div className="p-10 rounded-2xl border border-border/60 bg-muted/10 text-center space-y-2">
+ <div className="p-10 rounded-lg border border-border/60 bg-muted/10 text-center space-y-2">
  <Layers className="size-8 mx-auto text-muted-foreground/40" />
  <p className="text-xs font-bold text-foreground">Nenhuma seção personalizada adicionada ainda</p>
  <p className="text-xs text-muted-foreground/75 text-muted-foreground max-w-md mx-auto">
@@ -1221,9 +1221,9 @@ export default function WorkspaceDestinationsPage() {
  ) : (
  <div className="space-y-4">
  {sections.map((section, idx) => (
- <Card key={section.id || idx} className="p-4 rounded-2xl border border-border/80 bg-card space-y-3.5 shadow-2xs">
+ <Card key={section.id || idx} className="p-4 rounded-lg border border-border/80 bg-card space-y-4 shadow-2xs">
  {/* Top bar da Seção */}
- <div className="flex items-center justify-between pb-2.5 border-b border-border/60">
+ <div className="flex items-center justify-between pb-3 border-b border-border/60">
  <div className="flex items-center gap-2">
  <Badge className="bg-primary/10 text-primary border-none text-xs font-mono font-bold">
  #{idx + 1}
@@ -1287,7 +1287,7 @@ export default function WorkspaceDestinationsPage() {
  value={section.title}
  onChange={(e) => handleUpdateSection(idx, { title: e.target.value })}
  placeholder="Ex: Encante-se com Gramado"
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1">
@@ -1296,7 +1296,7 @@ export default function WorkspaceDestinationsPage() {
  value={section.subtitle || ""}
  onChange={(e) => handleUpdateSection(idx, { subtitle: e.target.value })}
  placeholder="Ex: Informações e Dicas"
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  </div>
@@ -1321,7 +1321,7 @@ export default function WorkspaceDestinationsPage() {
  <select
  value={section.layout_variant || "left"}
  onChange={(e) => handleUpdateSection(idx, { layout_variant: e.target.value as any })}
- className="w-full h-9 rounded-xl bg-background border border-border px-3 text-xs"
+ className="w-full h-9 rounded-lg bg-background border border-border px-3 text-xs"
  >
  <option value="left">Imagem na Esquerda, Texto na Direita</option>
  <option value="right">Imagem na Direita, Texto na Esquerda</option>
@@ -1337,7 +1337,7 @@ export default function WorkspaceDestinationsPage() {
  onChange={(e) => handleUpdateSection(idx, { content_text: e.target.value })}
  placeholder="Escreva a descrição detalhada, dicas e atrativos..."
  rows={3}
- className="text-xs rounded-xl resize-none"
+ className="text-xs rounded-lg resize-none"
  />
  </div>
  </div>
@@ -1345,7 +1345,7 @@ export default function WorkspaceDestinationsPage() {
 
  {/* Seção Grid de Itens (Atrações, FAQ, Dicas, etc.) */}
  {section.type !== "photo_text" && (
- <div className="space-y-2.5 pt-1">
+ <div className="space-y-3 pt-1">
  <div className="flex items-center justify-between">
  <Label className="text-xs text-muted-foreground/75 font-bold">
  Itens / Cartões da Seção ({section.items?.length || 0})
@@ -1364,7 +1364,7 @@ export default function WorkspaceDestinationsPage() {
  };
  handleUpdateSection(idx, { items: [...currentItems, newItem] });
  }}
- className="rounded-xl text-xs text-muted-foreground/75 font-bold h-7 px-2.5 gap-1"
+ className="rounded-lg text-xs text-muted-foreground/75 font-bold h-7 px-3 gap-1"
  >
  <Plus className="size-3" />
  <span>+ Adicionar Item</span>
@@ -1375,7 +1375,7 @@ export default function WorkspaceDestinationsPage() {
  {(section.items || []).map((item, itemIdx) => (
  <div
  key={item.id || itemIdx}
- className="p-3 rounded-xl border border-border/70 bg-muted/20 flex flex-col gap-2"
+ className="p-3 rounded-lg border border-border/70 bg-muted/20 flex flex-col gap-2"
  >
  <div className="flex items-center gap-2">
  <Input
@@ -1435,9 +1435,9 @@ export default function WorkspaceDestinationsPage() {
 
  {/* ── ABA 4: AVALIAÇÕES DE VIAJANTES & PROVAS SOCIAIS ── */}
  <TabsContent value="avaliacoes" className="m-0 space-y-5">
- <div className="p-4 rounded-2xl bg-muted/40 border border-border/70 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/70 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Award className="size-4 text-primary" />
  Cadastrar Nova Avaliação de Viajante
  </span>
@@ -1450,7 +1450,7 @@ export default function WorkspaceDestinationsPage() {
  value={newReviewAuthor}
  onChange={(e) => setNewReviewAuthor(e.target.value)}
  placeholder="Ex: Família Silveira"
- className="h-9 text-xs rounded-xl bg-background"
+ className="h-9 text-xs rounded-lg bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -1459,7 +1459,7 @@ export default function WorkspaceDestinationsPage() {
  value={newReviewCity}
  onChange={(e) => setNewReviewCity(e.target.value)}
  placeholder="Ex: Chapecó - SC"
- className="h-9 text-xs rounded-xl bg-background"
+ className="h-9 text-xs rounded-lg bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -1471,7 +1471,7 @@ export default function WorkspaceDestinationsPage() {
  type="button"
  onClick={() => setNewReviewRating(s)}
  className={cn(
- "size-8 rounded-xl font-bold font-mono text-xs border transition-all cursor-pointer",
+ "size-8 rounded-lg font-bold font-mono text-xs border transition-all cursor-pointer",
  s === newReviewRating
  ? "bg-primary text-primary-foreground border-primary shadow-2xs"
  : "bg-background border-border/80 text-muted-foreground hover:bg-muted"
@@ -1491,7 +1491,7 @@ export default function WorkspaceDestinationsPage() {
  onChange={(e) => setNewReviewComment(e.target.value)}
  placeholder="Descreva a experiência, elogios aos passeios e dicas..."
  rows={3}
- className="text-xs rounded-xl resize-none bg-background"
+ className="text-xs rounded-lg resize-none bg-background"
  />
  </div>
 
@@ -1500,7 +1500,7 @@ export default function WorkspaceDestinationsPage() {
  type="button"
  size="sm"
  onClick={handleAddReview}
- className="rounded-xl text-xs font-bold h-9 px-4 gap-1.5 bg-primary text-primary-foreground"
+ className="rounded-lg text-xs font-bold h-9 px-4 gap-2 bg-primary text-primary-foreground"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Depoimento</span>
@@ -1523,7 +1523,7 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  {reviews.length === 0 ? (
- <div className="p-8 text-center rounded-2xl border border-border/60 text-muted-foreground text-xs">
+ <div className="p-8 text-center rounded-lg border border-border/60 text-muted-foreground text-xs">
  Nenhuma avaliação registrada ainda. Adicione avaliações acima para exibir provas sociais nos orçamentos.
  </div>
  ) : (
@@ -1531,7 +1531,7 @@ export default function WorkspaceDestinationsPage() {
  {reviews.map((rev) => (
  <div
  key={rev.id}
- className="p-3.5 rounded-2xl border border-border bg-card space-y-2 relative group shadow-2xs"
+ className="p-4 rounded-lg border border-border bg-card space-y-2 relative group shadow-2xs"
  >
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
@@ -1548,8 +1548,8 @@ export default function WorkspaceDestinationsPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-0.5">
- <span className="px-2 py-0.5 rounded-md bg-muted text-foreground font-mono font-bold text-xs">
+ <div className="flex items-center gap-1">
+ <span className="px-2 py-1 rounded-md bg-muted text-foreground font-mono font-bold text-xs">
  Nota {rev.rating} / 5
  </span>
  </div>
@@ -1590,7 +1590,7 @@ export default function WorkspaceDestinationsPage() {
  key={tag}
  variant={isSelected ? "default" : "outline"}
  onClick={() => toggleTag(tag)}
- className={`cursor-pointer text-xs py-1.5 px-3 rounded-xl transition-all ${
+ className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all ${
  isSelected ? "bg-primary text-primary-foreground font-bold shadow-xs" : "hover:bg-muted"
  }`}
  >
@@ -1605,7 +1605,7 @@ export default function WorkspaceDestinationsPage() {
  <hr className="border-border/60" />
 
  <div className="space-y-3">
- <Label className="text-xs font-bold flex items-center gap-1.5">
+ <Label className="text-xs font-bold flex items-center gap-2">
  <Globe2 className="size-4 text-primary" />
  Configurações de SEO e Vitrine Pública
  </Label>
@@ -1616,7 +1616,7 @@ export default function WorkspaceDestinationsPage() {
  value={seoTitle}
  onChange={(e) => setSeoTitle(e.target.value)}
  placeholder={`Pacotes de Viagem para ${name || "Destino"} | Melhores Roteiros`}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
 
@@ -1627,7 +1627,7 @@ export default function WorkspaceDestinationsPage() {
  onChange={(e) => setSeoDescription(e.target.value)}
  placeholder={`Conheça os melhores passeios, hotéis e atrativos em ${name || "este destino"}. Pacotes com aéreo, transfer e guia exclusivo.`}
  rows={2}
- className="text-xs rounded-xl resize-none"
+ className="text-xs rounded-lg resize-none"
  />
  </div>
  </div>
@@ -1635,7 +1635,7 @@ export default function WorkspaceDestinationsPage() {
 
  {/* ── ABA 6: LIVE PREVIEW DA PÁGINA COMPLETA DO DESTINO ── */}
  <TabsContent value="preview" className="m-0 space-y-6">
-            <div className="rounded-2xl border border-border/80 overflow-hidden bg-background shadow-xs">
+            <div className="rounded-lg border border-border/80 overflow-hidden bg-background shadow-xs">
  {/* Hero Panorâmico do Destino */}
  <div className="relative h-64 sm:h-80 w-full overflow-hidden bg-muted">
  {coverImageUrl ? (
@@ -1702,7 +1702,7 @@ export default function WorkspaceDestinationsPage() {
  {sec.type === "photo_text" && (
  <div className={`grid grid-cols-1 ${sec.media_urls?.[0] ? "md:grid-cols-2" : ""} gap-6 items-center`}>
  {sec.media_urls?.[0] && (
- <div className="rounded-2xl overflow-hidden aspect-video bg-muted border border-border shadow-xs">
+ <div className="rounded-lg overflow-hidden aspect-video bg-muted border border-border shadow-xs">
  <img src={sec.media_urls[0]} alt={sec.title} className="w-full h-full object-cover" />
  </div>
  )}
@@ -1715,7 +1715,7 @@ export default function WorkspaceDestinationsPage() {
  {sec.items && sec.items.length > 0 && (
  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
  {sec.items.map((item, itIdx) => (
- <div key={item.id || itIdx} className="p-3.5 rounded-2xl border border-border/80 bg-muted/10 space-y-1.5 shadow-2xs">
+ <div key={item.id || itIdx} className="p-4 rounded-lg border border-border/80 bg-muted/10 space-y-2 shadow-2xs">
  <div className="flex items-center justify-between">
  <h4 className="text-xs font-bold text-foreground">{item.title}</h4>
  {item.badge && (
@@ -1740,7 +1740,7 @@ export default function WorkspaceDestinationsPage() {
  <h3 className="text-sm font-bold text-foreground">Galeria de Fotos do Destino</h3>
  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
  {galleryUrls.map((url, idx) => (
- <div key={idx} className="rounded-2xl overflow-hidden aspect-video bg-muted border border-border shadow-2xs">
+ <div key={idx} className="rounded-lg overflow-hidden aspect-video bg-muted border border-border shadow-2xs">
  <img src={url} alt="Galeria" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
  </div>
  ))}
@@ -1760,7 +1760,7 @@ export default function WorkspaceDestinationsPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsSheetOpen(false)}
- className="rounded-xl text-xs h-10 px-4 cursor-pointer"
+ className="rounded-lg text-xs h-10 px-4 cursor-pointer"
  >
  Cancelar
  </Button>
@@ -1771,7 +1771,7 @@ export default function WorkspaceDestinationsPage() {
  size="sm"
  variant="outline"
  onClick={() => setActiveTab("preview")}
- className="rounded-xl text-xs font-semibold h-10 px-4 gap-1.5 cursor-pointer"
+ className="rounded-lg text-xs font-semibold h-10 px-4 gap-2 cursor-pointer"
  >
  <Eye className="size-4 text-muted-foreground" />
  <span>Ver Preview</span>
@@ -1782,7 +1782,7 @@ export default function WorkspaceDestinationsPage() {
  size="sm"
  disabled={createMut.isPending || updateMut.isPending || !name.trim()}
  onClick={handleSubmit}
- className="rounded-xl text-xs font-bold h-10 px-6 bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer shadow-xs"
+ className="rounded-lg text-xs font-bold h-10 px-6 bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer shadow-xs"
  >
  <CheckCircle2 className="size-4 text-emerald-500" />
  <span>
@@ -1817,7 +1817,7 @@ export default function WorkspaceDestinationsPage() {
  </SheetHeader>
 
  <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-6">
- <div className="rounded-2xl overflow-hidden aspect-video relative bg-muted">
+ <div className="rounded-lg overflow-hidden aspect-video relative bg-muted">
  {previewModalDest.cover_image_url && (
  <img
  src={previewModalDest.cover_image_url}
@@ -1844,7 +1844,7 @@ export default function WorkspaceDestinationsPage() {
  <div className="space-y-4">
  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Seções Detalhadas</h3>
  {previewModalDest.sections.map((s, idx) => (
- <div key={idx} className="p-4 rounded-2xl border border-border/80 bg-muted/10 space-y-2">
+ <div key={idx} className="p-4 rounded-lg border border-border/80 bg-muted/10 space-y-2">
  <h4 className="text-xs font-bold text-foreground">{s.title}</h4>
  {s.content_text && <p className="text-xs text-muted-foreground leading-relaxed">{s.content_text}</p>}
  </div>

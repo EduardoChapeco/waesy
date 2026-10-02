@@ -184,10 +184,10 @@ export function BusFleetSelectorModal({
 
  return (
  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
- <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-2xl bg-card border border-border shadow-2xl">
+ <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-2xl">
  <DialogHeader className="p-5 border-b border-border/70 bg-muted/20">
- <div className="flex items-center gap-2.5">
- <div className="p-2 rounded-xl bg-primary/10 text-primary">
+ <div className="flex items-center gap-3">
+ <div className="p-2 rounded-lg bg-primary/10 text-primary">
  <Bus className="size-4" />
  </div>
  <div>
@@ -208,23 +208,23 @@ export function BusFleetSelectorModal({
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  placeholder="Buscar veículo por modelo, placa ou viação..."
- className="h-10 pl-9 rounded-xl text-xs bg-muted/20"
+ className="h-10 pl-9 rounded-lg text-xs bg-muted/20"
  />
  </div>
 
- <div className="space-y-2.5">
+ <div className="space-y-3">
  {filteredVehicles.map((v) => (
  <div
  key={v.id}
  onClick={() => setSelectedId(v.id)}
- className={'p-4 rounded-2xl border transition-all cursor-pointer space-y-2.5 ' + (
+ className={'p-4 rounded-lg border transition-all cursor-pointer space-y-3 ' + (
  selectedId === v.id
  ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary'
  : 'border-border bg-card hover:border-border/80'
  )}
  >
  <div className="flex items-start justify-between">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <div className="flex items-center gap-2">
  <span className="text-xs font-bold text-foreground">{v.name}</span>
  {v.isDoubleDecker && (
@@ -242,7 +242,7 @@ export function BusFleetSelectorModal({
 
  <div className="flex flex-wrap gap-1 pt-1">
  {v.amenities.map((a, i) => (
- <span key={i} className="px-2 py-0.5 rounded-md bg-muted text-[10px] text-muted-foreground font-medium">
+ <span key={i} className="px-2 py-1 rounded-md bg-muted text-[10px] text-muted-foreground font-medium">
  {a}
  </span>
  ))}
@@ -260,13 +260,13 @@ export function BusFleetSelectorModal({
  </div>
 
  <DialogFooter className="p-4 border-t border-border/70 bg-muted/10 flex items-center justify-between sm:justify-between">
- <Button type="button" variant="ghost" onClick={onClose} className="rounded-xl text-xs">
+ <Button type="button" variant="ghost" onClick={onClose} className="rounded-lg text-xs">
  Cancelar
  </Button>
  <Button
  type="button"
  onClick={handleConfirm}
- className="rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-md px-5"
+ className="rounded-lg bg-primary text-primary-foreground font-bold text-xs shadow-md px-5"
  >
  Vincular Ônibus Selecionado
  </Button>

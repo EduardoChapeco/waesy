@@ -125,19 +125,19 @@ function AIConfigurationPage() {
  <Cpu className="size-5 text-primary" />
  <span>Inteligência Artificial</span>
  </h1>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Gerencie chaves criptografadas de provedores de Inteligência Artificial e automação.
  </p>
  </div>
 
  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
  <DialogTrigger asChild>
- <Button size="sm" className="rounded-xl text-xs font-bold gap-1.5 ">
+ <Button size="sm" className="rounded-lg text-xs font-bold gap-2 ">
  <Plus className="size-4" />
  <span>Conectar Provedor (BYOK)</span>
  </Button>
  </DialogTrigger>
- <DialogContent className="sm:max-w-md sm:rounded-2xl">
+ <DialogContent className="sm:max-w-md sm:rounded-lg">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold flex items-center gap-2">
  <Key className="size-5 text-primary" />
@@ -150,10 +150,10 @@ function AIConfigurationPage() {
  </DialogHeader>
 
  <div className="space-y-4 py-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Provedor</Label>
  <Select value={provider} onValueChange={setProvider}>
- <SelectTrigger className="h-10 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -166,17 +166,17 @@ function AIConfigurationPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Rótulo / Identificador</Label>
  <Input
  value={label}
  onChange={(e) => setLabel(e.target.value)}
  placeholder="Ex: Gemini Produção Loja"
- className="h-10 rounded-xl text-xs bg-background"
+ className="h-10 rounded-lg text-xs bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Chave de API (Secret Key) *</Label>
  <div className="relative">
  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
@@ -185,25 +185,25 @@ function AIConfigurationPage() {
  value={secretKey}
  onChange={(e) => setSecretKey(e.target.value)}
  placeholder="Cole aqui sua API Key..."
- className="pl-8 h-10 rounded-xl text-xs bg-background font-mono"
+ className="pl-8 h-10 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Orçamento Diário Máximo (R$)</Label>
  <Input
  value={dailyBudgetCents}
  onChange={(e) => setDailyBudgetCents(e.target.value)}
  placeholder="0 (Sem limite de rate-limit)"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
 
  <Button
  onClick={handleSaveKey}
  disabled={saveMutation.isPending}
- className="w-full h-10 rounded-xl text-xs font-bold gap-2 mt-2"
+ className="w-full h-10 rounded-lg text-xs font-bold gap-2 mt-2"
  >
  {saveMutation.isPending ? (
  <>
@@ -223,7 +223,7 @@ function AIConfigurationPage() {
  </div>
 
  {/* Card de Quotas de IA & Arquitetura Dual (V141) */}
- <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-4">
+ <div className="p-5 rounded-lg border border-border/60 bg-card shadow-2xs space-y-4">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div>
  <div className="flex items-center gap-2">
@@ -241,7 +241,7 @@ function AIConfigurationPage() {
  </Badge>
  )}
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  {quota?.planTier === "WAESY_MAX"
  ? "Franquia expandida de 200 chamadas mensais com inteligência profunda multissetorial."
  : "Franquia essencial de 10 chamadas mensais para operações de catálogo e anúncios."}
@@ -293,7 +293,7 @@ function AIConfigurationPage() {
 
  {/* Grid de Provedores Conectados */}
  <div className="space-y-3">
- <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+ <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <Key className="size-3.5 text-primary" />
  Provedores Ativos no Cofre
  </h2>
@@ -314,11 +314,11 @@ function AIConfigurationPage() {
  return (
  <div
  key={sec.id}
- className=" bg-card rounded-2xl p-5 space-y-3"
+ className=" bg-card rounded-lg p-5 space-y-3"
  >
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
  <Bot className="size-4" />
  </div>
  <div>
@@ -327,7 +327,7 @@ function AIConfigurationPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs font-mono">
                       {sec.masked_suffix}
                     </Badge>
@@ -358,7 +358,7 @@ function AIConfigurationPage() {
  })}
  </div>
  ) : (
- <div className="bg-card rounded-2xl p-8 border border-border/60 text-center space-y-2">
+ <div className="bg-card rounded-lg p-8 border border-border/60 text-center space-y-2">
  <Key className="size-8 mx-auto text-muted-foreground/50" />
  <p className="text-xs font-semibold text-foreground">Nenhuma API Key conectada</p>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -370,14 +370,14 @@ function AIConfigurationPage() {
  </div>
 
  {/* Roteador de Capabilities de IA */}
- <div className="bg-card rounded-2xl p-6 border border-border/60 space-y-4">
+ <div className="bg-card rounded-lg p-6 border border-border/60 space-y-4">
  <div className="flex items-center gap-2">
  <Sliders className="size-4 text-primary" />
  <h2 className="text-sm font-bold text-foreground">Roteador de Modelos por Capacidade</h2>
  </div>
 
- <div className="space-y-2.5">
- <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
+ <div className="space-y-3">
+ <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
  <div>
  <p className="font-bold text-foreground">Assistente de Cláusulas e Contratos</p>
  <p className="text-xs text-muted-foreground">
@@ -389,7 +389,7 @@ function AIConfigurationPage() {
  </Badge>
  </div>
 
- <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
+ <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
  <div>
  <p className="font-bold text-foreground">Copywriter de Produtos e Classificados</p>
  <p className="text-xs text-muted-foreground">
@@ -401,7 +401,7 @@ function AIConfigurationPage() {
  </Badge>
  </div>
 
- <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
+ <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
  <div>
  <p className="font-bold text-foreground">Visão Computacional e OCR de Documentos</p>
  <p className="text-xs text-muted-foreground">

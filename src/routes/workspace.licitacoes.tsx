@@ -181,13 +181,13 @@ export default function WorkspaceTendersPage() {
               PNCP Gov Harvester
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Oportunidades municipais e estaduais mineradas em tempo real com análise preditiva de IA.
           </p>
         </div>
 
         {wallet && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border/60 bg-card text-xs">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/60 bg-card text-xs">
             <Coins className="size-3.5 text-primary" />
             <span className="text-muted-foreground">Saldo:</span>
             <span className="font-semibold text-foreground">{(wallet.balance || 0).toLocaleString()}</span>
@@ -198,7 +198,7 @@ export default function WorkspaceTendersPage() {
 
       {/* Grid de Métricas B2B */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 rounded-xl border border-border/60 bg-card">
+        <div className="p-4 rounded-lg border border-border/60 bg-card">
           <span className="text-xs text-muted-foreground font-medium block">Editais Abertos</span>
           <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
             {tenders.length}
@@ -206,7 +206,7 @@ export default function WorkspaceTendersPage() {
           <span className="text-xs text-muted-foreground">Chapecó e Região Oeste</span>
         </div>
 
-        <div className="p-4 rounded-xl border border-border/60 bg-card">
+        <div className="p-4 rounded-lg border border-border/60 bg-card">
           <span className="text-xs text-muted-foreground font-medium block">Volume em Disputa</span>
           <div className="text-2xl font-bold tracking-tight text-primary mt-1">
             {totalAmountBrl.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
@@ -214,7 +214,7 @@ export default function WorkspaceTendersPage() {
           <span className="text-xs text-muted-foreground">valor total estimado</span>
         </div>
 
-        <div className="p-4 rounded-xl border border-border/60 bg-card">
+        <div className="p-4 rounded-lg border border-border/60 bg-card">
           <span className="text-xs text-muted-foreground font-medium block">Dossiês Desbloqueados</span>
           <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
             {tenders.filter((t) => t.is_unlocked).length}
@@ -222,7 +222,7 @@ export default function WorkspaceTendersPage() {
           <span className="text-xs text-muted-foreground">com checklist de proposta</span>
         </div>
 
-        <div className="p-4 rounded-xl border border-border/60 bg-card">
+        <div className="p-4 rounded-lg border border-border/60 bg-card">
           <span className="text-xs text-muted-foreground font-medium block">Alertas de Nicho</span>
           <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
             {alertKeywords.length}
@@ -233,7 +233,7 @@ export default function WorkspaceTendersPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-xl h-10">
+        <TabsList className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-lg h-10">
           <TabsTrigger value="oportunidades" className="text-xs">
             Oportunidades em Aberto
           </TabsTrigger>
@@ -245,7 +245,7 @@ export default function WorkspaceTendersPage() {
         {/* Tab 1: Oportunidades */}
         <TabsContent value="oportunidades" className="space-y-4">
           {/* Barra de Filtros Silenciosa */}
-          <div className="p-3.5 rounded-xl border border-border/60 bg-card flex flex-col md:flex-row items-center gap-3">
+          <div className="p-4 rounded-lg border border-border/60 bg-card flex flex-col md:flex-row items-center gap-3">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
               <Input
@@ -271,7 +271,7 @@ export default function WorkspaceTendersPage() {
               </Select>
 
               <Select value={selectedModality} onValueChange={setSelectedModality}>
-                <SelectTrigger className="w-[160px] h-9 text-xs">
+                <SelectTrigger className="w-40 h-9 text-xs">
                   <SelectValue placeholder="Modalidade" />
                 </SelectTrigger>
                 <SelectContent>
@@ -288,7 +288,7 @@ export default function WorkspaceTendersPage() {
                 onClick={() => {
                   setFilterUnlockedOnly(!filterUnlockedOnly);
                 }}
-                className="h-9 px-3 text-xs gap-1.5"
+                className="h-9 px-3 text-xs gap-2"
               >
                 <ShieldCheck className="size-3.5" />
                 Desbloqueados
@@ -303,7 +303,7 @@ export default function WorkspaceTendersPage() {
           {/* Lista de Editais */}
           <div className="space-y-3">
             {tenders.length === 0 ? (
-              <div className="p-12 text-center rounded-xl border border-dashed border-border/80 bg-card">
+              <div className="p-12 text-center rounded-lg border border-dashed border-border/80 bg-card">
                 <FileText className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
                 <h3 className="text-sm font-semibold">Nenhuma licitação encontrada</h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
@@ -329,9 +329,9 @@ export default function WorkspaceTendersPage() {
                 return (
                   <div
                     key={t.id}
-                    className="p-4 rounded-xl border border-border/60 bg-card hover:border-border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    className="p-4 rounded-lg border border-border/60 bg-card hover:border-border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
-                    <div className="space-y-1.5 flex-1 min-w-0">
+                    <div className="space-y-2 flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="secondary" className="text-xs font-medium">
                           {t.modality}
@@ -371,7 +371,7 @@ export default function WorkspaceTendersPage() {
                       <Button
                         onClick={() => handleUnlockTender(t)}
                         variant={t.is_unlocked ? "secondary" : "outline"}
-                        className="gap-1.5 text-xs h-8 font-medium"
+                        className="gap-2 text-xs h-8 font-medium"
                       >
                         {t.is_unlocked ? (
                           <>
@@ -382,7 +382,7 @@ export default function WorkspaceTendersPage() {
                           <>
                             <Star className="size-3 text-amber-500" />
                             Ver Dossiê IA
-                            <span className="text-xs text-muted-foreground font-mono ml-0.5">
+                            <span className="text-xs text-muted-foreground font-mono ml-1">
                               [ -100 Tokens ]
                             </span>
                           </>
@@ -399,10 +399,10 @@ export default function WorkspaceTendersPage() {
 
         {/* Tab 2: Filtros & Alertas */}
         <TabsContent value="alertas" className="space-y-4">
-          <div className="p-5 rounded-xl border border-border/60 bg-card space-y-5 max-w-2xl">
+          <div className="p-5 rounded-lg border border-border/60 bg-card space-y-5 max-w-2xl">
             <div>
               <h2 className="text-base font-bold text-foreground">Radar de Alertas Proativo</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1">
                 Defina palavras-chave do seu nicho. Quando o Gov Harvester minerar uma licitação correspondente no PNCP, você será notificado imediatamente.
               </p>
             </div>
@@ -424,9 +424,9 @@ export default function WorkspaceTendersPage() {
                 </Button>
               </div>
 
-              <div className="flex flex-wrap gap-1.5 pt-2">
+              <div className="flex flex-wrap gap-2 pt-2">
                 {alertKeywords.map((kw) => (
-                  <Badge key={kw} variant="secondary" className="text-xs py-1 px-2.5 gap-1.5">
+                  <Badge key={kw} variant="secondary" className="text-xs py-1 px-3 gap-2">
                     {kw}
                     <button
                       onClick={() => handleRemoveKeyword(kw)}
@@ -441,7 +441,7 @@ export default function WorkspaceTendersPage() {
 
             <div className="pt-3 border-t border-border/40 flex justify-end">
               <Button onClick={handleSaveAlerts} disabled={isSavingAlert} className="text-xs font-semibold h-9">
-                {isSavingAlert ? <Loader2 className="size-3.5 animate-spin mr-1.5" /> : null}
+                {isSavingAlert ? <Loader2 className="size-3.5 animate-spin mr-2" /> : null}
                 Salvar Configurações de Radar
               </Button>
             </div>
@@ -484,8 +484,8 @@ export default function WorkspaceTendersPage() {
               ) : selectedTender.ai_curated_digest ? (
                 <div className="space-y-5 text-xs">
                   {/* Resumo Executivo */}
-                  <div className="p-4 rounded-xl bg-muted/40 border border-border/50 space-y-2">
-                    <span className="font-semibold text-foreground flex items-center gap-1.5">
+                  <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-2">
+                    <span className="font-semibold text-foreground flex items-center gap-2">
                       <Star className="size-3.5 text-amber-500" />
                       Resumo Executivo do Objeto
                     </span>
@@ -497,14 +497,14 @@ export default function WorkspaceTendersPage() {
                   {/* Requisitos de Habilitação */}
                   {selectedTender.ai_curated_digest.qualification_requirements && (
                     <div className="space-y-2">
-                      <span className="font-semibold text-foreground flex items-center gap-1.5">
+                      <span className="font-semibold text-foreground flex items-center gap-2">
                         <ShieldCheck className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                         Requisitos de Habilitação Exigidos
                       </span>
-                      <ul className="space-y-1.5 pl-1">
+                      <ul className="space-y-2 pl-1">
                         {selectedTender.ai_curated_digest.qualification_requirements.map((req, idx) => (
                           <li key={idx} className="flex items-start gap-2 text-muted-foreground">
-                            <span className="size-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                            <span className="size-1.5 rounded-full bg-emerald-500 mt-2 shrink-0" />
                             <span>{req}</span>
                           </li>
                         ))}
@@ -515,14 +515,14 @@ export default function WorkspaceTendersPage() {
                   {/* Datas Críticas */}
                   {selectedTender.ai_curated_digest.critical_milestones && (
                     <div className="space-y-2">
-                      <span className="font-semibold text-foreground flex items-center gap-1.5">
+                      <span className="font-semibold text-foreground flex items-center gap-2">
                         <Clock className="size-3.5 text-primary" />
                         Cronograma e Prazos Críticos
                       </span>
-                      <ul className="space-y-1.5 pl-1">
+                      <ul className="space-y-2 pl-1">
                         {selectedTender.ai_curated_digest.critical_milestones.map((m, idx) => (
                           <li key={idx} className="flex items-start gap-2 text-muted-foreground">
-                            <span className="size-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                            <span className="size-1.5 rounded-full bg-primary mt-2 shrink-0" />
                             <span>{m}</span>
                           </li>
                         ))}
@@ -533,14 +533,14 @@ export default function WorkspaceTendersPage() {
                   {/* Checklist da Proposta */}
                   {selectedTender.ai_curated_digest.proposal_checklist && (
                     <div className="space-y-2">
-                      <span className="font-semibold text-foreground flex items-center gap-1.5">
+                      <span className="font-semibold text-foreground flex items-center gap-2">
                         <CheckCircle2 className="size-3.5 text-foreground" />
                         Checklist para Montar sua Proposta
                       </span>
-                      <ul className="space-y-1.5 pl-1">
+                      <ul className="space-y-2 pl-1">
                         {selectedTender.ai_curated_digest.proposal_checklist.map((item, idx) => (
                           <li key={idx} className="flex items-start gap-2 text-muted-foreground">
-                            <span className="size-1.5 rounded-full bg-muted-foreground mt-1.5 shrink-0" />
+                            <span className="size-1.5 rounded-full bg-muted-foreground mt-2 shrink-0" />
                             <span>{item}</span>
                           </li>
                         ))}
@@ -550,8 +550,8 @@ export default function WorkspaceTendersPage() {
 
                   {/* Análise de Riscos */}
                   {selectedTender.ai_curated_digest.risk_assessment && (
-                    <div className="p-3.5 rounded-xl border border-amber-500/20 bg-amber-500/5 space-y-1.5">
-                      <span className="font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                    <div className="p-4 rounded-lg border border-amber-500/20 bg-amber-500/5 space-y-2">
+                      <span className="font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-2">
                         <AlertCircle className="size-3.5" />
                         Parecer de Risco do Edital
                       </span>

@@ -80,7 +80,7 @@ function KycVerificationPage() {
           </h1>
         </div>
         {kyc?.status === "verified" && (
-          <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full text-emerald-600 bg-emerald-500/10">
+          <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full text-emerald-600 bg-emerald-500/10">
             Verificado
           </Badge>
         )}
@@ -89,8 +89,8 @@ function KycVerificationPage() {
       <div className="px-4 sm:px-0">
         {/* Status Banner */}
         {kyc?.status === "verified" ? (
-          <div className="mb-6 flex items-center gap-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5 text-emerald-500">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20 shrink-0">
+          <div className="mb-6 flex items-center gap-4 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-5 text-emerald-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-500/20 shrink-0">
               <ShieldCheck className="h-7 w-7" />
             </div>
             <div>
@@ -101,8 +101,8 @@ function KycVerificationPage() {
             </div>
           </div>
         ) : kyc?.status === "under_review" ? (
-          <div className="mb-6 flex items-center gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5 text-amber-500">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20 shrink-0">
+          <div className="mb-6 flex items-center gap-4 rounded-lg border border-amber-500/20 bg-amber-500/10 p-5 text-amber-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-500/20 shrink-0">
               <Clock className="h-7 w-7" />
             </div>
             <div>
@@ -115,13 +115,13 @@ function KycVerificationPage() {
         ) : null}
 
         {/* Formulário de Envio */}
-        <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-8">
+        <div className="rounded-lg border border-border/60 bg-card p-5 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
                 Tipo de Perfil a ser Verificado
               </label>
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {[
                   { id: "individual", label: "Cidadão / CPF", icon: IdentificationCard },
                   { id: "lawyer", label: "Advogado (OAB)", icon: Scales },
@@ -137,7 +137,7 @@ function KycVerificationPage() {
                       key={type.id}
                       type="button"
                       onClick={() => setEntityType(type.id as any)}
-                      className={`min-h-[56px] flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center transition-all cursor-pointer ${
+                      className={`min-h-[56px] flex flex-col items-center justify-center gap-2 rounded-lg border p-3 text-center transition-all cursor-pointer ${
                         isSelected
                           ? "border-primary bg-primary/10 text-primary font-semibold"
                           : "border-border/60 bg-background text-muted-foreground hover:border-border hover:text-foreground"
@@ -163,7 +163,7 @@ function KycVerificationPage() {
                     placeholder="Ex: 58941"
                     value={regNumber}
                     onChange={(e) => setRegNumber(e.target.value)}
-                    className="mt-1.5 w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-base sm:text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                    className="mt-2 w-full rounded-lg border border-input bg-background px-4 py-3 text-base sm:text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                     required
                   />
                 </div>
@@ -173,7 +173,7 @@ function KycVerificationPage() {
                   <select
                     value={regState}
                     onChange={(e) => setRegState(e.target.value)}
-                    className="mt-1.5 w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-base sm:text-xs text-foreground focus:border-primary focus:outline-none"
+                    className="mt-2 w-full rounded-lg border border-input bg-background px-4 py-3 text-base sm:text-xs text-foreground focus:border-primary focus:outline-none"
                   >
                     <option value="SC">Santa Catarina (SC)</option>
                     <option value="RS">Rio Grande do Sul (RS)</option>
@@ -214,7 +214,7 @@ function KycVerificationPage() {
               <Button
                 type="submit"
                 disabled={isPending}
-                className="h-11 sm:h-10 min-h-[44px] px-6 rounded-xl font-semibold text-xs gap-2"
+                className="h-11 sm:h-10 min-h-11 px-6 rounded-lg font-semibold text-xs gap-2"
               >
                 <ShieldCheck className="h-4 w-4" />
                 {isPending ? "Enviando..." : "Submeter para Verificação"}

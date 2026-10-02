@@ -95,8 +95,8 @@ function EventSubpanelPortalPage() {
   if (!subpanel || error) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-8 rounded-3xl border border-border/70 bg-card text-center space-y-4 shadow-sm">
-          <div className="size-14 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+        <div className="max-w-md w-full p-8 rounded-lg border border-border/70 bg-card text-center space-y-4 shadow-sm">
+          <div className="size-14 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
             <AlertCircle className="size-7" />
           </div>
           <div className="space-y-1">
@@ -184,7 +184,7 @@ function EventSubpanelPortalPage() {
       <header className="sticky top-0 z-40 bg-card/90 backdrop-blur-md border-b border-border/60 px-4 py-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               {getPanelIcon()}
             </div>
             <div className="min-w-0">
@@ -192,7 +192,7 @@ function EventSubpanelPortalPage() {
                 <h1 className="text-sm font-bold text-foreground truncate">
                   {subpanel.name}
                 </h1>
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-500/40 text-emerald-600 bg-emerald-500/10 shrink-0">
+                <Badge variant="outline" className="text-[10px] px-2 py-0 border-emerald-500/40 text-emerald-600 bg-emerald-500/10 shrink-0">
                   Online
                 </Badge>
               </div>
@@ -230,7 +230,7 @@ function EventSubpanelPortalPage() {
                 key={item.id}
                 type="button"
                 onClick={() => handleAddToCart(item)}
-                className="p-3.5 rounded-2xl bg-card border border-border/60 hover:border-primary/50 active:scale-98 transition-all text-left flex flex-col justify-between min-h-[96px] shadow-xs cursor-pointer"
+                className="p-4 rounded-lg bg-card border border-border/60 hover:border-primary/50 active:scale-98 transition-all text-left flex flex-col justify-between min-h-[96px] shadow-xs cursor-pointer"
               >
                 <span className="text-xs font-semibold text-foreground line-clamp-2 leading-tight">
                   {item.name}
@@ -243,7 +243,7 @@ function EventSubpanelPortalPage() {
           </div>
 
           {/* Resumo do Turno Mobile */}
-          <div className="sm:hidden p-3 rounded-2xl bg-muted/30 border border-border/50 flex items-center justify-between text-xs">
+          <div className="sm:hidden p-3 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between text-xs">
             <span className="text-muted-foreground font-medium">Turno Atual:</span>
             <span className="font-bold font-mono text-foreground">
               {sessionOrdersCount} pedidos • {formatMoney(sessionTotalCents)}
@@ -252,10 +252,10 @@ function EventSubpanelPortalPage() {
         </div>
 
         {/* Comanda / Carrinho de Venda */}
-        <div className="lg:col-span-5 bg-card border border-border/70 rounded-3xl p-5 space-y-4 shadow-sm flex flex-col justify-between sticky top-20">
+        <div className="lg:col-span-5 bg-card border border-border/70 rounded-lg p-5 space-y-4 shadow-sm flex flex-col justify-between sticky top-20">
           <div className="space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-border/50">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <Receipt className="size-4 text-primary" />
                 <h3 className="text-sm font-bold text-foreground">Comanda Atual</h3>
               </div>
@@ -279,7 +279,7 @@ function EventSubpanelPortalPage() {
             ) : (
               <div className="divide-y divide-border/40 max-h-60 overflow-y-auto pr-1">
                 {cart.map((entry) => (
-                  <div key={entry.product.id} className="py-2.5 flex items-center justify-between gap-2">
+                  <div key={entry.product.id} className="py-3 flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-semibold text-foreground truncate">
                         {entry.product.name}
@@ -316,11 +316,11 @@ function EventSubpanelPortalPage() {
 
           <div className="space-y-4 pt-3 border-t border-border/50">
             {/* Método de Pagamento */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-[11px] font-semibold text-muted-foreground block">
                 Forma de Pagamento
               </label>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-3 gap-2">
                 {[
                   { id: "pix", label: "PIX", icon: QrCode },
                   { id: "card", label: "Cartão", icon: CreditCard },
@@ -333,7 +333,7 @@ function EventSubpanelPortalPage() {
                       key={m.id}
                       type="button"
                       onClick={() => setSelectedPayment(m.id as any)}
-                      className={`h-9 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      className={`h-9 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                         active
                           ? "bg-foreground text-background border-foreground font-bold"
                           : "bg-background text-muted-foreground border-border hover:text-foreground"
@@ -359,7 +359,7 @@ function EventSubpanelPortalPage() {
               <Button
                 onClick={handleFinalizeSale}
                 disabled={cart.length === 0}
-                className="w-full h-12 rounded-2xl font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+                className="w-full h-12 rounded-lg font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
               >
                 <CheckCircle2 className="size-4 mr-2" />
                 <span>Confirmar Pagamento</span>

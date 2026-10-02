@@ -142,14 +142,14 @@ export default function WorkspaceTripsListPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <Link
             to="/workspace/turismo/cotacoes"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 transition-colors border border-primary/20"
+            className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 transition-colors border border-primary/20"
           >
             <Clock className="size-3.5" />
             <span>Cotações</span>
           </Link>
           <Link
             to="/workspace/turismo/aereos"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors border border-border/50"
+            className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors border border-border/50"
           >
             <Plane className="size-3.5" />
             <span>Malha Aérea e PNR</span>
@@ -187,8 +187,8 @@ export default function WorkspaceTripsListPage() {
           Carregando roteiros de viagem...
         </div>
       ) : trips.length === 0 ? (
-        <div className="py-16 text-center space-y-4 rounded-2xl border border-dashed border-border/80 bg-muted/10">
-          <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="py-16 text-center space-y-4 rounded-lg border border-dashed border-border/80 bg-muted/10">
+          <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
             <Compass className="size-6" />
           </div>
           <div className="space-y-1">
@@ -203,12 +203,12 @@ export default function WorkspaceTripsListPage() {
             <Button
               size="sm"
               onClick={() => setIsNewTripOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+              className="rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
             >
               <Plus className="size-3.5" />
               <span>Registrar Primeira Viagem</span>
             </Button>
-            <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold">
+            <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold">
               <Link to="/workspace/turismo/cotacoes">Ver Cotações e Leads</Link>
             </Button>
           </div>
@@ -235,12 +235,12 @@ export default function WorkspaceTripsListPage() {
             return (
               <div
                 key={trip.id}
-                className="group relative rounded-2xl border border-border/70 bg-card hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between overflow-hidden shadow-2xs"
+                className="group relative rounded-lg border border-border/70 bg-card hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between overflow-hidden shadow-2xs"
               >
                 <div className="p-4 space-y-3">
                   {/* Topo do Card */}
                   <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <span className="text-xs font-mono font-bold text-muted-foreground uppercase block">
                         {trip.trip_number}
                       </span>
@@ -251,7 +251,7 @@ export default function WorkspaceTripsListPage() {
 
                     <Badge
                       variant="outline"
-                      className={`text-xs font-bold uppercase tracking-wider rounded-lg px-2 py-0.5 ${statusColors[trip.status] || ""}`}
+                      className={`text-xs font-bold uppercase tracking-wider rounded-lg px-2 py-1 ${statusColors[trip.status] || ""}`}
                     >
                       {statusLabels[trip.status] || trip.status}
                     </Badge>
@@ -259,14 +259,14 @@ export default function WorkspaceTripsListPage() {
 
                   {/* Detalhes do Cliente */}
                   <div className="text-xs text-muted-foreground space-y-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Users className="size-3.5 text-muted-foreground shrink-0" />
                       <span className="font-medium text-foreground truncate">{trip.client_name}</span>
                       <span className="text-xs text-muted-foreground">({paxTotal} pax)</span>
                     </div>
 
                     {(trip.travel_start_date || trip.travel_end_date) && (
-                      <div className="flex items-center gap-1.5 text-xs">
+                      <div className="flex items-center gap-2 text-xs">
                         <Calendar className="size-3.5 text-muted-foreground shrink-0" />
                         <span>
                           {trip.travel_start_date || "—"} até {trip.travel_end_date || "—"}
@@ -276,21 +276,21 @@ export default function WorkspaceTripsListPage() {
                   </div>
 
                   {/* Resumo de Serviços Inclusos */}
-                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
                     {trip.flights?.length > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
                         <Plane className="size-3 text-sky-500" />
                         {trip.flights.length} voo(s)
                       </span>
                     )}
                     {trip.hotels?.length > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
                         <Building2 className="size-3 text-amber-500" />
                         {trip.hotels.length} hotel(s)
                       </span>
                     )}
                     {trip.transfers?.length > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
                         <Luggage className="size-3 text-emerald-500" />
                         Transfer
                       </span>
@@ -309,7 +309,7 @@ export default function WorkspaceTripsListPage() {
                     </span>
                   </div>
 
-                  <Button asChild size="sm" className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 cursor-pointer shadow-2xs">
+                  <Button asChild size="sm" className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 cursor-pointer shadow-2xs">
                     <Link to="/workspace/turismo/viagens/$id" params={{ id: trip.id }}>
                       <span>Gerenciar</span>
                       <ArrowUpRight className="size-3.5" />

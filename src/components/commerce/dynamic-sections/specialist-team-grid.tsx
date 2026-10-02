@@ -42,7 +42,7 @@ export function SpecialistTeamGridSection({
  return (
  <section className="py-12 bg-muted/20 w-full">
  <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
- <div className="text-center max-w-xl mx-auto space-y-1.5">
+ <div className="text-center max-w-xl mx-auto space-y-2">
  <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
  Equipe Médica
  </Badge>
@@ -54,10 +54,10 @@ export function SpecialistTeamGridSection({
  {displayMembers.map((member: SpecialistMember) => (
  <div
  key={member.id}
- className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-2xs flex flex-col justify-between group hover:border-primary/40 transition-all p-5 space-y-4"
+ className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs flex flex-col justify-between group hover:border-primary/40 transition-all p-5 space-y-4"
  >
  <div className="space-y-3">
- <div className="aspect-square rounded-2xl overflow-hidden bg-muted border border-border/60 relative">
+ <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border/60 relative">
  {member.imageUrl ? (
  <img
  src={member.imageUrl}
@@ -92,7 +92,7 @@ export function SpecialistTeamGridSection({
  {member.specialties.map((spec: string, idx: number) => (
  <span
  key={idx}
- className="px-2 py-0.5 rounded-md bg-muted/60 text-[10px] text-muted-foreground font-medium"
+ className="px-2 py-1 rounded-md bg-muted/60 text-[10px] text-muted-foreground font-medium"
  >
  {spec}
  </span>
@@ -107,7 +107,7 @@ export function SpecialistTeamGridSection({
  size="sm"
  variant="outline"
  onClick={() => onBookAppointment(member.id)}
- className="w-full rounded-xl text-xs font-bold gap-1.5 border-border/80 bg-background hover:bg-muted"
+ className="w-full rounded-lg text-xs font-bold gap-2 border-border/80 bg-background hover:bg-muted"
  >
  <Calendar className="size-3.5" />
  <span>Agendar Consulta</span>

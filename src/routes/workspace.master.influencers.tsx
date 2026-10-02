@@ -83,14 +83,14 @@ function MasterInfluencersPage() {
       />
 
       {/* Toolbar de Filtros */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 bg-card p-3 rounded-2xl border border-border/60">
+      <div className="flex flex-col sm:flex-row items-center gap-3 bg-card p-3 rounded-lg border border-border/60">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder="Nome, @handle ou nicho..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 rounded-xl text-xs h-10"
+            className="pl-10 rounded-lg text-xs h-10"
           />
         </div>
 
@@ -99,16 +99,16 @@ function MasterInfluencersPage() {
             variant={filterAmbassador === "all" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilterAmbassador("all")}
-            className="rounded-xl text-xs font-bold h-11 sm:h-9"
+            className="rounded-lg text-xs font-bold h-11 sm:h-9"
           >
-            <SlidersHorizontal className="size-3.5 mr-1.5" />
+            <SlidersHorizontal className="size-3.5 mr-2" />
             Todos ({creators.length})
           </Button>
           <Button
             variant={filterAmbassador === "ambassadors" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilterAmbassador("ambassadors")}
-            className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9"
+            className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9"
           >
             <Award className="size-3.5 text-purple-500" />
             Embaixadores ({ambassadorCount})
@@ -129,7 +129,7 @@ function MasterInfluencersPage() {
             return (
                 <Card
                 key={creator.id}
-                className={`overflow-hidden rounded-2xl border transition-all ${
+                className={`overflow-hidden rounded-lg border transition-all ${
                   isAmbassador
                     ? "border-purple-500/40 bg-purple-500/5"
                     : "border-border/60 bg-card"
@@ -149,7 +149,7 @@ function MasterInfluencersPage() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <h4 className="text-sm font-bold text-foreground truncate">{creator.name}</h4>
                           {isAmbassador && <Award className="size-4 text-purple-500 shrink-0" />}
                         </div>
@@ -177,7 +177,7 @@ function MasterInfluencersPage() {
                       { label: "Seguidores", value: (creator as any).followers_count ?? "—" },
                       { label: "Posts", value: (creator as any).posts_count ?? "—" },
                     ].map(({ label, value }) => (
-                      <div key={label} className="bg-muted/40 rounded-xl p-2 text-center">
+                      <div key={label} className="bg-muted/40 rounded-lg p-2 text-center">
                         <div className="text-xs font-black text-foreground">{value}</div>
                         <div className="text-xs text-muted-foreground">{label}</div>
                       </div>
@@ -200,7 +200,7 @@ function MasterInfluencersPage() {
                       variant={isAmbassador ? "destructive" : "default"}
                       disabled={isUpdating === creator.id}
                       onClick={() => handleToggleAmbassador(creator)}
-                      className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8 px-3"
+                      className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-8 px-3"
                     >
                       {isAmbassador ? (
                         <><XCircle className="size-3.5" /><span>Remover</span></>

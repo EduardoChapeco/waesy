@@ -22,14 +22,14 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
         transform: `scale(${scale})`,
         transformOrigin: "top center",
       }}
-      className={`w-full max-w-[1000px] mx-auto bg-white text-slate-900 font-sans border border-slate-200/80 shadow-xl rounded-3xl overflow-hidden print:shadow-none print:border-none print:p-0 flex flex-col md:flex-row ${className}`}
+      className={`w-full max-w-5xl mx-auto bg-white text-slate-900 font-sans border border-slate-200/80 shadow-xl rounded-lg overflow-hidden print:shadow-none print:border-none print:p-0 flex flex-col md:flex-row ${className}`}
     >
       {/* ── 1. Barra Lateral Esquerda: 25% da Largura (Dark Slate Luxury) ── */}
       <div className="w-full md:w-72 bg-slate-950 text-white p-8 flex flex-col justify-between shrink-0">
         <div>
           {/* Identidade da Agência */}
-          <div className="flex items-center gap-2.5 mb-8">
-            <div className="size-10 rounded-2xl bg-white text-slate-950 font-black text-xl flex items-center justify-center">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="size-10 rounded-lg bg-white text-slate-950 font-black text-xl flex items-center justify-center">
               W
             </div>
             <div>
@@ -43,7 +43,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
           </div>
 
           {/* Dados do Cliente */}
-          <div className="mb-8 p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-1">
+          <div className="mb-8 p-4 rounded-lg bg-white/5 border border-white/10 text-xs space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
               PROPOSTA EXCLUSIVA PARA
             </span>
@@ -89,7 +89,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
         <div>
           {/* Título Editorial Display */}
           <div className="mb-8">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-800 mb-3">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-800 mb-3">
               <Star className="size-3.5 text-amber-500" />
               <span>Proposta Comercial Executiva</span>
             </span>
@@ -102,7 +102,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
           {data.stages && data.stages.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
               {data.stages.map((stage) => (
-                <div key={stage.step} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
+                <div key={stage.step} className="p-4 rounded-lg bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -115,7 +115,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
                         </span>
                       )}
                     </div>
-                    <h4 className="font-bold text-sm text-slate-900 mb-1.5">{stage.title}</h4>
+                    <h4 className="font-bold text-sm text-slate-900 mb-2">{stage.title}</h4>
                     <p className="text-xs text-slate-600 leading-relaxed">{stage.description}</p>
                   </div>
                 </div>
@@ -127,11 +127,11 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
                 ENTREGÁVEIS PRINCIPAIS
               </span>
               {data.items.slice(0, 3).map((item, idx) => (
-                <div key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                  <CheckCircle2 className="size-4 text-emerald-600 mt-0.5 shrink-0" />
+                <div key={idx} className="flex items-start gap-3 p-4 rounded-lg bg-slate-50 border border-slate-200/80">
+                  <CheckCircle2 className="size-4 text-emerald-600 mt-1 shrink-0" />
                   <div className="flex-1 text-xs">
                     <span className="font-bold text-slate-900">{item.title}</span>
-                    {item.description && <p className="text-slate-500 mt-0.5">{item.description}</p>}
+                    {item.description && <p className="text-slate-500 mt-1">{item.description}</p>}
                   </div>
                   <span className="font-mono font-bold text-xs text-slate-800">
                     {formatMoney(item.totalPriceCents)}
@@ -142,7 +142,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
           )}
 
           {/* Tabela de Investimento Resumido */}
-          <div className="p-6 rounded-2xl bg-slate-950 text-white mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-md">
+          <div className="p-6 rounded-lg bg-slate-950 text-white mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-md">
             <div>
               <span className="text-xs uppercase font-bold tracking-widest text-slate-400 block mb-1">
                 INVESTIMENTO TOTAL DO PROJETO
@@ -160,7 +160,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
             {/* Ação de Aceite Digital */}
             <div>
               {data.signatories?.clientSigned ? (
-                <div className="flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-400/30 px-5 py-3 rounded-xl font-bold text-sm">
+                <div className="flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-400/30 px-5 py-3 rounded-lg font-bold text-sm">
                   <ShieldCheck className="size-5" />
                   <span>Proposta Aceita e Ativa</span>
                 </div>
@@ -168,7 +168,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
                 <Button
                   size="lg"
                   onClick={onAcceptProposal}
-                  className="h-12 px-6 rounded-xl font-bold text-sm bg-white text-slate-950 hover:bg-slate-100 transition-transform active:scale-95 shadow-md flex items-center gap-2"
+                  className="h-12 px-6 rounded-lg font-bold text-sm bg-white text-slate-950 hover:bg-slate-100 transition-transform active:scale-95 shadow-md flex items-center gap-2"
                 >
                   <span>Aceitar Proposta e Iniciar</span>
                   <ArrowRight className="size-4" />

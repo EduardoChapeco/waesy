@@ -66,7 +66,7 @@ export function ProductGrid({
  )}
  {subtitle && <p className="text-muted-foreground text-xs @md:text-sm mt-1">{subtitle}</p>}
  </div>
- <Button variant="ghost" size="sm" className="hidden @md:flex gap-1.5 text-xs font-bold" asChild>
+ <Button variant="ghost" size="sm" className="hidden @md:flex gap-2 text-xs font-bold" asChild>
  <Link to="/mercado">
  <span>Ver Todos</span>
  <ArrowRight className="size-3.5" />
@@ -112,7 +112,7 @@ export function ProductGrid({
  )}
  {subtitle && <p className="text-muted-foreground text-xs @md:text-sm mt-1">{subtitle}</p>}
  </div>
- <Button variant="ghost" size="sm" className="hidden @md:flex gap-1.5 text-xs font-bold" asChild>
+ <Button variant="ghost" size="sm" className="hidden @md:flex gap-2 text-xs font-bold" asChild>
  <Link to="/mercado">
  <span>Ver Todos</span>
  <ArrowRight className="size-3.5" />
@@ -121,7 +121,7 @@ export function ProductGrid({
  </div>
 
  {products.length === 0 ? (
- <div className="flex flex-col items-center justify-center py-16 text-center gap-3 text-muted-foreground border border-dashed border-border/80 rounded-2xl p-8 bg-muted/20">
+ <div className="flex flex-col items-center justify-center py-16 text-center gap-3 text-muted-foreground border border-dashed border-border/80 rounded-lg p-8 bg-muted/20">
  <ShoppingBag className="size-10 text-muted-foreground/40" />
  <div className="space-y-1">
  <p className="font-bold text-foreground text-sm">Nenhum produto cadastrado nesta coleção</p>

@@ -126,7 +126,7 @@ export function ProductBomCard({
  };
 
  return (
- <Card className="rounded-2xl border border-border/80 shadow-xs overflow-hidden">
+ <Card className="rounded-lg border border-border/80 shadow-xs overflow-hidden">
  <CardHeader className="p-6 bg-muted/20 border-b border-border/60">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="space-y-1">
@@ -149,7 +149,7 @@ export function ProductBomCard({
  size="sm"
  onClick={handleApplyCost}
  disabled={items.length === 0}
- className="rounded-xl text-xs font-bold h-9 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20 gap-1.5"
+ className="rounded-lg text-xs font-bold h-9 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20 gap-2"
  >
  <CheckCircle2 className="size-3.5" />
  <span>Aplicar Custo ({formatMoney(summary.totalCostCents)})</span>
@@ -160,7 +160,7 @@ export function ProductBomCard({
 
  <CardContent className="p-6 space-y-6">
  {/* ── Métricas de Custo & Margem ── */}
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-muted/30 border border-border/50">
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-lg bg-muted/30 border border-border/50">
  <div className="space-y-1">
  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
  Custo Total Composto
@@ -203,7 +203,7 @@ export function ProductBomCard({
  {/* ── Formulário Rápido de Adição ── */}
  <form
  onSubmit={handleAddItem}
- className="p-4 rounded-2xl bg-background border border-border/70 space-y-3"
+ className="p-4 rounded-lg bg-background border border-border/70 space-y-3"
  >
  <span className="text-xs font-bold text-foreground block">
  Adicionar Novo Componente / Insumo
@@ -215,7 +215,7 @@ export function ProductBomCard({
  value={newItemName}
  onChange={(e) => setNewItemName(e.target.value)}
  placeholder="Ex: Pão Australiano, Caixa Kraft 20cm"
- className="h-9 text-xs rounded-xl font-medium"
+ className="h-9 text-xs rounded-lg font-medium"
  />
  </div>
 
@@ -225,10 +225,10 @@ export function ProductBomCard({
  value={newItemType}
  onValueChange={(v: any) => setNewItemType(v)}
  >
- <SelectTrigger className="h-9 text-xs rounded-xl">
+ <SelectTrigger className="h-9 text-xs rounded-lg">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="ingredient">Ingrediente</SelectItem>
  <SelectItem value="packaging">Embalagem</SelectItem>
  <SelectItem value="labor">Mão de Obra</SelectItem>
@@ -245,7 +245,7 @@ export function ProductBomCard({
  min="0.001"
  value={newItemQty}
  onChange={(e) => setNewItemQty(e.target.value)}
- className="h-9 text-xs rounded-xl font-mono"
+ className="h-9 text-xs rounded-lg font-mono"
  />
  </div>
 
@@ -257,14 +257,14 @@ export function ProductBomCard({
  value={newItemCost}
  onChange={(e) => setNewItemCost(e.target.value)}
  placeholder="0,00"
- className="h-9 text-xs rounded-xl font-mono"
+ className="h-9 text-xs rounded-lg font-mono"
  />
  </div>
 
  <div className="sm:col-span-2">
  <Button
  type="submit"
- className="w-full h-9 rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1"
+ className="w-full h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-1"
  >
  <Plus className="size-3.5" />
  <span>Incluir</span>
@@ -275,7 +275,7 @@ export function ProductBomCard({
 
  {/* ── Tabela de Componentes Cadastrados ── */}
  {items.length === 0 ? (
- <div className="p-8 text-center border border-dashed border-border rounded-2xl bg-muted/10 space-y-2">
+ <div className="p-8 text-center border border-dashed border-border rounded-lg bg-muted/10 space-y-2">
  <Boxes className="size-7 text-muted-foreground mx-auto" />
  <p className="text-xs font-bold text-foreground">Nenhum insumo vinculado</p>
  <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
@@ -284,13 +284,13 @@ export function ProductBomCard({
  </div>
  ) : (
  <div className="space-y-2">
- <div className="border border-border/70 rounded-2xl overflow-hidden divide-y divide-border/60">
+ <div className="border border-border/70 rounded-lg overflow-hidden divide-y divide-border/60">
  {items.map((item) => {
  const subtotal = Math.round(item.quantity * item.unitCostCents);
  return (
  <div
  key={item.id}
- className="p-3.5 flex items-center justify-between gap-3 text-xs hover:bg-muted/20 transition-colors"
+ className="p-4 flex items-center justify-between gap-3 text-xs hover:bg-muted/20 transition-colors"
  >
  <div className="flex items-center gap-3 min-w-0">
  <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">

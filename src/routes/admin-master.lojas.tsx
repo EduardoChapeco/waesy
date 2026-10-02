@@ -106,7 +106,7 @@ function MasterLojasPage() {
  {stores.length} cadastradas
  </Badge>
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Governança e auditoria de todos os negócios registrados na plataforma.
  </p>
  </div>
@@ -115,7 +115,7 @@ function MasterLojasPage() {
  variant="outline"
  size="sm"
  onClick={handleExportStoresCsv}
- className="h-9 px-3.5 rounded-xl text-xs font-medium gap-1.5 cursor-pointer bg-card border-border/60"
+ className="h-9 px-4 rounded-lg text-xs font-medium gap-2 cursor-pointer bg-card border-border/60"
  >
  <Download className="size-3.5" />
  <span>Exportar CSV</span>
@@ -123,13 +123,13 @@ function MasterLojasPage() {
  </div>
 
  {/* Table Card */}
- <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-2xs">
- <div className="p-3.5 border-b border-border/40 bg-muted/20 flex items-center justify-between gap-3">
+ <div className="bg-card rounded-lg border border-border/60 overflow-hidden shadow-2xs">
+ <div className="p-4 border-b border-border/40 bg-muted/20 flex items-center justify-between gap-3">
  <div className="relative max-w-xs w-full">
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
  <Input
  placeholder="Buscar por nome ou slug..."
- className="pl-8 bg-background h-8.5 rounded-xl text-xs border-border/60"
+ className="pl-8 bg-background h-8.5 rounded-lg text-xs border-border/60"
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
  />
@@ -153,16 +153,16 @@ function MasterLojasPage() {
  <tbody className="divide-y divide-border/40">
  {filteredStores.map((store: any) => (
  <tr key={store.id} className="hover:bg-muted/30 transition-colors">
- <td className="px-5 py-3.5">
+ <td className="px-5 py-4">
  <div className="flex items-center gap-3">
  <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
  {store.name?.slice(0, 2).toUpperCase()}
  </div>
  <div>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <p className="font-semibold text-foreground">{store.name}</p>
  {store.settings?.segment && (
- <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-border/60 uppercase">
+ <Badge variant="outline" className="text-[9px] px-2 py-0 h-4 border-border/60 uppercase">
  {store.settings.segment}
  </Badge>
  )}
@@ -173,29 +173,29 @@ function MasterLojasPage() {
  </div>
  </div>
  </td>
- <td className="px-5 py-3.5 font-mono text-[11px] text-muted-foreground">
+ <td className="px-5 py-4 font-mono text-[11px] text-muted-foreground">
  /{store.slug}
  </td>
- <td className="px-5 py-3.5 text-muted-foreground text-[11px]">
+ <td className="px-5 py-4 text-muted-foreground text-[11px]">
  {format(new Date(store.created_at || Date.now()), "dd/MM/yyyy", { locale: ptBR })}
  </td>
- <td className="px-5 py-3.5">
+ <td className="px-5 py-4">
  <Badge
  variant={store.is_active ? "default" : "destructive"}
  className={cn(
- "text-[10px] font-medium px-2 py-0.5",
+ "text-[10px] font-medium px-2 py-1",
  store.is_active ? "bg-emerald-600/90 text-white" : ""
  )}
  >
  {store.is_active ? "Ativa" : "Bloqueada"}
  </Badge>
  </td>
- <td className="px-5 py-3.5 text-right">
- <div className="flex items-center justify-end gap-1.5">
+ <td className="px-5 py-4 text-right">
+ <div className="flex items-center justify-end gap-2">
  <Button
  size="sm"
  variant="outline"
- className="h-7 px-2.5 rounded-lg text-xs font-medium bg-card"
+ className="h-7 px-3 rounded-lg text-xs font-medium bg-card"
  disabled={loadingId === store.id}
  onClick={() => handleImpersonateStore(store.id, store.name)}
  >

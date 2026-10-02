@@ -173,10 +173,10 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
           type="button"
           onClick={() => setIsCartOpen(true)}
           aria-label={`Ver carrinho com ${totalCartItems} itens`}
-          className="md:hidden fixed inset-x-3.5 z-40 max-w-sm mx-auto h-12 rounded-2xl bg-primary text-primary-foreground px-4 flex items-center justify-between shadow-lg border border-primary/20 active:scale-[0.98] transition-all cursor-pointer animate-in slide-in-from-bottom-2 fade-in duration-200 mobile-nav-hide-on-keyboard"
+          className="md:hidden fixed inset-x-3.5 z-40 max-w-sm mx-auto h-12 rounded-lg bg-primary text-primary-foreground px-4 flex items-center justify-between shadow-lg border border-primary/20 active:scale-[0.98] transition-all cursor-pointer animate-in slide-in-from-bottom-2 fade-in duration-200 mobile-nav-hide-on-keyboard"
           style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 72px), 76px)" }}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
             <span className="size-6 rounded-full bg-primary-foreground text-primary text-xs font-black flex items-center justify-center shrink-0">
               {totalCartItems > 99 ? "99+" : totalCartItems}
             </span>
@@ -185,7 +185,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0 text-xs sm:text-sm font-black">
+          <div className="flex items-center gap-2 shrink-0 text-xs sm:text-sm font-black">
             {cartSubtotal > 0 && <span>{formatCents(cartSubtotal)}</span>}
             <ArrowRight className="size-4" />
           </div>
@@ -199,14 +199,14 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
       >
         <nav
           aria-label="Navegação principal móvel"
-          className="grid grid-cols-5 items-center p-1.5 bg-background border border-border rounded-3xl transition-all duration-200"
+          className="grid grid-cols-5 items-center p-2 bg-background border border-border rounded-lg transition-all duration-200"
         >
           {/* TAB 1: INÍCIO */}
           <Link
             to="/"
             aria-label="Início"
             className={cn(
-              "h-12 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation",
+              "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer touch-manipulation",
               isHomeActive
                 ? "text-primary font-bold"
                 : "text-muted-foreground hover:text-foreground"
@@ -221,7 +221,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             to="/explorar"
             aria-label="Explorar"
             className={cn(
-              "h-12 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation",
+              "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer touch-manipulation",
               isSearchActive
                 ? "text-primary font-bold"
                 : "text-muted-foreground hover:text-foreground"
@@ -245,7 +245,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             to={isAuthenticated ? "/conta/conversas" : "/entrar"}
             aria-label="Mensagens"
             className={cn(
-              "h-12 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation relative",
+              "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer touch-manipulation relative",
               isMessagesActive
                 ? "text-primary font-bold"
                 : "text-muted-foreground hover:text-foreground"
@@ -261,7 +261,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             onClick={() => setIsMenuHubOpen(true)}
             aria-label="Menu principal"
             className={cn(
-              "h-12 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation relative",
+              "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer touch-manipulation relative",
               isMenuHubOpen
                 ? "text-primary font-bold"
                 : "text-muted-foreground hover:text-foreground"

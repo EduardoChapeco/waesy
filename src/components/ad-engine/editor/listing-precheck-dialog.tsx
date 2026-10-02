@@ -141,7 +141,7 @@ export function ListingPrecheckDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md sm:max-w-lg p-0 overflow-hidden rounded-2xl bg-card border border-border/80">
+      <DialogContent className="max-w-md sm:max-w-lg p-0 overflow-hidden rounded-lg bg-card border border-border/80">
         <DialogHeader className="p-5 pb-3 border-b border-border/40">
           <div className="flex items-center gap-2">
             <ShieldCheck className="size-5 text-primary shrink-0" />
@@ -179,18 +179,18 @@ export function ListingPrecheckDialog({
         </div>
 
         {/* Lista de Verificações */}
-        <div className="p-5 max-h-[50vh] overflow-y-auto space-y-2.5">
+        <div className="p-5 max-h-[50vh] overflow-y-auto space-y-3">
           {items.map((item) => (
             <div
               key={item.id}
               className={cn(
-                "p-3 rounded-xl border flex items-start gap-3 transition-colors",
+                "p-3 rounded-lg border flex items-start gap-3 transition-colors",
                 item.status === "fail" && "border-destructive/30 bg-destructive/5 text-destructive",
                 item.status === "warn" && "border-amber-500/30 bg-amber-500/5 text-amber-600 dark:text-amber-400",
                 item.status === "pass" && "border-emerald-500/30 bg-emerald-500/5 text-foreground"
               )}
             >
-              <div className="shrink-0 mt-0.5">
+              <div className="shrink-0 mt-1">
                 {item.status === "fail" && <XCircle className="size-4 text-destructive" />}
                 {item.status === "warn" && <AlertTriangle className="size-4 text-amber-500" />}
                 {item.status === "pass" && <CheckCircle2 className="size-4 text-emerald-500" />}
@@ -202,7 +202,7 @@ export function ListingPrecheckDialog({
                   </span>
                   <span className="text-2xs font-semibold text-foreground">• {item.label}</span>
                 </div>
-                <p className="text-xs mt-0.5 leading-snug">{item.message}</p>
+                <p className="text-xs mt-1 leading-snug">{item.message}</p>
               </div>
             </div>
           ))}
@@ -215,7 +215,7 @@ export function ListingPrecheckDialog({
             variant="ghost"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="h-10 rounded-xl text-xs cursor-pointer"
+            className="h-10 rounded-lg text-xs cursor-pointer"
           >
             Voltar ao Editor
           </Button>
@@ -224,7 +224,7 @@ export function ListingPrecheckDialog({
             type="button"
             disabled={!canPublish || isPublishing}
             onClick={onConfirmPublish}
-            className="h-10 rounded-xl text-xs font-semibold gap-1.5 px-4 cursor-pointer"
+            className="h-10 rounded-lg text-xs font-semibold gap-2 px-4 cursor-pointer"
           >
             {isPublishing ? (
               <>

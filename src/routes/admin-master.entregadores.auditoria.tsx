@@ -108,7 +108,7 @@ function AdminCourierAuditPage() {
           size="sm"
           onClick={() => refetch()}
           disabled={isFetching}
-          className="rounded-xl h-9 text-xs font-semibold gap-1.5"
+          className="rounded-lg h-9 text-xs font-semibold gap-2"
         >
           <ArrowsClockwise size={14} className={isFetching ? "animate-spin" : ""} />
           <span>Atualizar Fila</span>
@@ -128,7 +128,7 @@ function AdminCourierAuditPage() {
             key={tab.id}
             type="button"
             onClick={() => setSelectedStatus(tab.id)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-mono transition-all cursor-pointer ${
               selectedStatus === tab.id
                 ? "bg-foreground text-background font-bold shadow-xs"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -140,7 +140,7 @@ function AdminCourierAuditPage() {
       </div>
 
       {/* Tabela de Inscrições */}
-      <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+      <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-mono uppercase text-[10px]">
@@ -179,7 +179,7 @@ function AdminCourierAuditPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                      <div className="flex items-center gap-2 font-mono text-[11px]">
                         <span>Match Face:</span>
                         <strong
                           className={
@@ -192,7 +192,7 @@ function AdminCourierAuditPage() {
                         </strong>
                       </div>
                       {details.divergence_reasons && details.divergence_reasons.length > 0 && (
-                        <span className="text-[10px] text-destructive block truncate max-w-[200px]">
+                        <span className="text-[10px] text-destructive block truncate max-w-52">
                           {details.divergence_reasons[0]}
                         </span>
                       )}
@@ -227,7 +227,7 @@ function AdminCourierAuditPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setSelectedApp(app)}
-                        className="rounded-xl h-8 px-3 text-xs font-semibold gap-1"
+                        className="rounded-lg h-8 px-3 text-xs font-semibold gap-1"
                       >
                         <Eye size={13} />
                         <span>Inspecionar</span>
@@ -252,7 +252,7 @@ function AdminCourierAuditPage() {
       {/* Modal de Inspeção Forense Lado a Lado */}
       {selectedApp && (
         <Dialog open={!!selectedApp} onOpenChange={() => setSelectedApp(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-lg">
             <DialogHeader>
               <DialogTitle className="text-base font-bold flex items-center justify-between">
                 <span>Dossiê Forense de Credenciamento de Parceiro</span>
@@ -266,12 +266,12 @@ function AdminCourierAuditPage() {
               {/* Alerta de Divergência se houver */}
               {selectedApp.crosscheck_details?.divergence_reasons &&
                 selectedApp.crosscheck_details.divergence_reasons.length > 0 && (
-                  <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 space-y-1.5">
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 space-y-2">
                     <div className="flex items-center gap-2 text-destructive font-bold text-xs uppercase">
                       <Warning size={16} weight="bold" />
                       <span>Incompatibilidades de Dados Identificadas pela IA:</span>
                     </div>
-                    <ul className="list-disc list-inside text-xs text-foreground/90 space-y-0.5">
+                    <ul className="list-disc list-inside text-xs text-foreground/90 space-y-1">
                       {selectedApp.crosscheck_details.divergence_reasons.map((r, i) => (
                         <li key={i}>{r}</li>
                       ))}
@@ -282,12 +282,12 @@ function AdminCourierAuditPage() {
               {/* Inspeção de Imagens Lado a Lado */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* 1. Foto da CNH */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold flex items-center gap-1">
                     <FileText size={14} />
                     <span>CNH / Documento</span>
                   </Label>
-                  <div className="aspect-[4/3] rounded-xl border border-border overflow-hidden bg-muted/30">
+                  <div className="aspect-[4/3] rounded-lg border border-border overflow-hidden bg-muted/30">
                     <img
                       src={selectedApp.document_front_url}
                       alt="CNH"
@@ -297,12 +297,12 @@ function AdminCourierAuditPage() {
                 </div>
 
                 {/* 2. Selfie do Condutor */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold flex items-center gap-1">
                     <Camera size={14} />
                     <span>Selfie Cadastrada</span>
                   </Label>
-                  <div className="aspect-[4/3] rounded-xl border border-border overflow-hidden bg-muted/30">
+                  <div className="aspect-[4/3] rounded-lg border border-border overflow-hidden bg-muted/30">
                     <img
                       src={selectedApp.selfie_url}
                       alt="Selfie"
@@ -312,12 +312,12 @@ function AdminCourierAuditPage() {
                 </div>
 
                 {/* 3. Minivídeo de Liveness */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold flex items-center gap-1">
                     <VideoCamera size={14} />
                     <span>Minivídeo Liveness (Prova de Vida)</span>
                   </Label>
-                  <div className="aspect-[4/3] rounded-xl border border-border overflow-hidden bg-black flex items-center justify-center">
+                  <div className="aspect-[4/3] rounded-lg border border-border overflow-hidden bg-black flex items-center justify-center">
                     {selectedApp.liveness_video_url.endsWith(".mp4") ||
                     selectedApp.liveness_video_url.endsWith(".webm") ? (
                       <video
@@ -337,7 +337,7 @@ function AdminCourierAuditPage() {
               </div>
 
               {/* Dados Cadastrais em Colunas */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-muted/30 border border-border/40 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-lg bg-muted/30 border border-border/40 text-xs">
                 <div>
                   <span className="text-muted-foreground block text-[10px] uppercase font-mono">
                     Nome Candidato
@@ -377,7 +377,7 @@ function AdminCourierAuditPage() {
                     handleAuditDecision(selectedApp.id, "requires_resubmission")
                   }
                   disabled={isPending}
-                  className="rounded-xl h-10 px-4 text-xs font-semibold"
+                  className="rounded-lg h-10 px-4 text-xs font-semibold"
                 >
                   Solicitar Reenvio de Documento
                 </Button>
@@ -390,7 +390,7 @@ function AdminCourierAuditPage() {
                       handleAuditDecision(selectedApp.id, "fraud_rejected", true)
                     }
                     disabled={isPending}
-                    className="rounded-xl h-10 px-4 text-xs font-bold gap-1.5 cursor-pointer"
+                    className="rounded-lg h-10 px-4 text-xs font-bold gap-2 cursor-pointer"
                   >
                     <Siren size={15} weight="bold" />
                     <span>Rejeitar Fraude e Registrar Notificação</span>
@@ -402,7 +402,7 @@ function AdminCourierAuditPage() {
                       handleAuditDecision(selectedApp.id, "match_approved")
                     }
                     disabled={isPending}
-                    className="rounded-xl h-10 px-5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer shadow-xs"
+                    className="rounded-lg h-10 px-5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer shadow-xs"
                   >
                     <CheckCircle size={15} weight="bold" />
                     <span>Aprovar Credenciamento</span>

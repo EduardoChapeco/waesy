@@ -132,7 +132,7 @@ export function ProfileEventsManager({
           type="button"
           size="sm"
           onClick={openCreateModal}
-          className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer h-9"
+          className="rounded-lg text-xs font-semibold gap-2 cursor-pointer h-9"
         >
           <Plus className="size-3.5" />
           <span>+ Adicionar Evento</span>
@@ -140,7 +140,7 @@ export function ProfileEventsManager({
       </div>
 
       {events.length === 0 ? (
-        <div className="border border-dashed border-border/70 p-8 text-center rounded-2xl bg-muted/20 space-y-3">
+        <div className="border border-dashed border-border/70 p-8 text-center rounded-lg bg-muted/20 space-y-3">
           <Calendar className="size-8 mx-auto text-muted-foreground/50 mb-1" />
           <p className="text-xs font-semibold text-foreground">
             Nenhum evento adicionado ainda
@@ -153,7 +153,7 @@ export function ProfileEventsManager({
             size="sm"
             variant="outline"
             onClick={openCreateModal}
-            className="rounded-xl text-xs font-semibold cursor-pointer"
+            className="rounded-lg text-xs font-semibold cursor-pointer"
           >
             Cadastrar Primeiro Evento
           </Button>
@@ -177,7 +177,7 @@ export function ProfileEventsManager({
               <div
                 key={ev.id}
                 className={cn(
-                  "rounded-2xl border p-4 bg-card flex flex-col justify-between transition-all shadow-2xs group relative overflow-hidden",
+                  "rounded-lg border p-4 bg-card flex flex-col justify-between transition-all shadow-2xs group relative overflow-hidden",
                   ev.is_featured
                     ? "border-primary/50 ring-1 ring-primary/20"
                     : "border-border/70 hover:border-border"
@@ -186,7 +186,7 @@ export function ProfileEventsManager({
                 <div className="space-y-3">
                   {/* Capa do Evento se houver */}
                   {ev.cover_url && (
-                    <div className="h-32 w-full rounded-xl overflow-hidden bg-muted border border-border/40 relative">
+                    <div className="h-32 w-full rounded-lg overflow-hidden bg-muted border border-border/40 relative">
                       <img
                         src={ev.cover_url}
                         alt={ev.title}
@@ -204,7 +204,7 @@ export function ProfileEventsManager({
 
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Badge
                           variant="outline"
                           className={cn(
@@ -256,12 +256,12 @@ export function ProfileEventsManager({
                   )}
 
                   <div className="space-y-1 pt-1 border-t border-border/30 text-[11px] text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Clock className="size-3 text-muted-foreground/70 shrink-0" />
                       <span>{formattedDate}</span>
                     </div>
                     {ev.location && (
-                      <div className="flex items-center gap-1.5 truncate">
+                      <div className="flex items-center gap-2 truncate">
                         <MapPin className="size-3 text-muted-foreground/70 shrink-0" />
                         <span className="truncate">{ev.location}</span>
                       </div>
@@ -290,7 +290,7 @@ export function ProfileEventsManager({
 
       {/* Modal Dialog de Cadastro / Edição */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-lg rounded-2xl">
+        <DialogContent className="max-w-lg rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
               {editingEvent ? "Editar Evento" : "Novo Evento no Perfil"}
@@ -298,7 +298,7 @@ export function ProfileEventsManager({
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-muted-foreground">
                 Título do Evento *
               </Label>
@@ -306,12 +306,12 @@ export function ProfileEventsManager({
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
                 placeholder="Ex: Workshop de Liderança, Show Acústico, Feira de Negócios"
-                className="h-10 rounded-xl text-xs"
+                className="h-10 rounded-lg text-xs"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-muted-foreground">
                   Data e Horário de Início
                 </Label>
@@ -319,11 +319,11 @@ export function ProfileEventsManager({
                   type="datetime-local"
                   value={formDate}
                   onChange={(e) => setFormDate(e.target.value)}
-                  className="h-10 rounded-xl text-xs"
+                  className="h-10 rounded-lg text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-muted-foreground">
                   Término (opcional)
                 </Label>
@@ -331,12 +331,12 @@ export function ProfileEventsManager({
                   type="datetime-local"
                   value={formEndDate}
                   onChange={(e) => setFormEndDate(e.target.value)}
-                  className="h-10 rounded-xl text-xs"
+                  className="h-10 rounded-lg text-xs"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-muted-foreground">
                 Localização (ou Link Online)
               </Label>
@@ -344,11 +344,11 @@ export function ProfileEventsManager({
                 value={formLocation}
                 onChange={(e) => setFormLocation(e.target.value)}
                 placeholder="Ex: Centro de Eventos, Rua XV de Novembro ou Online (Google Meet)"
-                className="h-10 rounded-xl text-xs"
+                className="h-10 rounded-lg text-xs"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-muted-foreground">
                 Link Externo / Ingressos / Inscrição
               </Label>
@@ -356,11 +356,11 @@ export function ProfileEventsManager({
                 value={formExternalUrl}
                 onChange={(e) => setFormExternalUrl(e.target.value)}
                 placeholder="https://sympla.com.br/... ou https://wa.me/..."
-                className="h-10 rounded-xl text-xs font-mono"
+                className="h-10 rounded-lg text-xs font-mono"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-muted-foreground">
                 Descrição do Evento
               </Label>
@@ -368,11 +368,11 @@ export function ProfileEventsManager({
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 placeholder="Conte sobre o que é o evento, atrações, convidados..."
-                className="rounded-xl text-xs min-h-[70px]"
+                className="rounded-lg text-xs min-h-[70px]"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-muted-foreground">
                 Imagem de Capa (Formato 16:9)
               </Label>
@@ -405,7 +405,7 @@ export function ProfileEventsManager({
               type="button"
               variant="outline"
               onClick={() => setModalOpen(false)}
-              className="rounded-xl text-xs cursor-pointer"
+              className="rounded-lg text-xs cursor-pointer"
             >
               Cancelar
             </Button>
@@ -413,7 +413,7 @@ export function ProfileEventsManager({
               type="button"
               onClick={handleSave}
               disabled={!formTitle.trim()}
-              className="rounded-xl text-xs font-bold bg-primary text-primary-foreground cursor-pointer"
+              className="rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer"
             >
               Salvar Evento
             </Button>

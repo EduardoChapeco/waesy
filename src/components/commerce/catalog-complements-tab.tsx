@@ -161,7 +161,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  return (
  <div className="space-y-6">
  {/* Header da Aba */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card border border-border rounded-2xl p-5">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card border border-border rounded-lg p-5">
  <div className="space-y-1">
  <div className="flex items-center gap-2">
  <Layers className="size-5 text-primary" />
@@ -177,7 +177,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  <Button
  onClick={handleOpenNew}
  size="sm"
- className="rounded-xl font-bold text-xs h-9 px-4 gap-1.5 bg-primary text-primary-foreground cursor-pointer"
+ className="rounded-lg font-bold text-xs h-9 px-4 gap-2 bg-primary text-primary-foreground cursor-pointer"
  >
  <Plus className="size-4" />
  {newGroupLabel}
@@ -190,8 +190,8 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  Carregando complementos...
  </div>
  ) : groups.length === 0 ? (
- <div className="py-12 text-center rounded-2xl border border-dashed border-border bg-card/40 space-y-3">
- <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+ <div className="py-12 text-center rounded-lg border border-dashed border-border bg-card/40 space-y-3">
+ <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
  <Sliders className="size-6" />
  </div>
  <div className="space-y-1">
@@ -200,7 +200,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  {emptyText}
  </p>
  </div>
- <Button onClick={handleOpenNew} size="sm" variant="outline" className="rounded-xl text-xs font-bold cursor-pointer">
+ <Button onClick={handleOpenNew} size="sm" variant="outline" className="rounded-lg text-xs font-bold cursor-pointer">
  <Plus className="size-3.5 mr-1" />
  Criar Primeiro Grupo
  </Button>
@@ -210,7 +210,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  {groups.map((grp: any) => (
  <div
  key={grp.id}
- className="p-5 rounded-2xl bg-card border border-border/80 flex flex-col justify-between space-y-4 hover:border-primary/50 transition-colors"
+ className="p-5 rounded-lg bg-card border border-border/80 flex flex-col justify-between space-y-4 hover:border-primary/50 transition-colors"
  >
  <div className="space-y-2">
  <div className="flex items-start justify-between gap-2">
@@ -228,12 +228,12 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  </p>
  )}
 
- <div className="text-[11px] font-mono text-muted-foreground bg-muted/30 px-2.5 py-1 rounded-lg inline-block">
+ <div className="text-[11px] font-mono text-muted-foreground bg-muted/30 px-3 py-1 rounded-lg inline-block">
  Escolha: Min {grp.min_selection} • Max {grp.max_selection}
  </div>
 
  {/* Lista de Opções */}
- <div className="space-y-1.5 pt-2 border-t border-border/60">
+ <div className="space-y-2 pt-2 border-t border-border/60">
  <span className="text-[10px] font-bold text-muted-foreground uppercase">
  Opções ({grp.options?.length || 0})
  </span>
@@ -258,7 +258,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  size="sm"
  variant="ghost"
  onClick={() => handleEdit(grp)}
- className="rounded-xl text-xs font-semibold h-8 gap-1"
+ className="rounded-lg text-xs font-semibold h-8 gap-1"
  >
  <Edit2 className="size-3.5" />
  Editar
@@ -271,7 +271,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  deleteMutation.mutate(grp.id);
  }
  }}
- className="rounded-xl text-xs font-semibold h-8 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 gap-1"
+ className="rounded-lg text-xs font-semibold h-8 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 gap-1"
  >
  <Trash2 className="size-3.5" />
  Excluir
@@ -284,7 +284,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
 
  {/* Modal / Dialog de Criação/Edição */}
  <Dialog open={modalOpen} onOpenChange={setModalOpen}>
- <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto no-scrollbar">
  <DialogHeader>
  <DialogTitle className="text-base font-bold">
  {editingGroup ? "Editar Grupo de Complementos" : "Novo Grupo de Complementos"}
@@ -292,51 +292,51 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  </DialogHeader>
 
  <div className="space-y-4 py-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Nome do Grupo *</Label>
  <Input
  placeholder="Ex: Ponto da Carne, Queijo Extra, Borda..."
  value={title}
  onChange={(e) => setTitle(e.target.value)}
- className="h-10 rounded-xl text-xs font-medium"
+ className="h-10 rounded-lg text-xs font-medium"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Descrição (opcional)</Label>
  <Input
  placeholder="Ex: Escolha até 2 opções para turbinar seu prato"
  value={description}
  onChange={(e) => setDescription(e.target.value)}
- className="h-9 rounded-xl text-xs"
+ className="h-9 rounded-lg text-xs"
  />
  </div>
 
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Mínimo de Escolhas</Label>
  <Input
  type="number"
  min={0}
  value={minSelection}
  onChange={(e) => setMinSelection(Number(e.target.value))}
- className="h-9 rounded-xl text-xs font-mono"
+ className="h-9 rounded-lg text-xs font-mono"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Máximo de Escolhas</Label>
  <Input
  type="number"
  min={1}
  value={maxSelection}
  onChange={(e) => setMaxSelection(Number(e.target.value))}
- className="h-9 rounded-xl text-xs font-mono"
+ className="h-9 rounded-lg text-xs font-mono"
  />
  </div>
  </div>
 
- <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/70">
- <div className="space-y-0.5">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/70">
+ <div className="space-y-1">
  <span className="text-xs font-bold text-foreground">Seleção Obrigatória</span>
  <p className="text-[11px] text-muted-foreground">O cliente não pode avançar sem escolher</p>
  </div>
@@ -366,7 +366,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  placeholder={`Nome da opção ${idx + 1}`}
  value={opt.name}
  onChange={(e) => handleOptionChange(idx, "name", e.target.value)}
- className="h-9 rounded-xl text-xs flex-1"
+ className="h-9 rounded-lg text-xs flex-1"
  />
  <div className="w-28 relative">
  <span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">R$</span>
@@ -383,7 +383,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  Math.round(parseFloat(e.target.value || "0") * 100),
  )
  }
- className="h-9 rounded-xl text-xs pl-8 font-mono"
+ className="h-9 rounded-lg text-xs pl-8 font-mono"
  />
  </div>
  {options.length > 1 && (
@@ -392,7 +392,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  size="icon"
  variant="ghost"
  onClick={() => handleRemoveOption(idx)}
- className="size-9 rounded-xl text-rose-500 hover:bg-rose-500/10 shrink-0"
+ className="size-9 rounded-lg text-rose-500 hover:bg-rose-500/10 shrink-0"
  >
  <Trash2 className="size-4" />
  </Button>
@@ -408,7 +408,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  variant="ghost"
  size="sm"
  onClick={() => setModalOpen(false)}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
@@ -416,7 +416,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  size="sm"
  onClick={handleSave}
  disabled={saveMutation.isPending}
- className="rounded-xl font-bold text-xs h-9 px-4 bg-primary text-primary-foreground"
+ className="rounded-lg font-bold text-xs h-9 px-4 bg-primary text-primary-foreground"
  >
  {saveMutation.isPending ? "Salvando..." : "Salvar Grupo"}
  </Button>

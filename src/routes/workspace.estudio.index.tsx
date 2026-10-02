@@ -247,11 +247,11 @@ function StudioWorkspacePage() {
  </div>
 
  {/* Switcher de Modo (Design Gráfico vs Vídeo Studio) */}
- <div className="hidden sm:flex items-center gap-1 bg-muted/60 p-0.5 rounded-xl border border-border/60 ml-2">
+ <div className="hidden sm:flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 ml-2">
  <button
  type="button"
  onClick={() => setStudioMode("graphic")}
- className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+ className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
  studioMode === "graphic"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -263,7 +263,7 @@ function StudioWorkspacePage() {
  <button
  type="button"
  onClick={() => setStudioMode("video")}
- className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+ className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
  studioMode === "video"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -278,7 +278,7 @@ function StudioWorkspacePage() {
  {/* Ações Direitas (Zoom, Salvar e Exportar) */}
  <div className="flex items-center gap-2">
  {studioMode === "graphic" && (
- <div className="hidden md:flex items-center gap-1 bg-muted/40 px-2 py-0.5 rounded-xl border border-border/60 text-xs font-mono">
+ <div className="hidden md:flex items-center gap-1 bg-muted/40 px-2 py-1 rounded-lg border border-border/60 text-xs font-mono">
  <button
  type="button"
  onClick={() => setZoom((z) => Math.max(0.5, z - 0.1))}
@@ -302,7 +302,7 @@ function StudioWorkspacePage() {
  variant="outline"
  disabled={saveMutation.isPending}
  onClick={() => saveMutation.mutate()}
- className="h-8 rounded-xl font-bold text-xs gap-1.5"
+ className="h-8 rounded-lg font-bold text-xs gap-2"
  >
  {saveMutation.isPending ? (
  <Loader2 className="size-3.5 animate-spin" />
@@ -316,7 +316,7 @@ function StudioWorkspacePage() {
  size="sm"
  disabled={isExporting}
  onClick={handleExport}
- className="h-8 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1.5"
+ className="h-8 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2"
  >
  {isExporting ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
  <span>{isExporting ? "Exportando..." : "Exportar"}</span>
@@ -335,15 +335,15 @@ function StudioWorkspacePage() {
  </div>
 
  {/* Seletor de Aspect Ratio */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Formato do Canvas</Label>
- <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+ <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
  {(["1:1", "4:5", "9:16", "16:9", "1.91:1"] as StudioAspectRatio[]).map((ar) => (
  <button
  key={ar}
  type="button"
  onClick={() => setAspectRatio(ar)}
- className={`py-1.5 px-2 rounded-lg text-xs font-mono font-bold border transition-all ${
+ className={`py-2 px-2 rounded-lg text-xs font-mono font-bold border transition-all ${
  aspectRatio === ar
  ? "bg-foreground text-background border-foreground"
  : "bg-muted/40 border-border/60 text-muted-foreground hover:text-foreground"
@@ -363,7 +363,7 @@ function StudioWorkspacePage() {
  type="button"
  variant="outline"
  onClick={handleAddText}
- className="w-full h-9 rounded-xl font-semibold text-xs justify-start gap-2"
+ className="w-full h-9 rounded-lg font-semibold text-xs justify-start gap-2"
  >
  <Type className="size-4 text-primary" />
  <span>Adicionar Texto</span>
@@ -374,7 +374,7 @@ function StudioWorkspacePage() {
  type="button"
  variant="outline"
  onClick={() => handleAddShape("rectangle")}
- className="h-9 rounded-xl font-semibold text-xs gap-1.5"
+ className="h-9 rounded-lg font-semibold text-xs gap-2"
  >
  <Square className="size-3.5 text-info" />
  <span>Retângulo</span>
@@ -383,7 +383,7 @@ function StudioWorkspacePage() {
  type="button"
  variant="outline"
  onClick={() => handleAddShape("badge")}
- className="h-9 rounded-xl font-semibold text-xs gap-1.5"
+ className="h-9 rounded-lg font-semibold text-xs gap-2"
  >
  <Award className="size-3.5 text-primary" />
  <span>Selo / Badge</span>
@@ -439,7 +439,7 @@ function StudioWorkspacePage() {
  type="button"
  variant="outline"
  onClick={() => document.getElementById('studio-video-file-input')?.click()}
- className="w-full h-9 rounded-xl font-semibold text-xs justify-start gap-2"
+ className="w-full h-9 rounded-lg font-semibold text-xs justify-start gap-2"
  >
  <Film className="size-4 text-primary" />
  <span>Importar Vídeo (MP4)</span>
@@ -448,7 +448,7 @@ function StudioWorkspacePage() {
  type="button"
  variant="outline"
  onClick={() => document.getElementById('studio-audio-file-input')?.click()}
- className="w-full h-9 rounded-xl font-semibold text-xs justify-start gap-2"
+ className="w-full h-9 rounded-lg font-semibold text-xs justify-start gap-2"
  >
  <Music className="size-4 text-emerald-500" />
  <span>Adicionar Áudio</span>
@@ -476,7 +476,7 @@ function StudioWorkspacePage() {
  key={cat.id}
  type="button"
  onClick={() => setSelectedTemplateCategory(cat.id)}
- className={`px-2 py-0.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
+ className={`px-2 py-1 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
  selectedTemplateCategory === cat.id
  ? "bg-primary text-primary-foreground"
  : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -492,7 +492,7 @@ function StudioWorkspacePage() {
  <div
  key={tpl.id}
  onClick={() => handleApplyTemplate(tpl)}
- className="p-2.5 rounded-xl border border-border/70 bg-card hover:bg-muted/50 cursor-pointer transition-all space-y-1"
+ className="p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/50 cursor-pointer transition-all space-y-1"
  >
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground truncate">{tpl.title}</span>
@@ -532,7 +532,7 @@ function StudioWorkspacePage() {
  {/* Player de Vídeo */}
  <div className="flex-1 flex items-center justify-center p-6 bg-zinc-950">
  <div
- className="relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center"
+ className="relative rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center"
  style={{
  width: aspectRatio === "9:16" ? "320px" : "540px",
  height: aspectRatio === "9:16" ? "560px" : "300px",
@@ -540,7 +540,7 @@ function StudioWorkspacePage() {
  >
  <Film className="size-12 text-zinc-600 mb-2" />
  <p className="text-xs font-mono text-zinc-400">Vídeo Preview (4K Canvas)</p>
- <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-md p-2 rounded-xl flex items-center justify-between text-xs font-mono text-white">
+ <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-md p-2 rounded-lg flex items-center justify-between text-xs font-mono text-white">
  <span>{currentTime.toFixed(1)}s</span>
  <span>/ {videoDuration}s</span>
  </div>
@@ -555,7 +555,7 @@ function StudioWorkspacePage() {
  size="icon"
  variant="outline"
  onClick={() => setIsPlaying(!isPlaying)}
- className="size-8 rounded-xl font-bold"
+ className="size-8 rounded-lg font-bold"
  >
  {isPlaying ? <Pause className="size-4" /> : <Play className="size-4" />}
  </Button>
@@ -585,7 +585,7 @@ function StudioWorkspacePage() {
                 );
                 toast.success(`Trilha dividida aos ${currentTime.toFixed(1)}s`);
               }}
-              className="h-8 text-xs gap-1.5"
+              className="h-8 text-xs gap-2"
             >
               <Scissors className="size-3.5" />
               <span>Dividir (Split)</span>
@@ -593,11 +593,11 @@ function StudioWorkspacePage() {
  </div>
 
  {/* Trilhas Visuais */}
- <div className="space-y-1.5 overflow-y-auto no-scrollbar py-1">
+ <div className="space-y-2 overflow-y-auto no-scrollbar py-1">
  {videoTracks.map((tr) => (
  <div
  key={tr.id}
- className="h-8 rounded-xl bg-muted/40 border border-border/40 px-3 flex items-center justify-between text-xs"
+ className="h-8 rounded-lg bg-muted/40 border border-border/40 px-3 flex items-center justify-between text-xs"
  >
  <span className="font-bold text-foreground">{tr.name}</span>
  <div className="flex-1 mx-4 h-5 rounded-lg bg-primary/20 border border-primary/40 flex items-center px-2 text-xs font-mono text-primary truncate">
@@ -639,7 +639,7 @@ function StudioWorkspacePage() {
  {/* Edição de Texto */}
  {selectedElement.type === "text" && (
  <>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Conteúdo do Texto</Label>
  <Input
  value={(selectedElement.properties as any).content || ""}
@@ -653,11 +653,11 @@ function StudioWorkspacePage() {
  ),
  );
  }}
- className="h-9 rounded-xl text-xs"
+ className="h-9 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex justify-between text-xs">
  <Label className="font-bold text-foreground">Tamanho da Fonte</Label>
  <span className="font-mono text-muted-foreground">
@@ -681,7 +681,7 @@ function StudioWorkspacePage() {
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cor do Texto</Label>
  <div className="flex items-center gap-2">
  <input
@@ -707,7 +707,7 @@ function StudioWorkspacePage() {
 
  {/* Edição de Formas */}
  {selectedElement.type === "shape" && (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cor de Preenchimento</Label>
  <div className="flex items-center gap-2">
  <input
@@ -731,7 +731,7 @@ function StudioWorkspacePage() {
  )}
 
  {/* Rotação & Opacidade */}
- <div className="space-y-1.5 pt-2 border-t border-border/60">
+ <div className="space-y-2 pt-2 border-t border-border/60">
  <div className="flex justify-between text-xs">
  <Label className="font-bold text-foreground">Opacidade</Label>
  <span className="font-mono text-muted-foreground">

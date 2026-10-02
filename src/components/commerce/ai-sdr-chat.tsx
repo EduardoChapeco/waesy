@@ -133,7 +133,7 @@ export function AiSdrChat({ classifiedId, storeName, sellerName }: AiSdrChatProp
           {/* Botão "Instruções" */}
           <button
             onClick={() => setIsInfoOpen(true)}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground bg-background border border-border/60 rounded-full px-3 py-1.5 shadow-sm hover:bg-muted transition-colors"
+            className="flex items-center gap-2 text-xs text-muted-foreground bg-background border border-border/60 rounded-full px-3 py-2 shadow-sm hover:bg-muted transition-colors"
             aria-label="Saiba mais sobre o assistente"
           >
             <Info className="size-3.5" />
@@ -160,7 +160,7 @@ export function AiSdrChat({ classifiedId, storeName, sellerName }: AiSdrChatProp
         <div className={cn(
           "fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 pb-safe sm:pb-0",
           "w-full sm:w-[375px] h-[80vh] sm:h-[560px]",
-          "bg-background border border-border sm:rounded-2xl shadow-2xl",
+          "bg-background border border-border sm:rounded-lg shadow-2xl",
           "flex flex-col overflow-hidden",
           "animate-in slide-in-from-bottom-4 fade-in duration-250",
           // Borda azul sutil no modo aberto
@@ -169,7 +169,7 @@ export function AiSdrChat({ classifiedId, storeName, sellerName }: AiSdrChatProp
 
           {/* Header limpo — sem gradiente neon */}
           <div className="h-14 bg-card border-b border-border flex items-center justify-between px-4 shrink-0">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <Bot className="size-4 text-primary" />
               </div>
@@ -205,10 +205,10 @@ export function AiSdrChat({ classifiedId, storeName, sellerName }: AiSdrChatProp
           >
             {/* Mensagem inicial */}
             <div className="flex items-start gap-2">
-              <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
                 <Bot className="size-3.5 text-primary" />
               </div>
-              <div className="bg-muted text-foreground text-[13px] rounded-2xl rounded-tl-sm px-3.5 py-2.5 max-w-[85%]">
+              <div className="bg-muted text-foreground text-[13px] rounded-lg rounded-tl-sm px-4 py-3 max-w-[85%]">
                 Olá! Posso te ajudar com dúvidas sobre este produto. Como posso te ajudar?
               </div>
             </div>
@@ -219,12 +219,12 @@ export function AiSdrChat({ classifiedId, storeName, sellerName }: AiSdrChatProp
                 className={cn("flex items-start gap-2", m.role === "user" ? "flex-row-reverse" : "flex-row")}
               >
                 {m.role === "assistant" && (
-                  <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
                     <Bot className="size-3.5 text-primary" />
                   </div>
                 )}
                 <div className={cn(
-                  "text-[13px] rounded-2xl px-3.5 py-2.5 max-w-[85%] whitespace-pre-wrap leading-relaxed",
+                  "text-[13px] rounded-lg px-4 py-3 max-w-[85%] whitespace-pre-wrap leading-relaxed",
                   m.role === "user"
                     ? "bg-primary text-primary-foreground rounded-tr-sm"
                     : "bg-muted text-foreground rounded-tl-sm"
@@ -236,10 +236,10 @@ export function AiSdrChat({ classifiedId, storeName, sellerName }: AiSdrChatProp
 
             {isLoading && (
               <div className="flex items-start gap-2">
-                <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
                   <Bot className="size-3.5 text-primary" />
                 </div>
-                <div className="bg-muted text-foreground text-[13px] rounded-2xl rounded-tl-sm px-3.5 py-2.5 flex items-center gap-1 h-9">
+                <div className="bg-muted text-foreground text-[13px] rounded-lg rounded-tl-sm px-4 py-3 flex items-center gap-1 h-9">
                   <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.3s]" />
                   <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.15s]" />
                   <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce" />

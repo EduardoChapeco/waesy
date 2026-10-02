@@ -75,13 +75,13 @@ function CustomerGiftCardsPage() {
             Vales-Presente
           </h1>
           {giftCards.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {giftCards.length}
             </Badge>
           )}
         </div>
 
-        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
+        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer">
           <Link to="/mercado">Explorar Lojas</Link>
         </Button>
       </div>
@@ -89,7 +89,7 @@ function CustomerGiftCardsPage() {
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
  {/* Resgatar Vale */}
  <div className="md:col-span-1">
- <div className=" bg-card rounded-2xl p-5 space-y-4">
+ <div className=" bg-card rounded-lg p-5 space-y-4">
  <div className="flex items-center gap-2">
  <Layers className="size-5 text-primary" />
  <h2 className="text-base font-bold text-foreground">Resgatar Vale</h2>
@@ -111,7 +111,7 @@ function CustomerGiftCardsPage() {
  <FormControl>
  <Input
  placeholder="Ex: ABCD-1234-WXYZ"
- className="font-mono uppercase font-bold h-10 rounded-xl"
+ className="font-mono uppercase font-bold h-10 rounded-lg"
  {...field}
  />
  </FormControl>
@@ -121,7 +121,7 @@ function CustomerGiftCardsPage() {
  />
  <Button
  type="submit"
- className="w-full font-bold text-xs h-10 bg-primary text-primary-foreground rounded-xl"
+ className="w-full font-bold text-xs h-10 bg-primary text-primary-foreground rounded-lg"
  disabled={isLoading}
  >
  {isLoading ? (
@@ -148,7 +148,7 @@ function CustomerGiftCardsPage() {
  </div>
 
  {giftCards.length === 0 ? (
- <div className="border-0 p-8 text-center bg-card rounded-2xl flex flex-col items-center gap-3">
+ <div className="border-0 p-8 text-center bg-card rounded-lg flex flex-col items-center gap-3">
  <Gift className="size-10 text-muted-foreground/40" />
  <div className="space-y-1">
  <p className="font-semibold text-sm text-foreground">Nenhum vale ativo vinculado</p>
@@ -166,15 +166,15 @@ function CustomerGiftCardsPage() {
  return (
  <div
  key={card.id}
- className={`p-4 sm:p-5 bg-card flex flex-col sm:flex-row justify-between sm:items-center gap-3 rounded-xl transition-all ${
+ className={`p-4 sm:p-5 bg-card flex flex-col sm:flex-row justify-between sm:items-center gap-3 rounded-lg transition-all ${
  isUsed || card.status === "cancelled" || isExpired
  ? "opacity-60 bg-muted/30"
  : "hover:border-primary/40 "
  }`}
  >
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center gap-2">
- <span className="font-mono font-bold text-sm bg-muted px-2 py-0.5 rounded-md">
+ <span className="font-mono font-bold text-sm bg-muted px-2 py-1 rounded-md">
  {card.code}
  </span>
  <Button

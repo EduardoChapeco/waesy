@@ -96,11 +96,11 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
 
  return (
  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
- <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-2xl bg-card border border-border shadow-2xl">
+ <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-2xl">
  <DialogHeader className="p-5 border-b border-border/70 bg-muted/20">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600">
+ <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
  <Send className="size-4" />
  </div>
  <div>
@@ -117,8 +117,8 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
 
  <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar">
  {/* Destinatário */}
- <div className="space-y-1.5">
- <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="space-y-2">
+ <label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Phone className="size-3.5 text-primary" />
  <span>WhatsApp do Cliente:</span>
  </label>
@@ -126,12 +126,12 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  value={recipientPhone}
  onChange={(e) => setRecipientPhone(e.target.value)}
  placeholder="Ex: (49) 99999-9999"
- className="h-10 text-xs rounded-xl font-mono bg-muted/20"
+ className="h-10 text-xs rounded-lg font-mono bg-muted/20"
  />
  </div>
 
  {/* Mensagem Formatada */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <label className="text-xs font-bold text-foreground">Mensagem Comercial Formatada:</label>
  <Button
@@ -149,12 +149,12 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  value={message}
  onChange={(e) => setMessage(e.target.value)}
  rows={8}
- className="font-mono text-xs leading-relaxed rounded-2xl bg-muted/10 resize-none p-3.5 border-border/80"
+ className="font-mono text-xs leading-relaxed rounded-lg bg-muted/10 resize-none p-4 border-border/80"
  />
  </div>
 
  {/* Atalhos Rápidos de Exportação Visual de Lâminas */}
- <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-2">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-2">
  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
  Anexos & Lâminas de Alta Resolução:
  </span>
@@ -165,7 +165,7 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  size="sm"
  disabled={isExportingPng}
  onClick={handleExportPng}
- className="h-9 rounded-xl text-xs font-bold gap-1.5 border-border bg-card hover:bg-muted"
+ className="h-9 rounded-lg text-xs font-bold gap-2 border-border bg-card hover:bg-muted"
  >
  <ImageIcon className="size-3.5 text-primary" />
  {isExportingPng ? 'Gerando PNG...' : 'Baixar Lâmina (PNG)'}
@@ -177,7 +177,7 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  size="sm"
  disabled={isExportingPdf}
  onClick={handleExportPdf}
- className="h-9 rounded-xl text-xs font-bold gap-1.5 border-border bg-card hover:bg-muted"
+ className="h-9 rounded-lg text-xs font-bold gap-2 border-border bg-card hover:bg-muted"
  >
  <Download className="size-3.5 text-rose-500" />
  {isExportingPdf ? 'Gerando PDF...' : 'Baixar Proposta (PDF)'}
@@ -187,14 +187,14 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  </div>
 
  <DialogFooter className="p-4 border-t border-border/70 bg-muted/10 flex items-center justify-between sm:justify-between">
- <Button type="button" variant="ghost" onClick={onClose} className="rounded-xl text-xs">
+ <Button type="button" variant="ghost" onClick={onClose} className="rounded-lg text-xs">
  Fechar
  </Button>
 
  <Button
  type="button"
  onClick={handleOpenWhatsApp}
- className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 shadow-md px-5"
+ className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2 shadow-md px-5"
  >
  <Send className="size-3.5" />
  Disparar no WhatsApp

@@ -129,7 +129,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  {/* ── 1. Resumo do Caixa da Viagem ── */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  {/* Saldo Disponível */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-semibold">Saldo Atual em Viagem</span>
  <Wallet className="size-4 text-primary" />
@@ -145,7 +145,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  </div>
 
  {/* Total de Entradas */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-semibold">Total Suprimentos / Entradas</span>
  <ArrowDownLeft className="size-4 text-emerald-500" />
@@ -157,7 +157,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  </div>
 
  {/* Total de Saídas */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-semibold">Total Despesas Pagas</span>
  <ArrowUpRight className="size-4 text-rose-500" />
@@ -170,7 +170,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  </div>
 
  {/* ── 2. Lista de Lançamentos do Caixa ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/70 space-y-4">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div>
  <h3 className="text-sm font-bold text-foreground">Livro Caixa da Excursão</h3>
@@ -185,7 +185,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  variant="outline"
  size="sm"
  onClick={() => openNewEntry("inflow")}
- className="h-9 px-3 rounded-xl text-xs font-bold gap-1.5 cursor-pointer text-emerald-600 hover:text-emerald-700"
+ className="h-9 px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer text-emerald-600 hover:text-emerald-700"
  >
  <ArrowDownLeft className="size-3.5" /> Adicionar Suprimento
  </Button>
@@ -194,7 +194,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  type="button"
  size="sm"
  onClick={() => openNewEntry("outflow")}
- className="h-9 px-3 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+ className="h-9 px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
  >
  <Plus className="size-3.5" /> Lançar Despesa
  </Button>
@@ -210,11 +210,11 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  return (
  <div
  key={item.id}
- className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/15 hover:bg-muted/30 transition-colors"
+ className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/15 hover:bg-muted/30 transition-colors"
  >
  <div className="flex items-center gap-3 min-w-0 flex-1">
  <div
- className={`size-9 rounded-xl flex items-center justify-center shrink-0 ${
+ className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${
  isInflow
  ? "bg-emerald-500/10 text-emerald-600"
  : "bg-rose-500/10 text-rose-600"
@@ -227,7 +227,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  )}
  </div>
 
- <div className="space-y-0.5 min-w-0 flex-1">
+ <div className="space-y-1 min-w-0 flex-1">
  <p className="text-xs font-semibold text-foreground truncate">
  {item.description}
  </p>
@@ -265,7 +265,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  })}
 
  {entries.length === 0 && (
- <div className="p-8 text-center rounded-xl border border-dashed border-border/70 text-xs text-muted-foreground">
+ <div className="p-8 text-center rounded-lg border border-dashed border-border/70 text-xs text-muted-foreground">
  Nenhum lançamento no caixa desta viagem. Lance adiantamentos ou despesas em trânsito.
  </div>
  )}
@@ -274,7 +274,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
 
  {/* ── 3. Modal de Lançamento ── */}
  <Dialog open={modalOpen} onOpenChange={setModalOpen}>
- <DialogContent className="sm:max-w-md rounded-2xl border-border/70 bg-card p-5 space-y-4">
+ <DialogContent className="sm:max-w-md rounded-lg border-border/70 bg-card p-5 space-y-4">
  <DialogHeader>
  <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
  <Wallet className="size-4 text-primary" />
@@ -282,13 +282,13 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  </DialogTitle>
  </DialogHeader>
 
- <form onSubmit={handleCreateEntry} className="space-y-3.5">
+ <form onSubmit={handleCreateEntry} className="space-y-4">
  <div className="space-y-1">
  <label className="text-xs font-semibold text-foreground">Categoria *</label>
  <select
  value={category}
  onChange={(e) => setCategory(e.target.value)}
- className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
+ className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
  >
  {entryType === "inflow" ? (
  <>
@@ -316,7 +316,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  placeholder="Ex: Pedágio praça Palhoça km 220"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  autoFocus
  />
  </div>
@@ -328,7 +328,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  value={amountStr}
  onChange={(e) => setAmountStr(e.target.value)}
  placeholder="Ex: 58,50"
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-xs rounded-lg font-mono"
  />
  </div>
 
@@ -337,7 +337,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  <select
  value={paymentMethod}
  onChange={(e) => setPaymentMethod(e.target.value)}
- className="w-full h-10 px-2 rounded-xl border border-input bg-background text-xs text-foreground focus:outline-none"
+ className="w-full h-10 px-2 rounded-lg border border-input bg-background text-xs text-foreground focus:outline-none"
  >
  <option value="cash">Dinheiro em Espécie</option>
  <option value="pix">PIX</option>
@@ -351,7 +351,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  <Button
  type="submit"
  disabled={submitting || !description.trim() || !amountStr.trim()}
- className="w-full h-10 rounded-xl text-xs font-bold cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold cursor-pointer"
  >
  {submitting ? "Registrando..." : "Confirmar Lançamento"}
  </Button>

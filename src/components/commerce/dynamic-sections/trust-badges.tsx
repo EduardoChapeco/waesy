@@ -71,7 +71,7 @@ export function TrustBadges({ content, design_tokens }: TrustBadgesProps) {
  <div>
  <h4 className="font-bold text-[15px] tracking-tight text-foreground">{badge.title}</h4>
  {(badge.description || badge.subtitle) && (
- <p className="text-[13px] leading-relaxed text-muted-foreground mt-1.5">
+ <p className="text-[13px] leading-relaxed text-muted-foreground mt-2">
  {badge.description || badge.subtitle}
  </p>
  )}

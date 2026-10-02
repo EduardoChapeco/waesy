@@ -75,7 +75,7 @@ export function DestinationPicker({
  return (
  <div className={cn("space-y-2", className)}>
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Link2 className="size-3.5 text-primary" />
  <span>{label}</span>
  </Label>
@@ -93,7 +93,7 @@ export function DestinationPicker({
  value={currentPreset ? currentPreset.url : "custom"}
  onValueChange={handleSelectPreset}
  >
- <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+ <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
  <SelectValue placeholder="Selecione a página de destino..." />
  </SelectTrigger>
  <SelectContent className="max-h-72">
@@ -172,12 +172,12 @@ export function DestinationPicker({
  </SelectContent>
  </Select>
  ) : (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Input
  value={value}
  onChange={(e) => onChange(e.target.value)}
  placeholder="Ex: /produto/slug-item ou https://wa.me/..."
- className="h-11 rounded-xl text-xs font-mono bg-background"
+ className="h-11 rounded-lg text-xs font-mono bg-background"
  />
  </div>
  )}

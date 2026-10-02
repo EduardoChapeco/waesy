@@ -126,7 +126,7 @@ export function MotionStudioViewport({
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-[10px] bg-zinc-800 text-zinc-300 border-zinc-700">
             {template.label}
           </Badge>
@@ -137,7 +137,7 @@ export function MotionStudioViewport({
       {/* Main Canvas Area */}
       <div className="flex-1 flex items-center justify-center p-4 min-h-0 overflow-auto bg-gradient-to-b from-zinc-950 to-zinc-900/50">
         <div
-          className="relative rounded-2xl shadow-2xl border border-zinc-800 overflow-hidden flex flex-col transition-all duration-300"
+          className="relative rounded-lg shadow-2xl border border-zinc-800 overflow-hidden flex flex-col transition-all duration-300"
           style={{
             ...canvasStyle,
             background: `radial-gradient(circle at top right, ${accentColor}28, transparent 50%), linear-gradient(145deg, #090a0f 0%, #11141e 60%, #060709 100%)`,
@@ -186,7 +186,7 @@ export function MotionStudioViewport({
 
           {/* Store Logo Chip (if enabled) */}
           {showLogo && (
-            <div className="absolute top-4 right-4 z-10 pointer-events-none flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/30 border border-white/10 backdrop-blur-md text-[10px] font-semibold text-white/80">
+            <div className="absolute top-4 right-4 z-10 pointer-events-none flex items-center gap-2 px-3 py-1 rounded-full bg-black/30 border border-white/10 backdrop-blur-md text-[10px] font-semibold text-white/80">
               <Zap className="size-3 text-amber-400" />
               <span>Waesy Loja</span>
             </div>
@@ -209,7 +209,7 @@ export function MotionStudioViewport({
                 return (
                   <div
                     key={seq.id}
-                    className="rounded-2xl border border-white/15 bg-black/50 p-5 shadow-2xl backdrop-blur-xl transition-all space-y-3"
+                    className="rounded-lg border border-white/15 bg-black/50 p-5 shadow-2xl backdrop-blur-xl transition-all space-y-3"
                     style={{
                       opacity,
                       transform: `translateY(${translateY}px) scale(${scale})`,
@@ -235,7 +235,7 @@ export function MotionStudioViewport({
 
                     {/* Metric / Accent Tag */}
                     {seq.accentText && (
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-[11px] font-semibold text-white">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/10 border border-white/15 text-[11px] font-semibold text-white">
                         <span className="size-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
                         <span>{seq.accentText}</span>
                       </div>
@@ -246,7 +246,7 @@ export function MotionStudioViewport({
                       <div className="pt-2">
                         <button
                           type="button"
-                          className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-black shadow-lg flex items-center justify-center gap-2"
+                          className="w-full py-3 px-4 rounded-lg font-bold text-xs text-black shadow-lg flex items-center justify-center gap-2"
                           style={{ backgroundColor: accentColor }}
                         >
                           <span>{seq.ctaLabel}</span>
@@ -261,7 +261,7 @@ export function MotionStudioViewport({
           {/* Captions Strip (Optional) */}
           {captionsEnabled && (
             <div className="absolute bottom-4 left-4 right-4 z-20 pointer-events-none">
-              <div className="rounded-xl border border-white/10 bg-black/60 px-3 py-1.5 text-center text-[10px] text-white/90 backdrop-blur-md truncate">
+              <div className="rounded-lg border border-white/10 bg-black/60 px-3 py-2 text-center text-[10px] text-white/90 backdrop-blur-md truncate">
                 {activeSequences[0]?.body || activeSequences[0]?.headline || "Waesy Motion Studio"}
               </div>
             </div>
@@ -276,7 +276,7 @@ export function MotionStudioViewport({
 
       {/* Scrub & Playback Controls */}
       <div className="h-12 border-t border-zinc-800 bg-zinc-900/80 px-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <Button
             size="icon"
             variant="ghost"
@@ -331,8 +331,8 @@ export function MotionStudioViewport({
 
       {/* Multi-Track Sequence Timeline */}
       <div className="h-36 border-t border-zinc-800/90 bg-zinc-950 p-3 flex flex-col justify-between shrink-0">
-        <div className="flex items-center justify-between text-[11px] text-zinc-400 pb-1.5 border-b border-zinc-800/60">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-between text-[11px] text-zinc-400 pb-2 border-b border-zinc-800/60">
+          <div className="flex items-center gap-2">
             <Layers className="size-3.5 text-zinc-500" />
             <span className="font-semibold text-zinc-300">Linha do Tempo (Sequências)</span>
           </div>

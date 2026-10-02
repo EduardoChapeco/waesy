@@ -99,9 +99,9 @@ export function EmployeeDocumentsPanel({
     <div className="space-y-6">
       {/* Required Docs Alert */}
       {requiredCount > 0 && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600">
+            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-600">
               <AlertCircle className="size-5" />
             </div>
             <div>
@@ -117,7 +117,7 @@ export function EmployeeDocumentsPanel({
             size="sm"
             variant="outline"
             onClick={() => setSelectedCategory("all")}
-            className="rounded-xl h-8 px-3 text-xs border-amber-500/30 text-amber-700 dark:text-amber-300 shrink-0"
+            className="rounded-lg h-8 px-3 text-xs border-amber-500/30 text-amber-700 dark:text-amber-300 shrink-0"
           >
             Visualizar Pendentes
           </Button>
@@ -132,11 +132,11 @@ export function EmployeeDocumentsPanel({
             placeholder="Buscar por título ou assunto..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-11 min-h-[44px] text-xs rounded-xl bg-background"
+            className="pl-9 h-11 min-h-11 text-xs rounded-lg bg-background"
           />
         </div>
 
-        <div className="flex flex-wrap gap-1 bg-muted/60 p-1 rounded-xl border border-border/70 w-full sm:w-auto overflow-x-auto no-scrollbar">
+        <div className="flex flex-wrap gap-1 bg-muted/60 p-1 rounded-lg border border-border/70 w-full sm:w-auto overflow-x-auto no-scrollbar">
           {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => {
             const Icon = cfg.icon;
             const active = selectedCategory === key;
@@ -146,7 +146,7 @@ export function EmployeeDocumentsPanel({
                 type="button"
                 onClick={() => setSelectedCategory(key)}
                 className={cn(
-                  "min-h-[36px] px-3 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer",
+                  "min-h-9 px-3 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer",
                   active
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
@@ -166,7 +166,7 @@ export function EmployeeDocumentsPanel({
           <Loader2 className="size-6 animate-spin text-primary" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="p-8 rounded-2xl bg-card border border-border/60 text-center space-y-2">
+        <div className="p-8 rounded-lg bg-card border border-border/60 text-center space-y-2">
           <FileText className="size-10 text-muted-foreground/40 mx-auto" />
           <p className="text-sm font-semibold text-foreground">
             Nenhum documento encontrado
@@ -184,12 +184,12 @@ export function EmployeeDocumentsPanel({
             return (
               <div
                 key={doc.id}
-                className="p-5 rounded-2xl bg-card border border-border/70 hover:border-primary/40 transition-all space-y-3 flex flex-col justify-between shadow-xs"
+                className="p-5 rounded-lg bg-card border border-border/70 hover:border-primary/40 transition-all space-y-3 flex flex-col justify-between shadow-xs"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <div className="p-2 rounded-xl bg-muted/60">
+                      <div className="p-2 rounded-lg bg-muted/60">
                         <Icon className={cn("size-4", cfg.color)} />
                       </div>
                       <Badge
@@ -226,7 +226,7 @@ export function EmployeeDocumentsPanel({
                       {doc.title}
                     </h3>
                     {doc.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
                         {doc.description}
                       </p>
                     )}
@@ -244,7 +244,7 @@ export function EmployeeDocumentsPanel({
                     variant={doc.has_read ? "outline" : "default"}
                     onClick={() => void handleAcknowledge(doc)}
                     disabled={readingDocId === doc.id}
-                    className="rounded-xl h-8 px-3 text-xs gap-1.5 cursor-pointer"
+                    className="rounded-lg h-8 px-3 text-xs gap-2 cursor-pointer"
                   >
                     {readingDocId === doc.id ? (
                       <Loader2 className="size-3.5 animate-spin" />

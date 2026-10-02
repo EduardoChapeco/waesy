@@ -347,7 +347,7 @@ function ServicosVerticalPage() {
               })()}
             </div>
           ) : (
-            <div className="py-12 text-center bg-card rounded-2xl p-6">
+            <div className="py-12 text-center bg-card rounded-lg p-6">
               <EmptyState
                 title="Nenhum prestador encontrado"
                 description="Tente selecionar outra categoria ou busque por termos mais amplos."
@@ -358,7 +358,7 @@ function ServicosVerticalPage() {
       ) : viewMode === "list" ? (
         <section aria-label="Lista de Prestadores">
           {serviceStores.length === 0 ? (
-            <div className="py-12 text-center bg-card rounded-2xl p-6">
+            <div className="py-12 text-center bg-card rounded-lg p-6">
               <EmptyState
                 title="Nenhum prestador encontrado"
                 description="Tente selecionar outra categoria ou busque por termos mais amplos."
@@ -369,12 +369,12 @@ function ServicosVerticalPage() {
               {serviceStores.map((store: any) => (
                 <div
                   key={store.id}
-                  className="group relative overflow-hidden rounded-2xl bg-card border border-border/60 hover:border-foreground/30 transition-all min-h-[132px] pl-32 sm:pl-40 pr-4 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                  className="group relative overflow-hidden rounded-lg bg-card border border-border/60 hover:border-foreground/30 transition-all min-h-[132px] pl-32 sm:pl-40 pr-4 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
                 >
                   <Link
                     to="/diretorio/$id"
                     params={{ id: store.id }}
-                    className="absolute inset-y-0 left-0 w-32 sm:w-40 rounded-l-2xl bg-muted overflow-hidden flex items-center justify-center font-bold text-primary text-2xl"
+                    className="absolute inset-y-0 left-0 w-32 sm:w-40 rounded-l-lg bg-muted overflow-hidden flex items-center justify-center font-bold text-primary text-2xl"
                   >
                     {store.banner_url || store.logo_url ? (
                       <img src={store.banner_url || store.logo_url} alt={store.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -399,11 +399,11 @@ function ServicosVerticalPage() {
                     <Button
                       onClick={() => handleOpenQuote(store)}
                       size="sm"
-                      className="flex-1 sm:flex-initial bg-primary text-primary-foreground font-bold text-xs h-9 rounded-xl"
+                      className="flex-1 sm:flex-initial bg-primary text-primary-foreground font-bold text-xs h-9 rounded-lg"
                     >
                       Pedir Orçamento
                     </Button>
-                    <Button asChild variant="outline" size="sm" className="h-9 px-3 text-xs rounded-xl font-semibold">
+                    <Button asChild variant="outline" size="sm" className="h-9 px-3 text-xs rounded-lg font-semibold">
                       <Link to="/diretorio/$id" params={{ id: store.id }}>
                         Perfil
                       </Link>
@@ -417,7 +417,7 @@ function ServicosVerticalPage() {
       ) : (
  <section aria-label="Profissionais & Empresas Verificadas">
  {serviceStores.length === 0 ? (
- <div className="py-12 text-center bg-card rounded-2xl p-6 ">
+ <div className="py-12 text-center bg-card rounded-lg p-6 ">
  <EmptyState
  title="Nenhum prestador encontrado"
  description="Tente selecionar outra categoria ou busque por termos mais amplos."
@@ -428,11 +428,11 @@ function ServicosVerticalPage() {
  {serviceStores.map((store: any) => (
  <div
  key={store.id}
- className="group relative flex flex-col justify-between p-4.5 rounded-2xl bg-card border border-border/60 hover:border-foreground/30 hover:shadow-xs transition-all shadow-2xs"
+ className="group relative flex flex-col justify-between p-4.5 rounded-lg bg-card border border-border/60 hover:border-foreground/30 hover:shadow-xs transition-all shadow-2xs"
  >
  <div>
  <div className="flex items-start justify-between gap-3 mb-3">
- <div className="size-12 rounded-xl bg-muted overflow-hidden shrink-0 flex items-center justify-center font-bold text-primary text-lg">
+ <div className="size-12 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center font-bold text-primary text-lg">
  {store.logo_url ? (
  <img src={store.logo_url} alt={store.name} className="size-full object-cover" />
  ) : (
@@ -450,7 +450,7 @@ function ServicosVerticalPage() {
  </h3>
  </Link>
 
- <p className="text-xs text-muted-foreground line-clamp-2 mt-1 min-h-[32px]">
+ <p className="text-xs text-muted-foreground line-clamp-2 mt-1 min-h-8">
  {store.description || "Prestador de serviços especializado e atendimento de alta qualidade."}
  </p>
 
@@ -464,11 +464,11 @@ function ServicosVerticalPage() {
               <Button
                 onClick={() => handleOpenQuote(store)}
                 size="sm"
-                className="w-full bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold text-xs h-10 rounded-xl transition-all"
+                className="w-full bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold text-xs h-10 rounded-lg transition-all"
               >
                 Pedir Orçamento
               </Button>
-              <Button asChild variant="ghost" size="sm" className="h-10 px-3 text-xs rounded-xl font-semibold shrink-0">
+              <Button asChild variant="ghost" size="sm" className="h-10 px-3 text-xs rounded-lg font-semibold shrink-0">
                 <Link to="/diretorio/$id" params={{ id: store.id }}>
                   Perfil
                 </Link>

@@ -153,7 +153,7 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     });
 
     expect(customStyle.className).toContain("py-28");
-    expect(customStyle.className).toContain("rounded-3xl");
+    expect(customStyle.className).toContain("rounded-lg");
     expect(customStyle.style.backgroundColor).toBe("#0f172a");
     expect(customStyle.style.color).toBe("#f8fafc");
   });

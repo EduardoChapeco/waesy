@@ -10,7 +10,7 @@ export function ReturnModal({ orderId, items = [] }: { orderId: string; items?: 
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="w-full mt-4 text-xs font-semibold h-11 rounded-xl text-destructive border-destructive hover:bg-destructive/10 cursor-pointer"
+        className="w-full mt-4 text-xs font-semibold h-11 rounded-lg text-destructive border-destructive hover:bg-destructive/10 cursor-pointer"
       >
         Solicitar Devolução / Troca
       </Button>

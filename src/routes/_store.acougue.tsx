@@ -234,7 +234,7 @@ function AcougueVerticalPage() {
               })()}
             </div>
           ) : (
-            <div className="py-12 text-center bg-card rounded-2xl p-6">
+            <div className="py-12 text-center bg-card rounded-lg p-6">
               <EmptyState
                 title="Nenhum corte encontrado"
                 description="Tente selecionar outro departamento ou busque por tipos de cortes."
@@ -245,7 +245,7 @@ function AcougueVerticalPage() {
  ) : (
  <section aria-label="Vitrine de Cortes & Produtos">
  {filteredProducts.length === 0 ? (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhum corte encontrado"
  description="Tente selecionar outro departamento ou busque por tipos de cortes."

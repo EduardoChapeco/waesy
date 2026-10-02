@@ -130,15 +130,15 @@ function SocialPublicacoesPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold tracking-tight">Publicações</h1>
-        <Button size="sm" onClick={() => setIsOpen(true)} className="h-9 gap-1.5">
+        <Button size="sm" onClick={() => setIsOpen(true)} className="h-9 gap-2">
           <Plus className="w-4 h-4" />
           Nova publicação
         </Button>
       </div>
 
       {/* Aviso de configuração OAuth */}
-      <div className="rounded-xl border border-amber-400/30 bg-amber-400/8 px-4 py-3 text-sm text-amber-800 flex items-start gap-3">
-        <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
+      <div className="rounded-lg border border-amber-400/30 bg-amber-400/8 px-4 py-3 text-sm text-amber-800 flex items-start gap-3">
+        <AlertCircle className="w-4 h-4 mt-1 shrink-0 text-amber-600" />
         <span>
           Para publicar automaticamente, configure as credenciais OAuth de cada rede em{" "}
           <Link to="/workspace/configuracoes/integracoes" className="font-medium underline">
@@ -155,7 +155,7 @@ function SocialPublicacoesPage() {
             key={key}
             onClick={() => setFilterStatus(key)}
             className={cn(
-              "text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors",
+              "text-xs font-medium px-3 py-2 rounded-lg border transition-colors",
               filterStatus === key
                 ? "bg-foreground text-background border-foreground"
                 : "bg-transparent text-muted-foreground border-border/60 hover:border-foreground/30"
@@ -189,7 +189,7 @@ function SocialPublicacoesPage() {
             return (
               <div
                 key={post.id}
-                className="bg-card border border-border/80 rounded-xl px-4 py-3 flex items-start justify-between gap-4"
+                className="bg-card border border-border/80 rounded-lg px-4 py-3 flex items-start justify-between gap-4"
               >
                 <div className="flex-1 min-w-0 space-y-2">
                   <p className="text-sm text-foreground line-clamp-2 leading-snug">
@@ -259,13 +259,13 @@ function SocialPublicacoesPage() {
 
       {/* Dialog: Criar novo post */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-lg rounded-2xl">
+        <DialogContent className="sm:max-w-lg rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">Nova publicação</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             {/* Conteúdo */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Legenda</Label>
               <Textarea
                 placeholder="Escreva a legenda do post..."
@@ -273,7 +273,7 @@ function SocialPublicacoesPage() {
                 onChange={(e) => setContent(e.target.value)}
                 rows={4}
                 maxLength={2200}
-                className="resize-none text-sm rounded-xl"
+                className="resize-none text-sm rounded-lg"
               />
               <p className="text-xs text-muted-foreground/60 text-right">
                 {content.length}/2200
@@ -281,7 +281,7 @@ function SocialPublicacoesPage() {
             </div>
 
             {/* Redes */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Redes</Label>
               <div className="flex gap-2 flex-wrap">
                 {ALL_NETWORKS.map((net) => {
@@ -293,7 +293,7 @@ function SocialPublicacoesPage() {
                       key={net}
                       onClick={() => toggleNetwork(net)}
                       className={cn(
-                        "flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl border transition-colors min-h-[44px]",
+                        "flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg border transition-colors min-h-11",
                         selected
                           ? "bg-foreground text-background border-foreground"
                           : "border-border/60 text-muted-foreground hover:border-foreground/30"
@@ -324,7 +324,7 @@ function SocialPublicacoesPage() {
                   })
                 }
               >
-                <CalendarCheck className="w-3.5 h-3.5 mr-1.5" />
+                <CalendarCheck className="w-3.5 h-3.5 mr-2" />
                 Salvar rascunho
               </Button>
             </div>

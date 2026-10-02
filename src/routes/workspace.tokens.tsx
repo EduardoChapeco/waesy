@@ -166,7 +166,7 @@ export default function WorkspaceTokensPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
  <div>
  <h1 className="text-xl font-bold tracking-tight">Tokens</h1>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  0% de comissões sobre vendas. Pague apenas por utilidade e impulsos em micro-tokens.
  </p>
  </div>
@@ -182,7 +182,7 @@ export default function WorkspaceTokensPage() {
 
  {/* Grid de Métricas Dual-Pocket */}
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Saldo Total</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {(wallet.balance || 0).toLocaleString()}
@@ -190,7 +190,7 @@ export default function WorkspaceTokensPage() {
  <span className="text-xs text-muted-foreground">micro-tokens disponíveis</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Tokens de Mídia e Radar</span>
  <div className="text-2xl font-bold tracking-tight text-primary mt-1">
  {promoTokens.toLocaleString()}
@@ -198,7 +198,7 @@ export default function WorkspaceTokensPage() {
  <span className="text-xs text-muted-foreground">bounties e crescimento orgânico</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Tokens de Infra e APIs</span>
  <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
  {purchasedTokens.toLocaleString()}
@@ -206,7 +206,7 @@ export default function WorkspaceTokensPage() {
  <span className="text-xs text-muted-foreground">lastreados para IA, NF-e e WhatsApp</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Clientes Trazidos</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {growth?.total_clients_brought || 0}
@@ -217,7 +217,7 @@ export default function WorkspaceTokensPage() {
 
  {/* Tabs de Governança de Tokens */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
- <TabsList className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-xl h-10">
+ <TabsList className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-lg h-10">
  <TabsTrigger value="visao_geral" className="text-xs">Visão Geral e Pacotes</TabsTrigger>
  <TabsTrigger value="calculadora" className="text-xs">Comparativo de Economia</TabsTrigger>
  <TabsTrigger value="faturamento" className="text-xs">Faturamento e Limites</TabsTrigger>
@@ -226,8 +226,8 @@ export default function WorkspaceTokensPage() {
  {/* Tab 1: Visão Geral */}
  <TabsContent value="visao_geral" className="space-y-6">
  {/* Barra de Crescimento & Link Próprio (Tráfego Próprio Gratuito) */}
- <div className="p-4 rounded-xl border border-border/60 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
- <div className="space-y-0.5">
+ <div className="p-4 rounded-lg border border-border/60 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+ <div className="space-y-1">
  <div className="flex items-center gap-2">
  <span className="font-semibold text-foreground">Link Próprio da Loja</span>
  <Badge variant="outline" className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
@@ -243,7 +243,7 @@ export default function WorkspaceTokensPage() {
  size="sm"
  variant="outline"
  onClick={handleCopyReferral}
- className="gap-1.5 text-xs h-8 shrink-0"
+ className="gap-2 text-xs h-8 shrink-0"
  >
  <Copy className="size-3" />
  Copiar Link
@@ -253,39 +253,39 @@ export default function WorkspaceTokensPage() {
  {/* Tabela de Consumo Atômico de Utilidade */}
  <div className="space-y-2">
  <h2 className="text-sm font-bold text-foreground">Tabela de Utilidade (Micro-Tokens)</h2>
- <div className="rounded-xl border border-border/60 overflow-hidden bg-card text-xs">
+ <div className="rounded-lg border border-border/60 overflow-hidden bg-card text-xs">
  <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-border/40">
- <div className="p-3 space-y-0.5">
+ <div className="p-3 space-y-1">
  <span className="text-muted-foreground block text-xs">Visualização no Feed</span>
  <strong className="text-foreground">10 Tokens</strong>
  <span className="text-xs text-muted-foreground block">~R$ 0,0005 (Mídia)</span>
  </div>
- <div className="p-3 space-y-0.5">
+ <div className="p-3 space-y-1">
  <span className="text-muted-foreground block text-xs">Alerta Push / In-App</span>
  <strong className="text-foreground">25 Tokens</strong>
  <span className="text-xs text-muted-foreground block">~R$ 0,0012 (Mídia)</span>
  </div>
- <div className="p-3 space-y-0.5">
+ <div className="p-3 space-y-1">
  <span className="text-muted-foreground block text-xs">Turno IA de Vendas</span>
  <strong className="text-foreground">100 Tokens</strong>
  <span className="text-xs text-muted-foreground block">~R$ 0,0049 (Infra)</span>
  </div>
- <div className="p-3 space-y-0.5">
+ <div className="p-3 space-y-1">
  <span className="text-muted-foreground block text-xs">Disparo WhatsApp</span>
  <strong className="text-foreground">150 Tokens</strong>
  <span className="text-xs text-muted-foreground block">~R$ 0,0073 (Infra)</span>
  </div>
- <div className="p-3 space-y-0.5">
+ <div className="p-3 space-y-1">
  <span className="text-muted-foreground block text-xs">Diária Loja Curada</span>
  <strong className="text-foreground">200 Tokens/dia</strong>
  <span className="text-xs text-muted-foreground block">~R$ 0,0098 (Mídia)</span>
  </div>
- <div className="p-3 space-y-0.5">
+ <div className="p-3 space-y-1">
  <span className="text-muted-foreground block text-xs">Emissão NF-e / Fiscal</span>
  <strong className="text-foreground">1.500 Tokens</strong>
  <span className="text-xs text-muted-foreground block">~R$ 0,0735 (Infra API)</span>
  </div>
- <div className="p-3 space-y-0.5 col-span-2 bg-muted/20">
+ <div className="p-3 space-y-1 col-span-2 bg-muted/20">
  <span className="text-rose-600 dark:text-rose-400 font-semibold block text-xs">Lead Quente Qualificado</span>
  <strong className="text-foreground">35.000 Tokens (~R$ 1,71)</strong>
  <span className="text-xs text-muted-foreground block">Cliente local com intenção de compra imediata</span>
@@ -301,7 +301,7 @@ export default function WorkspaceTokensPage() {
  {wallet.packages.map((pkg: TokenPackage) => (
  <div
  key={pkg.id}
- className={`p-4 rounded-xl border flex flex-col justify-between transition-all bg-card ${
+ className={`p-4 rounded-lg border flex flex-col justify-between transition-all bg-card ${
  pkg.popular
  ? "border-primary/80 ring-1 ring-primary/30"
  : "border-border/60"
@@ -347,7 +347,7 @@ export default function WorkspaceTokensPage() {
             <span className="text-xs text-muted-foreground">Atualizado em tempo real</span>
           </div>
 
-          <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-sm divide-y divide-border/40 overflow-hidden shadow-xs">
+          <div className="rounded-lg border border-border/50 bg-card/60 backdrop-blur-sm divide-y divide-border/40 overflow-hidden shadow-xs">
             {wallet.transactions.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground text-xs">
                 Nenhuma movimentação registrada até o momento.
@@ -369,7 +369,7 @@ export default function WorkspaceTokensPage() {
                 return (
                   <div
                     key={tx.id}
-                    className="flex items-center justify-between p-3.5 sm:px-4 hover:bg-muted/30 transition-colors"
+                    className="flex items-center justify-between p-4 sm:px-4 hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div
@@ -421,7 +421,7 @@ export default function WorkspaceTokensPage() {
 
  {/* Tab 2: Calculadora de Economia Real */}
  <TabsContent value="calculadora" className="space-y-4">
- <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
+ <div className="p-5 rounded-lg border border-border/60 bg-card space-y-4">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div>
  <h2 className="text-base font-bold text-foreground">Calculadora de Economia Real</h2>
@@ -449,8 +449,8 @@ export default function WorkspaceTokensPage() {
  {economyData && (
  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
  {economyData.comparisons.map((c: any) => (
- <div key={c.platform} className="p-4 rounded-xl border border-border/60 bg-muted/10 space-y-3">
- <div className="space-y-0.5">
+ <div key={c.platform} className="p-4 rounded-lg border border-border/60 bg-muted/10 space-y-3">
+ <div className="space-y-1">
  <span className="font-bold text-sm text-foreground block">{c.platform}</span>
  <span className="text-xs text-muted-foreground block">{c.rate_desc}</span>
  </div>
@@ -462,7 +462,7 @@ export default function WorkspaceTokensPage() {
  </strong>
  </div>
 
- <div className="pt-2 border-t border-border/40 space-y-0.5">
+ <div className="pt-2 border-t border-border/40 space-y-1">
  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold block">
  Economia Líquida na Waesy:
  </span>
@@ -480,7 +480,7 @@ export default function WorkspaceTokensPage() {
 
  {/* Tab 3: Faturamento & Recarga Automática */}
  <TabsContent value="faturamento" className="space-y-4">
- <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
+ <div className="p-5 rounded-lg border border-border/60 bg-card space-y-4">
  <div>
  <h2 className="text-base font-bold text-foreground">Faturamento Inteligente e Limite de Gastos</h2>
  <p className="text-xs text-muted-foreground">
@@ -490,7 +490,7 @@ export default function WorkspaceTokensPage() {
 
  <form onSubmit={handleSaveBilling} className="space-y-4 pt-2 text-xs">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Modo de Cobrança</Label>
  <Select value={billingMode} onValueChange={(v: any) => setBillingMode(v)}>
  <SelectTrigger className="h-9">
@@ -504,7 +504,7 @@ export default function WorkspaceTokensPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Teto Máximo Mensal de Gastos (R$)</Label>
  <Input
  type="number"
@@ -520,8 +520,8 @@ export default function WorkspaceTokensPage() {
  </div>
  </div>
 
- <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/60 bg-muted/20">
- <div className="space-y-0.5">
+ <div className="flex items-center justify-between p-4 rounded-lg border border-border/60 bg-muted/20">
+ <div className="space-y-1">
  <span className="font-semibold text-foreground block">Recarga Automática de Continuidade</span>
  <p className="text-xs text-muted-foreground">
  Quando seu saldo cair abaixo de {thresholdTokens.toLocaleString()} tokens, recarrega automaticamente o pacote padrão.
@@ -535,7 +535,7 @@ export default function WorkspaceTokensPage() {
 
  <div className="flex justify-end pt-2">
  <Button type="submit" disabled={isSavingBilling} className="text-xs h-9 font-semibold">
- {isSavingBilling && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
+ {isSavingBilling && <Loader2 className="size-3.5 animate-spin mr-2" />}
  Salvar Preferências de Faturamento
  </Button>
  </div>
@@ -562,7 +562,7 @@ export default function WorkspaceTokensPage() {
  <button
  type="button"
  onClick={() => setPaymentMethod("pix")}
- className={`p-2.5 rounded-lg border text-center font-medium transition-all ${
+ className={`p-3 rounded-lg border text-center font-medium transition-all ${
  paymentMethod === "pix"
  ? "border-primary bg-primary/5 text-foreground font-semibold"
  : "border-border/60 text-muted-foreground"
@@ -573,7 +573,7 @@ export default function WorkspaceTokensPage() {
  <button
  type="button"
  onClick={() => setPaymentMethod("credit_card")}
- className={`p-2.5 rounded-lg border text-center font-medium transition-all ${
+ className={`p-3 rounded-lg border text-center font-medium transition-all ${
  paymentMethod === "credit_card"
  ? "border-primary bg-primary/5 text-foreground font-semibold"
  : "border-border/60 text-muted-foreground"
@@ -593,7 +593,7 @@ export default function WorkspaceTokensPage() {
  disabled={isProcessing}
  className="w-full sm:w-auto text-xs h-9 font-semibold"
  >
- {isProcessing && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
+ {isProcessing && <Loader2 className="size-3.5 animate-spin mr-2" />}
  Confirmar Pagamento
  </Button>
  </DialogFooter>

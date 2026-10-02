@@ -66,21 +66,21 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
     <aside
       className={cn(
         "flex flex-col shrink-0 h-full py-3 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40 transition-[width] duration-200",
-        isExpanded ? "w-56 px-2.5" : "w-16 px-1.5"
+        isExpanded ? "w-56 px-3" : "w-16 px-2"
       )}
     >
       <div className="space-y-4">
         {/* ── 1. MÓDULOS PRINCIPAIS (Compact Navigation Rail no Medium, Expandido no Expanded) ── */}
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <span
             className={cn(
-              "px-2.5 text-xs font-mono font-bold tracking-wider uppercase text-muted-foreground/70",
+              "px-3 text-xs font-mono font-bold tracking-wider uppercase text-muted-foreground/70",
               isExpanded ? "block" : "hidden"
             )}
           >
             Explorar
           </span>
-          <nav className="flex flex-col space-y-0.5 pt-0.5">
+          <nav className="flex flex-col space-y-1 pt-1">
             {MAIN_EXPLORER_ITEMS.map((item) => {
               const Icon = item.icon as any;
               const active = isCurrentActive(item);
@@ -93,14 +93,14 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                   title={item.label}
                   aria-label={item.label}
                   className={cn(
-                    "flex items-center h-10 rounded-xl text-xs transition-colors cursor-pointer group",
-                    isExpanded ? "justify-between px-2.5" : "justify-center px-0",
+                    "flex items-center h-10 rounded-lg text-xs transition-colors cursor-pointer group",
+                    isExpanded ? "justify-between px-3" : "justify-center px-0",
                     active
                       ? "bg-primary/10 text-primary font-bold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"
                   )}
                 >
-                  <div className={cn("flex items-center gap-2.5 min-w-0", isExpanded ? "justify-start" : "justify-center")}>
+                  <div className={cn("flex items-center gap-3 min-w-0", isExpanded ? "justify-start" : "justify-center")}>
                     {(item as any).isLucide ? (
                       <Icon
                         className={cn(
@@ -139,10 +139,10 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
 
         {/* ── 2. PAINEL PESSOAL & REDE SOCIAL ── */}
         {isAuthenticated && (
-          <div className="space-y-0.5 pt-1 border-t border-border/40">
+          <div className="space-y-1 pt-1 border-t border-border/40">
             <span
               className={cn(
-                "px-2.5 text-xs font-mono font-bold tracking-wider uppercase text-muted-foreground/70",
+                "px-3 text-xs font-mono font-bold tracking-wider uppercase text-muted-foreground/70",
                 isExpanded ? "block" : "hidden"
               )}
             >
@@ -150,14 +150,14 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
             </span>
 
             {hasStore && (
-              <div className="pt-1 pb-0.5">
+              <div className="pt-1 pb-1">
                 <Link
                   to="/workspace"
                   title="Workspace"
                   aria-label="Workspace"
                   className={cn(
-                    "flex items-center h-10 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 font-bold text-xs transition-colors group cursor-pointer",
-                    isExpanded ? "justify-between px-2.5" : "justify-center px-0"
+                    "flex items-center h-10 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-bold text-xs transition-colors group cursor-pointer",
+                    isExpanded ? "justify-between px-3" : "justify-center px-0"
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -175,7 +175,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
               </div>
             )}
 
-            <nav className="flex flex-col space-y-0.5 pt-0.5">
+            <nav className="flex flex-col space-y-1 pt-1">
               {USER_NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const active = isCurrentActive(item);
@@ -187,8 +187,8 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                     title={item.label}
                     aria-label={item.label}
                     className={cn(
-                      "flex items-center h-10 rounded-xl text-xs transition-colors cursor-pointer group",
-                      isExpanded ? "justify-start px-2.5 gap-2.5" : "justify-center px-0",
+                      "flex items-center h-10 rounded-lg text-xs transition-colors cursor-pointer group",
+                      isExpanded ? "justify-start px-3 gap-3" : "justify-center px-0",
                       active
                         ? "bg-primary/10 text-primary font-bold"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"

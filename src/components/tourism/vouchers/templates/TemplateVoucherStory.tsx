@@ -103,7 +103,7 @@ export default function TemplateVoucherStory({ voucher: v, agency, brandKit }: P
         {/* Info cards */}
         <div className="flex flex-col gap-3 mt-4">
           {v.flights && v.flights.length > 0 && (
-            <div className="rounded-2xl glass-dark border border-white/15 backdrop-blur-sm p-4">
+            <div className="rounded-lg glass-dark border border-white/15 backdrop-blur-sm p-4">
               <div className="flex justify-between items-center ds-label-caps text-white/60 mb-2">
                 <span>Voo Confirmado</span>
                 <Plane className="w-4 h-4" />
@@ -129,7 +129,7 @@ export default function TemplateVoucherStory({ voucher: v, agency, brandKit }: P
           )}
 
           {v.accommodation && v.accommodation.length > 0 && (
-            <div className="rounded-2xl glass-dark border border-white/15 backdrop-blur-sm p-4">
+            <div className="rounded-lg glass-dark border border-white/15 backdrop-blur-sm p-4">
               <div className="flex justify-between items-center ds-label-caps text-white/60 mb-1">
                 <span>Hospedagem</span>
                 <Hotel className="w-4 h-4" />
@@ -141,7 +141,7 @@ export default function TemplateVoucherStory({ voucher: v, agency, brandKit }: P
                 {v.accommodation[0].name}
               </div>
               {v.accommodation[0].city && (
-                <div className="ds-meta text-white/50 mt-0.5 truncate">
+                <div className="ds-meta text-white/50 mt-1 truncate">
                   {v.accommodation[0].city}
                 </div>
               )}

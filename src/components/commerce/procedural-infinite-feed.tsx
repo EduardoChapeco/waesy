@@ -132,7 +132,7 @@ export function ProceduralInfiniteFeed({
                 actionTo={section.action_to}
               >
                 {section.items.map((prod: any) => (
-                  <div key={prod.id} className="w-[280px] sm:w-[320px] shrink-0 snap-start">
+                  <div key={prod.id} className="w-72 sm:w-80 shrink-0 snap-start">
                     <OfferCard {...prod} />
                   </div>
                 ))}
@@ -152,7 +152,7 @@ export function ProceduralInfiniteFeed({
                 actionTo={section.action_to}
               >
                 {section.items.map((store: any) => (
-                  <div key={store.id} className="w-[280px] sm:w-[310px] shrink-0 snap-start">
+                  <div key={store.id} className="w-72 sm:w-[310px] shrink-0 snap-start">
                     <StoreCard {...store} />
                   </div>
                 ))}
@@ -176,7 +176,7 @@ export function ProceduralInfiniteFeed({
                     key={item.id}
                     to="/classificados/$id"
                     params={{ id: item.id }}
-                    className="min-w-[250px] sm:min-w-[280px] max-w-[290px] shrink-0 group flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs select-none"
+                    className="min-w-[250px] sm:min-w-72 max-w-[290px] shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs select-none"
                   >
                     <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/30">
                       {item.cover_image ? (
@@ -198,7 +198,7 @@ export function ProceduralInfiniteFeed({
                       </div>
                     </div>
 
-                    <div className="p-3.5 space-y-1">
+                    <div className="p-4 space-y-1">
                       <p className="font-bold text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">
                         {item.title}
                       </p>
@@ -221,7 +221,7 @@ export function ProceduralInfiniteFeed({
       })}
 
       {/* ── Sentinela de Scroll Infinito ── */}
-      <div ref={sentinelRef} className={hasMore || isLoading ? "py-3 flex items-center justify-center min-h-[36px]" : "h-0 w-full"}>
+      <div ref={sentinelRef} className={hasMore || isLoading ? "py-3 flex items-center justify-center min-h-9" : "h-0 w-full"}>
         {isLoading && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
             <CircleNotch size={16} className="animate-spin text-primary" />

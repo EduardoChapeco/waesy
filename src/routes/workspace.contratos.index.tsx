@@ -166,7 +166,7 @@ function ContractsDashboard() {
             <PenTool className="size-4 text-primary" />
             <span>Minuta Rápida</span>
           </Button>
-          <Button asChild className="h-11 min-h-11 rounded-xl text-xs font-semibold bg-primary text-primary-foreground cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-primary">
+          <Button asChild className="h-11 min-h-11 rounded-lg text-xs font-semibold bg-primary text-primary-foreground cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-primary">
             <Link to="/workspace/contratos/novo" className="flex items-center gap-2">
               <Plus className="size-4" />
               Novo Contrato
@@ -197,8 +197,8 @@ function ContractsDashboard() {
 
       {/* ── 4. Conteúdo: Listagem em Cards Elegantes (Paradigma Clean) ── */}
       {filteredContracts.length === 0 ? (
-        <div className="py-20 text-center space-y-4 bg-card rounded-2xl p-8 border border-dashed border-border">
-          <div className="size-12 mx-auto rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground">
+        <div className="py-20 text-center space-y-4 bg-card rounded-lg p-8 border border-dashed border-border">
+          <div className="size-12 mx-auto rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground">
             <FileSignature className="size-6" />
           </div>
           <h2 className="text-sm font-bold text-foreground">Nenhum contrato encontrado</h2>
@@ -207,7 +207,7 @@ function ContractsDashboard() {
               ? "Tente ajustar o termo de busca ou selecione outra aba de status."
               : "Comece criando o seu primeiro documento legal ou utilize um template inteligente de prestação de serviços."}
           </p>
-          <Button asChild size="sm" variant="outline" className="rounded-xl h-10 px-4 text-xs font-semibold mt-2 cursor-pointer">
+          <Button asChild size="sm" variant="outline" className="rounded-lg h-10 px-4 text-xs font-semibold mt-2 cursor-pointer">
             <Link to="/workspace/contratos/novo">Criar Primeiro Contrato</Link>
           </Button>
         </div>
@@ -222,11 +222,11 @@ function ContractsDashboard() {
             return (
               <div
                 key={contract.id}
-                className="bg-card border border-border hover:border-primary/40 rounded-2xl p-5 transition-all shadow-xs space-y-4 flex flex-col justify-between"
+                className="bg-card border border-border hover:border-primary/40 rounded-lg p-5 transition-all shadow-xs space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant="outline" className="text-xs font-medium bg-muted/40">
                         {categoryLabel}
                       </Badge>
@@ -256,14 +256,14 @@ function ContractsDashboard() {
                     <h3 className="font-bold text-sm text-foreground line-clamp-2 leading-snug">
                       {contract.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
                       <Clock className="size-3 text-muted-foreground" />
                       Criado em {formatDate(contract.created_at)}
                     </p>
                   </div>
 
                   {contract.deal && (
-                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/50 text-xs flex items-center justify-between">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-xs flex items-center justify-between">
                       <span className="text-muted-foreground font-medium">Valor sob Contrato:</span>
                       <span className="font-bold text-foreground font-mono">
                         {formatMoney(contract.deal.proposed_price_cents || 0)}
@@ -273,7 +273,7 @@ function ContractsDashboard() {
                 </div>
 
                 <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
- <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-1.5 flex-1">
+ <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-2 flex-1">
  <Link to="/workspace/contratos/$id/editor" params={{ id: contract.id }}>
  <FileSignature className="size-3.5" />
  <span>Abrir Contrato</span>
@@ -282,7 +282,7 @@ function ContractsDashboard() {
 
  <CrudActionsMenu
  triggerVariant="outline"
- triggerClassName="h-9 px-3 rounded-xl border-border/60 hover:bg-muted"
+ triggerClassName="h-9 px-3 rounded-lg border-border/60 hover:bg-muted"
  customActions={[
  {
  label: isCopied ? "Link Copiado!" : "Copiar Link de Assinatura",

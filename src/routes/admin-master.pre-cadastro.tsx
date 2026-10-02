@@ -201,7 +201,7 @@ export default function AdminPreCadastroPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold gap-1.5">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2">
             <a href="/home" target="_blank" rel="noreferrer">
               <span>Ver Landing Page</span>
               <ExternalLink className="size-3.5" />
@@ -212,7 +212,7 @@ export default function AdminPreCadastroPage() {
               onClick={handleExportCSV}
               variant="outline"
               size="sm"
-              className="rounded-xl text-xs font-semibold gap-1.5"
+              className="rounded-lg text-xs font-semibold gap-2"
             >
               <Download className="size-3.5" />
               <span>Exportar CSV</span>
@@ -226,7 +226,7 @@ export default function AdminPreCadastroPage() {
         <button
           type="button"
           onClick={() => setActiveTab("leads")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
             activeTab === "leads"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -239,7 +239,7 @@ export default function AdminPreCadastroPage() {
         <button
           type="button"
           onClick={() => setActiveTab("cms")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
             activeTab === "cms"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -262,11 +262,11 @@ export default function AdminPreCadastroPage() {
                 placeholder="Buscar por nome, empresa, ticket, whatsapp ou cidade..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-10 rounded-xl text-xs bg-muted/20 border-border"
+                className="pl-9 h-10 rounded-lg text-xs bg-muted/20 border-border"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
               {(
                 [
                   { id: "all", label: "Todos" },
@@ -279,7 +279,7 @@ export default function AdminPreCadastroPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setStatusFilter(tab.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                     statusFilter === tab.id
                       ? "bg-card border border-border text-foreground font-bold shadow-2xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -297,8 +297,8 @@ export default function AdminPreCadastroPage() {
               Carregando lista de fundadores...
             </div>
           ) : leads.length === 0 ? (
-            <div className="py-16 text-center space-y-3 rounded-2xl border border-dashed border-border bg-muted/10">
-              <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+            <div className="py-16 text-center space-y-3 rounded-lg border border-dashed border-border bg-muted/10">
+              <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
                 <Users className="size-6" />
               </div>
               <div className="space-y-1">
@@ -309,7 +309,7 @@ export default function AdminPreCadastroPage() {
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs">
+            <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-bold">
@@ -378,7 +378,7 @@ export default function AdminPreCadastroPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleOpenWhatsApp(lead)}
-                            className="h-8 rounded-xl text-[11px] font-bold gap-1.5 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                            className="h-8 rounded-lg text-[11px] font-bold gap-2 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
                           >
                             <WhatsappLogo className="size-3.5" weight="fill" />
                             <span>WhatsApp</span>
@@ -398,7 +398,7 @@ export default function AdminPreCadastroPage() {
       {activeTab === "cms" && (
         <form onSubmit={handleSaveCms} className="space-y-6 animate-in fade-in duration-200">
           {/* Card Hero Principal */}
-          <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-4 shadow-xs">
+          <div className="rounded-lg border border-border/80 bg-card p-5 space-y-4 shadow-xs">
             <div className="border-b border-border/40 pb-3">
               <h2 className="text-sm font-bold text-foreground">
                 Seção Principal do Topo (Hero)
@@ -409,29 +409,29 @@ export default function AdminPreCadastroPage() {
             </div>
 
             <div className="space-y-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Badge Superior</Label>
                 <Input
                   value={cmsForm.hero_badge}
                   onChange={(e) =>
                     setCmsForm((prev) => ({ ...prev, hero_badge: e.target.value }))
                   }
-                  className="h-10 rounded-xl text-xs bg-muted/20 border-border"
+                  className="h-10 rounded-lg text-xs bg-muted/20 border-border"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Título Principal (H1)</Label>
                 <Input
                   value={cmsForm.hero_title}
                   onChange={(e) =>
                     setCmsForm((prev) => ({ ...prev, hero_title: e.target.value }))
                   }
-                  className="h-10 rounded-xl text-xs bg-muted/20 border-border"
+                  className="h-10 rounded-lg text-xs bg-muted/20 border-border"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Subtítulo / Parágrafo Explicativo</Label>
                 <Textarea
                   rows={3}
@@ -439,14 +439,14 @@ export default function AdminPreCadastroPage() {
                   onChange={(e) =>
                     setCmsForm((prev) => ({ ...prev, hero_subtitle: e.target.value }))
                   }
-                  className="rounded-xl text-xs bg-muted/20 border-border resize-none"
+                  className="rounded-lg text-xs bg-muted/20 border-border resize-none"
                 />
               </div>
             </div>
           </div>
 
           {/* Card Carrossel de Mídias */}
-          <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-4 shadow-xs">
+          <div className="rounded-lg border border-border/80 bg-card p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
               <div>
                 <h2 className="text-sm font-bold text-foreground">
@@ -460,7 +460,7 @@ export default function AdminPreCadastroPage() {
                 type="button"
                 size="sm"
                 onClick={handleAddSlide}
-                className="rounded-xl text-xs font-bold gap-1.5"
+                className="rounded-lg text-xs font-bold gap-2"
               >
                 <Plus className="size-3.5" />
                 <span>Adicionar Slide</span>
@@ -471,7 +471,7 @@ export default function AdminPreCadastroPage() {
               {cmsForm.slides.map((slide, idx) => (
                 <div
                   key={slide.id || idx}
-                  className="rounded-2xl border border-border/70 bg-muted/10 p-3 space-y-3 relative group"
+                  className="rounded-lg border border-border/70 bg-muted/10 p-3 space-y-3 relative group"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-muted-foreground font-mono">
@@ -480,7 +480,7 @@ export default function AdminPreCadastroPage() {
                     <button
                       type="button"
                       onClick={() => handleRemoveSlide(idx)}
-                      className="text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors cursor-pointer"
+                      className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors cursor-pointer"
                       title="Excluir slide"
                     >
                       <Trash2 className="size-3.5" />
@@ -501,7 +501,7 @@ export default function AdminPreCadastroPage() {
                             ),
                           }));
                         }}
-                        className="h-9 rounded-xl text-xs bg-card"
+                        className="h-9 rounded-lg text-xs bg-card"
                       />
                     </div>
 
@@ -518,7 +518,7 @@ export default function AdminPreCadastroPage() {
                             ),
                           }));
                         }}
-                        className="h-9 rounded-xl text-xs bg-card"
+                        className="h-9 rounded-lg text-xs bg-card"
                       />
                     </div>
 
@@ -535,12 +535,12 @@ export default function AdminPreCadastroPage() {
                             ),
                           }));
                         }}
-                        className="h-9 rounded-xl text-xs bg-card font-mono"
+                        className="h-9 rounded-lg text-xs bg-card font-mono"
                       />
                     </div>
 
                     {slide.image_url && (
-                      <div className="aspect-[16/10] w-full rounded-xl overflow-hidden border border-border/80 bg-muted mt-2">
+                      <div className="aspect-[16/10] w-full rounded-lg overflow-hidden border border-border/80 bg-muted mt-2">
                         <img
                           src={slide.image_url}
                           alt={slide.title}
@@ -560,7 +560,7 @@ export default function AdminPreCadastroPage() {
             <Button
               type="submit"
               disabled={isSavingCms}
-              className="rounded-xl text-xs font-bold gap-2 px-6 h-11 bg-primary text-primary-foreground shadow-xs cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 px-6 h-11 bg-primary text-primary-foreground shadow-xs cursor-pointer"
             >
               <Save className="size-4" />
               <span>{isSavingCms ? "Salvando..." : "Salvar Alterações no CMS"}</span>

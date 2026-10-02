@@ -134,8 +134,8 @@ function ReceiptsPage() {
 
       {/* ── KPIS DE AUDITORIA ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Clock className="size-3.5 text-amber-500" />
             Comprovantes Pendentes
           </span>
@@ -147,8 +147,8 @@ function ReceiptsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <DollarSign className="size-3.5 text-emerald-600" />
             Valor em Análise
           </span>
@@ -160,8 +160,8 @@ function ReceiptsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ShieldCheck className="size-3.5 text-primary" />
             Último Envio
           </span>
@@ -175,14 +175,14 @@ function ReceiptsPage() {
       </div>
 
       {/* ── BARRA DE BUSCA EM TEMPO REAL ── */}
-      <div className="flex items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
+      <div className="flex items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por cliente, pedido ou código..."
-            className="pl-10 h-10 rounded-xl text-xs bg-background"
+            className="pl-10 h-10 rounded-lg text-xs bg-background"
           />
         </div>
         <Badge variant="outline" className="text-xs font-mono">
@@ -197,7 +197,7 @@ function ReceiptsPage() {
           description="Todos os pagamentos manuais e transferências Pix já foram analisados e liberados."
         />
       ) : (
-        <div className="bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+        <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
           <Table>
             <TableHeader>
               <TableRow className="border-border/60 hover:bg-transparent">
@@ -221,7 +221,7 @@ function ReceiptsPage() {
                       <Link
                         to="/workspace/pedidos/$id"
                         params={{ id: orderId }}
-                        className="flex items-center gap-1.5 hover:underline text-primary font-mono text-xs font-bold"
+                        className="flex items-center gap-2 hover:underline text-primary font-mono text-xs font-bold"
                       >
                         <FileText className="size-3.5" />#
                         {order.public_token || orderId.slice(0, 8)}
@@ -244,7 +244,7 @@ function ReceiptsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setPreviewTarget(r)}
-                          className="h-8 px-2.5 rounded-xl text-xs font-bold text-primary hover:bg-primary/10 gap-1.5 cursor-pointer"
+                          className="h-8 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 gap-2 cursor-pointer"
                         >
                           <Eye className="size-3.5" />
                           <span>Inspecionar</span>
@@ -258,7 +258,7 @@ function ReceiptsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 rounded-xl text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 hover:text-emerald-700 cursor-pointer"
+                          className="h-8 rounded-lg text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 hover:text-emerald-700 cursor-pointer"
                           disabled={approvingId === orderId}
                           onClick={() => handleApprove(orderId, order.public_token)}
                         >
@@ -268,7 +268,7 @@ function ReceiptsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 rounded-xl text-xs font-bold text-rose-600 border-rose-500/30 hover:bg-rose-500/10 hover:text-rose-700 cursor-pointer"
+                          className="h-8 rounded-lg text-xs font-bold text-rose-600 border-rose-500/30 hover:bg-rose-500/10 hover:text-rose-700 cursor-pointer"
                           onClick={() => setRejectTarget(r)}
                         >
                           <X className="size-3.5 mr-1" />
@@ -286,7 +286,7 @@ function ReceiptsPage() {
 
       {/* ── DIALOG DE PREVIEW DO COMPROVANTE COM AÇÕES INLINE ── */}
       <Dialog open={!!previewTarget} onOpenChange={(open) => !open && setPreviewTarget(null)}>
-        <DialogContent className="max-w-2xl rounded-2xl p-6">
+        <DialogContent className="max-w-2xl rounded-lg p-6">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between text-base font-bold">
               <span>Auditoria Visual de Comprovante</span>
@@ -302,7 +302,7 @@ function ReceiptsPage() {
           {previewTarget && (
             <div className="space-y-4 py-2">
               {/* Box de Informações Rápidas */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-muted/40 border border-border/60 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-lg bg-muted/40 border border-border/60 text-xs">
                 <div>
                   <span className="text-muted-foreground block text-xs uppercase font-bold">Cliente</span>
                   <span className="font-bold text-foreground">
@@ -324,7 +324,7 @@ function ReceiptsPage() {
               </div>
 
               {/* Imagem do Comprovante */}
-              <div className="relative rounded-xl border border-border/70 bg-black/5 dark:bg-black/40 overflow-hidden max-h-[380px] flex items-center justify-center p-2">
+              <div className="relative rounded-lg border border-border/70 bg-black/5 dark:bg-black/40 overflow-hidden max-h-[380px] flex items-center justify-center p-2">
                 {previewTarget.receipt_url?.toLowerCase().endsWith(".pdf") ? (
                   <iframe
                     src={previewTarget.receipt_url}
@@ -362,7 +362,7 @@ function ReceiptsPage() {
                 setPreviewTarget(null);
                 setRejectTarget(target);
               }}
-              className="rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-500/10"
+              className="rounded-lg text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-500/10"
             >
               <X className="size-3.5 mr-1" />
               Recusar Comprovante
@@ -373,7 +373,7 @@ function ReceiptsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setPreviewTarget(null)}
-                className="min-h-[44px] px-4 rounded-xl text-xs font-bold"
+                className="min-h-11 px-4 rounded-lg text-xs font-bold"
               >
                 Fechar
               </Button>
@@ -384,7 +384,7 @@ function ReceiptsPage() {
                   handleApprove(orderId, previewTarget?.orders?.public_token);
                 }}
                 disabled={approvingId === (previewTarget?.orders?.id || previewTarget?.order_id)}
-                className="min-h-[44px] px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5"
+                className="min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
               >
                 <CheckCircle2 className="size-3.5" />
                 <span>Confirmar e Aprovar</span>
@@ -396,7 +396,7 @@ function ReceiptsPage() {
 
       {/* ── SHEET DE REJEIÇÃO ── */}
       <Sheet open={!!rejectTarget} onOpenChange={(v) => !v && setRejectTarget(null)}>
-        <SheetContent className="rounded-l-2xl">
+        <SheetContent className="rounded-l-lg">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2 text-rose-600">
               <AlertTriangle className="size-5" />
@@ -415,25 +415,25 @@ function ReceiptsPage() {
                 placeholder="Ex: Imagem ilegível, valor divergente, agendado..."
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="rounded-xl text-xs h-10"
+                className="rounded-lg text-xs h-10"
               />
             </div>
 
-            <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground space-y-1">
+            <div className="p-3 rounded-lg bg-muted/40 border border-border/60 text-xs text-muted-foreground space-y-1">
               <span className="font-bold text-foreground block">Dica operacional:</span>
               <p>Motivos claros evitam atrito com o cliente e aceleram a regularização do pagamento.</p>
             </div>
           </div>
 
           <SheetFooter className="gap-2 mt-8">
-            <Button variant="outline" onClick={() => setRejectTarget(null)} className="rounded-xl text-xs font-bold">
+            <Button variant="outline" onClick={() => setRejectTarget(null)} className="rounded-lg text-xs font-bold">
               Cancelar
             </Button>
             <Button
               variant="destructive"
               disabled={isRejecting || !rejectReason.trim()}
               onClick={handleRejectConfirm}
-              className="rounded-xl text-xs font-bold"
+              className="rounded-lg text-xs font-bold"
             >
               {isRejecting ? "Recusando..." : "Confirmar Recusa"}
             </Button>

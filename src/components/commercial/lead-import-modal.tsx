@@ -119,7 +119,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
 
           {step === "paste" ? (
             <div className="space-y-4 py-2">
-              <div className="bg-muted/40 p-3 rounded-xl border border-border/80 text-[11px] font-mono text-muted-foreground space-y-1">
+              <div className="bg-muted/40 p-3 rounded-lg border border-border/80 text-[11px] font-mono text-muted-foreground space-y-1">
                 <p className="font-bold text-foreground">Exemplo aceito (separado por vírgula, ponto-e-vírgula ou tab):</p>
                 <p>Mariana Souza; (11) 98765-4321; mariana@email.com; Maceió; 4500; 2</p>
                 <p>Carlos Eduardo; (49) 99123-4567; carlos@empresa.com; Gramado; 2800; 1</p>
@@ -130,7 +130,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
                 rows={8}
-                className="font-mono text-xs rounded-xl bg-background/50 border-border"
+                className="font-mono text-xs rounded-lg bg-background/50 border-border"
               />
 
               <div className="flex justify-between items-center text-xs text-muted-foreground">
@@ -152,7 +152,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
           ) : (
             <div className="space-y-4 py-2">
               <div className="flex items-center justify-between">
-                <Badge variant="secondary" className="text-xs font-bold rounded-lg px-2.5 py-1">
+                <Badge variant="secondary" className="text-xs font-bold rounded-lg px-3 py-1">
                   {parsedLeads.length} contatos prontos para o CRM
                 </Badge>
                 <Button
@@ -165,16 +165,16 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
                 </Button>
               </div>
 
-              <div className="max-h-64 overflow-y-auto rounded-xl border border-border divide-y divide-border/60 text-xs">
+              <div className="max-h-64 overflow-y-auto rounded-lg border border-border divide-y divide-border/60 text-xs">
                 {parsedLeads.map((lead, i) => (
                   <div key={i} className="p-3 flex items-center justify-between hover:bg-muted/30">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <p className="font-bold text-foreground">{lead.fullName}</p>
                       <p className="text-[11px] text-muted-foreground">
                         {lead.phone || "Sem fone"} · {lead.email || "Sem e-mail"}
                       </p>
                     </div>
-                    <div className="text-right space-y-0.5">
+                    <div className="text-right space-y-1">
                       <span className="font-mono font-bold text-foreground">
                         R$ {((lead.estimatedValue || 0) / 100).toFixed(2)}
                       </span>
@@ -190,18 +190,18 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
         </div>
 
         <SheetFooter className="gap-2 sm:gap-0 pt-4 border-t border-border">
-          <Button variant="outline" onClick={onClose} disabled={isProcessing} className="rounded-xl min-h-[44px]">
+          <Button variant="outline" onClick={onClose} disabled={isProcessing} className="rounded-lg min-h-11">
             Cancelar
           </Button>
           {step === "paste" ? (
-            <Button onClick={handleParse} className="rounded-xl min-h-[44px] gap-2">
+            <Button onClick={handleParse} className="rounded-lg min-h-11 gap-2">
               Validar Contatos <ArrowRight className="size-4" />
             </Button>
           ) : (
             <Button
               onClick={handleConfirmImport}
               disabled={isProcessing}
-              className="rounded-xl min-h-[44px] gap-2 bg-primary text-primary-foreground"
+              className="rounded-lg min-h-11 gap-2 bg-primary text-primary-foreground"
             >
               {isProcessing ? "Importando..." : `Confirmar e Gravar ${parsedLeads.length} Leads`}
             </Button>

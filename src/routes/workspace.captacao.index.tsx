@@ -60,18 +60,18 @@ function WorkspaceCaptacaoHubPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <Button asChild variant="outline" size="sm" className="h-9 px-3.5 gap-2 rounded-xl text-xs font-semibold">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button asChild variant="outline" size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-semibold">
             <Link to="/workspace/captacao/ndas">
               <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
               <span>Ver NDAs Assinados</span>
-              <Badge variant="secondary" className="text-xs font-mono font-bold px-1.5 py-0 h-4">
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0 h-4">
                 {ndas.length}
               </Badge>
             </Link>
           </Button>
 
-          <Button asChild size="sm" className="h-9 px-3.5 gap-1.5 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs">
+          <Button asChild size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs">
             <Link to="/conta/classificados/novo" search={{ tipo: "negocio" }}>
               <Plus className="size-3.5" />
               <span>Novo Anúncio de Negócio</span>
@@ -82,7 +82,7 @@ function WorkspaceCaptacaoHubPage() {
 
       {/* ── 4 CARDS DE MÉTRICAS ESTRATÉGICAS ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
+        <div className="bg-card rounded-lg border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Total em Valuation</span>
             <Coins className="size-4 text-primary" />
@@ -93,7 +93,7 @@ function WorkspaceCaptacaoHubPage() {
           <span className="text-xs text-muted-foreground">Soma de ativos e participações</span>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
+        <div className="bg-card rounded-lg border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Oportunidades Ativas</span>
             <Briefcase className="size-4 text-emerald-500" />
@@ -104,7 +104,7 @@ function WorkspaceCaptacaoHubPage() {
           <span className="text-xs text-muted-foreground">Empresas e pontos listados</span>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
+        <div className="bg-card rounded-lg border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">NDAs Assinados</span>
             <Lock className="size-4 text-amber-500" />
@@ -115,7 +115,7 @@ function WorkspaceCaptacaoHubPage() {
           <span className="text-xs text-muted-foreground">Investidores com acesso liberado</span>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
+        <div className="bg-card rounded-lg border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Faturamento Mensal</span>
             <TrendingUp className="size-4 text-blue-500" />
@@ -128,7 +128,7 @@ function WorkspaceCaptacaoHubPage() {
       </div>
 
       {/* ── LISTA DAS EMPRESAS E PONTOS COMERCIAIS ── */}
-      <div className="bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+      <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
         <div className="p-4 sm:p-5 border-b border-border/40 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Building className="size-4 text-primary" />
@@ -150,9 +150,9 @@ function WorkspaceCaptacaoHubPage() {
                 Publique sua empresa, franquia ou ponto comercial com proteção de sigilo por termo NDA e conecte-se a investidores qualificados.
               </p>
             </div>
-            <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-bold">
+            <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold">
               <Link to="/conta/classificados/novo" search={{ tipo: "negocio" }}>
-                <Plus className="size-3.5 mr-1.5" />
+                <Plus className="size-3.5 mr-2" />
                 <span>Anunciar Empresa / Ponto</span>
               </Link>
             </Button>
@@ -172,8 +172,8 @@ function WorkspaceCaptacaoHubPage() {
                   key={item.id}
                   className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/20 transition-colors"
                 >
-                  <div className="flex items-start gap-3.5 min-w-0">
-                    <div className="size-14 sm:size-16 rounded-xl bg-muted/40 border border-border/50 overflow-hidden shrink-0 flex items-center justify-center">
+                  <div className="flex items-start gap-4 min-w-0">
+                    <div className="size-14 sm:size-16 rounded-lg bg-muted/40 border border-border/50 overflow-hidden shrink-0 flex items-center justify-center">
                       {img ? (
                         <img src={img} alt={item.title} className="size-full object-cover" />
                       ) : (
@@ -230,22 +230,22 @@ function WorkspaceCaptacaoHubPage() {
 
                   {/* Ações Rápidas */}
                   <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-                    <Button asChild variant="outline" size="sm" className="h-8 px-2.5 rounded-lg text-xs font-medium">
+                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs font-medium">
                       <Link to="/workspace/captacao/ndas">
-                        <Users className="size-3.5 mr-1.5 text-amber-600 dark:text-amber-400" />
+                        <Users className="size-3.5 mr-2 text-amber-600 dark:text-amber-400" />
                         <span>Ver Assinaturas</span>
                       </Link>
                     </Button>
 
-                    <Button asChild variant="outline" size="sm" className="h-8 px-2.5 rounded-lg text-xs font-medium">
+                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs font-medium">
                       <Link to="/classificados/$id" params={{ id: item.id }}>
-                        <Eye className="size-3.5 mr-1.5" />
+                        <Eye className="size-3.5 mr-2" />
                         <span>Vitrine</span>
-                        <ArrowUpRight className="size-3 ml-0.5 opacity-60" />
+                        <ArrowUpRight className="size-3 ml-1 opacity-60" />
                       </Link>
                     </Button>
 
-                    <Button asChild size="sm" className="h-8 px-2.5 rounded-lg text-xs font-medium">
+                    <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-medium">
                       <Link to="/conta/classificados/novo" search={{ tipo: "negocio", editId: item.id }}>
                         <span>Editar</span>
                       </Link>

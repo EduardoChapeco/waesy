@@ -27,10 +27,10 @@ export function ProUpgradePaywallModal({
 }: ProUpgradePaywallModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md rounded-2xl bg-card border border-border/70 p-5 sm:p-6 space-y-4">
+      <DialogContent className="sm:max-w-md rounded-lg bg-card border border-border/70 p-5 sm:p-6 space-y-4">
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+            <span className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
               <Lock className="size-4" />
             </span>
             <Badge variant="outline" className="text-[10px] font-mono border-amber-500/30 text-amber-600 bg-amber-500/10">
@@ -46,8 +46,8 @@ export function ProUpgradePaywallModal({
         </DialogHeader>
 
         {/* Card do Plano PRO com Vantagens Corporativas */}
-        <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-3">
-          <div className="flex items-baseline justify-between border-b border-border/40 pb-2.5">
+        <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-3">
+          <div className="flex items-baseline justify-between border-b border-border/40 pb-3">
             <div>
               <span className="text-sm font-bold text-foreground block">Waesy Enterprise PRO</span>
               <span className="text-[11px] text-muted-foreground">Para empresas e RH ágil</span>
@@ -60,28 +60,28 @@ export function ProUpgradePaywallModal({
 
           <div className="space-y-2 text-xs">
             <div className="flex items-start gap-2">
-              <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0 mt-1" />
               <span className="text-muted-foreground">
                 <strong className="text-foreground">Sindicação no LinkedIn:</strong> Publicação com 1 clique na sua Company Page com rastreio.
               </span>
             </div>
 
             <div className="flex items-start gap-2">
-              <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0 mt-1" />
               <span className="text-muted-foreground">
                 <strong className="text-foreground">Hunter de Talentos:</strong> Busca ativa na base completa de currículos com filtros.
               </span>
             </div>
 
             <div className="flex items-start gap-2">
-              <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0 mt-1" />
               <span className="text-muted-foreground">
                 <strong className="text-foreground">Destaque nas Vagas:</strong> Exibição prioritária no portal público de empregos.
               </span>
             </div>
 
             <div className="flex items-start gap-2">
-              <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0 mt-1" />
               <span className="text-muted-foreground">
                 <strong className="text-foreground">Empresa Verificada:</strong> Maior autoridade e confiança para atração de talentos.
               </span>
@@ -96,7 +96,7 @@ export function ProUpgradePaywallModal({
             variant="outline"
             size="sm"
             onClick={onClose}
-            className="w-full sm:w-auto rounded-xl text-xs h-9 cursor-pointer"
+            className="w-full sm:w-auto rounded-lg text-xs h-9 cursor-pointer"
           >
             Continuar no Gratuito
           </Button>
@@ -109,7 +109,7 @@ export function ProUpgradePaywallModal({
             <Button
               type="button"
               size="sm"
-              className="w-full rounded-xl text-xs h-9 font-bold gap-1.5 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+              className="w-full rounded-lg text-xs h-9 font-bold gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
             >
               <Zap className="size-3.5 fill-current" />
               <span>Assinar Plano PRO</span>

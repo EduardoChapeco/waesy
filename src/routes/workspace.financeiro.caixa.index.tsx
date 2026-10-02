@@ -268,7 +268,7 @@ function CashRegisterManagerPage() {
  <Button
  asChild
  size="sm"
- className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground h-9 px-4 cursor-pointer shadow-xs"
+ className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground h-9 px-4 cursor-pointer shadow-xs"
  >
  <Link to="/workspace/pdv">
  <Layers className="size-3.5" />
@@ -281,7 +281,7 @@ function CashRegisterManagerPage() {
  onClick={() => openMovementDialog("suprimento")}
  size="sm"
  variant="outline"
- className="rounded-xl text-xs font-bold h-9 gap-1"
+ className="rounded-lg text-xs font-bold h-9 gap-1"
  >
  <ArrowDownLeft className="size-3.5 text-emerald-500" />
  <span>Suprimento</span>
@@ -290,7 +290,7 @@ function CashRegisterManagerPage() {
  onClick={() => openMovementDialog("sangria")}
  size="sm"
  variant="outline"
- className="rounded-xl text-xs font-bold h-9 gap-1"
+ className="rounded-lg text-xs font-bold h-9 gap-1"
  >
  <ArrowUpRight className="size-3.5 text-rose-500" />
  <span>Sangria</span>
@@ -299,7 +299,7 @@ function CashRegisterManagerPage() {
  onClick={() => setIsCloseModalOpen(true)}
  size="sm"
  variant="destructive"
- className="rounded-xl text-xs font-bold h-9 gap-1"
+ className="rounded-lg text-xs font-bold h-9 gap-1"
  >
  <Lock className="size-3.5" />
  <span>Fechar Turno</span>
@@ -310,7 +310,7 @@ function CashRegisterManagerPage() {
  onClick={() => setIsOpenModalOpen(true)}
  size="sm"
  variant="outline"
- className="rounded-xl text-xs font-bold h-9 gap-1 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+ className="rounded-lg text-xs font-bold h-9 gap-1 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
  >
  <Play className="size-3.5" />
  <span>Abrir Turno de Caixa</span>
@@ -321,11 +321,11 @@ function CashRegisterManagerPage() {
  />
 
  {/* ── Card de Status do Turno Atual ── */}
- <div className="p-6 rounded-2xl bg-card border border-border/70 shadow-2xs space-y-5">
+ <div className="p-6 rounded-lg bg-card border border-border/70 shadow-2xs space-y-5">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-4">
  <div className="flex items-center gap-3">
  <div
- className={`size-11 rounded-2xl flex items-center justify-center font-bold shrink-0 ${
+ className={`size-11 rounded-lg flex items-center justify-center font-bold shrink-0 ${
  isBoxOpen
  ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
  : "bg-muted text-muted-foreground border border-border"
@@ -345,7 +345,7 @@ function CashRegisterManagerPage() {
  {isBoxOpen ? (register?.isExpired ? "Expirado (>24h)" : "Aberto") : "Fechado"}
  </Badge>
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  {isBoxOpen
  ? `Aberto por ${register?.opened_by_profile?.full_name || "Operador"} em ${formatDateTime(register?.opened_at)}`
  : "Nenhum turno em andamento. Abra o caixa para registrar vendas e movimentações."}
@@ -370,7 +370,7 @@ function CashRegisterManagerPage() {
  {/* Grade de Métricas do Turno por Forma de Pagamento */}
  {isBoxOpen && (
  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
- <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <Banknote className="size-3 text-emerald-500" />
  <span>Dinheiro</span>
@@ -380,7 +380,7 @@ function CashRegisterManagerPage() {
  </p>
  </div>
 
- <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <QrCode className="size-3 text-cyan-500" />
  <span>PIX</span>
@@ -390,7 +390,7 @@ function CashRegisterManagerPage() {
  </p>
  </div>
 
- <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <CreditCard className="size-3 text-blue-500" />
  <span>Débito</span>
@@ -400,7 +400,7 @@ function CashRegisterManagerPage() {
  </p>
  </div>
 
- <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <CreditCard className="size-3 text-indigo-500" />
  <span>Crédito</span>
@@ -410,7 +410,7 @@ function CashRegisterManagerPage() {
  </p>
  </div>
 
- <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <ArrowUpRight className="size-3 text-rose-500" />
  <span>Sangrias</span>
@@ -420,7 +420,7 @@ function CashRegisterManagerPage() {
  </p>
  </div>
 
- <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
  <ArrowDownLeft className="size-3 text-emerald-500" />
  <span>Suprimentos</span>
@@ -435,7 +435,7 @@ function CashRegisterManagerPage() {
 
  {/* ── Abas de Governança: Extrato do Turno & Histórico ── */}
  <Tabs defaultValue="current" className="space-y-4">
- <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border rounded-2xl px-4 py-3">
+ <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border rounded-lg px-4 py-3">
  <TabsList className="flex overflow-x-auto no-scrollbar h-8">
  <TabsTrigger value="current" className="text-xs shrink-0">
  Lançamentos do Turno Atual ({register?.recentEntries?.length || 0})
@@ -443,7 +443,7 @@ function CashRegisterManagerPage() {
  <TabsTrigger value="history" className="text-xs shrink-0">
  Turnos ({history.length})
  </TabsTrigger>
- <TabsTrigger value="ledger" className="text-xs font-semibold gap-1.5 rounded-lg">
+ <TabsTrigger value="ledger" className="text-xs font-semibold gap-2 rounded-lg">
  <ShieldCheck className="size-3.5" />
  Ledger ACID ({(loaderData.ledger || []).length})
  </TabsTrigger>
@@ -453,8 +453,8 @@ function CashRegisterManagerPage() {
  {/* ── Conteúdo: Lançamentos do Turno Atual ── */}
  <TabsContent value="current" className="mt-0 space-y-4">
  {!isBoxOpen ? (
- <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
- <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+ <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+ <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
  <ReceiptText className="size-6" />
  </div>
  <div className="space-y-1">
@@ -466,7 +466,7 @@ function CashRegisterManagerPage() {
  <Button
  onClick={() => setIsOpenModalOpen(true)}
  size="sm"
- className="rounded-xl text-xs font-bold h-9"
+ className="rounded-lg text-xs font-bold h-9"
  >
  <Play className="size-3.5 mr-1" />
  Abrir Turno de Caixa
@@ -475,7 +475,7 @@ function CashRegisterManagerPage() {
  ) : register?.recentEntries && register.recentEntries.length > 0 ? (
  <div className="space-y-3">
       {/* Seletor Rápido de Canal / Origem */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-xs">
         <span className="text-muted-foreground font-medium text-xs mr-1 shrink-0">Filtrar Canal:</span>
         {[
           { id: "all", label: "Todos os Canais" },
@@ -491,7 +491,7 @@ function CashRegisterManagerPage() {
             type="button"
             onClick={() => setSelectedChannel(ch.id)}
             className={cn(
-              "px-2.5 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap",
+              "px-3 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap",
               selectedChannel === ch.id
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -503,23 +503,23 @@ function CashRegisterManagerPage() {
       </div>
 
       {filteredEntries.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground border border-dashed border-border/70 rounded-2xl bg-card/40 p-6">
+        <div className="py-12 text-center text-sm text-muted-foreground border border-dashed border-border/70 rounded-lg bg-card/40 p-6">
           Nenhuma movimentação registrada no canal selecionado neste turno.
         </div>
       ) : (
         <>
           {/* ── 1. MOBILE (<640px): SILENT WHATSAPP LIST COMPACT ── */}
-          <div className="block sm:hidden rounded-2xl border border-border/60 bg-card overflow-hidden divide-y divide-border/40">
+          <div className="block sm:hidden rounded-lg border border-border/60 bg-card overflow-hidden divide-y divide-border/40">
             {filteredEntries.map((entry: any) => {
               const isNegative = entry.amount_cents < 0;
 
               return (
                 <div
                   key={entry.id}
-                  className="p-3.5 flex items-center justify-between gap-3 min-h-[50px] active:bg-muted/40 transition-colors"
+                  className="p-4 flex items-center justify-between gap-3 min-h-[50px] active:bg-muted/40 transition-colors"
                 >
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-bold text-foreground truncate">
                         {entry.description || "Lançamento de Caixa"}
                       </span>
@@ -563,7 +563,7 @@ function CashRegisterManagerPage() {
           {/* ── 2. TABLET / FOLD (640px-1024px): BIFURCAÇÃO MASTER-DETAIL EM 2 COLUNAS ── */}
           <div className="hidden sm:grid lg:hidden sm:grid-cols-12 gap-4 items-start">
             {/* Coluna Esquerda (5 cols): WhatsApp List Interativa */}
-            <div className="sm:col-span-5 rounded-2xl border border-border/60 bg-card overflow-hidden divide-y divide-border/40 max-h-[600px] overflow-y-auto">
+            <div className="sm:col-span-5 rounded-lg border border-border/60 bg-card overflow-hidden divide-y divide-border/40 max-h-[600px] overflow-y-auto">
               {filteredEntries.map((entry: any) => {
                 const isNegative = entry.amount_cents < 0;
                 const isSelected = (selectedEntryId || filteredEntries[0]?.id) === entry.id;
@@ -574,17 +574,17 @@ function CashRegisterManagerPage() {
                     type="button"
                     onClick={() => setSelectedEntryId(entry.id)}
                     className={cn(
-                      "w-full text-left p-3.5 flex items-center justify-between gap-2.5 transition-colors cursor-pointer",
+                      "w-full text-left p-4 flex items-center justify-between gap-3 transition-colors cursor-pointer",
                       isSelected
                         ? "bg-primary/10 border-l-4 border-l-primary"
                         : "hover:bg-muted/30"
                     )}
                   >
-                    <div className="min-w-0 flex-1 space-y-0.5">
+                    <div className="min-w-0 flex-1 space-y-1">
                       <p className="text-xs font-bold text-foreground truncate">
                         {entry.description || "Lançamento"}
                       </p>
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
                         <span>{formatDateTime(entry.created_at)}</span>
                         <span>•</span>
                         <span className="uppercase">{entry.method}</span>
@@ -613,7 +613,7 @@ function CashRegisterManagerPage() {
               const isNeg = activeEntry.amount_cents < 0;
 
               return (
-                <div className="sm:col-span-7 rounded-2xl border border-border/70 bg-card p-5 space-y-4 sticky top-20 shadow-xs">
+                <div className="sm:col-span-7 rounded-lg border border-border/70 bg-card p-5 space-y-4 sticky top-20 shadow-xs">
                   <div className="flex items-center justify-between pb-3 border-b border-border/40">
                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                       Detalhamento do Lançamento
@@ -636,22 +636,22 @@ function CashRegisterManagerPage() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5 pt-2 text-xs">
-                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
+                  <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
                       <span className="text-xs text-muted-foreground uppercase font-semibold">Método</span>
                       <p className="font-mono font-bold uppercase text-foreground">{activeEntry.method}</p>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
                       <span className="text-xs text-muted-foreground uppercase font-semibold">Horário</span>
                       <p className="font-mono text-muted-foreground text-xs">{formatDateTime(activeEntry.created_at)}</p>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
                       <span className="text-xs text-muted-foreground uppercase font-semibold">Taxa do Canal</span>
                       <p className="font-mono font-bold text-rose-600">
                         {activeEntry.marketplace_fee_cents ? `-${formatMoney(activeEntry.marketplace_fee_cents)}` : "R$ 0,00"}
                       </p>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
                       <span className="text-xs text-muted-foreground uppercase font-semibold">Líquido Recebido</span>
                       <p className="font-mono font-bold text-emerald-600">
                         {formatMoney(activeEntry.net_payout_cents || (activeEntry.amount_cents - (activeEntry.marketplace_fee_cents || 0)))}
@@ -661,7 +661,7 @@ function CashRegisterManagerPage() {
 
                   {activeEntry.order_id && (
                     <div className="pt-2">
-                      <Button asChild variant="outline" size="sm" className="w-full text-xs font-semibold rounded-xl h-9">
+                      <Button asChild variant="outline" size="sm" className="w-full text-xs font-semibold rounded-lg h-9">
                         <Link to={`/workspace/pedidos/${activeEntry.order_id}` as any}>
                           <span>Ver Pedido Completo</span>
                           <ChevronRight className="size-3.5 ml-1" />
@@ -675,17 +675,17 @@ function CashRegisterManagerPage() {
           </div>
 
           {/* ── 3. DESKTOP (>1024px): BENTO DATA TABLE DENSA COM SOFTWARE FEEL ── */}
-          <div className="hidden lg:block bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
+          <div className="hidden lg:block bg-card border border-border/70 rounded-lg overflow-hidden shadow-2xs">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30 text-xs">
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Horário</TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Canal</TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Método</TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Descrição</TableHead>
-                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Taxa Canal</TableHead>
-                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Valor Líquido</TableHead>
-                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Valor Total</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Horário</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Canal</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Método</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Descrição</TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Taxa Canal</TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Valor Líquido</TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Valor Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -696,14 +696,14 @@ function CashRegisterManagerPage() {
 
                   return (
                     <TableRow key={entry.id} className="hover:bg-muted/20 text-xs">
-                      <TableCell className="font-mono text-muted-foreground whitespace-nowrap py-3.5">
+                      <TableCell className="font-mono text-muted-foreground whitespace-nowrap py-4">
                         {formatDateTime(entry.created_at)}
                       </TableCell>
-                      <TableCell className="py-3.5">
+                      <TableCell className="py-4">
                         {getChannelBadge(entry.channel)}
                       </TableCell>
-                      <TableCell className="py-3.5">
-                        <div className="flex items-center gap-1.5">
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-2">
                           <Badge
                             variant={isNegative ? "destructive" : "outline"}
                             className="text-xs font-mono uppercase"
@@ -721,17 +721,17 @@ function CashRegisterManagerPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate text-foreground font-medium py-3.5">
+                      <TableCell className="max-w-xs truncate text-foreground font-medium py-4">
                         <span>{entry.description || "Venda balcão / Lançamento"}</span>
                       </TableCell>
-                      <TableCell className="text-right font-mono py-3.5 text-muted-foreground">
+                      <TableCell className="text-right font-mono py-4 text-muted-foreground">
                         {feeCents > 0 ? `-${formatMoney(feeCents)}` : "—"}
                       </TableCell>
-                      <TableCell className="text-right font-mono font-semibold py-3.5 text-foreground">
+                      <TableCell className="text-right font-mono font-semibold py-4 text-foreground">
                         {formatMoney(netCents)}
                       </TableCell>
                       <TableCell
-                        className={`text-right font-mono font-bold py-3.5 ${
+                        className={`text-right font-mono font-bold py-4 ${
                           isNegative
                             ? "text-rose-600 dark:text-rose-400"
                             : "text-emerald-600 dark:text-emerald-400"
@@ -750,11 +750,11 @@ function CashRegisterManagerPage() {
       )}
       </div>
     ) : (
-      <div className="py-16 text-center space-y-4 border border-border/50 rounded-2xl bg-card/40 px-4">
-        <div className="size-14 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+      <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card/40 px-4">
+        <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
           <ReceiptText className="size-6" />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <h3 className="text-base sm:text-lg font-bold text-foreground">Nenhum turno aberto no momento</h3>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
             Abra um turno de caixa para começar a registrar movimentações de PDV e vendas.
@@ -762,7 +762,7 @@ function CashRegisterManagerPage() {
         </div>
         <Button
           onClick={() => setIsOpenModalOpen(true)}
-          className="rounded-xl text-sm font-bold h-11 px-6 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+          className="rounded-lg text-sm font-bold h-11 px-6 bg-primary text-primary-foreground cursor-pointer shadow-xs"
         >
           <Play className="size-4 mr-2" />
           Abrir Turno de Caixa
@@ -774,11 +774,11 @@ function CashRegisterManagerPage() {
   {/* ── Conteúdo: Histórico de Turnos Anteriores ── */}
   <TabsContent value="history" className="mt-0 space-y-4">
     {history.length === 0 ? (
-      <div className="py-16 text-center space-y-4 border border-border/50 rounded-2xl bg-card/40 px-4">
-        <div className="size-14 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+      <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card/40 px-4">
+        <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
           <History className="size-6" />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <h3 className="text-base sm:text-lg font-bold text-foreground">Nenhum histórico disponível</h3>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
             Quando você fechar os turnos de caixa, o relatório e auditoria ficarão salvos aqui.
@@ -798,7 +798,7 @@ function CashRegisterManagerPage() {
             return (
               <div
                 key={turn.id}
-                className="p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-3 transition-all"
+                className="p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-3 transition-all"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
@@ -806,7 +806,7 @@ function CashRegisterManagerPage() {
                       Aberto: {formatDateTime(turn.opened_at)}
                     </h4>
                     {turn.closed_at && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Fechado: {formatDateTime(turn.closed_at)}
                       </p>
                     )}
@@ -816,34 +816,34 @@ function CashRegisterManagerPage() {
                   </div>
 
                   {turn.status === "open" ? (
-                    <Badge variant="default" className="text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                    <Badge variant="default" className="text-xs font-semibold px-3 py-1 rounded-full">
                       Aberto
                     </Badge>
                   ) : diff === 0 ? (
-                    <Badge variant="outline" className="text-xs font-semibold text-emerald-600 border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                    <Badge variant="outline" className="text-xs font-semibold text-emerald-600 border-emerald-500/30 px-3 py-1 rounded-full">
                       Exato
                     </Badge>
                   ) : diff > 0 ? (
-                    <Badge variant="outline" className="text-xs font-semibold text-cyan-600 border-cyan-500/30 px-2.5 py-0.5 rounded-full">
+                    <Badge variant="outline" className="text-xs font-semibold text-cyan-600 border-cyan-500/30 px-3 py-1 rounded-full">
                       Sobra +{formatMoney(diff)}
                     </Badge>
                   ) : (
-                    <Badge variant="destructive" className="text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                    <Badge variant="destructive" className="text-xs font-semibold px-3 py-1 rounded-full">
                       Falta -{formatMoney(Math.abs(diff))}
                     </Badge>
                   )}
                 </div>
 
                 <div className="pt-2 border-t border-border/40 grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="p-2 rounded-xl bg-muted/30">
+                  <div className="p-2 rounded-lg bg-muted/30">
                     <span className="text-xs text-muted-foreground block">Troco</span>
                     <span className="font-mono font-bold text-foreground">{formatMoney(turn.initial_balance_cents)}</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-muted/30">
+                  <div className="p-2 rounded-lg bg-muted/30">
                     <span className="text-xs text-muted-foreground block">Esperado</span>
                     <span className="font-mono font-bold text-foreground">{formatMoney(turn.expected_balance_cents ?? turn.currentBalanceCents ?? 0)}</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-muted/30">
+                  <div className="p-2 rounded-lg bg-muted/30">
                     <span className="text-xs text-muted-foreground block">Contado</span>
                     <span className="font-mono font-bold text-foreground">
                       {turn.final_balance_cents !== null ? formatMoney(turn.final_balance_cents) : "Em Aberto"}
@@ -856,16 +856,16 @@ function CashRegisterManagerPage() {
         </div>
 
         {/* ── 2. Desktop High-Density Table Layout ── */}
-        <div className="hidden md:block bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
+        <div className="hidden md:block bg-card border border-border/70 rounded-lg overflow-hidden shadow-2xs">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
-                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Turno</TableHead>
-                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Responsáveis</TableHead>
-                <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Troco Inicial</TableHead>
-                <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Esperado</TableHead>
-                <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Contado</TableHead>
-                <TableHead className="text-center font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Diferença</TableHead>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Turno</TableHead>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Responsáveis</TableHead>
+                <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Troco Inicial</TableHead>
+                <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Esperado</TableHead>
+                <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Contado</TableHead>
+                <TableHead className="text-center font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">Diferença</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -877,7 +877,7 @@ function CashRegisterManagerPage() {
 
                 return (
                   <TableRow key={turn.id} className="hover:bg-muted/20 text-xs">
-                    <TableCell className="font-mono text-muted-foreground whitespace-nowrap py-3.5">
+                    <TableCell className="font-mono text-muted-foreground whitespace-nowrap py-4">
                       <div>
                         <span className="text-foreground font-semibold">
                           {formatDateTime(turn.opened_at)}
@@ -889,7 +889,7 @@ function CashRegisterManagerPage() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="py-3.5">
+                    <TableCell className="py-4">
                       <div className="text-foreground">
                         <span>{turn.opened_by_profile?.full_name || "Operador"}</span>
                         {turn.closed_by_profile && (
@@ -899,18 +899,18 @@ function CashRegisterManagerPage() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right font-mono py-3.5">
+                    <TableCell className="text-right font-mono py-4">
                       {formatMoney(turn.initial_balance_cents)}
                     </TableCell>
-                    <TableCell className="text-right font-mono py-3.5">
+                    <TableCell className="text-right font-mono py-4">
                       {formatMoney(turn.expected_balance_cents ?? turn.currentBalanceCents ?? 0)}
                     </TableCell>
-                    <TableCell className="text-right font-mono font-bold py-3.5">
+                    <TableCell className="text-right font-mono font-bold py-4">
                       {turn.final_balance_cents !== null
                         ? formatMoney(turn.final_balance_cents)
                         : "Em Aberto"}
                     </TableCell>
-                    <TableCell className="text-center py-3.5">
+                    <TableCell className="text-center py-4">
                       {turn.status === "open" ? (
                         <Badge variant="default" className="text-xs">
                           Aberto
@@ -942,7 +942,7 @@ function CashRegisterManagerPage() {
   {/* ── Conteúdo: Livro-Razão Financeiro Imutável (V113 Financial Ledger ACID) ── */}
   <TabsContent value="ledger" className="mt-0 space-y-4">
     {!loaderData.ledger || loaderData.ledger.length === 0 ? (
-      <div className="py-12 text-center space-y-2 border border-dashed border-border/70 rounded-2xl bg-card/40">
+      <div className="py-12 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card/40">
         <ShieldCheck className="size-8 text-muted-foreground mx-auto" />
         <p className="text-sm font-bold text-foreground">Livro-Razão ACID sem lançamentos</p>
         <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -950,7 +950,7 @@ function CashRegisterManagerPage() {
         </p>
       </div>
     ) : (
-      <div className="bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
+      <div className="bg-card border border-border/70 rounded-lg overflow-hidden shadow-2xs">
         <div className="divide-y divide-border/40">
           {loaderData.ledger.map((row: any) => {
             const isDebit = row.direction === "debit";
@@ -997,15 +997,15 @@ function CashRegisterManagerPage() {
  <Sheet open={isOpenModalOpen} onOpenChange={setIsOpenModalOpen}>
  <SheetContent side="right" className="sm:max-w-xl w-full flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border">
  <SheetHeader className="p-6 pb-4 border-b border-border/80 bg-muted/20">
- <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
  <Play className="size-4.5" />
  </div>
  <div>
  <SheetTitle className="text-base font-bold text-foreground">
  Abrir Turno de Caixa
  </SheetTitle>
- <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+ <SheetDescription className="text-xs text-muted-foreground mt-1">
  Informe o fundo de troco inicial disponível na gaveta.
  </SheetDescription>
  </div>
@@ -1027,7 +1027,7 @@ function CashRegisterManagerPage() {
  <Input
  placeholder="100,00"
  {...field}
- className="h-10 text-sm font-mono rounded-xl"
+ className="h-10 text-sm font-mono rounded-lg"
  autoFocus
  />
  </FormControl>
@@ -1049,7 +1049,7 @@ function CashRegisterManagerPage() {
  placeholder="Ex: Turno da manhã, notas de 10 e 20..."
  {...field}
  rows={3}
- className="text-xs rounded-xl"
+ className="text-xs rounded-lg"
  />
  </FormControl>
  <FormMessage className="text-xs" />
@@ -1063,14 +1063,14 @@ function CashRegisterManagerPage() {
  type="button"
  variant="outline"
  onClick={() => setIsOpenModalOpen(false)}
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isSubmitting}
- className="h-10 rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+ className="h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  {isSubmitting ? "Abrindo..." : "Confirmar Abertura"}
  </Button>
@@ -1084,15 +1084,15 @@ function CashRegisterManagerPage() {
  <Sheet open={isCloseModalOpen} onOpenChange={setIsCloseModalOpen}>
  <SheetContent side="right" className="sm:max-w-xl w-full flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border">
  <SheetHeader className="p-6 pb-4 border-b border-border/80 bg-muted/20">
- <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0">
  <Lock className="size-4.5" />
  </div>
  <div>
  <SheetTitle className="text-base font-bold text-foreground">
  Fechamento de Turno
  </SheetTitle>
- <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+ <SheetDescription className="text-xs text-muted-foreground mt-1">
  Faça a contagem cega do dinheiro na gaveta para auditoria.
  </SheetDescription>
  </div>
@@ -1102,7 +1102,7 @@ function CashRegisterManagerPage() {
  <Form {...closeForm}>
  <form onSubmit={closeForm.handleSubmit(handleCloseRegister)} className="flex-1 flex flex-col justify-between">
  <div className="p-6 space-y-4 overflow-y-auto no-scrollbar">
- <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-1">
  <span className="text-xs font-bold text-muted-foreground block">
  Saldo Esperado em Dinheiro:
  </span>
@@ -1123,7 +1123,7 @@ function CashRegisterManagerPage() {
  <Input
  placeholder="Informe o dinheiro contado"
  {...field}
- className="h-10 text-sm font-mono rounded-xl"
+ className="h-10 text-sm font-mono rounded-lg"
  autoFocus
  />
  </FormControl>
@@ -1145,7 +1145,7 @@ function CashRegisterManagerPage() {
  placeholder="Ex: Diferença de troco para cliente, sangria não registrada..."
  {...field}
  rows={3}
- className="text-xs rounded-xl"
+ className="text-xs rounded-lg"
  />
  </FormControl>
  <FormMessage className="text-xs" />
@@ -1159,7 +1159,7 @@ function CashRegisterManagerPage() {
  type="button"
  variant="outline"
  onClick={() => setIsCloseModalOpen(false)}
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  >
  Cancelar
  </Button>
@@ -1167,7 +1167,7 @@ function CashRegisterManagerPage() {
  type="submit"
  disabled={isSubmitting}
  variant="destructive"
- className="h-10 rounded-xl text-xs font-bold"
+ className="h-10 rounded-lg text-xs font-bold"
  >
  {isSubmitting ? "Fechando..." : "Confirmar Fechamento"}
  </Button>
@@ -1181,9 +1181,9 @@ function CashRegisterManagerPage() {
  <Sheet open={isMovementModalOpen} onOpenChange={setIsMovementModalOpen}>
  <SheetContent side="right" className="sm:max-w-xl w-full flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border">
  <SheetHeader className="p-6 pb-4 border-b border-border/80 bg-muted/20">
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <div
- className={`size-9 rounded-xl flex items-center justify-center shrink-0 ${
+ className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${
  movementType === "sangria"
  ? "bg-rose-500/10 text-rose-500"
  : "bg-emerald-500/10 text-emerald-500"
@@ -1199,7 +1199,7 @@ function CashRegisterManagerPage() {
  <SheetTitle className="text-base font-bold text-foreground">
  {movementType === "sangria" ? "Registrar Sangria" : "Registrar Suprimento"}
  </SheetTitle>
- <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+ <SheetDescription className="text-xs text-muted-foreground mt-1">
  {movementType === "sangria"
  ? "Retirada de dinheiro da gaveta (depósito ou despesa)."
  : "Reforço ou entrada de troco na gaveta."}
@@ -1221,7 +1221,7 @@ function CashRegisterManagerPage() {
  <Input
  placeholder="Ex: 50,00"
  {...field}
- className="h-10 text-sm font-mono rounded-xl"
+ className="h-10 text-sm font-mono rounded-lg"
  autoFocus
  />
  </FormControl>
@@ -1246,7 +1246,7 @@ function CashRegisterManagerPage() {
  : "Ex: Troco moedas 1 real, reforço inicial..."
  }
  {...field}
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  />
  </FormControl>
  <FormMessage className="text-xs" />
@@ -1260,14 +1260,14 @@ function CashRegisterManagerPage() {
  type="button"
  variant="outline"
  onClick={() => setIsMovementModalOpen(false)}
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isSubmitting}
- className="h-10 rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+ className="h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  {isSubmitting ? "Processando..." : "Confirmar Movimentação"}
  </Button>

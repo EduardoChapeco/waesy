@@ -83,7 +83,7 @@ export const Route = createFileRoute("/_store/conta/pedidos/")({
 function CustomerOrdersErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <AlertCircle className="size-8" />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar pedidos</h2>
@@ -91,10 +91,10 @@ function CustomerOrdersErrorComponent({ error, reset }: { error: any; reset: () 
         {error?.message || "Não foi possível carregar seu histórico de pedidos no momento."}
       </p>
       <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-xl font-bold">
+        <Button onClick={reset} className="rounded-lg font-bold">
           Tentar Novamente
         </Button>
-        <Button asChild variant="outline" className="rounded-xl font-bold">
+        <Button asChild variant="outline" className="rounded-lg font-bold">
           <Link to="/conta">Voltar para Conta</Link>
         </Button>
       </div>
@@ -140,11 +140,11 @@ function OrderRow({ order }: { order: any }) {
     <Link
       to="/conta/pedidos/$id"
       params={{ id: order.id }}
-      className="flex items-center gap-3.5 px-4 py-4 min-h-[72px] hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer group"
+      className="flex items-center gap-4 px-4 py-4 min-h-[72px] hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer group"
       id={`order-row-${order.id}`}
     >
       {/* Thumbnail ou ícone de status */}
-      <div className="size-12 rounded-xl border border-border/50 overflow-hidden shrink-0 flex items-center justify-center bg-muted/30 relative">
+      <div className="size-12 rounded-lg border border-border/50 overflow-hidden shrink-0 flex items-center justify-center bg-muted/30 relative">
         {firstItem?.image_url ? (
           <img
             src={firstItem.image_url}
@@ -199,12 +199,12 @@ function OrderRow({ order }: { order: any }) {
               {statusLabel}
             </Badge>
             {isReadyPickup && (
-              <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md animate-pulse">
+              <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md animate-pulse">
                 Retirar já!
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <span className="text-[11px] text-muted-foreground">
               {formatDate(order.created_at)}
             </span>
@@ -291,7 +291,7 @@ function CustomerOrdersPage() {
           orders.length > 0 ? (
             <Badge
               variant="secondary"
-              className="text-xs font-mono font-bold px-2 py-0.5 rounded-md"
+              className="text-xs font-mono font-bold px-2 py-1 rounded-md"
             >
               {orders.length}
             </Badge>
@@ -302,7 +302,7 @@ function CustomerOrdersPage() {
             asChild
             size="sm"
             variant="outline"
-            className="rounded-xl text-xs font-semibold h-8.5 px-3 cursor-pointer"
+            className="rounded-lg text-xs font-semibold h-8.5 px-3 cursor-pointer"
           >
             <Link to="/mercado">Explorar</Link>
           </Button>
@@ -319,7 +319,7 @@ function CustomerOrdersPage() {
               Suas compras em lojas e restaurantes parceiros aparecerão aqui com rastreamento em tempo real.
             </p>
           </div>
-          <Button asChild className="rounded-xl h-10 px-6 text-xs font-bold mt-2">
+          <Button asChild className="rounded-lg h-10 px-6 text-xs font-bold mt-2">
             <Link to="/mercado">Explorar</Link>
           </Button>
         </div>
@@ -338,7 +338,7 @@ function CustomerOrdersPage() {
                 placeholder="Buscar por produto, loja ou código de rastreio..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8.5 h-10 text-base sm:text-xs rounded-xl border-border/60 bg-muted/30 focus:bg-background transition-colors"
+                className="pl-8.5 h-10 text-base sm:text-xs rounded-lg border-border/60 bg-muted/30 focus:bg-background transition-colors"
               />
             </div>
           </div>
@@ -356,7 +356,7 @@ function CustomerOrdersPage() {
                     id={`filter-chip-${chip.id}`}
                     type="button"
                     onClick={() => setActiveFilter(chip.id)}
-                    className={`flex items-center gap-1.5 h-8 px-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer snap-start ${
+                    className={`flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer snap-start ${
                       isActive
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-background text-muted-foreground border-border/60 hover:border-border hover:text-foreground"
@@ -397,7 +397,7 @@ function CustomerOrdersPage() {
                   </div>
 
                   {/* Cards do mês — WhatsApp list style */}
-                  <div className="w-full bg-card border-y border-border/40 sm:border sm:rounded-2xl overflow-hidden divide-y divide-border/30 mx-0 shadow-2xs">
+                  <div className="w-full bg-card border-y border-border/40 sm:border sm:rounded-lg overflow-hidden divide-y divide-border/30 mx-0 shadow-2xs">
                     {group.orders.map((order: any) => (
                       <OrderRow key={order.id} order={order} />
                     ))}

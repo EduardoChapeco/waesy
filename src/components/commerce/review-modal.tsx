@@ -32,7 +32,7 @@ export function ReviewModal({
  return (
  <Badge
  variant="outline"
- className="mt-2 text-xs font-bold text-success border-success/30 bg-success/10 py-1 px-2.5 flex items-center gap-1 shrink-0"
+ className="mt-2 text-xs font-bold text-success border-success/30 bg-success/10 py-1 px-3 flex items-center gap-1 shrink-0"
  >
  <CheckCircle className="size-3.5" />
  <span>Avaliado</span>
@@ -71,7 +71,7 @@ export function ReviewModal({
  Avaliar Produto
  </Button>
  </DialogTrigger>
- <DialogContent className=" bg-background rounded-2xl sm:max-w-md">
+ <DialogContent className=" bg-background rounded-lg sm:max-w-md">
  <DialogHeader>
  <div className="flex items-center gap-2 text-xs font-bold text-success mb-1">
  <ShieldCheck className="size-4" />
@@ -82,7 +82,7 @@ export function ReviewModal({
  </DialogTitle>
  </DialogHeader>
  <div className="space-y-5 py-3">
- <div className="flex flex-col items-center gap-2 bg-muted/40 rounded-2xl p-4">
+ <div className="flex flex-col items-center gap-2 bg-muted/40 rounded-lg p-4">
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
  Sua Nota para este produto
  </span>
@@ -105,7 +105,7 @@ export function ReviewModal({
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">
  Comentário da sua experiência (opcional)
  </label>
@@ -113,12 +113,12 @@ export function ReviewModal({
  placeholder="Conte como foi a sua experiência com a qualidade, entrega e atendimento..."
  value={comment}
  onChange={(e) => setComment(e.target.value)}
- className=" bg-card rounded-xl focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground resize-none font-medium h-28 text-xs"
+ className=" bg-card rounded-lg focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground resize-none font-medium h-28 text-xs"
  />
  </div>
 
  <Button
- className="w-full bg-primary text-primary-foreground font-bold text-sm h-11 rounded-xl cursor-pointer"
+ className="w-full bg-primary text-primary-foreground font-bold text-sm h-11 rounded-lg cursor-pointer"
  onClick={handleSubmit}
  disabled={loading}
  >

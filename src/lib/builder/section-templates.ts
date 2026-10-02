@@ -1508,7 +1508,7 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
  textColor: "#ffffff",
  boxColor: "rgba(255, 255, 255, 0.15)",
  boxTextColor: "#ffffff",
- borderRadius: "rounded-2xl",
+ borderRadius: "rounded-lg",
  },
  },
  ],

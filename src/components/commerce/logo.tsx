@@ -17,7 +17,7 @@ export function Logo({ src, className, ...props }: Omit<ComponentProps<"img">, "
  src={src}
  alt="Waesy — Super App & Comunidade"
  className={cn(
- "h-8 w-auto max-w-[240px] select-none object-contain bg-transparent mix-blend-normal",
+ "h-8 w-auto max-w-60 select-none object-contain bg-transparent mix-blend-normal",
  className,
  )}
  onError={() => setHasError(true)}

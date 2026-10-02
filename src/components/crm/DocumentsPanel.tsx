@@ -100,9 +100,9 @@ export function DocumentsPanel({
  return (
  <div className="space-y-4">
  {/* Header com Alertas e Botão de Ação */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-border">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-4 rounded-lg border border-border">
  <div className="flex items-center gap-3">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <FileText className="size-5" />
  </div>
  <div>
@@ -136,7 +136,7 @@ export function DocumentsPanel({
  <Button
  size="sm"
  onClick={() => setModalOpen(true)}
- className="rounded-xl text-xs font-bold gap-1.5 h-9 bg-primary text-primary-foreground cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-9 bg-primary text-primary-foreground cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Documento</span>
@@ -146,7 +146,7 @@ export function DocumentsPanel({
 
  {/* Grid de Documentos */}
  {documents.length === 0 ? (
- <div className="py-12 text-center rounded-2xl border border-dashed border-border p-8 bg-card/40 space-y-3">
+ <div className="py-12 text-center rounded-lg border border-dashed border-border p-8 bg-card/40 space-y-3">
  <FileText className="size-10 mx-auto text-muted-foreground/40" />
  <div className="space-y-1">
  <h4 className="font-bold text-sm text-foreground">Nenhum documento cadastrado</h4>
@@ -158,7 +158,7 @@ export function DocumentsPanel({
  variant="outline"
  size="sm"
  onClick={() => setModalOpen(true)}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  + Adicionar Primeiro Documento
  </Button>
@@ -173,7 +173,7 @@ export function DocumentsPanel({
  return (
  <div
  key={doc.id}
- className={`p-4 rounded-2xl border transition-all ${
+ className={`p-4 rounded-lg border transition-all ${
  isExpired
  ? "border-rose-500/30 bg-rose-500/5 dark:bg-rose-950/10"
  : isSoon
@@ -264,7 +264,7 @@ export function DocumentsPanel({
 
  {/* Modal de Inclusão de Documento */}
  <Dialog open={modalOpen} onOpenChange={setModalOpen}>
- <DialogContent className="max-w-lg w-full rounded-2xl p-6 space-y-4">
+ <DialogContent className="max-w-lg w-full rounded-lg p-6 space-y-4">
  <DialogHeader>
  <DialogTitle className="text-base font-bold flex items-center gap-2">
  <Plus className="size-4 text-primary" />
@@ -279,7 +279,7 @@ export function DocumentsPanel({
  <div className="space-y-1">
  <Label className="text-xs font-medium">Tipo de Documento *</Label>
  <Select value={docType} onValueChange={setDocType}>
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -298,7 +298,7 @@ export function DocumentsPanel({
  value={docNumber}
  onChange={(e) => setDocNumber(e.target.value)}
  placeholder="Ex: BR123456 ou 000.000.000-00"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
 
@@ -309,7 +309,7 @@ export function DocumentsPanel({
  type="date"
  value={issuedAt}
  onChange={(e) => setIssuedAt(e.target.value)}
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
 
@@ -319,7 +319,7 @@ export function DocumentsPanel({
  type="date"
  value={expiresAt}
  onChange={(e) => setExpiresAt(e.target.value)}
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -341,7 +341,7 @@ export function DocumentsPanel({
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
  placeholder="Ex: Passaporte italiano, emitido pelo consulado de Curitiba"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -361,7 +361,7 @@ export function DocumentsPanel({
  disabled={submitting}
  size="sm"
  onClick={handleCreate}
- className="text-xs font-bold bg-primary text-primary-foreground rounded-xl gap-1.5"
+ className="text-xs font-bold bg-primary text-primary-foreground rounded-lg gap-2"
  >
  {submitting ? <Loader2 className="size-3.5 animate-spin" /> : <ShieldCheck className="size-3.5" />}
  <span>Salvar Documento</span>

@@ -104,7 +104,7 @@ export function GroceryProductCard({
     return (
       <div
         className={cn(
-          "group relative flex items-center justify-between w-full min-h-[112px] sm:min-h-[124px] rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-colors content-auto-card overflow-hidden pl-28 sm:pl-36 pr-3.5 py-3 gap-3",
+          "group relative flex items-center justify-between w-full min-h-[112px] sm:min-h-[124px] rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-colors content-auto-card overflow-hidden pl-28 sm:pl-36 pr-4 py-3 gap-3",
           className,
         )}
       >
@@ -112,7 +112,7 @@ export function GroceryProductCard({
           to="/produto/$slug"
           params={{ slug: product.slug }}
           search={product.variantId ? { v: product.variantId } : undefined}
-          className="absolute inset-y-0 left-0 w-28 sm:w-36 rounded-l-2xl bg-muted/40 overflow-hidden block focus-visible:outline-none"
+          className="absolute inset-y-0 left-0 w-28 sm:w-36 rounded-l-lg bg-muted/40 overflow-hidden block focus-visible:outline-none"
         >
           {product.coverUrl ? (
             <img
@@ -129,7 +129,7 @@ export function GroceryProductCard({
 
           {hasDiscount && discountPercent > 0 && (
             <div className="absolute top-2 left-2 z-10">
-              <Badge className="bg-destructive text-destructive-foreground text-[9px] font-black px-1.5 py-0 rounded-md">
+              <Badge className="bg-destructive text-destructive-foreground text-[9px] font-black px-2 py-0 rounded-md">
                 -{discountPercent}%
               </Badge>
             </div>
@@ -137,7 +137,7 @@ export function GroceryProductCard({
 
           {product.isOutOfStock && (
             <div className="absolute inset-0 bg-background/85 flex items-center justify-center">
-              <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground bg-card px-1.5 py-0.5 rounded-lg">
+              <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground bg-card px-2 py-1 rounded-lg">
                 Esgotado
               </span>
             </div>
@@ -149,7 +149,7 @@ export function GroceryProductCard({
             to="/produto/$slug"
             params={{ slug: product.slug }}
             search={product.variantId ? { v: product.variantId } : undefined}
-            className="space-y-0.5 focus-visible:outline-none block"
+            className="space-y-1 focus-visible:outline-none block"
           >
             {((product as any).store_name || (product as any).storeName || product.brand) && (
               <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate block">
@@ -169,7 +169,7 @@ export function GroceryProductCard({
           </Link>
         </div>
 
-        <div className="shrink-0 flex flex-col items-end gap-1.5 pl-1">
+        <div className="shrink-0 flex flex-col items-end gap-2 pl-1">
           <div className="flex flex-col items-end min-w-0">
             {hasDiscount && typeof compareAtCents === "number" && (
               <span className="text-[9px] text-muted-foreground line-through font-mono">
@@ -183,7 +183,7 @@ export function GroceryProductCard({
 
           <div>
             {currentQty > 0 ? (
-              <div className="flex items-center gap-1 border border-primary/30 bg-primary/10 text-primary rounded-xl p-0.5">
+              <div className="flex items-center gap-1 border border-primary/30 bg-primary/10 text-primary rounded-lg p-1">
                 <button
                   type="button"
                   onClick={handleDecrement}
@@ -212,7 +212,7 @@ export function GroceryProductCard({
               <Button
                 size="sm"
                 onClick={handleQuickAdd}
-                className="rounded-xl h-7 sm:h-8 px-2 sm:px-2.5 font-bold text-[11px] sm:text-xs gap-1 cursor-pointer"
+                className="rounded-lg h-7 sm:h-8 px-2 sm:px-3 font-bold text-[11px] sm:text-xs gap-1 cursor-pointer"
               >
                 <Plus className="size-3" />
                 <span>Pedir</span>
@@ -222,7 +222,7 @@ export function GroceryProductCard({
                 asChild
                 size="sm"
                 variant="outline"
-                className="rounded-xl h-7 sm:h-8 px-2 sm:px-2.5 font-bold text-[11px] sm:text-xs border-border cursor-pointer"
+                className="rounded-lg h-7 sm:h-8 px-2 sm:px-3 font-bold text-[11px] sm:text-xs border-border cursor-pointer"
               >
                 <Link
                   to="/produto/$slug"
@@ -241,7 +241,7 @@ export function GroceryProductCard({
  return (
  <div
  className={cn(
- "group relative flex flex-col justify-between rounded-2xl bg-card border border-border/60 hover:border-foreground/20 transition-colors content-auto-card overflow-hidden p-0",
+ "group relative flex flex-col justify-between rounded-lg bg-card border border-border/60 hover:border-foreground/20 transition-colors content-auto-card overflow-hidden p-0",
  className,
  )}
  >
@@ -269,7 +269,7 @@ export function GroceryProductCard({
  {/* Discount Badge */}
  {hasDiscount && discountPercent > 0 && (
  <div className="absolute top-2.5 left-2.5 z-10">
- <Badge className="bg-destructive text-destructive-foreground text-[10px] font-black px-2 py-0.5 rounded-md ">
+ <Badge className="bg-destructive text-destructive-foreground text-[10px] font-black px-2 py-1 rounded-md ">
  -{discountPercent}%
  </Badge>
  </div>
@@ -278,7 +278,7 @@ export function GroceryProductCard({
  {/* Stock out badge */}
  {product.isOutOfStock && (
  <div className="absolute inset-0 bg-background/85 flex items-center justify-center">
- <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground bg-card px-2.5 py-1 rounded-lg ">
+ <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground bg-card px-3 py-1 rounded-lg ">
  Esgotado
  </span>
  </div>
@@ -286,7 +286,7 @@ export function GroceryProductCard({
  </Link>
 
  {/* Product Info with comfortable internal padding */}
- <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
+ <div className="p-4 sm:p-4 flex-1 flex flex-col justify-between">
  <Link
  to="/produto/$slug"
  params={{ slug: product.slug }}
@@ -330,7 +330,7 @@ export function GroceryProductCard({
  {/* Stepper / Quick Add Button */}
  <div>
  {currentQty > 0 ? (
- <div className="flex items-center gap-1.5 border border-primary/30 bg-primary/10 text-primary rounded-xl p-1">
+ <div className="flex items-center gap-2 border border-primary/30 bg-primary/10 text-primary rounded-lg p-1">
  <button
  type="button"
  onClick={handleDecrement}
@@ -359,7 +359,7 @@ export function GroceryProductCard({
  <Button
  size="sm"
  onClick={handleQuickAdd}
- className="rounded-xl min-h-[44px] sm:min-h-0 h-11 sm:h-9 px-3.5 font-bold text-xs gap-1.5 cursor-pointer"
+ className="rounded-lg min-h-11 sm:min-h-0 h-11 sm:h-9 px-4 font-bold text-xs gap-2 cursor-pointer"
  >
  <Plus className="size-4 sm:size-3.5" />
  <span className="hidden sm:inline">Adicionar</span>
@@ -369,7 +369,7 @@ export function GroceryProductCard({
  asChild
  size="sm"
  variant="outline"
- className="rounded-xl min-h-[44px] sm:min-h-0 h-11 sm:h-9 px-3.5 font-bold text-xs border-border cursor-pointer"
+ className="rounded-lg min-h-11 sm:min-h-0 h-11 sm:h-9 px-4 font-bold text-xs border-border cursor-pointer"
  >
  <Link
  to="/produto/$slug"

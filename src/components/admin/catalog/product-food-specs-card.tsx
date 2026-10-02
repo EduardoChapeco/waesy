@@ -114,10 +114,10 @@ export function ProductFoodSpecsCard({
   };
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-6 ">
+    <div className="rounded-lg border border-border/60 bg-card p-5 space-y-6 ">
       {/* Top Header */}
       <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3">
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Layers className="size-4 text-primary" />
             <h3 className="text-sm font-bold text-foreground line-clamp-1 truncate">Especificações de Varejo, Alimentação</h3>
@@ -133,8 +133,8 @@ export function ProductFoodSpecsCard({
 
       {/* ── 1. Código EAN-13 & Código de Integração PDV ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+        <div className="space-y-2">
+          <Label className="text-xs font-bold text-foreground flex items-center gap-2">
             <Barcode className="size-3.5 text-primary" />
             <span>Código de Barras (EAN-13 / GTIN)</span>
           </Label>
@@ -142,7 +142,7 @@ export function ProductFoodSpecsCard({
             placeholder="Ex: 7891000100103"
             value={value.barcodeEan || ""}
             onChange={(e) => onChange({ ...value, barcodeEan: e.target.value.trim() })}
-            className="h-9 text-xs rounded-xl font-mono"
+            className="h-9 text-xs rounded-lg font-mono"
             maxLength={14}
           />
           <p className="text-[11px] text-muted-foreground">
@@ -150,8 +150,8 @@ export function ProductFoodSpecsCard({
           </p>
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+        <div className="space-y-2">
+          <Label className="text-xs font-bold text-foreground flex items-center gap-2">
             <Tag className="size-3.5 text-muted-foreground" />
             <span>Código de Integração / PDV (SKU)</span>
           </Label>
@@ -159,7 +159,7 @@ export function ProductFoodSpecsCard({
             placeholder="Ex: XGAHTQ ou PRD-01"
             value={value.posCode || ""}
             onChange={(e) => onChange({ ...value, posCode: e.target.value.toUpperCase() })}
-            className="h-9 text-xs rounded-xl font-mono uppercase"
+            className="h-9 text-xs rounded-lg font-mono uppercase"
           />
           <p className="text-[11px] text-muted-foreground">
             Código interno do ERP/Frente de caixa para conciliação automática de vendas.
@@ -169,9 +169,9 @@ export function ProductFoodSpecsCard({
 
       {/* ── 2. Hortifrúti, Carnes & Produtos Pesáveis (A Granel / Peso Variável) ── */}
       <div className="pt-3 border-t border-border/40 space-y-4">
-        <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/30 border border-border/50">
-          <div className="space-y-0.5">
-            <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+        <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+          <div className="space-y-1">
+            <Label className="text-xs font-bold text-foreground flex items-center gap-2">
               <Scale className="size-3.5 text-primary" />
               <span>Produto Pesável / Hortifrúti / Açougue</span>
             </Label>
@@ -186,25 +186,25 @@ export function ProductFoodSpecsCard({
         </div>
 
         {value.isFreshPricingActive && (
-          <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-4 animate-in fade-in duration-150">
+          <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-4 animate-in fade-in duration-150">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Modo de Venda no Catálogo</Label>
                 <Select
                   value={value.freshPricingMode || "unit"}
                   onValueChange={(val: "unit" | "weight") => onChange({ ...value, freshPricingMode: val })}
                 >
-                  <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+                  <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl text-xs">
+                  <SelectContent className="rounded-lg text-xs">
                     <SelectItem value="unit">Por Unidade (com peso médio aproximado)</SelectItem>
                     <SelectItem value="weight">Direto por Peso (R$ por Kg)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">
                   Peso Médio Unitário Aproximado (gramas)
                 </Label>
@@ -219,7 +219,7 @@ export function ProductFoodSpecsCard({
                         avgPieceWeightGrams: e.target.value ? parseInt(e.target.value, 10) : undefined,
                       })
                     }
-                    className="h-9 text-xs rounded-xl bg-background pr-10"
+                    className="h-9 text-xs rounded-lg bg-background pr-10"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-bold">
                     g / un
@@ -231,7 +231,7 @@ export function ProductFoodSpecsCard({
             {/* Ponto de Maturação */}
             <div className="pt-2 border-t border-border/30 space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Apple className="size-3.5 text-primary" />
                   <span>Escolha do Ponto de Maturação pelo Cliente</span>
                 </Label>
@@ -242,7 +242,7 @@ export function ProductFoodSpecsCard({
               </div>
 
               {value.ripenessEnabled && (
-                <div className="space-y-1.5 pt-1">
+                <div className="space-y-2 pt-1">
                   <p className="text-[11px] text-muted-foreground">
                     Selecione quais opções estarão disponíveis para o cliente marcar no checkout:
                   </p>
@@ -255,14 +255,14 @@ export function ProductFoodSpecsCard({
                           type="button"
                           onClick={() => toggleRipenessStage(opt)}
                           className={cn(
-                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer",
+                            "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
                               : "bg-background text-muted-foreground border-border/70 hover:border-foreground/30 hover:text-foreground"
                           )}
                         >
                           <span>{opt}</span>
-                          {isSelected && <Check className="size-3 ml-0.5" />}
+                          {isSelected && <Check className="size-3 ml-1" />}
                         </button>
                       );
                     })}
@@ -277,8 +277,8 @@ export function ProductFoodSpecsCard({
       {/* ── 3. Descontos Progressivos / Varejo e Atacado (Pague Menos por Volume) ── */}
       <div className="pt-3 border-t border-border/40 space-y-3">
         <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+          <div className="space-y-1">
+            <Label className="text-xs font-bold text-foreground flex items-center gap-2">
               <Percent className="size-3.5 text-primary" />
               <span>Desconto Progressivo por Volume (Pague Menos)</span>
             </Label>
@@ -291,7 +291,7 @@ export function ProductFoodSpecsCard({
             variant="outline"
             size="sm"
             onClick={handleAddDiscountRule}
-            className="h-8 rounded-xl text-xs font-bold gap-1 cursor-pointer"
+            className="h-8 rounded-lg text-xs font-bold gap-1 cursor-pointer"
           >
             <Plus className="size-3" />
             <span>Adicionar Faixa</span>
@@ -303,7 +303,7 @@ export function ProductFoodSpecsCard({
             {discounts.map((rule, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-3 p-2.5 rounded-xl border border-border/60 bg-muted/20"
+                className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-muted/20"
               >
                 <div className="flex-1 flex items-center gap-2 text-xs">
                   <span className="text-muted-foreground whitespace-nowrap">A partir de</span>
@@ -349,7 +349,7 @@ export function ProductFoodSpecsCard({
       </div>
 
       {/* ── 4. Restrições Alimentares ── */}
-      <div className="space-y-2.5 pt-3 border-t border-border/40">
+      <div className="space-y-3 pt-3 border-t border-border/40">
         <div className="flex items-center justify-between">
           <Label className="text-xs font-bold text-foreground uppercase tracking-wider text-[11px]">
             Restrições Alimentares
@@ -367,7 +367,7 @@ export function ProductFoodSpecsCard({
                 type="button"
                 onClick={() => toggleDietary(item.id)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer",
+                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
                   isSelected
                     ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
                     : "bg-muted/40 text-muted-foreground border-border/70 hover:border-foreground/30 hover:text-foreground"
@@ -375,7 +375,7 @@ export function ProductFoodSpecsCard({
               >
                 <Icon className="size-3.5" />
                 <span>{item.label}</span>
-                {isSelected && <Check className="size-3 ml-0.5" />}
+                {isSelected && <Check className="size-3 ml-1" />}
               </button>
             );
           })}
@@ -383,7 +383,7 @@ export function ProductFoodSpecsCard({
       </div>
 
       {/* ── 5. Em Caso de Bebidas ── */}
-      <div className="space-y-2.5 pt-2 border-t border-border/40">
+      <div className="space-y-3 pt-2 border-t border-border/40">
         <Label className="text-xs font-bold text-foreground uppercase tracking-wider text-[11px]">
           Classificação para Bebidas
         </Label>
@@ -396,14 +396,14 @@ export function ProductFoodSpecsCard({
                 type="button"
                 onClick={() => toggleBeverage(item.id)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer",
+                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                     : "bg-muted/40 text-muted-foreground border-border/70 hover:border-foreground/30 hover:text-foreground"
                 )}
               >
                 <span>{item.label}</span>
-                {isSelected && <Check className="size-3 ml-0.5" />}
+                {isSelected && <Check className="size-3 ml-1" />}
               </button>
             );
           })}
@@ -418,8 +418,8 @@ export function ProductFoodSpecsCard({
 
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
           {/* Serve Até */}
-          <div className="sm:col-span-4 space-y-1.5">
-            <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+          <div className="sm:col-span-4 space-y-2">
+            <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
               <Users className="size-3.5 text-muted-foreground" />
               <span>Serve até</span>
             </Label>
@@ -427,10 +427,10 @@ export function ProductFoodSpecsCard({
               value={value.servesCount || "1 pessoa"}
               onValueChange={(val) => onChange({ ...value, servesCount: val })}
             >
-              <SelectTrigger className="h-9 rounded-xl text-xs">
+              <SelectTrigger className="h-9 rounded-lg text-xs">
                 <SelectValue placeholder="Selecione a porção" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl text-xs">
+              <SelectContent className="rounded-lg text-xs">
                 <SelectItem value="1 pessoa">1 pessoa (Individual)</SelectItem>
                 <SelectItem value="2 pessoas">2 pessoas</SelectItem>
                 <SelectItem value="3-4 pessoas">3 a 4 pessoas</SelectItem>
@@ -441,27 +441,27 @@ export function ProductFoodSpecsCard({
           </div>
 
           {/* Peso / Volume */}
-          <div className="sm:col-span-4 space-y-1.5">
-            <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+          <div className="sm:col-span-4 space-y-2">
+            <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
               <Scale className="size-3.5 text-muted-foreground" />
               <span>Peso / Volume</span>
             </Label>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Input
                 type="number"
                 placeholder="Ex: 750"
                 value={value.portionWeight || ""}
                 onChange={(e) => onChange({ ...value, portionWeight: e.target.value })}
-                className="h-9 text-xs rounded-xl flex-1"
+                className="h-9 text-xs rounded-lg flex-1"
               />
               <Select
                 value={value.portionUnit || "g"}
                 onValueChange={(val) => onChange({ ...value, portionUnit: val })}
               >
-                <SelectTrigger className="h-9 w-20 rounded-xl text-xs shrink-0">
+                <SelectTrigger className="h-9 w-20 rounded-lg text-xs shrink-0">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl text-xs">
+                <SelectContent className="rounded-lg text-xs">
                   <SelectItem value="g">g</SelectItem>
                   <SelectItem value="kg">kg</SelectItem>
                   <SelectItem value="ml">ml</SelectItem>
@@ -474,8 +474,8 @@ export function ProductFoodSpecsCard({
           </div>
 
           {/* Tempo de Preparo Próprio do Item */}
-          <div className="sm:col-span-4 space-y-1.5">
-            <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+          <div className="sm:col-span-4 space-y-2">
+            <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
               <Clock className="size-3.5 text-muted-foreground" />
               <span>Preparo deste item</span>
             </Label>
@@ -490,7 +490,7 @@ export function ProductFoodSpecsCard({
                     preparationTimeMinutes: e.target.value ? parseInt(e.target.value, 10) : undefined,
                   })
                 }
-                className="h-9 text-xs rounded-xl pr-10"
+                className="h-9 text-xs rounded-lg pr-10"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-bold">
                 min
@@ -501,7 +501,7 @@ export function ProductFoodSpecsCard({
       </div>
 
       {/* Aviso de Transparência */}
-      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 leading-snug">
+      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 leading-snug">
         Lembre-se: Você é legalmente responsável pela veracidade dos ingredientes e restrições alimentares declaradas, garantindo segurança aos clientes com alergias alimentares.
       </div>
     </div>

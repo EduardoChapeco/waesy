@@ -160,7 +160,7 @@ function ResolutionDrawer({
         </SheetHeader>
 
         <div className="py-6 space-y-6 flex-1 overflow-y-auto">
-          <div className="p-4 bg-muted/30 border border-border/60 rounded-xl space-y-2">
+          <div className="p-4 bg-muted/30 border border-border/60 rounded-lg space-y-2">
             <h4 className="font-semibold text-sm text-foreground">Resumo da Solicitação</h4>
             <p className="text-xs text-muted-foreground">Motivo: {exchange?.reason}</p>
             <p className="text-xs text-muted-foreground font-bold font-mono">
@@ -235,7 +235,7 @@ function ResolutionDrawer({
                 <button
                   type="button"
                   onClick={() => setResolutionType("store_credit")}
-                  className={`flex items-center gap-3 p-3.5 border rounded-xl text-left transition-colors cursor-pointer ${
+                  className={`flex items-center gap-3 p-4 border rounded-lg text-left transition-colors cursor-pointer ${
                     resolutionType === "store_credit"
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border/70 hover:bg-muted/30"
@@ -255,7 +255,7 @@ function ResolutionDrawer({
                 <button
                   type="button"
                   onClick={() => setResolutionType("refund")}
-                  className={`flex items-center gap-3 p-3.5 border rounded-xl text-left transition-colors cursor-pointer ${
+                  className={`flex items-center gap-3 p-4 border rounded-lg text-left transition-colors cursor-pointer ${
                     resolutionType === "refund"
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border/70 hover:bg-muted/30"
@@ -275,7 +275,7 @@ function ResolutionDrawer({
                 <button
                   type="button"
                   onClick={() => setResolutionType("replacement")}
-                  className={`flex items-center gap-3 p-3.5 border rounded-xl text-left transition-colors cursor-pointer ${
+                  className={`flex items-center gap-3 p-4 border rounded-lg text-left transition-colors cursor-pointer ${
                     resolutionType === "replacement"
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border/70 hover:bg-muted/30"
@@ -302,13 +302,13 @@ function ResolutionDrawer({
                 <CurrencyField
                   value={refundCents}
                   onChange={(val) => setRefundCents(val ?? 0)}
-                  className="font-mono font-bold text-lg h-12 bg-background border-border/80 rounded-xl"
+                  className="font-mono font-bold text-lg h-12 bg-background border-border/80 rounded-lg"
                 />
               </div>
             )}
 
             <Button
-              className="w-full mt-4 font-bold rounded-xl h-11 cursor-pointer"
+              className="w-full mt-4 font-bold rounded-lg h-11 cursor-pointer"
               onClick={handleResolve}
               disabled={isSubmitting}
             >
@@ -450,7 +450,7 @@ function ExchangesDashboardPage() {
             <Button
               size="sm"
               variant="default"
-              className="rounded-xl h-8 text-xs font-semibold cursor-pointer"
+              className="rounded-lg h-8 text-xs font-semibold cursor-pointer"
               onClick={() => handleUpdateStatus(exchange.id, "approved")}
               disabled={processingId === exchange.id}
             >
@@ -459,7 +459,7 @@ function ExchangesDashboardPage() {
             <Button
               size="sm"
               variant="outline"
-              className="rounded-xl h-8 text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+              className="rounded-lg h-8 text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
               onClick={() => handleUpdateStatus(exchange.id, "rejected")}
               disabled={processingId === exchange.id}
             >
@@ -471,7 +471,7 @@ function ExchangesDashboardPage() {
           <Button
             size="sm"
             variant="default"
-            className="rounded-xl h-8 text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+            className="rounded-lg h-8 text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
             onClick={() => setResolvingExchange(exchange)}
             disabled={processingId === exchange.id}
           >
@@ -494,19 +494,19 @@ function ExchangesDashboardPage() {
               onClick={handleExportCsv}
               variant="outline"
               size="sm"
-              className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+              className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
             >
               <FileSpreadsheet className="size-3.5 text-emerald-600" />
               <span>Exportar CSV</span>
             </Button>
-            <div className="flex bg-muted/60 p-1 rounded-xl border border-border/60">
+            <div className="flex bg-muted/60 p-1 rounded-lg border border-border/60">
               <Button
                 variant={viewMode === "kanban" ? "secondary" : "ghost"}
                 size="sm"
                 className="rounded-lg h-7 text-xs font-semibold cursor-pointer"
                 onClick={() => setViewMode("kanban")}
               >
-                <KanbanSquare className="h-3.5 w-3.5 mr-1.5" /> Kanban
+                <KanbanSquare className="h-3.5 w-3.5 mr-2" /> Kanban
               </Button>
               <Button
                 variant={viewMode === "table" ? "secondary" : "ghost"}
@@ -514,7 +514,7 @@ function ExchangesDashboardPage() {
                 className="rounded-lg h-7 text-xs font-semibold cursor-pointer"
                 onClick={() => setViewMode("table")}
               >
-                <TableIcon className="h-3.5 w-3.5 mr-1.5" /> Tabela
+                <TableIcon className="h-3.5 w-3.5 mr-2" /> Tabela
               </Button>
             </div>
           </div>
@@ -523,8 +523,8 @@ function ExchangesDashboardPage() {
 
       {/* ── ALERTA DE SOLICITAÇÕES PENDENTES ── */}
       {kpis.pendingCount > 0 && (
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs">
+          <div className="flex items-center gap-3">
             <AlertTriangle className="size-4 shrink-0 text-amber-600" />
             <span>
               <strong>Atenção operacional:</strong> Você possui <strong>{kpis.pendingCount} solicitação(ões) de troca/devolução</strong> aguardando análise de recebimento ou resolução.
@@ -535,8 +535,8 @@ function ExchangesDashboardPage() {
 
       {/* ── KPIS OPERACIONAIS & FINANCEIROS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <RotateCcw className="size-3.5 text-blue-600" />
             Total de Solicitações
           </span>
@@ -548,8 +548,8 @@ function ExchangesDashboardPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Clock className="size-3.5 text-amber-500" />
             Em Triagem / Pendentes
           </span>
@@ -561,8 +561,8 @@ function ExchangesDashboardPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Gift className="size-3.5 text-purple-600" />
             Vale-Compras Gerados
           </span>
@@ -574,8 +574,8 @@ function ExchangesDashboardPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Banknote className="size-3.5 text-rose-600" />
             Total Estornado
           </span>
@@ -589,12 +589,12 @@ function ExchangesDashboardPage() {
       </div>
 
       {/* ── BARRA DE CONTROLE & BUSCA ── */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-card p-3 rounded-2xl border border-border/70">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-card p-3 rounded-lg border border-border/70">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por pedido, cliente ou motivo..."
-            className="pl-10 h-10 bg-background border-border/70 rounded-xl text-xs"
+            className="pl-10 h-10 bg-background border-border/70 rounded-lg text-xs"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -607,7 +607,7 @@ function ExchangesDashboardPage() {
           description="Nenhuma troca ou devolução corresponde à busca atual ou todas as solicitações já foram concluídas."
         />
       ) : viewMode === "table" ? (
-        <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+        <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
           <Table>
             <TableHeader>
               <TableRow className="border-border/60 bg-muted/20">
@@ -624,7 +624,7 @@ function ExchangesDashboardPage() {
               {filteredExchanges.map((ex: any) => (
                 <TableRow key={ex.id} className="border-border/40 hover:bg-muted/30 transition-colors">
                   <TableCell>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <span className="font-bold font-mono text-xs text-foreground">#{ex.orderToken}</span>
                       {getExchangeChannelBadge(ex.channel || ex.origin_channel)}
                     </div>
@@ -669,7 +669,7 @@ function ExchangesDashboardPage() {
             return (
               <div
                 key={col.id}
-                className="min-w-[300px] w-[300px] bg-muted/20 border border-border/60 p-3.5 flex flex-col gap-3 rounded-2xl"
+                className="min-w-[300px] w-[300px] bg-muted/20 border border-border/60 p-4 flex flex-col gap-3 rounded-lg"
               >
                 <div className="flex justify-between items-center font-medium px-1">
                   <span className="font-bold text-xs text-foreground uppercase tracking-wider">{col.title}</span>
@@ -678,7 +678,7 @@ function ExchangesDashboardPage() {
                   </Badge>
                 </div>
                 {columnExchanges.length === 0 ? (
-                  <div className="text-xs text-muted-foreground p-6 text-center border border-dashed border-border/60 rounded-xl bg-card/40">
+                  <div className="text-xs text-muted-foreground p-6 text-center border border-dashed border-border/60 rounded-lg bg-card/40">
                     Nenhum item nesta etapa
                   </div>
                 ) : (
@@ -686,11 +686,11 @@ function ExchangesDashboardPage() {
                     {columnExchanges.map((ex: any) => (
                       <div
                         key={ex.id}
-                        className="bg-card border border-border/60 p-4 rounded-xl space-y-3 shadow-2xs"
+                        className="bg-card border border-border/60 p-4 rounded-lg space-y-3 shadow-2xs"
                       >
                         <div className="flex justify-between items-start gap-2">
                           <div>
-                            <div className="flex items-center gap-1.5 mb-1">
+                            <div className="flex items-center gap-2 mb-1">
                               <span className="font-bold font-mono text-xs text-foreground">#{ex.orderToken}</span>
                               {getExchangeChannelBadge(ex.channel || ex.origin_channel)}
                             </div>

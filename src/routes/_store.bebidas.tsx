@@ -233,7 +233,7 @@ function BebidasVerticalPage() {
  })()}
  </div>
  ) : (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhuma bebida encontrada"
  description="Tente selecionar outro departamento ou busque por marcas e tipos de bebidas."
@@ -244,7 +244,7 @@ function BebidasVerticalPage() {
  ) : (
  <section aria-label="Vitrine de Bebidas">
  {filteredProducts.length === 0 ? (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhuma bebida encontrada"
  description="Tente selecionar outro departamento ou busque por marcas e produtos específicos."

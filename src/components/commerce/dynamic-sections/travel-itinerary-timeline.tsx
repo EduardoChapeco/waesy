@@ -61,7 +61,7 @@ export function TravelItineraryTimeline({
  <section className="space-y-6 py-4">
  <div className="flex items-end justify-between border-b border-border/40 pb-3">
  <div className="space-y-1">
- <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+ <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
  <Calendar className="size-4" />
  <span>Itinerário de Viagem</span>
  </div>
@@ -100,7 +100,7 @@ export function TravelItineraryTimeline({
  </div>
 
  {/* Card da Programação */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 hover:border-primary/40 transition-all space-y-2 shadow-2xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 hover:border-primary/40 transition-all space-y-2 shadow-2xs">
  <div className="flex items-baseline justify-between gap-2">
  <h4 className="text-sm font-bold text-foreground">{day.title}</h4>
  {day.date && (
@@ -118,7 +118,7 @@ export function TravelItineraryTimeline({
  </p>
 
  {day.imageUrl && isExp && (
- <div className="w-full h-40 rounded-xl overflow-hidden mt-2 border border-border/50">
+ <div className="w-full h-40 rounded-lg overflow-hidden mt-2 border border-border/50">
  <img src={day.imageUrl} alt={day.title} className="size-full object-cover" />
  </div>
  )}

@@ -57,7 +57,7 @@ export function BuilderGlobalThemePanel({
  {/* Header */}
  <div className="p-4 border-b border-border/80 flex items-center justify-between bg-muted/20">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Palette className="size-4" />
  </div>
  <div>
@@ -90,12 +90,12 @@ export function BuilderGlobalThemePanel({
  <ScrollArea className="flex-1 p-4 space-y-5 text-xs">
  {/* Presets Rápidos de Paleta */}
  <div className="space-y-2">
- <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+ <Label className="text-xs font-bold flex items-center gap-2 text-foreground">
  <Layers className="size-3.5 text-amber-500" />
  Paletas Consagradas da Indústria
  </Label>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  {PALETTE_PRESETS.map((preset) => {
  const isSelected =
  theme.primaryColor === preset.primary && theme.backgroundColor === preset.bg;
@@ -112,7 +112,7 @@ export function BuilderGlobalThemePanel({
  toast.success(`Paleta "${preset.name}" aplicada!`);
  }}
  className={cn(
- "p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all",
+ "p-3 rounded-lg border flex items-center justify-between cursor-pointer transition-all",
  isSelected
  ? "bg-primary/5 border-primary shadow-2xs font-bold"
  : "bg-card border-border/70 hover:border-border hover:bg-muted/30"
@@ -146,7 +146,7 @@ export function BuilderGlobalThemePanel({
  Cores Personalizadas
  </Label>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-[11px] text-muted-foreground">Cor de Destaque Primária</Label>
  <ColorPicker
  value={theme.primaryColor}
@@ -154,7 +154,7 @@ export function BuilderGlobalThemePanel({
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-[11px] text-muted-foreground">Cor de Fundo da Vitrine</Label>
  <ColorPicker
  value={theme.backgroundColor}
@@ -162,7 +162,7 @@ export function BuilderGlobalThemePanel({
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-[11px] text-muted-foreground">Cor dos Textos Principais</Label>
  <ColorPicker
  value={theme.textColor}
@@ -175,7 +175,7 @@ export function BuilderGlobalThemePanel({
 
  {/* Tipografia */}
  <div className="space-y-3">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Type className="size-3.5 text-primary" />
  Tipografia e Fontes
  </Label>
@@ -185,7 +185,7 @@ export function BuilderGlobalThemePanel({
  <select
  value={theme.headingFont}
  onChange={(e) => onChangeTheme({ headingFont: e.target.value })}
- className="w-full h-9 rounded-xl bg-background border border-border px-3 text-xs"
+ className="w-full h-9 rounded-lg bg-background border border-border px-3 text-xs"
  >
  {FONT_PRESETS.map((f) => (
  <option key={f.id} value={f.id}>
@@ -200,7 +200,7 @@ export function BuilderGlobalThemePanel({
 
  {/* Geometria e Bordas */}
  <div className="space-y-3">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Square className="size-3.5 text-primary" />
  Cantos e Geometria
  </Label>
@@ -214,7 +214,7 @@ export function BuilderGlobalThemePanel({
  type="button"
  onClick={() => onChangeTheme({ borderRadius: opt.id })}
  className={cn(
- "py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer text-center",
+ "py-2 px-3 rounded-lg border text-xs font-semibold transition-all cursor-pointer text-center",
  isSelected
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground"

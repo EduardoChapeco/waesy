@@ -737,7 +737,7 @@ export function CheckoutPage() {
  Explore as lojas e produtos locais para adicionar itens.
  </p>
  </div>
- <Button asChild className="rounded-xl px-6 h-10 font-bold text-xs">
+ <Button asChild className="rounded-lg px-6 h-10 font-bold text-xs">
  <Link to="/">Explorar Produtos</Link>
  </Button>
  </div>
@@ -748,10 +748,10 @@ export function CheckoutPage() {
     <div className="w-full max-w-5xl mx-auto pb-32 sm:pb-16 space-y-6 px-0 sm:px-4 md:px-0 pt-4 sm:pt-0">
   {/* ── Sub-Header Clean (Silêncio Operacional) ── */}
  <div className="flex items-center justify-between gap-4 pb-2">
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <Link
  to="/"
- className="size-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+ className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
  aria-label="Voltar"
  >
  <ArrowLeft className="size-5" />
@@ -778,9 +778,9 @@ export function CheckoutPage() {
           
         {/* ── Omni-Checkout Multi-Loja: Seletor de Lojas com Carrinho Aberto (V141) ── */}
         {globalCarts && globalCarts.length > 1 && (
-          <div className="p-3.5 rounded-2xl border border-border/60 bg-muted/20 space-y-2">
+          <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Store className="size-3.5 text-primary" />
                 <span>Omni-Checkout: Pedidos Segregados por Loja ({globalCarts.length} lojas)</span>
               </span>
@@ -795,7 +795,7 @@ export function CheckoutPage() {
                   <div
                     key={c.storeId || c.id}
                     className={cn(
-                      "flex items-center gap-2 p-2 rounded-xl border text-xs min-w-52 shrink-0 transition-colors",
+                      "flex items-center gap-2 p-2 rounded-lg border text-xs min-w-52 shrink-0 transition-colors",
                       isCurrentStore
                         ? "bg-card border-foreground/30 shadow-2xs"
                         : "bg-muted/40 border-border/60 opacity-80 hover:opacity-100"
@@ -845,7 +845,7 @@ export function CheckoutPage() {
                     onClick={() => canNavigate && setActiveStep(step.number)}
                     disabled={!canNavigate}
                     className={cn(
-                      "flex items-center gap-1.5 pb-1 text-xs transition-colors select-none cursor-pointer border-b-2 -mb-px",
+                      "flex items-center gap-2 pb-1 text-xs transition-colors select-none cursor-pointer border-b-2 -mb-px",
                       isActive
                         ? "border-foreground font-bold text-foreground"
                         : isCompleted
@@ -869,18 +869,18 @@ export function CheckoutPage() {
  <div className="lg:col-span-2 space-y-6">
  {/* ── ETAPA 1: IDENTIFICAÇÃO DO CLIENTE ── */}
  {activeStep === 1 && (
- <Surface variant="default" className="p-5 sm:p-6 rounded-2xl space-y-5">
+ <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-5">
  {/* Zero-Amnesia: Card de Identificação Confirmada */}
           {userProfile && userProfile.fullName && userProfile.email && !isEditingContact ? (
-            <div className="p-4 rounded-2xl bg-muted/20 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-3.5">
-                <div className="size-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-4">
+                <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
                   {(userProfile.fullName || userProfile.email || "U").charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-xs font-bold text-foreground truncate">{formData.customerName || userProfile.fullName}</p>
-                    <Badge variant="secondary" className="text-xs text-muted-foreground/75 px-1.5 py-0 font-bold text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+                    <Badge variant="secondary" className="text-xs text-muted-foreground/75 px-2 py-0 font-bold text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
                       Confirmado 
                     </Badge>
                   </div>
@@ -894,7 +894,7 @@ export function CheckoutPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsEditingContact(true)}
-                className="text-xs font-semibold h-8 rounded-xl cursor-pointer self-start sm:self-auto"
+                className="text-xs font-semibold h-8 rounded-lg cursor-pointer self-start sm:self-auto"
               >
                 Alterar dados
               </Button>
@@ -914,18 +914,18 @@ export function CheckoutPage() {
                 </div>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5 sm:col-span-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label className="text-xs font-bold text-foreground">Nome Completo *</Label>
                   <Input
                     required
                     placeholder="Seu nome completo"
                     value={formData.customerName}
                     onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                    className="h-11 rounded-xl text-base sm:text-sm"
+                    className="h-11 rounded-lg text-base sm:text-sm"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold text-foreground">E-mail *</Label>
                   <Input
                     type="email"
@@ -933,17 +933,17 @@ export function CheckoutPage() {
                     placeholder="seuemail@exemplo.com"
                     value={formData.customerEmail}
                     onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
-                    className="h-11 rounded-xl text-base sm:text-sm"
+                    className="h-11 rounded-lg text-base sm:text-sm"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold text-foreground">WhatsApp / Telefone *</Label>
                   <PhoneField
                     required
                     value={formData.customerPhone}
                     onChange={(val) => setFormData({ ...formData, customerPhone: val || "" })}
-                    className="h-11 rounded-xl text-base sm:text-sm"
+                    className="h-11 rounded-lg text-base sm:text-sm"
                   />
                 </div>
               </div>
@@ -954,7 +954,7 @@ export function CheckoutPage() {
                 {checkoutConfig?.cpfOnReceipt?.enabled !== false && (
                   <div className="sm:col-span-2 space-y-2 pt-2 border-t border-border/40">
                     <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <Label className="text-xs font-bold text-foreground">
                           {checkoutConfig?.cpfOnReceipt?.label || "Deseja CPF na Nota Fiscal?"}
                         </Label>
@@ -994,7 +994,7 @@ export function CheckoutPage() {
                     </div>
 
                     {cpfRequested && (
-                      <div className="pt-1.5 animate-in fade-in duration-150">
+                      <div className="pt-2 animate-in fade-in duration-150">
                         <DocumentField
                           mode="dynamic"
                           value={cpfDocument}
@@ -1004,7 +1004,7 @@ export function CheckoutPage() {
                             setFormData((prev) => ({ ...prev, customerDocument: val }));
                           }}
                           placeholder="Digite seu CPF para emissão da nota"
-                          className="h-11 rounded-xl text-base sm:text-sm"
+                          className="h-11 rounded-lg text-base sm:text-sm"
                         />
                       </div>
                     )}
@@ -1016,7 +1016,7 @@ export function CheckoutPage() {
                   Array.isArray(storeProfile.settings.custom_checkout_fields) &&
                   storeProfile.settings.custom_checkout_fields.length > 0 && (
                     <div className="sm:col-span-2 space-y-3 pt-3 border-t border-border/40">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <Label className="text-xs font-bold text-foreground">
                           Informações Complementares ({storeProfile.name})
                         </Label>
@@ -1032,7 +1032,7 @@ export function CheckoutPage() {
  <div
  key={f.id}
  className={cn(
- "space-y-1.5",
+ "space-y-2",
  f.type === "textarea" ? "sm:col-span-2" : ""
  )}
  >
@@ -1052,7 +1052,7 @@ export function CheckoutPage() {
  placeholder={f.placeholder || "Digite sua resposta..."}
  rows={2}
  required={f.required}
- className="w-full rounded-xl border border-input bg-card p-3 text-base sm:text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none min-h-20"
+ className="w-full rounded-lg border border-input bg-card p-3 text-base sm:text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none min-h-20"
  />
  ) : (
  <Input
@@ -1066,7 +1066,7 @@ export function CheckoutPage() {
  }
  placeholder={f.placeholder || "Digite sua resposta..."}
  required={f.required}
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  )}
  </div>
@@ -1077,7 +1077,7 @@ export function CheckoutPage() {
  )}
 
  {/* Observações Gerais do Pedido */}
- <div className="sm:col-span-2 space-y-1.5 pt-2">
+ <div className="sm:col-span-2 space-y-2 pt-2">
  <Label className="text-xs font-semibold text-muted-foreground">
  Observações do Pedido (Opcional)
  </Label>
@@ -1085,7 +1085,7 @@ export function CheckoutPage() {
  placeholder="Instruções especiais ou ponto de referência..."
  value={orderNotes}
  onChange={(e) => setOrderNotes(e.target.value)}
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
   />
   </div>
 
@@ -1093,7 +1093,7 @@ export function CheckoutPage() {
  <Button
  onClick={handleAdvanceToDelivery}
  disabled={!formData.customerName || !formData.customerEmail || !formData.customerPhone}
- className="rounded-xl px-6 h-11 w-full sm:w-auto font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all"
+ className="rounded-lg px-6 h-11 w-full sm:w-auto font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all"
  >
  <span>Continuar para Entrega</span>
  <ChevronRight size={15} className="ml-1" />
@@ -1104,14 +1104,14 @@ export function CheckoutPage() {
 
  {/* ── ETAPA 2: ENTREGA OU RETIRADA ── */}
  {activeStep === 2 && (
- <Surface variant="default" className="p-5 sm:p-6 rounded-2xl space-y-5">
+ <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-5">
  {/* Seletor de Modalidade: Entrega vs Retirada */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <button
  type="button"
  onClick={() => setFormData({ ...formData, shippingMethod: "manual_table" })}
  className={cn(
- "p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer",
+ "p-4 rounded-lg border text-left flex items-center gap-3 transition-all cursor-pointer",
  formData.shippingMethod !== "pickup"
  ? "bg-foreground text-background border-foreground font-bold"
  : "bg-card border-border/80 text-foreground hover:bg-muted/40"
@@ -1130,7 +1130,7 @@ export function CheckoutPage() {
  type="button"
  onClick={handleSelectPickup}
  className={cn(
- "p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer",
+ "p-4 rounded-lg border text-left flex items-center gap-3 transition-all cursor-pointer",
  formData.shippingMethod === "pickup"
  ? "bg-foreground text-background border-foreground font-bold"
  : "bg-card border-border/80 text-foreground hover:bg-muted/40"
@@ -1151,9 +1151,9 @@ export function CheckoutPage() {
  <div className="space-y-4 pt-1">
  {/* Endereços Salvos do Usuário */}
  {userAddresses && userAddresses.length > 0 && !showNewAddressForm && (
- <div className="space-y-2.5">
+ <div className="space-y-3">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <MapPin size={13} className="text-primary" /> Meus Endereços Salvos
  </Label>
  <button
@@ -1165,7 +1165,7 @@ export function CheckoutPage() {
  </button>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  {userAddresses.map((addr: any) => {
  const cleanZip = (addr.zipcode || "").replace(/\D/g, "");
  const isSelected =
@@ -1192,7 +1192,7 @@ export function CheckoutPage() {
  handleCepChange(cleanZip, true);
  }}
  className={cn(
- "p-3 rounded-2xl border text-left text-xs transition-all cursor-pointer space-y-1",
+ "p-3 rounded-lg border text-left text-xs transition-all cursor-pointer space-y-1",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary font-medium"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -1203,7 +1203,7 @@ export function CheckoutPage() {
  {addr.street || "Rua"}, {addr.number}
  </span>
  {addr.is_default && (
- <Badge variant="secondary" className="text-xs font-bold px-1.5 py-0">
+ <Badge variant="secondary" className="text-xs font-bold px-2 py-0">
  Padrão
  </Badge>
  )}
@@ -1221,7 +1221,7 @@ export function CheckoutPage() {
 
  {/* Formulário de Endereço (Novo ou Editável) */}
  {(showNewAddressForm || !userAddresses || userAddresses.length === 0) && (
- <div className="p-4 rounded-2xl bg-muted/20 space-y-3.5">
+ <div className="p-4 rounded-lg bg-muted/20 space-y-4">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">Endereço de Entrega</Label>
  <div className="flex items-center gap-2">
@@ -1231,7 +1231,7 @@ export function CheckoutPage() {
  size="sm"
  onClick={handleGPSLocation}
  disabled={isLocatingGPS}
- className="rounded-xl h-7 px-2.5 text-xs font-bold gap-1 cursor-pointer"
+ className="rounded-lg h-7 px-3 text-xs font-bold gap-1 cursor-pointer"
  >
  {isLocatingGPS ? (
  <Loader2 size={12} className="animate-spin text-primary" />
@@ -1272,7 +1272,7 @@ export function CheckoutPage() {
  },
  }));
  }}
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
 
@@ -1287,7 +1287,7 @@ export function CheckoutPage() {
  shippingAddress: { ...formData.shippingAddress, street: e.target.value },
  })
  }
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
 
@@ -1302,7 +1302,7 @@ export function CheckoutPage() {
  shippingAddress: { ...formData.shippingAddress, number: e.target.value },
  })
  }
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
 
@@ -1317,7 +1317,7 @@ export function CheckoutPage() {
  shippingAddress: { ...formData.shippingAddress, complement: e.target.value },
  })
  }
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
 
@@ -1332,7 +1332,7 @@ export function CheckoutPage() {
  shippingAddress: { ...formData.shippingAddress, neighborhood: e.target.value },
  })
  }
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
 
@@ -1347,7 +1347,7 @@ export function CheckoutPage() {
  shippingAddress: { ...formData.shippingAddress, city: e.target.value },
  })
  }
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
 
@@ -1363,7 +1363,7 @@ export function CheckoutPage() {
  shippingAddress: { ...formData.shippingAddress, state: e.target.value.toUpperCase() },
  })
  }
- className="h-11 rounded-xl text-base sm:text-sm uppercase"
+ className="h-11 rounded-lg text-base sm:text-sm uppercase"
  />
  </div>
  </div>
@@ -1390,13 +1390,13 @@ export function CheckoutPage() {
  type="button"
  onClick={() => handleSelectRate({ ...rate, id: rateKey, name: rateName })}
  className={cn(
- "flex items-center justify-between p-3.5 rounded-2xl border text-left transition-all cursor-pointer",
+ "flex items-center justify-between p-4 rounded-lg border text-left transition-all cursor-pointer",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary font-medium"
  : "bg-card border-border/80 hover:bg-muted/40"
  )}
  >
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <p className="font-bold text-xs text-foreground">{rateName}</p>
  {rate.notice && (
  <p className="text-xs text-muted-foreground/75 font-medium text-amber-600 dark:text-amber-400">
@@ -1417,7 +1417,7 @@ export function CheckoutPage() {
  })}
  </div>
  ) : noShippingRatesFound ? (
- <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300">
+ <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300">
  Nenhuma tabela fixa automática encontrada para este CEP. A entrega será combinada diretamente com a loja.
  </div>
  ) : (
@@ -1442,7 +1442,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setFormData({ ...formData, deliverySlot: slot.id })}
  className={cn(
- "p-3 rounded-xl border text-left transition-all cursor-pointer",
+ "p-3 rounded-lg border text-left transition-all cursor-pointer",
  isSelected
  ? "border-foreground bg-muted/20 font-bold"
  : "border-border/60 hover:border-foreground/30"
@@ -1459,7 +1459,7 @@ export function CheckoutPage() {
 
  {/* ── Motor Waesy Go & Logística de Precisão (Entrega na Porta / Apartamento) ── */}
             <div className="pt-3 border-t border-border/40 space-y-3">
-              <div className="flex items-start justify-between gap-3 p-3.5 rounded-2xl bg-card border border-border/80">
+              <div className="flex items-start justify-between gap-3 p-4 rounded-lg bg-card border border-border/80">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-foreground">Entregar na porta de casa / apartamento</span>
@@ -1487,15 +1487,15 @@ export function CheckoutPage() {
               </div>
 
               {deliveryToDoor && (
-                <div className="p-3.5 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3 animate-in fade-in duration-150">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3 animate-in fade-in duration-150">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label className="text-xs font-bold text-foreground">Bloco / Torre / Edifício</Label>
                       <Input
                         placeholder="Ex: Bloco B, Torre 2"
                         value={apartmentDetails.blockTower}
                         onChange={(e) => setApartmentDetails((prev) => ({ ...prev, blockTower: e.target.value }))}
-                        className="h-10 rounded-xl text-xs"
+                        className="h-10 rounded-lg text-xs"
                       />
                     </div>
                     <div className="space-y-1">
@@ -1504,7 +1504,7 @@ export function CheckoutPage() {
                         placeholder="Ex: Interfone 402, Ramal 12"
                         value={apartmentDetails.intercomCode}
                         onChange={(e) => setApartmentDetails((prev) => ({ ...prev, intercomCode: e.target.value }))}
-                        className="h-10 rounded-xl text-xs"
+                        className="h-10 rounded-lg text-xs"
                       />
                     </div>
                   </div>
@@ -1517,8 +1517,8 @@ export function CheckoutPage() {
 
             {/* ── Logística e Recebimento: Quem recebe as compras ── */}
  {checkoutConfig?.receiverInfo?.enabled !== false && (
- <div className="pt-3 border-t border-border/40 space-y-2.5">
- <div className="space-y-0.5">
+ <div className="pt-3 border-t border-border/40 space-y-3">
+ <div className="space-y-1">
  <Label className="text-xs font-bold text-foreground">
  {checkoutConfig?.receiverInfo?.label || "Quem irá receber o pedido?"}
  </Label>
@@ -1532,7 +1532,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setReceiverMode("self")}
  className={cn(
- "px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+ "px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
  receiverMode === "self"
  ? "border-foreground text-foreground font-bold"
  : "border-border/60 text-muted-foreground hover:text-foreground"
@@ -1544,7 +1544,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setReceiverMode("other")}
  className={cn(
- "px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+ "px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
  receiverMode === "other"
  ? "border-foreground text-foreground font-bold"
  : "border-border/60 text-muted-foreground hover:text-foreground"
@@ -1560,13 +1560,13 @@ export function CheckoutPage() {
  placeholder="Nome de quem irá receber"
  value={receiverName}
  onChange={(e) => setReceiverName(e.target.value)}
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  <PhoneField
  placeholder="Telefone de quem irá receber"
  value={receiverPhone}
  onChange={(val) => setReceiverPhone(val || "")}
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
  )}
@@ -1576,7 +1576,7 @@ export function CheckoutPage() {
  {/* ── Política de Substituição (Supermercados / Alimentos) ── */}
  {(checkoutConfig?.substitutionPolicy?.enabled ?? isMarketNiche) && (
  <div className="pt-3 border-t border-border/40 space-y-2">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <Label className="text-xs font-bold text-foreground">
  Se algum item estiver em falta no mercado:
  </Label>
@@ -1600,14 +1600,14 @@ export function CheckoutPage() {
  setFormData((prev) => ({ ...prev, substitutionPolicy: pol.id as any }));
  }}
  className={cn(
-                          "p-2.5 rounded-xl border text-left transition-all cursor-pointer",
+                          "p-3 rounded-lg border text-left transition-all cursor-pointer",
                           isSelected
                             ? "border-emerald-600 bg-emerald-500/5 text-foreground font-semibold"
                             : "border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
                         )}
                       >
                         <div className="text-xs font-semibold leading-tight">{pol.label}</div>
-                        <div className="text-xs text-muted-foreground/75 text-muted-foreground mt-0.5">{pol.desc}</div>
+                        <div className="text-xs text-muted-foreground/75 text-muted-foreground mt-1">{pol.desc}</div>
                       </button>
                     );
                   })}
@@ -1618,7 +1618,7 @@ export function CheckoutPage() {
             {/* ── Descartáveis & Talheres (Gastronomia / Food) ── */}
             {(checkoutConfig?.enableUtensilsOption ?? isFoodNiche) && (
               <div className="pt-3 border-t border-border/40 space-y-2">
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   <Label className="text-xs font-bold text-foreground">
                     Enviar talheres e guardanapos descartáveis?
                   </Label>
@@ -1631,7 +1631,7 @@ export function CheckoutPage() {
                     type="button"
                     onClick={() => setUtensilsRequested(true)}
                     className={cn(
-                      "px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                      "px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
                       utensilsRequested
                         ? "border-foreground text-foreground font-bold"
                         : "border-border/60 text-muted-foreground hover:text-foreground"
@@ -1643,7 +1643,7 @@ export function CheckoutPage() {
                     type="button"
                     onClick={() => setUtensilsRequested(false)}
                     className={cn(
-                      "px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                      "px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
                       !utensilsRequested
                         ? "border-foreground text-foreground font-bold"
                         : "border-border/60 text-muted-foreground hover:text-foreground"
@@ -1657,7 +1657,7 @@ export function CheckoutPage() {
  </div>
  ) : (
  /* Opção 2: Retirar na Loja */
- <div className="p-4 rounded-2xl bg-muted/20 space-y-2">
+ <div className="p-4 rounded-lg bg-muted/20 space-y-2">
  <p className="text-xs font-bold text-foreground">Endereço de Retirada:</p>
  <p className="text-xs text-muted-foreground">
  {storeProfile?.address
@@ -1674,14 +1674,14 @@ export function CheckoutPage() {
  <Button
  variant="outline"
  onClick={() => setActiveStep(1)}
- className="rounded-xl px-5 h-11 font-bold text-xs sm:text-sm"
+ className="rounded-lg px-5 h-11 font-bold text-xs sm:text-sm"
  >
  Voltar
  </Button>
  <Button
  onClick={() => setActiveStep(3)}
  disabled={formData.shippingMethod !== "pickup" && !formData.shippingAddress.zipcode}
- className="rounded-xl px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-1.5"
+ className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-2"
  >
  <span>Ir para Pagamento</span>
  <ChevronRight size={15} />
@@ -1692,7 +1692,7 @@ export function CheckoutPage() {
 
  {/* ── ETAPA 3: FORMA DE PAGAMENTO ── */}
  {activeStep === 3 && (
- <Surface variant="default" className="p-5 sm:p-6 rounded-2xl space-y-5">
+ <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-5">
  <Label className="text-xs font-bold text-foreground">Escolha a Forma de Pagamento</Label>
 
  <div className="space-y-3">
@@ -1701,7 +1701,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setFormData({ ...formData, paymentMethod: "pix", paymentMethodId: "" })}
  className={cn(
- "w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer",
+ "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer",
  formData.paymentMethod === "pix"
  ? "border-primary bg-primary/5 ring-1 ring-primary font-bold"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -1724,7 +1724,7 @@ export function CheckoutPage() {
  </p>
  </div>
  </div>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  {storeProfile?.settings?.payment_processing_mode === "direct_store" ? (
  <Badge variant="success">
  Direto da Loja
@@ -1741,7 +1741,7 @@ export function CheckoutPage() {
  {formData.paymentMethod === "pix" &&
  storeProfile?.settings?.payment_processing_mode === "direct_store" &&
  storeProfile?.settings?.payment_instructions && (
- <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground space-y-1 animate-in fade-in-50">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/60 text-xs text-muted-foreground space-y-1 animate-in fade-in-50">
  <span className="text-xs text-muted-foreground/75 font-bold uppercase text-foreground tracking-wider block">
  Instruções da Loja para Pagamento Pix:
  </span>
@@ -1758,7 +1758,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setFormData({ ...formData, paymentMethod: "credit_card", paymentMethodId: "" })}
  className={cn(
- "w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer",
+ "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer",
  formData.paymentMethod === "credit_card"
  ? "border-primary bg-primary/5 ring-1 ring-primary font-bold"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -1776,7 +1776,7 @@ export function CheckoutPage() {
  </button>
 
  {formData.paymentMethod === "credit_card" && (
- <div className="p-4 rounded-2xl bg-muted/20 space-y-3.5 animate-in fade-in-50">
+ <div className="p-4 rounded-lg bg-muted/20 space-y-4 animate-in fade-in-50">
  <div className="space-y-1">
  <Label className="text-xs font-bold text-muted-foreground">Número do Cartão *</Label>
  <CreditCardNumberInput
@@ -1784,7 +1784,7 @@ export function CheckoutPage() {
  onChange={(formatted, _brand, clean) =>
  setCreditCardData({ ...creditCardData, number: clean || formatted })
  }
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
 
@@ -1794,7 +1794,7 @@ export function CheckoutPage() {
  placeholder="Como está gravado no cartão"
  value={creditCardData.holderName}
  onChange={(e) => setCreditCardData({ ...creditCardData, holderName: e.target.value.toUpperCase() })}
- className="h-11 rounded-xl text-base sm:text-sm uppercase"
+ className="h-11 rounded-lg text-base sm:text-sm uppercase"
  />
  </div>
 
@@ -1806,7 +1806,7 @@ export function CheckoutPage() {
  onChange={(formatted) =>
  setCreditCardData({ ...creditCardData, expiryDate: formatted })
  }
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
  <div className="space-y-1">
@@ -1816,7 +1816,7 @@ export function CheckoutPage() {
  onChange={(cvv) =>
  setCreditCardData({ ...creditCardData, cvv })
  }
- className="h-11 rounded-xl text-base sm:text-sm"
+ className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
  </div>
@@ -1828,7 +1828,7 @@ export function CheckoutPage() {
  value={String(selectedInstallment)}
  onValueChange={(v) => setSelectedInstallment(Number(v))}
  >
- <SelectTrigger className="h-11 rounded-xl text-base sm:text-sm">
+ <SelectTrigger className="h-11 rounded-lg text-base sm:text-sm">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1867,7 +1867,7 @@ export function CheckoutPage() {
  })
  }
  className={cn(
- "w-full p-3.5 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer",
+ "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary font-bold"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -1891,13 +1891,13 @@ export function CheckoutPage() {
  <Button
  variant="outline"
  onClick={() => setActiveStep(2)}
- className="rounded-xl px-5 h-11 font-bold text-xs sm:text-sm"
+ className="rounded-lg px-5 h-11 font-bold text-xs sm:text-sm"
  >
  Voltar
  </Button>
  <Button
  onClick={() => setActiveStep(4)}
- className="rounded-xl px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-1.5"
+ className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-2"
  >
  <span>Revisar Pedido</span>
  <ChevronRight size={15} />
@@ -1908,12 +1908,12 @@ export function CheckoutPage() {
 
  {/* ── ETAPA 4: REVISÃO & CONFIRMAÇÃO ── */}
  {activeStep === 4 && (
- <Surface variant="default" className="p-5 sm:p-6 rounded-2xl space-y-5">
+ <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-5">
  <div className="space-y-4">
  {/* Resumo de Entrega */}
- <div className="p-4 rounded-2xl bg-muted/20 space-y-1.5">
+ <div className="p-4 rounded-lg bg-muted/20 space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Truck size={14} className="text-primary" />
  {formData.shippingMethod === "pickup" ? "Retirada no Balcão" : "Entrega em Domicílio"}
  </span>
@@ -1940,9 +1940,9 @@ export function CheckoutPage() {
  </div>
 
  {/* Resumo de Pagamento */}
- <div className="p-4 rounded-2xl bg-muted/20 space-y-1.5">
+ <div className="p-4 rounded-lg bg-muted/20 space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <CreditCard size={14} className="text-primary" />
  Forma de Pagamento
  </span>
@@ -1964,13 +1964,13 @@ export function CheckoutPage() {
  </div>
 
  {/* Observações do Pedido */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Observações / Instruções para a loja</Label>
  <Input
  placeholder="Ex: Deixar na portaria, ponto de referência..."
  value={orderNotes}
                   onChange={(e) => setOrderNotes(e.target.value)}
-                  className="h-11 rounded-xl text-base sm:text-sm"
+                  className="h-11 rounded-lg text-base sm:text-sm"
  />
  </div>
  </div>
@@ -1980,14 +1980,14 @@ export function CheckoutPage() {
             variant="outline"
             onClick={() => setActiveStep(3)}
             disabled={isSubmitting}
-            className="rounded-xl px-5 h-11 w-full sm:w-auto font-bold text-xs sm:text-sm"
+            className="rounded-lg px-5 h-11 w-full sm:w-auto font-bold text-xs sm:text-sm"
           >
             Voltar
           </Button>
           <Button
             onClick={handleSubmitOrder}
             disabled={isSubmitting}
-            className="rounded-xl px-4 sm:px-8 h-11 sm:h-12 w-full sm:w-auto bg-primary text-primary-foreground font-bold text-xs sm:text-base cursor-pointer active:scale-98 transition-all flex items-center justify-center gap-2"
+            className="rounded-lg px-4 sm:px-8 h-11 sm:h-12 w-full sm:w-auto bg-primary text-primary-foreground font-bold text-xs sm:text-base cursor-pointer active:scale-98 transition-all flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
               <>
@@ -2017,7 +2017,7 @@ export function CheckoutPage() {
 
  {/* Coluna da Direita: Resumo da Sacola & Totais */}
  <div className="space-y-4">
- <Surface variant="default" className="p-5 rounded-2xl space-y-4">
+ <Surface variant="default" className="p-5 rounded-lg space-y-4">
  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Resumo do Pedido
  </h3>
@@ -2070,21 +2070,21 @@ export function CheckoutPage() {
  placeholder="Cupom ou Vale-presente"
  value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
-                  className="h-10 rounded-xl text-base sm:text-sm"
+                  className="h-10 rounded-lg text-base sm:text-sm"
                 />
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={handleApplyPromo}
                   disabled={isApplyingPromo || !promoCode.trim()}
-                  className="h-10 rounded-xl text-xs font-bold px-3.5 cursor-pointer"
+                  className="h-10 rounded-lg text-xs font-bold px-4 cursor-pointer"
  >
  {isApplyingPromo ? <Loader2 size={12} className="animate-spin" /> : "Aplicar"}
  </Button>
  </div>
 
  {appliedGiftCard && (
- <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-success/10 text-success border border-success/20">
+ <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-success/10 text-success border border-success/20">
  <span className="flex items-center gap-1 font-bold">
  <Gift size={13} /> Vale: {appliedGiftCard.code}
  </span>
@@ -2157,7 +2157,7 @@ export function CheckoutPage() {
    <Button
    onClick={handleSubmitOrder}
    disabled={isSubmitting}
-   className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground font-bold text-xs cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+   className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs cursor-pointer active:scale-98 flex items-center justify-center gap-2"
    >
    {isSubmitting ? (
    <>

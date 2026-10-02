@@ -73,11 +73,11 @@ export function ReportDialog({
 
  return (
  <Dialog open={open} onOpenChange={handleClose}>
- <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6 p-5">
+ <DialogContent className="sm:max-w-md sm:rounded-lg sm:p-6 p-5">
  {!isSubmitted ? (
  <>
  <DialogHeader className="space-y-1">
- <div className="size-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center mb-1">
+ <div className="size-10 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mb-1">
  <Flag className="size-5" />
  </div>
  <DialogTitle className="text-base font-bold text-foreground">
@@ -90,10 +90,10 @@ export function ReportDialog({
  </DialogHeader>
 
  <div className="space-y-4 py-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Qual é o motivo da denúncia? *</Label>
  <Select value={reason} onValueChange={setReason}>
- <SelectTrigger className="h-10 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -106,14 +106,14 @@ export function ReportDialog({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Detalhes adicionais (opcional)</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  placeholder="Descreva o que está errado com este conteúdo para ajudar a moderação..."
  rows={3}
- className="rounded-xl text-xs bg-background resize-none leading-relaxed"
+ className="rounded-lg text-xs bg-background resize-none leading-relaxed"
  />
  </div>
 
@@ -123,7 +123,7 @@ export function ReportDialog({
  variant="ghost"
  size="sm"
  onClick={handleClose}
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  >
  Cancelar
  </Button>
@@ -132,7 +132,7 @@ export function ReportDialog({
  type="button"
  onClick={handleSubmit}
  disabled={reportMutation.isPending}
- className="rounded-xl text-xs font-bold gap-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+ className="rounded-lg text-xs font-bold gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90"
  >
  {reportMutation.isPending ? (
  <>
@@ -157,7 +157,7 @@ export function ReportDialog({
  Recebemos seu reporte. Nossa equipe analisará e tomará as providências cabíveis para
  manter a comunidade segura.
  </p>
- <Button onClick={handleClose} className="rounded-xl text-xs font-bold mt-3">
+ <Button onClick={handleClose} className="rounded-lg text-xs font-bold mt-3">
  Fechar
  </Button>
  </div>

@@ -409,17 +409,17 @@ function NovoClassificadoPage() {
     return (
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 animate-in fade-in duration-200">
         <div className="space-y-2">
-          <Skeleton className="h-8 w-64 rounded-xl" />
+          <Skeleton className="h-8 w-64 rounded-lg" />
           <Skeleton className="h-4 w-96 rounded-lg" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Skeleton className="h-12 rounded-xl" />
-          <Skeleton className="h-12 rounded-xl" />
+          <Skeleton className="h-12 rounded-lg" />
+          <Skeleton className="h-12 rounded-lg" />
         </div>
-        <Skeleton className="h-48 w-full rounded-2xl" />
+        <Skeleton className="h-48 w-full rounded-lg" />
         <div className="flex justify-end gap-3">
-          <Skeleton className="h-11 w-32 rounded-xl" />
-          <Skeleton className="h-11 w-40 rounded-xl" />
+          <Skeleton className="h-11 w-32 rounded-lg" />
+          <Skeleton className="h-11 w-40 rounded-lg" />
         </div>
       </div>
     );
@@ -3237,7 +3237,7 @@ function SpecializedClassifiedEditor({
  return (
  <div className="space-y-4">
  {/* ── Topbar Operacional Compacta & Sticky no Mobile ────────── */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/60 -mx-3.5 px-4 py-2 sm:mx-0 sm:px-0 sm:py-0 sm:static sm:border-0 sm:bg-transparent flex items-center justify-between gap-2 pb-3">
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/60 -mx-4 px-4 py-2 sm:mx-0 sm:px-0 sm:py-0 sm:static sm:border-0 sm:bg-transparent flex items-center justify-between gap-2 pb-3">
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -3261,7 +3261,7 @@ function SpecializedClassifiedEditor({
 
         {/* Mobile Switcher & Publicar / Salvar Action */}
         <div className="flex items-center gap-2">
-          <div className="flex md:hidden bg-muted p-0.5 rounded-lg text-xs font-semibold">
+          <div className="flex md:hidden bg-muted p-1 rounded-lg text-xs font-semibold">
             <button
               type="button"
               onClick={() => setMobileTab("edit")}
@@ -3328,7 +3328,7 @@ function SpecializedClassifiedEditor({
                   else setCurrentStep(s.step as any);
                 }}
                 className={cn(
-                  "flex items-center justify-center gap-2 py-2 px-2.5 sm:px-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-center shrink-0 snap-center min-w-20 sm:min-w-0",
+                  "flex items-center justify-center gap-2 py-2 px-3 sm:px-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-center shrink-0 snap-center min-w-20 sm:min-w-0",
                   isCurrent
                     ? "bg-primary text-primary-foreground font-bold"
                     : isPast
@@ -3415,7 +3415,7 @@ function SpecializedClassifiedEditor({
             </div>
 
             {/* Alternador Limpo: Mobile vs Desktop (Sem Emojis) */}
-            <div className="flex items-center bg-muted p-0.5 rounded-lg text-xs font-semibold">
+            <div className="flex items-center bg-muted p-1 rounded-lg text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setPreviewDevice("mobile")}
@@ -3539,7 +3539,7 @@ function SpecializedClassifiedEditor({
           </div>
 
           {/* Sticky Thumb Zone Action Bar no Step 5 */}
-          <div className="sticky bottom-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 p-3 sm:p-4 -mx-3.5 sm:mx-0 sm:rounded-lg sm:border flex items-center justify-between gap-3">
+          <div className="sticky bottom-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 p-3 sm:p-4 -mx-4 sm:mx-0 sm:rounded-lg sm:border flex items-center justify-between gap-3">
             <Button
               type="button"
               variant="outline"
@@ -3592,7 +3592,7 @@ function SpecializedClassifiedEditor({
           <div className="space-y-6">
             {/* Section 1: Fotos do Topo & Galeria Exclusiva do Feed */}
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
-              <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+              <div className="flex items-center justify-between pb-3 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                   <ImagePlus className="size-4 text-primary shrink-0" />
                   <span>1. Mídias do Anúncio</span>
@@ -3656,7 +3656,7 @@ function SpecializedClassifiedEditor({
 
             {/* Section 2: Informações Básicas (Design Silencioso V121) */}
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                 <FileText className="size-4 text-primary shrink-0" />
                 <span>2. Informações</span>
               </div>
@@ -3783,7 +3783,7 @@ function SpecializedClassifiedEditor({
                         key={days}
                         type="button"
                         onClick={() => setValidityDays(days)}
-                        className={`px-2.5 py-1 text-xs text-muted-foreground/75 font-bold rounded-md transition-colors ${
+                        className={`px-3 py-1 text-xs text-muted-foreground/75 font-bold rounded-md transition-colors ${
                           validityDays === days
                             ? "bg-primary text-primary-foreground shadow-xs"
                             : "text-muted-foreground hover:text-foreground"
@@ -3957,7 +3957,7 @@ function SpecializedClassifiedEditor({
             {niche.id === "viagem" && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-6 border border-border/60">
                 {/* Header */}
-                <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Key className="size-4 text-primary shrink-0" />
                     <span>2. Detalhes da Viagem</span>
@@ -4291,10 +4291,10 @@ function SpecializedClassifiedEditor({
                         {travelBoardingGateways.length > 0 && (
                           <div className="flex flex-wrap gap-2 pt-1">
                             {travelBoardingGateways.map((gw) => (
-                              <span key={gw} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-muted-foreground/75 font-medium text-primary">
+                              <span key={gw} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-muted-foreground/75 font-medium text-primary">
                                 <Navigation className="size-2.5" />
                                 {gw}
-                                <button type="button" onClick={() => handleRemoveGateway(gw)} className="size-3.5 hover:bg-destructive/20 rounded-full flex items-center justify-center ml-0.5">
+                                <button type="button" onClick={() => handleRemoveGateway(gw)} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring size-3.5 hover:bg-destructive/20 rounded-full flex items-center justify-center ml-1">
                                   <X className="size-2.5" />
                                 </button>
                               </span>
@@ -4537,7 +4537,7 @@ function SpecializedClassifiedEditor({
                         <div key={opt.id} className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-muted-foreground/75 font-bold text-foreground">Saída {idx + 1}</span>
-                            <button type="button" onClick={() => handleRemoveDeparture(opt.id)} className="size-6 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center">
+                            <button type="button" onClick={() => handleRemoveDeparture(opt.id)} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring size-6 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center">
                               <X className="size-3.5" />
                             </button>
                           </div>
@@ -4769,7 +4769,7 @@ function SpecializedClassifiedEditor({
             {/* Destaques Visuais em Vitrine Imersiva */}
             {niche.id !== "viagem" && (templateStyle === "editorial" || (templateStyle as string) === "instagram") && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <ImagePlus className="size-4 text-primary shrink-0" />
                     <span>Destaques Visuais</span>
@@ -4790,7 +4790,7 @@ function SpecializedClassifiedEditor({
             {/* Aluguel de Equipamentos */}
             {niche.id === "equipamento" && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Wrench className="size-4 text-primary shrink-0" />
                     <span>2. Equipamento</span>
@@ -4831,7 +4831,7 @@ function SpecializedClassifiedEditor({
             {/* Hospedagem & Temporada */}
             {niche.id === "hospedagem" && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Key className="size-4 text-primary shrink-0" />
  <span>2. Hospedagem</span>
@@ -5046,7 +5046,7 @@ function SpecializedClassifiedEditor({
  {/* Imóvel */}
  {niche.id === "imovel" && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <HomeIcon className="size-4 text-primary shrink-0" />
  <span>2. Imóvel</span>
  </div>
@@ -5411,7 +5411,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                             className={cn(
-                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
+                              "h-8 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -5614,7 +5614,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                             className={cn(
-                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
+                              "h-8 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -5724,7 +5724,7 @@ function SpecializedClassifiedEditor({
                           type="button"
                           onClick={() => setConvenienceVolume(v)}
                           className={cn(
-                            "h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-colors border",
+                            "h-7 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors border",
                             convenienceVolume === v
                               ? "bg-primary text-primary-foreground border-primary"
                               : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/60"
@@ -5772,7 +5772,7 @@ function SpecializedClassifiedEditor({
 
                   {/* Restrição Alcoólica / 18+ */}
                   <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <Label htmlFor="conv-alcoholic" className="text-xs font-semibold text-foreground cursor-pointer flex items-center gap-2">
                         <span>Contém Álcool (Bebida Alcoólica +18)</span>
                       </Label>
@@ -5881,7 +5881,7 @@ function SpecializedClassifiedEditor({
                                 type="button"
                                 onClick={() => setGrocerySubCategory(sub)}
                                 className={cn(
-                                  "px-2.5 py-1 rounded-lg text-xs font-medium border cursor-pointer transition-colors",
+                                  "px-3 py-1 rounded-lg text-xs font-medium border cursor-pointer transition-colors",
                                   isSelected
                                     ? "bg-primary/15 border-primary text-primary font-bold"
                                     : "bg-background border-border/60 text-foreground/80 hover:bg-muted/40"
@@ -5963,7 +5963,7 @@ function SpecializedClassifiedEditor({
                                 }
                               }}
                               className={cn(
-                                "px-2.5 py-2 rounded-lg text-xs font-medium border cursor-pointer transition-colors",
+                                "px-3 py-2 rounded-lg text-xs font-medium border cursor-pointer transition-colors",
                                 isSelected
                                   ? "bg-primary text-primary-foreground border-primary font-bold "
                                   : "bg-background text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted/40"
@@ -6116,7 +6116,7 @@ function SpecializedClassifiedEditor({
                   {/* Lógica de Produtos Frescos (Hortifrúti, Peso Variável & Maturação) */}
                   <div className="p-4 rounded-lg border border-border/50 bg-muted/15 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <Label className="text-xs font-bold text-foreground">
                           Hortifrúti e Produtos Frescos (Peso Variável / Maturação)
                         </Label>
@@ -6205,7 +6205,7 @@ function SpecializedClassifiedEditor({
                   {/* Motor de Desconto Progressivo (Gamificação - Compre Mais, Pague Menos) */}
                   <div className="p-4 rounded-lg border border-border/50 bg-muted/15 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                           <BadgePercent className="size-4 text-emerald-600 dark:text-emerald-400" />
                           <span>Desconto Progressivo (Compre Mais, Pague Menos)</span>
@@ -6224,7 +6224,7 @@ function SpecializedClassifiedEditor({
                       <div className="space-y-2 pt-2 border-t border-border/40">
                         {groceryDiscountTiers.map((tier, idx) => (
                           <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-background border border-border/50">
-                            <div className="w-24 space-y-0.5">
+                            <div className="w-24 space-y-1">
                               <span className="text-xs text-muted-foreground block">Mínimo (un)</span>
                               <Input
                                 type="number"
@@ -6240,7 +6240,7 @@ function SpecializedClassifiedEditor({
                               />
                             </div>
 
-                            <div className="w-36 space-y-0.5">
+                            <div className="w-36 space-y-1">
                               <span className="text-xs text-muted-foreground block">Tipo</span>
                               <Select
                                 value={tier.discount_type}
@@ -6260,7 +6260,7 @@ function SpecializedClassifiedEditor({
                               </Select>
                             </div>
 
-                            <div className="flex-1 space-y-0.5">
+                            <div className="flex-1 space-y-1">
                               <span className="text-xs text-muted-foreground block">
                                 {tier.discount_type === "percentage" ? "Desconto (%)" : "Desconto (R$)"}
                               </span>
@@ -6333,7 +6333,7 @@ function SpecializedClassifiedEditor({
                   {/* Oferta Relâmpago / Order Bump no Checkout */}
                   <div className="p-4 rounded-lg border border-border/50 bg-muted/15 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                           <Zap className="size-4 text-amber-500 fill-amber-500" />
                           <span>Oferta Relâmpago no Checkout (Order Bump / Venda Cruzada)</span>
@@ -6413,7 +6413,7 @@ function SpecializedClassifiedEditor({
                   {/* Sincronização e Auditoria Cadastral por CNPJ (Receita Federal & IA) */}
                   <div className="p-4 sm:p-4 rounded-lg bg-muted/20 border border-border/60 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                           <Building className="size-3.5 text-primary" />
                           <span>Buscar Dados Oficiais da Empresa por CNPJ (Opcional)</span>
@@ -6497,7 +6497,7 @@ function SpecializedClassifiedEditor({
                             type="button"
                             onClick={() => setBusinessType(type.id)}
                             className={cn(
-                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
+                              "h-8 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -6613,7 +6613,7 @@ function SpecializedClassifiedEditor({
                                   );
                                 }}
                                 className={cn(
-                                  "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border",
+                                  "h-8 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border",
                                   isSelected
                                     ? "bg-primary text-primary-foreground border-primary font-bold "
                                     : "bg-background text-muted-foreground border-border hover:text-foreground"
@@ -6803,7 +6803,7 @@ function SpecializedClassifiedEditor({
                   {/* Governança de Sigilo & Assessoria M&A */}
                   <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
                     <div className="flex items-center justify-between gap-3">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <Label htmlFor="nda-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-2">
                           <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
                           Exigir Assinatura de NDA Digital
@@ -6820,7 +6820,7 @@ function SpecializedClassifiedEditor({
                     </div>
 
                     <div className="flex items-center justify-between gap-3 pt-2 border-t border-amber-500/15">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <Label htmlFor="advisor-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-2">
                           <ShieldCheck className="size-3.5 text-primary" />
                           Operação Assessorada por Consultor M&A
@@ -6839,7 +6839,7 @@ function SpecializedClassifiedEditor({
                     {/* Uploader de Documentos Restritos & DRE (Fase 3 Master Plan) */}
                     <div className="pt-3 border-t border-amber-500/20 space-y-2">
                       <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                             <FileSpreadsheet className="size-3.5 text-amber-600 dark:text-amber-400" />
                             Documentos Confidenciais e DRE (Acesso Restrito via NDA)
@@ -7152,7 +7152,7 @@ function SpecializedClassifiedEditor({
  isSelected ? prev.filter((x) => x !== item) : [...prev, item]
  );
  }}
- className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+ className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
  isSelected
  ? "bg-primary/10 border-primary text-primary"
  : "bg-background border-border text-muted-foreground hover:text-foreground"
@@ -7456,7 +7456,7 @@ function SpecializedClassifiedEditor({
  active ? prev.filter((b) => b !== ben) : [...prev, ben]
  );
  }}
- className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+ className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
  active
  ? "bg-primary/15 border-primary text-primary font-semibold"
  : "bg-background border-border text-muted-foreground hover:text-foreground"
@@ -7483,7 +7483,7 @@ function SpecializedClassifiedEditor({
  <Badge
  key={sk}
  variant="secondary"
- className="text-xs font-medium pl-2.5 pr-1.5 py-1 rounded-lg gap-2 bg-primary/10 text-primary border-primary/20"
+ className="text-xs font-medium pl-3 pr-2 py-1 rounded-lg gap-2 bg-primary/10 text-primary border-primary/20"
  >
  <span>{sk}</span>
  <button
@@ -7814,7 +7814,7 @@ function SpecializedClassifiedEditor({
                         <Badge
                           key={idx}
                           variant="secondary"
-                          className="text-xs px-2.5 py-1 rounded-lg gap-2 bg-primary/10 text-primary border border-primary/20"
+                          className="text-xs px-3 py-1 rounded-lg gap-2 bg-primary/10 text-primary border border-primary/20"
                         >
                           <span> {feat}</span>
                           <button
@@ -7834,7 +7834,7 @@ function SpecializedClassifiedEditor({
               {/* Destaques & Diferenciais Livres (Disponível para todos os outros nichos) */}
               {niche.id !== "viagem" && (
                 <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                  <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                  <div className="flex items-center justify-between pb-3 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                       <Award className="size-4 text-primary shrink-0" />
                       <span>Destaques</span>
@@ -7931,7 +7931,7 @@ function SpecializedClassifiedEditor({
 
               {/* Formas de Pagamento (LISTA ESTRUTURADA ESPAÇOSA - ZERO TRUNCATION - 1x = À VISTA) */}
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <CreditCard className="size-4 text-primary shrink-0" />
                     <span>Formas de Pagamento Aceitas</span>
@@ -8447,7 +8447,7 @@ function SpecializedClassifiedEditor({
 
               {/* Seção: Localização */}
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <MapPin className="size-4 text-primary shrink-0" />
                   <span>Localização</span>
                 </div>
@@ -8464,7 +8464,7 @@ function SpecializedClassifiedEditor({
             {/* Controle de Privacidade Total de Endereço (LGPD) */}
             <div className="p-4 bg-muted/20 border border-border/70 rounded-lg space-y-2">
               <div className="flex items-center justify-between gap-3">
-                <div className="space-y-0.5 min-w-0">
+                <div className="space-y-1 min-w-0">
                   <Label htmlFor="hide-location-toggle" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-2">
                     <ShieldCheck className="size-3.5 text-primary" />
                     Ocultar endereço completamente
@@ -8480,7 +8480,7 @@ function SpecializedClassifiedEditor({
                 />
               </div>
               {hideLocation && (
-                <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-2 rounded-lg font-medium flex items-center gap-2">
+                <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-lg font-medium flex items-center gap-2">
                   <Check className="size-3 shrink-0" />
                   Privacidade total ativa: nenhum dado geográfico ou mapa será exposto.
                 </div>
@@ -8580,7 +8580,7 @@ function SpecializedClassifiedEditor({
 
               {/* ── Seção 6: Agente Vendedor (SDR) — Configuração ── */}
               <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.03] p-4 sm:p-5 space-y-4">
-                <div className="flex items-center justify-between pb-2.5 border-b border-blue-500/15">
+                <div className="flex items-center justify-between pb-3 border-b border-blue-500/15">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Bot className="size-4 text-blue-500 shrink-0" />
                     <span>6. Agente Vendedor (SDR)</span>

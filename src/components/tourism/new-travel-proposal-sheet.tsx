@@ -525,14 +525,14 @@ export function NewTravelProposalSheet({
  <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-card">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-xl bg-muted flex items-center justify-center text-foreground border border-border/60">
+ <div className="size-9 rounded-lg bg-muted flex items-center justify-center text-foreground border border-border/60">
  <PlaneTakeoff className="size-4" />
  </div>
  <div>
  <SheetTitle className="text-sm font-bold text-foreground">
  Nova Proposta de Viagem
  </SheetTitle>
- <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+ <SheetDescription className="text-xs text-muted-foreground mt-1">
  Configure destino, datas e distribuição de quartos para o passageiro.
  </SheetDescription>
  </div>
@@ -546,26 +546,26 @@ export function NewTravelProposalSheet({
  onValueChange={(v) => setActiveTab(v as any)}
  className="w-full"
  >
- <TabsList className="grid grid-cols-3 h-9 rounded-xl bg-muted/70 p-1 text-xs">
+ <TabsList className="grid grid-cols-3 h-9 rounded-lg bg-muted/70 p-1 text-xs">
  <TabsTrigger
  value="custom"
  className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
  >
- <User className="mr-1.5 size-3.5" />
+ <User className="mr-2 size-3.5" />
  Consultor e CRM
  </TabsTrigger>
  <TabsTrigger
  value="template"
  className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
  >
- <FolderPlus className="mr-1.5 size-3.5" />
+ <FolderPlus className="mr-2 size-3.5" />
  Templates Prontos
  </TabsTrigger>
  <TabsTrigger
  value="ocr"
  className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
  >
- <ScanText className="mr-1.5 size-3.5 text-primary" />
+ <ScanText className="mr-2 size-3.5 text-primary" />
  Importar por Texto
  </TabsTrigger>
  </TabsList>
@@ -579,7 +579,7 @@ export function NewTravelProposalSheet({
  {activeTab === "custom" && (
  <div className="space-y-6 text-xs">
  {/* Card 1: Identificação do Passageiro & CRM */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <User className="size-4 text-primary" />
@@ -608,7 +608,7 @@ export function NewTravelProposalSheet({
 
  {/* Sub-painel retrátil: Criação Rápida no CRM */}
  {isQuickCreateOpen && (
- <div className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-3 animate-in fade-in zoom-in-95">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border space-y-3 animate-in fade-in zoom-in-95">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground">
  Novo Cliente da Agência (Salva no CRM)
@@ -621,7 +621,7 @@ export function NewTravelProposalSheet({
  ✕
  </button>
  </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1 sm:col-span-2">
  <Label className="text-[11px] font-semibold">Nome Completo *</Label>
  <Input
@@ -680,9 +680,9 @@ export function NewTravelProposalSheet({
  className="w-full h-8 text-xs rounded-lg font-bold"
  >
  {quickCreateMutation.isPending ? (
- <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+ <Loader2 className="mr-2 size-3.5 animate-spin" />
  ) : (
- <Check className="mr-1.5 size-3.5" />
+ <Check className="mr-2 size-3.5" />
  )}
  Salvar no CRM e Vincular à Proposta
  </Button>
@@ -703,7 +703,7 @@ export function NewTravelProposalSheet({
  if (customerSearch.trim().length >= 1) setIsCustomerDropdownOpen(true);
  }}
  placeholder="🔍 Buscar cliente existente no CRM (Nome, CPF, Whats, E-mail)..."
- className="h-9 rounded-xl text-xs bg-muted/20 pl-3 pr-8 border-border/70"
+ className="h-9 rounded-lg text-xs bg-muted/20 pl-3 pr-8 border-border/70"
  />
  {isLoadingCustomers && (
  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 animate-spin text-muted-foreground" />
@@ -712,7 +712,7 @@ export function NewTravelProposalSheet({
 
  {/* Dropdown de Resultados */}
  {isCustomerDropdownOpen && customerSearch.trim().length >= 1 && (
- <div className="absolute left-0 right-0 top-10 z-50 rounded-xl bg-card border border-border shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95">
+ <div className="absolute left-0 right-0 top-10 z-50 rounded-lg bg-card border border-border shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95">
  <div className="p-2 border-b border-border/60 bg-muted/40 flex items-center justify-between text-[11px] text-muted-foreground font-bold">
  <span>Resultados da Carteira ({crmCustomers.length})</span>
  <button
@@ -734,9 +734,9 @@ export function NewTravelProposalSheet({
  key={c.id}
  type="button"
  onClick={() => handleSelectCustomer(c)}
- className="w-full text-left p-2.5 rounded-lg hover:bg-muted/60 transition-colors flex items-center justify-between gap-3 cursor-pointer group"
+ className="w-full text-left p-3 rounded-lg hover:bg-muted/60 transition-colors flex items-center justify-between gap-3 cursor-pointer group"
  >
- <div className="space-y-0.5 min-w-0">
+ <div className="space-y-1 min-w-0">
  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
  {c.fullName || c.name || c.full_name}
  </p>
@@ -760,7 +760,7 @@ export function NewTravelProposalSheet({
 
  {/* Banner de Cliente Conectado */}
  {selectedCustomer && (
- <div className="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs">
  <div className="flex items-center gap-2">
  <ShieldCheck className="size-4 text-primary shrink-0" />
  <span>
@@ -788,7 +788,7 @@ export function NewTravelProposalSheet({
  placeholder="Nome completo do passageiro"
  value={customerName}
  onChange={(e) => setCustomerName(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  required
  />
  </div>
@@ -798,7 +798,7 @@ export function NewTravelProposalSheet({
  placeholder="(49) 99999-9999"
  value={customerWhatsapp}
  onChange={(e) => setCustomerWhatsapp(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  required
  />
  </div>
@@ -809,7 +809,7 @@ export function NewTravelProposalSheet({
  placeholder="cliente@email.com"
  value={customerEmail}
  onChange={(e) => setCustomerEmail(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1">
@@ -818,14 +818,14 @@ export function NewTravelProposalSheet({
  placeholder="000.000.000-00"
  value={customerDocument}
  onChange={(e) => setCustomerDocument(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  </div>
  </div>
 
  {/* Card 2: Destino & Período da Viagem */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Compass className="size-4 text-primary" />
@@ -838,7 +838,7 @@ export function NewTravelProposalSheet({
  )}
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <Label className="text-[11px] font-bold">Destino Principal da Viagem *</Label>
  {selectedCanonicalDest && (
@@ -861,7 +861,7 @@ export function NewTravelProposalSheet({
  if (!title) setTitle(`Pacote Exclusivo: ${match.name}`);
  }
  }}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  required
  />
 
@@ -870,7 +870,7 @@ export function NewTravelProposalSheet({
  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
  Destinos Mais Procurados (1 Toque):
  </span>
- <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto no-scrollbar pr-1">
+ <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto no-scrollbar pr-1">
  {CANONICAL_DESTINATIONS.map((dest) => (
  <button
  key={dest.id}
@@ -881,7 +881,7 @@ export function NewTravelProposalSheet({
  if (!title) setTitle(`Pacote Exclusivo: ${dest.name}`);
  }}
  className={cn(
- "text-[10px] font-medium px-2 py-0.5 rounded-lg border transition-all cursor-pointer flex items-center gap-1",
+ "text-[10px] font-medium px-2 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1",
  destinationCity === dest.name || selectedCanonicalDest?.id === dest.id
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
  : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60"
@@ -903,21 +903,21 @@ export function NewTravelProposalSheet({
 
  {/* Card de Inteligência Canônica do Destino */}
  {selectedCanonicalDest && (
- <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 space-y-2 mt-2 animate-in fade-in duration-150">
- <div className="flex items-center gap-2.5">
+ <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2 mt-2 animate-in fade-in duration-150">
+ <div className="flex items-center gap-3">
  <img
  src={selectedCanonicalDest.coverImage}
  alt={selectedCanonicalDest.name}
  className="size-11 rounded-lg object-cover border border-border/60 shrink-0"
  />
  <div className="min-w-0 flex-1">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <h4 className="text-[11px] font-bold text-foreground truncate">{selectedCanonicalDest.name}</h4>
  <Badge variant="secondary" className="text-[8px] font-mono font-bold bg-primary/10 text-primary">
  {selectedCanonicalDest.iata}
  </Badge>
  </div>
- <p className="text-[10px] text-primary font-medium mt-0.5">
+ <p className="text-[10px] text-primary font-medium mt-1">
  ☀️ <strong>Melhor época:</strong> {selectedCanonicalDest.bestSeason}
  </p>
  <p className="text-[10px] text-muted-foreground line-clamp-1">
@@ -935,7 +935,7 @@ export function NewTravelProposalSheet({
  placeholder="Ex: Férias em Família em Gramado & Rota dos Vinhedos"
  value={title}
  onChange={(e) => setTitle(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
 
@@ -946,7 +946,7 @@ export function NewTravelProposalSheet({
  type="date"
  value={travelStartDate}
  onChange={(e) => setTravelStartDate(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-1">
@@ -955,14 +955,14 @@ export function NewTravelProposalSheet({
  type="date"
  value={travelEndDate}
  onChange={(e) => setTravelEndDate(e.target.value)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
  </div>
  </div>
 
  {/* Card 3: Distribuição de Quartos & Hóspedes (Zero AI-Smell, 100% Dinâmico) */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <BedDouble className="size-4 text-primary" />
@@ -979,7 +979,7 @@ export function NewTravelProposalSheet({
  {rooms.map((room) => (
  <div
  key={room.id}
- className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-3"
+ className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3"
  >
  {/* Cabeçalho do Quarto */}
  <div className="flex items-center justify-between">
@@ -1015,7 +1015,7 @@ export function NewTravelProposalSheet({
  {/* Controles de Adultos e Crianças */}
  <div className="grid grid-cols-2 gap-3">
  {/* Adultos */}
- <div className="p-2.5 rounded-lg bg-background border border-border/50 flex items-center justify-between">
+ <div className="p-3 rounded-lg bg-background border border-border/50 flex items-center justify-between">
  <div>
  <p className="text-[11px] font-bold text-foreground">Adultos</p>
  <p className="text-[9px] text-muted-foreground">+12 anos</p>
@@ -1046,7 +1046,7 @@ export function NewTravelProposalSheet({
  </div>
 
  {/* Crianças */}
- <div className="p-2.5 rounded-lg bg-background border border-border/50 flex items-center justify-between">
+ <div className="p-3 rounded-lg bg-background border border-border/50 flex items-center justify-between">
  <div>
  <p className="text-[11px] font-bold text-foreground">Crianças</p>
  <p className="text-[9px] text-muted-foreground">0 a 11 anos</p>
@@ -1079,7 +1079,7 @@ export function NewTravelProposalSheet({
 
  {/* Idade de cada criança (se houver) */}
  {room.children > 0 && (
- <div className="p-2.5 rounded-lg bg-background/60 border border-border/40 space-y-2">
+ <div className="p-3 rounded-lg bg-background/60 border border-border/40 space-y-2">
  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">
  Idade de cada criança no check-in:
  </span>
@@ -1123,7 +1123,7 @@ export function NewTravelProposalSheet({
  type="button"
  variant="outline"
  onClick={handleAddRoom}
- className="w-full h-8 rounded-xl text-xs font-semibold border-dashed border-border/80 hover:bg-muted/40 transition-colors gap-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
+ className="w-full h-8 rounded-lg text-xs font-semibold border-dashed border-border/80 hover:bg-muted/40 transition-colors gap-2 text-muted-foreground hover:text-foreground cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Outro Quarto</span>
@@ -1131,7 +1131,7 @@ export function NewTravelProposalSheet({
  </div>
 
  {/* Card 3.5: Hospedagem & Resort (Banco Oficial de Hotéis) */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Building2 className="size-4 text-emerald-600 dark:text-emerald-400" />
@@ -1145,7 +1145,7 @@ export function NewTravelProposalSheet({
  </div>
 
  {selectedHotel ? (
- <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2.5">
+ <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-3">
  <div className="flex items-center justify-between">
  <div>
  <h4 className="text-xs font-bold text-foreground">{selectedHotel.name}</h4>
@@ -1191,7 +1191,7 @@ export function NewTravelProposalSheet({
  </div>
  </div>
  ) : (
- <div className="relative space-y-1.5">
+ <div className="relative space-y-2">
  <Label className="text-[11px] font-bold">Buscar Hotel no Banco da Agência</Label>
  <div className="relative">
  <Input
@@ -1202,10 +1202,10 @@ export function NewTravelProposalSheet({
  setIsHotelDropdownOpen(true);
  }}
  onFocus={() => setIsHotelDropdownOpen(true)}
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  {isHotelDropdownOpen && hotelsBankList.length > 0 && (
- <div className="absolute z-30 left-0 right-0 top-10 bg-popover border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto p-1 text-xs space-y-1">
+ <div className="absolute z-30 left-0 right-0 top-10 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto p-1 text-xs space-y-1">
  {hotelsBankList.slice(0, 6).map((h) => (
  <button
  key={h.id}
@@ -1242,7 +1242,7 @@ export function NewTravelProposalSheet({
  </div>
 
  {/* Card 3.6: Transfers & Inclusões Rápidas (1 Toque) */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3 shadow-xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Tag className="size-4 text-primary" />
@@ -1254,7 +1254,7 @@ export function NewTravelProposalSheet({
  </div>
 
  {/* Tags sugeridas e ativas */}
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {[
  "Transfer In/Out Aeroporto ↔ Hotel",
  "Seguro Viagem Cobertura Completa",
@@ -1269,7 +1269,7 @@ export function NewTravelProposalSheet({
  key={tag}
  type="button"
  onClick={() => toggleProposalTag(tag)}
- className={`text-[11px] px-2.5 py-1 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 ${
+ className={`text-[11px] px-3 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-2 ${
  isSelected
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
  : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/70"
@@ -1297,7 +1297,7 @@ export function NewTravelProposalSheet({
  .map((customTag) => (
  <span
  key={customTag}
- className="text-[11px] px-2.5 py-1 rounded-xl border bg-primary text-primary-foreground border-primary font-bold shadow-2xs flex items-center gap-1.5"
+ className="text-[11px] px-3 py-1 rounded-lg border bg-primary text-primary-foreground border-primary font-bold shadow-2xs flex items-center gap-2"
  >
  <span>✓</span>
  <span>{customTag}</span>
@@ -1332,7 +1332,7 @@ export function NewTravelProposalSheet({
  }
  }
  }}
- className="h-8 text-xs rounded-xl bg-background"
+ className="h-8 text-xs rounded-lg bg-background"
  />
  <Button
  type="button"
@@ -1348,7 +1348,7 @@ export function NewTravelProposalSheet({
  setCustomTagInput("");
  }
  }}
- className="h-8 px-3 rounded-xl text-xs shrink-0 font-medium cursor-pointer"
+ className="h-8 px-3 rounded-lg text-xs shrink-0 font-medium cursor-pointer"
  >
  <Plus className="size-3.5 mr-1" />
  Adicionar
@@ -1357,7 +1357,7 @@ export function NewTravelProposalSheet({
  </div>
 
  {/* Card 3.7: Orçamento & Condições de Pagamento (Zero Hardcoded) */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <DollarSign className="size-4 text-emerald-600 dark:text-emerald-400" />
@@ -1375,7 +1375,7 @@ export function NewTravelProposalSheet({
  value={basePriceCents}
  onChange={setBasePriceCents}
  placeholder="0,00"
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
 
@@ -1384,7 +1384,7 @@ export function NewTravelProposalSheet({
  <select
  value={pricingModel}
  onChange={(e) => setPricingModel(e.target.value as any)}
- className="h-9 w-full rounded-xl border border-input bg-background px-3 text-xs"
+ className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
  >
  <option value="total">Pacote Total (Todos os Passageiros)</option>
  <option value="per_person">Valor por Pessoa (Pax)</option>
@@ -1400,7 +1400,7 @@ export function NewTravelProposalSheet({
  value={downPaymentCents}
  onChange={setDownPaymentCents}
  placeholder="0,00 (sem entrada)"
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  />
  </div>
 
@@ -1409,7 +1409,7 @@ export function NewTravelProposalSheet({
  <select
  value={installmentsCount}
  onChange={(e) => setInstallmentsCount(Number(e.target.value))}
- className="h-9 w-full rounded-xl border border-input bg-background px-3 text-xs"
+ className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
  >
  <option value={1}>1x (À Vista)</option>
  <option value={3}>Até 3x sem juros</option>
@@ -1421,7 +1421,7 @@ export function NewTravelProposalSheet({
  </div>
 
  {basePriceCents && basePriceCents > 0 && (
- <div className="p-2.5 rounded-xl bg-muted/30 border border-border/50 text-[11px] space-y-1 text-muted-foreground">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-[11px] space-y-1 text-muted-foreground">
  <p className="font-semibold text-foreground flex items-center justify-between">
  <span>Projeção para o Cliente:</span>
  <span className="text-primary font-bold font-mono">
@@ -1447,7 +1447,7 @@ export function NewTravelProposalSheet({
  </div>
 
  {/* Card 4: Moeda, Validade & Tema */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3 shadow-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3 shadow-xs">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <DollarSign className="size-4 text-primary" />
  <span>Moeda, Validade e Apresentação</span>
@@ -1459,7 +1459,7 @@ export function NewTravelProposalSheet({
  <select
  value={currency}
  onChange={(e) => setCurrency(e.target.value)}
- className="h-9 w-full rounded-xl border border-input bg-background px-3 text-xs"
+ className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
  >
  <option value="BRL">BRL (R$ Real)</option>
  <option value="USD">USD (US$ Dólar)</option>
@@ -1471,7 +1471,7 @@ export function NewTravelProposalSheet({
  <select
  value={validUntilDays}
  onChange={(e) => setValidUntilDays(Number(e.target.value))}
- className="h-9 w-full rounded-xl border border-input bg-background px-3 text-xs"
+ className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
  >
  <option value={3}>3 dias (Urgência comercial)</option>
  <option value={7}>7 dias (Padrão de agência)</option>
@@ -1484,7 +1484,7 @@ export function NewTravelProposalSheet({
  <select
  value={templateTheme}
  onChange={(e) => setTemplateTheme(e.target.value)}
- className="h-9 w-full rounded-xl border border-input bg-background px-3 text-xs"
+ className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
  >
  <option value="editorial-flat">Editorial Flat (Clean)</option>
  <option value="dark-premium">Dark Premium (Noturno)</option>
@@ -1499,7 +1499,7 @@ export function NewTravelProposalSheet({
  placeholder="Notas internas da agência, operadora cotada, margem de comissão, etc..."
  value={initialNotes}
  onChange={(e) => setInitialNotes(e.target.value)}
- className="min-h-16 text-xs rounded-xl"
+ className="min-h-16 text-xs rounded-lg"
  />
  </div>
  </div>
@@ -1509,7 +1509,7 @@ export function NewTravelProposalSheet({
  {/* TAB 2: TEMPLATES PRONTOS */}
  {activeTab === "template" && (
  <div className="space-y-4 text-xs">
- <div className="p-4 rounded-2xl bg-muted/30 border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-1">
  <p className="font-bold text-foreground">Biblioteca de Pacotes e Roteiros de Sucesso</p>
  <p className="text-muted-foreground text-[11px]">
  Selecione um pacote pré-formatado para clonar voos, hotéis, roteiro dia a dia, inclusões e exclusões em 1 clique.
@@ -1521,7 +1521,7 @@ export function NewTravelProposalSheet({
  <div
  key={tpl.id}
  onClick={() => handleApplyTemplate(tpl)}
- className="p-4 rounded-2xl border border-border/70 bg-card hover:border-primary/50 hover:bg-muted/30 transition-all cursor-pointer group space-y-3"
+ className="p-4 rounded-lg border border-border/70 bg-card hover:border-primary/50 hover:bg-muted/30 transition-all cursor-pointer group space-y-3"
  >
  <div className="flex items-start justify-between gap-3">
  <div className="space-y-1 min-w-0">
@@ -1543,7 +1543,7 @@ export function NewTravelProposalSheet({
  <Button
  type="button"
  size="sm"
- className="rounded-xl text-xs shrink-0 font-bold group-hover:bg-primary group-hover:text-primary-foreground"
+ className="rounded-lg text-xs shrink-0 font-bold group-hover:bg-primary group-hover:text-primary-foreground"
  >
  Usar Roteiro
  </Button>
@@ -1567,7 +1567,7 @@ export function NewTravelProposalSheet({
  {/* TAB 3: IMPORTAÇÃO POR IA (OCR) */}
  {activeTab === "ocr" && (
  <div className="space-y-4 text-xs">
- <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-1">
+ <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-1">
  <div className="flex items-center gap-2 text-primary font-bold text-xs">
  <ScanText className="size-4" />
  <span>Assistente de Extração de Texto (PDF / WhatsApp)</span>
@@ -1588,7 +1588,7 @@ Aéreo saindo de Campinas com bagagem.
 Incluso Maria Fumaça e traslados.`}
  value={ocrPastedText}
  onChange={(e) => setOcrPastedText(e.target.value)}
- className="min-h-36 text-xs rounded-xl font-mono leading-relaxed"
+ className="min-h-36 text-xs rounded-lg font-mono leading-relaxed"
  />
  </div>
 
@@ -1596,7 +1596,7 @@ Incluso Maria Fumaça e traslados.`}
  type="button"
  onClick={handleSimulateOcr}
  disabled={ocrLoading || !ocrPastedText.trim()}
- className="w-full h-10 rounded-xl font-bold gap-2 text-xs bg-primary text-primary-foreground"
+ className="w-full h-10 rounded-lg font-bold gap-2 text-xs bg-primary text-primary-foreground"
  >
  {ocrLoading ? (
  <>
@@ -1613,9 +1613,9 @@ Incluso Maria Fumaça e traslados.`}
 
  {/* Resultado da IA */}
  {ocrExtractedData && (
- <div className="p-4 rounded-2xl bg-card border border-primary/30 space-y-3 animate-in fade-in zoom-in-95">
+ <div className="p-4 rounded-lg bg-card border border-primary/30 space-y-3 animate-in fade-in zoom-in-95">
  <div className="flex items-center justify-between">
- <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
+ <span className="font-bold text-xs text-foreground flex items-center gap-2">
  <Check className="size-4 text-primary" />
  Dados Identificados pela IA:
  </span>
@@ -1632,7 +1632,7 @@ Incluso Maria Fumaça e traslados.`}
  <Button
  type="button"
  onClick={handleApplyOcrData}
- className="w-full h-9 rounded-xl font-bold text-xs"
+ className="w-full h-9 rounded-lg font-bold text-xs"
  >
  Aplicar Dados ao Formulário →
  </Button>
@@ -1649,7 +1649,7 @@ Incluso Maria Fumaça e traslados.`}
  variant="ghost"
  size="sm"
  onClick={() => onOpenChange(false)}
- className="rounded-xl text-xs font-semibold text-muted-foreground"
+ className="rounded-lg text-xs font-semibold text-muted-foreground"
  >
  Cancelar
  </Button>
@@ -1658,7 +1658,7 @@ Incluso Maria Fumaça e traslados.`}
  type="submit"
  form="new-proposal-form"
  disabled={isSubmitting}
- className="h-10 px-6 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-2"
+ className="h-10 px-6 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-2"
  >
  {isSubmitting ? (
  <>

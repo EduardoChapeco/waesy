@@ -109,7 +109,7 @@ export function StoreProfileHero({
 
  <div>
  <h1 className="text-2xl font-bold leading-tight">{store.name}</h1>
- {store.slug && <p className="text-sm text-muted-foreground mt-0.5">@{store.slug}</p>}
+ {store.slug && <p className="text-sm text-muted-foreground mt-1">@{store.slug}</p>}
  {showDescription && store.description && (
  <p className="mt-3 text-sm leading-relaxed text-muted-foreground max-w-sm">
  {store.description}

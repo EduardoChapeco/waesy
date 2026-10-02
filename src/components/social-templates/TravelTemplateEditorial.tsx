@@ -132,7 +132,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
                 <div
                   key={i}
                   className={`flex items-center rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-sm ${
-                    aspectRatio === "1:1" ? "gap-2 px-4 py-1.5" : "gap-3 px-5 py-2.5"
+                    aspectRatio === "1:1" ? "gap-2 px-4 py-2" : "gap-3 px-5 py-3"
                   }`}
                 >
                   <IncIcon
@@ -159,7 +159,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
           }`}
         >
           <div
-            className={`rounded-3xl bg-black/55 backdrop-blur-xl border border-white/25 shadow-2xl space-y-2 text-white ${
+            className={`rounded-lg bg-black/55 backdrop-blur-xl border border-white/25 shadow-2xl space-y-2 text-white ${
               aspectRatio === "1:1" ? "max-w-xs p-4" : "max-w-md p-6"
             }`}
           >
@@ -191,7 +191,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
               </span>
             </div>
 
-            <div className="pt-1 flex flex-col text-sm text-white/90 space-y-0.5 font-medium">
+            <div className="pt-1 flex flex-col text-sm text-white/90 space-y-1 font-medium">
               <span className="text-amber-300 font-bold uppercase tracking-wider text-xs">
                 {pricingMode === "per_person" ? "Por pessoa" : "Pacote fechado"}
               </span>
@@ -202,9 +202,9 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
           </div>
 
           {/* Selo da Agência / Loja */}
-          <div className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 text-white/80">
+          <div className="flex items-center gap-2 px-5 py-3 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white/80">
             <ShieldCheck className="size-5 sm:size-6 text-emerald-400 shrink-0" />
-            <span className="text-sm sm:text-base font-semibold tracking-tight truncate max-w-[200px]">
+            <span className="text-sm sm:text-base font-semibold tracking-tight truncate max-w-52">
               {storeName || "Waesy Turismo"}
             </span>
           </div>

@@ -61,10 +61,10 @@ export function ClaimBusinessModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md rounded-2xl bg-card border border-border/50">
+      <DialogContent className="sm:max-w-md rounded-lg bg-card border border-border/50">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <span className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+            <span className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
               <Building2 className="w-5 h-5" />
             </span>
             <DialogTitle className="text-base sm:text-lg font-bold">
@@ -89,10 +89,10 @@ export function ClaimBusinessModal({
               Sua empresa agora está verificada e associada à sua conta no Waesy.
             </p>
             <div className="pt-2">
-              <Button asChild className="rounded-xl font-medium w-full">
+              <Button asChild className="rounded-lg font-medium w-full">
                 <a href={`/workspace`}>
                   Ir para o Painel de Gestão
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </a>
               </Button>
             </div>
@@ -107,7 +107,7 @@ export function ClaimBusinessModal({
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
                 placeholder="Ex: João da Silva"
-                className="h-10 text-xs rounded-xl bg-background"
+                className="h-10 text-xs rounded-lg bg-background"
                 required
               />
             </div>
@@ -120,7 +120,7 @@ export function ClaimBusinessModal({
                 <select
                   value={contactRole}
                   onChange={(e) => setContactRole(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs text-foreground"
+                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-xs text-foreground"
                 >
                   <option value="Proprietário(a)">Proprietário(a)</option>
                   <option value="Sócio(a)">Sócio(a)</option>
@@ -138,7 +138,7 @@ export function ClaimBusinessModal({
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
                   placeholder="(49) 99999-0000"
-                  className="h-10 text-xs rounded-xl bg-background"
+                  className="h-10 text-xs rounded-lg bg-background"
                   required
                 />
               </div>
@@ -152,7 +152,7 @@ export function ClaimBusinessModal({
                 value={document}
                 onChange={(e) => setDocument(e.target.value)}
                 placeholder="00.000.000/0001-00"
-                className="h-10 text-xs rounded-xl bg-background"
+                className="h-10 text-xs rounded-lg bg-background"
               />
             </div>
 
@@ -162,23 +162,23 @@ export function ClaimBusinessModal({
                 variant="outline"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="rounded-xl text-xs"
+                className="rounded-lg text-xs"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl text-xs font-medium"
+                className="rounded-lg text-xs font-medium"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Verificando...
                   </>
                 ) : (
                   <>
-                    <ShieldCheck className="w-4 h-4 mr-1.5" />
+                    <ShieldCheck className="w-4 h-4 mr-2" />
                     Confirmar Reivindicação
                   </>
                 )}

@@ -79,12 +79,12 @@ export function TravelAiImporterBanner({ onExtracted, className = "" }: TravelAi
 
   return (
     <div
-      className={`rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent p-4 sm:p-5 transition-all ${className}`}
+      className={`rounded-lg border border-primary/30 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent p-4 sm:p-5 transition-all ${className}`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-2xs">
+            <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-2xs">
               <Star className="size-4" />
             </span>
             <h3 className="text-xs sm:text-sm font-bold text-foreground">
@@ -111,7 +111,7 @@ export function TravelAiImporterBanner({ onExtracted, className = "" }: TravelAi
               }}
               className="hidden"
             />
-            <div className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl border border-primary/30 bg-card hover:bg-muted text-xs font-semibold text-foreground transition-colors cursor-pointer shadow-2xs">
+            <div className="inline-flex items-center gap-2 h-9 px-4 rounded-lg border border-primary/30 bg-card hover:bg-muted text-xs font-semibold text-foreground transition-colors cursor-pointer shadow-2xs">
               {isAnalyzing ? (
                 <Loader2 className="size-3.5 animate-spin text-primary" />
               ) : (
@@ -124,8 +124,8 @@ export function TravelAiImporterBanner({ onExtracted, className = "" }: TravelAi
       </div>
 
       {lastExtractedTitle && (
-        <div className="mt-3 pt-2.5 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
-          <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+        <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium">
             <Check className="size-3.5" /> Último anúncio extraído: <strong>{lastExtractedTitle}</strong>
           </span>
           <span className="text-[10px] font-mono text-muted-foreground">

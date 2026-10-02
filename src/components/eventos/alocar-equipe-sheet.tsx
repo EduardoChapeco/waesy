@@ -137,11 +137,11 @@ export function AlocarEquipeSheet({
 
         <div className="py-5 space-y-6">
           {/* Formulário Rápido de Alocação */}
-          <form onSubmit={handleAddAllocation} className="p-4 bg-muted/20 border border-border/60 rounded-2xl space-y-3.5">
+          <form onSubmit={handleAddAllocation} className="p-4 bg-muted/20 border border-border/60 rounded-lg space-y-4">
             <h4 className="text-xs font-bold text-foreground">Alocar Colaborador</h4>
 
             {contractors.length > 0 && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="staff-contractor" className="text-xs">
                   Vincular Terceirizado Cadastrado (Opcional)
                 </Label>
@@ -149,7 +149,7 @@ export function AlocarEquipeSheet({
                   id="staff-contractor"
                   value={selectedContractorId}
                   onChange={(e) => handleContractorChange(e.target.value)}
-                  className="w-full h-9 px-3 rounded-xl border border-border bg-background text-xs"
+                  className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs"
                 >
                   <option value="">Nenhum (Posto Avulso / Equipe Direta)</option>
                   {contractors.map((c) => (
@@ -161,7 +161,7 @@ export function AlocarEquipeSheet({
               </div>
             )}
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="staff-role" className="text-xs">Função / Posto de Trabalho *</Label>
               <Input
                 id="staff-role"
@@ -174,13 +174,13 @@ export function AlocarEquipeSheet({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="staff-shift" className="text-xs">Turno de Trabalho</Label>
                 <select
                   id="staff-shift"
                   value={shiftName}
                   onChange={(e) => setShiftName(e.target.value)}
-                  className="w-full h-9 px-3 rounded-xl border border-border bg-background text-xs"
+                  className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs"
                 >
                   {TURNOS.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -188,7 +188,7 @@ export function AlocarEquipeSheet({
                 </select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="staff-diaria" className="text-xs">Diária / Cachê (R$)</Label>
                 <CurrencyField
                   value={remunerationCents}
@@ -197,7 +197,7 @@ export function AlocarEquipeSheet({
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="staff-notes" className="text-xs">Observações / Instruções</Label>
               <Input
                 id="staff-notes"
@@ -208,7 +208,7 @@ export function AlocarEquipeSheet({
               />
             </div>
 
-            <Button type="submit" disabled={saving} size="sm" className="w-full font-bold gap-1.5 h-9">
+            <Button type="submit" disabled={saving} size="sm" className="w-full font-bold gap-2 h-9">
               <Plus className="size-4" />
               {saving ? "Alocando..." : "Confirmar Alocação"}
             </Button>
@@ -228,15 +228,15 @@ export function AlocarEquipeSheet({
             {loading ? (
               <p className="text-xs text-muted-foreground text-center py-4">Carregando escala...</p>
             ) : allocations.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-6 border border-dashed rounded-xl">
+              <p className="text-xs text-muted-foreground text-center py-6 border border-dashed rounded-lg">
                 Nenhum membro escalado para este evento ainda.
               </p>
             ) : (
               <div className="space-y-2">
                 {allocations.map((item) => (
-                  <Card key={item.id} className="p-3 bg-card border border-border/60 rounded-xl space-y-1.5">
+                  <Card key={item.id} className="p-3 bg-card border border-border/60 rounded-lg space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-[10px] uppercase font-bold">
                           {item.role_title}
                         </Badge>
@@ -259,7 +259,7 @@ export function AlocarEquipeSheet({
                     </div>
 
                     {item.notes && (
-                      <p className="text-[10px] text-muted-foreground bg-muted/30 p-1.5 rounded">
+                      <p className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded">
                         {item.notes}
                       </p>
                     )}

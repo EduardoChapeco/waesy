@@ -186,7 +186,7 @@ function FullscreenMapaPage() {
  <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
  <Link
  to="/"
- className="pointer-events-auto inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-card/90 backdrop-blur-md text-xs font-bold text-foreground hover:bg-card active:scale-95 transition-all cursor-pointer"
+ className="pointer-events-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-card/90 backdrop-blur-md text-xs font-bold text-foreground hover:bg-card active:scale-95 transition-all cursor-pointer"
  >
  <ArrowLeft size={16} weight="bold" />
  <span className="hidden sm:inline">Início</span>
@@ -196,7 +196,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={handleLocateMe}
- className="size-9 rounded-2xl p-0 bg-card/90 backdrop-blur-md text-foreground hover:bg-card active:scale-95 transition-all cursor-pointer"
+ className="size-9 rounded-lg p-0 bg-card/90 backdrop-blur-md text-foreground hover:bg-card active:scale-95 transition-all cursor-pointer"
  title="Minha Localização"
  aria-label="Minha Localização"
  >
@@ -206,7 +206,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={() => setIsPublishModalOpen(true)}
- className="h-9 px-3.5 rounded-2xl font-bold text-xs gap-1.5 active:scale-95 transition-all cursor-pointer"
+ className="h-9 px-4 rounded-lg font-bold text-xs gap-2 active:scale-95 transition-all cursor-pointer"
  >
  <Plus size={14} weight="bold" />
  <span>Publicar</span>
@@ -219,22 +219,22 @@ function FullscreenMapaPage() {
  className={cn(
  "absolute z-30 transition-all duration-300 ease-out",
         /* Mobile: Bottom Sheet ancorado embaixo */
-        "bottom-0 left-0 right-0 rounded-t-3xl border-t border-x sm:border bg-card flex flex-col shadow-xs",
+        "bottom-0 left-0 right-0 rounded-t-lg border-t border-x sm:border bg-card flex flex-col shadow-xs",
         isExpandedMobile ? "h-[85vh]" : "h-[36vh]",
  /* Desktop: Sidebar flutuante à esquerda */
- "sm:bottom-4 sm:top-16 sm:left-4 sm:right-auto sm:w-[400px] sm:h-auto sm:max-h-none sm:rounded-2xl"
+ "sm:bottom-4 sm:top-16 sm:left-4 sm:right-auto sm:w-[400px] sm:h-auto sm:max-h-none sm:rounded-lg"
  )}
  >
  {/* Drag Handle Mobile */}
  <div
  onClick={() => setIsExpandedMobile(!isExpandedMobile)}
- className="w-full flex sm:hidden items-center justify-center pt-2.5 pb-1 cursor-pointer select-none"
+ className="w-full flex sm:hidden items-center justify-center pt-3 pb-1 cursor-pointer select-none"
  >
  <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
  </div>
 
  {/* Cabeçalho do Drawer */}
- <div className="p-3.5 sm:p-4 pb-2 space-y-2.5 shrink-0">
+ <div className="p-4 sm:p-4 pb-2 space-y-3 shrink-0">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <span className="size-2 rounded-full bg-destructive animate-ping" />
@@ -262,7 +262,7 @@ function FullscreenMapaPage() {
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Buscar momentos, pessoas, rolês..."
- className="pl-8 pr-7 h-8 rounded-xl bg-background/80 border-border text-xs"
+ className="pl-8 pr-7 h-8 rounded-lg bg-background/80 border-border text-xs"
  />
  {searchQuery && (
  <button
@@ -276,7 +276,7 @@ function FullscreenMapaPage() {
  </div>
 
  {/* Filtros de Vibe */}
- <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar ">
+ <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar ">
  {VIBE_FILTERS.map((f) => {
  const isSelected = activeVibe === f.id;
  const Icon = f.icon;
@@ -286,7 +286,7 @@ function FullscreenMapaPage() {
  type="button"
  onClick={() => setActiveVibe(f.id)}
  className={cn(
- "h-7 px-2.5 rounded-xl text-[11px] font-bold shrink-0 transition-all border cursor-pointer flex items-center gap-1.5",
+ "h-7 px-3 rounded-lg text-[11px] font-bold shrink-0 transition-all border cursor-pointer flex items-center gap-2",
  isSelected
  ? "bg-primary/10 text-primary border-primary/30 font-bold"
  : "bg-background/80 border-border/80 text-muted-foreground hover:text-foreground"
@@ -311,7 +311,7 @@ function FullscreenMapaPage() {
  ) : null}
 
  {/* ── LISTA VERTICAL DE MOMENTOS (ROLAGEM SUAVE INDEPENDENTE) ── */}
- <div className="flex-1 overflow-y-auto no-scrollbar p-3 space-y-2.5">
+ <div className="flex-1 overflow-y-auto no-scrollbar p-3 space-y-3">
  {filteredMoments.length === 0 ? (
  <div className="py-8 text-center text-muted-foreground text-xs space-y-2">
  <Camera className="size-6 mx-auto opacity-30 text-primary" />
@@ -319,7 +319,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={() => setIsPublishModalOpen(true)}
- className="rounded-xl font-bold text-xs h-8 px-4"
+ className="rounded-lg font-bold text-xs h-8 px-4"
  >
  + Publicar Meu Momento
  </Button>
@@ -333,14 +333,14 @@ function FullscreenMapaPage() {
  type="button"
  onClick={() => handleSelectMoment(m)}
  className={cn(
- "w-full p-2.5 rounded-2xl text-left transition-all border flex items-start gap-3 cursor-pointer",
+ "w-full p-3 rounded-lg text-left transition-all border flex items-start gap-3 cursor-pointer",
  isSelected
  ? "bg-primary/10 border-primary text-foreground ring-1 ring-primary "
  : "bg-card border-border/70 hover:bg-muted/40 text-foreground "
  )}
  >
  {/* Foto do Momento */}
- <div className="relative size-12 rounded-xl overflow-hidden bg-muted shrink-0">
+ <div className="relative size-12 rounded-lg overflow-hidden bg-muted shrink-0">
  {m.image_url ? (
  <img src={m.image_url} alt={m.title} className="size-full object-cover" />
  ) : (
@@ -354,7 +354,7 @@ function FullscreenMapaPage() {
  </div>
 
  {/* Informações da Pessoa & Atividade */}
- <div className="min-w-0 flex-1 space-y-0.5">
+ <div className="min-w-0 flex-1 space-y-1">
  <div className="flex items-center justify-between gap-1">
  <span className="text-[11px] font-bold text-foreground truncate">
  {m.author_name || "Membro Waesy"}

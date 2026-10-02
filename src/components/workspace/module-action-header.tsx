@@ -81,16 +81,16 @@ export function ModuleActionHeader({
         {/* Lado Esquerdo: Identidade do Módulo (Direta & Semântica) */}
         <div className="min-w-0">
           {eyebrow ? (
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
               {eyebrow}
             </p>
           ) : null}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               {title}
             </h1>
             {badge !== undefined ? (
-              <Badge variant="secondary" className="text-xs font-semibold px-2 py-0.5">
+              <Badge variant="secondary" className="text-xs font-semibold px-2 py-1">
                 {badge}
               </Badge>
             ) : null}
@@ -98,7 +98,7 @@ export function ModuleActionHeader({
         </div>
 
         {/* Lado Direito: Barra de Ferramentas (Busca, Visão, Configurações Rápidas e Ação) */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Busca Rápida Contextual */}
           {onSearchChange !== undefined ? (
             <div className="relative flex-1 sm:w-64 sm:flex-initial">
@@ -108,14 +108,14 @@ export function ModuleActionHeader({
                 value={searchValue || ""}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="pl-9 h-10 sm:h-10 rounded-xl bg-card border-border/80 text-xs focus-visible:ring-1 focus-visible:ring-primary"
+                className="pl-9 h-10 sm:h-10 rounded-lg bg-card border-border/80 text-xs focus-visible:ring-1 focus-visible:ring-primary"
               />
             </div>
           ) : null}
 
           {/* Alternador de Visão (Segmented Controls Apple HIG) */}
           {viewModes && viewModes.length > 1 && onViewModeChange ? (
-            <div className="flex items-center p-1 bg-muted/60 border border-border/60 rounded-xl">
+            <div className="flex items-center p-1 bg-muted/60 border border-border/60 rounded-lg">
               {viewModes.map((v) => {
                 const IconComponent = v.icon || getDefaultIcon(v.id);
                 const isActive = currentViewMode === v.id;
@@ -125,7 +125,7 @@ export function ModuleActionHeader({
                     type="button"
                     onClick={() => onViewModeChange(v.id)}
                     className={cn(
-                      "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all",
+                      "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all",
                       isActive
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -148,11 +148,11 @@ export function ModuleActionHeader({
             <Button
               variant="outline"
               size="sm"
-              className="h-10 px-3 rounded-xl border-border/80 text-xs font-semibold hover:bg-muted/50"
+              className="h-10 px-3 rounded-lg border-border/80 text-xs font-semibold hover:bg-muted/50"
               onClick={() => setConfigDrawerOpen(true)}
               title="Ajustes rápidos do módulo"
             >
-              <SlidersHorizontal className="size-4 sm:mr-1.5" />
+              <SlidersHorizontal className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Ajustes</span>
             </Button>
           ) : null}
@@ -160,12 +160,12 @@ export function ModuleActionHeader({
           {/* Ação Primária de Alto Impacto */}
           {primaryAction ? (
             primaryAction.to ? (
-              <Button asChild className="h-10 sm:h-10 px-4 rounded-xl text-xs font-semibold shadow-sm">
+              <Button asChild className="h-10 sm:h-10 px-4 rounded-lg text-xs font-semibold shadow-sm">
                 <Link to={primaryAction.to}>
                   {primaryAction.icon ? (
-                    <primaryAction.icon className="size-4 mr-1.5" />
+                    <primaryAction.icon className="size-4 mr-2" />
                   ) : (
-                    <Plus className="size-4 mr-1.5" />
+                    <Plus className="size-4 mr-2" />
                   )}
                   {primaryAction.label}
                 </Link>
@@ -174,12 +174,12 @@ export function ModuleActionHeader({
               <Button
                 onClick={primaryAction.onClick}
                 disabled={primaryAction.disabled}
-                className="h-10 sm:h-10 px-4 rounded-xl text-xs font-semibold shadow-sm"
+                className="h-10 sm:h-10 px-4 rounded-lg text-xs font-semibold shadow-sm"
               >
                 {primaryAction.icon ? (
-                  <primaryAction.icon className="size-4 mr-1.5" />
+                  <primaryAction.icon className="size-4 mr-2" />
                 ) : (
-                  <Plus className="size-4 mr-1.5" />
+                  <Plus className="size-4 mr-2" />
                 )}
                 {primaryAction.label}
               </Button>

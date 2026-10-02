@@ -130,7 +130,7 @@ export function ShippingLabelModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-0 gap-0 border-border/70 rounded-2xl">
+      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-0 gap-0 border-border/70 rounded-lg">
         <DialogHeader className="p-5 border-b border-border/40 bg-muted/20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
@@ -143,7 +143,7 @@ export function ShippingLabelModal({
                   </Badge>
                 )}
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+              <DialogDescription className="text-xs text-muted-foreground mt-1">
                 Emissão nos padrões Correios/Transportadoras em PDF 100x150mm, ZPL II Térmico e Declaração de Conteúdo.
               </DialogDescription>
             </div>
@@ -151,7 +151,7 @@ export function ShippingLabelModal({
               <Button
                 size="sm"
                 onClick={handlePrint}
-                className="h-8 rounded-xl text-xs font-semibold gap-1.5"
+                className="h-8 rounded-lg text-xs font-semibold gap-2"
               >
                 <Printer className="size-3.5" />
                 <span>Imprimir</span>
@@ -164,7 +164,7 @@ export function ShippingLabelModal({
             onValueChange={(v) => setActiveTab(v as any)}
             className="w-full mt-3"
           >
-            <TabsList className="grid grid-cols-3 h-8 p-0.5 bg-background border border-border/50 rounded-xl">
+            <TabsList className="grid grid-cols-3 h-8 p-1 bg-background border border-border/50 rounded-lg">
               <TabsTrigger value="thermal" className="text-xs font-medium rounded-lg">
                 Etiqueta Térmica (100x150mm)
               </TabsTrigger>
@@ -203,7 +203,7 @@ export function ShippingLabelModal({
                     <div className="font-black text-base tracking-wider uppercase">
                       {carrier}
                     </div>
-                    <div className="border border-black px-2 py-0.5 text-[11px] font-bold uppercase rounded">
+                    <div className="border border-black px-2 py-1 text-[11px] font-bold uppercase rounded">
                       {shippingService}
                     </div>
                   </div>
@@ -228,13 +228,13 @@ export function ShippingLabelModal({
                         ))}
                       </svg>
                     </div>
-                    <span className="text-[9px] text-gray-600 block mt-0.5">
+                    <span className="text-[9px] text-gray-600 block mt-1">
                       Código de Rastreamento Postal
                     </span>
                   </div>
 
                   {/* Bloco DESTINATÁRIO */}
-                  <div className="py-2.5 border-b-2 border-black space-y-1">
+                  <div className="py-3 border-b-2 border-black space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] uppercase font-bold text-gray-700">
                         Destinatário
@@ -285,7 +285,7 @@ export function ShippingLabelModal({
                   </div>
 
                   {/* Bloco REMETENTE */}
-                  <div className="py-2 border-b border-gray-300 text-[11px] leading-tight space-y-0.5">
+                  <div className="py-2 border-b border-gray-300 text-[11px] leading-tight space-y-1">
                     <span className="text-[9px] uppercase font-bold text-gray-600 block">
                       Remetente
                     </span>
@@ -389,7 +389,7 @@ export function ShippingLabelModal({
                   </table>
                 </div>
 
-                <div className="text-[10px] text-gray-600 border p-2.5 rounded leading-tight">
+                <div className="text-[10px] text-gray-600 border p-3 rounded leading-tight">
                   Declaro que não me enquadro no conceito de contribuinte do ICMS e que a mercadoria acima não tem finalidade comercial, responsabilizando-me perante a lei pela veracidade desta declaração.
                 </div>
 
@@ -414,7 +414,7 @@ export function ShippingLabelModal({
                       size="sm"
                       variant="outline"
                       onClick={handleCopyZpl}
-                      className="h-8 text-xs font-semibold gap-1.5"
+                      className="h-8 text-xs font-semibold gap-2"
                     >
                       {copiedZpl ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
                       <span>{copiedZpl ? "Copiado" : "Copiar ZPL"}</span>
@@ -422,7 +422,7 @@ export function ShippingLabelModal({
                     <Button
                       size="sm"
                       onClick={handleDownloadZpl}
-                      className="h-8 text-xs font-semibold gap-1.5"
+                      className="h-8 text-xs font-semibold gap-2"
                     >
                       <Download className="size-3.5" />
                       <span>Baixar .zpl</span>
@@ -430,15 +430,15 @@ export function ShippingLabelModal({
                   </div>
                 </div>
 
-                <pre className="p-4 rounded-xl bg-muted/60 border border-border text-[11px] font-mono overflow-x-auto max-h-80 text-foreground">
+                <pre className="p-4 rounded-lg bg-muted/60 border border-border text-[11px] font-mono overflow-x-auto max-h-80 text-foreground">
                   {zplScript || "Gerando script ZPL..."}
                 </pre>
               </div>
             )}
 
             {/* ── SEÇÃO INFERIOR: REGISTRO DE DESPACHO & RASTREAMENTO ── */}
-            <div className="border-t border-border/60 pt-4 bg-muted/10 p-4 rounded-xl space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+            <div className="border-t border-border/60 pt-4 bg-muted/10 p-4 rounded-lg space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
                 <Truck className="size-3.5 text-primary" />
                 <span>Atualizar Rastreamento e Confirmar Despacho</span>
               </h4>

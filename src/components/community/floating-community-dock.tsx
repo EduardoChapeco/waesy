@@ -169,10 +169,10 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 pointer-events-auto">
  {/* ── Card Minimalista Expansível (Card Flutuante Expansível) ── */}
  {isExpanded && (
- <div className="w-[90vw] sm:w-[420px] bg-background/95 backdrop-blur-xl border border-border/80 rounded-2xl p-4 shadow-2xl space-y-3.5 animate-in fade-in zoom-in-95 duration-200">
+ <div className="w-[90vw] sm:w-[420px] bg-background/95 backdrop-blur-xl border border-border/80 rounded-lg p-4 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
  {/* Header do Floating Composer */}
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <Avatar className="size-8 rounded-full border border-border/60">
  <AvatarImage src={userAvatar} alt={userName} />
  <AvatarFallback className="text-[11px] font-bold bg-primary/10 text-primary">
@@ -181,7 +181,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  </Avatar>
  <div>
  <p className="text-xs font-bold text-foreground leading-none">{userName}</p>
- <p className="text-[10px] text-muted-foreground mt-0.5">Novo Post no Feed</p>
+ <p className="text-[10px] text-muted-foreground mt-1">Novo Post no Feed</p>
  </div>
  </div>
 
@@ -205,7 +205,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  type="button"
  onClick={() => setActiveFormat(fmt.id as PostType)}
  className={cn(
- "px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0",
+ "px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0",
  isSelected
  ? "bg-foreground text-background shadow-xs"
  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -220,7 +220,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
 
  {/* Campos Específicos para Notícia */}
  {activeFormat === "news" && (
- <div className="space-y-2 p-2.5 rounded-2xl bg-muted/40 border border-border/80">
+ <div className="space-y-2 p-3 rounded-lg bg-muted/40 border border-border/80">
  <Input
  value={newsTitle}
  onChange={(e) => setNewsTitle(e.target.value)}
@@ -238,7 +238,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
 
  {/* Campos Específicos para Viagem */}
  {activeFormat === "travel" && (
- <div className="grid grid-cols-2 gap-2 p-2.5 rounded-2xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-300/30">
+ <div className="grid grid-cols-2 gap-2 p-3 rounded-lg bg-sky-50/50 dark:bg-sky-950/20 border border-sky-300/30">
  <Input
  value={travelOrigin}
  onChange={(e) => setTravelOrigin(e.target.value)}
@@ -268,7 +268,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  {mediaPreviews.map((media, idx) => (
  <div
  key={idx}
- className="relative size-16 rounded-xl overflow-hidden bg-muted border border-border/60 shrink-0 group"
+ className="relative size-16 rounded-lg overflow-hidden bg-muted border border-border/60 shrink-0 group"
  >
  <img src={media.url} alt="Preview" className="size-full object-cover" />
  <button
@@ -285,7 +285,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
 
  {/* Barra Inferior com Anexo e Botão Publicar */}
  <div className="flex items-center justify-between pt-2 border-t border-border/40">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <input
  ref={fileInputRef}
  type="file"
@@ -299,7 +299,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  size="sm"
  onClick={() => fileInputRef.current?.click()}
  disabled={isUploading || mediaPreviews.length >= 6}
- className="h-8 px-2.5 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground gap-1.5 cursor-pointer"
+ className="h-8 px-3 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground gap-2 cursor-pointer"
  >
  {isUploading ? (
  <CircleNotch size={13} className="animate-spin text-primary" />
@@ -309,7 +309,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <span>Foto/Vídeo</span>
  </Button>
 
- <div className="flex items-center gap-1 bg-muted/40 px-2 py-0.5 rounded-lg">
+ <div className="flex items-center gap-1 bg-muted/40 px-2 py-1 rounded-lg">
  <MapPin size={11} className="text-muted-foreground" />
  <Input
  value={locationName}
@@ -324,7 +324,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  onClick={handlePublish}
  disabled={isSubmitting || isUploading || (!content.trim() && mediaUrls.length === 0 && !newsTitle.trim())}
  size="sm"
- className="bg-primary text-primary-foreground font-bold rounded-xl h-8 px-4 text-xs hover:scale-102 active:scale-98 transition-all cursor-pointer shadow-xs"
+ className="bg-primary text-primary-foreground font-bold rounded-lg h-8 px-4 text-xs hover:scale-102 active:scale-98 transition-all cursor-pointer shadow-xs"
  >
  {isSubmitting ? (
  <>
@@ -340,12 +340,12 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  )}
 
  {/* ── Botões Flutuantes da Dock (Chat + Criar Post) ── */}
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  {/* Botão Flutuante de Conversas / Chat */}
  <Button
  asChild
  size="icon"
- className="size-11 sm:size-12 rounded-2xl bg-card border border-border/80 text-foreground hover:bg-muted shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+ className="size-11 sm:size-12 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
  title="Abrir Conversas e Mensagens"
  >
  <Link to="/conta/conversas/$id" params={{ id: "novo" }}>
@@ -357,7 +357,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <Button
  onClick={() => setIsExpanded(!isExpanded)}
  className={cn(
- "h-11 sm:h-12 px-4 rounded-2xl bg-primary text-primary-foreground font-bold text-xs shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer",
+ "h-11 sm:h-12 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer",
  isExpanded ? "ring-2 ring-primary/40 bg-foreground text-background" : ""
  )}
  >

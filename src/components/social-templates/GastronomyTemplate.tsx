@@ -55,7 +55,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
             <span>{promoBadge || "ESPECIAL DA CASA"}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-semibold">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-semibold">
             <Clock className="size-3.5 text-amber-400 shrink-0" />
             <span>35-45 min</span>
           </div>
@@ -79,7 +79,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
             {resolvedHighlights.map((item, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-semibold"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-semibold"
               >
                 <Star className="size-3.5 text-amber-400 shrink-0 fill-current" />
                 <span>{item}</span>
@@ -102,7 +102,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold shrink-0">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold shrink-0">
             <Utensils className="size-4.5 text-amber-400 shrink-0" />
             <span className="truncate max-w-[180px]">{storeName}</span>
           </div>

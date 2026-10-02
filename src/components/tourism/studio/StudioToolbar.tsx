@@ -52,7 +52,7 @@ export function StudioToolbar({
               )}
               {status && (
                 <span
-                  className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${statusBg} ${statusColor}`}
+                  className={`rounded-full px-2 py-1 text-[9px] font-bold uppercase tracking-wider ${statusBg} ${statusColor}`}
                 >
                   {status}
                 </span>
@@ -75,7 +75,7 @@ export function StudioToolbar({
                 onChange={(e) => onTitleChange(e.target.value)}
                 onBlur={(e) => onTitleBlur?.(e.target.value)}
                 placeholder="Sem título"
-                className="font-bold border-b hover:border-border/50 focus:border-brand w-full max-w-md py-0.5"
+                className="font-bold border-b hover:border-border/50 focus:border-brand w-full max-w-md py-1"
               />
             ) : (
               <h1 className="text-sm font-bold text-foreground truncate">{title}</h1>

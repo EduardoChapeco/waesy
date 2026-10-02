@@ -30,20 +30,20 @@ export function TemplateVoucherA4({
  <h1 className="text-2xl font-extrabold uppercase text-slate-900 mt-1">
  {voucher.title || 'Cartão de Embarque'}
  </h1>
- <p className="text-xs text-slate-500 mt-0.5">{agencyName}</p>
+ <p className="text-xs text-slate-500 mt-1">{agencyName}</p>
  </div>
 
  <div className="text-right">
  <span className="text-[10px] font-mono text-slate-400">Nº DO VOUCHER</span>
  <p className="text-lg font-mono font-black text-slate-900">{voucher.voucher_number || 'VCH-2026-0001'}</p>
- <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+ <span className="inline-block mt-1 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
  CONFIRMADO / EMITIDO
  </span>
  </div>
  </div>
 
  {/* Titular */}
- <div className="grid grid-cols-3 gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200 my-4 text-xs">
+ <div className="grid grid-cols-3 gap-4 p-5 rounded-lg bg-slate-50 border border-slate-200 my-4 text-xs">
  <div>
  <span className="text-[10px] font-mono text-slate-400 uppercase">PASSAGEIRO TITULAR</span>
  <p className="font-bold text-sm text-slate-900">{voucher.passenger_name || 'Nome do Passageiro'}</p>
@@ -67,7 +67,7 @@ export function TemplateVoucherA4({
  <Plane className="size-4" /> Dados do Voo e Trecho Aéreo
  </div>
 
- <div className="p-6 rounded-2xl bg-sky-50/50 border-2 border-dashed border-sky-200 space-y-4">
+ <div className="p-6 rounded-lg bg-sky-50/50 border-2 border-dashed border-sky-200 space-y-4">
  <div className="grid grid-cols-4 gap-4 text-xs">
  <div>
  <span className="text-[10px] text-slate-500">COMPANHIA</span>
@@ -118,7 +118,7 @@ export function TemplateVoucherA4({
  <Building2 className="size-4" /> Voucher de Hospedagem e Check-in
  </div>
 
- <div className="p-6 rounded-2xl bg-emerald-50/50 border-2 border-dashed border-emerald-200 space-y-4">
+ <div className="p-6 rounded-lg bg-emerald-50/50 border-2 border-dashed border-emerald-200 space-y-4">
  <div className="grid grid-cols-3 gap-4 text-xs">
  <div>
  <span className="text-[10px] text-slate-500">HOTEL / RESORT</span>
@@ -153,7 +153,7 @@ export function TemplateVoucherA4({
  )}
 
  {/* QR Code & Validação */}
- <div className="p-6 rounded-2xl bg-slate-900 text-white flex items-center justify-between mt-auto">
+ <div className="p-6 rounded-lg bg-slate-900 text-white flex items-center justify-between mt-auto">
  <div className="space-y-1">
  <span className="text-[10px] font-mono tracking-widest text-sky-400 uppercase">Validação Criptográfica Digital</span>
  <h4 className="text-sm font-bold">Apresente este voucher no balcão de atendimento</h4>
@@ -162,7 +162,7 @@ export function TemplateVoucherA4({
  </p>
  </div>
 
- <div className="p-3 bg-white rounded-xl text-slate-900 text-center space-y-1">
+ <div className="p-3 bg-white rounded-lg text-slate-900 text-center space-y-1">
  <QrCode className="size-16 mx-auto text-slate-900" />
  <span className="text-[9px] font-mono font-bold block text-slate-500">{voucher.voucher_number || 'VCH-QR'}</span>
  </div>

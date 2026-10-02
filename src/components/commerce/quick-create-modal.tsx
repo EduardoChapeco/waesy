@@ -136,7 +136,7 @@ export function QuickCreateModal({
  aria-label="Publicar"
  className={
  asNavButton
- ? "size-11 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-xs active:scale-90 transition-transform focus:outline-none cursor-pointer"
+ ? "size-11 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shadow-xs active:scale-90 transition-transform focus:outline-none cursor-pointer"
  : "size-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center -mt-5 hover:scale-105 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer border-2 border-background"
  }
  >
@@ -151,7 +151,7 @@ export function QuickCreateModal({
  <div className="flex items-center gap-3">
  <button
  onClick={closeSheet}
- className="size-9 rounded-xl flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-9 rounded-lg flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
  aria-label="Fechar"
  >
  <X size={18} />
@@ -167,11 +167,11 @@ export function QuickCreateModal({
  const Icon = item.icon;
  const CardContent = (
  <div
- className={`w-full p-4 rounded-2xl bg-card border border-border/60 hover:bg-muted/40 transition-all duration-200 active:scale-[0.99] flex items-center justify-between gap-3 group cursor-pointer shadow-2xs ${item.borderHover}`}
+ className={`w-full p-4 rounded-lg bg-card border border-border/60 hover:bg-muted/40 transition-all duration-200 active:scale-[0.99] flex items-center justify-between gap-3 group cursor-pointer shadow-2xs ${item.borderHover}`}
  >
- <div className="flex items-start gap-3.5 min-w-0">
+ <div className="flex items-start gap-4 min-w-0">
  <div
- className={`size-12 rounded-xl ${item.iconBg} ${item.iconColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}
+ className={`size-12 rounded-lg ${item.iconBg} ${item.iconColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}
  >
  <Icon className="size-6 stroke-[2]" />
  </div>
@@ -185,7 +185,7 @@ export function QuickCreateModal({
  <Badge
  key={b}
  variant="secondary"
- className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-md bg-muted text-muted-foreground"
+ className="text-[9px] font-bold uppercase px-2 py-1 rounded-md bg-muted text-muted-foreground"
  >
  {b}
  </Badge>

@@ -354,7 +354,7 @@ function VehicleLayoutEditorPage() {
  size="icon"
  onClick={handleUndo}
  disabled={historyIndex <= 0}
- className="size-9 rounded-xl cursor-pointer"
+ className="size-9 rounded-lg cursor-pointer"
  title="Desfazer"
  >
  <Undo className="size-3.5" />
@@ -365,7 +365,7 @@ function VehicleLayoutEditorPage() {
  size="icon"
  onClick={handleRedo}
  disabled={historyIndex >= history.length - 1}
- className="size-9 rounded-xl cursor-pointer"
+ className="size-9 rounded-lg cursor-pointer"
  title="Refazer"
  >
  <Redo className="size-3.5" />
@@ -377,7 +377,7 @@ function VehicleLayoutEditorPage() {
  variant="outline"
  size="sm"
  onClick={() => setPresetModalOpen(true)}
- className="h-9 px-3 rounded-xl text-xs gap-1.5 cursor-pointer"
+ className="h-9 px-3 rounded-lg text-xs gap-2 cursor-pointer"
  >
  <BookmarkPlus className="size-3.5 text-primary" /> Modelos Prontos
  </Button>
@@ -388,7 +388,7 @@ function VehicleLayoutEditorPage() {
  variant="outline"
  size="sm"
  onClick={handleAutoRenumber}
- className="h-9 px-3 rounded-xl text-xs gap-1.5 cursor-pointer"
+ className="h-9 px-3 rounded-lg text-xs gap-2 cursor-pointer"
  >
  <ListOrdered className="size-3.5 text-primary" /> Renumerar
  </Button>
@@ -398,7 +398,7 @@ function VehicleLayoutEditorPage() {
  type="button"
  onClick={handleSave}
  disabled={saving}
- className="h-9 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-primary text-primary-foreground shadow-xs"
+ className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer bg-primary text-primary-foreground shadow-xs"
  >
  <Save className="size-3.5" /> {saving ? "Salvando..." : "Salvar Mapa"}
  </Button>
@@ -408,18 +408,18 @@ function VehicleLayoutEditorPage() {
  {/* ── 2. Paleta de Ferramentas & Categorias de Assento ── */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  {/* Ferramentas de Pintura */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-2.5">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">
  Ferramenta de Pintura
  </span>
  {isDoubleDecker && (
- <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/60">
+ <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/60">
  <button
  type="button"
  onClick={() => setActiveDeck(1)}
  className={cn(
- "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
  activeDeck === 1
  ? "bg-primary text-primary-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -431,7 +431,7 @@ function VehicleLayoutEditorPage() {
  type="button"
  onClick={() => setActiveDeck(2)}
  className={cn(
- "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
  activeDeck === 2
  ? "bg-primary text-primary-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -443,7 +443,7 @@ function VehicleLayoutEditorPage() {
  )}
  </div>
 
- <div className="flex flex-wrap items-center gap-1.5">
+ <div className="flex flex-wrap items-center gap-2">
  {TOOL_OPTIONS.map((tool) => {
  const isSelected = activeTool === tool.type;
  return (
@@ -452,7 +452,7 @@ function VehicleLayoutEditorPage() {
  type="button"
  onClick={() => setActiveTool(tool.type)}
  className={cn(
- "px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5",
+ "px-3 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2",
  isSelected
  ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-2xs"
  : "border-border/70 bg-background text-foreground hover:bg-muted/50"
@@ -479,11 +479,11 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* Categorias de Poltrona */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-2.5">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3">
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">
  Categoria Ativa para Novas Poltronas
  </span>
- <div className="flex flex-wrap items-center gap-1.5">
+ <div className="flex flex-wrap items-center gap-2">
  {CATEGORY_OPTIONS.map((cat) => {
  const isSelected = activeCategory === cat.key;
  return (
@@ -492,7 +492,7 @@ function VehicleLayoutEditorPage() {
  type="button"
  onClick={() => setActiveCategory(cat.key)}
  className={cn(
- "px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5",
+ "px-3 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2",
  isSelected
  ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-2xs"
  : "border-border/70 bg-background text-foreground hover:bg-muted/50"
@@ -508,7 +508,7 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* ── 3. Chassi Virtual do Veículo 2D (Apple Grade) ── */}
- <div className="flex flex-col items-center justify-center p-6 sm:p-10 rounded-2xl bg-muted/20 border border-border/70 overflow-x-auto no-scrollbar">
+ <div className="flex flex-col items-center justify-center p-6 sm:p-10 rounded-lg bg-muted/20 border border-border/70 overflow-x-auto no-scrollbar">
  <div className="text-xs font-mono text-muted-foreground mb-4 flex items-center gap-2">
  <Info className="size-3.5" />
  <span>
@@ -519,15 +519,15 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* Carroceria do Ônibus */}
- <div className="relative w-fit rounded-3xl border-4 border-foreground/30 bg-card p-6 sm:p-8 shadow-sm flex flex-col items-center space-y-4 min-w-[300px]">
+ <div className="relative w-fit rounded-lg border-4 border-foreground/30 bg-card p-6 sm:p-8 shadow-sm flex flex-col items-center space-y-4 min-w-[300px]">
  {/* Para-brisa Dianteiro */}
- <div className="w-full h-9 rounded-t-3xl bg-sky-500/10 border-2 border-sky-500/30 flex items-center justify-center text-xs font-mono font-bold text-sky-600 uppercase tracking-widest">
+ <div className="w-full h-9 rounded-t-lg bg-sky-500/10 border-2 border-sky-500/30 flex items-center justify-center text-xs font-mono font-bold text-sky-600 uppercase tracking-widest">
  Frente / Para-brisa {isDoubleDecker ? `(Piso ${activeDeck})` : ""}
  </div>
 
  {/* Matriz de Assentos */}
  <div
- className="grid gap-2.5"
+ className="grid gap-3"
  style={{
  gridTemplateColumns: `repeat(${cols}, minmax(44px, 52px))`,
  }}
@@ -548,7 +548,7 @@ function VehicleLayoutEditorPage() {
  onClick={(e) => handleCellClick(r, c, e)}
  title={`Linha ${r + 1}, Coluna ${c + 1}: ${cell?.label || cellType} (${cell?.category || ""})`}
  className={cn(
- "size-11 sm:size-12 rounded-xl flex flex-col items-center justify-center font-bold text-xs transition-all cursor-pointer select-none active:scale-95",
+ "size-11 sm:size-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs transition-all cursor-pointer select-none active:scale-95",
  // Estilização por Tipo
  cellType === "seat" &&
  !isAccessible &&
@@ -585,7 +585,7 @@ function VehicleLayoutEditorPage() {
  {cellType === "seat" ? (
  <>
  <span className="font-mono text-xs leading-none">{cell?.label || `${r + 1}`}</span>
- <span className="text-xs opacity-80 uppercase tracking-tighter mt-0.5">
+ <span className="text-xs opacity-80 uppercase tracking-tighter mt-1">
  {isAccessible ? "PCD" : isBlocked ? "BLQ" : cell?.category ? cell.category.substring(0, 4) : "EXEC"}
  </span>
  </>
@@ -601,7 +601,7 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* Traseira do Ônibus */}
- <div className="w-full h-5 rounded-b-2xl bg-muted/60 border-t border-border flex items-center justify-center text-xs font-mono text-muted-foreground uppercase tracking-wider">
+ <div className="w-full h-5 rounded-b-lg bg-muted/60 border-t border-border flex items-center justify-center text-xs font-mono text-muted-foreground uppercase tracking-wider">
  Traseira do Veículo
  </div>
  </div>
@@ -628,7 +628,7 @@ function VehicleLayoutEditorPage() {
  <Input
  value={seatLabel}
  onChange={(e) => setSeatLabel(e.target.value)}
- className="mt-1 font-mono rounded-xl h-9"
+ className="mt-1 font-mono rounded-lg h-9"
  placeholder="Ex: 01, 02, 14A..."
  />
  </div>
@@ -638,7 +638,7 @@ function VehicleLayoutEditorPage() {
  <select
  value={seatCategory}
  onChange={(e) => setSeatCategory(e.target.value as any)}
- className="w-full h-9 mt-1 px-3 rounded-xl border border-border bg-background text-xs font-semibold"
+ className="w-full h-9 mt-1 px-3 rounded-lg border border-border bg-background text-xs font-semibold"
  >
  {CATEGORY_OPTIONS.map((c) => (
  <option key={c.key} value={c.key}>
@@ -653,7 +653,7 @@ function VehicleLayoutEditorPage() {
  <select
  value={seatStatus}
  onChange={(e) => setSeatStatus(e.target.value as any)}
- className="w-full h-9 mt-1 px-3 rounded-xl border border-border bg-background text-xs font-semibold"
+ className="w-full h-9 mt-1 px-3 rounded-lg border border-border bg-background text-xs font-semibold"
  >
  <option value="available">Disponível para Venda</option>
  <option value="accessible">Acessível / PCD (Prioritário)</option>
@@ -664,10 +664,10 @@ function VehicleLayoutEditorPage() {
  </div>
 
  <SheetFooter className="pt-4 border-t border-border/60">
- <Button variant="outline" onClick={() => setSelectedSeat(null)} className="rounded-xl text-xs font-bold">
+ <Button variant="outline" onClick={() => setSelectedSeat(null)} className="rounded-lg text-xs font-bold">
  Cancelar
  </Button>
- <Button onClick={handleSaveSeatDetail} className="rounded-xl text-xs font-bold">
+ <Button onClick={handleSaveSeatDetail} className="rounded-lg text-xs font-bold">
  Confirmar
  </Button>
  </SheetFooter>
@@ -689,9 +689,9 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("exec_46")}
- className="p-4 rounded-2xl border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1"
  >
- <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+ <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Bus className="size-4 text-primary" /> 46L Executivo
  </div>
  <p className="text-xs text-muted-foreground">
@@ -702,9 +702,9 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("semi_42")}
- className="p-4 rounded-2xl border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1"
  >
- <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+ <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Bus className="size-4 text-emerald-500" /> 42L Semi-Leito
  </div>
  <p className="text-xs text-muted-foreground">
@@ -715,9 +715,9 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("dd_60")}
- className="p-4 rounded-2xl border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2"
  >
- <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+ <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Layers className="size-4 text-amber-500" /> 60L Double Decker (G8 DD)
  </div>
  <p className="text-xs text-muted-foreground">
@@ -728,9 +728,9 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("micro_28")}
- className="p-4 rounded-2xl border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2"
  >
- <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+ <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Bus className="size-4 text-indigo-500" /> 28L Micro-ônibus
  </div>
  <p className="text-xs text-muted-foreground">
@@ -741,7 +741,7 @@ function VehicleLayoutEditorPage() {
  </div>
 
  <SheetFooter className="pt-4 border-t border-border/60">
- <Button variant="outline" onClick={() => setPresetModalOpen(false)} className="rounded-xl text-xs font-bold">
+ <Button variant="outline" onClick={() => setPresetModalOpen(false)} className="rounded-lg text-xs font-bold">
  Fechar
  </Button>
  </SheetFooter>

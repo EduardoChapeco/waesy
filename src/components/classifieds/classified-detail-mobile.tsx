@@ -306,7 +306,7 @@ export function ClassifiedDetailMobile({
 
             {/* Indicador de Dots / Paginação Silenciosa */}
             {images.length > 1 && (
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md z-10 pointer-events-none">
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1 rounded-full bg-black/50 backdrop-blur-md z-10 pointer-events-none">
                 {images.map((_, idx) => (
                   <span
                     key={idx}
@@ -322,7 +322,7 @@ export function ClassifiedDetailMobile({
 
             {/* Contador Numérico Discreto no Canto */}
             {images.length > 1 && (
-              <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-mono font-medium pointer-events-none z-10">
+              <div className="absolute bottom-3 right-3 px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-mono font-medium pointer-events-none z-10">
                 {activeImage + 1}/{images.length}
               </div>
             )}
@@ -387,7 +387,7 @@ export function ClassifiedDetailMobile({
               size="sm"
               variant="outline"
               onClick={onEdit}
-              className="h-7 text-xs px-2.5 rounded-lg border-amber-500/40 text-amber-900 dark:text-amber-100 hover:bg-amber-500/20 font-bold"
+              className="h-7 text-xs px-3 rounded-lg border-amber-500/40 text-amber-900 dark:text-amber-100 hover:bg-amber-500/20 font-bold"
             >
               <Edit3 className="size-3 mr-1" /> Editar
             </Button>
@@ -398,8 +398,8 @@ export function ClassifiedDetailMobile({
       {/* ── 2. CONTEÚDO PRINCIPAL (Padrão WhatsApp / Mobile App Native List) ── */}
       <div className="px-4 pt-4 space-y-5">
         {/* Preço & Badges */}
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-1.5">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className="text-[10px] font-semibold text-primary border-primary/30 bg-primary/10">
               {niche.shortLabel || niche.title}
             </Badge>
@@ -409,7 +409,7 @@ export function ClassifiedDetailMobile({
               </Badge>
             )}
             {attrs.delivery_available && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
                 <Truck className="size-3" /> Entrega
               </span>
             )}
@@ -423,7 +423,7 @@ export function ClassifiedDetailMobile({
                 <span className="text-xs text-muted-foreground">Doação sem custo</span>
               </div>
             ) : isInvestmentOpportunity ? (
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Aporte Solicitado</span>
                 <span className="text-2xl font-extrabold text-foreground font-mono">
                   {targetInvestment > 0 ? formatMoney(targetInvestment) : (priceCents > 0 ? formatMoney(priceCents) : "A combinar")}
@@ -431,7 +431,7 @@ export function ClassifiedDetailMobile({
                 {offeredEquity && <span className="text-xs text-primary font-semibold block">{offeredEquity} de participação</span>}
               </div>
             ) : (
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl sm:text-3xl font-extrabold text-foreground font-mono">
                     {priceCents > 0 ? formatMoney(priceCents) : "Consulte o anunciante"}
@@ -455,14 +455,14 @@ export function ClassifiedDetailMobile({
           </h1>
 
           {/* Localização & Timestamp */}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground pt-0.5">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1">
             <MapPin className="size-3.5 shrink-0 text-muted-foreground/70" />
             <span className="truncate">{locationText}</span>
           </div>
         </div>
 
         {/* ── 3. CARD DO VENDEDOR / ANUNCIANTE ── */}
-        <div className="rounded-2xl border border-border/60 bg-card p-3.5 flex items-center justify-between gap-3 shadow-xs">
+        <div className="rounded-lg border border-border/60 bg-card p-4 flex items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3 min-w-0">
             <div className="size-11 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground text-sm overflow-hidden shrink-0 border border-border/40">
               {author?.avatar_url ? (
@@ -488,7 +488,7 @@ export function ClassifiedDetailMobile({
               variant="outline"
               size="sm"
               onClick={handleWhatsApp}
-              className="h-9 px-3 rounded-xl border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 text-xs font-bold shrink-0 flex items-center gap-1.5 active:scale-95"
+              className="h-9 px-3 rounded-lg border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 text-xs font-bold shrink-0 flex items-center gap-2 active:scale-95"
             >
               <MessageCircle className="size-3.5 text-emerald-500" />
               <span>Conversar</span>
@@ -504,7 +504,7 @@ export function ClassifiedDetailMobile({
             </h2>
             <div className="grid grid-cols-2 gap-2">
               {featureList.map((item, idx) => (
-                <div key={idx} className="rounded-xl border border-border/50 bg-card p-2.5 space-y-0.5">
+                <div key={idx} className="rounded-lg border border-border/50 bg-card p-3 space-y-1">
                   <span className="text-[10px] text-muted-foreground uppercase font-medium block">
                     {item.label}
                   </span>
@@ -523,7 +523,7 @@ export function ClassifiedDetailMobile({
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Descrição
             </h2>
-            <div className="rounded-2xl border border-border/50 bg-card p-3.5 space-y-2 text-xs text-foreground/90 leading-relaxed">
+            <div className="rounded-lg border border-border/50 bg-card p-4 space-y-2 text-xs text-foreground/90 leading-relaxed">
               <p className={isDescExpanded ? "whitespace-pre-line" : "whitespace-pre-line line-clamp-4"}>
                 {classified.content}
               </p>
@@ -549,12 +549,12 @@ export function ClassifiedDetailMobile({
               </h2>
               <span className="text-[10px] text-muted-foreground font-mono">Informativo</span>
             </div>
-            <div className="rounded-2xl border border-border/50 bg-card p-3 space-y-2">
-              <div className="flex flex-wrap gap-1.5">
+            <div className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
+              <div className="flex flex-wrap gap-2">
                 {paymentMethodsList.map((pm) => (
                   <span
                     key={pm.id}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
                   >
                     <pm.icon className="size-3.5 text-primary shrink-0" />
                     <span>{pm.label}</span>
@@ -577,7 +577,7 @@ export function ClassifiedDetailMobile({
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Localização Aproximada
             </h2>
-            <div className="rounded-2xl border border-border/50 overflow-hidden h-44 bg-muted/20">
+            <div className="rounded-lg border border-border/50 overflow-hidden h-44 bg-muted/20">
               <MapLibreCanvas
                 initialCenter={[classified.location_lng, classified.location_lat]}
                 initialZoom={14}
@@ -588,9 +588,9 @@ export function ClassifiedDetailMobile({
         )}
 
         {/* ── 7. COMPROMISSO DE SEGURANÇA ── */}
-        <div className="rounded-xl border border-border/40 bg-muted/20 p-3 flex items-start gap-2.5 text-muted-foreground">
-          <ShieldCheck className="size-4 text-primary shrink-0 mt-0.5" />
-          <div className="text-[11px] leading-snug space-y-0.5">
+        <div className="rounded-lg border border-border/40 bg-muted/20 p-3 flex items-start gap-3 text-muted-foreground">
+          <ShieldCheck className="size-4 text-primary shrink-0 mt-1" />
+          <div className="text-[11px] leading-snug space-y-1">
             <span className="font-semibold text-foreground block">Dica de Segurança</span>
             <span>Nunca faça transferências antecipadas fora da plataforma. Prefira locais públicos para entregas.</span>
           </div>
@@ -599,11 +599,11 @@ export function ClassifiedDetailMobile({
 
       {/* ── 8. STICKY BOTTOM ACTION BAR (Native-First: Nielsen Norman & Apple HIG) ── */}
       {/* Utiliza pb-[calc(0.75rem+env(safe-area-inset-bottom))] e mobile-nav-hide-on-keyboard */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/50 px-4 py-2.5 pb-[calc(0.65rem+env(safe-area-inset-bottom))] flex items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] mobile-nav-hide-on-keyboard">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/50 px-4 py-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] flex items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] mobile-nav-hide-on-keyboard">
         {/* Preço / Condição */}
         <div className="flex flex-col min-w-0">
           {isDonation ? (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="text-base font-extrabold text-emerald-600 font-mono">Gratuito</span>
               <Badge variant="outline" className="text-[9px] font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
                 Doação
@@ -643,7 +643,7 @@ export function ClassifiedDetailMobile({
               variant="outline"
               size="sm"
               onClick={handleWhatsApp}
-              className="h-11 w-11 p-0 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 active:scale-95 transition-transform"
+              className="h-11 w-11 p-0 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 active:scale-95 transition-transform"
               aria-label="Chamar no WhatsApp"
             >
               <MessageCircle className="size-5" />
@@ -654,7 +654,7 @@ export function ClassifiedDetailMobile({
             type="button"
             onClick={primaryCta.action}
             disabled={isBooking || isBuyingDirect || isDownloadingDigital}
-            className="h-11 px-5 rounded-xl font-bold text-xs sm:text-sm bg-primary text-primary-foreground shadow-sm hover:opacity-90 active:scale-95 transition-transform cursor-pointer"
+            className="h-11 px-5 rounded-lg font-bold text-xs sm:text-sm bg-primary text-primary-foreground shadow-sm hover:opacity-90 active:scale-95 transition-transform cursor-pointer"
           >
             {primaryCta.label}
           </Button>

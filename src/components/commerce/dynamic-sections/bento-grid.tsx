@@ -85,14 +85,14 @@ export function BentoGrid({ content, node_id, block_type }: BentoGridProps) {
  </div>
 
  {/* Content Overlay */}
- <div className="relative z-10 p-6 space-y-1.5 text-white">
+ <div className="relative z-10 p-6 space-y-2 text-white">
  {item.subtitle && (
  <span className="text-[10px] font-bold uppercase tracking-wider text-primary/80">
  {item.subtitle}
  </span>
  )}
  {item.title && (
- <h3 className="text-base font-black tracking-tight flex items-center gap-1.5">
+ <h3 className="text-base font-black tracking-tight flex items-center gap-2">
  {item.title}
  {item.link && (
  <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />

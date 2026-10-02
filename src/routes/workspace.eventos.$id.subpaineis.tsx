@@ -66,7 +66,7 @@ function EventSubpanelsPage() {
  title="Pontos de Venda"
  description="Crie portais isolados com link mágico para operadores de bar, praça de alimentação e lojinhas."
  />
- <Button onClick={() => setIsDialogOpen(true)} className="rounded-2xl min-h-[44px] font-bold">
+ <Button onClick={() => setIsDialogOpen(true)} className="rounded-lg min-h-11 font-bold">
  <Plus className="h-4 w-4 mr-2" /> Novo Subpainel
  </Button>
  </div>
@@ -74,16 +74,16 @@ function EventSubpanelsPage() {
  {isLoading ? (
  <div className="py-12 text-center text-sm text-muted-foreground">Carregando subpainéis...</div>
  ) : subpanels.length === 0 ? (
- <div className="bg-card border border-border rounded-2xl p-12 text-center text-sm text-muted-foreground">
+ <div className="bg-card border border-border rounded-lg p-12 text-center text-sm text-muted-foreground">
  Nenhum subpainel criado para este evento. Clique no botão acima para adicionar bares ou pontos de atendimento.
  </div>
  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
  {subpanels.map((sp: any) => (
- <div key={sp.id} className="bg-card border border-border p-5 rounded-2xl space-y-4 shadow-sm">
+ <div key={sp.id} className="bg-card border border-border p-5 rounded-lg space-y-4 shadow-sm">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
- <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="flex items-center gap-3">
+ <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  {sp.panel_type === "bar" ? <Beer className="h-5 w-5" /> : <ShoppingBag className="h-5 w-5" />}
  </div>
  <div>
@@ -106,7 +106,7 @@ function EventSubpanelsPage() {
  variant="outline"
  size="sm"
  onClick={() => sp.access_token && copyMagicLink(sp.access_token)}
- className="w-full min-h-[44px] rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
+ className="w-full min-h-11 rounded-lg text-xs font-semibold flex items-center justify-center gap-2"
  >
  {copiedToken === sp.access_token ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
  {copiedToken === sp.access_token ? "Link Copiado!" : "Copiar Link de Acesso Externo"}
@@ -119,28 +119,28 @@ function EventSubpanelsPage() {
 
  {/* Modal de Criação */}
  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
- <DialogContent className="sm:max-w-md rounded-2xl p-6 bg-card border border-border">
+ <DialogContent className="sm:max-w-md rounded-lg p-6 bg-card border border-border">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold">Novo Subpainel de Evento</DialogTitle>
  </DialogHeader>
 
  <div className="space-y-4 py-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-muted-foreground">Nome do Subpainel</label>
  <Input
  placeholder="Ex: Bar Principal - Área VIP"
  value={panelName}
  onChange={(e) => setPanelName(e.target.value)}
- className="min-h-[44px] rounded-xl"
+ className="min-h-11 rounded-lg"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-muted-foreground">Tipo de Operação</label>
  <select
  value={panelType}
  onChange={(e) => setPanelType(e.target.value)}
- className="w-full h-11 min-h-[44px] rounded-xl bg-background border border-border px-3 text-sm"
+ className="w-full h-11 min-h-11 rounded-lg bg-background border border-border px-3 text-sm"
  >
  <option value="bar">Bar / Bebidas</option>
  <option value="foodtruck">Foodtruck / Alimentação</option>
@@ -150,25 +150,25 @@ function EventSubpanelsPage() {
  </select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-semibold text-muted-foreground">Nome do Responsável / Operador</label>
  <Input
  placeholder="Ex: João Silva (Líder de Bar)"
  value={managerName}
  onChange={(e) => setManagerName(e.target.value)}
- className="min-h-[44px] rounded-xl"
+ className="min-h-11 rounded-lg"
  />
  </div>
  </div>
 
  <DialogFooter className="gap-2 sm:gap-0">
- <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="rounded-xl min-h-[44px]">
+ <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="rounded-lg min-h-11">
  Cancelar
  </Button>
  <Button
  onClick={() => createMutation.mutate()}
  disabled={!panelName.trim() || createMutation.isPending}
- className="rounded-xl min-h-[44px] font-bold"
+ className="rounded-lg min-h-11 font-bold"
  >
  Criar com Token Mágico
  </Button>

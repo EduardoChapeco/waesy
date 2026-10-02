@@ -354,7 +354,7 @@ function WorkspaceAtendimentoPage() {
   return (
     <div className="flex flex-col h-[calc(100dvh-80px)] font-sans text-foreground">
       {/* Top Header com Seletor de Modo: Atendimento em Tempo Real vs SDR IA */}
-      <div className="bg-card border-b border-border/80 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
+      <div className="bg-card border-b border-border/80 px-4 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Building2 className="size-4 text-primary" />
@@ -363,12 +363,12 @@ function WorkspaceAtendimentoPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-xl border border-border/60">
+          <div className="flex items-center gap-2 bg-muted/60 p-1 rounded-lg border border-border/60">
             <button
               type="button"
               onClick={() => setActiveHubTab("live")}
               className={cn(
-                "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer",
+                "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer",
                 activeHubTab === "live"
                   ? "bg-background text-foreground shadow-2xs font-bold"
                   : "text-muted-foreground hover:text-foreground"
@@ -377,7 +377,7 @@ function WorkspaceAtendimentoPage() {
               <MessageSquare className="size-3.5" />
               <span>Atendimento Direto</span>
               {(metrics?.open || 0) > 0 && (
-                <Badge variant="default" className="text-xs h-4 px-1.5 font-mono">
+                <Badge variant="default" className="text-xs h-4 px-2 font-mono">
                   {metrics?.open}
                 </Badge>
               )}
@@ -387,7 +387,7 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setActiveHubTab("sdr")}
               className={cn(
-                "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer",
+                "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer",
                 activeHubTab === "sdr"
                   ? "bg-background text-foreground shadow-2xs font-bold"
                   : "text-muted-foreground hover:text-foreground"
@@ -396,7 +396,7 @@ function WorkspaceAtendimentoPage() {
               <Bot className="size-3.5 text-primary" />
               <span>Conversas SDR (IA)</span>
               {sdrMetrics?.total > 0 && (
-                <Badge variant="secondary" className="text-xs h-4 px-1.5 font-mono bg-primary/10 text-primary border border-primary/20">
+                <Badge variant="secondary" className="text-xs h-4 px-2 font-mono bg-primary/10 text-primary border border-primary/20">
                   {sdrMetrics.total}
                 </Badge>
               )}
@@ -406,17 +406,17 @@ function WorkspaceAtendimentoPage() {
 
         {activeHubTab === "live" && isSupervisor && (
           <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Em Aberto:</span>
               <Badge variant="default" className="font-bold text-xs h-5">
                 {metrics?.open || 0}
               </Badge>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="text-muted-foreground">SLA Médio:</span>
               <span className="font-bold text-foreground">{metrics?.sla_first_response_min} min</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="text-muted-foreground">CSAT:</span>
               <span className="font-bold text-foreground flex items-center gap-1">
                 <Star className="size-3 fill-amber-500 text-amber-500" />
@@ -428,14 +428,14 @@ function WorkspaceAtendimentoPage() {
 
         {activeHubTab === "sdr" && (
           <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Target className="size-3.5 text-emerald-600" />
               <span className="text-muted-foreground">Prontos p/ Comprar:</span>
               <Badge variant="default" className="font-bold text-xs h-5 bg-emerald-600 hover:bg-emerald-600 text-white font-mono">
                 {sdrMetrics?.readyToBuy || 0}
               </Badge>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Flame className="size-3.5 text-amber-500" />
               <span className="text-muted-foreground">Quentes:</span>
               <span className="font-bold text-amber-600 dark:text-amber-400 font-mono">{sdrMetrics?.warm || 0}</span>
@@ -448,18 +448,18 @@ function WorkspaceAtendimentoPage() {
       {activeHubTab === "sdr" ? (
         <div className="flex-1 flex flex-col overflow-hidden bg-muted/15 p-4 sm:p-6 space-y-4">
           {/* Barra de Filtros SDR */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70 shadow-2xs">
             <div className="relative flex-1 max-w-md">
               <Search className="size-3.5 absolute left-3 top-3 text-muted-foreground" />
               <Input
                 placeholder="Buscar por anúncio ou resumo da IA..."
                 value={sdrSearchTerm}
                 onChange={(e) => setSdrSearchTerm(e.target.value)}
-                className="pl-8 h-9 rounded-xl text-xs bg-muted/40"
+                className="pl-8 h-9 rounded-lg text-xs bg-muted/40"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
               {[
                 { id: "all", label: "Todas", count: sdrMetrics.total },
                 { id: "ready_to_buy", label: "Pronto p/ Compra", count: sdrMetrics.readyToBuy },
@@ -471,7 +471,7 @@ function WorkspaceAtendimentoPage() {
                   type="button"
                   onClick={() => setSdrIntentFilter(pill.id)}
                   className={cn(
-                    "px-2.5 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1",
+                    "px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1",
                     sdrIntentFilter === pill.id
                       ? "bg-primary text-primary-foreground font-bold shadow-2xs"
                       : "bg-muted/60 text-muted-foreground hover:text-foreground border border-border/50"
@@ -488,7 +488,7 @@ function WorkspaceAtendimentoPage() {
           <div className="flex-1 overflow-y-auto">
             {filteredSdrSessions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center space-y-3">
-                <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground">
+                <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground">
                   <Bot className="size-6" />
                 </div>
                 <div className="space-y-1">
@@ -499,7 +499,7 @@ function WorkspaceAtendimentoPage() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 pb-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-12">
                 {filteredSdrSessions.map((session) => {
                   const isReady = session.intent_classification === "ready_to_buy";
                   const isWarm = session.intent_classification === "warm";
@@ -508,7 +508,7 @@ function WorkspaceAtendimentoPage() {
                     <div
                       key={session.id}
                       className={cn(
-                        "p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 bg-card shadow-2xs hover:shadow-xs",
+                        "p-4 rounded-lg border transition-all flex flex-col justify-between space-y-3 bg-card shadow-2xs hover:shadow-xs",
                         isReady
                           ? "border-emerald-500/40 bg-emerald-500/[0.02]"
                           : isWarm
@@ -516,12 +516,12 @@ function WorkspaceAtendimentoPage() {
                           : "border-border/70"
                       )}
                     >
-                      <div className="space-y-2.5">
+                      <div className="space-y-3">
                         {/* Topo do Card: Badge de Intenção e Data */}
                         <div className="flex items-center justify-between gap-2">
                           <Badge
                             className={cn(
-                              "text-xs font-bold uppercase tracking-wider px-2 py-0.5",
+                              "text-xs font-bold uppercase tracking-wider px-2 py-1",
                               isReady
                                 ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
                                 : isWarm
@@ -545,7 +545,7 @@ function WorkspaceAtendimentoPage() {
 
                         {/* Anúncio Relacionado */}
                         {session.classified && (
-                          <div className="space-y-0.5">
+                          <div className="space-y-1">
                             <h4 className="text-xs font-bold text-foreground line-clamp-1">
                               {session.classified.title}
                             </h4>
@@ -559,7 +559,7 @@ function WorkspaceAtendimentoPage() {
 
                         {/* Resumo da IA */}
                         {session.summary && (
-                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed bg-muted/40 p-2.5 rounded-xl border border-border/40">
+                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed bg-muted/40 p-3 rounded-lg border border-border/40">
                             {session.summary}
                           </p>
                         )}
@@ -579,7 +579,7 @@ function WorkspaceAtendimentoPage() {
                             setSelectedSdrSession(session);
                             setSdrDrawerOpen(true);
                           }}
-                          className="h-7 px-2.5 text-xs font-semibold rounded-lg gap-1 cursor-pointer"
+                          className="h-7 px-3 text-xs font-semibold rounded-lg gap-1 cursor-pointer"
                         >
                           Ver Diálogo
                           <ArrowLeft className="size-3 rotate-180" />
@@ -608,16 +608,16 @@ function WorkspaceAtendimentoPage() {
                   placeholder="Buscar por cliente, assunto..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-9 rounded-xl text-xs bg-muted/40"
+                  className="pl-8 h-9 rounded-lg text-xs bg-muted/40"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-2">
                 <Select value={deptFilter} onValueChange={setDeptFilter}>
-                  <SelectTrigger className="h-8 rounded-xl text-xs">
+                  <SelectTrigger className="h-8 rounded-lg text-xs">
                     <SelectValue placeholder="Departamento" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="all">Todos Setores</SelectItem>
                     {Object.entries(departmentLabels).map(([key, label]) => (
                       <SelectItem key={key} value={key}>
@@ -628,10 +628,10 @@ function WorkspaceAtendimentoPage() {
                 </Select>
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="h-8 rounded-xl text-xs">
+                  <SelectTrigger className="h-8 rounded-lg text-xs">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="all">Todos Status</SelectItem>
                     <SelectItem value="open">Abertos</SelectItem>
                     <SelectItem value="closed">Encerrados</SelectItem>
@@ -653,11 +653,11 @@ function WorkspaceAtendimentoPage() {
                     <button
                       key={t.id}
                       onClick={() => setActiveThreadId(t.id)}
-                      className={`w-full p-3.5 text-left flex items-start gap-3 transition-colors cursor-pointer ${
+                      className={`w-full p-4 text-left flex items-start gap-3 transition-colors cursor-pointer ${
                         isActive ? "bg-muted/60 border-l-4 border-primary" : "hover:bg-muted/30"
                       }`}
                     >
-                      <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                         {(t.customer?.full_name || "C")[0].toUpperCase()}
                       </div>
 
@@ -676,7 +676,7 @@ function WorkspaceAtendimentoPage() {
                           {t.last_message || "Sem mensagens"}
                         </p>
 
-                        <div className="flex items-center gap-1.5 pt-0.5">
+                        <div className="flex items-center gap-2 pt-1">
                           <Badge variant="outline" className="text-xs px-1 py-0 h-4 uppercase">
                             {departmentLabels[t.department] || t.department}
                           </Badge>
@@ -701,7 +701,7 @@ function WorkspaceAtendimentoPage() {
               !activeThreadId ? "hidden md:flex" : "flex"
             )}>
               {/* Header da Conversa Ativa */}
-              <div className="p-3.5 bg-card border-b border-border/80 flex items-center justify-between gap-3 shrink-0">
+              <div className="p-4 bg-card border-b border-border/80 flex items-center justify-between gap-3 shrink-0">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <Button
                     type="button"
@@ -713,7 +713,7 @@ function WorkspaceAtendimentoPage() {
                   >
                     <ArrowLeft className="size-4" />
                   </Button>
-                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                     {(activeThread.customer?.full_name || "C")[0].toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -731,10 +731,10 @@ function WorkspaceAtendimentoPage() {
                     value={activeThread.department || "geral"}
                     onValueChange={handleDepartmentChange}
                   >
-                    <SelectTrigger className="h-8 rounded-xl text-xs w-36">
+                    <SelectTrigger className="h-8 rounded-lg text-xs w-36">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl">
+                    <SelectContent className="rounded-lg">
                       <SelectItem value="vendas">Vendas</SelectItem>
                       <SelectItem value="suporte">Suporte / SAC</SelectItem>
                       <SelectItem value="financeiro">Financeiro</SelectItem>
@@ -747,7 +747,7 @@ function WorkspaceAtendimentoPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowCustomer360(!showCustomer360)}
-                    className={`h-8 text-xs font-bold rounded-xl ${showCustomer360 ? "bg-muted" : ""}`}
+                    className={`h-8 text-xs font-bold rounded-lg ${showCustomer360 ? "bg-muted" : ""}`}
                   >
                     <UserCheck className="size-3.5 mr-1" />
                     Perfil 360º
@@ -758,7 +758,7 @@ function WorkspaceAtendimentoPage() {
               {/* Timeline */}
               <div
                 ref={chatContainerRef}
-                className="flex-1 space-y-3.5 overflow-y-auto no-scrollbar p-4"
+                className="flex-1 space-y-4 overflow-y-auto no-scrollbar p-4"
               >
                 {loadingMessages ? (
                   <div className="flex items-center justify-center h-full">
@@ -814,7 +814,7 @@ function WorkspaceAtendimentoPage() {
                           className={`flex flex-col ${isStaff ? "items-end" : "items-start"} w-full`}
                         >
                           <div
-                            className={`max-w-[95%] sm:max-w-lg rounded-2xl p-3.5 text-xs shadow-xs ${
+                            className={`max-w-[95%] sm:max-w-lg rounded-lg p-4 text-xs shadow-xs ${
                               isStaff
                                 ? "bg-card border border-border/80 text-foreground rounded-tr-xs"
                                 : "bg-card border border-border/80 text-foreground rounded-tl-xs"
@@ -840,7 +840,7 @@ function WorkspaceAtendimentoPage() {
                         className={`flex flex-col ${isStaff ? "items-end" : "items-start"}`}
                       >
                         <div
-                          className={`max-w-[85%] sm:max-w-md rounded-2xl p-3.5 text-xs leading-relaxed shadow-xs ${
+                          className={`max-w-[85%] sm:max-w-md rounded-lg p-4 text-xs leading-relaxed shadow-xs ${
                             isStaff
                               ? "bg-primary text-primary-foreground font-medium rounded-tr-xs"
                               : "bg-card border border-border/80 text-foreground rounded-tl-xs"
@@ -869,13 +869,13 @@ function WorkspaceAtendimentoPage() {
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="size-10 rounded-xl border border-border/80 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                      className="size-10 rounded-lg border border-border/80 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
                       title="Inserir Widget ou Ação"
                     >
                       <Plus className="size-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-56 rounded-xl">
+                  <DropdownMenuContent align="start" className="w-56 rounded-lg">
                     <DropdownMenuItem
                       onClick={() =>
                         handleSendStructuredBlock(
@@ -982,14 +982,14 @@ function WorkspaceAtendimentoPage() {
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder="Escreva uma resposta para o cliente..."
-                  className="flex-1 h-10 rounded-xl text-xs bg-muted/30"
+                  className="flex-1 h-10 rounded-lg text-xs bg-muted/30"
                   disabled={isSending}
                 />
                 <Button
                   type="submit"
                   size="icon"
                   disabled={!text.trim() || isSending}
-                  className="size-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
+                  className="size-10 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
                 >
                   {isSending ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -1037,18 +1037,18 @@ function WorkspaceAtendimentoPage() {
               </SheetHeader>
 
               <div className="space-y-4 py-2 text-xs">
-                <div className="p-3 rounded-xl bg-muted/40 border border-border/80 space-y-1">
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/80 space-y-1">
                   <span className="font-bold text-foreground block">{selectedTicket.title}</span>
                   <p className="text-muted-foreground">"{selectedTicket.description}"</p>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Atualizar Status</Label>
                   <Select value={ticketStatus} onValueChange={setTicketStatus}>
-                    <SelectTrigger className="h-10 rounded-xl text-xs">
+                    <SelectTrigger className="h-10 rounded-lg text-xs">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl">
+                    <SelectContent className="rounded-lg">
                       <SelectItem value="under_review">Em Análise Técnica</SelectItem>
                       <SelectItem value="action_required">Aguardando Resposta do Cliente</SelectItem>
                       <SelectItem value="resolved">Aprovado e Resolvido</SelectItem>
@@ -1058,14 +1058,14 @@ function WorkspaceAtendimentoPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Parecer da Empresa para o Cliente</Label>
                   <Textarea
                     value={resolutionNotes}
                     onChange={(e) => setResolutionNotes(e.target.value)}
                     placeholder="Explique o que foi feito ou as instruções para o cliente..."
                     rows={4}
-                    className="rounded-xl text-xs"
+                    className="rounded-lg text-xs"
                   />
                 </div>
               </div>
@@ -1075,7 +1075,7 @@ function WorkspaceAtendimentoPage() {
               <Button
                 variant="ghost"
                 onClick={() => setTicketModalOpen(false)}
-                className="rounded-xl text-xs flex-1 sm:flex-none"
+                className="rounded-lg text-xs flex-1 sm:flex-none"
                 disabled={isResolvingTicket}
               >
                 Cancelar
@@ -1083,11 +1083,11 @@ function WorkspaceAtendimentoPage() {
               <Button
                 onClick={handleResolveTicket}
                 disabled={isResolvingTicket}
-                className="rounded-xl text-xs font-bold flex-1 sm:flex-none"
+                className="rounded-lg text-xs font-bold flex-1 sm:flex-none"
               >
                 {isResolvingTicket ? (
                   <>
-                    <Loader2 className="size-4 animate-spin mr-1.5" />
+                    <Loader2 className="size-4 animate-spin mr-2" />
                     Salvando...
                   </>
                 ) : (
@@ -1106,7 +1106,7 @@ function WorkspaceAtendimentoPage() {
             <SheetHeader className="p-4 sm:p-5 border-b border-border/70 space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
+                  <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
                     <Bot className="size-4" />
                   </div>
                   <div>
@@ -1138,7 +1138,7 @@ function WorkspaceAtendimentoPage() {
               </div>
 
               {selectedSdrSession.classified && (
-                <div className="p-3 rounded-xl bg-muted/40 border border-border/50 flex items-center justify-between gap-2">
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-foreground truncate">
                       {selectedSdrSession.classified.title}
@@ -1160,7 +1160,7 @@ function WorkspaceAtendimentoPage() {
               )}
 
               {selectedSdrSession.summary && (
-                <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-foreground space-y-1">
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-foreground space-y-1">
                   <span className="text-xs font-bold uppercase tracking-wider text-primary block">
                     Resumo do Interesse (Gerado por IA)
                   </span>
@@ -1180,7 +1180,7 @@ function WorkspaceAtendimentoPage() {
                     <div
                       key={i}
                       className={cn(
-                        "flex flex-col max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed",
+                        "flex flex-col max-w-[85%] rounded-lg p-3 text-xs leading-relaxed",
                         isAssistant
                           ? "ml-auto bg-primary text-primary-foreground rounded-tr-xs"
                           : "mr-auto bg-card border border-border/70 text-foreground rounded-tl-xs shadow-2xs"
@@ -1212,7 +1212,7 @@ function WorkspaceAtendimentoPage() {
                   navigator.clipboard.writeText(logText);
                   toast.success("Transcrição da conversa copiada!");
                 }}
-                className="rounded-xl text-xs gap-1.5 cursor-pointer"
+                className="rounded-lg text-xs gap-2 cursor-pointer"
               >
                 <Copy className="size-3.5" />
                 Copiar Histórico
@@ -1221,7 +1221,7 @@ function WorkspaceAtendimentoPage() {
               <Button
                 size="sm"
                 onClick={() => setSdrDrawerOpen(false)}
-                className="rounded-xl text-xs font-semibold cursor-pointer"
+                className="rounded-lg text-xs font-semibold cursor-pointer"
               >
                 Fechar
               </Button>

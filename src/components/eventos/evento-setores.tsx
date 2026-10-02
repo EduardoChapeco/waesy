@@ -93,7 +93,7 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">Setores</h3>
@@ -101,14 +101,14 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
               Capacidade Total: {totalCap} pessoas
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Defina divisões de espaço físico, como Pista Premium, Camarote, Backstage e Área VIP.
           </p>
         </div>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Button className="h-11 px-4 rounded-xl text-xs font-bold gap-2">
+            <Button className="h-11 px-4 rounded-lg text-xs font-bold gap-2">
               <Plus className="size-4" />
               <span>Novo Setor</span>
             </Button>
@@ -122,39 +122,39 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
             </SheetHeader>
 
             <form onSubmit={handleCreate} className="space-y-4 mt-6">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Nome do Setor *</Label>
                 <Input
                   required
                   placeholder="Ex: Camarote Open Bar"
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Capacidade Máxima</Label>
                   <Input
                     type="number"
                     placeholder="Ex: 500"
-                    className="h-11 rounded-xl text-xs font-mono"
+                    className="h-11 rounded-lg text-xs font-mono"
                     value={capacidade}
                     onChange={(e) => setCapacidade(e.target.value)}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Cor de Identificação</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       type="color"
-                      className="h-11 w-14 p-1 rounded-xl cursor-pointer"
+                      className="h-11 w-14 p-1 rounded-lg cursor-pointer"
                       value={corHex}
                       onChange={(e) => setCorHex(e.target.value)}
                     />
                     <Input
-                      className="h-11 rounded-xl text-xs font-mono flex-1 uppercase"
+                      className="h-11 rounded-lg text-xs font-mono flex-1 uppercase"
                       value={corHex}
                       onChange={(e) => setCorHex(e.target.value)}
                     />
@@ -162,18 +162,18 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Descrição do Setor</Label>
                 <Textarea
                   rows={3}
                   placeholder="Benefícios inclusos, acesso a banheiros exclusivos, etc."
-                  className="rounded-xl text-xs"
+                  className="rounded-lg text-xs"
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
                 />
               </div>
 
-              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-xl text-xs font-bold mt-4">
+              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-lg text-xs font-bold mt-4">
                 {isPending ? "Salvando..." : "Salvar Setor"}
               </Button>
             </form>
@@ -182,7 +182,7 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
       </div>
 
       {sectors.length === 0 ? (
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center bg-card/40">
+        <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <MapPin className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhum setor cadastrado</p>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -194,11 +194,11 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
           {sectors.map((s) => (
             <Card
               key={s.id}
-              className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
+              className="rounded-lg border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
             >
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-3">
                     <span
                       className="size-3.5 rounded-full ring-2 ring-border/50"
                       style={{ backgroundColor: s.cor_hex || "#6366f1" }}
@@ -223,7 +223,7 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
               </div>
 
               <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5">
+                <span className="text-muted-foreground flex items-center gap-2">
                   <Users className="size-3.5" />
                   Capacidade
                 </span>

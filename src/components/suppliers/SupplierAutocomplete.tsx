@@ -107,19 +107,19 @@ export function SupplierAutocomplete({
       {/* Selected value display */}
       {value ? (
         <div className="flex items-center gap-2 border border-border rounded-full bg-surface px-3 py-2 text-sm">
-          <span className="text-xs bg-brand/10 text-brand rounded px-1.5 py-0.5 font-semibold">
+          <span className="text-xs bg-brand/10 text-brand rounded px-2 py-1 font-semibold">
             {KIND_LABEL[value.kind] ?? value.kind}
           </span>
           <span className="font-medium flex-1">{value.name}</span>
           {value.city && (
-            <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
               <MapPin className="h-2.5 w-2.5" /> {value.city}
             </span>
           )}
           <Button
             type="button"
             onClick={handleClear}
-            className="p-0.5 rounded hover:bg-surface-alt text-muted-foreground hover:text-foreground transition-colors"
+            className="p-1 rounded hover:bg-surface-alt text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="h-3.5 w-3.5" />
           </Button>
@@ -149,7 +149,7 @@ export function SupplierAutocomplete({
       {isOpen && !value && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 top-full left-0 right-0 mt-1 border border-border rounded-2xl bg-surface shadow-lg overflow-hidden"
+          className="absolute z-50 top-full left-0 right-0 mt-1 border border-border rounded-lg bg-surface shadow-lg overflow-hidden"
         >
           {debouncedSearch.length < 2 && (
             <div className="px-4 py-3 text-xs text-muted-foreground">
@@ -173,12 +173,12 @@ export function SupplierAutocomplete({
                     className="w-full text-left px-4 py-3 hover:bg-surface-alt transition-colors border-b border-border/50 last:border-0"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="ds-meta bg-brand/10 text-brand rounded px-1.5 py-0.5 font-semibold shrink-0">
+                      <span className="ds-meta bg-brand/10 text-brand rounded px-2 py-1 font-semibold shrink-0">
                         {KIND_LABEL[supplier.kind] ?? supplier.kind}
                       </span>
                       <span className="text-sm font-medium text-foreground">{supplier.name}</span>
                       {supplier.rating != null && (
-                        <span className="ml-auto flex items-center gap-0.5 text-xs text-amber-500 shrink-0">
+                        <span className="ml-auto flex items-center gap-1 text-xs text-amber-500 shrink-0">
                           <Star className="h-3 w-3 fill-amber-400" />
                           {supplier.rating.toFixed(1)}
                         </span>
@@ -187,7 +187,7 @@ export function SupplierAutocomplete({
                     {(supplier.city || supplier.commission_rate > 0) && (
                       <div className="flex items-center gap-3 mt-1">
                         {supplier.city && (
-                          <span className="ds-meta text-muted-foreground flex items-center gap-0.5">
+                          <span className="ds-meta text-muted-foreground flex items-center gap-1">
                             <MapPin className="h-2.5 w-2.5" />
                             {supplier.city}
                             {supplier.country &&

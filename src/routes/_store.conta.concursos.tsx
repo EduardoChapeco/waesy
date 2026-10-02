@@ -53,7 +53,7 @@ function ContaConcursosPage() {
 
         <Button
           asChild
-          className="h-10 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-primary text-primary-foreground"
+          className="h-10 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer bg-primary text-primary-foreground"
         >
           <Link to="/concursos">
             <Ticket className="size-4" />
@@ -64,14 +64,14 @@ function ContaConcursosPage() {
 
       {/* â”€â”€ MÃ©tricas do Participante â”€â”€ */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-1">
+        <div className="rounded-lg border border-border/70 bg-card p-4 space-y-1">
           <span className="text-[11px] font-mono text-muted-foreground uppercase block">
             Cupons Ativos
           </span>
           <span className="text-2xl font-black font-mono text-foreground">{totalTickets}</span>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-1">
+        <div className="rounded-lg border border-border/70 bg-card p-4 space-y-1">
           <span className="text-[11px] font-mono text-muted-foreground uppercase block">
             Saldo de Pontos
           </span>
@@ -80,7 +80,7 @@ function ContaConcursosPage() {
           </span>
         </div>
 
-        <div className="col-span-2 sm:col-span-1 rounded-2xl border border-border/70 bg-card p-4 space-y-1">
+        <div className="col-span-2 sm:col-span-1 rounded-lg border border-border/70 bg-card p-4 space-y-1">
           <span className="text-[11px] font-mono text-muted-foreground uppercase block">
             PrÃªmios Conquistados
           </span>
@@ -92,9 +92,9 @@ function ContaConcursosPage() {
 
       {/* â”€â”€ ALERTA DE PRÃŠMIO CONQUISTADO â”€â”€ */}
       {winningEntries.length > 0 && (
-        <div className="rounded-3xl border-2 border-amber-500/50 bg-amber-500/10 p-5 space-y-2">
+        <div className="rounded-lg border-2 border-amber-500/50 bg-amber-500/10 p-5 space-y-2">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
               <Trophy className="size-6" />
             </div>
             <div>
@@ -111,8 +111,8 @@ function ContaConcursosPage() {
 
       {/* â”€â”€ Lista de Cupons / Sorteios â”€â”€ */}
       {entries.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-border/80 bg-card p-12 text-center space-y-4">
-          <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-border/80 bg-card p-12 text-center space-y-4">
+          <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Ticket className="size-6" />
           </div>
           <div className="max-w-md mx-auto space-y-1">
@@ -123,7 +123,7 @@ function ContaConcursosPage() {
           </div>
           <Button
             asChild
-            className="h-11 px-6 rounded-xl text-xs font-semibold cursor-pointer"
+            className="h-11 px-6 rounded-lg text-xs font-semibold cursor-pointer"
           >
             <Link to="/concursos">Explorar Sorteios</Link>
           </Button>
@@ -142,7 +142,7 @@ function ContaConcursosPage() {
             return (
               <div
                 key={raffle.id}
-                className={`rounded-3xl border p-5 sm:p-6 space-y-4 transition-all ${
+                className={`rounded-lg border p-5 sm:p-6 space-y-4 transition-all ${
                   isWinner
                     ? "border-amber-500/60 bg-amber-500/5 shadow-sm"
                     : "border-border/70 bg-card"
@@ -203,7 +203,7 @@ function ContaConcursosPage() {
                       return (
                         <div
                           key={t.id}
-                          className={`px-3 py-1.5 rounded-xl border text-xs font-mono flex items-center gap-1.5 ${
+                          className={`px-3 py-2 rounded-lg border text-xs font-mono flex items-center gap-2 ${
                             isWinningTicket
                               ? "bg-amber-500 text-amber-950 border-amber-400 font-black shadow-xs"
                               : "bg-muted/40 border-border text-foreground font-bold"
@@ -222,7 +222,7 @@ function ContaConcursosPage() {
                 {isCompleted && (
                   <div className="pt-2">
                     {isWinner ? (
-                      <div className="rounded-2xl bg-amber-500/20 border border-amber-500/30 p-4 space-y-2">
+                      <div className="rounded-lg bg-amber-500/20 border border-amber-500/30 p-4 space-y-2">
                         <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-xs">
                           <CheckCircle2 className="size-4" />
                           <span>Seu cupom #{raffle.winnerTicketNumber} foi o vencedor!</span>
@@ -232,7 +232,7 @@ function ContaConcursosPage() {
                         </p>
                       </div>
                     ) : (
-                      <div className="rounded-xl bg-muted/30 p-3 text-xs text-muted-foreground flex items-center justify-between">
+                      <div className="rounded-lg bg-muted/30 p-3 text-xs text-muted-foreground flex items-center justify-between">
                         <span>Cupom vencedor: <strong>#{raffle.winnerTicketNumber}</strong></span>
                         <span className="font-mono text-[11px]">Sorteio finalizado</span>
                       </div>

@@ -78,7 +78,7 @@ export default function WorkspaceLojasPage() {
  eyebrow="Negócios"
  title="Minhas Lojas"
  actions={
- <Button asChild className="gap-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground">
+ <Button asChild className="gap-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground">
  <Link to="/criar-negocio">
  <Plus className="size-4" />
  Novo Negócio
@@ -89,12 +89,12 @@ export default function WorkspaceLojasPage() {
 
  {/* ── 2. KPI Summary Cards ── */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- <Card className="p-4 bg-card border-border rounded-2xl">
+ <Card className="p-4 bg-card border-border rounded-lg">
  <div className="flex items-center justify-between">
  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
  Loja Ativa no Painel
  </span>
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <CheckCircle2 className="size-4" />
  </div>
  </div>
@@ -102,18 +102,18 @@ export default function WorkspaceLojasPage() {
  <div className="text-lg font-bold text-foreground truncate">
  {activeStore?.name || "Nenhuma Selecionada"}
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  /{activeStore?.slug || "loja"} • {activeStore?.city || "Brasil"}
  </p>
  </div>
  </Card>
 
- <Card className="p-4 bg-card border-border rounded-2xl">
+ <Card className="p-4 bg-card border-border rounded-lg">
  <div className="flex items-center justify-between">
  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
  Total de Espaços
  </span>
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Building2 className="size-4" />
  </div>
  </div>
@@ -121,18 +121,18 @@ export default function WorkspaceLojasPage() {
  <div className="text-2xl font-bold text-foreground">
  {stores.length}
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Marcas sob sua governança
  </p>
  </div>
  </Card>
 
- <Card className="p-4 bg-card border-border rounded-2xl">
+ <Card className="p-4 bg-card border-border rounded-lg">
  <div className="flex items-center justify-between">
  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
  Catálogo Integrado
  </span>
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Package className="size-4" />
  </div>
  </div>
@@ -140,7 +140,7 @@ export default function WorkspaceLojasPage() {
  <div className="text-2xl font-bold text-foreground">
  {totalProducts}
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Itens ativos cadastrados
  </p>
  </div>
@@ -148,14 +148,14 @@ export default function WorkspaceLojasPage() {
  </div>
 
  {/* ── 3. Barra de Busca & Filtros ── */}
- <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-muted/40 rounded-2xl ">
+ <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-muted/40 rounded-lg ">
  <div className="relative w-full sm:w-80">
  <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
  <Input
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Buscar por nome, slug ou cidade..."
- className="pl-9 rounded-xl text-xs h-9 bg-background"
+ className="pl-9 rounded-lg text-xs h-9 bg-background"
  />
  </div>
 
@@ -164,7 +164,7 @@ export default function WorkspaceLojasPage() {
  variant={selectedType === "all" ? "default" : "outline"}
  size="sm"
  onClick={() => setSelectedType("all")}
- className="rounded-xl text-xs font-semibold h-11 sm:h-8 px-3"
+ className="rounded-lg text-xs font-semibold h-11 sm:h-8 px-3"
  >
  Todas
  </Button>
@@ -172,7 +172,7 @@ export default function WorkspaceLojasPage() {
  variant={selectedType === "ecommerce" ? "default" : "outline"}
  size="sm"
  onClick={() => setSelectedType("ecommerce")}
- className="rounded-xl text-xs font-semibold h-11 sm:h-8 px-3"
+ className="rounded-lg text-xs font-semibold h-11 sm:h-8 px-3"
  >
  Lojas
  </Button>
@@ -180,7 +180,7 @@ export default function WorkspaceLojasPage() {
  variant={selectedType === "food_service" ? "default" : "outline"}
  size="sm"
  onClick={() => setSelectedType("food_service")}
- className="rounded-xl text-xs font-semibold h-11 sm:h-8 px-3"
+ className="rounded-lg text-xs font-semibold h-11 sm:h-8 px-3"
  >
  Alimentação
  </Button>
@@ -197,7 +197,7 @@ export default function WorkspaceLojasPage() {
  </div>
 
  {filteredStores.length === 0 ? (
- <div className="p-12 text-center bg-card rounded-2xl shadow-xs border-0 space-y-3">
+ <div className="p-12 text-center bg-card rounded-lg shadow-xs border-0 space-y-3">
  <Store className="size-10 text-muted-foreground mx-auto opacity-40" />
  <p className="text-sm font-semibold text-foreground">Nenhuma loja encontrada</p>
  <p className="text-xs text-muted-foreground">Tente ajustar seus termos de busca ou crie uma nova loja.</p>
@@ -211,7 +211,7 @@ export default function WorkspaceLojasPage() {
  return (
  <Card
  key={st.id}
- className={`rounded-2xl shadow-xs border transition-all flex flex-col justify-between overflow-hidden bg-card group ${
+ className={`rounded-lg shadow-xs border transition-all flex flex-col justify-between overflow-hidden bg-card group ${
  isCurrentActive
  ? "border-primary/60 ring-2 ring-primary/20"
  : "border-border hover:border-foreground/20 hover:shadow-xs"
@@ -233,9 +233,9 @@ export default function WorkspaceLojasPage() {
  <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-black/20" />
 
  {/* Badges Flutuantes no Banner */}
- <div className="absolute top-3 right-3 flex items-center gap-1.5">
+ <div className="absolute top-3 right-3 flex items-center gap-2">
  {isCurrentActive ? (
- <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold px-2 py-0.5 ">
+ <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold px-2 py-1 ">
  ● Ativa no Painel
  </Badge>
  ) : (
@@ -251,7 +251,7 @@ export default function WorkspaceLojasPage() {
  <div className="space-y-3">
  {/* Avatar em Squircle */}
  <div className="flex items-end justify-between -mt-8 mb-2 relative z-10">
- <div className="size-16 rounded-2xl bg-card flex items-center justify-center overflow-hidden shrink-0">
+ <div className="size-16 rounded-lg bg-card flex items-center justify-center overflow-hidden shrink-0">
  {st.logo_url ? (
  <img
  src={st.logo_url}
@@ -270,7 +270,7 @@ export default function WorkspaceLojasPage() {
  variant="outline"
  size="sm"
  onClick={() => handleOpenEditor(st)}
- className="rounded-xl text-xs font-bold h-11 sm:h-8 px-3 gap-1.5 bg-card/80 backdrop-blur-md hover:border-primary/40 hover:text-primary transition-colors"
+ className="rounded-lg text-xs font-bold h-11 sm:h-8 px-3 gap-2 bg-card/80 backdrop-blur-md hover:border-primary/40 hover:text-primary transition-colors"
  >
  <Settings2 className="size-3.5" />
  <span>Configurar</span>
@@ -289,7 +289,7 @@ export default function WorkspaceLojasPage() {
  </p>
 
  {st.description && (
- <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+ <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
  {st.description}
  </p>
  )}
@@ -297,7 +297,7 @@ export default function WorkspaceLojasPage() {
 
  {/* Metadados Chave em Grid */}
  <div className="grid grid-cols-2 gap-2 py-3 border-y border-border/60 text-xs">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <span className="text-xs uppercase font-bold text-muted-foreground block">
  Localização
  </span>
@@ -307,7 +307,7 @@ export default function WorkspaceLojasPage() {
  </span>
  </div>
 
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <span className="text-xs uppercase font-bold text-muted-foreground block">
  Produtos
  </span>
@@ -326,7 +326,7 @@ export default function WorkspaceLojasPage() {
  onClick={() => handleSelectStore(st.id, st.name)}
  disabled={isCurrentSwitching}
  variant={isCurrentActive ? "default" : "secondary"}
- className={`flex-1 rounded-xl text-xs font-bold h-11 min-h-[44px] gap-1.5 ${
+ className={`flex-1 rounded-lg text-xs font-bold h-11 min-h-11 gap-2 ${
  isCurrentActive
  ? "bg-primary text-primary-foreground "
  : "hover:bg-primary/10 hover:text-primary"
@@ -351,7 +351,7 @@ export default function WorkspaceLojasPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 min-w-[44px] min-h-[44px] rounded-xl shrink-0"
+ className="size-11 min-w-[44px] min-h-11 rounded-lg shrink-0"
  title="Abrir Vitrine Pública da Loja"
  >
  <Link to={`/destaques/${st.slug}` as any} target="_blank">

@@ -31,7 +31,7 @@ export const Route = createFileRoute("/_store/conta/negociacoes")({
 function NegociacoesErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <XCircle className="size-8" />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar negociações</h2>
@@ -39,10 +39,10 @@ function NegociacoesErrorComponent({ error, reset }: { error: any; reset: () => 
         {error?.message || "Não foi possível carregar o histórico de propostas e negociações."}
       </p>
       <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-xl font-bold h-11">
+        <Button onClick={reset} className="rounded-lg font-bold h-11">
           Tentar Novamente
         </Button>
-        <Button asChild variant="outline" className="rounded-xl font-bold h-11">
+        <Button asChild variant="outline" className="rounded-lg font-bold h-11">
           <Link to="/conta">Voltar para Conta</Link>
         </Button>
       </div>
@@ -94,7 +94,7 @@ function DealTimeline({ status }: { status: string }) {
           const isReached = i <= activeIndex;
           const isCurrent = i === activeIndex;
           return (
-            <div key={step.key} className="space-y-1.5">
+            <div key={step.key} className="space-y-2">
               <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                 <div
                   className={cn(
@@ -223,7 +223,7 @@ function NegociacoesPage() {
         centerTitle={true}
         badge={
           deals && deals.length > 0 ? (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {deals.length}
             </Badge>
           ) : null
@@ -236,7 +236,7 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("all")}
           className={cn(
-            "snap-start h-11 px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "all"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -248,7 +248,7 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("purchases")}
           className={cn(
-            "snap-start h-11 px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "purchases"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -260,7 +260,7 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("sales")}
           className={cn(
-            "snap-start h-11 px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "sales"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -272,7 +272,7 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("bookings")}
           className={cn(
-            "snap-start h-11 px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "bookings"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -292,7 +292,7 @@ function NegociacoesPage() {
         <div className="flex flex-col items-center justify-center py-16 gap-3 text-center px-4">
           <p className="text-sm font-medium text-foreground">Não foi possível carregar as negociações</p>
           <p className="text-xs text-muted-foreground font-mono">{(error as any)?.message || "Erro desconhecido"}</p>
-          <Button variant="outline" className="rounded-xl h-11 text-xs" onClick={() => window.location.reload()}>
+          <Button variant="outline" className="rounded-lg h-11 text-xs" onClick={() => window.location.reload()}>
             Tentar novamente
           </Button>
         </div>
@@ -308,7 +308,7 @@ function NegociacoesPage() {
             return (
               <div
                 key={deal.id}
-                className="rounded-2xl p-4 sm:p-5 space-y-3.5 border border-border/60 bg-card shadow-2xs"
+                className="rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 bg-card shadow-2xs"
               >
                 {/* BLOCO 1 (<FrostedCard>): VALOR ACORDADO & TIMELINE */}
                 <FrostedCard intensity="standard" className="p-4 space-y-3">
@@ -380,7 +380,7 @@ function NegociacoesPage() {
                   </div>
 
                   {deal.terms && (
-                    <p className="text-xs text-foreground/80 bg-background/60 p-3 rounded-xl leading-relaxed border border-border/40">
+                    <p className="text-xs text-foreground/80 bg-background/60 p-3 rounded-lg leading-relaxed border border-border/40">
                       <strong className="text-foreground">Termos:</strong> {deal.terms}
                     </p>
                   )}
@@ -388,13 +388,13 @@ function NegociacoesPage() {
 
                 {/* BLOCO 3 (<FrostedCard>): AÇÕES DE NEGOCIAÇÃO */}
                 {isNegotiating && !isCountering && (
-                  <FrostedCard intensity="subtle" className="p-3.5 flex flex-wrap items-center gap-2">
+                  <FrostedCard intensity="subtle" className="p-4 flex flex-wrap items-center gap-2">
                     {deal.seller_id === profile?.id ? (
                       <>
                         <Button
                           onClick={() => handleAction(deal.id, "accept")}
                           disabled={respondMutation.isPending}
-                          className="min-h-[44px] h-11 px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+                          className="min-h-11 h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
                         >
                           <CheckCircle2 className="size-4" />
                           <span>Aceitar Proposta</span>
@@ -404,7 +404,7 @@ function NegociacoesPage() {
                           variant="outline"
                           onClick={() => setSelectedDealId(deal.id)}
                           disabled={respondMutation.isPending}
-                          className="h-11 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+                          className="h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
                         >
                           <DollarSign className="size-4 text-primary" />
                           <span>Fazer Contraproposta</span>
@@ -414,7 +414,7 @@ function NegociacoesPage() {
                           variant="ghost"
                           onClick={() => handleAction(deal.id, "reject")}
                           disabled={respondMutation.isPending}
-                          className="h-11 px-4 rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+                          className="h-11 px-4 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
                         >
                           <XCircle className="size-4" />
                           <span>Recusar</span>
@@ -422,7 +422,7 @@ function NegociacoesPage() {
                       </>
                     ) : deal.buyer_id === profile?.id ? (
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground flex items-center gap-2">
                           <Clock className="size-3.5 text-amber-500" />
                           Proposta enviada ao anunciante. Aguardando resposta.
                         </span>
@@ -431,7 +431,7 @@ function NegociacoesPage() {
                           variant="ghost"
                           onClick={() => handleAction(deal.id, "cancel")}
                           disabled={respondMutation.isPending}
-                          className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+                          className="rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
                         >
                           <XCircle className="size-3.5" />
                           <span>Cancelar Proposta</span>
@@ -442,7 +442,7 @@ function NegociacoesPage() {
                         size="sm"
                         onClick={() => handleAction(deal.id, "accept")}
                         disabled={respondMutation.isPending}
-                        className="min-h-[44px] px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+                        className="min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
                       >
                         <CheckCircle2 className="size-3.5" />
                         <span>Aceitar Proposta</span>
@@ -453,7 +453,7 @@ function NegociacoesPage() {
                       asChild
                       size="sm"
                       variant="outline"
-                      className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer ml-auto"
+                      className="rounded-lg text-xs font-semibold gap-2 cursor-pointer ml-auto"
                     >
                       <Link to="/conta/conversas">
                         <MessageSquare className="size-3.5 text-primary" />
@@ -465,7 +465,7 @@ function NegociacoesPage() {
 
                 {/* Form de Contraproposta */}
                 {isCountering && (
-                  <div className="border border-primary/30 bg-primary/5 rounded-xl p-4 space-y-3">
+                  <div className="border border-primary/30 bg-primary/5 rounded-lg p-4 space-y-3">
                     <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                       Enviar Contraproposta
                     </h3>
@@ -479,7 +479,7 @@ function NegociacoesPage() {
                           value={counterPriceCents}
                           onChange={setCounterPriceCents}
                           placeholder="0,00"
-                          className="h-9 rounded-xl text-xs bg-background"
+                          className="h-9 rounded-lg text-xs bg-background"
                         />
                       </div>
 
@@ -491,7 +491,7 @@ function NegociacoesPage() {
                           value={counterMessage}
                           onChange={(e) => setCounterMessage(e.target.value)}
                           placeholder="Ex: Consigo fechar por esse valor com retirada hoje..."
-                          className="h-9 rounded-xl text-xs bg-background"
+                          className="h-9 rounded-lg text-xs bg-background"
                         />
                       </div>
                     </div>
@@ -501,7 +501,7 @@ function NegociacoesPage() {
                         size="sm"
                         onClick={() => handleAction(deal.id, "counter_proposal")}
                         disabled={respondMutation.isPending}
-                        className="rounded-xl text-xs font-bold gap-1.5"
+                        className="rounded-lg text-xs font-bold gap-2"
                       >
                         {respondMutation.isPending ? (
                           <Loader2 className="size-3.5 animate-spin" />
@@ -515,7 +515,7 @@ function NegociacoesPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() => setSelectedDealId(null)}
-                        className="rounded-xl text-xs"
+                        className="rounded-lg text-xs"
                       >
                         Cancelar
                       </Button>
@@ -528,7 +528,7 @@ function NegociacoesPage() {
 
                 {/* Se a proposta foi aceita */}
                 {isAccepted && (
-                  <div className="border border-emerald-500/30 bg-emerald-500/5 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="border border-emerald-500/30 bg-emerald-500/5 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <div>
@@ -549,10 +549,10 @@ function NegociacoesPage() {
                           asChild
                           size="sm"
                           variant="outline"
-                          className="rounded-xl text-xs font-bold shrink-0"
+                          className="rounded-lg text-xs font-bold shrink-0"
                         >
                           <Link to="/classificados/$id" params={{ id: deal.classified.id }}>
-                            <Tag className="size-3.5 mr-1.5" />
+                            <Tag className="size-3.5 mr-2" />
                             <span>Ver Anúncio</span>
                           </Link>
                         </Button>
@@ -562,7 +562,7 @@ function NegociacoesPage() {
                           variant="outline"
                           disabled={generatingContractId === deal.id}
                           onClick={() => handleGenerateContract(deal.id)}
-                          className="rounded-xl text-xs font-bold shrink-0 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs gap-1.5"
+                          className="rounded-lg text-xs font-bold shrink-0 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs gap-2"
                         >
                           {generatingContractId === deal.id ? (
                             <Loader2 className="size-3.5 animate-spin" />
@@ -582,7 +582,7 @@ function NegociacoesPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => setSelectedCompanionDeal(deal)}
-                          className="rounded-xl text-xs font-bold shrink-0 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer shadow-2xs gap-1.5"
+                          className="rounded-lg text-xs font-bold shrink-0 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer shadow-2xs gap-2"
                           title="Visualizar Guia Digital 9:16"
                         >
                           <Smartphone className="size-3.5" />
@@ -594,7 +594,7 @@ function NegociacoesPage() {
                             size="sm"
                             onClick={() => handleAction(deal.id, "complete")}
                             disabled={respondMutation.isPending}
-                            className="min-h-[44px] px-3.5 rounded-xl text-xs font-bold shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer"
+                            className="min-h-11 px-4 rounded-lg text-xs font-bold shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer"
                             title="Confirmar que o item foi recebido e liberar o pagamento para o vendedor"
                           >
                             <CheckCircle2 className="size-3.5" />
@@ -610,8 +610,8 @@ function NegociacoesPage() {
           })}
         </div>
       ) : (
-        <div className="border border-border/70 bg-card rounded-2xl p-6 sm:p-12 text-center space-y-3.5 shadow-xs max-w-xl mx-auto w-full">
-          <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+        <div className="border border-border/70 bg-card rounded-lg p-6 sm:p-12 text-center space-y-4 shadow-xs max-w-xl mx-auto w-full">
+          <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Handshake className="size-6" />
           </div>
           <div className="space-y-1">
@@ -620,7 +620,7 @@ function NegociacoesPage() {
               Quando você enviar uma proposta para um anúncio ou reservar uma hospedagem, elas aparecerão aqui.
             </p>
           </div>
-          <Button asChild size="default" className="rounded-xl h-10 sm:h-11 px-6 text-xs sm:text-sm font-bold gap-2 mt-1 shadow-xs cursor-pointer">
+          <Button asChild size="default" className="rounded-lg h-10 sm:h-11 px-6 text-xs sm:text-sm font-bold gap-2 mt-1 shadow-xs cursor-pointer">
             <Link to="/classificados">
               <Tag className="size-4" />
               <span>Explorar Classificados e Imóveis</span>
@@ -636,7 +636,7 @@ function NegociacoesPage() {
           if (!open) setSelectedCompanionDeal(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-2xl">
           <DialogHeader className="sr-only">
             <DialogTitle>Guia Digital de Acompanhamento</DialogTitle>
           </DialogHeader>

@@ -111,7 +111,7 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
 
  {/* Story Viewer Dialog */}
  <Dialog open={!!selectedStory} onOpenChange={() => setSelectedStory(null)}>
- <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-black text-white border-0 rounded-2xl">
+ <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-black text-white border-0 rounded-lg">
  {selectedStory && (
  <div className="relative aspect-[9/16] max-h-[85vh] flex flex-col justify-between p-4">
  {/* Mídia do Story (Vídeo ou Foto) */}
@@ -144,8 +144,8 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  </div>
 
  {/* Header com Avatar e Autor */}
- <div className="relative z-10 bg-black/50 backdrop-blur-sm p-3 rounded-xl flex items-center justify-between gap-3">
- <div className="flex items-center gap-2.5 min-w-0">
+ <div className="relative z-10 bg-black/50 backdrop-blur-sm p-3 rounded-lg flex items-center justify-between gap-3">
+ <div className="flex items-center gap-3 min-w-0">
  <Avatar className="size-8 ring-2 ring-primary">
  <AvatarImage src={selectedStory.avatar_url ?? ""} />
  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
@@ -154,7 +154,7 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  </Avatar>
  <div className="min-w-0">
  <p className="font-bold text-sm leading-none truncate">{selectedStory.title}</p>
- <p className="text-[10px] text-white/80 mt-0.5">
+ <p className="text-[10px] text-white/80 mt-1">
  {selectedStory.badge || "Story da Comunidade"}
  </p>
  </div>

@@ -159,7 +159,7 @@ function Field({
   required?: boolean;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
@@ -168,7 +168,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-10 rounded-xl border-border/50 bg-background/50 text-sm"
+        className="h-10 rounded-lg border-border/50 bg-background/50 text-sm"
       />
     </div>
   );
@@ -188,7 +188,7 @@ function FieldArea({
   required?: boolean;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
@@ -198,7 +198,7 @@ function FieldArea({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={3}
-        className="rounded-xl border-border/50 bg-background/50 text-sm resize-none"
+        className="rounded-lg border-border/50 bg-background/50 text-sm resize-none"
       />
     </div>
   );
@@ -214,11 +214,11 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
+    <div className="bg-card border border-border/50 rounded-lg overflow-hidden">
       <div className="px-6 py-4 border-b border-border/30">
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         {description && (
-          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+          <p className="text-xs text-muted-foreground mt-1">{description}</p>
         )}
       </div>
       <div className="p-6 space-y-4">{children}</div>
@@ -349,7 +349,7 @@ export function BrandBriefingPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                   Estratégia Engine
                 </span>
                 <span className="text-xs font-mono text-muted-foreground">
@@ -366,7 +366,7 @@ export function BrandBriefingPage() {
                 size="sm"
                 onClick={handleAIMagic}
                 disabled={isGenerating}
-                className="h-9 px-4 rounded-xl text-xs font-medium gap-2"
+                className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isGenerating ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -379,7 +379,7 @@ export function BrandBriefingPage() {
                 size="sm"
                 onClick={() => handleSave()}
                 disabled={isSaving}
-                className="h-9 px-4 rounded-xl text-xs font-medium gap-2"
+                className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isSaving ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -512,12 +512,12 @@ export function BrandBriefingPage() {
                     value={p}
                     onChange={(e) => handlePillarChange(i, e.target.value)}
                     placeholder={`Pilar ${i + 1} — ex: Inovação, Sustentabilidade...`}
-                    className="h-10 rounded-xl border-border/50 text-sm flex-1"
+                    className="h-10 rounded-lg border-border/50 text-sm flex-1"
                   />
                   <button
                     type="button"
                     onClick={() => removePillar(i)}
-                    className="p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -527,7 +527,7 @@ export function BrandBriefingPage() {
             <button
               type="button"
               onClick={addPillar}
-              className="w-full h-10 border border-dashed border-border/60 rounded-xl text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors"
+              className="w-full h-10 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Pilar de Conteúdo
@@ -543,7 +543,7 @@ export function BrandBriefingPage() {
               {form.keywords.map((k, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-1.5 bg-muted/40 border border-border/40 rounded-lg px-2 py-1"
+                  className="flex items-center gap-2 bg-muted/40 border border-border/40 rounded-lg px-2 py-1"
                 >
                   <Input
                     value={k}
@@ -564,7 +564,7 @@ export function BrandBriefingPage() {
             <button
               type="button"
               onClick={addKeyword}
-              className="h-9 px-4 border border-dashed border-border/60 rounded-xl text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center gap-2 transition-colors"
+              className="h-9 px-4 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center gap-2 transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Keyword
@@ -576,7 +576,7 @@ export function BrandBriefingPage() {
         <div className="w-72 xl:w-80 shrink-0 hidden lg:flex flex-col gap-4 sticky top-32 self-start">
 
           {/* Score circular */}
-          <div className="bg-card border border-border/50 rounded-2xl p-6">
+          <div className="bg-card border border-border/50 rounded-lg p-6">
             <div className="flex items-center gap-2 mb-4">
               <BarChart3 className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-semibold text-foreground">Radar do DNA</h3>
@@ -610,7 +610,7 @@ export function BrandBriefingPage() {
             </div>
 
             {/* Dimensões do radar */}
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {dimensions.map(({ label, ok }) => (
                 <div key={label} className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">{label}</span>
@@ -628,8 +628,8 @@ export function BrandBriefingPage() {
 
           {/* CCP Ativo (transplantado do satélite) */}
           {score >= 60 && (
-            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4">
-              <p className="text-xs font-semibold text-primary mb-1 flex items-center gap-1.5">
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <p className="text-xs font-semibold text-primary mb-1 flex items-center gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 CCP Ativo
               </p>
@@ -641,14 +641,14 @@ export function BrandBriefingPage() {
           )}
 
           {/* Módulos que consomem o briefing */}
-          <div className="bg-card border border-border/50 rounded-2xl p-4">
+          <div className="bg-card border border-border/50 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-3">
               <Users className="w-3.5 h-3.5 text-muted-foreground" />
               <p className="text-xs font-semibold text-muted-foreground">
                 Módulos alimentados
               </p>
             </div>
-            <div className="flex gap-1.5 flex-wrap">
+            <div className="flex gap-2 flex-wrap">
               {[
                 "Brand Kit",
                 "Canvas dos 7 Pecados",
@@ -658,7 +658,7 @@ export function BrandBriefingPage() {
               ].map((m) => (
                 <span
                   key={m}
-                  className="text-xs bg-muted/40 text-muted-foreground px-2 py-0.5 rounded-md border border-border/30"
+                  className="text-xs bg-muted/40 text-muted-foreground px-2 py-1 rounded-md border border-border/30"
                 >
                   {m}
                 </span>
@@ -667,7 +667,7 @@ export function BrandBriefingPage() {
           </div>
 
           {/* Schema real do banco (debug transparente) */}
-          <div className="bg-card border border-border/50 rounded-2xl p-4">
+          <div className="bg-card border border-border/50 rounded-lg p-4">
             <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-2">
               Schema JSONB no banco
             </p>

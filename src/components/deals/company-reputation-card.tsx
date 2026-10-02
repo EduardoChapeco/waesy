@@ -61,14 +61,14 @@ export function CompanyReputationCard({
   return (
     <div className="space-y-6">
       {/* ── Painel Principal de Reputação & Score ── */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-muted/30 border border-border/40 space-y-5">
+      <div className="p-5 sm:p-6 rounded-lg bg-muted/30 border border-border/40 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex flex-col items-center justify-center size-20 rounded-2xl bg-foreground text-background shrink-0 shadow-md">
+            <div className="flex flex-col items-center justify-center size-20 rounded-lg bg-foreground text-background shrink-0 shadow-md">
               <span className="text-3xl font-black font-display tracking-tight leading-none">
                 {avg.toFixed(1)}
               </span>
-              <div className="flex items-center gap-0.5 mt-1 text-amber-400">
+              <div className="flex items-center gap-1 mt-1 text-amber-400">
                 <Star className="size-3 fill-amber-400" />
               </div>
             </div>
@@ -124,7 +124,7 @@ export function CompanyReputationCard({
         </h4>
 
         {reviews.length === 0 ? (
-          <div className="p-8 text-center rounded-2xl bg-muted/20 border border-border/30 space-y-1">
+          <div className="p-8 text-center rounded-lg bg-muted/20 border border-border/30 space-y-1">
             <p className="text-xs font-semibold text-foreground">Nenhuma avaliação registrada ainda</p>
             <p className="text-[11px] text-muted-foreground">
               Assim que compradores iniciarem negociações ou fecharem pacotes, as avaliações auditadas aparecerão aqui.
@@ -138,10 +138,10 @@ export function CompanyReputationCard({
               return (
                 <div
                   key={rev.id}
-                  className="p-4 rounded-2xl bg-card border border-border/40 shadow-xs space-y-3"
+                  className="p-4 rounded-lg bg-card border border-border/40 shadow-xs space-y-3"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-3">
                       <div className="size-9 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-foreground shrink-0 overflow-hidden border border-border/30">
                         {rev.reviewer?.avatar_url ? (
                           <img
@@ -154,12 +154,12 @@ export function CompanyReputationCard({
                         )}
                       </div>
 
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-xs text-foreground">
                             {rev.reviewer?.full_name || "Comprador Verificado"}
                           </span>
-                          <Badge variant="outline" className="text-[9px] font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0">
+                          <Badge variant="outline" className="text-[9px] font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0">
                             Negócio Auditado
                           </Badge>
                         </div>
@@ -187,7 +187,7 @@ export function CompanyReputationCard({
                   </div>
 
                   {rev.classified && (
-                    <div className="text-[11px] text-muted-foreground px-2.5 py-1 rounded-lg bg-muted/40 inline-block">
+                    <div className="text-[11px] text-muted-foreground px-3 py-1 rounded-lg bg-muted/40 inline-block">
                       Ref: <strong className="text-foreground">{rev.classified.title}</strong>
                     </div>
                   )}
@@ -200,7 +200,7 @@ export function CompanyReputationCard({
 
                   {/* Resposta do Lojista se existir */}
                   {rev.response_comment && (
-                    <div className="ml-4 pl-3 border-l-2 border-primary/40 space-y-1 bg-muted/20 p-2.5 rounded-r-xl text-xs">
+                    <div className="ml-4 pl-3 border-l-2 border-primary/40 space-y-1 bg-muted/20 p-3 rounded-r-lg text-xs">
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-bold text-[11px] text-foreground flex items-center gap-1">
                           <Reply className="size-3 text-primary" />
@@ -227,7 +227,7 @@ export function CompanyReputationCard({
                             value={replyText}
                             onChange={(e) => setReplyText(e.target.value)}
                             placeholder="Escreva sua resposta de agradecimento ou esclarecimento..."
-                            className="text-xs rounded-xl min-h-[70px] resize-none"
+                            className="text-xs rounded-lg min-h-[70px] resize-none"
                             maxLength={1000}
                           />
                           <div className="flex items-center justify-end gap-2">
@@ -264,7 +264,7 @@ export function CompanyReputationCard({
                             setReplyingId(rev.id);
                             setReplyText("");
                           }}
-                          className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground gap-1.5 rounded-lg"
+                          className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-2 rounded-lg"
                         >
                           <Reply className="size-3" />
                           <span>Responder feedback</span>

@@ -151,12 +151,12 @@ function ServicesIndexPage() {
      onClick={() => setIsSearchCatalogOpen(true)}
      variant="outline"
      size="sm"
-     className="rounded-xl font-bold text-xs gap-1.5 border-border/60 hover:bg-muted/30 text-foreground shadow-sm"
+     className="rounded-lg font-bold text-xs gap-2 border-border/60 hover:bg-muted/30 text-foreground shadow-sm"
    >
      <Star className="size-3.5 text-amber-500" />
      <span>Importar do Catálogo</span>
    </Button>
-   <Button onClick={handleOpenCreate} size="sm" className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground">
+   <Button onClick={handleOpenCreate} size="sm" className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground">
      <Plus className="size-3.5" />
      <span>Novo Serviço</span>
    </Button>
@@ -179,13 +179,13 @@ function ServicesIndexPage() {
  title="Nenhum Serviço Cadastrado"
  description="Cadastre procedimentos, cortes, sessões ou atendimentos com duração e valor definidos."
  action={
- <Button onClick={handleOpenCreate} size="sm" className="rounded-xl font-bold text-xs">
+ <Button onClick={handleOpenCreate} size="sm" className="rounded-lg font-bold text-xs">
  Cadastrar Primeiro Serviço
  </Button>
  }
  />
  ) : (
- <div className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+ <div className="bg-card rounded-lg border border-border/60 overflow-hidden">
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/40">
@@ -201,7 +201,7 @@ function ServicesIndexPage() {
  {services.map((service: any) => (
  <TableRow key={service.id} className="group hover:bg-muted/20 transition-colors">
  <TableCell className="pl-4 pr-0">
- <div className="size-10 rounded-xl bg-muted/60 border border-border/50 overflow-hidden flex items-center justify-center shrink-0">
+ <div className="size-10 rounded-lg bg-muted/60 border border-border/50 overflow-hidden flex items-center justify-center shrink-0">
  {service.image_url ? (
  <img
  src={service.image_url}
@@ -216,7 +216,7 @@ function ServicesIndexPage() {
  <TableCell>
  <div className="font-bold text-foreground text-xs">{service.title}</div>
  {service.description && (
- <div className="text-xs text-muted-foreground line-clamp-1 max-w-[320px] mt-0.5">
+ <div className="text-xs text-muted-foreground line-clamp-1 max-w-80 mt-1">
  {service.description}
  </div>
  )}
@@ -263,7 +263,7 @@ function ServicesIndexPage() {
  description="Configure os parâmetros de agendamento, duração e valor do serviço."
  >
  <div className="space-y-4 p-1 pb-16">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="service-title" className="text-xs font-bold text-foreground">
  Título do Serviço *
  </Label>
@@ -272,12 +272,12 @@ function ServicesIndexPage() {
  placeholder="Ex: Corte Degrade + Barba, Massagem..."
  value={form.title}
  onChange={(e) => setForm({ ...form, title: e.target.value })}
- className="rounded-xl h-10 text-xs"
+ className="rounded-lg h-10 text-xs"
  autoFocus
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="service-desc" className="text-xs font-bold text-foreground">
  Descrição / Detalhes (Opcional)
  </Label>
@@ -287,21 +287,21 @@ function ServicesIndexPage() {
  rows={3}
  value={form.description}
  onChange={(e) => setForm({ ...form, description: e.target.value })}
- className="rounded-2xl text-xs resize-none"
+ className="rounded-lg text-xs resize-none"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Duração Estimada *</Label>
  <Select
  value={String(form.duration_minutes)}
  onValueChange={(val) => setForm({ ...form, duration_minutes: Number(val) })}
  >
- <SelectTrigger className="rounded-xl h-10 text-xs">
+ <SelectTrigger className="rounded-lg h-10 text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="15" className="text-xs">15 min</SelectItem>
  <SelectItem value="30" className="text-xs">30 min</SelectItem>
  <SelectItem value="45" className="text-xs">45 min</SelectItem>
@@ -312,7 +312,7 @@ function ServicesIndexPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="service-price" className="text-xs font-bold text-foreground">
  Preço (R$) *
  </Label>
@@ -321,22 +321,22 @@ function ServicesIndexPage() {
  placeholder="0,00"
  value={form.price_reais}
  onChange={(e) => setForm({ ...form, price_reais: e.target.value })}
- className="rounded-xl h-10 text-xs font-mono"
+ className="rounded-lg h-10 text-xs font-mono"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Público / Alvo</Label>
  <Select
  value={form.gender_target}
  onValueChange={(val) => setForm({ ...form, gender_target: val })}
  >
- <SelectTrigger className="rounded-xl h-10 text-xs">
+ <SelectTrigger className="rounded-lg h-10 text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="todos" className="text-xs">Todos (Unissex)</SelectItem>
  <SelectItem value="masculino" className="text-xs">Masculino</SelectItem>
  <SelectItem value="feminino" className="text-xs">Feminino</SelectItem>
@@ -345,16 +345,16 @@ function ServicesIndexPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Status de Exibição</Label>
  <Select
  value={form.status}
  onValueChange={(val: any) => setForm({ ...form, status: val })}
  >
- <SelectTrigger className="rounded-xl h-10 text-xs">
+ <SelectTrigger className="rounded-lg h-10 text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-2xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="active" className="text-xs font-semibold text-emerald-600">● Ativo na Agenda</SelectItem>
  <SelectItem value="archived" className="text-xs text-muted-foreground">● Arquivado / Oculto</SelectItem>
  </SelectContent>
@@ -362,7 +362,7 @@ function ServicesIndexPage() {
  </div>
  </div>
 
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <Label className="text-xs font-bold text-foreground">Foto Ilustrativa do Serviço</Label>
  <ImageUpload
  value={form.image_url}
@@ -378,7 +378,7 @@ function ServicesIndexPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsSheetOpen(false)}
- className="rounded-xl text-xs font-bold"
+ className="rounded-lg text-xs font-bold"
  >
  Cancelar
  </Button>
@@ -386,7 +386,7 @@ function ServicesIndexPage() {
  size="sm"
  onClick={() => saveMutation.mutate()}
  disabled={saveMutation.isPending || !form.title.trim()}
- className="rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground min-w-28"
+ className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground min-w-28"
  >
  {saveMutation.isPending ? (
  <>

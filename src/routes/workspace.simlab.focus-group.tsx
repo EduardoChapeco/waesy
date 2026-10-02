@@ -208,9 +208,9 @@ function FocusGroupPage() {
   return (
     <div className="w-full min-h-full bg-background text-foreground flex flex-col font-sans selection:bg-primary/20">
       {/* Level 2: TopBar Flutuante com Glassmorphism Apple HIG */}
-      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border/40 px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border/40 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="size-9 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+          <div className="size-9 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
             <Layers className="size-4.5" />
           </div>
           <div>
@@ -229,15 +229,15 @@ function FocusGroupPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
           {/* Status do Motor Cognitivo */}
           {keyStatus.hasActiveKey ? (
-            <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-medium py-1 px-3 gap-1.5 h-8">
+            <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-medium py-1 px-3 gap-2 h-8">
               <Cpu className="size-3.5 text-emerald-500" />
               <span>IA Viva ({keyStatus.activeProvider?.toUpperCase()})</span>
             </Badge>
           ) : (
-            <Badge className="bg-sky-500/10 text-sky-600 border border-sky-500/20 text-xs font-medium py-1 px-3 gap-1.5 h-8">
+            <Badge className="bg-sky-500/10 text-sky-600 border border-sky-500/20 text-xs font-medium py-1 px-3 gap-2 h-8">
               <Brain className="size-3.5 text-sky-500" />
               <span>Econometria McFadden (IBGE)</span>
             </Badge>
@@ -248,13 +248,13 @@ function FocusGroupPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsKeySheetOpen(true)}
-            className="h-8 rounded-xl text-xs font-medium gap-1.5 border-border/80"
+            className="h-8 rounded-lg text-xs font-medium gap-2 border-border/80"
           >
             <Key className="size-3.5" />
             <span>Chave de IA</span>
           </Button>
 
-          <Badge className="bg-muted text-muted-foreground border-border/60 text-xs font-medium py-1 px-3 gap-1.5 h-8">
+          <Badge className="bg-muted text-muted-foreground border-border/60 text-xs font-medium py-1 px-3 gap-2 h-8">
             <Activity className="size-3 text-emerald-500" />
             {selectedPersonas.length} de {availablePersonas.length} Personas Ativas
           </Badge>
@@ -264,15 +264,15 @@ function FocusGroupPage() {
       {/* Grid Principal: Terminal de 2 Colunas */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Barra Horizontal Compacta Mobile */}
-        <div className="lg:hidden border-b border-border/40 bg-card/40 p-2.5 space-y-1.5 shrink-0">
+        <div className="lg:hidden border-b border-border/40 bg-card/40 p-3 space-y-2 shrink-0">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium px-1">
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-2">
               <Users className="size-3" />
               Bancada Amostral ({selectedPersonas.length}/{availablePersonas.length})
             </span>
             <span className="text-xs">Toque para alternar</span>
           </div>
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
             {availablePersonas.map((p) => {
               const isSelected = selectedPersonas.some(x => x.id === p.id);
               return (
@@ -280,14 +280,14 @@ function FocusGroupPage() {
                   key={p.id}
                   type="button"
                   onClick={() => handleTogglePersona(p)}
-                  className={`h-11 px-3 rounded-xl border text-xs font-medium shrink-0 flex items-center gap-2 transition-all min-h-[44px] ${
+                  className={`h-11 px-3 rounded-lg border text-xs font-medium shrink-0 flex items-center gap-2 transition-all min-h-11 ${
                     isSelected
                       ? 'bg-card border-border shadow-xs text-foreground ring-1 ring-primary/30'
                       : 'bg-muted/30 border-transparent text-muted-foreground opacity-60'
                   }`}
                 >
                   <span className="truncate max-w-[120px]">{p.display_name}</span>
-                  <Badge variant="secondary" className="text-xs py-0 px-1.5 rounded-sm">
+                  <Badge variant="secondary" className="text-xs py-0 px-2 rounded-sm">
                     {p.abep_social_class}
                   </Badge>
                 </button>
@@ -299,14 +299,14 @@ function FocusGroupPage() {
         {/* Painel Lateral Desktop: Bancada Amostral com Currículos e Finanças */}
         <aside className="hidden lg:block w-88 border-r border-border/60 bg-card/30 p-4 space-y-4 overflow-y-auto no-scrollbar shrink-0">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium pb-2 border-b border-border/40">
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-2">
               <Users className="size-3.5" />
               Bancada Amostral Ativa
             </span>
             <span className="font-semibold text-foreground">{selectedPersonas.length} selecionadas</span>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {availablePersonas.map((p) => {
               const isSelected = selectedPersonas.some(x => x.id === p.id);
               const profession = p.curriculum?.profession_title || 'Profissional autônomo';
@@ -315,7 +315,7 @@ function FocusGroupPage() {
               return (
                 <div
                   key={p.id}
-                  className={`p-3.5 rounded-2xl border transition-all min-h-[44px] ${
+                  className={`p-4 rounded-lg border transition-all min-h-11 ${
                     isSelected 
                       ? 'bg-card border-border/90 shadow-xs ring-1 ring-border/80' 
                       : 'bg-muted/20 border-transparent opacity-60 hover:opacity-100 hover:bg-muted/40'
@@ -324,23 +324,23 @@ function FocusGroupPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0" onClick={() => handleTogglePersona(p)}>
                       <p className="text-xs font-semibold text-foreground truncate">{p.display_name}</p>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      <p className="text-xs text-muted-foreground truncate mt-1">
                         {profession}
                       </p>
                     </div>
-                    <Badge variant="secondary" className="text-xs font-semibold py-0.5 px-2 shrink-0">
+                    <Badge variant="secondary" className="text-xs font-semibold py-1 px-2 shrink-0">
                       {p.abep_social_class}
                     </Badge>
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-border/40 grid grid-cols-2 gap-2 text-xs">
+                  <div className="mt-3 pt-3 border-t border-border/40 grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <span className="text-muted-foreground block text-xs">Folga Mensal POF</span>
                       <span className="font-semibold text-foreground">R$ {surplus.toLocaleString('pt-BR')}</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground block text-xs">Sensibilidade Preço</span>
-                      <div className="flex items-center gap-1.5 mt-0.5">
+                      <div className="flex items-center gap-2 mt-1">
                         <Progress value={p.price_sensitivity * 10} className="h-1 bg-muted/60" />
                         <span className="font-semibold text-xs">{p.price_sensitivity}</span>
                       </div>
@@ -348,7 +348,7 @@ function FocusGroupPage() {
                   </div>
 
                   {/* Ação de Inspecionar Ficha 360° */}
-                  <div className="mt-2.5 pt-2 border-t border-border/30 flex items-center justify-between">
+                  <div className="mt-3 pt-2 border-t border-border/30 flex items-center justify-between">
                     <button
                       type="button"
                       onClick={() => handleTogglePersona(p)}
@@ -377,7 +377,7 @@ function FocusGroupPage() {
         {/* Painel Central: Trilha de Depoimentos Auditados */}
         <main className="flex-1 flex flex-col bg-background">
           <div className="flex-1 p-6 overflow-y-auto space-y-4 no-scrollbar">
-            <div className="rounded-2xl border border-border/80 bg-card divide-y divide-border/40 shadow-xs overflow-hidden">
+            <div className="rounded-lg border border-border/80 bg-card divide-y divide-border/40 shadow-xs overflow-hidden">
               {statements.map((s) => {
                 const isModerator = s.sender_type === 'moderator_user';
                 const isScientist = s.sender_type === 'squad_scientist';
@@ -387,7 +387,7 @@ function FocusGroupPage() {
                   <div key={s.id} className={`p-4.5 flex items-start gap-4 transition-colors ${
                     isModerator ? 'bg-primary/5' : isScientist ? 'bg-blue-500/5' : 'bg-transparent'
                   }`}>
-                    <div className={`size-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold ${
+                    <div className={`size-8 rounded-lg flex items-center justify-center shrink-0 mt-1 text-xs font-bold ${
                       isModerator 
                         ? 'bg-primary text-primary-foreground' 
                         : isScientist 
@@ -405,7 +405,7 @@ function FocusGroupPage() {
                             <button
                               type="button"
                               onClick={() => setInspectingPersona(matchedPersona)}
-                              className="text-xs text-muted-foreground hover:text-primary underline flex items-center gap-0.5"
+                              className="text-xs text-muted-foreground hover:text-primary underline flex items-center gap-1"
                             >
                               <span>ver currículo e finanças</span>
                             </button>
@@ -416,11 +416,11 @@ function FocusGroupPage() {
                           {new Date(s.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <p className="text-sm text-foreground/90 mt-1.5 leading-relaxed">
+                      <p className="text-sm text-foreground/90 mt-2 leading-relaxed">
                         {s.content}
                       </p>
                       {s.sentiment_score !== null && s.sentiment_score !== undefined && (
-                        <div className="mt-2.5 flex items-center gap-3">
+                        <div className="mt-3 flex items-center gap-3">
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-muted-foreground font-medium">Receptividade Estimada:</span>
                             <div className="w-20 bg-muted/60 h-1.5 rounded-sm overflow-hidden">
@@ -432,7 +432,7 @@ function FocusGroupPage() {
                             <span className="text-xs font-semibold">{Math.round((s.sentiment_score || 0) * 100)}%</span>
                           </div>
                           {s.sentiment_score >= 0.75 && (
-                            <Badge variant="outline" className="text-xs py-0 px-1.5 border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
+                            <Badge variant="outline" className="text-xs py-0 px-2 border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
                               Alta Probabilidade de Compra
                             </Badge>
                           )}
@@ -460,13 +460,13 @@ function FocusGroupPage() {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Insira a hipótese comercial (ex: 'Pacote Beto Carrero World por R$ 290,00 por pessoa com transporte e ingresso em até 10x sem juros no cartão')"
-                className="flex-1 h-11 rounded-xl text-sm bg-card border-border/80 focus-visible:ring-1 focus-visible:ring-primary min-h-[44px]"
+                className="flex-1 h-11 rounded-lg text-sm bg-card border-border/80 focus-visible:ring-1 focus-visible:ring-primary min-h-11"
                 disabled={isProcessing}
               />
               <Button
                 type="submit"
                 disabled={isProcessing || !inputMessage.trim()}
-                className="h-11 px-6 rounded-xl font-medium text-xs gap-2 min-h-[44px] shrink-0"
+                className="h-11 px-6 rounded-lg font-medium text-xs gap-2 min-h-11 shrink-0"
               >
                 <span>Avaliar Amostra</span>
                 <ArrowRight className="size-3.5" />
@@ -499,12 +499,12 @@ function FocusGroupPage() {
               </SheetHeader>
 
               {/* Bloco 1: Currículo & Carreira */}
-              <div className="rounded-xl border border-border/70 p-4 space-y-3 bg-muted/20">
+              <div className="rounded-lg border border-border/70 p-4 space-y-3 bg-muted/20">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Briefcase className="size-4 text-primary" />
                   <span>Currículo Profissional e Ocupação</span>
                 </div>
-                <div className="space-y-1.5 text-xs">
+                <div className="space-y-2 text-xs">
                   <p className="text-foreground font-medium">
                     {inspectingPersona.curriculum?.profession_title || 'Profissional Autônomo'}
                   </p>
@@ -521,7 +521,7 @@ function FocusGroupPage() {
               </div>
 
               {/* Bloco 2: Perfil do Domicílio */}
-              <div className="rounded-xl border border-border/70 p-4 space-y-3 bg-muted/20">
+              <div className="rounded-lg border border-border/70 p-4 space-y-3 bg-muted/20">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Home className="size-4 text-primary" />
                   <span>Estrutura Familiar e Dependentes</span>
@@ -543,7 +543,7 @@ function FocusGroupPage() {
               </div>
 
               {/* Bloco 3: Balanço Patrimonial & Renda POF */}
-              <div className="rounded-xl border border-border/70 p-4 space-y-3 bg-muted/20">
+              <div className="rounded-lg border border-border/70 p-4 space-y-3 bg-muted/20">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Wallet className="size-4 text-primary" />
                   <span>Balanço Mensal e Capacidade Financeira</span>
@@ -567,7 +567,7 @@ function FocusGroupPage() {
                       R$ {(inspectingPersona.financial_sheet?.essential_fixed_expenses_brl || Math.round(inspectingPersona.median_income_brl * 0.7)).toLocaleString('pt-BR')}
                     </span>
                   </div>
-                  <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                     <span className="text-xs text-emerald-700 block font-medium">Folga Discricionária</span>
                     <span className="font-bold text-emerald-800">
                       R$ {(inspectingPersona.financial_sheet?.discretionary_surplus_brl || Math.round(inspectingPersona.median_income_brl * 0.25)).toLocaleString('pt-BR')}
@@ -592,7 +592,7 @@ function FocusGroupPage() {
               </div>
 
               {/* Bloco 4: Heurísticas de Decisão */}
-              <div className="rounded-xl border border-border/70 p-4 space-y-3 bg-muted/20">
+              <div className="rounded-lg border border-border/70 p-4 space-y-3 bg-muted/20">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Scale className="size-4 text-primary" />
                   <span>Heurísticas Comportamentais de Compra</span>
@@ -642,13 +642,13 @@ function FocusGroupPage() {
           </SheetHeader>
 
           <form onSubmit={handleSaveKey} className="space-y-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-medium text-foreground">Provedor de IA</label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setKeyProvider('gemini')}
-                  className={`h-10 rounded-xl border text-xs font-medium transition-all ${
+                  className={`h-10 rounded-lg border text-xs font-medium transition-all ${
                     keyProvider === 'gemini' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
@@ -659,7 +659,7 @@ function FocusGroupPage() {
                 <button
                   type="button"
                   onClick={() => setKeyProvider('groq')}
-                  className={`h-10 rounded-xl border text-xs font-medium transition-all ${
+                  className={`h-10 rounded-lg border text-xs font-medium transition-all ${
                     keyProvider === 'groq' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
@@ -670,7 +670,7 @@ function FocusGroupPage() {
                 <button
                   type="button"
                   onClick={() => setKeyProvider('openai')}
-                  className={`h-10 rounded-xl border text-xs font-medium transition-all ${
+                  className={`h-10 rounded-lg border text-xs font-medium transition-all ${
                     keyProvider === 'openai' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
@@ -681,14 +681,14 @@ function FocusGroupPage() {
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-medium text-foreground">Chave de API ({keyProvider.toUpperCase()})</label>
               <Input
                 type="password"
                 placeholder={keyProvider === 'gemini' ? 'AIzaSy...' : keyProvider === 'groq' ? 'gsk_...' : 'sk-...'}
                 value={apiKeyInput}
                 onChange={(e) => setApiKeyInput(e.target.value)}
-                className="h-11 rounded-xl text-xs bg-card border-border/80 font-mono"
+                className="h-11 rounded-lg text-xs bg-card border-border/80 font-mono"
               />
               <p className="text-xs text-muted-foreground leading-relaxed">
                 A chave é criptografada e armazenada no Supabase (`api_key_pools`), habilitando chamadas seguras server-side.
@@ -699,7 +699,7 @@ function FocusGroupPage() {
               <Button
                 type="submit"
                 disabled={isSavingKey || !apiKeyInput.trim()}
-                className="w-full h-11 rounded-xl font-medium text-xs gap-2 min-h-[44px]"
+                className="w-full h-11 rounded-lg font-medium text-xs gap-2 min-h-11"
               >
                 {isSavingKey ? 'Salvando e Testando...' : 'Salvar e Ativar Chave'}
               </Button>
@@ -708,7 +708,7 @@ function FocusGroupPage() {
 
           <div className="pt-4 border-t border-border/50 space-y-2 text-xs">
             <p className="font-semibold text-foreground">Status Atual:</p>
-            <div className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1 text-xs">
+            <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Chave ativa detectada:</span>
                 <span className={keyStatus.hasActiveKey ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>

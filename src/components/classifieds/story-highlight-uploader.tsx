@@ -117,7 +117,7 @@ export function StoryHighlightUploader({
           const isEditing = editingId === hl.id;
 
           return (
-            <div key={hl.id} className="flex flex-col items-center gap-1.5 shrink-0">
+            <div key={hl.id} className="flex flex-col items-center gap-2 shrink-0">
               {/* Círculo */}
               <div className="relative group">
                 <button
@@ -208,7 +208,7 @@ export function StoryHighlightUploader({
 
         {/* Botão de adicionar novo destaque */}
         {!readOnly && highlights.length < maxHighlights && (
-          <div className="flex flex-col items-center gap-1.5 shrink-0">
+          <div className="flex flex-col items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={handleAddNew}

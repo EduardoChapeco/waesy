@@ -345,10 +345,10 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <div className="flex flex-col space-y-1 select-none">
  {/* ── Módulo VIP: Painel Global Master para Platform Admin ── */}
  {isPlatformAdmin && (
- <div className="mb-2 pb-2 border-b border-border/40 space-y-1.5">
+ <div className="mb-2 pb-2 border-b border-border/40 space-y-2">
  <Link
  to="/admin-master"
- className="flex items-center justify-between px-3 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-all font-bold text-xs group"
+ className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-all font-bold text-xs group"
  >
  <div className="flex items-center gap-2">
  <ShieldAlert className="size-4 text-primary shrink-0" />
@@ -361,7 +361,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  type="button"
  onClick={() => setIsMasterAllVerticals((prev) => !prev)}
  className={cn(
- "w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer",
+ "w-full flex items-center justify-between px-3 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer",
  isMasterAllVerticals
  ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
  : "bg-muted/40 text-muted-foreground border-border/40 hover:text-foreground"
@@ -395,9 +395,9 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  const isExpanded = expandedGroups[group.id] ?? isGroupActive;
 
  return (
- <div key={group.id} className="space-y-0.5">
+ <div key={group.id} className="space-y-1">
  {isNewSection && sectionLabel && (
- <div className="pt-2.5 pb-1 px-2.5 flex items-center gap-2 select-none">
+ <div className="pt-3 pb-1 px-3 flex items-center gap-2 select-none">
  <span className="text-xs font-mono font-bold tracking-wider text-muted-foreground/60 uppercase truncate">
  {sectionLabel}
  </span>
@@ -445,7 +445,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <button
  type="button"
  onClick={() => setIsAllToolsOpen(true)}
- className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+ className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
  >
  <Sliders className="size-4 text-primary shrink-0" />
  <span className="truncate">Todas as ferramentas</span>
@@ -455,7 +455,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <button
  type="button"
  onClick={() => setIsAllToolsOpen(true)}
- className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+ className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
  >
  <Search className="size-4 shrink-0 text-muted-foreground" />
  <span className="truncate">Pesquisar</span>
@@ -464,7 +464,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  {/* 3. Configurações da Loja */}
  <Link
  to="/workspace/configuracoes"
- className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+ className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
  >
  <Settings className="size-4 shrink-0 text-muted-foreground" />
  <span className="truncate">Configurações</span>
@@ -474,7 +474,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
  <Link
  to="/termos"
- className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground px-2 py-1 rounded-lg hover:bg-muted/40 transition-colors"
+ className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-2 py-1 rounded-lg hover:bg-muted/40 transition-colors"
  >
  <HelpCircle className="size-3.5" />
  <span>Ajuda</span>
@@ -500,7 +500,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
             <div className="lg:hidden shrink-0">
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="icon" className="size-10 min-w-10 min-h-10 rounded-xl border-border/60">
+                  <Button variant="outline" size="icon" className="size-10 min-w-10 min-h-10 rounded-lg border-border/60">
                     <Sliders className="size-4" />
                   </Button>
                 </SheetTrigger>
@@ -528,7 +528,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
             </div>
 
             {/* Identificação rápida da loja no Mobile/Tablet (< lg) */}
-            <div className="lg:hidden flex items-center gap-1.5 min-w-0">
+            <div className="lg:hidden flex items-center gap-2 min-w-0">
               <span className="text-xs font-bold text-foreground truncate max-w-36 sm:max-w-56">
                 {activeStore?.name || "Workspace"}
               </span>
@@ -536,7 +536,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           </div>
 
           {/* Ações do Header do Workspace */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2 shrink-0">
             {/* Botão Contextual da Loja Pública */}
             {(() => {
               const storeData = activeStore?.store || activeStore;
@@ -549,7 +549,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-8 rounded-xl text-xs font-bold gap-1.5 hidden sm:inline-flex border-border bg-card hover:bg-muted"
+                  className="h-8 rounded-lg text-xs font-bold gap-2 hidden sm:inline-flex border-border bg-card hover:bg-muted"
                 >
                   <Link
                     to="/perfil-da-loja"
@@ -559,7 +559,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   >
                     <ActionIcon className="size-3.5 text-primary" />
                     <span>{contextualAction.label}</span>
-                    <ExternalLink className="size-3 text-muted-foreground ml-0.5" />
+                    <ExternalLink className="size-3 text-muted-foreground ml-1" />
                   </Link>
                 </Button>
               );
@@ -570,7 +570,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Button
                 asChild
                 size="sm"
-                className="h-8 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground hover:opacity-95 cursor-pointer"
+                className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:opacity-95 cursor-pointer"
               >
                 <Link to="/admin-master">
                   <ShieldAlert className="size-3.5" />
@@ -590,7 +590,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-8 rounded-xl text-xs font-bold gap-1.5 hidden md:inline-flex border-border bg-card hover:bg-muted"
+                  className="h-8 rounded-lg text-xs font-bold gap-2 hidden md:inline-flex border-border bg-card hover:bg-muted"
                 >
                   <Link to={opAction.path as never}>
                     <OpIcon className="size-3.5 text-primary" />
@@ -605,7 +605,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="flex items-center gap-2 p-1 pl-2 rounded-xl border border-border/60 bg-card hover:bg-muted/80 transition-all cursor-pointer"
+                  className="flex items-center gap-2 p-1 pl-2 rounded-lg border border-border/60 bg-card hover:bg-muted/80 transition-all cursor-pointer"
                 >
                   <span className="text-xs font-bold text-foreground max-w-28 truncate hidden md:inline-block">
                     {userDisplayName}
@@ -619,25 +619,25 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                 </button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="w-60 rounded-2xl p-2 border border-border">
-                <DropdownMenuLabel className="font-normal px-2 py-1.5">
+              <DropdownMenuContent align="end" className="w-60 rounded-lg p-2 border border-border">
+                <DropdownMenuLabel className="font-normal px-2 py-2">
                   <p className="text-xs font-bold text-foreground truncate">{userDisplayName}</p>
                   <p className="text-xs font-mono text-muted-foreground truncate">{session?.email}</p>
-                  <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                  <span className="inline-block mt-1 px-2 py-1 rounded text-xs font-bold bg-primary/10 text-primary border border-primary/20">
                     {activeStore?.name || "Loja"}
                   </span>
                 </DropdownMenuLabel>
 
                 <DropdownMenuSeparator className="bg-border" />
 
-                <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs">
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs">
                   <Link to="/workspace/configuracoes">
                     <Settings className="size-3.5 mr-2 text-muted-foreground" />
                     <span>Configurações</span>
                   </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs">
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs">
                   <Link to="/workspace/lojas">
                     <Building2 className="size-3.5 mr-2 text-muted-foreground" />
                     <span>Trocar Loja</span>
@@ -646,7 +646,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
                 <DropdownMenuSeparator className="bg-border" />
 
-                <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between">
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between">
                   <Link to="/conta">
                     <div className="flex items-center gap-2">
                       <UserCircle className="size-3.5 text-primary" />
@@ -660,7 +660,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="rounded-xl cursor-pointer text-xs text-destructive focus:text-destructive"
+                  className="rounded-lg cursor-pointer text-xs text-destructive focus:text-destructive"
                 >
                   <LogOut className="size-3.5 mr-2" />
                   <span>Sair</span>
@@ -697,13 +697,13 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           return (
             <nav
               aria-label="Navegação operacional móvel"
-              className="lg:hidden fixed inset-x-2.5 z-30 max-w-lg mx-auto grid grid-cols-5 items-center p-1.5 bg-background border border-border rounded-2xl select-none"
+              className="lg:hidden fixed inset-x-2.5 z-30 max-w-lg mx-auto grid grid-cols-5 items-center p-2 bg-background border border-border rounded-lg select-none"
               style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 6px), 8px)" }}
             >
               <Link
                 to="/workspace"
                 className={cn(
-                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs transition-colors active:scale-95",
+                  "h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95",
                   isOverview ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -714,7 +714,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Link
                 to={opAction.path as any}
                 className={cn(
-                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs transition-colors active:scale-95",
+                  "h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95",
                   isOpActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -725,7 +725,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Link
                 to="/workspace/catalogo/produtos"
                 className={cn(
-                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs transition-colors active:scale-95",
+                  "h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95",
                   isCatalogActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -736,7 +736,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Link
                 to="/workspace/financeiro/caixa"
                 className={cn(
-                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs transition-colors active:scale-95",
+                  "h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95",
                   isFinanceActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -747,7 +747,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors active:scale-95 cursor-pointer"
+                className="h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors active:scale-95 cursor-pointer"
               >
                 <Sliders className="size-4" />
                 <span className="truncate">Menu</span>
@@ -759,9 +759,9 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
  {/* ── 3. MODAL DE CONFIRMAÇÃO DE ALTERNÂNCIA DE CONTEXTO (PROTEÇÃO RIGOROSA) ── */}
  <Dialog open={showPersonalSwitchModal} onOpenChange={setShowPersonalSwitchModal}>
- <DialogContent className="sm:max-w-md p-0 overflow-hidden sm:rounded-2xl bg-background border border-border">
+ <DialogContent className="sm:max-w-md p-0 overflow-hidden sm:rounded-lg bg-background border border-border">
  <DialogHeader className="p-6 pb-4 bg-muted/20 border-b border-border/40">
- <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-2 border border-primary/20">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2 border border-primary/20">
  <ArrowRightLeft className="size-5" />
  </div>
  <DialogTitle className="text-lg font-black tracking-tight text-foreground">
@@ -774,7 +774,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
  <div className="p-6 space-y-4 text-xs">
  {/* Box informativo de transição de identidade */}
- <div className="rounded-2xl border border-border/60 bg-muted/30 p-3.5 space-y-2">
+ <div className="rounded-lg border border-border/60 bg-muted/30 p-4 space-y-2">
  <div className="flex items-center justify-between text-xs">
  <span className="text-muted-foreground">Ambiente Atual:</span>
  <span className="font-bold text-foreground">Loja {activeStore?.name || "Matriz"}</span>
@@ -796,14 +796,14 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  type="button"
  variant="outline"
  onClick={() => setShowPersonalSwitchModal(false)}
- className="w-full sm:w-auto rounded-xl text-xs font-bold"
+ className="w-full sm:w-auto rounded-lg text-xs font-bold"
  >
  Permanecer no Painel
  </Button>
  <Button
  type="button"
  onClick={confirmSwitchToPersonal}
- className="w-full sm:w-auto rounded-xl text-xs font-bold gap-1.5"
+ className="w-full sm:w-auto rounded-lg text-xs font-bold gap-2"
  >
  <Check className="size-3.5" />
  <span>Sim, alternar para {userDisplayName}</span>

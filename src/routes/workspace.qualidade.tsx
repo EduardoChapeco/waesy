@@ -84,7 +84,7 @@ export default function WorkspaceQualidadePage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
  <div>
  <h1 className="text-xl font-bold tracking-tight">Qualidade</h1>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Inspeções de qualidade, auditorias anônimas e programa de apoio solidário.
  </p>
  </div>
@@ -96,7 +96,7 @@ export default function WorkspaceQualidadePage() {
 
  {/* Grid de Métricas Limpo */}
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Índice de Qualidade</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {averageRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span>
@@ -104,13 +104,13 @@ export default function WorkspaceQualidadePage() {
  <span className="text-xs text-muted-foreground">média das auditorias</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Auditorias Realizadas</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">{audits.length}</div>
  <span className="text-xs text-muted-foreground">inspeções anônimas</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card col-span-2 sm:col-span-1">
+ <div className="p-4 rounded-lg border border-border/60 bg-card col-span-2 sm:col-span-1">
  <span className="text-xs text-muted-foreground font-medium block">Canal Solidário</span>
  <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-1">Disponível</div>
  <span className="text-xs text-muted-foreground">apoio em momentos de dificuldade</span>
@@ -121,7 +121,7 @@ export default function WorkspaceQualidadePage() {
  <div className="space-y-2">
  <h2 className="text-sm font-bold text-foreground">Histórico de Auditorias</h2>
 
- <div className="rounded-xl border border-border/60 overflow-hidden bg-card">
+ <div className="rounded-lg border border-border/60 overflow-hidden bg-card">
  <Table>
  <TableHeader>
  <TableRow>
@@ -142,19 +142,19 @@ export default function WorkspaceQualidadePage() {
  ) : (
  audits.map((a: any) => (
  <TableRow key={a.id}>
- <TableCell className="text-xs font-mono font-medium py-2.5">
+ <TableCell className="text-xs font-mono font-medium py-3">
  {a.masked_auditor_code || "AUD-COMMUNITY"}
  </TableCell>
- <TableCell className="text-xs font-medium py-2.5">
+ <TableCell className="text-xs font-medium py-3">
  {a.product_name}
  </TableCell>
- <TableCell className="text-xs font-mono text-muted-foreground py-2.5">
+ <TableCell className="text-xs font-mono text-muted-foreground py-3">
  {((a.cost_cents || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
  </TableCell>
- <TableCell className="text-xs font-semibold py-2.5">
+ <TableCell className="text-xs font-semibold py-3">
  {a.rating_overall ? `${a.rating_overall}/5` : "Em Análise"}
  </TableCell>
- <TableCell className="text-right py-2.5">
+ <TableCell className="text-right py-3">
  {(!a.dispute_status || a.dispute_status === "none") ? (
  <Button
  size="sm"
@@ -220,7 +220,7 @@ export default function WorkspaceQualidadePage() {
  Cancelar
  </Button>
  <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto text-xs h-9 font-semibold">
- {isSubmitting && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
+ {isSubmitting && <Loader2 className="size-3.5 animate-spin mr-2" />}
  Enviar Relato
  </Button>
  </DialogFooter>

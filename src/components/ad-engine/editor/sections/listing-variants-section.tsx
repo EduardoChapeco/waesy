@@ -102,7 +102,7 @@ export function ListingVariantsSection({
 
   if (isTourism) {
     return (
-      <div className={cn("bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4", className)}>
+      <div className={cn("bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4", className)}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
             <Calendar className="size-4 text-primary shrink-0" />
@@ -113,7 +113,7 @@ export function ListingVariantsSection({
             variant="outline"
             size="sm"
             onClick={handleAddDeparture}
-            className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+            className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
           >
             <Plus className="size-3.5" />
             <span>Adicionar Saída</span>
@@ -121,7 +121,7 @@ export function ListingVariantsSection({
         </div>
 
         {departures.length === 0 ? (
-          <div className="p-6 text-center rounded-xl bg-muted/20 border border-border/40 space-y-2">
+          <div className="p-6 text-center rounded-lg bg-muted/20 border border-border/40 space-y-2">
             <Calendar className="size-8 text-muted-foreground mx-auto" />
             <p className="text-xs font-semibold text-foreground">Nenhuma saída ou pacote cadastrado</p>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -133,7 +133,7 @@ export function ListingVariantsSection({
             {departures.map((dep, idx) => (
               <div
                 key={dep.id}
-                className="p-4 rounded-xl border border-border/60 bg-background/60 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end"
+                className="p-4 rounded-lg border border-border/60 bg-background/60 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end"
               >
                 <div className="space-y-1">
                   <Label className="text-2xs font-medium text-foreground">Data de Início</Label>
@@ -141,7 +141,7 @@ export function ListingVariantsSection({
                     type="date"
                     value={dep.date_start}
                     onChange={(e) => handleUpdateDeparture(idx, { date_start: e.target.value })}
-                    className="h-10 rounded-xl text-xs bg-background"
+                    className="h-10 rounded-lg text-xs bg-background"
                   />
                 </div>
 
@@ -151,7 +151,7 @@ export function ListingVariantsSection({
                     value={dep.boarding_location}
                     onChange={(e) => handleUpdateDeparture(idx, { boarding_location: e.target.value })}
                     placeholder="Ex: Rodoviária / Aeroporto"
-                    className="h-10 rounded-xl text-xs bg-background"
+                    className="h-10 rounded-lg text-xs bg-background"
                   />
                 </div>
 
@@ -162,7 +162,7 @@ export function ListingVariantsSection({
                     min={1}
                     value={dep.available_spots}
                     onChange={(e) => handleUpdateDeparture(idx, { available_spots: Number(e.target.value) })}
-                    className="h-10 rounded-xl text-xs bg-background"
+                    className="h-10 rounded-lg text-xs bg-background"
                   />
                 </div>
 
@@ -172,7 +172,7 @@ export function ListingVariantsSection({
                     <CurrencyField
                       value={dep.price_cents}
                       onChange={(cents) => handleUpdateDeparture(idx, { price_cents: cents })}
-                      className="h-10 rounded-xl text-xs bg-background"
+                      className="h-10 rounded-lg text-xs bg-background"
                     />
                   </div>
                   <Button
@@ -180,7 +180,7 @@ export function ListingVariantsSection({
                     variant="ghost"
                     size="icon"
                     onClick={() => handleRemoveDeparture(idx)}
-                    className="size-10 rounded-xl text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer"
+                    className="size-10 rounded-lg text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer"
                     title="Remover saída"
                   >
                     <Trash2 className="size-4" />
@@ -196,7 +196,7 @@ export function ListingVariantsSection({
 
   // Retail & Other physical/service variations
   return (
-    <div className={cn("bg-card rounded-2xl p-4 sm:p-5 border border-border/60 space-y-4", className)}>
+    <div className={cn("bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4", className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <Layers className="size-4 text-primary shrink-0" />
@@ -207,7 +207,7 @@ export function ListingVariantsSection({
           variant="outline"
           size="sm"
           onClick={handleAddVariant}
-          className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+          className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
         >
           <Plus className="size-3.5" />
           <span>Nova Variação</span>
@@ -215,7 +215,7 @@ export function ListingVariantsSection({
       </div>
 
       {variants.length === 0 ? (
-        <div className="p-6 text-center rounded-xl bg-muted/20 border border-border/40 space-y-2">
+        <div className="p-6 text-center rounded-lg bg-muted/20 border border-border/40 space-y-2">
           <Box className="size-8 text-muted-foreground mx-auto" />
           <p className="text-xs font-semibold text-foreground">Produto sem variações (Item Único)</p>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -227,7 +227,7 @@ export function ListingVariantsSection({
           {variants.map((v, idx) => (
             <div
               key={v.id}
-              className="p-4 rounded-xl border border-border/60 bg-background/60 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end"
+              className="p-4 rounded-lg border border-border/60 bg-background/60 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end"
             >
               <div className="space-y-1">
                 <Label className="text-2xs font-medium text-foreground">Nome da Variação</Label>
@@ -235,7 +235,7 @@ export function ListingVariantsSection({
                   value={v.title}
                   onChange={(e) => handleUpdateVariant(idx, { title: e.target.value })}
                   placeholder="Ex: Azul / Tamanho G"
-                  className="h-10 rounded-xl text-xs bg-background"
+                  className="h-10 rounded-lg text-xs bg-background"
                 />
               </div>
 
@@ -245,7 +245,7 @@ export function ListingVariantsSection({
                   value={v.sku || ""}
                   onChange={(e) => handleUpdateVariant(idx, { sku: e.target.value })}
                   placeholder="Ex: PROD-AZ-G"
-                  className="h-10 rounded-xl text-xs bg-background font-mono"
+                  className="h-10 rounded-lg text-xs bg-background font-mono"
                 />
               </div>
 
@@ -256,7 +256,7 @@ export function ListingVariantsSection({
                   min={0}
                   value={v.stock_quantity}
                   onChange={(e) => handleUpdateVariant(idx, { stock_quantity: Number(e.target.value) })}
-                  className="h-10 rounded-xl text-xs bg-background"
+                  className="h-10 rounded-lg text-xs bg-background"
                 />
               </div>
 
@@ -266,7 +266,7 @@ export function ListingVariantsSection({
                   <CurrencyField
                     value={v.price_override_cents ?? basePriceCents}
                     onChange={(cents) => handleUpdateVariant(idx, { price_override_cents: cents })}
-                    className="h-10 rounded-xl text-xs bg-background"
+                    className="h-10 rounded-lg text-xs bg-background"
                   />
                 </div>
                 <Button
@@ -274,7 +274,7 @@ export function ListingVariantsSection({
                   variant="ghost"
                   size="icon"
                   onClick={() => handleRemoveVariant(idx)}
-                  className="size-10 rounded-xl text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer"
+                  className="size-10 rounded-lg text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer"
                   title="Remover variação"
                 >
                   <Trash2 className="size-4" />

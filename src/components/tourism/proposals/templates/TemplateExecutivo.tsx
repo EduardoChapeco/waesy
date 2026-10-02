@@ -39,7 +39,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
       </div>
 
       {/* JANELA CENTRAL (Capa) */}
-      <div className="w-full h-[250px] rounded-3xl overflow-hidden relative mb-12 flex items-center justify-center break-inside-avoid border border-slate-200">
+      <div className="w-full h-[250px] rounded-lg overflow-hidden relative mb-12 flex items-center justify-center break-inside-avoid border border-slate-200">
         {p.cover_image_url ? (
           <img
             src={p.cover_image_url}
@@ -141,7 +141,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                   className="border border-slate-200 rounded-card p-5 break-inside-avoid flex gap-6"
                 >
                   {h.images?.[0] && (
-                    <div className="w-32 h-32 shrink-0 rounded-2xl overflow-hidden">
+                    <div className="w-32 h-32 shrink-0 rounded-lg overflow-hidden">
                       <img
                         src={h.images[0]}
                         crossOrigin="anonymous"
@@ -195,7 +195,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
               {p.transfers!.map((t, i) => (
                 <div
                   key={i}
-                  className="border border-slate-200 rounded-2xl p-4 flex items-center gap-4 break-inside-avoid"
+                  className="border border-slate-200 rounded-lg p-4 flex items-center gap-4 break-inside-avoid"
                 >
                   <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
                     <Car className="w-4 h-4 text-slate-500" />
@@ -212,7 +212,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
               {p.tours!.map((t, i) => (
                 <div
                   key={i}
-                  className="border border-slate-200 rounded-2xl p-4 flex items-center gap-4 break-inside-avoid"
+                  className="border border-slate-200 rounded-lg p-4 flex items-center gap-4 break-inside-avoid"
                 >
                   <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
                     <Compass className="w-4 h-4 text-slate-500" />
@@ -231,7 +231,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
 
         {/* FINANCEIRO */}
         <div className="mt-16 break-inside-avoid">
-          <div className="bg-[#1E293B] rounded-2xl p-10 text-white border border-slate-700">
+          <div className="bg-[#1E293B] rounded-lg p-10 text-white border border-slate-700">
             <h2 className="text-xl font-medium text-slate-300 mb-8 border-b border-slate-700 pb-4">
               Investimento Total
             </h2>
@@ -277,7 +277,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                     <div className="ds-meta uppercase font-bold tracking-widest text-slate-500">
                       À vista (PIX)
                     </div>
-                    <div className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded ds-meta font-bold">
+                    <div className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded ds-meta font-bold">
                       -{vm.totals.descontoPixPercentual}%
                     </div>
                   </div>

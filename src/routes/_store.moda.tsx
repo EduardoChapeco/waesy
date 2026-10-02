@@ -183,7 +183,7 @@ function ModaVerticalPage() {
  ) : (
  <section aria-label="Vitrine de Roupas & Calçados">
  {allProducts.length === 0 ? (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhuma peça de roupa encontrada"
  description="Tente selecionar outro departamento ou busque por marcas e tamanhos."

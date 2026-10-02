@@ -24,7 +24,7 @@ export function ThemeSelector({ className }: { className?: string }) {
  type="button"
  onClick={() => setTheme(opt.mode)}
  className={cn(
- "flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl border text-xs font-medium transition-all",
+ "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border text-xs font-medium transition-all",
  isSelected
  ? "bg-primary text-primary-foreground border-primary shadow-xs font-semibold"
  : "bg-card hover:bg-muted/50 border-border/60 text-muted-foreground hover:text-foreground"

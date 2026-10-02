@@ -234,7 +234,7 @@ function ConstrucaoVerticalPage() {
  })()}
  </div>
  ) : (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhum material encontrado"
  description="Tente selecionar outro departamento ou busque por marcas e ferramentas específicas."
@@ -245,7 +245,7 @@ function ConstrucaoVerticalPage() {
  ) : (
  <section aria-label="Vitrine de Materiais & Ferramentas">
  {filteredProducts.length === 0 ? (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhum material encontrado"
  description="Tente selecionar outro departamento ou busque por ferramentas e marcas."

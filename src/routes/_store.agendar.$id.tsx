@@ -59,7 +59,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 function ServiceDetailErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <WarningCircle size={32} />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Não foi possível carregar o serviço</h2>
@@ -67,10 +67,10 @@ function ServiceDetailErrorComponent({ error, reset }: { error: any; reset: () =
         {error?.message || "Ocorreu uma instabilidade momentânea ao carregar os dados deste serviço."}
       </p>
       <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-xl font-bold">
+        <Button onClick={reset} className="rounded-lg font-bold">
           Tentar Novamente
         </Button>
-        <Button asChild variant="outline" className="rounded-xl font-bold">
+        <Button asChild variant="outline" className="rounded-lg font-bold">
           <Link to="/agendar">Voltar para Serviços</Link>
         </Button>
       </div>
@@ -153,14 +153,14 @@ function ServiceDetailPage() {
   if (!service) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-        <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-2">
+        <div className="inline-flex size-16 items-center justify-center rounded-lg bg-muted text-muted-foreground mb-2">
           <WarningCircle size={32} />
         </div>
         <h2 className="text-2xl font-bold text-foreground">Serviço não encontrado</h2>
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
           O serviço solicitado não está disponível ou foi arquivado pelo estabelecimento.
         </p>
-        <Button asChild className="rounded-xl font-bold" variant="outline">
+        <Button asChild className="rounded-lg font-bold" variant="outline">
           <Link to="/agendar">
             <ArrowLeft size={16} weight="bold" className="mr-2" />
             Voltar para Serviços e Agendamentos

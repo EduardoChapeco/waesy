@@ -232,7 +232,7 @@ function PetVerticalPage() {
               })()}
             </div>
           ) : (
-            <div className="py-12 text-center bg-card rounded-2xl p-6">
+            <div className="py-12 text-center bg-card rounded-lg p-6">
               <EmptyState
                 title="Nenhum produto pet encontrado"
                 description="Tente selecionar outro departamento ou busque por marcas de ração e medicamentos."
@@ -243,7 +243,7 @@ function PetVerticalPage() {
  ) : (
  <section aria-label="Vitrine de Produtos Pet">
  {filteredProducts.length === 0 ? (
- <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <div className="py-12 text-center bg-card rounded-lg p-6">
  <EmptyState
  title="Nenhum produto pet encontrado"
  description="Tente selecionar outro departamento ou busque por marcas de ração e medicamentos."

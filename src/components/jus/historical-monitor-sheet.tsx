@@ -189,7 +189,7 @@ export function HistoricalMonitorSheet({
  placeholder="Ex: Auditoria Fornecedores 2026, OAB Dr. Carlos..."
  value={title}
  onChange={(e) => setTitle(e.target.value)}
- className="h-11 rounded-xl bg-card text-xs font-medium"
+ className="h-11 rounded-lg bg-card text-xs font-medium"
  />
  </div>
 
@@ -208,13 +208,13 @@ export function HistoricalMonitorSheet({
  handleAddDocument();
  }
  }}
- className="h-11 rounded-xl bg-card text-xs font-mono font-medium"
+ className="h-11 rounded-lg bg-card text-xs font-mono font-medium"
  />
  <Button
  type="button"
  onClick={handleAddDocument}
  size="icon"
- className="size-11 shrink-0 rounded-xl bg-primary text-primary-foreground font-bold"
+ className="size-11 shrink-0 rounded-lg bg-primary text-primary-foreground font-bold"
  >
  <Plus className="size-4" />
  </Button>
@@ -228,7 +228,7 @@ export function HistoricalMonitorSheet({
  </div>
 
  {documentKeys.length === 0 ? (
- <div className="p-6 rounded-2xl border border-dashed border-border/80 bg-muted/20 text-center text-xs text-muted-foreground">
+ <div className="p-6 rounded-lg border border-dashed border-border/80 bg-muted/20 text-center text-xs text-muted-foreground">
  Nenhum documento adicionado ainda. Insira CPFs, CNPJs ou OABs acima.
  </div>
  ) : (
@@ -236,7 +236,7 @@ export function HistoricalMonitorSheet({
  {documentKeys.map((doc) => (
  <div
  key={doc}
- className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/80 text-xs font-mono font-medium"
+ className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/80 text-xs font-mono font-medium"
  >
  <span className="text-foreground">{doc}</span>
  <Button
@@ -256,14 +256,14 @@ export function HistoricalMonitorSheet({
  </div>
 
  {/* Coluna 2: Filtros Especializados (6 Colunas no Desktop) */}
- <div className="md:col-span-6 space-y-5 rounded-2xl bg-card/60 p-5 border border-border/80">
+ <div className="md:col-span-6 space-y-5 rounded-lg bg-card/60 p-5 border border-border/80">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <SlidersHorizontal className="size-4 text-primary" />
  <span>Filtros do Processo</span>
  </div>
  {appliedFiltersCount > 0 && (
- <Badge variant="secondary" className="text-[10px] font-mono px-2 py-0.5">
+ <Badge variant="secondary" className="text-[10px] font-mono px-2 py-1">
  {appliedFiltersCount} ativo(s)
  </Badge>
  )}
@@ -274,7 +274,7 @@ export function HistoricalMonitorSheet({
  <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
  Por Tags / Áreas
  </Label>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {PRESET_TAGS.map((tag) => {
  const isSelected = selectedTags.includes(tag);
  return (
@@ -283,7 +283,7 @@ export function HistoricalMonitorSheet({
  type="button"
  onClick={() => toggleTag(tag)}
  className={cn(
- "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors border",
+ "px-3 py-1 rounded-lg text-[11px] font-semibold transition-colors border",
  isSelected
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-background text-muted-foreground border-border hover:text-foreground"
@@ -302,7 +302,7 @@ export function HistoricalMonitorSheet({
  <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
  Por Tribunal
  </Label>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {PRESET_COURTS.map((court) => {
  const isSelected = selectedCourts.includes(court);
  return (
@@ -311,7 +311,7 @@ export function HistoricalMonitorSheet({
  type="button"
  onClick={() => toggleCourt(court)}
  className={cn(
- "px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold transition-colors border",
+ "px-3 py-1 rounded-lg text-[11px] font-mono font-bold transition-colors border",
  isSelected
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-background text-muted-foreground border-border hover:text-foreground"
@@ -337,7 +337,7 @@ export function HistoricalMonitorSheet({
  type="date"
  value={dateFrom}
  onChange={(e) => setDateFrom(e.target.value)}
- className="h-9 rounded-xl bg-background text-xs"
+ className="h-9 rounded-lg bg-background text-xs"
  />
  </div>
  <div>
@@ -346,7 +346,7 @@ export function HistoricalMonitorSheet({
  type="date"
  value={dateTo}
  onChange={(e) => setDateTo(e.target.value)}
- className="h-9 rounded-xl bg-background text-xs"
+ className="h-9 rounded-lg bg-background text-xs"
  />
  </div>
  </div>
@@ -370,7 +370,7 @@ export function HistoricalMonitorSheet({
  type="button"
  onClick={handleSubmit}
  disabled={isPending}
- className="h-11 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-2"
+ className="h-11 px-6 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2"
  >
  {isPending ? "Processando..." : "Realizar Monitoramento"}
  </Button>

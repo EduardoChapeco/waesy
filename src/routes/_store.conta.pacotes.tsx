@@ -86,13 +86,13 @@ function CustomerPassesPage() {
             Pacotes
           </h1>
           {passes.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {passes.length}
             </Badge>
           )}
         </div>
 
-        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
+        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer">
           <Link to="/agendar">Explorar Serviços</Link>
         </Button>
       </div>
@@ -105,7 +105,7 @@ function CustomerPassesPage() {
  action={
  <Link
  to="/servicos"
- className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-bold bg-primary text-primary-foreground "
+ className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-bold bg-primary text-primary-foreground "
  >
  Ver Serviços e Pacotes Disponíveis <ArrowRight size={14} />
  </Link>
@@ -125,12 +125,12 @@ function CustomerPassesPage() {
  return (
  <div
  key={pass.id}
- className="p-5 rounded-2xl bg-card space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-all "
+ className="p-5 rounded-lg bg-card space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-all "
  >
  <div className="space-y-3">
  {/* Store & Status Header */}
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  {store?.avatar_url ? (
  <img
  src={store.avatar_url}
@@ -153,7 +153,7 @@ function CustomerPassesPage() {
  </div>
 
  <Badge
- className={`text-[10px] font-mono px-2 py-0.5 rounded-md ${
+ className={`text-[10px] font-mono px-2 py-1 rounded-md ${
  pass.status === "active" && !isExpired
  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
  : "bg-muted text-muted-foreground "
@@ -164,13 +164,13 @@ function CustomerPassesPage() {
  </div>
 
  {/* Progress & Credits */}
- <div className="p-4 rounded-2xl bg-muted/30 space-y-2.5">
+ <div className="p-4 rounded-lg bg-muted/30 space-y-3">
  <div className="flex items-end justify-between">
  <div>
  <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
  Créditos Disponíveis
  </span>
- <div className="flex items-baseline gap-1.5 mt-0.5">
+ <div className="flex items-baseline gap-2 mt-1">
  <span className="text-2xl font-black text-foreground">
  {pass.remaining_credits}
  </span>
@@ -206,9 +206,9 @@ function CustomerPassesPage() {
  setSelectedPass(pass);
  setIsBookingOpen(true);
  }}
- className="flex-1 rounded-2xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90"
+ className="flex-1 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90"
  >
- <Calendar className="size-3.5 mr-1.5" />
+ <Calendar className="size-3.5 mr-2" />
  Agendar com 1-Clique
  </Button>
 
@@ -218,7 +218,7 @@ function CustomerPassesPage() {
  onClick={() =>
  setExpandedLedgerPassId(isLedgerOpen ? null : pass.id)
  }
- className="rounded-2xl border-border shrink-0"
+ className="rounded-lg border-border shrink-0"
  title="Ver histórico de uso"
  >
  {isLedgerOpen ? <ChevronUp size={16} /> : <History size={16} />}
@@ -227,8 +227,8 @@ function CustomerPassesPage() {
 
  {/* Ledger Extrato Expandido */}
  {isLedgerOpen && (
- <div className="p-3 rounded-2xl bg-muted/40 text-xs space-y-2 animate-in fade-in duration-200">
- <span className="font-bold text-[11px] text-foreground flex items-center gap-1.5">
+ <div className="p-3 rounded-lg bg-muted/40 text-xs space-y-2 animate-in fade-in duration-200">
+ <span className="font-bold text-[11px] text-foreground flex items-center gap-2">
  <History size={12} className="text-primary" /> Extrato do Pacote
  </span>
  {pass.service_pass_ledger?.length === 0 ? (
@@ -236,7 +236,7 @@ function CustomerPassesPage() {
  Nenhum agendamento realizado ainda.
  </p>
  ) : (
- <div className="space-y-1.5 max-h-36 overflow-y-auto no-scrollbar pr-1">
+ <div className="space-y-2 max-h-36 overflow-y-auto no-scrollbar pr-1">
  {pass.service_pass_ledger?.map((log: any) => (
  <div
  key={log.id}
@@ -272,7 +272,7 @@ function CustomerPassesPage() {
 
  {/* ── Modal de Agendamento por Crédito ── */}
  <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
- <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6">
+ <DialogContent className="sm:max-w-md sm:rounded-lg sm:p-6">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold flex items-center gap-2">
  <Ticket className="size-5 text-primary" />
@@ -282,7 +282,7 @@ function CustomerPassesPage() {
 
  {selectedPass && (
  <div className="space-y-4 py-2">
- <div className="p-3 rounded-2xl bg-muted/40 flex items-center justify-between text-xs">
+ <div className="p-3 rounded-lg bg-muted/40 flex items-center justify-between text-xs">
  <div>
  <p className="font-bold text-foreground">
  {selectedPass.service_packages?.title}
@@ -297,7 +297,7 @@ function CustomerPassesPage() {
  </div>
 
  {/* Seletor de Data */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">Selecione o Dia:</label>
  <input
  type="date"
@@ -307,7 +307,7 @@ function CustomerPassesPage() {
  setSelectedDate(e.target.value);
  setSelectedSlot(null);
  }}
- className="w-full h-10 px-3 rounded-xl bg-card text-xs font-mono"
+ className="w-full h-10 px-3 rounded-lg bg-card text-xs font-mono"
  />
  </div>
 
@@ -323,7 +323,7 @@ function CustomerPassesPage() {
  </label>
 
  {availableSlots.length === 0 ? (
- <div className="p-4 rounded-2xl border-0 text-center text-xs text-muted-foreground">
+ <div className="p-4 rounded-lg border-0 text-center text-xs text-muted-foreground">
  Nenhum horário livre encontrado para esta data. Selecione outro dia.
  </div>
  ) : (
@@ -336,7 +336,7 @@ function CustomerPassesPage() {
  key={slot}
  type="button"
  onClick={() => setSelectedSlot(slot)}
- className={`py-2 px-3 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer ${
+ className={`py-2 px-3 rounded-lg text-xs font-mono font-bold border transition-all cursor-pointer ${
  isSelected
  ? "bg-foreground text-background border-foreground "
  : "bg-muted/40 border-border hover:bg-muted text-foreground"
@@ -356,14 +356,14 @@ function CustomerPassesPage() {
  <Button
  variant="outline"
  onClick={() => setIsBookingOpen(false)}
- className="rounded-xl text-xs font-bold border-border"
+ className="rounded-lg text-xs font-bold border-border"
  >
  Cancelar
  </Button>
  <Button
  disabled={!selectedSlot || bookMutation.isPending}
  onClick={() => bookMutation.mutate()}
- className="rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90"
+ className="rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90"
  >
  {bookMutation.isPending ? "Confirmando..." : "Confirmar Agendamento"}
  </Button>

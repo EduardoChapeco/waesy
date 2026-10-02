@@ -144,7 +144,7 @@ export function KanbanColumnCustomizerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 rounded-2xl border border-border/80 bg-background overflow-hidden select-none">
+      <DialogContent className="sm:max-w-xl p-0 rounded-lg border border-border/80 bg-background overflow-hidden select-none">
         <DialogHeader className="p-5 pb-3 border-b border-border/60 bg-muted/20">
           <DialogTitle className="text-sm font-bold text-foreground">
             Personalizar Colunas do Kanban
@@ -159,12 +159,12 @@ export function KanbanColumnCustomizerModal({
             <div
               key={stage.stage_key}
               className={cn(
-                "p-3 rounded-xl border border-border/70 bg-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 transition-all",
+                "p-3 rounded-lg border border-border/70 bg-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 transition-all",
                 !stage.is_visible && "opacity-50 bg-muted/40"
               )}
             >
               {/* Lado Esquerdo: Indicador de Cor & Título */}
-              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 {/* Seletor Rápido de Cor */}
                 <div className="flex items-center gap-1 shrink-0">
                   <span
@@ -211,7 +211,7 @@ export function KanbanColumnCustomizerModal({
                 </select>
 
                 {/* Botões de Mover Ordem */}
-                <div className="flex items-center gap-0.5">
+                <div className="flex items-center gap-1">
                   <Button
                     type="button"
                     variant="ghost"
@@ -264,7 +264,7 @@ export function KanbanColumnCustomizerModal({
             size="sm"
             onClick={handleReset}
             disabled={isSaving}
-            className="h-9 px-3 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground gap-1.5 cursor-pointer shadow-none"
+            className="h-9 px-3 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground gap-2 cursor-pointer shadow-none"
           >
             <RotateCcw className="size-3" />
             <span>Restaurar Padrão</span>
@@ -277,7 +277,7 @@ export function KanbanColumnCustomizerModal({
               size="sm"
               onClick={() => onOpenChange(false)}
               disabled={isSaving}
-              className="h-9 px-3 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
@@ -286,7 +286,7 @@ export function KanbanColumnCustomizerModal({
               size="sm"
               onClick={handleSave}
               disabled={isSaving}
-              className="h-9 px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1.5 cursor-pointer shadow-xs"
+              className="h-9 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
             >
               <Check className="size-3.5" />
               <span>{isSaving ? "Salvando..." : "Salvar Alterações"}</span>

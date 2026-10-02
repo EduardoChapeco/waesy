@@ -247,7 +247,7 @@ function CanonicalDirectoryDetailPage() {
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
           Este cadastro pode ter sido alterado ou desativado temporariamente.
         </p>
-        <Button asChild className="rounded-xl font-bold">
+        <Button asChild className="rounded-lg font-bold">
           <Link to="/diretorio">
             <ArrowLeft size={16} weight="bold" className="mr-2" />
             Voltar para o Guia Local

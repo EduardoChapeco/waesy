@@ -185,7 +185,7 @@ function AdminResourcesPage() {
         eyebrow="Agenda & Agendamentos"
         title="Recursos"
         actions={
-          <Button onClick={openNewResourceModal} className="rounded-xl font-bold text-xs gap-2">
+          <Button onClick={openNewResourceModal} className="rounded-lg font-bold text-xs gap-2">
             <UserPlus className="size-4" />
             Novo Recurso
           </Button>
@@ -200,7 +200,7 @@ function AdminResourcesPage() {
         <EmptyState
           title="Nenhum Recurso Cadastrado"
           action={
-            <Button onClick={openNewResourceModal} className="rounded-xl font-bold text-xs">
+            <Button onClick={openNewResourceModal} className="rounded-lg font-bold text-xs">
               Cadastrar Primeiro Recurso
             </Button>
           }
@@ -210,7 +210,7 @@ function AdminResourcesPage() {
           {resources.map((res: any) => (
             <div
               key={res.id}
-              className="flex flex-col h-full relative group p-6 bg-card hover:border-primary/50 transition-colors rounded-2xl border border-border shadow-xs"
+              className="flex flex-col h-full relative group p-6 bg-card hover:border-primary/50 transition-colors rounded-lg border border-border shadow-xs"
             >
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -243,11 +243,11 @@ function AdminResourcesPage() {
                 </h4>
 
                 {res.booking_resource_availabilities?.length > 0 ? (
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {res.booking_resource_availabilities.map((avail: any) => (
                       <div
                         key={avail.id}
-                        className="flex justify-between items-center text-xs p-2 rounded-xl bg-muted/40 font-mono"
+                        className="flex justify-between items-center text-xs p-2 rounded-lg bg-muted/40 font-mono"
                       >
                         <span className="font-semibold text-foreground font-sans">{getDayName(avail.day_of_week)}</span>
                         <span className="text-muted-foreground">
@@ -267,7 +267,7 @@ function AdminResourcesPage() {
                   size="icon"
                   variant="secondary"
                   onClick={() => openEditResourceModal(res)}
-                  className="min-h-[44px] min-w-[44px] sm:size-8 rounded-xl cursor-pointer shadow-xs"
+                  className="min-h-11 min-w-[44px] sm:size-8 rounded-lg cursor-pointer shadow-xs"
                   title="Editar Recurso"
                 >
                   <Settings2 className="size-4" />
@@ -280,7 +280,7 @@ function AdminResourcesPage() {
 
       {/* ── Dialog de Criação / Edição de Recurso ── */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent size="lg" className="rounded-2xl max-w-xl max-h-[90vh] overflow-y-auto">
+        <DialogContent size="lg" className="rounded-lg max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold">
               {selectedId ? "Editar Recurso da Agenda" : "Novo Recurso da Agenda"}
@@ -288,7 +288,7 @@ function AdminResourcesPage() {
           </DialogHeader>
 
           <div className="space-y-5 py-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="resource-name" className="text-xs font-semibold">
                 Nome do Recurso / Profissional *
               </Label>
@@ -297,22 +297,22 @@ function AdminResourcesPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: Dr. Roberto, Sala 02, Cadeira 01..."
-                className="rounded-xl text-xs"
+                className="rounded-lg text-xs"
                 autoFocus
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Tipo de Recurso</Label>
                 <Select
                   value={resourceType}
                   onValueChange={(val: any) => setResourceType(val)}
                 >
-                  <SelectTrigger className="rounded-xl text-xs">
+                  <SelectTrigger className="rounded-lg text-xs">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="person">Profissional / Atendente</SelectItem>
                     <SelectItem value="room">Sala / Espaço Físico</SelectItem>
                     <SelectItem value="equipment">Equipamento / Máquina</SelectItem>
@@ -320,7 +320,7 @@ function AdminResourcesPage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Capacidade Simultânea</Label>
                 <Input
                   type="number"
@@ -328,20 +328,20 @@ function AdminResourcesPage() {
                   max={99}
                   value={capacity}
                   onChange={(e) => setCapacity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="rounded-xl text-xs font-mono"
+                  className="rounded-lg text-xs font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Status</Label>
                 <Select
                   value={status}
                   onValueChange={(val: any) => setStatus(val)}
                 >
-                  <SelectTrigger className="rounded-xl text-xs">
+                  <SelectTrigger className="rounded-lg text-xs">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="active">Ativo na Agenda</SelectItem>
                     <SelectItem value="inactive">Inativo / Oculto</SelectItem>
                   </SelectContent>
@@ -358,7 +358,7 @@ function AdminResourcesPage() {
                     Marque os dias e defina os horários em que este recurso pode receber agendamentos.
                   </p>
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex gap-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -388,7 +388,7 @@ function AdminResourcesPage() {
                   return (
                     <div
                       key={d.id}
-                      className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-muted/20 text-xs"
+                      className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/20 text-xs"
                     >
                       <label className="flex items-center gap-2 font-medium cursor-pointer select-none min-w-[130px]">
                         <input
@@ -438,7 +438,7 @@ function AdminResourcesPage() {
                   deleteMutation.mutate(selectedId);
                 }}
                 disabled={deleteMutation.isPending}
-                className="rounded-xl text-xs gap-1.5"
+                className="rounded-lg text-xs gap-2"
               >
                 <Trash2 className="size-3.5" />
                 Excluir Recurso
@@ -451,7 +451,7 @@ function AdminResourcesPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-xl text-xs"
+                className="rounded-lg text-xs"
               >
                 Cancelar
               </Button>
@@ -460,7 +460,7 @@ function AdminResourcesPage() {
                 size="sm"
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending}
-                className="rounded-xl text-xs font-bold px-4"
+                className="rounded-lg text-xs font-bold px-4"
               >
                 {saveMutation.isPending ? "Salvando..." : selectedId ? "Salvar Alterações" : "Criar Recurso"}
               </Button>

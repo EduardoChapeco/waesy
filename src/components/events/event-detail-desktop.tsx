@@ -37,7 +37,7 @@ export function EventDetailDesktop({
     <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-4 space-y-6 pb-16 font-sans">
       {/* ── Rule 23: Owner Edit Mode Banner ── */}
       {isOwner && (
-        <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs text-amber-950 dark:text-amber-200">
+        <div className="bg-amber-500/10 border border-amber-500/25 rounded-lg px-4 py-3 flex items-center justify-between text-xs text-amber-950 dark:text-amber-200">
           <div className="flex items-center gap-2">
             <span className="inline-block size-2 rounded-full bg-amber-500" />
             <span className="font-semibold">Modo Organizador: Você é o responsável por este evento.</span>
@@ -46,10 +46,10 @@ export function EventDetailDesktop({
             asChild
             size="sm"
             variant="outline"
-            className="h-7 text-[11px] font-bold rounded-xl border-amber-500/40 hover:bg-amber-500/15"
+            className="h-7 text-[11px] font-bold rounded-lg border-amber-500/40 hover:bg-amber-500/15"
           >
             <Link to="/workspace/eventos">
-              <PencilSimple size={14} className="mr-1.5" />
+              <PencilSimple size={14} className="mr-2" />
               Painel de Eventos
             </Link>
           </Button>
@@ -65,7 +65,7 @@ export function EventDetailDesktop({
               asChild
               size="sm"
               variant="outline"
-              className="h-8 text-xs font-bold rounded-xl gap-1.5"
+              className="h-8 text-xs font-bold rounded-lg gap-2"
             >
               <Link to="/workspace/eventos">
                 <PencilSimple size={14} weight="bold" />
@@ -90,7 +90,7 @@ export function EventDetailDesktop({
         {/* Coluna Esquerda: Banner, Detalhes & Cobertura Cruzada */}
         <div className="col-span-7 space-y-6">
           {event.cover_image && (
-            <div className="w-full aspect-[16/9] overflow-hidden rounded-2xl border border-border/60 bg-muted relative shadow-sm">
+            <div className="w-full aspect-[16/9] overflow-hidden rounded-lg border border-border/60 bg-muted relative shadow-sm">
               <img src={event.cover_image} alt={event.title} className="w-full h-full object-cover" />
               {event.is_external && (
                 <div className="absolute top-3 left-3">
@@ -106,7 +106,7 @@ export function EventDetailDesktop({
             <div className="flex flex-wrap gap-2">
               <Badge
                 variant="secondary"
-                className="px-3 py-1 text-xs font-semibold rounded-xl gap-1.5"
+                className="px-3 py-1 text-xs font-semibold rounded-lg gap-2"
               >
                 <CalendarBlank size={14} weight="bold" />
                 {new Date(event.event_date).toLocaleString("pt-BR", {
@@ -117,14 +117,14 @@ export function EventDetailDesktop({
               {(event.venue || event.location || event.location_name) && (
                 <Badge
                   variant="outline"
-                  className="px-3 py-1 text-xs font-semibold rounded-xl gap-1.5"
+                  className="px-3 py-1 text-xs font-semibold rounded-lg gap-2"
                 >
                   <MapPin size={14} weight="bold" className="text-foreground" />
                   {event.venue || event.location || event.location_name}
                 </Badge>
               )}
               {event.city && (
-                <Badge variant="outline" className="px-3 py-1 text-xs font-semibold rounded-xl text-muted-foreground">
+                <Badge variant="outline" className="px-3 py-1 text-xs font-semibold rounded-lg text-muted-foreground">
                   {event.city}{event.state ? ` - ${event.state}` : ""}
                 </Badge>
               )}
@@ -156,11 +156,11 @@ export function EventDetailDesktop({
                 <Link
                   to="/noticias/$slug"
                   params={{ slug: linkedNews.slug }}
-                  className="block group p-4 rounded-2xl border border-border/80 bg-card hover:border-primary/50 transition-all shadow-sm"
+                  className="block group p-4 rounded-lg border border-border/80 bg-card hover:border-primary/50 transition-all shadow-sm"
                 >
                   <div className="flex gap-4 items-center">
                     {linkedNews.cover_media_url && (
-                      <div className="size-20 shrink-0 rounded-xl overflow-hidden bg-muted border border-border/40">
+                      <div className="size-20 shrink-0 rounded-lg overflow-hidden bg-muted border border-border/40">
                         <img
                           src={linkedNews.cover_media_url}
                           alt={linkedNews.title}
@@ -193,7 +193,7 @@ export function EventDetailDesktop({
         {/* Coluna Direita: Ingressos & RSVP (Sticky) */}
         <div className="col-span-5 space-y-5 sticky top-24">
           {/* ── Card 1: Confirmação de Presença (RSVP) ── */}
-          <div className="p-6 rounded-2xl border border-border/80 bg-card space-y-4 shadow-sm">
+          <div className="p-6 rounded-lg border border-border/80 bg-card space-y-4 shadow-sm">
             <div className="flex items-center justify-between pb-3 border-b border-border/40">
               <div className="flex items-center gap-2">
                 <Users size={18} weight="bold" className="text-primary" />
@@ -209,7 +209,7 @@ export function EventDetailDesktop({
                 type="button"
                 onClick={() => handleToggleRsvp("going")}
                 disabled={isSubmittingRsvp}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all min-h-[58px] ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[58px] ${
                   userRsvp === "going"
                     ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
@@ -228,7 +228,7 @@ export function EventDetailDesktop({
                 type="button"
                 onClick={() => handleToggleRsvp("interested")}
                 disabled={isSubmittingRsvp}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all min-h-[58px] ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[58px] ${
                   userRsvp === "interested"
                     ? "bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400 font-bold shadow-sm"
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
@@ -247,7 +247,7 @@ export function EventDetailDesktop({
                 type="button"
                 onClick={() => handleToggleRsvp("not_going")}
                 disabled={isSubmittingRsvp}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all min-h-[58px] ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[58px] ${
                   userRsvp === "not_going"
                     ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold shadow-sm"
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
@@ -265,8 +265,8 @@ export function EventDetailDesktop({
           </div>
 
           {/* ── Card 2: Ingressos ── */}
-          <div className="p-6 rounded-2xl border border-border/80 bg-card space-y-5 shadow-sm">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-border/40">
+          <div className="p-6 rounded-lg border border-border/80 bg-card space-y-5 shadow-sm">
+            <div className="flex items-center gap-3 pb-3 border-b border-border/40">
               <Ticket size={20} weight="bold" className="text-primary" />
               <h2 className="text-base md:text-lg font-bold text-foreground tracking-tight">
                 {event.is_external || event.is_external_ticket ? "Ingressos Oficiais" : "Ingressos Disponíveis"}
@@ -289,7 +289,7 @@ export function EventDetailDesktop({
                   href={event.external_ticket_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-foreground text-background font-bold text-sm hover:bg-foreground/90 transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-foreground text-background font-bold text-sm hover:bg-foreground/90 transition-colors"
                 >
                   <Ticket size={18} weight="bold" />
                   Comprar na Plataforma Oficial
@@ -300,7 +300,7 @@ export function EventDetailDesktop({
                 </p>
               </div>
             ) : activeLots.length === 0 ? (
-              <div className="p-6 text-center rounded-xl bg-muted/30 border border-border/40">
+              <div className="p-6 text-center rounded-lg bg-muted/30 border border-border/40">
                 <p className="text-xs md:text-sm font-medium text-muted-foreground">
                   Nenhum lote de ingressos disponível no momento.
                 </p>
@@ -314,7 +314,7 @@ export function EventDetailDesktop({
                   return (
                     <div
                       key={lot.id}
-                      className={`p-4 rounded-xl border transition-all ${
+                      className={`p-4 rounded-lg border transition-all ${
                         isSoldOut
                           ? "border-border/40 bg-muted/20 opacity-70"
                           : "border-border/80 bg-background hover:border-primary/50"
@@ -323,7 +323,7 @@ export function EventDetailDesktop({
                       <div className="flex justify-between items-start mb-3 gap-2">
                         <div>
                           <h3 className="font-bold text-sm md:text-base text-foreground">{lot.name}</h3>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                          <p className="text-[11px] text-muted-foreground mt-1">
                             {isSoldOut ? "Esgotado" : `Restam ${available} ingressos`}
                           </p>
                         </div>
@@ -335,7 +335,7 @@ export function EventDetailDesktop({
                       </div>
 
                       <Button
-                        className="w-full font-bold h-11 text-xs rounded-xl"
+                        className="w-full font-bold h-11 text-xs rounded-lg"
                         variant={isSoldOut ? "secondary" : "default"}
                         disabled={isSoldOut}
                         onClick={() => handleBuyTicket(lot)}

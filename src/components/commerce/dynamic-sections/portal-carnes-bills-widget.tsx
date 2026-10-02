@@ -90,7 +90,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  <div
  key={bill.id}
  className={cn(
- "p-5 rounded-2xl border transition-all duration-200 shadow-sm flex flex-col justify-between gap-4",
+ "p-5 rounded-lg border transition-all duration-200 shadow-sm flex flex-col justify-between gap-4",
  bill.status === "paid"
  ? "bg-card/60 border-border/50 opacity-85"
  : bill.status === "overdue"
@@ -124,7 +124,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  R$ {(bill.amount_cents / 100).toFixed(2).replace(".", ",")}
  </div>
 
- <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+ <div className="text-xs text-muted-foreground flex items-center gap-2">
  <Calendar className="w-3.5 h-3.5" />
  Vencimento: {new Date(bill.due_date).toLocaleDateString("pt-BR")}
  </div>
@@ -137,7 +137,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  </div>
  ) : (
  <Button
- className="w-full min-h-[44px] gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+ className="w-full min-h-11 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
  onClick={() => {
  setSelectedBill(bill);
  setIsPixModalOpen(true);
@@ -154,7 +154,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
 
  {/* Modal PIX Copia e Cola */}
  <Dialog open={isPixModalOpen} onOpenChange={setIsPixModalOpen}>
- <DialogContent className="max-w-md rounded-2xl">
+ <DialogContent className="max-w-md rounded-lg">
  <DialogHeader>
  <DialogTitle className="flex items-center gap-2">
  <QrCode className="w-5 h-5 text-emerald-600" />
@@ -166,7 +166,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  </DialogHeader>
 
  <div className="flex flex-col items-center py-4 space-y-4">
- <div className="w-48 h-48 bg-white p-3 rounded-2xl border border-border shadow-inner flex items-center justify-center">
+ <div className="w-48 h-48 bg-white p-3 rounded-lg border border-border shadow-inner flex items-center justify-center">
  {/* Simulação visual do QR Code com SVG nativo */}
  <div className="w-full h-full border-4 border-black/80 rounded-lg p-2 flex flex-col justify-between">
  <div className="flex justify-between">
@@ -192,13 +192,13 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  type="text"
  readOnly
  value={selectedBill?.pix_copy_paste || ""}
- className="w-full pr-12 pl-3.5 py-2.5 rounded-xl border border-border bg-muted/50 text-xs font-mono select-all min-h-[44px]"
+ className="w-full pr-12 pl-4 py-3 rounded-lg border border-border bg-muted/50 text-xs font-mono select-all min-h-11"
  />
  <Button
  size="sm"
  variant="ghost"
  onClick={() => copyPix(selectedBill?.pix_copy_paste || "")}
- className="absolute right-1 top-1 bottom-1 px-3 min-h-[36px]"
+ className="absolute right-1 top-1 bottom-1 px-3 min-h-9"
  >
  {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
  </Button>

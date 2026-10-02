@@ -30,7 +30,7 @@ const DrawerContent = React.forwardRef<
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl border border-border/60 bg-background pb-safe",
+        "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-lg border border-border/60 bg-background pb-safe",
         "max-h-[80dvh]",
         className,
       )}
@@ -100,7 +100,7 @@ function CityPickerPanel({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar cidade..."
-          className="h-11 pl-10 pr-10 rounded-2xl text-sm bg-muted/50 border-border/60 font-medium"
+          className="h-11 pl-10 pr-10 rounded-lg text-sm bg-muted/50 border-border/60 font-medium"
           autoFocus
         />
         {searchQuery && (
@@ -116,14 +116,14 @@ function CityPickerPanel({
 
       {/* Quick-access chips */}
       {!searchQuery && (
-        <div className="px-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+        <div className="px-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           {quickCities.map((city) => (
             <button
               key={city.id}
               type="button"
               onClick={() => { onSelect(city); onClose(); }}
               className={cn(
-                "shrink-0 h-8 px-3 rounded-xl text-xs font-semibold border transition-all cursor-pointer",
+                "shrink-0 h-8 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer",
                 selectedCity?.id === city.id
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-card text-foreground border-border/70 hover:border-primary/50 hover:bg-primary/5"
@@ -136,7 +136,7 @@ function CityPickerPanel({
       )}
 
       {/* Results list */}
-      <div className="overflow-y-auto flex-1 px-2 pb-6 space-y-0.5">
+      <div className="overflow-y-auto flex-1 px-2 pb-6 space-y-1">
         {filteredCities.length > 0 ? (
           filteredCities.map((city) => {
             const isSelected = selectedCity?.id === city.id;
@@ -146,7 +146,7 @@ function CityPickerPanel({
                 type="button"
                 onClick={() => { onSelect(city); onClose(); }}
                 className={cn(
-                  "w-full flex items-center justify-between gap-3 px-3 py-3 rounded-xl text-left cursor-pointer transition-colors",
+                  "w-full flex items-center justify-between gap-3 px-3 py-3 rounded-lg text-left cursor-pointer transition-colors",
                   isSelected
                     ? "bg-primary/10 text-primary"
                     : "hover:bg-muted/60 text-foreground"
@@ -270,7 +270,7 @@ export function CityCombobox({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full h-11 px-3 rounded-xl flex items-center justify-between gap-2 text-sm font-medium transition-all cursor-pointer",
+        "w-full h-11 px-3 rounded-lg flex items-center justify-between gap-2 text-sm font-medium transition-all cursor-pointer",
         "border border-border/80 bg-background hover:border-primary/50 hover:bg-muted/30",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         !selectedCity && "text-muted-foreground"
@@ -288,7 +288,7 @@ export function CityCombobox({
     <div className={cn("space-y-3", className)}>
       {/* Label row */}
       <div className="flex items-center justify-between gap-2">
-        <Label className="text-xs text-foreground font-medium flex items-center gap-1.5">
+        <Label className="text-xs text-foreground font-medium flex items-center gap-2">
           <MapPin className="size-3.5 text-primary" />
           <span>{label}</span>
           {required && <span className="text-destructive">*</span>}
@@ -306,13 +306,13 @@ export function CityCombobox({
       </div>
 
       {/* Two-column grid: Neighborhood + City */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Neighborhood input */}
         <Input
           value={neighborhood}
           onChange={(e) => handleNeighborhoodChange(e.target.value)}
           placeholder="Bairro / Região (ex: Centro)"
-          className="h-11 rounded-xl text-sm bg-background border-border/80 font-medium placeholder:text-muted-foreground/60"
+          className="h-11 rounded-lg text-sm bg-background border-border/80 font-medium placeholder:text-muted-foreground/60"
         />
 
         {/* ── Mobile: Vaul Drawer ── */}
@@ -348,7 +348,7 @@ export function CityCombobox({
             <div
               className={cn(
                 "absolute left-0 right-0 top-[calc(100%+6px)] z-50",
-                "bg-popover border border-border/80 rounded-2xl shadow-xl",
+                "bg-popover border border-border/80 rounded-lg shadow-xl",
                 "overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150",
               )}
             >
@@ -359,12 +359,12 @@ export function CityCombobox({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Buscar cidade..."
-                    className="h-9 pl-9 rounded-xl text-xs bg-muted/50 border-none font-medium"
+                    className="h-9 pl-9 rounded-lg text-xs bg-muted/50 border-none font-medium"
                     autoFocus
                   />
                 </div>
                 {/* Chips */}
-                <div className="flex items-center gap-1.5 mt-2 overflow-x-auto no-scrollbar pb-0.5">
+                <div className="flex items-center gap-2 mt-2 overflow-x-auto no-scrollbar pb-1">
                   {QUICK_CITIES_IDS.map((id) => {
                     const city = CANONICAL_CITIES.find((c) => c.id === id);
                     if (!city) return null;
@@ -374,7 +374,7 @@ export function CityCombobox({
                         type="button"
                         onClick={() => { handleSelectCity(city); setDesktopOpen(false); }}
                         className={cn(
-                          "shrink-0 h-7 px-2.5 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer",
+                          "shrink-0 h-7 px-3 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer",
                           selectedCity?.id === id
                             ? "bg-primary text-primary-foreground border-primary"
                             : "bg-muted text-foreground border-border hover:border-primary/50"
@@ -388,7 +388,7 @@ export function CityCombobox({
               </div>
 
               {/* Results */}
-              <div className="max-h-56 overflow-y-auto p-1 space-y-0.5">
+              <div className="max-h-56 overflow-y-auto p-1 space-y-1">
                 {searchCanonicalCities(searchQuery, 10).map((city) => {
                   const isSelected = selectedCity?.id === city.id;
                   return (
@@ -397,7 +397,7 @@ export function CityCombobox({
                       type="button"
                       onClick={() => { handleSelectCity(city); setDesktopOpen(false); }}
                       className={cn(
-                        "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs cursor-pointer transition-colors text-left",
+                        "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors text-left",
                         isSelected
                           ? "bg-primary/10 text-primary font-bold"
                           : "hover:bg-muted/70 text-foreground font-medium"

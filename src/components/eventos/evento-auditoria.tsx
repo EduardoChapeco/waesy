@@ -66,7 +66,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
             <Lock className="size-5 text-primary" />
             Governança, Trilha de Auditoria e Integridade
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Registro criptográfico e imutável de todas as ações de ingressos, equipe, lotes e portaria.
           </p>
         </div>
@@ -76,12 +76,12 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
             <Input
               placeholder="Buscar histórico..."
-              className="pl-8 text-xs h-9 rounded-xl"
+              className="pl-8 text-xs h-9 rounded-lg"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="sm" onClick={loadLogs} className="gap-1.5 h-9">
+          <Button variant="outline" size="sm" onClick={loadLogs} className="gap-2 h-9">
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
             Atualizar
           </Button>
@@ -90,7 +90,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
 
       {/* KPI Cards de Integridade */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="bg-card rounded-2xl border border-border/60">
+        <Card className="bg-card rounded-lg border border-border/60">
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-muted-foreground">Total de Registros</CardTitle>
           </CardHeader>
@@ -99,7 +99,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-card rounded-2xl border border-border/60">
+        <Card className="bg-card rounded-lg border border-border/60">
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-muted-foreground">Portaria</CardTitle>
           </CardHeader>
@@ -110,7 +110,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-card rounded-2xl border border-border/60">
+        <Card className="bg-card rounded-lg border border-border/60">
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-muted-foreground">Gestão de Lotes</CardTitle>
           </CardHeader>
@@ -121,12 +121,12 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-card rounded-2xl border border-border/60">
+        <Card className="bg-card rounded-lg border border-border/60">
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-muted-foreground">Status Criptográfico</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <div className="text-sm font-bold text-emerald-600 flex items-center gap-1.5 pt-1">
+            <div className="text-sm font-bold text-emerald-600 flex items-center gap-2 pt-1">
               <ShieldCheck className="size-4" /> 100% Verificado
             </div>
           </CardContent>
@@ -134,7 +134,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
       </div>
 
       {/* Tabela de Trilha de Auditoria */}
-      <Card className="rounded-2xl border border-border/60 overflow-hidden bg-card">
+      <Card className="rounded-lg border border-border/60 overflow-hidden bg-card">
         <CardHeader className="p-4 border-b border-border/40">
           <div className="flex items-center gap-2">
             <History className="size-4 text-muted-foreground" />

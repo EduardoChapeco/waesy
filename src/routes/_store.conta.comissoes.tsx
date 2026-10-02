@@ -130,7 +130,7 @@ function AffiliateCommissionsPage() {
         <p className="text-sm text-muted-foreground max-w-sm mb-6">
           Faça login em sua conta para acessar seu painel de comissões, links de indicação e solicitar saques.
         </p>
-        <Button asChild className="h-11 px-6 rounded-xl font-semibold">
+        <Button asChild className="h-11 px-6 rounded-lg font-semibold">
           <Link to="/entrar">Fazer Login</Link>
         </Button>
       </div>
@@ -145,8 +145,8 @@ function AffiliateCommissionsPage() {
           <NativeBackButton fallbackHref="/conta" />
         </div>
 
-        <div className="bg-card border border-border/80 rounded-2xl p-6 sm:p-8 text-center space-y-4">
-          <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+        <div className="bg-card border border-border/80 rounded-lg p-6 sm:p-8 text-center space-y-4">
+          <div className="size-14 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Star className="h-7 w-7" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">Ativar Programa de Parceiros</h1>
@@ -168,19 +168,19 @@ function AffiliateCommissionsPage() {
             }}
             className="space-y-4 text-left max-w-sm mx-auto pt-4"
           >
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="displayName" className="text-xs font-semibold">Nome de Exibição / Marca</Label>
               <Input
                 id="displayName"
                 value={displayNameInput}
                 onChange={(e) => setDisplayNameInput(e.target.value)}
                 placeholder="Ex: João da Silva ou Meu Canal"
-                className="h-11 rounded-xl text-sm"
+                className="h-11 rounded-lg text-sm"
                 required
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="handle" className="text-xs font-semibold">Identificador Único (@handle)</Label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-semibold">@</span>
@@ -189,7 +189,7 @@ function AffiliateCommissionsPage() {
                   value={handleInput}
                   onChange={(e) => setHandleInput(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
                   placeholder="seunome"
-                  className="h-11 pl-8 rounded-xl text-sm font-mono"
+                  className="h-11 pl-8 rounded-lg text-sm font-mono"
                   required
                 />
               </div>
@@ -198,7 +198,7 @@ function AffiliateCommissionsPage() {
             <Button
               type="submit"
               disabled={activateMutation.isPending}
-              className="w-full h-11 rounded-xl font-semibold bg-foreground text-background cursor-pointer mt-2"
+              className="w-full h-11 rounded-lg font-semibold bg-foreground text-background cursor-pointer mt-2"
             >
               {activateMutation.isPending ? "Ativando..." : "Ativar Meu Link de Parceiro"}
             </Button>
@@ -269,7 +269,7 @@ function AffiliateCommissionsPage() {
             onClick={handleOpenPayout}
             disabled={availableBalanceCents < 5000}
             size="sm"
-            className="h-8.5 px-3 rounded-xl font-semibold bg-foreground text-background cursor-pointer"
+            className="h-8.5 px-3 rounded-lg font-semibold bg-foreground text-background cursor-pointer"
           >
             <Wallet className="h-3.5 w-3.5 mr-1" /> Sacar
           </Button>
@@ -285,7 +285,7 @@ function AffiliateCommissionsPage() {
 
       {/* Grid de Métricas Principais */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-card border border-border/70 rounded-2xl p-4 shadow-xs space-y-2">
+        <div className="bg-card border border-border/70 rounded-lg p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Saldo Disponível</span>
             <Wallet className="h-4 w-4 text-emerald-500" />
@@ -296,7 +296,7 @@ function AffiliateCommissionsPage() {
           <div className="text-[11px] text-muted-foreground">Disponível para saque imediato</div>
         </div>
 
-        <div className="bg-card border border-border/70 rounded-2xl p-4 shadow-xs space-y-2">
+        <div className="bg-card border border-border/70 rounded-lg p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Ganhos Totais</span>
             <TrendingUp className="h-4 w-4 text-primary" />
@@ -307,7 +307,7 @@ function AffiliateCommissionsPage() {
           <div className="text-[11px] text-muted-foreground">Comissão acumulada na plataforma</div>
         </div>
 
-        <div className="bg-card border border-border/70 rounded-2xl p-4 shadow-xs space-y-2">
+        <div className="bg-card border border-border/70 rounded-lg p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Já Sacado</span>
             <Coins className="h-4 w-4 text-blue-500" />
@@ -318,7 +318,7 @@ function AffiliateCommissionsPage() {
           <div className="text-[11px] text-muted-foreground">Transferido para sua conta bancária</div>
         </div>
 
-        <div className="bg-card border border-border/70 rounded-2xl p-4 shadow-xs space-y-2">
+        <div className="bg-card border border-border/70 rounded-lg p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Cliques / Pedidos</span>
             <MousePointerClick className="h-4 w-4 text-amber-500" />
@@ -331,7 +331,7 @@ function AffiliateCommissionsPage() {
       </div>
 
       {/* Link de Indicação com Ações Diretas */}
-      <div className="bg-card border border-border/70 rounded-2xl p-5 shadow-xs space-y-3">
+      <div className="bg-card border border-border/70 rounded-lg p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-foreground">Seu Link de Indicação Oficial</h3>
@@ -349,7 +349,7 @@ function AffiliateCommissionsPage() {
             <Input
               readOnly
               value={affiliateUrl}
-              className="h-11 rounded-xl text-xs sm:text-sm font-mono bg-muted/30"
+              className="h-11 rounded-lg text-xs sm:text-sm font-mono bg-muted/30"
             />
           </div>
 
@@ -358,7 +358,7 @@ function AffiliateCommissionsPage() {
               type="button"
               variant="outline"
               onClick={handleCopyLink}
-              className="h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
             >
               {copiedLink ? <Check className="h-4 w-4 mr-1 text-emerald-500" /> : <Copy className="h-4 w-4 mr-1" />}
               {copiedLink ? "Copiado!" : "Copiar Link"}
@@ -368,7 +368,7 @@ function AffiliateCommissionsPage() {
               type="button"
               variant="outline"
               onClick={() => setIsQrModalOpen(true)}
-              className="h-11 px-3 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer"
               title="Exibir QR Code"
             >
               <QrCode className="h-4 w-4" />
@@ -378,7 +378,7 @@ function AffiliateCommissionsPage() {
       </div>
 
       {/* Histórico de Solicitações de Saque */}
-      <div className="bg-card border border-border/70 rounded-2xl p-6 shadow-xs space-y-4">
+      <div className="bg-card border border-border/70 rounded-lg p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-foreground flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" /> Histórico de Saques via PIX
@@ -391,7 +391,7 @@ function AffiliateCommissionsPage() {
         {isPayoutsLoading ? (
           <div className="py-8 text-center text-sm text-muted-foreground">Carregando solicitações...</div>
         ) : !payoutRequests || payoutRequests.length === 0 ? (
-          <div className="py-8 text-center text-sm text-muted-foreground border border-dashed rounded-xl p-6">
+          <div className="py-8 text-center text-sm text-muted-foreground border border-dashed rounded-lg p-6">
             Nenhuma solicitação de saque realizada até o momento.
           </div>
         ) : (
@@ -427,7 +427,7 @@ function AffiliateCommissionsPage() {
                         {req.pix_key} ({req.pix_key_type?.toUpperCase()})
                       </td>
                       <td className="py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ${currentStatus.badge}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-semibold ${currentStatus.badge}`}>
                           <StatusIcon className="h-3 w-3" /> {currentStatus.label}
                         </span>
                       </td>
@@ -456,13 +456,13 @@ function AffiliateCommissionsPage() {
 
       {/* Modal de Solicitação de Saque PIX */}
       <Dialog open={isPayoutModalOpen} onOpenChange={setIsPayoutModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-lg">
           <DialogHeader>
             <DialogTitle>Solicitar Saque de Comissão</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmitPayout} className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Valor do Saque (R$)</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-sm">R$</span>
@@ -473,7 +473,7 @@ function AffiliateCommissionsPage() {
                   max={(availableBalanceCents / 100).toFixed(2)}
                   value={payoutAmount}
                   onChange={(e) => setPayoutAmount(e.target.value)}
-                  className="pl-9 h-11 rounded-xl text-base font-mono font-bold"
+                  className="pl-9 h-11 rounded-lg text-base font-mono font-bold"
                   required
                 />
               </div>
@@ -483,12 +483,12 @@ function AffiliateCommissionsPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Tipo de Chave</Label>
                 <select
                   value={pixKeyType}
                   onChange={(e) => setPixKeyType(e.target.value as any)}
-                  className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm font-medium"
+                  className="w-full h-11 px-3 rounded-lg border border-input bg-background text-sm font-medium"
                 >
                   <option value="cpf">CPF</option>
                   <option value="cnpj">CNPJ</option>
@@ -498,27 +498,27 @@ function AffiliateCommissionsPage() {
                 </select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Chave PIX</Label>
                 <Input
                   type="text"
                   value={pixKey}
                   onChange={(e) => setPixKey(e.target.value)}
                   placeholder="Informe sua chave"
-                  className="h-11 rounded-xl text-sm"
+                  className="h-11 rounded-lg text-sm"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Observações (opcional)</Label>
               <Input
                 type="text"
                 value={payoutNotes}
                 onChange={(e) => setPayoutNotes(e.target.value)}
                 placeholder="Ex: Nome do titular da conta"
-                className="h-10 rounded-xl text-xs"
+                className="h-10 rounded-lg text-xs"
               />
             </div>
 
@@ -527,14 +527,14 @@ function AffiliateCommissionsPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsPayoutModalOpen(false)}
-                className="h-11 rounded-xl font-semibold text-xs cursor-pointer"
+                className="h-11 rounded-lg font-semibold text-xs cursor-pointer"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={payoutMutation.isPending}
-                className="h-11 rounded-xl font-semibold bg-foreground text-background cursor-pointer"
+                className="h-11 rounded-lg font-semibold bg-foreground text-background cursor-pointer"
               >
                 {payoutMutation.isPending ? "Processando..." : "Confirmar Solicitação"}
               </Button>
@@ -545,12 +545,12 @@ function AffiliateCommissionsPage() {
 
       {/* Modal de QR Code do Link de Afiliado */}
       <Dialog open={isQrModalOpen} onOpenChange={setIsQrModalOpen}>
-        <DialogContent className="sm:max-w-sm rounded-2xl text-center">
+        <DialogContent className="sm:max-w-sm rounded-lg text-center">
           <DialogHeader>
             <DialogTitle>QR Code de Indicação</DialogTitle>
           </DialogHeader>
           <div className="py-4 flex flex-col items-center justify-center space-y-3">
-            <div className="p-4 bg-white rounded-2xl shadow-xs border border-border">
+            <div className="p-4 bg-white rounded-lg shadow-xs border border-border">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(affiliateUrl)}`}
                 alt="QR Code de Afiliado"
@@ -564,7 +564,7 @@ function AffiliateCommissionsPage() {
           <DialogFooter>
             <Button
               onClick={handleCopyLink}
-              className="w-full h-11 rounded-xl font-semibold bg-foreground text-background cursor-pointer"
+              className="w-full h-11 rounded-lg font-semibold bg-foreground text-background cursor-pointer"
             >
               <Copy className="h-4 w-4 mr-2" /> Copiar Link
             </Button>

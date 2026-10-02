@@ -97,7 +97,7 @@ export function PWAInstallBanner({
  <div
  className={cn(
  "fixed bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 z-40 sm:max-w-md",
- "p-3.5 rounded-2xl bg-card/95 backdrop-blur-md border border-border/80 shadow-xl",
+ "p-4 rounded-lg bg-card/95 backdrop-blur-md border border-border/80 shadow-xl",
  "flex items-center justify-between gap-3 animate-in slide-in-from-bottom-5 duration-300",
  className
  )}
@@ -107,15 +107,15 @@ export function PWAInstallBanner({
  <img
  src={storeLogoUrl}
  alt={storeName}
- className="size-10 rounded-xl object-cover border border-border/60 shrink-0 bg-muted"
+ className="size-10 rounded-lg object-cover border border-border/60 shrink-0 bg-muted"
  />
  ) : (
- <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+ <div className="size-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
  <Smartphone className="size-5" />
  </div>
  )}
 
- <div className="min-w-0 space-y-0.5">
+ <div className="min-w-0 space-y-1">
  <p className="text-xs font-bold text-foreground truncate">
  App de {storeName}
  </p>
@@ -129,7 +129,7 @@ export function PWAInstallBanner({
  <Button
  onClick={handleInstallClick}
  size="sm"
- className="min-h-[44px] px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 shadow-xs cursor-pointer"
+ className="min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-xs cursor-pointer"
  >
  <Download className="size-4" />
  <span>Instalar</span>
@@ -138,7 +138,7 @@ export function PWAInstallBanner({
  <button
  type="button"
  onClick={handleDismiss}
- className="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+ className="min-h-11 min-w-[44px] rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
  title="Fechar"
  aria-label="Fechar banner de instalação"
  >
@@ -150,7 +150,7 @@ export function PWAInstallBanner({
  {/* ── Modal Guia de Instalação no iOS Safari ── */}
  {showIOSGuide && (
  <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-4">
- <div className="w-full max-w-sm rounded-2xl bg-card border border-border/80 p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom-6">
+ <div className="w-full max-w-sm rounded-lg bg-card border border-border/80 p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom-6">
  <div className="flex items-center justify-between">
  <h3 className="text-sm font-bold text-foreground">Como instalar no iPhone</h3>
  <button
@@ -163,12 +163,12 @@ export function PWAInstallBanner({
  </div>
 
  <div className="space-y-3 text-xs text-muted-foreground">
- <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
+ <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
  <div className="size-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
  1
  </div>
- <div className="space-y-0.5 pt-0.5">
- <p className="font-semibold text-foreground flex items-center gap-1.5">
+ <div className="space-y-1 pt-1">
+ <p className="font-semibold text-foreground flex items-center gap-2">
  <span>Toque no botão Compartilhar</span>
  <Share className="size-3.5 text-primary" />
  </p>
@@ -176,12 +176,12 @@ export function PWAInstallBanner({
  </div>
  </div>
 
- <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
+ <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
  <div className="size-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
  2
  </div>
- <div className="space-y-0.5 pt-0.5">
- <p className="font-semibold text-foreground flex items-center gap-1.5">
+ <div className="space-y-1 pt-1">
+ <p className="font-semibold text-foreground flex items-center gap-2">
  <span>"Adicionar à Tela de Início"</span>
  <PlusSquare className="size-3.5 text-primary" />
  </p>
@@ -192,7 +192,7 @@ export function PWAInstallBanner({
 
  <Button
  onClick={() => setShowIOSGuide(false)}
- className="w-full h-10 rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+ className="w-full h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  Entendido
  </Button>

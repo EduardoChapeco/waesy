@@ -141,7 +141,7 @@ export default function WorkspaceContractsIndexPage() {
 
         {/* ── 2. GRID DE CONTRATOS ── */}
         {contractsList.length === 0 ? (
-          <div className="py-20 text-center space-y-3 bg-card rounded-2xl border border-dashed border-border/70 p-6 sm:p-8">
+          <div className="py-20 text-center space-y-3 bg-card rounded-lg border border-dashed border-border/70 p-6 sm:p-8">
             <FileText className="size-12 mx-auto text-muted-foreground/40" />
             <h3 className="text-sm font-bold text-foreground">Nenhum contrato encontrado</h3>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -150,7 +150,7 @@ export default function WorkspaceContractsIndexPage() {
             <Button
               size="sm"
               onClick={() => setIsNewModalOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 mt-2 cursor-pointer shadow-xs"
+              className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 mt-2 cursor-pointer shadow-xs"
             >
               <Plus className="size-4" />
               <span>Emitir Primeiro Contrato</span>
@@ -163,11 +163,11 @@ export default function WorkspaceContractsIndexPage() {
               return (
                 <Card
                   key={c.id}
-                  className="rounded-2xl border border-border/70 bg-card p-4 sm:p-5 space-y-4 hover:border-foreground/20 transition-all flex flex-col justify-between shadow-2xs"
+                  className="rounded-lg border border-border/70 bg-card p-4 sm:p-5 space-y-4 hover:border-foreground/20 transition-all flex flex-col justify-between shadow-2xs"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <span className="text-xs font-mono text-muted-foreground uppercase font-bold">
                           Token: {c.public_token}
                         </span>
@@ -209,7 +209,7 @@ export default function WorkspaceContractsIndexPage() {
                     </div>
 
                     {isSigned && (c.signatures || []).length > 0 && (
-                      <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-xs space-y-1">
+                      <div className="p-3 rounded-lg bg-muted/40 border border-border/40 text-xs space-y-1">
                         <p className="font-bold text-foreground flex items-center gap-1">
                           <CheckCircle2 className="size-3 text-emerald-600" />
                           <span>Assinado por {c.signatures[0].signer_name}</span>
@@ -226,7 +226,7 @@ export default function WorkspaceContractsIndexPage() {
                       asChild
                       variant="secondary"
                       size="sm"
-                      className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8 px-3 flex-1 cursor-pointer"
+                      className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-8 px-3 flex-1 cursor-pointer"
                     >
                       <a
                         href={`/contrato/${c.public_token}`}

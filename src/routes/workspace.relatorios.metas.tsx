@@ -174,28 +174,28 @@ function RevenueGoalsPage() {
     switch (data.status) {
       case "achieved":
         return (
-          <Badge className="bg-emerald-600 text-white font-bold text-xs gap-1.5 px-3 py-1">
+          <Badge className="bg-emerald-600 text-white font-bold text-xs gap-2 px-3 py-1">
             <CheckCircle2 className="size-3.5" />
             Meta Mensal Atingida!
           </Badge>
         );
       case "ahead":
         return (
-          <Badge className="bg-primary text-primary-foreground font-bold text-xs gap-1.5 px-3 py-1">
+          <Badge className="bg-primary text-primary-foreground font-bold text-xs gap-2 px-3 py-1">
             <Star className="size-3.5" />
             Ritmo Acelerado (+{data.projected_percent - 100}% acima da meta)
           </Badge>
         );
       case "behind":
         return (
-          <Badge variant="destructive" className="font-bold text-xs gap-1.5 px-3 py-1">
+          <Badge variant="destructive" className="font-bold text-xs gap-2 px-3 py-1">
             <AlertCircle className="size-3.5" />
             Abaixo do Ritmo Planejado
           </Badge>
         );
       default:
         return (
-          <Badge variant="secondary" className="font-bold text-xs gap-1.5 px-3 py-1">
+          <Badge variant="secondary" className="font-bold text-xs gap-2 px-3 py-1">
             <Clock className="size-3.5" />
             No Ritmo Previsto ({data.projected_percent}% projetado)
           </Badge>
@@ -215,7 +215,7 @@ function RevenueGoalsPage() {
               onClick={handleExportCsv}
               variant="outline"
               size="sm"
-              className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+              className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
             >
               <FileSpreadsheet className="size-3.5 text-emerald-600" />
               <span>Exportar CSV</span>
@@ -224,7 +224,7 @@ function RevenueGoalsPage() {
               onClick={handleOpenSettings}
               variant="default"
               size="sm"
-              className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+              className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
             >
               <Settings2 className="size-3.5" />
               <span>Configurar Metas</span>
@@ -234,7 +234,7 @@ function RevenueGoalsPage() {
       />
 
       {/* ── CARD HERO: PROGRESSO GLOBAL & FORECAST ── */}
-      <div className="p-6 rounded-3xl bg-card border border-border/70 space-y-6 shadow-2xs">
+      <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6 shadow-2xs">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border/50 pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -267,7 +267,7 @@ function RevenueGoalsPage() {
             </div>
           </div>
 
-          <div className="h-4 w-full bg-muted/60 rounded-full overflow-hidden p-0.5 border border-border/60">
+          <div className="h-4 w-full bg-muted/60 rounded-full overflow-hidden p-1 border border-border/60">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 data.percent_achieved >= 100
@@ -293,8 +293,8 @@ function RevenueGoalsPage() {
 
       {/* ── GRID DE 4 KPIS DE PERFORMANCE E PROJEÇÃO ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Target className="size-3.5 text-blue-600" />
             Meta Mensal
           </span>
@@ -306,8 +306,8 @@ function RevenueGoalsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <DollarSign className="size-3.5 text-emerald-600" />
             Realizado Atual
           </span>
@@ -319,8 +319,8 @@ function RevenueGoalsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="size-3.5 text-purple-600" />
             Forecast de Fechamento
           </span>
@@ -335,8 +335,8 @@ function RevenueGoalsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ArrowUpRight className="size-3.5 text-amber-500" />
             Meta Diária Necessária
           </span>
@@ -353,9 +353,9 @@ function RevenueGoalsPage() {
       {/* ── SEÇÃO SECUNDÁRIA: PEDIDOS E TICKET MÉDIO ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Volume de Pedidos */}
-        <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs">
+        <div className="p-5 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <ShoppingCart className="size-4 text-blue-600" />
               Volume de Pedidos
             </span>
@@ -390,9 +390,9 @@ function RevenueGoalsPage() {
         </div>
 
         {/* Ticket Médio */}
-        <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs">
+        <div className="p-5 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <Receipt className="size-4 text-emerald-600" />
               Ticket Médio
             </span>
@@ -428,7 +428,7 @@ function RevenueGoalsPage() {
       </div>
 
       {/* ── METAS SEGMENTADAS POR CANAL DE VENDA ── */}
-      <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs space-y-4 p-5">
+      <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs space-y-4 p-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-border/50 pb-3">
           <div>
             <h3 className="text-base font-bold text-foreground">
@@ -516,7 +516,7 @@ function RevenueGoalsPage() {
               <CurrencyField
                 value={editMonthlyGoalCents}
                 onChange={(val) => setEditMonthlyGoalCents(val ?? 0)}
-                className="font-mono font-bold text-lg h-12 bg-background border-border/80 rounded-xl"
+                className="font-mono font-bold text-lg h-12 bg-background border-border/80 rounded-lg"
               />
               <p className="text-xs text-muted-foreground">
                 Receita total esperada no mês somando todos os pontos de contato da empresa.
@@ -534,7 +534,7 @@ function RevenueGoalsPage() {
                   min={0}
                   value={editOrdersGoal}
                   onChange={(e) => setEditOrdersGoal(parseInt(e.target.value, 10) || 0)}
-                  className="font-mono font-bold text-sm h-11 bg-background border-border/80 rounded-xl"
+                  className="font-mono font-bold text-sm h-11 bg-background border-border/80 rounded-lg"
                 />
               </div>
 
@@ -545,7 +545,7 @@ function RevenueGoalsPage() {
                 <CurrencyField
                   value={editAvgTicketGoalCents}
                   onChange={(val) => setEditAvgTicketGoalCents(val ?? 0)}
-                  className="font-mono font-bold text-sm h-11 bg-background border-border/80 rounded-xl"
+                  className="font-mono font-bold text-sm h-11 bg-background border-border/80 rounded-lg"
                 />
               </div>
             </div>
@@ -557,7 +557,7 @@ function RevenueGoalsPage() {
               </Label>
               <div className="space-y-3">
                 {data.channels.map((ch) => (
-                  <div key={ch.channel} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/20 border border-border/60">
+                  <div key={ch.channel} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/20 border border-border/60">
                     <span className="text-xs font-semibold text-foreground">
                       {ch.channel_label}
                     </span>
@@ -581,7 +581,7 @@ function RevenueGoalsPage() {
 
           <div className="pt-4 border-t border-border/60">
             <Button
-              className="w-full font-bold rounded-xl h-11 cursor-pointer"
+              className="w-full font-bold rounded-lg h-11 cursor-pointer"
               onClick={handleSaveGoals}
               disabled={isSubmitting}
             >

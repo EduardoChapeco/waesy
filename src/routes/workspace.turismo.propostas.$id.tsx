@@ -123,7 +123,7 @@ function WorkspaceProposalStudioPage() {
  return (
  <div className="h-[100dvh] w-screen flex flex-col items-center justify-center bg-background space-y-4">
  <h2 className="text-sm font-bold text-foreground">Proposta não encontrada</h2>
- <Button asChild size="sm" variant="outline" className="rounded-xl">
+ <Button asChild size="sm" variant="outline" className="rounded-lg">
  <Link to="/workspace/turismo/cotacoes">Voltar para Cotações</Link>
  </Button>
  </div>
@@ -181,12 +181,12 @@ function WorkspaceProposalStudioPage() {
 
  <div className="h-4 w-px bg-border/80" />
 
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <div className="flex items-center gap-2">
  <h1 className="text-xs font-bold text-foreground truncate max-w-xs sm:max-w-sm">
  {proposal.title}
  </h1>
- <Badge variant="outline" className="text-xs font-mono uppercase font-bold py-0.5 px-2">
+ <Badge variant="outline" className="text-xs font-mono uppercase font-bold py-1 px-2">
  {proposal.status}
  </Badge>
  {isSaving ? (
@@ -208,14 +208,14 @@ function WorkspaceProposalStudioPage() {
  {/* Centro: Formato + Template + Controles de Zoom */}
  <div className="flex items-center gap-2">
  {/* Seletor de Formato do Canvas */}
- <div className="flex items-center gap-0.5 bg-muted/40 p-0.5 rounded-xl border border-border/50">
+ <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
  {(["a4-portrait", "a4-landscape", "story-916"] as ProposalCanvasFormat[]).map((fmt) => (
  <button
  key={fmt}
  type="button"
  onClick={() => handleChange({ canvas_format: fmt })}
  className={cn(
- "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
  proposal.canvas_format === fmt
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -231,7 +231,7 @@ function WorkspaceProposalStudioPage() {
  </div>
 
  {/* Seletor de Template Visual */}
- <div className="flex items-center gap-0.5 bg-muted/40 p-0.5 rounded-xl border border-border/50">
+ <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
  {[
   { id: "editorial-flat", label: "Clean Apple", icon: LayoutTemplate },
   { id: "dark-premium", label: "Dark Luxo", icon: Moon },
@@ -262,7 +262,7 @@ function WorkspaceProposalStudioPage() {
  </div>
 
  {/* Controles de Zoom */}
- <div className="hidden lg:flex items-center gap-1 bg-muted/40 p-0.5 rounded-xl border border-border/50">
+ <div className="hidden lg:flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
  <button
  type="button"
  onClick={() => setZoomScale((prev) => Math.max(0.3, (prev !== null ? prev : autoFitScale) - 0.1))}
@@ -274,7 +274,7 @@ function WorkspaceProposalStudioPage() {
  <button
  type="button"
  onClick={() => setZoomScale(null)}
- className="px-2 py-0.5 text-xs font-mono font-bold text-muted-foreground hover:text-foreground cursor-pointer"
+ className="px-2 py-1 text-xs font-mono font-bold text-muted-foreground hover:text-foreground cursor-pointer"
  title="Ajustar à Tela (Fit)"
  >
  {displayZoom}%
@@ -291,14 +291,14 @@ function WorkspaceProposalStudioPage() {
  </div>
 
  {/* Direita: Ações de Exportação, Contrato, WhatsApp */}
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Button
  type="button"
  size="sm"
  variant="outline"
  disabled={isExportingImage}
  onClick={handleExportImage}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-2.5 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  title="Exportar Imagem PNG"
  >
  <ImageIcon className="size-3.5" />
@@ -311,7 +311,7 @@ function WorkspaceProposalStudioPage() {
  variant="outline"
  disabled={isExportingPdf}
  onClick={handleExportPdf}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-2.5 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  title="Exportar Documento PDF"
  >
  <Download className="size-3.5" />
@@ -323,7 +323,7 @@ function WorkspaceProposalStudioPage() {
  size="sm"
  disabled={isConvertingTrip}
  onClick={handleConvertToTrip}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs"
  >
  {isConvertingTrip ? <Loader2 className="size-3.5 animate-spin" /> : <Compass className="size-3.5" />}
  <span className="hidden lg:inline">Converter em Viagem</span>
@@ -335,7 +335,7 @@ function WorkspaceProposalStudioPage() {
  variant="outline"
  disabled={isCreatingContract}
  onClick={handleGenerateContract}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-2.5 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  title="Emitir Contrato Oficial"
  >
  {isCreatingContract ? <Loader2 className="size-3.5 animate-spin" /> : <FileCheck2 className="size-3.5" />}
@@ -346,7 +346,7 @@ function WorkspaceProposalStudioPage() {
  type="button"
  size="sm"
  onClick={handleCopyLink}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-2.5 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
  title="Copiar link público da proposta"
  >
  <Copy className="size-3.5" />
@@ -357,7 +357,7 @@ function WorkspaceProposalStudioPage() {
  type="button"
  size="sm"
  onClick={() => setWhatsappModalOpen(true)}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-2.5 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
  title="Enviar Proposta WhatsApp"
  >
  <Send className="size-3.5" />
@@ -396,7 +396,7 @@ function WorkspaceProposalStudioPage() {
  <SlidersHorizontal className="size-5" />
  </button>
  </SheetTrigger>
- <SheetContent side="bottom" className="h-[85vh] p-0 overflow-hidden rounded-t-3xl">
+ <SheetContent side="bottom" className="h-[85vh] p-0 overflow-hidden rounded-t-lg">
  <div className="h-full flex flex-col">
  <StudioSidebarEditor proposal={proposal} onChange={handleChange} />
  </div>

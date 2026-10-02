@@ -21,17 +21,17 @@ const buttonVariants = cva(
  ghost: "hover:bg-muted hover:text-foreground text-muted-foreground",
  link: "text-primary underline-offset-4 hover:underline font-semibold",
  pillow:
- "rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 active:scale-[0.97]",
+ "rounded-lg bg-primary text-primary-foreground font-bold hover:bg-primary/90 active:scale-[0.97]",
  pillowOutline:
- "rounded-xl border border-border bg-background hover:bg-muted text-foreground font-bold active:scale-[0.97]",
+ "rounded-lg border border-border bg-background hover:bg-muted text-foreground font-bold active:scale-[0.97]",
  heroAction:
- "rounded-2xl bg-primary text-primary-foreground font-black hover:bg-primary/90 active:scale-[0.97]",
+ "rounded-lg bg-primary text-primary-foreground font-black hover:bg-primary/90 active:scale-[0.97]",
  },
  size: {
- default: "h-11 px-5.5 py-2.5", /* 44px — padrão ergonômico Apple Squircle */
+ default: "h-11 px-5.5 py-3", /* 44px — padrão ergonômico Apple Squircle */
  sm: "h-9 px-4 text-xs rounded-lg", /* 36px — compacto squircle */
- lg: "h-13 px-8 text-base font-bold rounded-2xl", /* 52px — destaque */
- icon: "size-10 rounded-xl",
+ lg: "h-13 px-8 text-base font-bold rounded-lg", /* 52px — destaque */
+ icon: "size-10 rounded-lg",
  iconSm: "size-8 rounded-lg",
  },
  },

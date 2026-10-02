@@ -189,7 +189,7 @@ export function FileAttachmentUpload({
  <div className={cn("space-y-2", className)}>
  {label && (
  <div className="flex items-center justify-between">
- <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Paperclip className="size-3.5 text-muted-foreground" />
  <span>{label}</span>
  </label>
@@ -218,10 +218,10 @@ export function FileAttachmentUpload({
 
  {/* State 1: File is Uploaded */}
  {hasFile ? (
- <div className="rounded-2xl border border-border/80 bg-card p-3 shadow-2xs transition-all">
+ <div className="rounded-lg border border-border/80 bg-card p-3 shadow-2xs transition-all">
  <div className="flex items-center gap-3">
  {/* Thumbnail Preview */}
- <div className="size-14 rounded-xl overflow-hidden bg-muted/60 border border-border/60 shrink-0 flex items-center justify-center relative group">
+ <div className="size-14 rounded-lg overflow-hidden bg-muted/60 border border-border/60 shrink-0 flex items-center justify-center relative group">
  {isImage ? (
  <img
  src={value!}
@@ -245,8 +245,8 @@ export function FileAttachmentUpload({
  </div>
 
  {/* Info */}
- <div className="flex-1 min-w-0 space-y-0.5">
- <div className="flex items-center gap-1.5">
+ <div className="flex-1 min-w-0 space-y-1">
+ <div className="flex items-center gap-2">
  <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
  <p className="text-xs font-bold text-foreground truncate">{fileName}</p>
  </div>
@@ -262,7 +262,7 @@ export function FileAttachmentUpload({
  variant="ghost"
  size="sm"
  asChild
- className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  title="Abrir anexo em nova aba"
  >
  <a href={value!} target="_blank" rel="noopener noreferrer">
@@ -275,7 +275,7 @@ export function FileAttachmentUpload({
  variant="ghost"
  size="sm"
  onClick={handleClear}
- className="h-8 w-8 p-0 rounded-xl text-destructive hover:bg-destructive/10"
+ className="h-8 w-8 p-0 rounded-lg text-destructive hover:bg-destructive/10"
  title="Remover anexo"
  >
  <Trash2 className="size-4" />
@@ -285,7 +285,7 @@ export function FileAttachmentUpload({
  </div>
  ) : showManualInput ? (
  /* State 2: Manual URL fallback input */
- <div className="space-y-2 rounded-2xl border border-dashed border-border bg-muted/20 p-3">
+ <div className="space-y-2 rounded-lg border border-dashed border-border bg-muted/20 p-3">
  <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
  <span>Informe o link público do arquivo (HTTPS)</span>
  <button
@@ -302,7 +302,7 @@ export function FileAttachmentUpload({
  value={manualUrl}
  onChange={(e) => setManualUrl(e.target.value)}
  placeholder="https://storage... ou link externo"
- className="h-9 text-xs rounded-xl flex-1 bg-background"
+ className="h-9 text-xs rounded-lg flex-1 bg-background"
  onKeyDown={(e) => {
  if (e.key === "Enter") {
  e.preventDefault();
@@ -314,7 +314,7 @@ export function FileAttachmentUpload({
  type="button"
  size="sm"
  onClick={handleApplyManualUrl}
- className="rounded-xl text-xs font-bold h-9 px-3"
+ className="rounded-lg text-xs font-bold h-9 px-3"
  >
  Aplicar
  </Button>
@@ -339,8 +339,8 @@ export function FileAttachmentUpload({
         onClick={() => !isUploading && inputRef.current?.click()}
         className={cn(
           "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
- "rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center select-none",
- compact ? "p-4 gap-2" : "p-5 gap-2.5",
+ "rounded-lg border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center select-none",
+ compact ? "p-4 gap-2" : "p-5 gap-3",
  isDragging
  ? "border-primary bg-primary/5 scale-[0.99]"
  : "border-border/80 bg-muted/10 hover:bg-muted/30 hover:border-border",
@@ -355,13 +355,13 @@ export function FileAttachmentUpload({
  </div>
  ) : (
  <>
- <div className="size-10 rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground border border-border/60">
+ <div className="size-10 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground border border-border/60">
  <UploadCloud className="size-5 text-primary" />
  </div>
 
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <p className="text-xs font-bold text-foreground">
- Clique, arraste <span className="font-normal text-muted-foreground">ou cole com </span><kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-muted border border-border rounded">Ctrl+V</kbd>
+ Clique, arraste <span className="font-normal text-muted-foreground">ou cole com </span><kbd className="px-2 py-1 text-[10px] font-mono bg-muted border border-border rounded">Ctrl+V</kbd>
  </p>
  {helperText && (
  <p className="text-[11px] text-muted-foreground">{helperText}</p>

@@ -38,14 +38,14 @@ function PublicSponsorReportPage() {
   if (!report || !report.sponsor) {
     return (
       <div className="w-full max-w-xl mx-auto px-0 sm:px-4 py-24 text-center space-y-4">
-        <div className="size-14 mx-auto rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground">
+        <div className="size-14 mx-auto rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground">
           <ShieldCheck className="size-7" />
         </div>
         <h1 className="text-xl font-black text-foreground">Relatório Não Encontrado</h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
           O link mágico informado pode estar incorreto, expirado ou a campanha publicitária ainda não foi ativada.
         </p>
-        <Button asChild variant="outline" className="rounded-xl font-bold mt-2">
+        <Button asChild variant="outline" className="rounded-lg font-bold mt-2">
           <Link to="/">
             Voltar ao Início
           </Link>
@@ -78,16 +78,16 @@ function PublicSponsorReportPage() {
   return (
     <div className="max-w-4xl mx-auto px-0 sm:px-4 py-8 space-y-8">
       {/* ── Topo do Relatório: Veículo de Imprensa & Selo Auditado ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-card border shadow-xs">
-        <div className="flex items-center gap-3.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-lg bg-card border shadow-xs">
+        <div className="flex items-center gap-4">
           {newspaperLogo ? (
             <img
               src={newspaperLogo}
               alt={newspaperName}
-              className="size-12 rounded-xl object-cover border"
+              className="size-12 rounded-lg object-cover border"
             />
           ) : (
-            <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-base">
+            <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-black text-base">
               {newspaperName.charAt(0)}
             </div>
           )}
@@ -104,7 +104,7 @@ function PublicSponsorReportPage() {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold">
             <CheckCircle2 className="size-3.5" />
             <span>Auditoria em Tempo Real</span>
           </div>
@@ -112,7 +112,7 @@ function PublicSponsorReportPage() {
             variant="outline"
             size="sm"
             onClick={handleShareLink}
-            className="rounded-xl font-bold text-xs gap-1.5 h-10 px-3.5 min-h-[44px]"
+            className="rounded-lg font-bold text-xs gap-2 h-10 px-4 min-h-11"
           >
             <Share2 className="size-3.5" />
             <span>Compartilhar</span>
@@ -142,9 +142,9 @@ function PublicSponsorReportPage() {
       </div>
 
       {/* ── Grid de Métricas Principais (Apple HIG Clean) ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card: Visualizações Reais */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-card border space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg bg-card border space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-bold">Visualizações</span>
             <Eye className="size-4 text-primary" />
@@ -158,7 +158,7 @@ function PublicSponsorReportPage() {
         </div>
 
         {/* Card: Cliques Registrados */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-card border space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg bg-card border space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-bold">Cliques Únicos</span>
             <MousePointerClick className="size-4 text-primary" />
@@ -172,7 +172,7 @@ function PublicSponsorReportPage() {
         </div>
 
         {/* Card: Taxa de Conversão (CTR) */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-card border space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg bg-card border space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-bold">Taxa de Cliques (CTR)</span>
             <TrendingUp className="size-4 text-emerald-500" />
@@ -186,7 +186,7 @@ function PublicSponsorReportPage() {
         </div>
 
         {/* Card: Tempo Total de Atenção */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-card border space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg bg-card border space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-bold">Tempo de Atenção</span>
             <Clock className="size-4 text-primary" />
@@ -201,9 +201,9 @@ function PublicSponsorReportPage() {
       </div>
 
       {/* ── Prévia do Criativo Ativo da Rede Display ── */}
-      <div className="p-6 rounded-2xl bg-card border space-y-4">
+      <div className="p-6 rounded-lg bg-card border space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4">
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <h3 className="text-sm font-bold text-foreground">Criativo em Veiculação</h3>
             <p className="text-xs text-muted-foreground">
               Formato responsivo distribuído randomicamente nas matérias e feed do jornal
@@ -216,7 +216,7 @@ function PublicSponsorReportPage() {
               rel="noopener noreferrer"
               className="self-start sm:self-auto"
             >
-              <Button variant="outline" size="sm" className="rounded-xl font-bold text-xs gap-1.5 h-10 px-3.5 min-h-[44px]">
+              <Button variant="outline" size="sm" className="rounded-lg font-bold text-xs gap-2 h-10 px-4 min-h-11">
                 <span>Testar Destino</span>
                 <ExternalLink className="size-3.5" />
               </Button>
@@ -226,7 +226,7 @@ function PublicSponsorReportPage() {
 
         <div className="space-y-3">
           {sponsor.video_url ? (
-            <div className="rounded-xl overflow-hidden border bg-black aspect-16/9 max-w-xl mx-auto">
+            <div className="rounded-lg overflow-hidden border bg-black aspect-16/9 max-w-xl mx-auto">
               <video
                 src={sponsor.video_url}
                 autoPlay
@@ -238,7 +238,7 @@ function PublicSponsorReportPage() {
               />
             </div>
           ) : sponsor.banner_url ? (
-            <div className="rounded-xl overflow-hidden border bg-muted/40 max-w-xl mx-auto">
+            <div className="rounded-lg overflow-hidden border bg-muted/40 max-w-xl mx-auto">
               <img
                 src={sponsor.banner_url}
                 alt={sponsor.name}
@@ -246,7 +246,7 @@ function PublicSponsorReportPage() {
               />
             </div>
           ) : (
-            <div className="p-8 rounded-xl bg-muted/20 border border-dashed text-center text-xs text-muted-foreground">
+            <div className="p-8 rounded-lg bg-muted/20 border border-dashed text-center text-xs text-muted-foreground">
               Nenhum banner ou vídeo cadastrado. O anúncio está sendo veiculado em formato textual.
             </div>
           )}
@@ -262,8 +262,8 @@ function PublicSponsorReportPage() {
 
       {/* ── Desempenho Diário de Telemetria ── */}
       {dailyPoints && dailyPoints.length > 0 && (
-        <div className="p-6 rounded-2xl bg-card border space-y-4">
-          <div className="space-y-0.5 border-b pb-4">
+        <div className="p-6 rounded-lg bg-card border space-y-4">
+          <div className="space-y-1 border-b pb-4">
             <h3 className="text-sm font-bold text-foreground">Histórico de Visualizações e Cliques</h3>
             <p className="text-xs text-muted-foreground">
               Distribuição diária registrada pelos eventos de telemetria antifraude
@@ -274,7 +274,7 @@ function PublicSponsorReportPage() {
             {dailyPoints.map((point) => (
               <div
                 key={point.date}
-                className="py-2.5 flex items-center justify-between gap-4 font-mono"
+                className="py-3 flex items-center justify-between gap-4 font-mono"
               >
                 <div className="flex items-center gap-2 text-foreground font-medium">
                   <Calendar className="size-3.5 text-muted-foreground" />
@@ -295,7 +295,7 @@ function PublicSponsorReportPage() {
       )}
 
       {/* ── Rodapé de Auditoria e Transparência ── */}
-      <div className="p-4 rounded-xl bg-muted/30 border text-center text-[11px] text-muted-foreground space-y-1">
+      <div className="p-4 rounded-lg bg-muted/30 border text-center text-[11px] text-muted-foreground space-y-1">
         <p className="font-medium text-foreground">
           Relatório protegido por Token Criptográfico Exclusivo • Waesy Display Network
         </p>

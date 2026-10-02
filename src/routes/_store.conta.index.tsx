@@ -204,7 +204,7 @@ function AccountDashboardPage() {
   if (!isAuthenticated) {
     return (
       <div className="w-full max-w-md mx-auto py-16 px-4 text-center space-y-6 animate-in fade-in duration-200">
-        <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
+        <div className="size-16 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
           <User className="size-8" />
         </div>
 
@@ -215,10 +215,10 @@ function AccountDashboardPage() {
           </p>
         </div>
 
-        <div className="space-y-2.5 pt-2">
+        <div className="space-y-3 pt-2">
           <Button
             asChild
-            className="w-full h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-xs cursor-pointer"
+            className="w-full h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground shadow-xs cursor-pointer"
           >
             <Link to="/entrar">Entrar com Minha Conta</Link>
           </Button>
@@ -226,7 +226,7 @@ function AccountDashboardPage() {
           <Button
             asChild
             variant="outline"
-            className="w-full h-11 rounded-xl text-xs font-semibold cursor-pointer hover:bg-muted"
+            className="w-full h-11 rounded-lg text-xs font-semibold cursor-pointer hover:bg-muted"
           >
             <Link to="/cadastro">Criar Nova Conta</Link>
           </Button>
@@ -238,20 +238,20 @@ function AccountDashboardPage() {
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
       {/* ── 1. Header do Perfil com Acesso ao Perfil & Master ── */}
-      <div className="relative bg-card rounded-2xl border border-border/60 p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="relative bg-card rounded-lg border border-border/60 p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         {/* Ação de Logout Minimalista no Top-Right (Não polui o grid central de ações) */}
         <button
           type="button"
           onClick={handleSignOut}
           disabled={isLoggingOut}
-          className="absolute right-3 top-3 sm:right-4 sm:top-4 p-2 rounded-xl text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+          className="absolute right-3 top-3 sm:right-4 sm:top-4 p-2 rounded-lg text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
           title="Encerrar Sessão"
         >
           <LogOut className="size-4" />
         </button>
 
         <div className="flex items-center gap-4 min-w-0 pr-8 sm:pr-0">
-          <div className="size-14 rounded-2xl bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
+          <div className="size-14 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
             {userAvatar ? (
               <img src={userAvatar} alt={userName} className="size-full object-cover" />
             ) : (
@@ -259,7 +259,7 @@ function AccountDashboardPage() {
             )}
           </div>
 
-          <div className="min-w-0 space-y-0.5">
+          <div className="min-w-0 space-y-1">
             <div className="flex items-center gap-2">
               <h1 className="text-base sm:text-lg font-bold text-foreground truncate tracking-tight">{userName}</h1>
               {isMasterAdmin && (
@@ -302,7 +302,7 @@ function AccountDashboardPage() {
           />
 
           {isMasterAdmin && (
-            <Button asChild size="sm" variant="default" className="rounded-xl text-xs h-10 px-3.5 font-bold bg-primary text-primary-foreground gap-1.5 cursor-pointer active:scale-98">
+            <Button asChild size="sm" variant="default" className="rounded-lg text-xs h-10 px-4 font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-98">
               <Link to="/admin-master">
                 <Shield className="size-3.5" />
                 <span>Master</span>
@@ -310,7 +310,7 @@ function AccountDashboardPage() {
             </Button>
           )}
 
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-10 px-3.5 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer active:scale-98">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-10 px-4 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer active:scale-98">
             <Link to="/conta/perfil">Editar Perfil</Link>
           </Button>
         </div>
@@ -320,13 +320,13 @@ function AccountDashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Link
           to="/conta/pedidos"
-          className="h-11 px-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
+          className="h-11 px-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
         >
           <div className="flex items-center gap-2 min-w-0">
             <ShoppingBag className="size-4 text-muted-foreground shrink-0" />
             <span className="text-xs font-semibold text-foreground truncate">Pedidos</span>
           </div>
-          <Badge variant="secondary" className="text-[10px] font-bold h-5 px-1.5 shrink-0">
+          <Badge variant="secondary" className="text-[10px] font-bold h-5 px-2 shrink-0">
             {orders.length}
           </Badge>
         </Link>
@@ -334,7 +334,7 @@ function AccountDashboardPage() {
         <Link
           to="/conta/notificacoes"
           className={cn(
-            "h-11 px-3.5 rounded-xl border transition-colors flex items-center justify-between gap-2 cursor-pointer",
+            "h-11 px-4 rounded-lg border transition-colors flex items-center justify-between gap-2 cursor-pointer",
             unreadNotifsCount > 0
               ? "border-primary/40 bg-primary/[0.04] hover:bg-primary/[0.08]"
               : "border-border/60 bg-card hover:bg-muted/40"
@@ -344,14 +344,14 @@ function AccountDashboardPage() {
             <Bell className={cn("size-4 shrink-0", unreadNotifsCount > 0 ? "text-primary" : "text-muted-foreground")} />
             <span className="text-xs font-semibold text-foreground truncate">Notificações</span>
           </div>
-          <Badge variant={unreadNotifsCount > 0 ? "default" : "secondary"} className="text-[10px] font-bold h-5 px-1.5 shrink-0">
+          <Badge variant={unreadNotifsCount > 0 ? "default" : "secondary"} className="text-[10px] font-bold h-5 px-2 shrink-0">
             {unreadNotifsCount}
           </Badge>
         </Link>
 
         <Link
           to="/conta/negociacoes"
-          className="h-11 px-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
+          className="h-11 px-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
         >
           <div className="flex items-center gap-2 min-w-0">
             <Handshake className="size-4 text-muted-foreground shrink-0" />
@@ -362,7 +362,7 @@ function AccountDashboardPage() {
 
         <Link
           to="/conta/salvos"
-          className="h-11 px-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
+          className="h-11 px-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
         >
           <div className="flex items-center gap-2 min-w-0">
             <Bookmark className="size-4 text-muted-foreground shrink-0" />
@@ -374,7 +374,7 @@ function AccountDashboardPage() {
 
       {/* ── 2. SELETOR DE PERFIL: EMPRESAS & LOJAS DO USUÁRIO ── */}
       {stores.length > 0 && (
-        <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-xs">
+        <div className="bg-card rounded-lg border border-border/60 overflow-hidden shadow-xs">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/40 bg-muted/20">
             <div className="flex items-center gap-2">
               <Building2 className="size-4 text-primary" />
@@ -383,9 +383,9 @@ function AccountDashboardPage() {
                 {stores.length}
               </Badge>
             </div>
-            <Button asChild variant="ghost" size="sm" className="rounded-xl text-xs sm:text-sm font-semibold h-10 px-3.5 text-primary hover:bg-primary/10 cursor-pointer shadow-2xs active:scale-98">
+            <Button asChild variant="ghost" size="sm" className="rounded-lg text-xs sm:text-sm font-semibold h-10 px-4 text-primary hover:bg-primary/10 cursor-pointer shadow-2xs active:scale-98">
               <Link to="/criar-negocio">
-                <Plus className="size-4 mr-1.5" />
+                <Plus className="size-4 mr-2" />
                 <span>Criar</span>
               </Link>
             </Button>
@@ -401,17 +401,17 @@ function AccountDashboardPage() {
               return (
                 <div
                   key={storeId}
-                  className="p-4 rounded-xl border border-border/60 hover:border-primary/50 transition-all bg-background flex items-center justify-between gap-3 group"
+                  className="p-4 rounded-lg border border-border/60 hover:border-primary/50 transition-all bg-background flex items-center justify-between gap-3 group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="size-10 rounded-xl bg-muted border border-border/40 overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="size-10 rounded-lg bg-muted border border-border/40 overflow-hidden flex items-center justify-center shrink-0">
                       {logoUrl ? (
                         <img src={logoUrl} alt={storeName} className="size-full object-cover" />
                       ) : (
                         <Store className="size-5 text-primary" />
                       )}
                     </div>
-                    <div className="min-w-0 space-y-0.5">
+                    <div className="min-w-0 space-y-1">
                       <p className="text-xs font-bold text-foreground truncate">{storeName}</p>
                       <p className="text-[10px] text-muted-foreground font-medium">{storeRole}</p>
                     </div>
@@ -420,7 +420,7 @@ function AccountDashboardPage() {
                   <Button
                     onClick={() => handleOpenWorkspace(storeId)}
                     size="sm"
-                    className="h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer shadow-2xs shrink-0 active:scale-98"
+                    className="h-10 sm:h-11 px-4 sm:px-4 rounded-lg text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer shadow-2xs shrink-0 active:scale-98"
                   >
                     <span>Entrar</span>
                     <ArrowRight className="size-3.5" />
@@ -434,9 +434,9 @@ function AccountDashboardPage() {
 
       {/* ── 2.1 CONVERSÃO PARA CONTA PRO (Ponte de Conversão) ── */}
       {stores.length === 0 && (
-        <div className="bg-card rounded-2xl border border-border/60 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+        <div className="bg-card rounded-lg border border-border/60 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <Store className="size-5" />
             </div>
             <div>
@@ -444,10 +444,10 @@ function AccountDashboardPage() {
               <p className="text-xs text-muted-foreground">Gerencie catálogo, vendas e operação completa no Workspace.</p>
             </div>
           </div>
-          <Button asChild size="sm" className="rounded-xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground h-10 sm:h-11 px-4 sm:px-5 shrink-0 shadow-2xs cursor-pointer active:scale-98">
+          <Button asChild size="sm" className="rounded-lg text-xs sm:text-sm font-bold bg-primary text-primary-foreground h-10 sm:h-11 px-4 sm:px-5 shrink-0 shadow-2xs cursor-pointer active:scale-98">
             <Link to="/criar-negocio">
               <span>Criar Empresa</span>
-              <ArrowRight className="size-4 ml-1.5" />
+              <ArrowRight className="size-4 ml-2" />
             </Link>
           </Button>
         </div>
@@ -458,9 +458,9 @@ function AccountDashboardPage() {
         {ACCOUNT_GROUPS.map((group) => (
           <div
             key={group.title}
-            className="bg-card border-y border-border/40 sm:border sm:rounded-2xl overflow-hidden shadow-2xs"
+            className="bg-card border-y border-border/40 sm:border sm:rounded-lg overflow-hidden shadow-2xs"
           >
-            <div className="px-4 py-2.5 bg-muted/15 border-b border-border/30">
+            <div className="px-4 py-3 bg-muted/15 border-b border-border/30">
               <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
                 {group.title}
               </h2>
@@ -473,9 +473,9 @@ function AccountDashboardPage() {
                   <Link
                     key={sec.to}
                     to={sec.to}
-                    className="flex items-center justify-between px-4 py-3.5 hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer group min-h-[48px]"
+                    className="flex items-center justify-between px-4 py-4 hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer group min-h-12"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="flex items-center gap-4 min-w-0">
                       <Icon className="size-5 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" strokeWidth={1.75} />
                       <span className="text-xs sm:text-sm font-medium text-foreground truncate">
                         {sec.label}

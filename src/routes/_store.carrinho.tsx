@@ -70,7 +70,7 @@ function StoreCartPage() {
             variant="ghost"
             size="icon"
             onClick={() => (window.history.length > 1 ? window.history.back() : router.navigate({ to: "/" }))}
-            className="size-11 sm:hidden rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+            className="size-11 sm:hidden rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
             aria-label="Voltar"
           >
             <ArrowLeft className="size-5" />
@@ -88,7 +88,7 @@ function StoreCartPage() {
 
       {!carts || carts.length === 0 ? (
         <div className="py-14 px-2 flex flex-col items-center justify-center text-center">
-          <div className="size-16 rounded-3xl bg-muted/60 flex items-center justify-center mb-4 text-muted-foreground">
+          <div className="size-16 rounded-lg bg-muted/60 flex items-center justify-center mb-4 text-muted-foreground">
             <ShoppingBag className="size-8 stroke-[1.5]" />
           </div>
           <h2 className="text-xl font-bold tracking-tight text-foreground">Seu carrinho está vazio</h2>
@@ -97,7 +97,7 @@ function StoreCartPage() {
           </p>
           <Button
             onClick={() => router.navigate({ to: "/mercado" })}
-            className="rounded-2xl h-11 px-6 font-bold text-sm cursor-pointer active:scale-95 transition-all"
+            className="rounded-lg h-11 px-6 font-bold text-sm cursor-pointer active:scale-95 transition-all"
           >
             Continuar Comprando
           </Button>
@@ -110,7 +110,7 @@ function StoreCartPage() {
               <Surface
                 key={cart.id}
                 variant="default"
-                className="p-4 sm:p-6 rounded-2xl border border-border/80 bg-card space-y-4"
+                className="p-4 sm:p-6 rounded-lg border border-border/80 bg-card space-y-4"
               >
                 <div
                   className="flex items-center justify-between cursor-pointer group pb-3 border-b border-border/40"
@@ -140,9 +140,9 @@ function StoreCartPage() {
                   {cart.items.map((item: any) => (
                     <div
                       key={item.id}
-                      className="flex gap-3.5 sm:gap-4 py-3 sm:py-4 border-b border-border/40 last:border-0 items-center sm:items-start"
+                      className="flex gap-4 sm:gap-4 py-3 sm:py-4 border-b border-border/40 last:border-0 items-center sm:items-start"
                     >
-                      <div className="size-20 sm:size-24 flex-shrink-0 overflow-hidden rounded-xl border border-border/60 bg-muted">
+                      <div className="size-20 sm:size-24 flex-shrink-0 overflow-hidden rounded-lg border border-border/60 bg-muted">
                         {item.coverUrl ? (
                           <img
                             src={item.coverUrl}
@@ -163,7 +163,7 @@ function StoreCartPage() {
                               {item.productTitle}
                             </h3>
                             {Object.entries(item.variantAttributes || {}).length > 0 && (
-                              <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                              <p className="text-xs text-muted-foreground mt-1 truncate">
                                 {Object.entries(item.variantAttributes || {})
                                   .map(([k, v]) => `${k}: ${v}`)
                                   .join(" | ")}
@@ -171,7 +171,7 @@ function StoreCartPage() {
                             )}
                             {item.selectedOptionsLabels &&
                               item.selectedOptionsLabels.length > 0 && (
-                                <p className="text-xs text-muted-foreground mt-0.5 font-medium flex items-center gap-1 flex-wrap">
+                                <p className="text-xs text-muted-foreground mt-1 font-medium flex items-center gap-1 flex-wrap">
                                   <span className="opacity-60">+</span>
                                   {item.selectedOptionsLabels.join(", ")}
                                 </p>
@@ -195,7 +195,7 @@ function StoreCartPage() {
 
                         {/* Controles de Quantidade e Ação com hit-area mínima de 44px (Apple HIG) */}
                         <div className="flex items-center justify-between mt-3 pt-1">
-                          <div className="inline-flex items-center rounded-xl border border-border/80 bg-background overflow-hidden">
+                          <div className="inline-flex items-center rounded-lg border border-border/80 bg-background overflow-hidden">
                             <button
                               type="button"
                               className="size-11 min-w-11 min-h-11 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40 cursor-pointer"
@@ -238,7 +238,7 @@ function StoreCartPage() {
             <Surface
               variant="default"
               elevation="sm"
-              className="p-5 sm:p-6 rounded-2xl border border-border/80 bg-card sticky top-24"
+              className="p-5 sm:p-6 rounded-lg border border-border/80 bg-card sticky top-24"
             >
               <h2 className="text-base font-bold mb-4 text-foreground">Resumo da Compra</h2>
 
@@ -276,7 +276,7 @@ function StoreCartPage() {
                   </div>
 
                   {selectedCart.items.some((i: any) => i.isOutOfStock) ? (
-                    <Button size="lg" className="w-full font-bold rounded-xl h-11" disabled>
+                    <Button size="lg" className="w-full font-bold rounded-lg h-11" disabled>
                       Remova itens sem estoque
                     </Button>
                   ) : (
@@ -285,7 +285,7 @@ function StoreCartPage() {
                       search={{ store: selectedCart.storeId }}
                       className="w-full block"
                     >
-                      <Button size="lg" className="w-full font-bold rounded-xl h-11 text-sm">
+                      <Button size="lg" className="w-full font-bold rounded-lg h-11 text-sm">
                         <span>Finalizar Compra</span>
                         <ArrowRight className="ml-2 size-4 shrink-0" />
                       </Button>
@@ -300,7 +300,7 @@ function StoreCartPage() {
 
       {/* ── Sticky Mobile Bottom Bar (Thumb Zone para Mobile) ── */}
       {selectedCart && selectedCart.items.length > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3.5 pb-safe bg-background border-t border-border/60 z-40">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 pb-safe bg-background border-t border-border/60 z-40">
           <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
             <div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-semibold">
@@ -312,7 +312,7 @@ function StoreCartPage() {
             </div>
 
             {selectedCart.items.some((i: any) => i.isOutOfStock) ? (
-              <Button className="h-12 px-5 font-bold rounded-xl text-xs" disabled>
+              <Button className="h-12 px-5 font-bold rounded-lg text-xs" disabled>
                 Itens sem estoque
               </Button>
             ) : (
@@ -321,7 +321,7 @@ function StoreCartPage() {
                 search={{ store: selectedCart.storeId }}
                 className="flex-1 max-w-[220px]"
               >
-                <Button className="w-full h-12 font-bold rounded-xl text-sm flex items-center justify-center gap-2 bg-primary text-primary-foreground shadow-none active:scale-95 transition-all cursor-pointer">
+                <Button className="w-full h-12 font-bold rounded-lg text-sm flex items-center justify-center gap-2 bg-primary text-primary-foreground shadow-none active:scale-95 transition-all cursor-pointer">
                   <span>Finalizar Compra</span>
                   <ArrowRight className="size-4 shrink-0" />
                 </Button>

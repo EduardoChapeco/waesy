@@ -52,9 +52,9 @@ function GarcomTerminalPage() {
  return (
  <div className="min-h-[100dvh] bg-background text-foreground pb-20">
  {/* Header Fixo Mobile-First */}
- <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-3.5 flex items-center justify-between">
- <div className="flex items-center gap-2.5">
- <div className="h-9 w-9 rounded-xl bg-orange-500 text-white flex items-center justify-center font-bold">
+ <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
+ <div className="flex items-center gap-3">
+ <div className="h-9 w-9 rounded-lg bg-orange-500 text-white flex items-center justify-center font-bold">
  <Utensils className="h-4 w-4" />
  </div>
  <div>
@@ -68,7 +68,7 @@ function GarcomTerminalPage() {
  variant="ghost" 
  size="sm" 
  onClick={() => setSelectedTable(null)}
- className="min-h-[44px] h-11 px-3 text-xs font-semibold gap-1.5"
+ className="min-h-11 h-11 px-3 text-xs font-semibold gap-2"
  aria-label="Voltar ao Mapa"
  >
  <ArrowLeft className="size-4" />
@@ -87,7 +87,7 @@ function GarcomTerminalPage() {
  {isLoading ? (
  <div className="p-8 text-center text-muted-foreground text-sm">Carregando mapa de mesas...</div>
  ) : tables.length === 0 ? (
- <div className="bg-card border border-border p-8 rounded-2xl text-center text-sm text-muted-foreground">
+ <div className="bg-card border border-border p-8 rounded-lg text-center text-sm text-muted-foreground">
  Nenhuma mesa cadastrada no sistema de PDV.
  </div>
  ) : (
@@ -101,7 +101,7 @@ function GarcomTerminalPage() {
  <button
  key={table.id}
  onClick={() => setSelectedTable(table)}
- className={`p-4 rounded-2xl border text-left transition-all min-h-[110px] flex flex-col justify-between ${
+ className={`p-4 rounded-lg border text-left transition-all min-h-[110px] flex flex-col justify-between ${
  isOccupied 
  ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400" 
  : isBilling 
@@ -111,7 +111,7 @@ function GarcomTerminalPage() {
  >
  <div className="flex items-center justify-between">
  <span className="font-black text-lg">Mesa {table.table_number}</span>
- <Badge variant="outline" className="text-[10px] uppercase font-bold py-0.5 px-1.5 rounded-md">
+ <Badge variant="outline" className="text-[10px] uppercase font-bold py-1 px-2 rounded-md">
  {table.status}
  </Badge>
  </div>
@@ -131,13 +131,13 @@ function GarcomTerminalPage() {
  ) : (
  <div className="space-y-4">
  {/* Detalhe da Mesa Selecionada */}
- <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
+ <div className="bg-card border border-border rounded-lg p-5 space-y-3">
  <div className="flex items-center justify-between">
  <div>
  <h2 className="font-black text-2xl">Mesa {selectedTable.table_number}</h2>
  <p className="text-xs text-muted-foreground">Zona: {selectedTable.zone} • Capacidade: {selectedTable.capacity} pessoas</p>
  </div>
- <Badge variant="outline" className="text-xs font-bold py-1 px-3 rounded-xl uppercase">
+ <Badge variant="outline" className="text-xs font-bold py-1 px-3 rounded-lg uppercase">
  {selectedTable.status}
  </Badge>
  </div>
@@ -147,7 +147,7 @@ function GarcomTerminalPage() {
  <p className="text-xs text-muted-foreground mb-2">Mesa livre. Clique para abrir comanda:</p>
  <Button
  onClick={() => occupyTableMutation.mutate(selectedTable.id)}
- className="w-full min-h-[48px] rounded-2xl font-bold bg-primary text-primary-foreground"
+ className="w-full min-h-12 rounded-lg font-bold bg-primary text-primary-foreground"
  >
  Abrir Mesa para {guestsCount} Pessoas
  </Button>
@@ -155,16 +155,16 @@ function GarcomTerminalPage() {
  ) : (
  <div className="pt-2 space-y-4">
  {/* Formulário Rápido de Adição de Itens para Cozinha */}
- <div className="space-y-2 bg-muted/40 p-3.5 rounded-2xl border border-border">
+ <div className="space-y-2 bg-muted/40 p-4 rounded-lg border border-border">
  <h3 className="font-bold text-xs text-foreground">Lançar Item para a Cozinha</h3>
  <div className="flex gap-2">
  <Input
  placeholder="Nome do Prato / Bebida"
  value={newItemName}
  onChange={(e) => setNewItemName(e.target.value)}
- className="min-h-[44px] rounded-xl text-sm"
+ className="min-h-11 rounded-lg text-sm"
  />
- <Button onClick={addItemToComanda} className="min-h-[44px] rounded-xl px-4">
+ <Button onClick={addItemToComanda} className="min-h-11 rounded-lg px-4">
  <Plus className="h-4 w-4" />
  </Button>
  </div>
@@ -172,7 +172,7 @@ function GarcomTerminalPage() {
  placeholder="Observações (ex: sem cebola, gelo e limão)"
  value={newItemNotes}
  onChange={(e) => setNewItemNotes(e.target.value)}
- className="min-h-[40px] rounded-xl text-xs"
+ className="min-h-10 rounded-lg text-xs"
  />
  </div>
 
@@ -181,7 +181,7 @@ function GarcomTerminalPage() {
  <div className="space-y-2">
  <h4 className="text-xs font-semibold text-muted-foreground">Itens Prontos para Enviar:</h4>
  {cartItems.map((item, idx) => (
- <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
+ <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
  <div>
  <div className="font-bold text-sm">{item.name}</div>
  {item.notes && <div className="text-[11px] text-muted-foreground">Obs: {item.notes}</div>}
@@ -202,7 +202,7 @@ function GarcomTerminalPage() {
  toast.success("Itens enviados com sucesso para o KDS da Cozinha!");
  setCartItems([]);
  }}
- className="w-full min-h-[48px] rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+ className="w-full min-h-12 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
  >
  <Send className="h-4 w-4 mr-2" /> Enviar {cartItems.length} Itens para a Cozinha (KDS)
  </Button>

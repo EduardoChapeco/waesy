@@ -178,7 +178,7 @@ function WorkspaceCollectionsPage() {
           <Button
             onClick={handleOpenCreate}
             size="sm"
-            className="h-9 px-4 rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground shadow-sm cursor-pointer hover:opacity-90"
+            className="h-9 px-4 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground shadow-sm cursor-pointer hover:opacity-90"
           >
             <Plus className="size-4" />
             <span>Nova Coleção</span>
@@ -187,14 +187,14 @@ function WorkspaceCollectionsPage() {
       />
 
       {/* ── 2. Toolbar & Filtros ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/60">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/60">
         <div className="relative flex-1">
           <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nome ou slug..."
-            className="pl-9 h-9 text-xs rounded-xl bg-background border-border/50"
+            className="pl-9 h-9 text-xs rounded-lg bg-background border-border/50"
           />
         </div>
 
@@ -203,7 +203,7 @@ function WorkspaceCollectionsPage() {
             value={statusFilter}
             onValueChange={(val: any) => setStatusFilter(val)}
           >
-            <SelectTrigger className="h-9 text-xs rounded-xl w-[130px] bg-background border-border/50">
+            <SelectTrigger className="h-9 text-xs rounded-lg w-[130px] bg-background border-border/50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -219,11 +219,11 @@ function WorkspaceCollectionsPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-40 rounded-2xl bg-card/60 animate-pulse border border-border/40" />
+            <div key={n} className="h-40 rounded-lg bg-card/60 animate-pulse border border-border/40" />
           ))}
         </div>
       ) : filteredCollections.length === 0 ? (
-        <div className="bg-card rounded-2xl border border-border/60 p-8 text-center">
+        <div className="bg-card rounded-lg border border-border/60 p-8 text-center">
           <EmptyState
             title="Nenhuma coleção encontrada"
             description={
@@ -236,7 +236,7 @@ function WorkspaceCollectionsPage() {
             <Button
               onClick={handleOpenCreate}
               size="sm"
-              className="mt-4 rounded-xl text-xs font-bold gap-1.5"
+              className="mt-4 rounded-lg text-xs font-bold gap-2"
             >
               <Plus className="size-4" />
               <span>Criar Primeira Coleção</span>
@@ -250,11 +250,11 @@ function WorkspaceCollectionsPage() {
             return (
               <div
                 key={col.id}
-                className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col justify-between space-y-3 hover:border-foreground/30 transition-all group shadow-xs"
+                className="bg-card rounded-lg border border-border/60 p-4 flex flex-col justify-between space-y-3 hover:border-foreground/30 transition-all group shadow-xs"
               >
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   {col.cover_url ? (
-                    <div className="w-full h-32 rounded-xl overflow-hidden bg-muted relative">
+                    <div className="w-full h-32 rounded-lg overflow-hidden bg-muted relative">
                       <img
                         src={col.cover_url}
                         alt={col.name}
@@ -268,7 +268,7 @@ function WorkspaceCollectionsPage() {
                       </Badge>
                     </div>
                   ) : (
-                    <div className="w-full h-24 rounded-xl bg-muted/40 border border-border/40 flex items-center justify-between px-3">
+                    <div className="w-full h-24 rounded-lg bg-muted/40 border border-border/40 flex items-center justify-between px-3">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Layers className="size-5 text-primary" />
                         <span className="text-xs font-mono font-medium">Sem imagem de capa</span>
@@ -309,7 +309,7 @@ function WorkspaceCollectionsPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleOpenEdit(col)}
-                      className="size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
                       title="Editar Coleção"
                     >
                       <Edit2 className="size-3.5" />
@@ -318,7 +318,7 @@ function WorkspaceCollectionsPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setDeleteTarget(col)}
-                      className="size-8 rounded-xl text-destructive hover:bg-destructive/10 cursor-pointer"
+                      className="size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       title="Excluir Coleção"
                     >
                       <Trash2 className="size-3.5" />
@@ -333,7 +333,7 @@ function WorkspaceCollectionsPage() {
 
       {/* ── 4. Dialog de Criação / Edição ── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl bg-card">
+        <DialogContent className="sm:max-w-md rounded-lg bg-card">
           <form onSubmit={handleSubmit} className="space-y-4">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-foreground">
@@ -345,39 +345,39 @@ function WorkspaceCollectionsPage() {
             </DialogHeader>
 
             <div className="space-y-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Nome da Coleção</Label>
                 <Input
                   value={name}
                   onChange={(e) => handleNameChange(e.target.value)}
                   placeholder="Ex: Coleção de Verão, Mais Vendidos..."
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-lg"
                   required
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Slug da URL</Label>
                 <Input
                   value={slug}
                   onChange={(e) => setSlug(slugify(e.target.value))}
                   placeholder="colecao-de-verao"
-                  className="h-9 text-xs rounded-xl font-mono"
+                  className="h-9 text-xs rounded-lg font-mono"
                   required
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Descrição (Opcional)</Label>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Breve descrição da coleção para os clientes..."
-                  className="text-xs rounded-xl min-h-16 resize-none"
+                  className="text-xs rounded-lg min-h-16 resize-none"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Imagem de Capa (Banner)</Label>
                 <ImageUpload
                   value={coverUrl}
@@ -387,10 +387,10 @@ function WorkspaceCollectionsPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Status de Exibição</Label>
                 <Select value={status} onValueChange={(val: any) => setStatus(val)}>
-                  <SelectTrigger className="h-9 text-xs rounded-xl">
+                  <SelectTrigger className="h-9 text-xs rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -406,14 +406,14 @@ function WorkspaceCollectionsPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setDialogOpen(false)}
-                className="h-9 rounded-xl text-xs font-medium"
+                className="h-9 rounded-lg text-xs font-medium"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={createMutation.isPending || updateMutation.isPending}
-                className="h-9 rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+                className="h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
               >
                 {createMutation.isPending || updateMutation.isPending
                   ? "Salvando..."
@@ -428,7 +428,7 @@ function WorkspaceCollectionsPage() {
 
       {/* ── 5. Diálogo de Confirmação de Exclusão ── */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <AlertDialogContent className="rounded-2xl bg-card">
+        <AlertDialogContent className="rounded-lg bg-card">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-bold text-foreground">
               Excluir Coleção "{deleteTarget?.name}"?
@@ -438,10 +438,10 @@ function WorkspaceCollectionsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="h-9 rounded-xl text-xs font-medium">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="h-9 rounded-lg text-xs font-medium">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
-              className="h-9 rounded-xl text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="h-9 rounded-lg text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Confirmar Exclusão
             </AlertDialogAction>

@@ -90,11 +90,11 @@ function NewGiftCardDrawer({
       size="wide"
       footer={
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="rounded-xl text-xs font-semibold">
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="rounded-lg text-xs font-semibold">
             Cancelar
           </Button>
           <Button
-            className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+            className="rounded-lg text-xs font-bold bg-primary text-primary-foreground"
             onClick={handleCreate}
             disabled={isSubmitting}
           >
@@ -104,24 +104,24 @@ function NewGiftCardDrawer({
       }
     >
       <div className="py-2 space-y-4">
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-bold">Valor do Cartão (R$)</Label>
           <CurrencyField
             value={balanceCents}
             onChange={setBalanceCents}
             placeholder="0,00"
-            className="font-mono font-bold text-lg h-11 rounded-xl"
+            className="font-mono font-bold text-lg h-11 rounded-lg"
           />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-bold">E-mail do Destinatário (Opcional)</Label>
           <Input
             type="email"
             placeholder="cliente@exemplo.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-10 rounded-xl text-xs"
+            className="h-10 rounded-lg text-xs"
           />
           <p className="text-xs text-muted-foreground">
             Se preenchido, o código e link de resgate serão enviados automaticamente.
@@ -178,7 +178,7 @@ function GiftCardsDashboardPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <PageHeader title="Presentes" />
-        <Button onClick={() => setIsDrawerOpen(true)} className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground h-10">
+        <Button onClick={() => setIsDrawerOpen(true)} className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground h-10">
           <Plus className="h-4 w-4" /> Gerar Vale-Presente
         </Button>
       </div>
@@ -188,7 +188,7 @@ function GiftCardsDashboardPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             placeholder="Buscar por código ou gerador..."
-            className="pl-9 bg-card rounded-xl text-xs h-9"
+            className="pl-9 bg-card rounded-lg text-xs h-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -198,7 +198,7 @@ function GiftCardsDashboardPage() {
       {filteredCards.length === 0 ? (
         <EmptyState title="Nenhum Vale-Presente encontrado" />
       ) : (
-        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-2xs">
+        <div className="rounded-lg border border-border/60 bg-card overflow-hidden shadow-2xs">
           <Table>
             <TableHeader>
               <TableRow className="border-border/40">
@@ -216,7 +216,7 @@ function GiftCardsDashboardPage() {
                 <TableRow key={card.id} className="border-border/40 hover:bg-muted/20">
                   <TableCell className="whitespace-nowrap text-xs font-medium text-muted-foreground">{formatDate(card.createdAt)}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
                         className="font-mono text-xs font-bold tracking-widest bg-muted/40 border-border/60"

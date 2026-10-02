@@ -46,22 +46,22 @@ function MyContractsPage() {
               Meus Contratos
             </h1>
             {contracts.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
                 {contracts.length}
               </Badge>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Cofre digital pessoal com validade jurídica nacional (MP 2.200-2/2001 e Lei 14.063/2020)
           </p>
         </div>
 
         {/* Filtros em Tabs */}
-        <div className="flex items-center p-1 bg-muted rounded-xl text-xs">
+        <div className="flex items-center p-1 bg-muted rounded-lg text-xs">
           <button
             type="button"
             onClick={() => setFilterTab("all")}
-            className={`px-3 py-1.5 rounded-lg transition-all font-medium ${
+            className={`px-3 py-2 rounded-lg transition-all font-medium ${
               filterTab === "all" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
             }`}
           >
@@ -70,7 +70,7 @@ function MyContractsPage() {
           <button
             type="button"
             onClick={() => setFilterTab("signed")}
-            className={`px-3 py-1.5 rounded-lg transition-all font-medium ${
+            className={`px-3 py-2 rounded-lg transition-all font-medium ${
               filterTab === "signed" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
             }`}
           >
@@ -79,7 +79,7 @@ function MyContractsPage() {
           <button
             type="button"
             onClick={() => setFilterTab("pending")}
-            className={`px-3 py-1.5 rounded-lg transition-all font-medium ${
+            className={`px-3 py-2 rounded-lg transition-all font-medium ${
               filterTab === "pending" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
             }`}
           >
@@ -89,11 +89,11 @@ function MyContractsPage() {
       </div>
 
       {/* Informativo de Auditoria Imutável */}
-      <div className="flex items-start gap-3 p-4 rounded-2xl border border-border/60 bg-card shadow-xs">
-        <div className="h-9 w-9 shrink-0 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+      <div className="flex items-start gap-3 p-4 rounded-lg border border-border/60 bg-card shadow-xs">
+        <div className="h-9 w-9 shrink-0 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
           <ShieldCheck className="h-5 w-5" />
         </div>
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <div className="text-sm font-semibold text-foreground">Cofre Criptográfico Permanente</div>
           <p className="text-xs text-muted-foreground">
             Documentos assinados por você ou vinculados ao seu CPF ficam permanentemente custodiados com hash SHA-256 e trilha de auditoria verificável.
@@ -103,8 +103,8 @@ function MyContractsPage() {
 
       {/* Lista de Contratos */}
       {filteredContracts.length === 0 ? (
-        <div className="bg-card border border-border/60 rounded-2xl p-8 sm:p-12 text-center space-y-3 shadow-xs">
-          <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="bg-card border border-border/60 rounded-lg p-8 sm:p-12 text-center space-y-3 shadow-xs">
+          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <FileText className="h-6 w-6" />
           </div>
           <h3 className="font-semibold text-base text-foreground">Nenhum contrato nesta seção</h3>
@@ -113,7 +113,7 @@ function MyContractsPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-xs divide-y divide-border/40">
+        <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs divide-y divide-border/40">
           {filteredContracts.map((contract: UserContractVaultItemDTO) => {
             const isSigned = contract.status === "signed";
             const signingUrl = `/assinar/${contract.signingToken}`;
@@ -122,19 +122,19 @@ function MyContractsPage() {
             return (
               <div
                 key={contract.envelopeId}
-                className="p-4 sm:p-5 space-y-3.5 hover:bg-muted/20 transition-colors"
+                className="p-4 sm:p-5 space-y-4 hover:bg-muted/20 transition-colors"
               >
                 {/* Cabeçalho do Card */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="size-10 shrink-0 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+                    <div className="size-10 shrink-0 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                       <FileText className="size-5" />
                     </div>
                     <div className="min-w-0">
                       <div className="font-semibold text-sm sm:text-base text-foreground truncate">
                         {contract.title}
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                         {contract.storeName && (
                           <span className="flex items-center gap-1 truncate">
                             <Building2 className="size-3 shrink-0" />
@@ -184,7 +184,7 @@ function MyContractsPage() {
 
                 {/* Hash Criptográfico */}
                 {contract.hashSha256 && (
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/60">
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/60">
                     <Hash className="size-3.5 text-primary shrink-0" />
                     <span className="font-mono truncate">{contract.hashSha256}</span>
                   </div>
@@ -196,10 +196,10 @@ function MyContractsPage() {
                     <Button
                       asChild
                       size="sm"
-                      className="rounded-xl text-xs font-bold h-10 px-5 bg-primary text-primary-foreground min-h-[44px] sm:min-h-[36px]"
+                      className="rounded-lg text-xs font-bold h-10 px-5 bg-primary text-primary-foreground min-h-11 sm:min-h-9"
                     >
                       <Link to={signingUrl}>
-                        <PenTool className="size-3.5 mr-1.5" />
+                        <PenTool className="size-3.5 mr-2" />
                         Assinar Documento Agora
                       </Link>
                     </Button>
@@ -209,10 +209,10 @@ function MyContractsPage() {
                         asChild
                         variant="outline"
                         size="sm"
-                        className="rounded-xl text-xs font-medium h-9 px-4 min-h-[44px] sm:min-h-[36px]"
+                        className="rounded-lg text-xs font-medium h-9 px-4 min-h-11 sm:min-h-9"
                       >
                         <Link to={verifyUrl}>
-                          <ExternalLink className="size-3.5 mr-1.5" />
+                          <ExternalLink className="size-3.5 mr-2" />
                           Ver Certificado de Autenticidade
                         </Link>
                       </Button>
@@ -222,9 +222,9 @@ function MyContractsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => window.open(verifyUrl, "_blank")}
-                        className="rounded-xl text-xs font-medium h-9 px-3 text-muted-foreground hover:text-foreground"
+                        className="rounded-lg text-xs font-medium h-9 px-3 text-muted-foreground hover:text-foreground"
                       >
-                        <Download className="size-3.5 mr-1.5" />
+                        <Download className="size-3.5 mr-2" />
                         Baixar PDF
                       </Button>
                     </>

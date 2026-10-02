@@ -83,7 +83,7 @@ export function CommunityFeed({ content, resolvedClassifieds, isEditing }: any) 
  {categoryLabels[item.category] || item.category}
  </Badge>
  {item.price_cents > 0 && (
- <span className="font-black text-lg bg-primary text-primary-foreground px-2 py-0.5 rounded-lg transform rotate-3">
+ <span className="font-black text-lg bg-primary text-primary-foreground px-2 py-1 rounded-lg transform rotate-3">
  {formatMoney(item.price_cents)}
  </span>
  )}

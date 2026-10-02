@@ -79,14 +79,14 @@ function UserTokensPage() {
           asChild
           size="sm"
           variant="outline"
-          className="rounded-xl text-xs font-semibold h-9 px-3.5"
+          className="rounded-lg text-xs font-semibold h-9 px-4"
         >
           <Link to="/mercado">Explorar Lojas</Link>
         </Button>
       </div>
 
       {/* ── 2. Card de Saldo Limpo ── */}
-      <div className="mx-4 sm:mx-0 p-5 rounded-2xl border border-border/60 bg-card space-y-1">
+      <div className="mx-4 sm:mx-0 p-5 rounded-lg border border-border/60 bg-card space-y-1">
         <span className="text-xs text-muted-foreground font-medium block">
           Saldo Acumulado
         </span>
@@ -149,7 +149,7 @@ function UserTokensPage() {
         </div>
 
         {/* Desktop View: Clean Table */}
-        <div className="hidden sm:block rounded-xl border border-border/60 overflow-hidden bg-card">
+        <div className="hidden sm:block rounded-lg border border-border/60 overflow-hidden bg-card">
           <Table>
             <TableHeader>
               <TableRow>
@@ -165,13 +165,13 @@ function UserTokensPage() {
                   const isPositive = amount > 0;
                   return (
                     <TableRow key={tx.id}>
-                      <TableCell className="text-xs font-mono text-muted-foreground py-2.5">
+                      <TableCell className="text-xs font-mono text-muted-foreground py-3">
                         {new Date(tx.created_at).toLocaleDateString("pt-BR")}
                       </TableCell>
-                      <TableCell className="text-xs font-medium text-foreground py-2.5">
+                      <TableCell className="text-xs font-medium text-foreground py-3">
                         {tx.description || tx.origin_store_name || "Cashback de Loja"}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-xs font-semibold py-2.5">
+                      <TableCell className="text-right font-mono text-xs font-semibold py-3">
                         <span
                           className={
                             isPositive
@@ -206,7 +206,7 @@ function UserTokensPage() {
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl w-full sm:w-auto h-11 sm:h-9"
+              className="rounded-lg w-full sm:w-auto h-11 sm:h-9"
               onClick={loadMore}
               disabled={isLoading}
             >

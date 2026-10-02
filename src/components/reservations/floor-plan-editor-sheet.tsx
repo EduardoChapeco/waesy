@@ -124,7 +124,7 @@ export function FloorPlanEditorSheet({
 
  <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4">
  {/* Barra de Ações Rápidas & Total de Lugares */}
- <div className="p-4 rounded-2xl bg-muted/30 border border-border/70 flex items-center justify-between">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/70 flex items-center justify-between">
  <div>
  <p className="text-xs font-bold text-foreground">
  {tables.length} mesas cadastradas
@@ -139,7 +139,7 @@ export function FloorPlanEditorSheet({
  variant="outline"
  size="sm"
  onClick={handleResetDefaults}
- className="h-8 px-2.5 rounded-lg text-xs font-semibold"
+ className="h-8 px-3 rounded-lg text-xs font-semibold"
  >
  Padrão
  </Button>
@@ -160,10 +160,10 @@ export function FloorPlanEditorSheet({
  {tables.map((t, index) => (
  <div
  key={t.id}
- className="p-3.5 rounded-2xl border border-border bg-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs"
+ className="p-4 rounded-lg border border-border bg-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs"
  >
  <div className="flex items-center gap-3 w-full sm:w-auto">
- <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+ <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
  <Armchair className="size-4" />
  </div>
  <div className="flex-1 sm:w-36">
@@ -173,14 +173,14 @@ export function FloorPlanEditorSheet({
  handleUpdateTable(t.id, { label: e.target.value })
  }
  placeholder="Ex: Mesa 01"
- className="h-9 rounded-xl bg-background font-bold text-xs"
+ className="h-9 rounded-lg bg-background font-bold text-xs"
  />
  </div>
  </div>
 
  <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
  {/* Lugares */}
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="text-[10px] text-muted-foreground font-mono uppercase font-bold">
  Lugares:
  </span>
@@ -194,7 +194,7 @@ export function FloorPlanEditorSheet({
  seats: parseInt(e.target.value, 10) || 2,
  })
  }
- className="h-9 w-16 rounded-xl bg-background text-center font-mono text-xs font-bold"
+ className="h-9 w-16 rounded-lg bg-background text-center font-mono text-xs font-bold"
  />
  </div>
 
@@ -204,7 +204,7 @@ export function FloorPlanEditorSheet({
  onChange={(e) =>
  handleUpdateTable(t.id, { shape: e.target.value as any })
  }
- className="h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none"
+ className="h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none"
  >
  <option value="square">Quadrada</option>
  <option value="round">Redonda</option>
@@ -217,7 +217,7 @@ export function FloorPlanEditorSheet({
  variant="ghost"
  size="sm"
  onClick={() => handleRemoveTable(t.id)}
- className="size-9 p-0 text-muted-foreground hover:text-destructive rounded-xl"
+ className="size-9 p-0 text-muted-foreground hover:text-destructive rounded-lg"
  >
  <Trash2 className="size-4" />
  </Button>
@@ -232,7 +232,7 @@ export function FloorPlanEditorSheet({
  type="button"
  variant="outline"
  onClick={() => onOpenChange(false)}
- className="h-11 px-5 rounded-xl text-xs font-bold"
+ className="h-11 px-5 rounded-lg text-xs font-bold"
  >
  Cancelar
  </Button>
@@ -240,7 +240,7 @@ export function FloorPlanEditorSheet({
  type="button"
  disabled={isSaving}
  onClick={handleSave}
- className="h-11 px-6 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs gap-2"
+ className="h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs gap-2"
  >
  <CheckCircle2 className="size-4" />
  <span>{isSaving ? "Salvando..." : "Salvar Planta do Salão"}</span>

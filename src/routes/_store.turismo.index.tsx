@@ -50,14 +50,14 @@ export const Route = createFileRoute("/_store/turismo/")({
 function TourismErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <AirplaneTilt size={32} />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar viagens e turismo</h2>
       <p className="text-sm text-muted-foreground max-w-md mx-auto">
         {error?.message || "Não foi possível carregar os pacotes e destinos no momento."}
       </p>
-      <Button onClick={reset} className="rounded-xl font-bold">
+      <Button onClick={reset} className="rounded-lg font-bold">
         Tentar Novamente
       </Button>
     </div>
@@ -197,7 +197,7 @@ function TourismMasterPage() {
       />
 
       {/* Filtro de Saída por Aeroporto Regional (Padrão Botão Grande com Snap Scroll) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 pr-8 border-b border-border/40 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_88%,transparent_100%)]">
+      <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 pr-8 border-b border-border/40 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_88%,transparent_100%)]">
         <span className="text-xs font-semibold text-muted-foreground shrink-0 mr-1 snap-start">
           Saída:
         </span>
@@ -209,7 +209,7 @@ function TourismMasterPage() {
               type="button"
               onClick={() => setSelectedAirport(air.id)}
               className={cn(
-                "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98 snap-start",
+                "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98 snap-start",
                 isActive
                   ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                   : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -225,7 +225,7 @@ function TourismMasterPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-2xl border border-border/60 bg-card overflow-hidden animate-pulse">
+            <div key={i} className="rounded-lg border border-border/60 bg-card overflow-hidden animate-pulse">
               <div className="aspect-[16/10] w-full bg-muted" />
               <div className="p-5 space-y-3">
                 <div className="h-3 w-24 bg-muted rounded-full" />
@@ -235,7 +235,7 @@ function TourismMasterPage() {
           ))}
         </div>
       ) : tourismList.length === 0 ? (
-        <div className="rounded-2xl border border-border/60 p-12 text-center bg-card space-y-2">
+        <div className="rounded-lg border border-border/60 p-12 text-center bg-card space-y-2">
           <p className="text-sm font-semibold text-foreground">Nenhum resultado encontrado</p>
           <p className="text-xs text-muted-foreground">
             Ajuste os filtros de saída ou busque por outro termo.
@@ -267,7 +267,7 @@ function TourismMasterPage() {
             return (
               <div
                 key={item.id}
-                className="rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-border transition-all flex flex-col justify-between group"
+                className="rounded-lg border border-border/60 bg-card overflow-hidden hover:border-border transition-all flex flex-col justify-between group"
               >
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
                   {item.cover_image ? (
@@ -283,14 +283,14 @@ function TourismMasterPage() {
                     </div>
                   )}
 
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
                     {mealPlan && (
-                      <span className="bg-background/90 text-foreground text-[10px] font-medium px-2 py-0.5 rounded-md border border-border/40">
+                      <span className="bg-background/90 text-foreground text-[10px] font-medium px-2 py-1 rounded-md border border-border/40">
                         {mealPlan}
                       </span>
                     )}
                     {durationDays && (
-                      <span className="bg-background/90 text-foreground text-[10px] font-medium px-2 py-0.5 rounded-md border border-border/40">
+                      <span className="bg-background/90 text-foreground text-[10px] font-medium px-2 py-1 rounded-md border border-border/40">
                         {durationDays} dias
                       </span>
                     )}
@@ -334,19 +334,19 @@ function TourismMasterPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleOpenQuote(item.title)}
-                        className="rounded-xl text-xs h-9 px-3 font-medium cursor-pointer"
+                        className="rounded-lg text-xs h-9 px-3 font-medium cursor-pointer"
                       >
                         Cotar
                       </Button>
                       <Button
                         asChild
                         size="sm"
-                        className="rounded-xl text-xs h-9 px-3.5 font-medium cursor-pointer"
+                        className="rounded-lg text-xs h-9 px-4 font-medium cursor-pointer"
                       >
                         <Link to="/turismo/$id" params={{ id: item.id }}>
                           <span>Ver</span>
@@ -368,12 +368,12 @@ function TourismMasterPage() {
             return (
               <div
                 key={item.id}
-                className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card min-h-[136px] pl-32 sm:pl-44 p-3.5 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-3.5 w-full"
+                className="group relative overflow-hidden rounded-lg border border-border/60 bg-card min-h-[136px] pl-32 sm:pl-44 p-4 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-4 w-full"
               >
                 <Link
                   to="/turismo/$id"
                   params={{ id: item.id }}
-                  className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-2xl bg-muted border-r border-border/40"
+                  className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-lg bg-muted border-r border-border/40"
                 >
                   {item.cover_image ? (
                     <img
@@ -388,13 +388,13 @@ function TourismMasterPage() {
                     </div>
                   )}
                   {item.departure_city && (
-                    <span className="absolute bottom-2 left-2 text-[9px] bg-background/90 px-1.5 py-0.5 rounded text-foreground font-medium">
+                    <span className="absolute bottom-2 left-2 text-[9px] bg-background/90 px-2 py-1 rounded text-foreground font-medium">
                       {item.departure_city}
                     </span>
                   )}
                 </Link>
 
-                <div className="flex-1 min-w-0 pl-1 space-y-1.5 flex flex-col justify-between">
+                <div className="flex-1 min-w-0 pl-1 space-y-2 flex flex-col justify-between">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block truncate">
                       {item.location_name || item.destination || "Regional"}
@@ -414,7 +414,7 @@ function TourismMasterPage() {
                       asChild
                       size="sm"
                       variant="outline"
-                      className="h-9 px-3.5 text-xs rounded-xl font-bold cursor-pointer"
+                      className="h-9 px-4 text-xs rounded-lg font-bold cursor-pointer"
                     >
                       <Link to="/turismo/$id" params={{ id: item.id }}>
                         Ver Roteiro
@@ -444,7 +444,7 @@ function TourismMasterPage() {
                 {catItems.map((item) => (
                   <div
                     key={item.id}
-                    className="min-w-[280px] sm:min-w-[320px] max-w-[340px] rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-border transition-all flex flex-col justify-between shrink-0"
+                    className="min-w-72 sm:min-w-80 max-w-[340px] rounded-lg border border-border/60 bg-card overflow-hidden hover:border-border transition-all flex flex-col justify-between shrink-0"
                   >
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
                       {item.cover_image ? (
@@ -460,7 +460,7 @@ function TourismMasterPage() {
                         </div>
                       )}
                       {item.departure_city && (
-                        <span className="absolute bottom-2 left-2 text-[9px] bg-background/90 px-2 py-0.5 rounded text-foreground font-medium">
+                        <span className="absolute bottom-2 left-2 text-[9px] bg-background/90 px-2 py-1 rounded text-foreground font-medium">
                           {item.departure_city}
                         </span>
                       )}
@@ -480,7 +480,7 @@ function TourismMasterPage() {
                         <span className="font-mono text-sm font-bold text-foreground">
                           {item.price_display || (item.price_cents ? formatMoney(item.price_cents) : "Consulte")}
                         </span>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <Button
                             size="sm"
                             variant="outline"

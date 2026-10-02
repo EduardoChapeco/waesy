@@ -100,7 +100,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-2xl p-0 overflow-hidden sm:rounded-2xl border-border/80 bg-card">
+ <DialogContent className="sm:max-w-2xl p-0 overflow-hidden sm:rounded-lg border-border/80 bg-card">
  <DialogHeader className="sr-only">
  <DialogTitle>Buscar</DialogTitle>
  </DialogHeader>
@@ -155,7 +155,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  key={term}
  type="button"
  onClick={() => handleSelectTerm(term)}
- className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/60 bg-muted/30 text-xs text-foreground hover:bg-muted/70 transition-colors"
+ className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border/60 bg-muted/30 text-xs text-foreground hover:bg-muted/70 transition-colors"
  >
  <Clock className="size-3 text-muted-foreground" />
  <span>{term}</span>
@@ -178,7 +178,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  key={cat.label}
  to={cat.to as any}
  onClick={() => onOpenChange(false)}
- className="p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/60 transition-all text-xs font-semibold text-foreground text-center"
+ className="p-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition-all text-xs font-semibold text-foreground text-center"
  >
  {cat.label}
  </Link>
@@ -205,7 +205,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  saveRecentSearch(store.name);
  onOpenChange(false);
  }}
- className="p-2.5 rounded-xl border border-border/60 hover:bg-muted/40 transition-colors flex items-center gap-3"
+ className="p-3 rounded-lg border border-border/60 hover:bg-muted/40 transition-colors flex items-center gap-3"
  >
  <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
  {store.logo_url ? (
@@ -218,7 +218,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  <span className="text-xs font-bold text-foreground truncate block">
  {store.name}
  </span>
- <div className="flex items-center gap-1.5 mt-0.5">
+ <div className="flex items-center gap-2 mt-1">
  {store.is_open !== false ? (
  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
  • Aberto agora
@@ -243,7 +243,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  {results.products.length > 0 && (
  <div className="space-y-2">
  <span className="text-xs font-bold text-foreground">Produtos e Ofertas</span>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  {results.products.map((prod: any) => (
  <Link
  key={prod.id}
@@ -253,7 +253,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  saveRecentSearch(prod.title);
  onOpenChange(false);
  }}
- className="p-2 rounded-xl hover:bg-muted/40 transition-colors flex items-center justify-between gap-3"
+ className="p-2 rounded-lg hover:bg-muted/40 transition-colors flex items-center justify-between gap-3"
  >
  <div className="flex items-center gap-3 min-w-0">
  <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
@@ -286,7 +286,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
 
  {/* Se query digitada mas nada encontrado */}
  {query.trim().length >= 2 && !isLoading && !hasResults && (
- <div className="py-8 text-center space-y-1.5">
+ <div className="py-8 text-center space-y-2">
  <p className="text-xs font-bold text-foreground">Nenhum resultado direto para "{query}"</p>
  <p className="text-[11px] text-muted-foreground">Tente buscar por termos mais genéricos ou outras categorias.</p>
  </div>
@@ -297,12 +297,12 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  {query.trim().length >= 2 && (
  <div className="p-3 bg-muted/20 border-t border-border/40 flex items-center justify-between">
  <span className="text-xs text-muted-foreground">
- Pressione <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-[10px] font-mono">Enter</kbd> para busca completa
+ Pressione <kbd className="px-2 py-1 rounded bg-muted border border-border text-[10px] font-mono">Enter</kbd> para busca completa
  </span>
  <Button
  size="sm"
  onClick={() => handleSelectTerm(query.trim())}
- className="gap-1.5 text-xs h-8 font-semibold"
+ className="gap-2 text-xs h-8 font-semibold"
  >
  <span>Ver todos os resultados</span>
  <ArrowRight className="size-3" />

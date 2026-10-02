@@ -187,7 +187,7 @@ export function LeadFormRenderer({
   // ─── TELA DE SUCESSO PÓS-ENVIO ───────────────────────────────────────────────
   if (submissionResult) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 text-center bg-card rounded-2xl border border-border/60 shadow-sm animate-in fade-in-50 duration-300">
+      <div className="flex flex-col items-center justify-center p-6 text-center bg-card rounded-lg border border-border/60 shadow-sm animate-in fade-in-50 duration-300">
         <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-4">
           <Check className="w-7 h-7 stroke-[2.5]" />
         </div>
@@ -204,7 +204,7 @@ export function LeadFormRenderer({
           <div className="w-full max-w-sm flex flex-col gap-3">
             <Button
               asChild
-              className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-base gap-2 shadow-sm"
+              className="w-full h-12 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-base gap-2 shadow-sm"
             >
               <a
                 href={submissionResult.whatsappUrl}
@@ -255,7 +255,7 @@ export function LeadFormRenderer({
                 });
               }
             }}
-            className={`h-11 rounded-xl text-sm ${errors.name ? "border-destructive focus-visible:ring-destructive" : ""}`}
+            className={`h-11 rounded-lg text-sm ${errors.name ? "border-destructive focus-visible:ring-destructive" : ""}`}
             autoComplete="name"
           />
           {errors.name && (
@@ -276,7 +276,7 @@ export function LeadFormRenderer({
             placeholder="(00) 00000-0000"
             value={phone}
             onChange={handlePhoneChange}
-            className={`h-11 rounded-xl text-sm ${errors.phone ? "border-destructive focus-visible:ring-destructive" : ""}`}
+            className={`h-11 rounded-lg text-sm ${errors.phone ? "border-destructive focus-visible:ring-destructive" : ""}`}
             autoComplete="tel"
           />
           {errors.phone && (
@@ -306,7 +306,7 @@ export function LeadFormRenderer({
                 });
               }
             }}
-            className={`h-11 rounded-xl text-sm ${errors.email ? "border-destructive focus-visible:ring-destructive" : ""}`}
+            className={`h-11 rounded-lg text-sm ${errors.email ? "border-destructive focus-visible:ring-destructive" : ""}`}
             autoComplete="email"
           />
           {errors.email && (
@@ -320,7 +320,7 @@ export function LeadFormRenderer({
 
       {/* Campos Dinâmicos Customizados */}
       {fields.length > 0 && (
-        <div className="pt-2 border-t border-border/50 space-y-3.5">
+        <div className="pt-2 border-t border-border/50 space-y-4">
           {fields.map((field) => {
             const hasError = !!errors[field.field_key];
 
@@ -336,14 +336,14 @@ export function LeadFormRenderer({
                     placeholder={field.placeholder || ""}
                     value={answers[field.field_key] || ""}
                     onChange={(e) => handleFieldChange(field.field_key, e.target.value)}
-                    className={`rounded-xl text-sm resize-none min-h-[80px] ${hasError ? "border-destructive" : ""}`}
+                    className={`rounded-lg text-sm resize-none min-h-[80px] ${hasError ? "border-destructive" : ""}`}
                   />
                 ) : field.field_type === "select" ? (
                   <select
                     id={`field-${field.field_key}`}
                     value={answers[field.field_key] || ""}
                     onChange={(e) => handleFieldChange(field.field_key, e.target.value)}
-                    className={`w-full h-11 px-3 rounded-xl border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring ${hasError ? "border-destructive" : "border-input"}`}
+                    className={`w-full h-11 px-3 rounded-lg border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring ${hasError ? "border-destructive" : "border-input"}`}
                   >
                     <option value="">{field.placeholder || "Selecione uma opção..."}</option>
                     {(field.options || []).map((opt, idx) => (
@@ -359,7 +359,7 @@ export function LeadFormRenderer({
                     placeholder={field.placeholder || "R$ 0,00"}
                     value={answers[field.field_key] || ""}
                     onChange={(e) => handleFieldChange(field.field_key, formatCurrencyInput(e.target.value))}
-                    className={`h-11 rounded-xl text-sm ${hasError ? "border-destructive" : ""}`}
+                    className={`h-11 rounded-lg text-sm ${hasError ? "border-destructive" : ""}`}
                   />
                 ) : field.field_type === "date" ? (
                   <Input
@@ -367,7 +367,7 @@ export function LeadFormRenderer({
                     type="date"
                     value={answers[field.field_key] || ""}
                     onChange={(e) => handleFieldChange(field.field_key, e.target.value)}
-                    className={`h-11 rounded-xl text-sm ${hasError ? "border-destructive" : ""}`}
+                    className={`h-11 rounded-lg text-sm ${hasError ? "border-destructive" : ""}`}
                   />
                 ) : field.field_type === "number" ? (
                   <Input
@@ -376,7 +376,7 @@ export function LeadFormRenderer({
                     placeholder={field.placeholder || ""}
                     value={answers[field.field_key] || ""}
                     onChange={(e) => handleFieldChange(field.field_key, e.target.value)}
-                    className={`h-11 rounded-xl text-sm ${hasError ? "border-destructive" : ""}`}
+                    className={`h-11 rounded-lg text-sm ${hasError ? "border-destructive" : ""}`}
                   />
                 ) : (
                   <Input
@@ -385,12 +385,12 @@ export function LeadFormRenderer({
                     placeholder={field.placeholder || ""}
                     value={answers[field.field_key] || ""}
                     onChange={(e) => handleFieldChange(field.field_key, e.target.value)}
-                    className={`h-11 rounded-xl text-sm ${hasError ? "border-destructive" : ""}`}
+                    className={`h-11 rounded-lg text-sm ${hasError ? "border-destructive" : ""}`}
                   />
                 )}
 
                 {field.helper_text && !hasError && (
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{field.helper_text}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">{field.helper_text}</p>
                 )}
 
                 {hasError && (
@@ -410,7 +410,7 @@ export function LeadFormRenderer({
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium text-base gap-2 shadow-sm transition-all active:scale-[0.99]"
+          className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-medium text-base gap-2 shadow-sm transition-all active:scale-[0.99]"
         >
           {isSubmitting ? (
             <>
@@ -426,7 +426,7 @@ export function LeadFormRenderer({
         </Button>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground pt-1">
+      <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground pt-1">
         <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground/80" />
         <span>Seus dados estão protegidos de acordo com a LGPD.</span>
       </div>

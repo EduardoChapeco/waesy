@@ -179,7 +179,7 @@ export default function WorkspaceGroupToursIndexPage() {
 
         {/* ── 2. GRID DE VIAGENS EM GRUPO ── */}
         {filteredTours.length === 0 ? (
-          <div className="py-16 sm:py-20 text-center space-y-3 bg-card rounded-2xl border border-dashed border-border/70 p-6 sm:p-8">
+          <div className="py-16 sm:py-20 text-center space-y-3 bg-card rounded-lg border border-dashed border-border/70 p-6 sm:p-8">
             <Bus className="size-12 mx-auto text-muted-foreground/40" />
             <h3 className="text-sm font-bold text-foreground">Nenhuma excursão encontrada</h3>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -188,7 +188,7 @@ export default function WorkspaceGroupToursIndexPage() {
             <Button
               size="default"
               onClick={() => setIsNewSheetOpen(true)}
-              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-2 mt-2 cursor-pointer shadow-xs"
+              className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold gap-2 mt-2 cursor-pointer shadow-xs"
             >
               <Plus className="size-4" />
               <span>Criar Primeira Excursão</span>
@@ -203,7 +203,7 @@ export default function WorkspaceGroupToursIndexPage() {
               return (
                 <Card
                   key={t.id}
-                  className="rounded-2xl border border-border/70 bg-card overflow-hidden hover:border-foreground/20 transition-all flex flex-col justify-between shadow-2xs"
+                  className="rounded-lg border border-border/70 bg-card overflow-hidden hover:border-foreground/20 transition-all flex flex-col justify-between shadow-2xs"
                 >
                   {/* Foto de Capa ou Banner de Destino */}
                   {t.cover_image_url ? (
@@ -229,7 +229,7 @@ export default function WorkspaceGroupToursIndexPage() {
                     </div>
                   ) : (
                     <div className="p-4 pb-0 flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-primary/10 text-primary">
+                      <span className="text-xs font-mono font-bold px-3 py-1 rounded-lg bg-primary/10 text-primary">
                         {t.destination}
                       </span>
                       <Badge variant="outline" className="text-xs font-mono uppercase font-bold">
@@ -245,7 +245,7 @@ export default function WorkspaceGroupToursIndexPage() {
                       </div>
 
                       {t.vehicle_layout_name && (
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Bus className="size-3.5 text-primary shrink-0" />
                           <span className="font-bold text-foreground truncate">
                             {t.vehicle_layout_name}
@@ -254,20 +254,20 @@ export default function WorkspaceGroupToursIndexPage() {
                       )}
 
                       <div className="space-y-1 text-xs text-muted-foreground">
-                        <p className="flex items-center gap-1.5">
+                        <p className="flex items-center gap-2">
                           <Calendar className="size-3.5 text-foreground shrink-0" />
                           <span>
                             {t.departure_date} às {t.departure_time} até {t.return_date}
                           </span>
                         </p>
-                        <p className="flex items-center gap-1.5">
+                        <p className="flex items-center gap-2">
                           <MapPin className="size-3.5 text-foreground shrink-0" />
                           <span>Saída: {t.departure_city}</span>
                         </p>
                       </div>
 
                       {/* Barra de Ocupação de Poltronas */}
-                      <div className="space-y-1.5 pt-2 border-t border-border/50">
+                      <div className="space-y-2 pt-2 border-t border-border/50">
                         <div className="flex items-center justify-between text-xs font-bold">
                           <span className="text-muted-foreground text-xs">Ocupação:</span>
                           <span className="font-mono text-foreground text-xs">
@@ -302,7 +302,7 @@ export default function WorkspaceGroupToursIndexPage() {
                       <Button
                         asChild
                         variant="default"
-                        className="rounded-xl text-xs font-bold gap-2 h-11 sm:h-9 px-4 flex-1 cursor-pointer shadow-xs"
+                        className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 flex-1 cursor-pointer shadow-xs"
                       >
                         <Link to={`/workspace/turismo/grupos/${t.id}` as any}>
                           <UserCheck className="size-4 sm:size-3.5" />

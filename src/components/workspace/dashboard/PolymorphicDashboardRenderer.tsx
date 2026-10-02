@@ -62,10 +62,10 @@ function AppointmentServicesDashboard({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* ── Topo: Timeline Horizontal Apple Calendar ── */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/60 space-y-3">
+      <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
               <Calendar className="size-4" />
             </div>
             <div>
@@ -73,7 +73,7 @@ function AppointmentServicesDashboard({
               <p className="text-[11px] text-muted-foreground">Grade dinâmica em tempo real para especialistas</p>
             </div>
           </div>
-          <Button asChild size="sm" variant="outline" className="h-8 rounded-xl text-xs font-semibold gap-1.5 border-border/80">
+          <Button asChild size="sm" variant="outline" className="h-8 rounded-lg text-xs font-semibold gap-2 border-border/80">
             <Link to="/workspace/agenda">
               <span>Abrir Agenda Completa</span>
               <ArrowUpRight className="size-3.5 text-muted-foreground" />
@@ -87,7 +87,7 @@ function AppointmentServicesDashboard({
             <div
               key={idx}
               className={cn(
-                "p-2.5 rounded-xl border text-xs transition-all select-none space-y-1",
+                "p-3 rounded-lg border text-xs transition-all select-none space-y-1",
                 slot.status === "current"
                   ? "bg-primary/10 border-primary text-primary shadow-2xs font-semibold"
                   : slot.status === "past"
@@ -118,9 +118,9 @@ function AppointmentServicesDashboard({
       </div>
 
       {/* ── KPIs Estruturais de Agenda (Bento Grid) ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Taxa de Ocupação da Grade */}
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Taxa de Ocupação</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {occupancyRate}%
@@ -132,7 +132,7 @@ function AppointmentServicesDashboard({
         </div>
 
         {/* Atendimentos Hoje */}
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Atendimentos Hoje</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {todayCount}
@@ -143,7 +143,7 @@ function AppointmentServicesDashboard({
         </div>
 
         {/* No-Shows / Faltas */}
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Faltas (No-Shows)</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {noShows}
@@ -154,7 +154,7 @@ function AppointmentServicesDashboard({
         </div>
 
         {/* Faturamento de Procedimentos */}
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Faturamento Mês</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {formatMoney(metrics?.salesMonthCents || 0)}
@@ -166,7 +166,7 @@ function AppointmentServicesDashboard({
       </div>
 
       {/* ── Seção Inferior Bifurcada: Lista Mobile vs Tabela Desktop ── */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/60 space-y-3">
+      <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Próximos Pacientes / Clientes
@@ -183,11 +183,11 @@ function AppointmentServicesDashboard({
             { name: "Lucas Fontes", time: "14:00", phone: "(49) 99104-5522", service: "Atendimento Inicial", priceCents: 12000 },
             { name: "Patrícia Lima", time: "15:30", phone: "(49) 98831-2299", service: "Sessão Terapêutica", priceCents: 22000 },
           ].map((item, i) => (
-            <div key={i} className="px-4 py-3 sm:p-3 sm:rounded-xl sm:border sm:border-border/60 bg-card flex items-center justify-between gap-3">
-              <div className="space-y-0.5 min-w-0">
+            <div key={i} className="px-4 py-3 sm:p-3 sm:rounded-lg sm:border sm:border-border/60 bg-card flex items-center justify-between gap-3">
+              <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs text-foreground truncate">{item.name}</span>
-                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-4 font-mono font-bold">
+                  <Badge variant="secondary" className="text-[10px] py-0 px-2 h-4 font-mono font-bold">
                     {item.time}
                   </Badge>
                 </div>
@@ -195,7 +195,7 @@ function AppointmentServicesDashboard({
                   {item.service} • {formatMoney(item.priceCents)}
                 </div>
               </div>
-              <Button asChild size="sm" variant="outline" className="h-9 px-2.5 rounded-xl text-xs gap-1.5 shrink-0 border-border/80">
+              <Button asChild size="sm" variant="outline" className="h-9 px-3 rounded-lg text-xs gap-2 shrink-0 border-border/80">
                 <a href={`https://wa.me/55${item.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
                   <Phone className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span className="hidden sm:inline">WhatsApp</span>
@@ -228,7 +228,7 @@ function HighValueLeadsDashboard({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* ── Banner de Alto Impacto: VGV da Carteira & Funil ── */}
-      <div className="p-4 sm:p-6 rounded-2xl bg-foreground text-background flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 sm:p-6 rounded-lg bg-foreground text-background flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <span className="text-xs font-semibold uppercase tracking-wider opacity-70">
             Valor Geral de Vendas (VGV da Carteira)
@@ -236,19 +236,19 @@ function HighValueLeadsDashboard({
           <div className="text-3xl sm:text-4xl font-bold font-mono tracking-tight">
             {formatMoney(vgvCents)}
           </div>
-          <div className="text-xs opacity-90 flex items-center gap-2 pt-0.5">
+          <div className="text-xs opacity-90 flex items-center gap-2 pt-1">
             <Building2 className="size-3.5" />
             <span>Imóveis e unidades ativas sob gestão</span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" className="h-10 px-4 rounded-xl text-xs font-bold bg-background text-foreground hover:bg-muted cursor-pointer shadow-xs">
+          <Button asChild size="sm" className="h-10 px-4 rounded-lg text-xs font-bold bg-background text-foreground hover:bg-muted cursor-pointer shadow-xs">
             <Link to="/workspace/orcamentos/novo">
               <span>Nova Proposta Comercial</span>
             </Link>
           </Button>
-          <Button asChild size="sm" variant="outline" className="h-10 px-4 rounded-xl text-xs font-bold border-background/30 text-background hover:bg-background/10">
+          <Button asChild size="sm" variant="outline" className="h-10 px-4 rounded-lg text-xs font-bold border-background/30 text-background hover:bg-background/10">
             <Link to="/workspace/catalogo/produtos/novo">
               <span>Cadastrar Imóvel</span>
             </Link>
@@ -257,8 +257,8 @@ function HighValueLeadsDashboard({
       </div>
 
       {/* ── Funil Kanban de Propostas & Vistorias (Bento Grid) ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Propostas em Análise</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {activeProposals}
@@ -268,7 +268,7 @@ function HighValueLeadsDashboard({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Vistorias Agendadas</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             7
@@ -278,7 +278,7 @@ function HighValueLeadsDashboard({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Unidades Estagnadas</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {stagnantCount}
@@ -288,7 +288,7 @@ function HighValueLeadsDashboard({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Contratos Assinados (Mês)</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {metrics?.ordersMonthCount || 3}
@@ -301,7 +301,7 @@ function HighValueLeadsDashboard({
       </div>
 
       {/* ── Painel de Propostas Recentes (Kanban Simplificado) ── */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/60 space-y-3">
+      <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Propostas de Compra & Locação Recentes
@@ -317,11 +317,11 @@ function HighValueLeadsDashboard({
             { title: "Casa Condomínio Fechado", lead: "Dra. Helena Martins", valueCents: 240000000, status: "Análise de Crédito", badge: "Venda" },
             { title: "Sala Comercial Centro", lead: "Inova Softwares Ltda", valueCents: 450000, status: "Vistoria Realizada", badge: "Locação" },
           ].map((item, idx) => (
-            <div key={idx} className="px-4 py-3 sm:p-3.5 sm:rounded-xl sm:border sm:border-border/60 bg-card flex items-center justify-between gap-3">
-              <div className="space-y-0.5 min-w-0">
+            <div key={idx} className="px-4 py-3 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 bg-card flex items-center justify-between gap-3">
+              <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs text-foreground truncate">{item.title}</span>
-                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4 font-bold border-border/80">
+                  <Badge variant="outline" className="text-[10px] py-0 px-2 h-4 font-bold border-border/80">
                     {item.badge}
                   </Badge>
                 </div>
@@ -362,10 +362,10 @@ function CommerceGastroDashboard({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* ── Topo: Pedidos em Andamento & KDS Live ── */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/60 space-y-3">
+      <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
               {isGastro ? <ChefHat className="size-4" /> : <ShoppingBag className="size-4" />}
             </div>
             <div>
@@ -377,7 +377,7 @@ function CommerceGastroDashboard({
               </p>
             </div>
           </div>
-          <Button asChild size="sm" className="h-8 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground">
+          <Button asChild size="sm" className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground">
             <Link to={isGastro ? "/workspace/pedidos/gestor" : "/workspace/pedidos"}>
               <span>{isGastro ? "Abrir Tela KDS" : "Ver Fila de Envios"}</span>
               <ArrowUpRight className="size-3.5" />
@@ -387,28 +387,28 @@ function CommerceGastroDashboard({
 
         {/* Resumo de Pedidos em Tempo Real */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400">
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400">
             <span className="text-[10px] font-bold uppercase tracking-wider block">Aguardando Cozinha</span>
-            <span className="text-xl font-bold font-mono mt-0.5 block">{awaitingOrders}</span>
+            <span className="text-xl font-bold font-mono mt-1 block">{awaitingOrders}</span>
           </div>
-          <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-400">
+          <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-400">
             <span className="text-[10px] font-bold uppercase tracking-wider block">Em Preparo / Rota</span>
-            <span className="text-xl font-bold font-mono mt-0.5 block">{metrics?.ordersBreakdown?.shippedOrReady || 2}</span>
+            <span className="text-xl font-bold font-mono mt-1 block">{metrics?.ordersBreakdown?.shippedOrReady || 2}</span>
           </div>
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400">
+          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400">
             <span className="text-[10px] font-bold uppercase tracking-wider block">Finalizados Hoje</span>
-            <span className="text-xl font-bold font-mono mt-0.5 block">{metrics?.ordersBreakdown?.completed || 14}</span>
+            <span className="text-xl font-bold font-mono mt-1 block">{metrics?.ordersBreakdown?.completed || 14}</span>
           </div>
-          <div className="p-3 rounded-xl bg-card border border-border/60 text-foreground">
+          <div className="p-3 rounded-lg bg-card border border-border/60 text-foreground">
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Ticket Médio</span>
-            <span className="text-xl font-bold font-mono mt-0.5 block">{formatMoney(averageTicket)}</span>
+            <span className="text-xl font-bold font-mono mt-1 block">{formatMoney(averageTicket)}</span>
           </div>
         </div>
       </div>
 
       {/* ── KPIs Estruturais de Varejo / Comércio ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Vendas Hoje</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {formatMoney(metrics?.salesTodayCents || 0)}
@@ -418,7 +418,7 @@ function CommerceGastroDashboard({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Faturamento Mês</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {formatMoney(metrics?.salesMonthCents || 0)}
@@ -428,7 +428,7 @@ function CommerceGastroDashboard({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Estoque Crítico</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {criticalStock}
@@ -438,7 +438,7 @@ function CommerceGastroDashboard({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Caixa Aberto</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {metrics?.activeCashRegister?.isOpen ? "Ativo" : "Fechado"}

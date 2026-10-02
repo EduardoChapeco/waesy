@@ -30,7 +30,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
  <section key={section.id} aria-label={section.title} className="w-full">
  <Link
  to={banner.link_url || "/"}
- className="group relative block w-full aspect-21/9 rounded-2xl overflow-hidden bg-muted/40 border border-border/60 shadow-xs active:scale-[0.99] transition-all"
+ className="group relative block w-full aspect-21/9 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shadow-xs active:scale-[0.99] transition-all"
  >
  {banner.image_url ? (
  <img
@@ -48,7 +48,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
  <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
  <div className="absolute bottom-3 left-4 right-4 text-left">
  {section.badge_tag && (
- <span className="inline-block px-2 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20 mb-1">
+ <span className="inline-block px-2 py-1 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20 mb-1">
  {section.badge_tag}
  </span>
  )}
@@ -75,7 +75,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
  {section.title}
  </h2>
  {section.badge_tag && (
- <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+ <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
  {section.badge_tag}
  </span>
  )}
@@ -86,7 +86,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
  <Link
  key={b.id || idx}
  to={b.link_url || "/"}
- className="group relative block w-full aspect-16/9 rounded-2xl overflow-hidden bg-muted/40 border border-border/60 shadow-xs active:scale-[0.99] transition-all"
+ className="group relative block w-full aspect-16/9 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shadow-xs active:scale-[0.99] transition-all"
  >
  {b.image_url ? (
  <img
@@ -128,18 +128,18 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
  </h2>
  </div>
  {section.badge_tag && (
- <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+ <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
  {section.badge_tag}
  </span>
  )}
  </div>
 
- <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar pb-1 ">
+ <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1 ">
  {section.items.map((btn: any) => (
  <Link
  key={btn.id}
  to={btn.route || btn.link_url || "/"}
- className="inline-flex items-center gap-2.5 px-4 h-11 rounded-xl bg-card border border-border/80 text-foreground hover:bg-muted/60 hover:border-primary/40 transition-all shrink-0 active:scale-[0.98] shadow-xs cursor-pointer"
+ className="inline-flex items-center gap-3 px-4 h-11 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted/60 hover:border-primary/40 transition-all shrink-0 active:scale-[0.98] shadow-xs cursor-pointer"
  >
  {btn.icon_url ? (
  <img src={btn.icon_url} alt={btn.label} className="size-5 object-contain" />
@@ -148,7 +148,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
  )}
  <span className="text-xs font-bold whitespace-nowrap">{btn.label}</span>
  {btn.badge && (
- <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.2 rounded-full bg-primary text-primary-foreground">
+ <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.2 rounded-full bg-primary text-primary-foreground">
  {btn.badge}
  </span>
  )}
@@ -180,7 +180,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
  </div>
  </div>
  {section.badge_tag && (
- <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-destructive/10 text-destructive border border-destructive/20">
+ <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-destructive/10 text-destructive border border-destructive/20">
  {section.badge_tag}
  </span>
  )}
@@ -188,7 +188,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
 
  <HorizontalRail hideHeader={true} title={section.title}>
  {section.items.map((offer: any) => (
- <div key={offer.id} className="w-[320px] sm:w-[350px] shrink-0 snap-start">
+ <div key={offer.id} className="w-80 sm:w-[350px] shrink-0 snap-start">
  <OfferCard {...offer} />
  </div>
  ))}
@@ -228,7 +228,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
 
  <HorizontalRail hideHeader={true} title={section.title}>
  {section.items.map((store: any) => (
- <div key={store.id} className="w-[280px] sm:w-[320px] shrink-0 snap-start">
+ <div key={store.id} className="w-72 sm:w-80 shrink-0 snap-start">
  <StoreCard
  id={store.id}
  name={store.name}
@@ -322,7 +322,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
 
  <HorizontalRail hideHeader={true} title={section.title}>
  {section.items.map((prod: any) => (
- <div key={prod.id} className="w-[320px] sm:w-[350px] shrink-0 snap-start">
+ <div key={prod.id} className="w-80 sm:w-[350px] shrink-0 snap-start">
  <OfferCard {...prod} />
  </div>
  ))}

@@ -144,7 +144,7 @@ function AdminTokensPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
  <div>
  <h1 className="text-xl font-bold tracking-tight">Economia de Tokens</h1>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Volume em circulação, conciliação contábil e prova de solvência do ecossistema.
  </p>
  </div>
@@ -155,7 +155,7 @@ function AdminTokensPage() {
  disabled={isReconciling}
  variant="outline"
  size="sm"
- className="gap-1.5 text-xs h-8"
+ className="gap-2 text-xs h-8"
  >
  {isReconciling ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
  Auditar Solvência
@@ -169,7 +169,7 @@ function AdminTokensPage() {
 
  {/* Grid de Métricas */}
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Em Circulação</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {dataStats.total_circulating_tokens.toLocaleString()}
@@ -177,7 +177,7 @@ function AdminTokensPage() {
  <span className="text-[11px] text-muted-foreground">Valor: {dataStats.total_estimated_value_brl}</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Tempo Acelerado</span>
  <div className="text-2xl font-bold tracking-tight text-primary mt-1">
  ~{dataStats.total_time_saved_hours.toLocaleString()}h
@@ -185,7 +185,7 @@ function AdminTokensPage() {
  <span className="text-[11px] text-muted-foreground">em prospecção economizada</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Tokens Queimados</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {dataStats.total_lifetime_consumed.toLocaleString()}
@@ -193,7 +193,7 @@ function AdminTokensPage() {
  <span className="text-[11px] text-muted-foreground">em serviços e impulsos</span>
  </div>
 
- <div className="p-4 rounded-xl border border-border/60 bg-card">
+ <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Total Recarregado</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {dataStats.total_lifetime_purchased.toLocaleString()}
@@ -204,7 +204,7 @@ function AdminTokensPage() {
 
  {/* Tabs */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-  <TabsList className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-xl h-10">
+  <TabsList className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-lg h-10">
     <TabsTrigger value="carteiras" className="text-xs">Carteiras ({dataStats.stores.length})</TabsTrigger>
     <TabsTrigger value="abatimentos" className="text-xs">Abatimentos ({pendingDiscounts.length})</TabsTrigger>
     <TabsTrigger value="conciliacao" className="text-xs">Solvência</TabsTrigger>
@@ -223,7 +223,7 @@ function AdminTokensPage() {
  />
  </div>
 
- <div className="rounded-xl border border-border/60 overflow-hidden bg-card">
+ <div className="rounded-lg border border-border/60 overflow-hidden bg-card">
  <Table>
  <TableHeader>
  <TableRow>
@@ -245,25 +245,25 @@ function AdminTokensPage() {
  ) : (
  filteredStores.map((s: any) => (
  <TableRow key={s.store_id}>
- <TableCell className="font-medium text-xs py-2.5">
+ <TableCell className="font-medium text-xs py-3">
  <span className="font-semibold block text-foreground">{s.store_name}</span>
  <span className="text-[11px] text-muted-foreground font-mono">{s.store_slug}</span>
  </TableCell>
- <TableCell className="font-mono text-xs font-semibold py-2.5">
+ <TableCell className="font-mono text-xs font-semibold py-3">
  {s.balance.toLocaleString()}
  </TableCell>
- <TableCell className="font-mono text-xs text-muted-foreground py-2.5">
+ <TableCell className="font-mono text-xs text-muted-foreground py-3">
  {s.lifetime_consumed.toLocaleString()}
  </TableCell>
- <TableCell className="font-mono text-xs text-muted-foreground py-2.5">
+ <TableCell className="font-mono text-xs text-muted-foreground py-3">
  ~{Math.round(s.estimated_time_saved_hours)}h
  </TableCell>
- <TableCell className="py-2.5">
+ <TableCell className="py-3">
  <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
  Auditado
  </Badge>
  </TableCell>
- <TableCell className="text-right py-2.5">
+ <TableCell className="text-right py-3">
  <Button
  size="sm"
  variant="ghost"
@@ -283,9 +283,9 @@ function AdminTokensPage() {
 
         {/* Tab 2: Conciliação & Prova de Solvência */}
         <TabsContent value="conciliacao" className="space-y-4">
-          <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
+          <div className="p-5 rounded-lg border border-border/60 bg-card space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-foreground">Prova Matemática de Solvência e Cadeia SHA-256</span>
                   {reconciliationReport && (
@@ -312,7 +312,7 @@ function AdminTokensPage() {
                 size="sm"
                 onClick={handleRunReconciliation}
                 disabled={isReconciling}
-                className="text-xs h-9 rounded-xl font-semibold gap-1.5"
+                className="text-xs h-9 rounded-lg font-semibold gap-2"
               >
                 {isReconciling && <Loader2 className="size-3.5 animate-spin" />}
                 <span>{isReconciling ? "Auditando..." : "Reconciliar Agora"}</span>
@@ -321,7 +321,7 @@ function AdminTokensPage() {
 
             {reconciliationReport && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-muted/20 border border-border/40 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-lg bg-muted/20 border border-border/40 text-xs">
                   <div>
                     <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-medium">Carteiras Auditadas</span>
                     <strong className="font-mono text-base text-foreground">{reconciliationReport.total_wallets_audited}</strong>
@@ -343,7 +343,7 @@ function AdminTokensPage() {
                 </div>
 
                 {reconciliationReport.store_reports && reconciliationReport.store_reports.length > 0 && (
-                  <div className="rounded-xl border border-border/40 overflow-hidden">
+                  <div className="rounded-lg border border-border/40 overflow-hidden">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -357,21 +357,21 @@ function AdminTokensPage() {
                       <TableBody>
                         {reconciliationReport.store_reports.map((sr: any) => (
                           <TableRow key={sr.store_id}>
-                            <TableCell className="text-xs font-semibold py-2.5">
+                            <TableCell className="text-xs font-semibold py-3">
                               {sr.store_name}
                             </TableCell>
-                            <TableCell className="text-xs font-mono py-2.5">
+                            <TableCell className="text-xs font-mono py-3">
                               {sr.wallet_balance?.toLocaleString("pt-BR")}
                             </TableCell>
-                            <TableCell className="text-xs font-mono py-2.5">
+                            <TableCell className="text-xs font-mono py-3">
                               {sr.audited_balance?.toLocaleString("pt-BR")}
                             </TableCell>
-                            <TableCell className="text-xs font-mono py-2.5">
+                            <TableCell className="text-xs font-mono py-3">
                               <span className={sr.divergence === 0 ? "text-emerald-600 font-bold" : "text-destructive font-bold"}>
                                 {sr.divergence === 0 ? "0 (Perfeito)" : `${sr.divergence} Tokens`}
                               </span>
                             </TableCell>
-                            <TableCell className="text-right py-2.5">
+                            <TableCell className="text-right py-3">
                               <Badge
                                 variant="outline"
                                 className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
@@ -392,7 +392,7 @@ function AdminTokensPage() {
 
  {/* Tab 3: Logs */}
  <TabsContent value="seguranca" className="space-y-3">
- <div className="rounded-xl border border-border/60 overflow-hidden bg-card">
+ <div className="rounded-lg border border-border/60 overflow-hidden bg-card">
  <Table>
  <TableHeader>
  <TableRow>
@@ -412,16 +412,16 @@ function AdminTokensPage() {
  ) : (
  events.map((e: any) => (
  <TableRow key={e.id}>
- <TableCell className="text-xs font-mono text-muted-foreground py-2.5">
+ <TableCell className="text-xs font-mono text-muted-foreground py-3">
  {new Date(e.created_at).toLocaleDateString("pt-BR")}
  </TableCell>
- <TableCell className="text-xs font-medium py-2.5">
+ <TableCell className="text-xs font-medium py-3">
  {e.action}
  </TableCell>
- <TableCell className="text-xs text-muted-foreground font-mono py-2.5">
+ <TableCell className="text-xs text-muted-foreground font-mono py-3">
  {e.entity_type}
  </TableCell>
- <TableCell className="text-right py-2.5">
+ <TableCell className="text-right py-3">
  <Badge variant="outline" className="text-[10px]">
  OK
  </Badge>
@@ -436,7 +436,7 @@ function AdminTokensPage() {
 
         {/* Tab 4: Abatimentos de Faturas com Tokens */}
         <TabsContent value="abatimentos" className="space-y-3">
-          <div className="rounded-xl border border-border/60 overflow-hidden bg-card">
+          <div className="rounded-lg border border-border/60 overflow-hidden bg-card">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -560,7 +560,7 @@ function AdminTokensPage() {
  Cancelar
  </Button>
  <Button type="submit" disabled={isSubmittingBonus} className="w-full sm:w-auto text-xs h-9 font-semibold">
- {isSubmittingBonus && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
+ {isSubmittingBonus && <Loader2 className="size-3.5 animate-spin mr-2" />}
  Confirmar (+{(bonusTokens || 0).toLocaleString()})
  </Button>
  </DialogFooter>

@@ -334,7 +334,7 @@ function WorkspaceSitesHubPage() {
  <Button
  onClick={() => setIsCreateSheetOpen(true)}
  size="sm"
- className="rounded-xl text-xs font-semibold gap-1.5 shadow-xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+ className="rounded-lg text-xs font-semibold gap-2 shadow-xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Criar Nova Página</span>
@@ -350,7 +350,7 @@ function WorkspaceSitesHubPage() {
  variant={activeTab === "sites" ? "secondary" : "ghost"}
  size="sm"
  onClick={() => setActiveTab("sites")}
- className="rounded-xl text-xs font-semibold h-8 cursor-pointer"
+ className="rounded-lg text-xs font-semibold h-8 cursor-pointer"
  >
  Minhas Páginas ({documents.length})
  </Button>
@@ -358,7 +358,7 @@ function WorkspaceSitesHubPage() {
  variant={activeTab === "templates" ? "secondary" : "ghost"}
  size="sm"
  onClick={() => setActiveTab("templates")}
- className="rounded-xl text-xs font-semibold h-8 cursor-pointer gap-1.5"
+ className="rounded-lg text-xs font-semibold h-8 cursor-pointer gap-2"
  >
  <Grid className="size-3 text-primary" />
  <span>Biblioteca de Modelos</span>
@@ -373,11 +373,11 @@ function WorkspaceSitesHubPage() {
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  placeholder="Buscar por título ou slug..."
- className="h-8 pl-8 text-xs rounded-xl bg-background border-border/80"
+ className="h-8 pl-8 text-xs rounded-lg bg-background border-border/80"
  />
  </div>
 
- <div className="flex items-center border border-border/80 rounded-xl p-0.5 bg-muted/30">
+ <div className="flex items-center border border-border/80 rounded-lg p-1 bg-muted/30">
  <button
  type="button"
  onClick={() => setViewMode("grid")}
@@ -409,7 +409,7 @@ function WorkspaceSitesHubPage() {
  {activeTab === "sites" && (
  <div className="flex flex-col gap-5">
  {/* Sub-filtros por Tipo de Documento */}
- <div className="flex flex-wrap items-center gap-1.5">
+ <div className="flex flex-wrap items-center gap-2">
  <Button
  variant={docTypeFilter === "all" ? "default" : "outline"}
  size="sm"
@@ -458,7 +458,7 @@ function WorkspaceSitesHubPage() {
 
  {/* Estado de Documentos */}
  {filteredDocuments.length === 0 ? (
- <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/80 rounded-2xl bg-muted/10 gap-3">
+ <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border/80 rounded-lg bg-muted/10 gap-3">
  <Layers className="size-10 text-muted-foreground/60" />
  <div className="space-y-1 max-w-sm">
  <p className="font-semibold text-foreground text-sm">Nenhuma página encontrada</p>
@@ -469,7 +469,7 @@ function WorkspaceSitesHubPage() {
  <Button
  onClick={() => setIsCreateSheetOpen(true)}
  size="sm"
- className="mt-2 rounded-xl text-xs font-semibold gap-1.5"
+ className="mt-2 rounded-lg text-xs font-semibold gap-2"
  >
  <Plus className="size-3.5" />
  <span>Criar Primeira Página</span>
@@ -480,16 +480,16 @@ function WorkspaceSitesHubPage() {
  {/* Card de Criação Rápida */}
  <div
  onClick={() => setIsCreateSheetOpen(true)}
- className="flex flex-col items-center justify-center p-8 border border-dashed border-border/80 hover:border-primary/50 rounded-2xl bg-background hover:bg-muted/30 transition-all cursor-pointer text-center gap-3 min-h-[220px] group"
+ className="flex flex-col items-center justify-center p-8 border border-dashed border-border/80 hover:border-primary/50 rounded-lg bg-background hover:bg-muted/30 transition-all cursor-pointer text-center gap-3 min-h-[220px] group"
  >
- <div className="size-10 rounded-xl bg-muted/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors flex items-center justify-center text-muted-foreground">
+ <div className="size-10 rounded-lg bg-muted/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors flex items-center justify-center text-muted-foreground">
  <Plus className="size-5" />
  </div>
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
  Nova Página ou Vitrine
  </p>
- <p className="text-xs text-muted-foreground max-w-[200px]">
+ <p className="text-xs text-muted-foreground max-w-52">
  Crie uma nova vitrine, link da bio ou landing page customizada.
  </p>
  </div>
@@ -503,7 +503,7 @@ function WorkspaceSitesHubPage() {
  return (
  <div
  key={doc.id}
- className="flex flex-col border border-border/70 rounded-2xl bg-background overflow-hidden hover:border-border transition-all shadow-2xs group"
+ className="flex flex-col border border-border/70 rounded-lg bg-background overflow-hidden hover:border-border transition-all shadow-2xs group"
  >
  {/* Header do Card */}
  <div className="p-4 pb-3 flex items-start justify-between gap-3 border-b border-border/50 bg-muted/10">
@@ -572,7 +572,7 @@ function WorkspaceSitesHubPage() {
  <Button
  onClick={() => handleOpenBuilder(doc.id)}
  size="sm"
- className="flex-1 h-8 rounded-xl text-xs font-semibold bg-secondary hover:bg-secondary/80 text-secondary-foreground cursor-pointer"
+ className="flex-1 h-8 rounded-lg text-xs font-semibold bg-secondary hover:bg-secondary/80 text-secondary-foreground cursor-pointer"
  >
  Abrir Studio
  </Button>
@@ -584,7 +584,7 @@ function WorkspaceSitesHubPage() {
  </div>
  ) : (
  /* Visualização em Lista */
- <div className="border border-border/70 rounded-2xl overflow-hidden bg-background divide-y divide-border/60">
+ <div className="border border-border/70 rounded-lg overflow-hidden bg-background divide-y divide-border/60">
  {filteredDocuments.map((doc: any) => {
  const isPrimary =
  doc.id === primaryStorefrontId || doc.id === primaryBiolinkId || doc.is_active;
@@ -592,10 +592,10 @@ function WorkspaceSitesHubPage() {
  return (
  <div key={doc.id} className="p-4 flex items-center justify-between gap-4 hover:bg-muted/10 transition-colors">
  <div className="flex items-center gap-3 min-w-0 flex-1">
- <div className="size-9 rounded-xl bg-muted/60 flex items-center justify-center shrink-0 text-muted-foreground">
+ <div className="size-9 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 text-muted-foreground">
  {doc.document_type === "storefront" ? <Store className="size-4" /> : <Smartphone className="size-4" />}
  </div>
- <div className="space-y-0.5 min-w-0 flex-1">
+ <div className="space-y-1 min-w-0 flex-1">
  <div className="flex items-center gap-2">
  <span className="text-sm font-semibold text-foreground truncate">{doc.title}</span>
  {getDocTypeBadge(doc.document_type)}
@@ -614,7 +614,7 @@ function WorkspaceSitesHubPage() {
  onClick={() => handleOpenBuilder(doc.id)}
  size="sm"
  variant="secondary"
- className="h-8 rounded-xl text-xs font-semibold cursor-pointer"
+ className="h-8 rounded-lg text-xs font-semibold cursor-pointer"
  >
  Studio
  </Button>
@@ -655,7 +655,7 @@ function WorkspaceSitesHubPage() {
  {activeTab === "templates" && (
  <div className="flex flex-col gap-6">
  {/* Filtros de Nicho */}
- <div className="flex flex-wrap items-center gap-1.5">
+ <div className="flex flex-wrap items-center gap-2">
  {["all", "turismo", "hotpage", "varejo", "food", "servicos", "editorial", "imoveis"].map((cat) => (
  <Button
  key={cat}
@@ -673,7 +673,7 @@ function WorkspaceSitesHubPage() {
  {filteredTemplates.map((tpl) => (
  <div
  key={tpl.id}
- className="flex flex-col border border-border/70 rounded-2xl bg-background overflow-hidden hover:border-border transition-all shadow-2xs group"
+ className="flex flex-col border border-border/70 rounded-lg bg-background overflow-hidden hover:border-border transition-all shadow-2xs group"
  >
  <div className="relative h-44 overflow-hidden bg-muted/40">
  <img
@@ -689,7 +689,7 @@ function WorkspaceSitesHubPage() {
  </div>
 
  <div className="p-4 flex-1 flex flex-col justify-between gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="text-xs font-semibold text-primary uppercase tracking-wider">{tpl.niche}</div>
  <h3 className="text-sm font-semibold text-foreground leading-snug">{tpl.title}</h3>
  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{tpl.tagline}</p>
@@ -698,7 +698,7 @@ function WorkspaceSitesHubPage() {
  <Button
  onClick={() => handleApplyTemplate(tpl.id)}
  disabled={isApplyingTemplate}
- className="w-full h-10 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-primary text-primary-foreground"
+ className="w-full h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer bg-primary text-primary-foreground"
  >
  <Plus className="size-3.5" />
  <span>Usar Este Modelo</span>
@@ -723,13 +723,13 @@ function WorkspaceSitesHubPage() {
 
  <form id="create-page-form" onSubmit={handleCreatePage} className="space-y-4">
  {/* Tipo de Documento */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Tipo de Experiência</Label>
  <Select
  value={newPageData.document_type}
  onValueChange={(val: any) => setNewPageData((prev) => ({ ...prev, document_type: val }))}
  >
- <SelectTrigger className="h-9 text-xs rounded-xl">
+ <SelectTrigger className="h-9 text-xs rounded-lg">
  <SelectValue placeholder="Selecione o tipo de página" />
  </SelectTrigger>
  <SelectContent className="text-xs">
@@ -743,7 +743,7 @@ function WorkspaceSitesHubPage() {
  </div>
 
  {/* Título */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Título do Documento</Label>
  <Input
  value={newPageData.title}
@@ -758,34 +758,34 @@ function WorkspaceSitesHubPage() {
  setNewPageData((prev) => ({ ...prev, title, slug: autoSlug }));
  }}
  placeholder="Ex: Vitrine de Inverno 2026"
- className="h-9 text-xs rounded-xl"
+ className="h-9 text-xs rounded-lg"
  required
  />
  </div>
 
  {/* Slug (URL) */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Slug da URL</Label>
  <div className="flex items-center">
- <span className="text-xs text-muted-foreground px-2.5 py-1.5 bg-muted rounded-l-xl border border-r-0 border-border">/</span>
+ <span className="text-xs text-muted-foreground px-3 py-2 bg-muted rounded-l-lg border border-r-0 border-border">/</span>
  <Input
  value={newPageData.slug}
  onChange={(e) => setNewPageData((prev) => ({ ...prev, slug: e.target.value }))}
  placeholder="vitrine-inverno"
- className="h-9 text-xs rounded-l-none rounded-r-xl font-mono"
+ className="h-9 text-xs rounded-l-none rounded-r-lg font-mono"
  required
  />
  </div>
  </div>
 
  {/* Modelo Inicial */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Ponto de Partida</Label>
  <Select
  value={newPageData.template_id}
  onValueChange={(val) => setNewPageData((prev) => ({ ...prev, template_id: val }))}
  >
- <SelectTrigger className="h-9 text-xs rounded-xl">
+ <SelectTrigger className="h-9 text-xs rounded-lg">
  <SelectValue placeholder="Escolha um ponto de partida" />
  </SelectTrigger>
  <SelectContent className="text-xs">
@@ -807,7 +807,7 @@ function WorkspaceSitesHubPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsCreateSheetOpen(false)}
- className="flex-1 h-9 rounded-xl text-xs font-semibold"
+ className="flex-1 h-9 rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
@@ -816,7 +816,7 @@ function WorkspaceSitesHubPage() {
  type="submit"
  disabled={isSubmittingPage}
  size="sm"
- className="flex-1 h-9 rounded-xl text-xs font-semibold bg-primary text-primary-foreground"
+ className="flex-1 h-9 rounded-lg text-xs font-semibold bg-primary text-primary-foreground"
  >
  {isSubmittingPage ? "Criando..." : "Criar no Studio"}
  </Button>

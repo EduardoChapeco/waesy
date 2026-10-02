@@ -164,7 +164,7 @@ export function DiscoveryControlBar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="pl-9 pr-8 sm:pr-12 h-11 rounded-xl bg-card border-border/70 text-base sm:text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary w-full shadow-2xs"
+            className="pl-9 pr-8 sm:pr-12 h-11 rounded-lg bg-card border-border/70 text-base sm:text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary w-full shadow-2xs"
             aria-label="Buscar"
           />
           {search || isMobileSearchExpanded ? (
@@ -174,13 +174,13 @@ export function DiscoveryControlBar({
                 onSearchChange("");
                 setIsMobileSearchExpanded(false);
               }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/80 transition-colors cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/80 transition-colors cursor-pointer"
               aria-label="Limpar busca"
             >
               <X size={14} weight="bold" />
             </button>
           ) : (
-            <kbd className="hidden sm:inline-flex items-center gap-0.5 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 select-none rounded border border-border/80 bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground/80">
+            <kbd className="hidden sm:inline-flex items-center gap-1 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 select-none rounded border border-border/80 bg-muted/50 px-2 py-1 font-mono text-[10px] font-medium text-muted-foreground/80">
               <span className="text-[11px]">⌘</span>K
             </kbd>
           )}
@@ -194,7 +194,7 @@ export function DiscoveryControlBar({
               setIsMobileSearchExpanded(true);
               setTimeout(() => inputRef.current?.focus(), 40);
             }}
-            className="sm:hidden flex-1 h-11 px-3.5 rounded-xl bg-card border border-border/70 flex items-center gap-2.5 text-left text-xs text-muted-foreground active:scale-98 transition-all"
+            className="sm:hidden flex-1 h-11 px-4 rounded-lg bg-card border border-border/70 flex items-center gap-3 text-left text-xs text-muted-foreground active:scale-98 transition-all"
           >
             <MagnifyingGlass size={16} weight="bold" className="text-foreground/70 shrink-0" />
             <span className="truncate">{searchPlaceholder}</span>
@@ -203,11 +203,11 @@ export function DiscoveryControlBar({
 
         {/* Seletor Desktop de Ordenação (Opcional) */}
         {sortOptions && sortOptions.length > 0 && onSortChange && (
-          <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
             <select
               value={sortOption}
               onChange={(e) => onSortChange(e.target.value)}
-              className="h-11 px-3 rounded-xl bg-card border border-border/70 text-xs font-semibold text-foreground focus:ring-1 focus:ring-primary cursor-pointer hover:border-foreground/30 transition-colors shadow-2xs"
+              className="h-11 px-3 rounded-lg bg-card border border-border/70 text-xs font-semibold text-foreground focus:ring-1 focus:ring-primary cursor-pointer hover:border-foreground/30 transition-colors shadow-2xs"
               aria-label="Ordenar resultados"
             >
               {sortOptions.map((opt) => (
@@ -225,7 +225,7 @@ export function DiscoveryControlBar({
           variant="outline"
           onClick={handleOpenFilterEngine}
           className={cn(
-            "h-11 min-w-[44px] px-3.5 rounded-xl border border-border/70 text-xs sm:text-sm font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs transition-all active:scale-95",
+            "h-11 min-w-[44px] px-4 rounded-lg border border-border/70 text-xs sm:text-sm font-semibold flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-all active:scale-95",
             computedActiveCount > 0
               ? "bg-primary/10 border-primary/40 text-primary font-bold"
               : "bg-card hover:bg-muted/50 text-foreground"
@@ -244,13 +244,13 @@ export function DiscoveryControlBar({
 
         {/* Comutador de Visualização Desktop (No Mobile vive dentro do ML-Filter Modal) */}
         {allowedViewModes.length > 1 && onViewModeChange && (
-          <div className="hidden sm:flex items-center p-1 rounded-xl bg-muted/40 border border-border/50 shrink-0 h-11">
+          <div className="hidden sm:flex items-center p-1 rounded-lg bg-muted/40 border border-border/50 shrink-0 h-11">
             {allowedViewModes.includes("feed") && (
               <button
                 type="button"
                 onClick={() => onViewModeChange("feed")}
                 className={cn(
-                  "h-full px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
+                  "h-full px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
                   viewMode === "feed"
                     ? "bg-card text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -267,7 +267,7 @@ export function DiscoveryControlBar({
                 type="button"
                 onClick={() => onViewModeChange("grid")}
                 className={cn(
-                  "h-full px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
+                  "h-full px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
                   viewMode === "grid"
                     ? "bg-card text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -284,7 +284,7 @@ export function DiscoveryControlBar({
                 type="button"
                 onClick={() => onViewModeChange("list")}
                 className={cn(
-                  "h-full px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
+                  "h-full px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
                   viewMode === "list"
                     ? "bg-card text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -307,7 +307,7 @@ export function DiscoveryControlBar({
           aria-label="Filtros e Visualização"
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
         >
-          <div className="w-full h-[100dvh] sm:h-auto sm:max-h-[88dvh] sm:max-w-lg bg-background sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl">
+          <div className="w-full h-[100dvh] sm:h-auto sm:max-h-[88dvh] sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden shadow-2xl">
             <div className="px-4 h-14 border-b border-border/60 flex items-center justify-between shrink-0">
               <span className="text-base font-bold text-foreground">
                 Filtros e Ordenação
@@ -339,7 +339,7 @@ export function DiscoveryControlBar({
                           type="button"
                           onClick={() => onViewModeChange(mode)}
                           className={cn(
-                            "h-11 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all",
+                            "h-11 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all",
                             active
                               ? "border-primary bg-primary/10 text-primary font-bold"
                               : "border-border/60 text-muted-foreground"
@@ -372,7 +372,7 @@ export function DiscoveryControlBar({
                           type="button"
                           onClick={() => onSelectCategory(cat.id)}
                           className={cn(
-                            "h-11 px-3 rounded-xl border text-xs font-semibold flex items-center gap-2 text-left transition-all truncate",
+                            "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center gap-2 text-left transition-all truncate",
                             isActive
                               ? "border-primary bg-primary/10 text-primary font-bold"
                               : "border-border/60 bg-card text-foreground"
@@ -400,7 +400,7 @@ export function DiscoveryControlBar({
                         type="button"
                         onClick={f.onToggle}
                         className={cn(
-                          "h-11 px-4 rounded-xl border text-xs font-semibold transition-all",
+                          "h-11 px-4 rounded-lg border text-xs font-semibold transition-all",
                           f.active
                             ? "border-primary bg-primary/10 text-primary font-bold"
                             : "border-border/60 bg-card text-muted-foreground"
@@ -423,14 +423,14 @@ export function DiscoveryControlBar({
                   if (onSelectCategory) onSelectCategory("todos");
                   setIsMlFilterOpen(false);
                 }}
-                className="h-12 flex-1 rounded-xl font-bold text-xs"
+                className="h-12 flex-1 rounded-lg font-bold text-xs"
               >
                 Limpar Filtros
               </Button>
               <Button
                 type="button"
                 onClick={() => setIsMlFilterOpen(false)}
-                className="h-12 flex-1 rounded-xl font-bold text-xs"
+                className="h-12 flex-1 rounded-lg font-bold text-xs"
               >
                 Ver Resultados
               </Button>
@@ -448,7 +448,7 @@ export function DiscoveryControlBar({
           />
           <div
             ref={tabsContainerRef}
-            className="flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 py-1.5 px-3 sm:px-0.5 pr-10 w-full focus:outline-none"
+            className="flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 py-2 px-3 sm:px-1 pr-10 w-full focus:outline-none"
           >
             {categories.map((chip) => {
               const isActive = activeCategory === chip.id || (!activeCategory && chip.id === "todos");
@@ -484,7 +484,7 @@ export function DiscoveryControlBar({
                 );
               }
 
-              // Padrão Canônico: Botão Grande h-10 sm:h-11 rounded-xl com Snap Start
+              // Padrão Canônico: Botão Grande h-10 sm:h-11 rounded-lg com Snap Start
               return (
                 <button
                   key={chip.id}
@@ -492,7 +492,7 @@ export function DiscoveryControlBar({
                   type="button"
                   onClick={() => onSelectCategory(chip.id)}
                   className={cn(
-                    "snap-start h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none whitespace-nowrap active:scale-98 shadow-2xs",
+                    "snap-start h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none whitespace-nowrap active:scale-98 shadow-2xs",
                     isActive
                       ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                       : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -509,7 +509,7 @@ export function DiscoveryControlBar({
                   {chip.count !== undefined && chip.count > 0 && (
                     <span
                       className={cn(
-                        "text-[10px] px-1.5 py-0.5 rounded-md font-mono",
+                        "text-[10px] px-2 py-1 rounded-md font-mono",
                         isActive ? "bg-background/20 text-background" : "bg-muted text-muted-foreground"
                       )}
                     >
@@ -517,7 +517,7 @@ export function DiscoveryControlBar({
                     </span>
                   )}
                   {chip.badge && (
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">
+                    <span className="text-[9px] px-2 py-0.2 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">
                       {chip.badge}
                     </span>
                   )}
@@ -535,7 +535,7 @@ export function DiscoveryControlBar({
             aria-hidden="true"
             className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background via-background/70 to-transparent z-10"
           />
-          <div className="flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 pt-0.5 px-3 sm:px-0.5 pr-10">
+          <div className="flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 pt-1 px-3 sm:px-1 pr-10">
             {fastFilters.map((filter) => {
               const Icon = filter.icon;
               const cleanFilterLabel = filter.label.replace(/\s+&\s+/g, " e ");
@@ -545,7 +545,7 @@ export function DiscoveryControlBar({
                   type="button"
                   onClick={filter.onToggle}
                   className={cn(
-                    "snap-start h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap border shadow-2xs active:scale-98",
+                    "snap-start h-9 sm:h-10 px-3 sm:px-4 rounded-lg text-xs font-semibold shrink-0 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap border shadow-2xs active:scale-98",
                     filter.active
                       ? "bg-primary/10 border-primary/40 text-primary font-bold"
                       : "bg-card border-border/70 text-muted-foreground hover:text-foreground"

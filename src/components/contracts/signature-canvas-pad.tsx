@@ -102,7 +102,7 @@ export function SignatureCanvasPad({ onSave, className }: SignatureCanvasPadProp
  return (
  <div className={cn("space-y-2 select-none", className)}>
  <div className="flex items-center justify-between px-1">
- <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+ <div className="flex items-center gap-2 text-xs font-bold text-foreground">
  <PenTool className="size-3.5 text-primary" />
  <span>Assine no campo abaixo com o dedo ou mouse</span>
  </div>
@@ -119,7 +119,7 @@ export function SignatureCanvasPad({ onSave, className }: SignatureCanvasPadProp
  </Button>
  </div>
 
- <div className="relative rounded-2xl border-2 border-dashed border-border/80 bg-background overflow-hidden shadow-inner">
+ <div className="relative rounded-lg border-2 border-dashed border-border/80 bg-background overflow-hidden shadow-inner">
  <canvas
  ref={canvasRef}
  onMouseDown={startDrawing}

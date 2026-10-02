@@ -218,11 +218,11 @@ function FrotaEntregasPage() {
 
  {/* Tab Switcher */}
  <div className="flex items-center gap-2">
- <div className="bg-muted p-1 rounded-xl flex items-center gap-1 ">
+ <div className="bg-muted p-1 rounded-lg flex items-center gap-1 ">
  <button
  type="button"
  onClick={() => setActiveTab("dispatches")}
- className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+ className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
  activeTab === "dispatches"
  ? "bg-background text-foreground "
  : "text-muted-foreground hover:text-foreground"
@@ -233,7 +233,7 @@ function FrotaEntregasPage() {
  <button
  type="button"
  onClick={() => setActiveTab("pricing")}
- className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+ className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
  activeTab === "pricing"
  ? "bg-background text-foreground "
  : "text-muted-foreground hover:text-foreground"
@@ -250,7 +250,7 @@ function FrotaEntregasPage() {
  <div className="space-y-6">
  {/* Seção de Pedidos Pendentes de Despacho */}
  {pendingOrders.length > 0 && (
- <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-3">
+ <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-foreground font-bold text-sm">
  <Bike className="size-4 text-primary" />
@@ -262,7 +262,7 @@ function FrotaEntregasPage() {
  </div>
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
  {pendingOrders.map((ord) => (
- <div key={ord.id} className="p-3.5 rounded-xl bg-muted/40 border border-border/60 flex flex-col justify-between gap-3">
+ <div key={ord.id} className="p-4 rounded-lg bg-muted/40 border border-border/60 flex flex-col justify-between gap-3">
  <div>
  <div className="flex items-center justify-between">
  <span className="font-mono font-bold text-xs text-foreground">
@@ -275,14 +275,14 @@ function FrotaEntregasPage() {
  <p className="text-xs font-semibold text-foreground mt-1">
  {ord.customer_snapshot?.name || "Cliente"}
  </p>
- <p className="text-xs text-muted-foreground truncate mt-0.5">
+ <p className="text-xs text-muted-foreground truncate mt-1">
  {ord.shipping_address?.street ? `${ord.shipping_address.street}, ${ord.shipping_address.number || ""}` : "Entrega Delivery"}
  </p>
  </div>
  <Button
  size="sm"
  onClick={() => openDispatchForOrder(ord)}
- className="w-full h-11 sm:h-9 rounded-xl font-bold text-xs gap-1.5 cursor-pointer"
+ className="w-full h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 cursor-pointer"
  >
  <Truck className="size-3.5" />
  <span>Despachar Este Pedido</span>
@@ -297,7 +297,7 @@ function FrotaEntregasPage() {
  <h2 className="text-sm font-bold text-foreground">Despachos Ativos ({dispatches.length})</h2>
  <Sheet open={isOpen} onOpenChange={setIsOpen}>
  <SheetTrigger asChild>
- <Button className="rounded-xl h-10 px-4 font-semibold text-xs bg-foreground text-background hover:opacity-90 gap-1.5 cursor-pointer">
+ <Button className="rounded-lg h-10 px-4 font-semibold text-xs bg-foreground text-background hover:opacity-90 gap-2 cursor-pointer">
  <Plus className="size-4" />
  <span>Novo Despacho</span>
  </Button>
@@ -314,10 +314,10 @@ function FrotaEntregasPage() {
 
  <form onSubmit={handleCreateDispatch} className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
  {/* Seletor de Pedido Pendente */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Vincular a Pedido da Loja</Label>
  <Select value={selectedOrderId} onValueChange={handleSelectPendingOrder}>
- <SelectTrigger className="h-10 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Escolha um pedido ou preencha manual..." />
  </SelectTrigger>
  <SelectContent>
@@ -333,10 +333,10 @@ function FrotaEntregasPage() {
 
  {/* Seletor de Entregador Cadastrado */}
  {couriers.length > 0 && (
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Entregador da Frota</Label>
  <Select value={selectedCourierId} onValueChange={handleSelectCourier}>
- <SelectTrigger className="h-10 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Escolha um entregador ou digite abaixo..." />
  </SelectTrigger>
  <SelectContent>
@@ -358,7 +358,7 @@ function FrotaEntregasPage() {
  value={orderNumber}
  onChange={(e) => setOrderNumber(e.target.value)}
  placeholder="Ex: 1042"
- className="h-10 rounded-xl text-xs bg-background mt-1 font-mono"
+ className="h-10 rounded-lg text-xs bg-background mt-1 font-mono"
  required
  />
  </div>
@@ -368,7 +368,7 @@ function FrotaEntregasPage() {
  value={feeReal}
  onChange={(e) => setFeeReal(e.target.value)}
  placeholder="10.00"
- className="h-10 rounded-xl text-xs bg-background mt-1 font-mono"
+ className="h-10 rounded-lg text-xs bg-background mt-1 font-mono"
  />
  </div>
  </div>
@@ -379,7 +379,7 @@ function FrotaEntregasPage() {
  value={deliveryAddress}
  onChange={(e) => setDeliveryAddress(e.target.value)}
  placeholder="Rua, Número, Bairro"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  required
  />
  </div>
@@ -391,7 +391,7 @@ function FrotaEntregasPage() {
  value={recipientName}
  onChange={(e) => setRecipientName(e.target.value)}
  placeholder="Nome do cliente"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  required
  />
  </div>
@@ -401,7 +401,7 @@ function FrotaEntregasPage() {
  value={recipientPhone}
  onChange={(e) => setRecipientPhone(e.target.value)}
  placeholder="(49) 99999-9999"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  />
  </div>
  </div>
@@ -413,7 +413,7 @@ function FrotaEntregasPage() {
  value={courierName}
  onChange={(e) => setCourierName(e.target.value)}
  placeholder="Motoboy / Motorista"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  required
  />
  </div>
@@ -423,7 +423,7 @@ function FrotaEntregasPage() {
  value={courierPhone}
  onChange={(e) => setCourierPhone(e.target.value)}
  placeholder="(49) 98888-8888"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  />
  </div>
  </div>
@@ -432,7 +432,7 @@ function FrotaEntregasPage() {
  <Button
  type="submit"
  disabled={isSubmitting}
- className="w-full h-11 rounded-xl bg-foreground text-background font-bold text-xs hover:opacity-90 cursor-pointer"
+ className="w-full h-11 rounded-lg bg-foreground text-background font-bold text-xs hover:opacity-90 cursor-pointer"
  >
  {isSubmitting ? (
  <div className="flex items-center gap-2">
@@ -450,7 +450,7 @@ function FrotaEntregasPage() {
  </div>
 
  {dispatches.length === 0 ? (
- <div className="p-12 text-center border-0 rounded-2xl bg-muted/20 space-y-2">
+ <div className="p-12 text-center border-0 rounded-lg bg-muted/20 space-y-2">
  <Truck className="size-8 mx-auto text-muted-foreground opacity-40" />
  <h3 className="text-sm font-semibold text-foreground">Nenhum despacho ativo</h3>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -460,14 +460,14 @@ function FrotaEntregasPage() {
  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
  {dispatches.map((d) => (
- <div key={d.id} className="rounded-2xl bg-card p-4 space-y-3 ">
+ <div key={d.id} className="rounded-lg bg-card p-4 space-y-3 ">
  <div className="flex items-start justify-between">
  <div>
  <span className="text-xs font-mono font-bold text-foreground">
  Pedido #{d.order_number}
  </span>
  <h3 className="text-sm font-semibold text-foreground">{d.recipient_name}</h3>
- <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+ <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
  <MapPin className="size-3" />
  {d.delivery_address}
  </p>
@@ -477,7 +477,7 @@ function FrotaEntregasPage() {
  </Badge>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-muted/40 p-2.5 rounded-xl text-xs">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-muted/40 p-3 rounded-lg text-xs">
  <div>
  <span className="text-xs text-muted-foreground">Entregador</span>
  <p className="font-semibold text-foreground truncate">{d.courier_name}</p>
@@ -487,7 +487,7 @@ function FrotaEntregasPage() {
  <p className="font-semibold text-foreground">{formatMoney(d.delivery_fee_cents)}</p>
  </div>
  <div>
- <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+ <span className="text-xs text-muted-foreground flex items-center gap-1">
  <KeyRound className="size-2.5" /> PIN Cliente
  </span>
  <p className="font-mono font-bold text-foreground">{d.pin_code}</p>
@@ -500,12 +500,12 @@ function FrotaEntregasPage() {
  variant="outline"
  size="sm"
  onClick={() => handleCopyLink(d.delivery_token)}
- className="flex-1 rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 cursor-pointer"
+ className="flex-1 rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 cursor-pointer"
  >
  <Copy className="size-3.5" />
  Copiar Link Mágico
  </Button>
- <Button asChild variant="ghost" size="icon" className="rounded-xl size-11 sm:size-9 cursor-pointer">
+ <Button asChild variant="ghost" size="icon" className="rounded-lg size-11 sm:size-9 cursor-pointer">
  <Link to="/entrega/$token" params={{ token: d.delivery_token }} target="_blank">
  <ExternalLink className="size-4" />
  </Link>
@@ -528,7 +528,7 @@ function FrotaEntregasPage() {
 
  <Sheet open={isPriceModalOpen} onOpenChange={setIsPriceModalOpen}>
  <SheetTrigger asChild>
- <Button className="rounded-xl h-10 px-4 font-semibold text-xs bg-foreground text-background hover:opacity-90 gap-1.5 cursor-pointer">
+ <Button className="rounded-lg h-10 px-4 font-semibold text-xs bg-foreground text-background hover:opacity-90 gap-2 cursor-pointer">
  <Plus className="size-4" />
  <span>Adicionar Tabela de Tarifa</span>
  </Button>
@@ -550,7 +550,7 @@ function FrotaEntregasPage() {
  value={priceFormName}
  onChange={(e) => setPriceFormName(e.target.value)}
  placeholder="Ex: Tarifa Chapecó Centro"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  required
  />
  </div>
@@ -560,7 +560,7 @@ function FrotaEntregasPage() {
  <select
  value={priceFormServiceType}
  onChange={(e: any) => setPriceFormServiceType(e.target.value)}
- className="w-full h-10 rounded-xl text-xs bg-background border border-border px-3 text-foreground mt-1"
+ className="w-full h-10 rounded-lg text-xs bg-background border border-border px-3 text-foreground mt-1"
  >
  <option value="delivery_express">Entrega Flash (Moto / Bike)</option>
  <option value="ride_moto">Moto Passageiro</option>
@@ -577,7 +577,7 @@ function FrotaEntregasPage() {
  value={priceFormBaseFee}
  onChange={(e) => setPriceFormBaseFee(e.target.value)}
  placeholder="5.00"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  required
  />
  </div>
@@ -587,7 +587,7 @@ function FrotaEntregasPage() {
  value={priceFormKmRate}
  onChange={(e) => setPriceFormKmRate(e.target.value)}
  placeholder="2.50"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  required
  />
  </div>
@@ -600,7 +600,7 @@ function FrotaEntregasPage() {
  value={priceFormMinFare}
  onChange={(e) => setPriceFormMinFare(e.target.value)}
  placeholder="10.00"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  />
  </div>
  <div>
@@ -609,7 +609,7 @@ function FrotaEntregasPage() {
  value={priceFormMinuteRate}
  onChange={(e) => setPriceFormMinuteRate(e.target.value)}
  placeholder="0.30"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  />
  </div>
  <div>
@@ -618,7 +618,7 @@ function FrotaEntregasPage() {
  value={priceFormHelperFee}
  onChange={(e) => setPriceFormHelperFee(e.target.value)}
  placeholder="50.00"
- className="h-10 rounded-xl text-xs bg-background mt-1"
+ className="h-10 rounded-lg text-xs bg-background mt-1"
  />
  </div>
  </div>
@@ -627,7 +627,7 @@ function FrotaEntregasPage() {
  <Button
  type="submit"
  disabled={isSavingPrice}
- className="w-full h-11 rounded-xl bg-foreground text-background font-bold text-xs hover:opacity-90 cursor-pointer"
+ className="w-full h-11 rounded-lg bg-foreground text-background font-bold text-xs hover:opacity-90 cursor-pointer"
  >
  {isSavingPrice ? (
  <div className="flex items-center gap-2">
@@ -645,7 +645,7 @@ function FrotaEntregasPage() {
  </div>
 
  {priceTables.length === 0 ? (
- <div className="p-12 text-center border-0 rounded-2xl bg-muted/20 space-y-2">
+ <div className="p-12 text-center border-0 rounded-lg bg-muted/20 space-y-2">
  <DollarSign className="size-8 mx-auto text-muted-foreground opacity-40" />
  <h3 className="text-sm font-semibold text-foreground">Nenhuma tabela de tarifa ativa</h3>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -655,7 +655,7 @@ function FrotaEntregasPage() {
  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
  {priceTables.map((tbl) => (
- <div key={tbl.id} className="rounded-2xl bg-card p-4 space-y-3 ">
+ <div key={tbl.id} className="rounded-lg bg-card p-4 space-y-3 ">
  <div className="flex items-start justify-between">
  <div>
  <Badge variant="outline" className="text-xs uppercase font-mono mb-1">
@@ -668,14 +668,14 @@ function FrotaEntregasPage() {
  variant="ghost"
  size="icon"
  onClick={() => handleDeletePriceTable(tbl.id)}
- className="size-9 sm:size-8 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer"
+ className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
  aria-label="Remover tabela de tarifa"
  >
  <Trash2 className="size-4" />
  </Button>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-muted/40 p-2.5 rounded-xl text-xs">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-muted/40 p-3 rounded-lg text-xs">
  <div>
  <span className="text-xs text-muted-foreground">Taxa Partida</span>
  <p className="font-semibold text-foreground">{formatMoney(tbl.base_fee_cents)}</p>

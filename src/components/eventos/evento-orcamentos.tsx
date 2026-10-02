@@ -241,7 +241,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
   return (
     <div className="space-y-6">
       {/* Header com Seletor de Versão e Ações */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">
@@ -259,7 +259,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
               </Badge>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             DRE projetado, fornecedores contratados, custos fixos e margem líquida.
           </p>
         </div>
@@ -271,7 +271,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
               value={selectedBudget?.id}
               onValueChange={(id) => setSelectedBudget(budgets.find((b) => b.id === id))}
             >
-              <SelectTrigger className="h-11 rounded-xl text-xs w-[140px]">
+              <SelectTrigger className="h-11 rounded-lg text-xs w-[140px]">
                 <SelectValue placeholder="Versão" />
               </SelectTrigger>
               <SelectContent>
@@ -288,7 +288,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
             variant="outline"
             onClick={handleCreateNewVersion}
             disabled={isPending}
-            className="h-11 rounded-xl text-xs font-bold gap-1.5"
+            className="h-11 rounded-lg text-xs font-bold gap-2"
           >
             <Plus className="size-3.5" />
             <span>Nova Versão</span>
@@ -299,7 +299,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
               variant={selectedBudget.status === "aprovado" ? "secondary" : "default"}
               onClick={handleToggleStatus}
               disabled={isPending}
-              className="h-11 rounded-xl text-xs font-bold gap-1.5"
+              className="h-11 rounded-lg text-xs font-bold gap-2"
             >
               <CheckCircle2 className="size-3.5" />
               <span>{selectedBudget.status === "aprovado" ? "Reabrir Rascunho" : "Aprovar Versão"}</span>
@@ -310,7 +310,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
 
       {/* Cards de Métricas Financeiras Apple HIG */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <Card className="rounded-lg border border-border/80 bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
             <span>Receitas Projetadas</span>
             <TrendingUp className="size-4 text-emerald-500" />
@@ -323,7 +323,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
           </p>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <Card className="rounded-lg border border-border/80 bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
             <span>Custos e Fornecedores</span>
             <TrendingDown className="size-4 text-rose-500" />
@@ -336,7 +336,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
           </p>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <Card className="rounded-lg border border-border/80 bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
             <span>Resultado / Margem</span>
             <Calculator className="size-4 text-primary" />
@@ -363,7 +363,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
         {selectedBudget && (
           <Sheet open={isItemModalOpen} onOpenChange={setIsItemModalOpen}>
             <SheetTrigger asChild>
-              <Button size="sm" className="h-9 rounded-xl text-xs font-bold gap-1.5">
+              <Button size="sm" className="h-9 rounded-lg text-xs font-bold gap-2">
                 <Plus className="size-3.5" />
                 <span>Adicionar Lançamento</span>
               </Button>
@@ -377,7 +377,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
               </SheetHeader>
 
               <form onSubmit={handleAddItem} className="space-y-4 mt-6">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Tipo de Lançamento</Label>
                   <Select
                     value={itemType}
@@ -386,7 +386,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
                       setItemCategory(v === "despesa" ? CATEGORIAS_DESPESA[0] : CATEGORIAS_RECEITA[0]);
                     }}
                   >
-                    <SelectTrigger className="h-11 rounded-xl text-xs">
+                    <SelectTrigger className="h-11 rounded-lg text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -400,10 +400,10 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
                   </Select>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Categoria</Label>
                   <Select value={itemCategory} onValueChange={setItemCategory}>
-                    <SelectTrigger className="h-11 rounded-xl text-xs">
+                    <SelectTrigger className="h-11 rounded-lg text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -416,31 +416,31 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
                   </Select>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Descrição / Fornecedor *</Label>
                   <Input
                     required
                     placeholder="Ex: Empresa de Geradores Santa Clara"
-                    className="h-11 rounded-xl text-xs"
+                    className="h-11 rounded-lg text-xs"
                     value={itemDescription}
                     onChange={(e) => setItemDescription(e.target.value)}
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Valor em Reais (R$) *</Label>
                   <Input
                     required
                     type="number"
                     step="0.01"
                     placeholder="0.00"
-                    className="h-11 rounded-xl text-xs font-mono"
+                    className="h-11 rounded-lg text-xs font-mono"
                     value={itemValue}
                     onChange={(e) => setItemValue(e.target.value)}
                   />
                 </div>
 
-                <Button type="submit" disabled={isPending} className="w-full h-11 rounded-xl text-xs font-bold mt-4">
+                <Button type="submit" disabled={isPending} className="w-full h-11 rounded-lg text-xs font-bold mt-4">
                   {isPending ? "Salvando..." : "Confirmar Lançamento"}
                 </Button>
               </form>
@@ -451,7 +451,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
 
       {/* Lista de Itens do Orçamento */}
       {!selectedBudget || items.length === 0 ? (
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center bg-card/40">
+        <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <Building className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhum item lançado neste orçamento</p>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -463,7 +463,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
           {items.map((item: any) => (
             <div
               key={item.id}
-              className="flex items-center justify-between p-3.5 rounded-xl border border-border/70 bg-card hover:border-border transition-all"
+              className="flex items-center justify-between p-4 rounded-lg border border-border/70 bg-card hover:border-border transition-all"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -478,7 +478,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="text-xs font-bold text-foreground">{item.descricao}</p>
-                    <Badge variant="outline" className="text-[10px] py-0 px-1.5">
+                    <Badge variant="outline" className="text-[10px] py-0 px-2">
                       {item.categoria}
                     </Badge>
                   </div>

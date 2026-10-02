@@ -213,7 +213,7 @@ export function SquadsWorkspacePage() {
 
       {/* ── ALERTA DE FEEDBACK ── */}
       {feedback && (
-        <div className="p-4 rounded-xl flex items-center justify-between border bg-card/60 text-foreground border-border/80">
+        <div className="p-4 rounded-lg flex items-center justify-between border bg-card/60 text-foreground border-border/80">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
             <p className="text-sm font-medium">{feedback.message}</p>
@@ -245,14 +245,14 @@ export function SquadsWorkspacePage() {
               return (
                 <div
                   key={squad.id}
-                  className="bg-card border border-border/60 rounded-2xl p-6 flex flex-col justify-between space-y-6"
+                  className="bg-card border border-border/60 rounded-lg p-6 flex flex-col justify-between space-y-6"
                 >
                   {/* Topo do Card do Squad */}
                   <div>
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 text-xs">
+                          <span className="text-xs font-semibold px-2 py-1 rounded-md uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 text-xs">
                             {squad.template.badge_label}
                           </span>
                           <span className="text-xs text-muted-foreground capitalize">
@@ -267,7 +267,7 @@ export function SquadsWorkspacePage() {
                         </p>
                       </div>
 
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <span className="inline-flex items-center gap-2 text-xs font-medium px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         Operacional
                       </span>
@@ -275,8 +275,8 @@ export function SquadsWorkspacePage() {
 
                     {/* Meta Operacional */}
                     {squad.operational_goal && (
-                      <div className="mt-4 p-3 rounded-xl bg-muted/20 border border-border/30 text-xs text-foreground">
-                        <strong className="text-muted-foreground block text-xs uppercase tracking-wider mb-0.5">
+                      <div className="mt-4 p-3 rounded-lg bg-muted/20 border border-border/30 text-xs text-foreground">
+                        <strong className="text-muted-foreground block text-xs uppercase tracking-wider mb-1">
                           Objetivo Atual do Squad:
                         </strong>
                         {squad.operational_goal}
@@ -292,12 +292,12 @@ export function SquadsWorkspacePage() {
                         <span className="text-xs text-muted-foreground">Clique para ver currículo</span>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {squad.agents.map((agent) => (
                           <div
                             key={agent.agent_id}
                             onClick={() => setSelectedAgent(agent)}
-                            className="p-3 rounded-xl bg-muted/10 border border-border/40 hover:bg-muted/30 hover:border-border transition-all cursor-pointer flex items-center justify-between group"
+                            className="p-3 rounded-lg bg-muted/10 border border-border/40 hover:bg-muted/30 hover:border-border transition-all cursor-pointer flex items-center justify-between group"
                           >
                             <div className="truncate pr-2">
                               <span className="text-xs font-semibold text-foreground block truncate group-hover:text-primary transition-colors">
@@ -318,9 +318,9 @@ export function SquadsWorkspacePage() {
                   <div className="pt-5 border-t border-border/30 space-y-4">
                     {/* Alerta de Aprovação Pendente */}
                     {hasPendingApproval && squad.latest_run && (
-                      <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div className="flex items-start gap-2.5">
-                          <AlertCircle className="w-4 h-4 text-foreground/70 shrink-0 mt-0.5" />
+                      <div className="p-4 rounded-lg bg-muted/40 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="w-4 h-4 text-foreground/70 shrink-0 mt-1" />
                           <div>
                             <span className="text-xs font-bold text-foreground block">
                               Entrega Aguardando Sua Aprovação
@@ -335,7 +335,7 @@ export function SquadsWorkspacePage() {
                           <button
                             type="button"
                             onClick={() => setSelectedRunArtifacts({ squadName: squad.custom_name, run: squad.latest_run })}
-                            className="h-11 px-3 inline-flex items-center gap-1.5 rounded-xl text-xs font-medium border border-border/60 bg-background hover:bg-muted/40 transition-colors shrink-0 min-h-[44px]"
+                            className="h-11 px-3 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 bg-background hover:bg-muted/40 transition-colors shrink-0 min-h-11"
                           >
                             <FileCheck className="w-3.5 h-3.5 text-foreground/80" />
                             Inspecionar Parecer
@@ -345,7 +345,7 @@ export function SquadsWorkspacePage() {
                             type="button"
                             onClick={() => handleApproveRun(squad.latest_run!.id)}
                             disabled={actionLoading === `approve-${squad.latest_run.id}`}
-                            className="h-11 px-4 inline-flex items-center gap-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shrink-0 min-h-[44px]"
+                            className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shrink-0 min-h-11"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {actionLoading === `approve-${squad.latest_run.id}`
@@ -381,7 +381,7 @@ export function SquadsWorkspacePage() {
                         type="button"
                         onClick={() => handleTriggerRun(squad.id)}
                         disabled={actionLoading === `trigger-${squad.id}`}
-                        className="h-11 px-4 inline-flex items-center gap-2 rounded-xl text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity min-h-[44px]"
+                        className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity min-h-11"
                       >
                         <Play
                           className={`w-3.5 h-3.5 ${
@@ -410,7 +410,7 @@ export function SquadsWorkspacePage() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-primary block">
                   Perfil do Especialista
                 </span>
-                <SheetTitle className="text-xl font-bold tracking-tight text-foreground mt-0.5">
+                <SheetTitle className="text-xl font-bold tracking-tight text-foreground mt-1">
                   {selectedAgent.name}
                 </SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
@@ -424,22 +424,22 @@ export function SquadsWorkspacePage() {
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Resumo de Carreira e Expertise
                   </h4>
-                  <p className="text-xs text-foreground leading-relaxed p-3.5 rounded-xl bg-muted/20 border border-border/40">
+                  <p className="text-xs text-foreground leading-relaxed p-4 rounded-lg bg-muted/20 border border-border/40">
                     {selectedAgent.career_summary}
                   </p>
                 </div>
 
                 {/* Formação Acadêmica */}
                 <div className="space-y-2">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <GraduationCap className="w-3.5 h-3.5 text-primary" />
                     Formação Acadêmica
                   </h4>
-                  <ul className="space-y-1.5 text-xs text-foreground">
+                  <ul className="space-y-2 text-xs text-foreground">
                     {selectedAgent.curriculum.academic_background.map((item, idx) => (
                       <li
                         key={idx}
-                        className="p-2.5 rounded-lg bg-muted/10 border border-border/40 flex items-center gap-2"
+                        className="p-3 rounded-lg bg-muted/10 border border-border/40 flex items-center gap-2"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                         <span>{item}</span>
@@ -450,7 +450,7 @@ export function SquadsWorkspacePage() {
 
                 {/* Certificações Executivas */}
                 <div className="space-y-2">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Award className="w-3.5 h-3.5 text-primary" />
                     Certificações Executivas
                   </h4>
@@ -458,7 +458,7 @@ export function SquadsWorkspacePage() {
                     {selectedAgent.curriculum.certifications.map((cert, idx) => (
                       <span
                         key={idx}
-                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20"
+                        className="px-3 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20"
                       >
                         {cert}
                       </span>
@@ -468,11 +468,11 @@ export function SquadsWorkspacePage() {
 
                 {/* Entregáveis Produzidos */}
                 <div className="space-y-2">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <FileCheck className="w-3.5 h-3.5 text-primary" />
                     Entregáveis Produzidos por Este Agente
                   </h4>
-                  <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  <ul className="space-y-2 text-xs text-muted-foreground">
                     {selectedAgent.deliverables.map((deliv, idx) => (
                       <li key={idx} className="flex items-start gap-2">
                         <span className="text-primary font-bold">•</span>
@@ -483,7 +483,7 @@ export function SquadsWorkspacePage() {
                 </div>
 
                 {/* Metadados Técnicos de IA */}
-                <div className="p-3.5 rounded-xl bg-muted/10 border border-border/30 text-xs text-muted-foreground space-y-1">
+                <div className="p-4 rounded-lg bg-muted/10 border border-border/30 text-xs text-muted-foreground space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Modelo de IA Alocado:</span>
                     <strong className="text-foreground font-mono">{selectedAgent.default_model}</strong>
@@ -502,7 +502,7 @@ export function SquadsWorkspacePage() {
               type="button"
               variant="outline"
               onClick={() => setSelectedAgent(null)}
-              className="w-full rounded-xl text-xs font-bold"
+              className="w-full rounded-lg text-xs font-bold"
             >
               Fechar Currículo
             </Button>
@@ -519,7 +519,7 @@ export function SquadsWorkspacePage() {
                   <span className="text-xs font-semibold uppercase tracking-wider text-primary block">
                     Parecer Executivo de Rotina
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase ${
+                  <span className={`text-xs px-2 py-1 rounded-md font-bold uppercase ${
                     selectedRunArtifacts.run.status === "needs_approval"
                       ? "bg-muted text-foreground border border-border/60"
                       : "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
@@ -541,7 +541,7 @@ export function SquadsWorkspacePage() {
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Diagnóstico Estruturado
                   </h4>
-                  <div className="p-4 rounded-xl bg-muted/20 border border-border/40 text-foreground leading-relaxed">
+                  <div className="p-4 rounded-lg bg-muted/20 border border-border/40 text-foreground leading-relaxed">
                     {selectedRunArtifacts.run.output_artifacts?.executive_summary || "Diagnóstico concluído com sucesso."}
                   </div>
                 </div>
@@ -552,16 +552,16 @@ export function SquadsWorkspacePage() {
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Entregáveis Produzidos ({selectedRunArtifacts.run.output_artifacts.pending_approval_items.length})
                     </h4>
-                    <div className="space-y-2.5">
+                    <div className="space-y-3">
                       {selectedRunArtifacts.run.output_artifacts.pending_approval_items.map((item: any, idx: number) => (
                         <div
                           key={idx}
-                          className="p-3.5 rounded-xl bg-muted/10 border border-border/40 space-y-2"
+                          className="p-4 rounded-lg bg-muted/10 border border-border/40 space-y-2"
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-foreground text-xs">{item.title}</span>
                             {item.confidence_score && (
-                              <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
+                              <span className="text-xs font-mono px-2 py-1 rounded bg-primary/10 text-primary font-bold">
                                 {item.confidence_score}% Confiança
                               </span>
                             )}
@@ -590,7 +590,7 @@ export function SquadsWorkspacePage() {
                       {selectedRunArtifacts.run.output_artifacts.kpis_monitored.map((kpi: string, idx: number) => (
                         <span
                           key={idx}
-                          className="px-2.5 py-1 rounded-md text-xs font-medium bg-muted/30 border border-border/40 text-foreground"
+                          className="px-3 py-1 rounded-md text-xs font-medium bg-muted/30 border border-border/40 text-foreground"
                         >
                           {kpi}
                         </span>
@@ -600,7 +600,7 @@ export function SquadsWorkspacePage() {
                 )}
 
                 {/* Metadados Técnicos de Execução */}
-                <div className="p-3.5 rounded-xl bg-muted/10 border border-border/30 text-xs text-muted-foreground space-y-1">
+                <div className="p-4 rounded-lg bg-muted/10 border border-border/30 text-xs text-muted-foreground space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Tokens Processados:</span>
                     <strong className="text-foreground font-mono">{selectedRunArtifacts.run.total_tokens_consumed || 1250}</strong>
@@ -623,9 +623,9 @@ export function SquadsWorkspacePage() {
                   setSelectedRunArtifacts(null);
                 }}
                 disabled={actionLoading === `approve-${selectedRunArtifacts.run.id}`}
-                className="w-full sm:flex-1 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white"
+                className="w-full sm:flex-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white"
               >
-                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 mr-2" />
                 {actionLoading === `approve-${selectedRunArtifacts.run.id}` ? "Aprovando..." : "Aprovar Diretriz"}
               </Button>
             )}
@@ -633,7 +633,7 @@ export function SquadsWorkspacePage() {
               type="button"
               variant="outline"
               onClick={() => setSelectedRunArtifacts(null)}
-              className="w-full sm:w-auto rounded-xl text-xs font-bold"
+              className="w-full sm:w-auto rounded-lg text-xs font-bold"
             >
               Fechar
             </Button>

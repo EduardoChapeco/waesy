@@ -75,39 +75,39 @@ function AfiliadosFinanceiroPage() {
 
       {/* Summary Cards (Clean Paradigm - Apple HIG) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 shadow-2xs space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/70 shadow-2xs space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <Clock className="size-4 text-warning" />
             <h2 className="text-xs font-semibold text-muted-foreground">Comissões Pendentes</h2>
           </div>
           {isSummaryLoading ? (
-            <div className="h-8 bg-muted animate-pulse rounded-xl w-32 mt-1" />
+            <div className="h-8 bg-muted animate-pulse rounded-lg w-32 mt-1" />
           ) : (
             <p className="text-2xl font-bold text-foreground font-mono">
               {formatMoney(summary?.totalPendingCents ?? 0)}
             </p>
           )}
         </div>
-        <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 shadow-2xs space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/70 shadow-2xs space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <CheckCircle2 className="size-4 text-emerald-600" />
             <h2 className="text-xs font-semibold text-muted-foreground">Comissões Pagas</h2>
           </div>
           {isSummaryLoading ? (
-            <div className="h-8 bg-muted animate-pulse rounded-xl w-32 mt-1" />
+            <div className="h-8 bg-muted animate-pulse rounded-lg w-32 mt-1" />
           ) : (
             <p className="text-2xl font-bold text-foreground font-mono">
               {formatMoney(summary?.totalPaidCents ?? 0)}
             </p>
           )}
         </div>
-        <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 shadow-2xs space-y-2">
+        <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/70 shadow-2xs space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <Users className="size-4 text-primary" />
             <h2 className="text-xs font-semibold text-muted-foreground">Parceiros Ativos</h2>
           </div>
           {isSummaryLoading ? (
-            <div className="h-8 bg-muted animate-pulse rounded-xl w-16 mt-1" />
+            <div className="h-8 bg-muted animate-pulse rounded-lg w-16 mt-1" />
           ) : (
             <p className="text-2xl font-bold text-foreground font-mono">{summary?.sellerCount ?? 0}</p>
           )}
@@ -123,7 +123,7 @@ function AfiliadosFinanceiroPage() {
  placeholder="Buscar por parceiro..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full pl-9 pr-4 py-2 text-sm bg-background rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+ className="w-full pl-9 pr-4 py-2 text-sm bg-background rounded-lg outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
  />
  </div>
  <Button variant="outline" size="sm">

@@ -37,10 +37,10 @@ export function OfficeContractViewer({
 
  return (
  <section className="w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
- <div className="p-6 rounded-2xl bg-card border border-border shadow-lg space-y-6">
+ <div className="p-6 rounded-lg bg-card border border-border shadow-lg space-y-6">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
  <div className="flex items-center gap-3">
- <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+ <div className="p-3 rounded-lg bg-primary/10 text-primary">
  <FileText className="w-6 h-6" />
  </div>
  <div>
@@ -50,9 +50,9 @@ export function OfficeContractViewer({
  </div>
  </div>
 
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <span
- className={'px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ' + (
+ className={'px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2 ' + (
  currentStatus === 'signed'
  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
  : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
@@ -75,7 +75,7 @@ export function OfficeContractViewer({
  <Button
  type="button"
  onClick={() => setShowSignModal(true)}
- className="min-h-[44px] px-5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs shadow-md"
+ className="min-h-11 px-5 rounded-lg bg-primary text-primary-foreground font-semibold text-xs shadow-md"
  >
  Assinar Agora
  </Button>
@@ -83,14 +83,14 @@ export function OfficeContractViewer({
  </div>
  </div>
 
- <div className="p-6 rounded-2xl bg-muted/20 border border-border/50 text-xs leading-relaxed whitespace-pre-wrap font-serif text-foreground/90 max-h-[350px] overflow-y-auto no-scrollbar">
+ <div className="p-6 rounded-lg bg-muted/20 border border-border/50 text-xs leading-relaxed whitespace-pre-wrap font-serif text-foreground/90 max-h-[350px] overflow-y-auto no-scrollbar">
  {content}
  </div>
 
  {signature && (
- <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+ <div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
  <div className="space-y-1">
- <div className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+ <div className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
  <CheckCircle2 className="w-4 h-4" />
  Assinado por {signature.signerName} ({signature.signerCpf})
  </div>

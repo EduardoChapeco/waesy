@@ -98,11 +98,11 @@ function AdminCategoriesPage() {
       />
 
       {filteredCategories.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl border border-border/40 bg-card/60 space-y-4 px-4">
-          <div className="size-14 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="py-16 text-center rounded-lg border border-border/40 bg-card/60 space-y-4 px-4">
+          <div className="size-14 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Plus className="size-6" />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <h3 className="text-base sm:text-lg font-bold text-foreground">
               {statusFilter === "active"
                 ? "Nenhuma categoria cadastrada"
@@ -115,7 +115,7 @@ function AdminCategoriesPage() {
           {statusFilter === "active" && (
             <Button
               asChild
-              className="h-11 px-6 rounded-xl font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+              className="h-11 px-6 rounded-lg font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
             >
               <Link to="/workspace/catalogo/categorias/novo">
                 <Plus className="size-4" />
@@ -136,7 +136,7 @@ function AdminCategoriesPage() {
               return (
                 <div
                   key={cat.id}
-                  className="p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-3.5 transition-all"
+                  className="p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-4 transition-all"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
@@ -144,10 +144,10 @@ function AdminCategoriesPage() {
                         <img
                           src={cat.cover_url}
                           alt={cat.name}
-                          className="size-12 rounded-xl object-cover shrink-0 border border-border/40"
+                          className="size-12 rounded-lg object-cover shrink-0 border border-border/40"
                         />
                       ) : (
-                        <div className="size-12 rounded-xl bg-muted/60 border border-border/40 flex items-center justify-center shrink-0 text-muted-foreground font-bold text-sm">
+                        <div className="size-12 rounded-lg bg-muted/60 border border-border/40 flex items-center justify-center shrink-0 text-muted-foreground font-bold text-sm">
                           {cat.name.slice(0, 2).toUpperCase()}
                         </div>
                       )}
@@ -155,12 +155,12 @@ function AdminCategoriesPage() {
                         <h4 className="text-base font-bold text-foreground truncate">
                           {cat.name}
                         </h4>
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs font-mono text-muted-foreground truncate">
                             /{cat.slug}
                           </span>
                           {parentCat && (
-                            <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-md truncate">
+                            <span className="text-xs text-muted-foreground bg-muted/40 px-2 py-1 rounded-md truncate">
                               Sub de: {parentCat.name}
                             </span>
                           )}
@@ -176,7 +176,7 @@ function AdminCategoriesPage() {
                           ? "outline"
                           : "secondary"
                       }
-                      className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
+                      className="text-xs font-semibold px-3 py-1 rounded-full shrink-0"
                     >
                       {cat.status === "active"
                         ? "Ativa"
@@ -191,7 +191,7 @@ function AdminCategoriesPage() {
                     <Button
                       asChild
                       variant="outline"
-                      className="flex-1 h-11 rounded-xl text-sm font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
+                      className="flex-1 h-11 rounded-lg text-sm font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
                     >
                       <Link to={`/workspace/catalogo/categorias/${cat.id}` as any}>
                         <Edit className="size-4 text-muted-foreground" />
@@ -201,7 +201,7 @@ function AdminCategoriesPage() {
 
                     <CrudActionsMenu
                       triggerVariant="outline"
-                      triggerClassName="h-11 px-4 rounded-xl border-border/60 hover:bg-muted"
+                      triggerClassName="h-11 px-4 rounded-lg border-border/60 hover:bg-muted"
                       onEdit={() => router.navigate({ to: `/workspace/catalogo/categorias/${cat.id}` as any })}
                       onToggleStatus={() =>
                         handleUpdateStatus(cat.id, cat.status === "active" ? "inactive" : "active")
@@ -229,21 +229,21 @@ function AdminCategoriesPage() {
           </div>
 
           {/* ── 2. Desktop High-Density Table Layout ── */}
-          <div className="hidden md:block rounded-2xl overflow-hidden bg-card border border-border/40 shadow-2xs">
+          <div className="hidden md:block rounded-lg overflow-hidden bg-card border border-border/40 shadow-2xs">
             <div className="overflow-x-auto no-scrollbar">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40">
-                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                       Nome da Categoria
                     </TableHead>
-                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                       Slug URL
                     </TableHead>
-                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                       Status
                     </TableHead>
-                    <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                       Ações
                     </TableHead>
                   </TableRow>
@@ -251,7 +251,7 @@ function AdminCategoriesPage() {
                 <TableBody>
                   {filteredCategories.map((cat: any) => (
                     <TableRow key={cat.id} className="hover:bg-muted/30 transition-colors">
-                      <TableCell className="font-semibold text-sm text-foreground py-3.5">
+                      <TableCell className="font-semibold text-sm text-foreground py-4">
                         <div className="flex items-center gap-3">
                           {cat.cover_url ? (
                             <img
@@ -275,10 +275,10 @@ function AdminCategoriesPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground font-mono text-xs py-3.5">
+                      <TableCell className="text-muted-foreground font-mono text-xs py-4">
                         /{cat.slug}
                       </TableCell>
-                      <TableCell className="py-3.5">
+                      <TableCell className="py-4">
                         <Badge
                           variant={
                             cat.status === "active"
@@ -287,7 +287,7 @@ function AdminCategoriesPage() {
                               ? "outline"
                               : "secondary"
                           }
-                          className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                          className="text-xs font-semibold px-3 py-1 rounded-full"
                         >
                           {cat.status === "active"
                             ? "Ativa"
@@ -296,7 +296,7 @@ function AdminCategoriesPage() {
                             : "Arquivada"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right py-3.5">
+                      <TableCell className="text-right py-4">
                         <CrudActionsMenu
                           onEdit={() => router.navigate({ to: `/workspace/catalogo/categorias/${cat.id}` as any })}
                           onToggleStatus={() =>

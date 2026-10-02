@@ -230,7 +230,7 @@ export function CanonicalListingView({
                   {listing.title || "Título do Anúncio"}
                 </h1>
                 {listing.location_data?.city && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground pt-0.5">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1">
                     <MapPin className="size-4 text-primary shrink-0" />
                     <span>{listing.location_data.city}, {listing.location_data.state || "SC"}</span>
                   </div>
@@ -254,7 +254,7 @@ export function CanonicalListingView({
                 </div>
 
                 {/* Parcelamento e PIX */}
-                <div className="pt-1 text-xs text-muted-foreground space-y-0.5">
+                <div className="pt-1 text-xs text-muted-foreground space-y-1">
                   {maxInstallments > 1 ? (
                     <p>
                       Em até <strong className="text-foreground">{maxInstallments}x</strong> de{" "}
@@ -282,7 +282,7 @@ export function CanonicalListingView({
                     <span className="text-primary font-bold font-mono">
                       {formatMoney(Math.round((priceCents * depositPercent) / 100))}
                     </span>
-                    <span className="text-muted-foreground block text-2xs mt-0.5">
+                    <span className="text-muted-foreground block text-2xs mt-1">
                       Restante quitado até {commercial.balance_due_days || 10} dias antes da viagem.
                     </span>
                   </div>
@@ -368,7 +368,7 @@ export function CanonicalListingView({
                       <ul className="space-y-2 text-xs text-foreground">
                         {inclusions.map((item, idx) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <CheckCircle2 className="size-4 text-emerald-500 shrink-0 mt-0.5" />
+                            <CheckCircle2 className="size-4 text-emerald-500 shrink-0 mt-1" />
                             <span>{item}</span>
                           </li>
                         ))}
@@ -384,7 +384,7 @@ export function CanonicalListingView({
                       <ul className="space-y-2 text-xs text-muted-foreground">
                         {exclusions.map((item, idx) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <XCircle className="size-4 text-destructive shrink-0 mt-0.5" />
+                            <XCircle className="size-4 text-destructive shrink-0 mt-1" />
                             <span>{item}</span>
                           </li>
                         ))}

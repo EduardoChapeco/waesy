@@ -124,14 +124,14 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  <PopoverContent
  align="end"
  sideOffset={8}
- className="w-[360px] sm:w-[400px] p-0 rounded-2xl bg-card overflow-hidden"
+ className="w-[360px] sm:w-[400px] p-0 rounded-lg bg-card overflow-hidden"
  >
  {/* ── 1. Header do Painel de Notificações ── */}
  <div className="p-4 pb-3 flex items-center justify-between">
  <div className="flex items-center gap-2">
  <h3 className="text-sm font-bold text-foreground">Notificações</h3>
  {unreadCount > 0 && (
- <Badge className="bg-primary text-primary-foreground font-mono text-[10px] px-1.5 py-0 h-4 rounded-full font-bold">
+ <Badge className="bg-primary text-primary-foreground font-mono text-[10px] px-2 py-0 h-4 rounded-full font-bold">
  {unreadCount} novas
  </Badge>
  )}
@@ -151,7 +151,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  </div>
 
  {/* ── 2. Filtros por Categoria em Chips ── */}
- <div className="px-3 py-2 bg-muted/20 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+ <div className="px-3 py-2 bg-muted/20 flex items-center gap-2 overflow-x-auto no-scrollbar">
  {FILTER_TABS.map((tab) => {
  const isActive = activeTab === tab.id;
  return (
@@ -160,7 +160,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  type="button"
  onClick={() => setActiveTab(tab.id)}
  className={cn(
- "px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
+ "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
  isActive
  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
  : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
@@ -175,18 +175,18 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  {/* ── 3. Lista de Notificações com Scroll Interno Nativo ── */}
  <div className="max-h-[380px] overflow-y-auto divide-y divide-border/40 overscroll-contain">
  {notifications.length > 0 ? (
- <div className="p-1 space-y-0.5">
+ <div className="p-1 space-y-1">
  {notifications.map((item) => (
  <div
  key={item.id}
  onClick={() => handleNotificationClick(item)}
  className={cn(
- "p-3 rounded-2xl flex items-start gap-3 transition-colors cursor-pointer group text-left",
+ "p-3 rounded-lg flex items-start gap-3 transition-colors cursor-pointer group text-left",
  item.isRead ? "hover:bg-muted/40" : "bg-muted/30 hover:bg-muted/60"
  )}
  >
  {/* Avatar Squircle da Empresa / Autor */}
- <div className="size-10 rounded-xl bg-card overflow-hidden shrink-0 flex items-center justify-center ">
+ <div className="size-10 rounded-lg bg-card overflow-hidden shrink-0 flex items-center justify-center ">
  {item.avatarUrl ? (
  <img src={item.avatarUrl} alt="" className="size-full object-cover" />
  ) : (
@@ -197,7 +197,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  </div>
 
  {/* Conteúdo da Notificação */}
- <div className="min-w-0 flex-1 space-y-0.5">
+ <div className="min-w-0 flex-1 space-y-1">
  <div className="flex items-center justify-between gap-2">
  <p className={cn("text-xs line-clamp-1 leading-snug", item.isRead ? "font-semibold text-foreground" : "font-bold text-foreground")}>
  {item.title}
@@ -212,7 +212,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  </p>
 
  {item.authorName && (
- <span className="text-[10px] font-medium text-foreground/70 block pt-0.5">
+ <span className="text-[10px] font-medium text-foreground/70 block pt-1">
  {item.authorName}
  </span>
  )}
@@ -251,13 +251,13 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  </div>
 
  {/* ── 4. Rodapé com Link para Visualização Completa In-Page ── */}
- <div className="p-2.5 bg-muted/10 flex items-center justify-between">
+ <div className="p-3 bg-muted/10 flex items-center justify-between">
  <Button
  asChild
  variant="ghost"
  size="sm"
  onClick={() => setOpen(false)}
- className="w-full rounded-xl text-xs font-bold h-9 justify-center gap-1.5 text-foreground hover:bg-muted/80"
+ className="w-full rounded-lg text-xs font-bold h-9 justify-center gap-2 text-foreground hover:bg-muted/80"
  >
  <Link to="/conta/notificacoes">
  <span>Ver todas as notificações</span>

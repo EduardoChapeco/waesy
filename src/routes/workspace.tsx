@@ -107,8 +107,8 @@ function WorkspaceErrorComponent({ error, reset }: { error: Error; reset: () => 
 
  return (
  <div className="min-h-[100dvh] flex items-center justify-center bg-background p-4 text-center">
- <div className="max-w-md w-full bg-card p-6 sm:p-8 rounded-2xl border border-border/80 space-y-4 shadow-sm">
- <div className="size-14 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+ <div className="max-w-md w-full bg-card p-6 sm:p-8 rounded-lg border border-border/80 space-y-4 shadow-sm">
+ <div className="size-14 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
  <AlertTriangle className="size-7" />
  </div>
  <div className="space-y-1">
@@ -119,7 +119,7 @@ function WorkspaceErrorComponent({ error, reset }: { error: Error; reset: () => 
  </div>
 
  {error?.message && (
- <div className="p-3 bg-destructive/5 rounded-xl border border-destructive/20 text-left text-xs font-mono text-destructive space-y-1 max-h-40 overflow-y-auto no-scrollbar">
+ <div className="p-3 bg-destructive/5 rounded-lg border border-destructive/20 text-left text-xs font-mono text-destructive space-y-1 max-h-40 overflow-y-auto no-scrollbar">
  <span className="font-bold block">Diagnóstico Técnico:</span>
  <span className="break-all">{error.message}</span>
  </div>
@@ -131,12 +131,12 @@ function WorkspaceErrorComponent({ error, reset }: { error: Error; reset: () => 
  if (typeof window !== "undefined") window.location.reload();
  reset();
  }}
- className="w-full sm:w-auto rounded-xl text-xs font-bold gap-1.5"
+ className="w-full sm:w-auto rounded-lg text-xs font-bold gap-2"
  >
  <RefreshCw className="size-3.5" />
  <span>Recarregar Painel</span>
  </Button>
- <Button asChild variant="outline" className="w-full sm:w-auto rounded-xl text-xs font-bold gap-1.5">
+ <Button asChild variant="outline" className="w-full sm:w-auto rounded-lg text-xs font-bold gap-2">
  <Link to="/workspace">
  <ArrowLeft className="size-3.5" />
  <span>Painel Geral</span>

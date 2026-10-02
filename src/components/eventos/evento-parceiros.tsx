@@ -101,7 +101,7 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">Patrocinadores</h3>
@@ -109,14 +109,14 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
               {partners.length} {partners.length === 1 ? "parceiro ativo" : "parceiros ativos"}
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Gestão de marcas patrocinadoras, cotas master, exposição em telões e materiais gráficos.
           </p>
         </div>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Button className="h-11 px-4 rounded-xl text-xs font-bold gap-2">
+            <Button className="h-11 px-4 rounded-lg text-xs font-bold gap-2">
               <Plus className="size-4" />
               <span>Novo Patrocinador</span>
             </Button>
@@ -130,22 +130,22 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
             </SheetHeader>
 
             <form onSubmit={handleCreate} className="space-y-4 mt-6">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Nome da Empresa / Marca *</Label>
                 <Input
                   required
                   placeholder="Ex: Cervejaria Heineken / Banco Sicoob"
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Tipo de Parceria</Label>
                   <Select value={tipo} onValueChange={setTipo}>
-                    <SelectTrigger className="h-11 rounded-xl text-xs">
+                    <SelectTrigger className="h-11 rounded-lg text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -157,10 +157,10 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
                   </Select>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Cota / Nível</Label>
                   <Select value={nivel} onValueChange={setNivel}>
-                    <SelectTrigger className="h-11 rounded-xl text-xs">
+                    <SelectTrigger className="h-11 rounded-lg text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -174,27 +174,27 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Website Oficial</Label>
                 <Input
                   placeholder="https://empresa.com.br"
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={siteUrl}
                   onChange={(e) => setSiteUrl(e.target.value)}
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">URL da Logo (Vetor ou PNG)</Label>
                 <Input
                   placeholder="https://..."
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
                 />
               </div>
 
-              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-xl text-xs font-bold mt-4">
+              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-lg text-xs font-bold mt-4">
                 {isPending ? "Cadastrando..." : "Salvar Patrocinador"}
               </Button>
             </form>
@@ -203,7 +203,7 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
       </div>
 
       {partners.length === 0 ? (
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center bg-card/40">
+        <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <Handshake className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhum parceiro cadastrado</p>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -217,12 +217,12 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
             return (
               <Card
                 key={p.id}
-                className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
+                className="rounded-lg border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="size-9 rounded-xl bg-muted/60 flex items-center justify-center font-bold text-xs text-foreground">
+                    <div className="flex items-center gap-3">
+                      <div className="size-9 rounded-lg bg-muted/60 flex items-center justify-center font-bold text-xs text-foreground">
                         {p.logo_url ? (
                           <img src={p.logo_url} alt={p.nome} className="size-6 object-contain rounded" />
                         ) : (

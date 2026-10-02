@@ -158,7 +158,7 @@ export function CurriculoGeneratorModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl w-[95vw] h-[92vh] max-h-[95vh] p-0 flex flex-col bg-background overflow-hidden rounded-3xl border border-border shadow-2xl">
+      <DialogContent className="max-w-6xl w-[95vw] h-[92vh] max-h-[95vh] p-0 flex flex-col bg-background overflow-hidden rounded-lg border border-border shadow-2xl">
         {/* ── TopBar do Gerador ── */}
         <div className="px-6 py-4 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20 shrink-0">
           <div>
@@ -177,7 +177,7 @@ export function CurriculoGeneratorModal({
               size="sm"
               onClick={handlePrint}
               disabled={isExporting}
-              className="rounded-xl text-xs font-semibold gap-1.5 h-9 cursor-pointer"
+              className="rounded-lg text-xs font-semibold gap-2 h-9 cursor-pointer"
             >
               <Printer className="size-3.5" />
               <span>Imprimir</span>
@@ -187,7 +187,7 @@ export function CurriculoGeneratorModal({
               size="sm"
               onClick={handleDownloadImage}
               disabled={isExporting}
-              className="rounded-xl text-xs font-semibold gap-1.5 h-9 cursor-pointer"
+              className="rounded-lg text-xs font-semibold gap-2 h-9 cursor-pointer"
             >
               <Download className="size-3.5" />
               <span>Baixar Imagem</span>
@@ -196,7 +196,7 @@ export function CurriculoGeneratorModal({
               size="sm"
               onClick={handleDownloadPdf}
               disabled={isExporting}
-              className="rounded-xl text-xs font-bold gap-1.5 h-9 bg-primary text-primary-foreground shadow-xs cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-9 bg-primary text-primary-foreground shadow-xs cursor-pointer"
             >
               <Download className="size-3.5" />
               <span>{isExporting ? exportMessage || "Gerando..." : "Baixar PDF Oficial"}</span>
@@ -218,7 +218,7 @@ export function CurriculoGeneratorModal({
                   type="button"
                   onClick={() => setFormat("a4")}
                   className={cn(
-                    "flex flex-col items-center justify-center p-3 rounded-2xl border text-xs font-semibold gap-1.5 transition-all cursor-pointer",
+                    "flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-semibold gap-2 transition-all cursor-pointer",
                     format === "a4"
                       ? "bg-primary/10 border-primary text-primary shadow-xs"
                       : "bg-card border-border text-muted-foreground hover:text-foreground"
@@ -232,7 +232,7 @@ export function CurriculoGeneratorModal({
                   type="button"
                   onClick={() => setFormat("story")}
                   className={cn(
-                    "flex flex-col items-center justify-center p-3 rounded-2xl border text-xs font-semibold gap-1.5 transition-all cursor-pointer",
+                    "flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-semibold gap-2 transition-all cursor-pointer",
                     format === "story"
                       ? "bg-primary/10 border-primary text-primary shadow-xs"
                       : "bg-card border-border text-muted-foreground hover:text-foreground"
@@ -250,7 +250,7 @@ export function CurriculoGeneratorModal({
               <label className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Modelo Visual
               </label>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-3 gap-2">
                 {[
                   { id: "minimal", label: "Executivo" },
                   { id: "modern", label: "Moderno" },
@@ -261,7 +261,7 @@ export function CurriculoGeneratorModal({
                     type="button"
                     onClick={() => setTemplate(t.id as CurriculoTemplate)}
                     className={cn(
-                      "h-8 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer truncate",
+                      "h-8 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer truncate",
                       template === t.id
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-card border-border text-muted-foreground hover:text-foreground"
@@ -304,7 +304,7 @@ export function CurriculoGeneratorModal({
                 <Sliders className="size-3.5 text-muted-foreground" />
               </label>
               <div className="space-y-2 text-xs">
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showPhoto}
@@ -314,7 +314,7 @@ export function CurriculoGeneratorModal({
                   <span>Foto de Perfil</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showPhone}
@@ -324,7 +324,7 @@ export function CurriculoGeneratorModal({
                   <span>Telefone / WhatsApp</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showAddress}
@@ -334,7 +334,7 @@ export function CurriculoGeneratorModal({
                   <span>Cidade / Estado</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showSummary}
@@ -344,7 +344,7 @@ export function CurriculoGeneratorModal({
                   <span>Resumo Sobre Mim</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showExperiences}
@@ -354,7 +354,7 @@ export function CurriculoGeneratorModal({
                   <span>Experiências Profissionais</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showEducations}
@@ -364,7 +364,7 @@ export function CurriculoGeneratorModal({
                   <span>Formação Acadêmica</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showCertifications}
@@ -374,7 +374,7 @@ export function CurriculoGeneratorModal({
                   <span>Certificações</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showProjects}
@@ -384,7 +384,7 @@ export function CurriculoGeneratorModal({
                   <span>Projetos</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showVolunteering}
@@ -394,7 +394,7 @@ export function CurriculoGeneratorModal({
                   <span>Voluntariado</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showLanguages}
@@ -404,7 +404,7 @@ export function CurriculoGeneratorModal({
                   <span>Idiomas</span>
                 </label>
 
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={showQrCode}
@@ -417,7 +417,7 @@ export function CurriculoGeneratorModal({
             </div>
 
             {/* 5. Link Direto */}
-            <div className="p-3 rounded-2xl bg-muted/40 border border-border/50 space-y-1.5">
+            <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-2">
               <span className="text-[11px] font-bold text-muted-foreground block">
                 Link do Perfil Profissional
               </span>
@@ -442,8 +442,8 @@ export function CurriculoGeneratorModal({
               className={cn(
                 "bg-white text-zinc-900 shadow-2xl transition-all select-none overflow-hidden curriculo-canvas",
                 format === "a4"
-                  ? "w-full max-w-[680px] min-h-[960px] p-8 sm:p-10 space-y-6 rounded-2xl border border-zinc-200"
-                  : "w-full max-w-[420px] aspect-[9/16] p-6 space-y-4 rounded-3xl border border-zinc-200 flex flex-col justify-between"
+                  ? "w-full max-w-[680px] min-h-[960px] p-8 sm:p-10 space-y-6 rounded-lg border border-zinc-200"
+                  : "w-full max-w-[420px] aspect-[9/16] p-6 space-y-4 rounded-lg border border-zinc-200 flex flex-col justify-between"
               )}
               style={{
                 fontFamily:
@@ -474,7 +474,7 @@ export function CurriculoGeneratorModal({
                   )}
 
                   {/* Contatos & Localização */}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1.5 text-xs text-zinc-600 font-medium">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-xs text-zinc-600 font-medium">
                     {profile?.email && (
                       <span className="flex items-center gap-1">
                         <Mail className="size-3 text-zinc-400" />
@@ -505,7 +505,7 @@ export function CurriculoGeneratorModal({
                 {/* Foto / Avatar ou QR Code */}
                 <div className="flex items-center gap-3 shrink-0">
                   {showPhoto && profile?.avatar_url && (
-                    <div className="size-16 sm:size-20 rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-100 shadow-2xs">
+                    <div className="size-16 sm:size-20 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-100 shadow-2xs">
                       <img
                         src={profile.avatar_url}
                         alt={profile.full_name}
@@ -516,7 +516,7 @@ export function CurriculoGeneratorModal({
                   )}
 
                   {showQrCode && (
-                    <div className="hidden sm:flex flex-col items-center gap-1 p-1 rounded-xl border border-zinc-200 bg-white">
+                    <div className="hidden sm:flex flex-col items-center gap-1 p-1 rounded-lg border border-zinc-200 bg-white">
                       <img
                         src={qrCodeUrl}
                         alt="QR Code"
@@ -533,9 +533,9 @@ export function CurriculoGeneratorModal({
 
               {/* ── RESUMO EXECUTIVO / SOBRE ── */}
               {showSummary && summary && (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <h2
-                    className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-0.5"
+                    className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
                     style={{ color: accentColor.hex }}
                   >
                     Resumo Profissional
@@ -550,14 +550,14 @@ export function CurriculoGeneratorModal({
               {showExperiences && experiences.length > 0 && (
                 <div className="space-y-3">
                   <h2
-                    className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-0.5"
+                    className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
                     style={{ color: accentColor.hex }}
                   >
                     Trajetória Profissional
                   </h2>
                   <div className="space-y-3 divide-y divide-zinc-100">
                     {experiences.map((exp: any, i: number) => (
-                      <div key={i} className={cn("space-y-1", i > 0 && "pt-2.5")}>
+                      <div key={i} className={cn("space-y-1", i > 0 && "pt-3")}>
                         <div className="flex items-start justify-between text-xs gap-2">
                           <div>
                             <span className="font-bold text-zinc-900 text-sm">{exp.title}</span>
@@ -576,7 +576,7 @@ export function CurriculoGeneratorModal({
                           </p>
                         )}
                         {exp.skills && exp.skills.length > 0 && (
-                          <p className="text-[11px] text-zinc-500 pt-0.5">
+                          <p className="text-[11px] text-zinc-500 pt-1">
                             <strong className="text-zinc-700">Competências:</strong>{" "}
                             {exp.skills.join(" • ")}
                           </p>
@@ -591,7 +591,7 @@ export function CurriculoGeneratorModal({
               {showEducations && educations.length > 0 && (
                 <div className="space-y-2">
                   <h2
-                    className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-0.5"
+                    className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
                     style={{ color: accentColor.hex }}
                   >
                     Formação Acadêmica
@@ -618,7 +618,7 @@ export function CurriculoGeneratorModal({
               {showCertifications && certifications.length > 0 && (
                 <div className="space-y-2">
                   <h2
-                    className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-0.5"
+                    className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
                     style={{ color: accentColor.hex }}
                   >
                     Certificações
@@ -640,14 +640,14 @@ export function CurriculoGeneratorModal({
               {showProjects && projects.length > 0 && (
                 <div className="space-y-2">
                   <h2
-                    className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-0.5"
+                    className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
                     style={{ color: accentColor.hex }}
                   >
                     Projetos Realizados
                   </h2>
                   <div className="space-y-2">
                     {projects.map((proj: any, i: number) => (
-                      <div key={i} className="text-xs space-y-0.5">
+                      <div key={i} className="text-xs space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-zinc-900">{proj.title}</span>
                           <span className="text-zinc-500 font-mono text-[11px]">
@@ -668,18 +668,18 @@ export function CurriculoGeneratorModal({
               {/* ── IDIOMAS & VOLUNTARIADO ── */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 {showLanguages && languages.length > 0 && (
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <h3
-                      className="text-[11px] font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-0.5"
+                      className="text-[11px] font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
                       style={{ color: accentColor.hex }}
                     >
                       Idiomas
                     </h3>
-                    <div className="flex flex-wrap gap-1.5 text-xs">
+                    <div className="flex flex-wrap gap-2 text-xs">
                       {languages.map((l: any, i: number) => (
                         <span
                           key={i}
-                          className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-800 text-[11px] font-medium"
+                          className="px-2 py-1 rounded-md bg-zinc-100 text-zinc-800 text-[11px] font-medium"
                         >
                           <strong>{l.language}:</strong> {l.proficiency}
                         </span>
@@ -689,9 +689,9 @@ export function CurriculoGeneratorModal({
                 )}
 
                 {showVolunteering && volunteering.length > 0 && (
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <h3
-                      className="text-[11px] font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-0.5"
+                      className="text-[11px] font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
                       style={{ color: accentColor.hex }}
                     >
                       Voluntariado

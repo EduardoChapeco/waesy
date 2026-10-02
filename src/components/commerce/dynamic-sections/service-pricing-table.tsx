@@ -73,14 +73,14 @@ export const ServicePricingTable: React.FC<ServicePricingTableProps> = ({
  <div
  key={idx}
  className={cn(
- "rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all bg-card border",
+ "rounded-lg p-6 sm:p-8 flex flex-col justify-between transition-all bg-card border",
  pkg.popular
  ? "border-primary shadow-xl ring-2 ring-primary/20 relative scale-102 z-10"
  : "border-border/70 shadow-xs hover:border-border"
  )}
  >
  {pkg.popular && (
- <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-sm">
+ <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-sm">
  <Layers className="size-3" />
  <span>Mais Recomendado</span>
  </div>
@@ -97,12 +97,12 @@ export const ServicePricingTable: React.FC<ServicePricingTableProps> = ({
  {pkg.period && <span className="text-xs text-muted-foreground font-medium">{pkg.period}</span>}
  </div>
 
- <div className="space-y-2.5">
+ <div className="space-y-3">
  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">O que está incluso:</p>
  <ul className="space-y-2">
  {(pkg.features || []).map((feat: string, fIdx: number) => (
  <li key={fIdx} className="flex items-start gap-2 text-xs text-foreground/90">
- <Check className="size-3.5 text-emerald-500 shrink-0 mt-0.5" />
+ <Check className="size-3.5 text-emerald-500 shrink-0 mt-1" />
  <span>{feat}</span>
  </li>
  ))}
@@ -113,7 +113,7 @@ export const ServicePricingTable: React.FC<ServicePricingTableProps> = ({
  <Button
  asChild
  className={cn(
- "w-full h-10 mt-6 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs",
+ "w-full h-10 mt-6 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs",
  pkg.popular
  ? "bg-primary text-primary-foreground hover:bg-primary/90"
  : "bg-muted hover:bg-muted/80 text-foreground border border-border/70"

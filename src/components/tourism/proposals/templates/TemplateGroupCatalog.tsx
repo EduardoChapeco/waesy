@@ -37,7 +37,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
               alt="Logo"
-              className="h-10 w-auto max-w-[160px] aspect-[4/1] object-contain brightness-0 invert"
+              className="h-10 w-auto max-w-40 aspect-[4/1] object-contain brightness-0 invert"
               width={160}
               height={40}
             />
@@ -59,11 +59,11 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
             {p.title || "Pacote Grupo Rodoviário"}
           </h1>
           <div className="flex items-center gap-4 font-bold text-lg">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-red-500" /> {p.destination || "Destino"}
             </div>
             <div className="w-1.5 h-1.5 rounded-full bg-foreground/50" />
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-red-500" />{" "}
               {p.travel_start ? formatDate(p.travel_start) : "A definir"}
             </div>
@@ -74,7 +74,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
       <div className="px-12 py-12 grid grid-cols-3 gap-8">
         {/* COLUNA ESQUERDA - DESCRIÇÃO E ROTEIRO (Ocupa 2 colunas) */}
         <div className="col-span-2 space-y-8">
-          <div className="bg-white rounded-3xl p-8 border border-slate-200 break-inside-avoid">
+          <div className="bg-white rounded-lg p-8 border border-slate-200 break-inside-avoid">
             <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-4">
               Sobre a Viagem
             </h2>
@@ -86,7 +86,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
           </div>
 
           {vm.hasItinerary && (
-            <div className="bg-white rounded-3xl p-8 border border-slate-200 break-inside-avoid">
+            <div className="bg-white rounded-lg p-8 border border-slate-200 break-inside-avoid">
               <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-6">
                 Programação
               </h2>
@@ -118,7 +118,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
         {/* COLUNA DIREITA - PAINEL DE VENDAS */}
         <div className="space-y-6">
           <div
-            className="bg-white border-2 rounded-3xl p-6 sticky top-8 break-inside-avoid"
+            className="bg-white border-2 rounded-lg p-6 sticky top-8 break-inside-avoid"
             style={{ borderColor: brand }}
           >
             <div className="text-center mb-6 border-b border-slate-100 pb-6">
@@ -162,24 +162,24 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 break-inside-avoid">
+          <div className="bg-white rounded-lg p-6 border border-slate-200 break-inside-avoid">
             <h3 className="font-black text-slate-900 uppercase tracking-tighter mb-4 text-lg">
               O Pacote Inclui
             </h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-2 text-sm font-semibold text-slate-700">
-                <Bus className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                <Bus className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
                 Transporte Rodoviário Executivo Ida/Volta
               </li>
               {vm.hasHotels && (
                 <li className="flex items-start gap-2 text-sm font-semibold text-slate-700">
-                  <Building2 className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                  <Building2 className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
                   Hospedagem com Café da Manhã
                 </li>
               )}
               {p.includes?.map((inc, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm font-semibold text-slate-700">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-1" />
                   {inc}
                 </li>
               ))}

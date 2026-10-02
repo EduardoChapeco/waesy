@@ -127,12 +127,12 @@ export function OrderEditWizard({
  </div>
 
  {items.length === 0 && (
- <div className="text-center p-4 bg-muted text-muted-foreground rounded-xl text-sm">
+ <div className="text-center p-4 bg-muted text-muted-foreground rounded-lg text-sm">
  Nenhum item restante.
  </div>
  )}
 
- <div className="bg-muted/50 p-4 rounded-xl space-y-2">
+ <div className="bg-muted/50 p-4 rounded-lg space-y-2">
  <div className="flex justify-between text-sm">
  <span>Subtotal Itens</span>
  <span>

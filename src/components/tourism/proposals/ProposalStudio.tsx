@@ -151,7 +151,7 @@ export function ProposalStudio({ draft, save, agency }: ProposalStudioProps) {
                     return (
                       <div
                         key={entry.id}
-                        className="ds-meta border-b border-border/40 pb-1.5 last:border-0 last:pb-0"
+                        className="ds-meta border-b border-border/40 pb-2 last:border-0 last:pb-0"
                       >
                         <div className="flex justify-between items-start gap-1">
                           <span className="font-semibold text-foreground leading-tight">
@@ -162,7 +162,7 @@ export function ProposalStudio({ draft, save, agency }: ProposalStudioProps) {
                           </span>
                         </div>
                         {descText && (
-                          <p className="ds-meta text-muted-foreground mt-0.5">{descText}</p>
+                          <p className="ds-meta text-muted-foreground mt-1">{descText}</p>
                         )}
                       </div>
                     );

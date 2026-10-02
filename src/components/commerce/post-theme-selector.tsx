@@ -15,7 +15,7 @@ export function PostThemeSelector({ selectedThemeId, onSelectTheme }: PostThemeS
  return (
  <div className="space-y-3">
  <div className="flex items-center justify-between">
- <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Layers className="size-3.5 text-primary" />
  Estilo Visual / Tema do Post
  </label>
@@ -24,7 +24,7 @@ export function PostThemeSelector({ selectedThemeId, onSelectTheme }: PostThemeS
  </span>
  </div>
 
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
  {PRESENTATION_THEMES.map((theme) => {
  const isSelected = selectedThemeId === theme.id;
  return (
@@ -33,14 +33,14 @@ export function PostThemeSelector({ selectedThemeId, onSelectTheme }: PostThemeS
  type="button"
  onClick={() => onSelectTheme(theme.id)}
  className={cn(
- "p-3 rounded-xl border text-left flex flex-col justify-between transition-all duration-150 relative overflow-hidden",
+ "p-3 rounded-lg border text-left flex flex-col justify-between transition-all duration-150 relative overflow-hidden",
  isSelected
  ? "border-primary ring-1 ring-primary/40 bg-card "
  : "border-border/70 bg-card hover:bg-muted/40 hover:border-border",
  )}
  >
  <div className="flex items-center justify-between w-full mb-2">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <div
  className="size-3 rounded-full border border-black/10"
  style={{ backgroundColor: theme.colors.primary }}
@@ -61,7 +61,7 @@ export function PostThemeSelector({ selectedThemeId, onSelectTheme }: PostThemeS
  <p className="text-xs font-bold text-foreground leading-tight truncate">
  {theme.name}
  </p>
- <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
+ <p className="text-[10px] text-muted-foreground line-clamp-1 mt-1">
  {theme.description}
  </p>
  </div>

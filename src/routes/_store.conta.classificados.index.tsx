@@ -119,27 +119,27 @@ export const Route = createFileRoute("/_store/conta/classificados/")({
 function ContaClassificadosErrorComponent({ error }: { error: any }) {
   return (
     <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-5">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-1">
         <Tag className="size-8" />
       </div>
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <h1 className="text-xl font-bold text-foreground">Falha ao Carregar Seus Anúncios</h1>
         <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
           Não foi possível sincronizar sua lista de anúncios gerenciados no momento.
         </p>
       </div>
       {error?.message && (
-        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
           {error.message}
         </pre>
       )}
       <div className="pt-2 flex items-center justify-center gap-3">
         <Button
           variant="default"
-          className="rounded-xl text-xs h-11 px-5 font-bold cursor-pointer"
+          className="rounded-lg text-xs h-11 px-5 font-bold cursor-pointer"
           onClick={() => window.location.reload()}
         >
-          <RefreshCw className="size-3.5 mr-1.5" />
+          <RefreshCw className="size-3.5 mr-2" />
           <span>Tentar Novamente</span>
         </Button>
       </div>
@@ -381,7 +381,7 @@ function ClassificadosIndex() {
           <Button
             asChild
             size="sm"
-            className="hidden sm:inline-flex h-11 px-4 rounded-xl font-bold gap-1.5 bg-primary text-primary-foreground"
+            className="hidden sm:inline-flex h-11 px-4 rounded-lg font-bold gap-2 bg-primary text-primary-foreground"
           >
             <Link to="/conta/classificados/novo">
               <Plus className="size-4" />
@@ -393,8 +393,8 @@ function ClassificadosIndex() {
 
       {/* ── Aviso Gateway ── */}
       {!gatewayLoading && !gatewayAvailable && (
-        <div className="mx-4 sm:mx-0 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5 text-xs text-amber-700 dark:text-amber-400">
-          <AlertTriangle className="size-4 shrink-0 mt-0.5" />
+        <div className="mx-4 sm:mx-0 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-700 dark:text-amber-400">
+          <AlertTriangle className="size-4 shrink-0 mt-1" />
           <div>
             <span className="font-bold">Impulsionamento indisponível.</span> Nenhum gateway de pagamento está configurado na plataforma.
           </div>
@@ -428,13 +428,13 @@ function ClassificadosIndex() {
               return (
                 <div
                   key={ad.id}
-                  className="flex items-center justify-between p-3.5 gap-3 hover:bg-muted/20 active:bg-muted/40 transition-colors"
+                  className="flex items-center justify-between p-4 gap-3 hover:bg-muted/20 active:bg-muted/40 transition-colors"
                 >
                   {/* Thumbnail Quadrada Edge com Aspect 1:1 */}
                   <Link
                     to="/classificados/$id"
                     params={{ id: ad.id }}
-                    className="relative size-16 shrink-0 rounded-xl overflow-hidden bg-muted flex items-center justify-center"
+                    className="relative size-16 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center"
                   >
                     {thumbUrl ? (
                       isVideo ? (
@@ -454,7 +454,7 @@ function ClassificadosIndex() {
 
                   {/* Conteúdo Central */}
                   <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Link
                         to="/classificados/$id"
                         params={{ id: ad.id }}
@@ -464,7 +464,7 @@ function ClassificadosIndex() {
                       </Link>
                       <Badge
                         variant="outline"
-                        className={cn("text-[9px] font-mono px-1.5 py-0 shrink-0", statusConf.className)}
+                        className={cn("text-[9px] font-mono px-2 py-0 shrink-0", statusConf.className)}
                       >
                         {statusConf.label}
                       </Badge>
@@ -481,15 +481,15 @@ function ClassificadosIndex() {
 
                     {/* Telemetria Compacta */}
                     <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
-                      <span className="flex items-center gap-0.5" title="Visualizações">
+                      <span className="flex items-center gap-1" title="Visualizações">
                         <Eye className="size-2.5" />
                         <span>{viewsCount}</span>
                       </span>
-                      <span className="flex items-center gap-0.5 text-sky-600 dark:text-sky-400" title="Cliques">
+                      <span className="flex items-center gap-1 text-sky-600 dark:text-sky-400" title="Cliques">
                         <MousePointer className="size-2.5" />
                         <span>{clicksCount}</span>
                       </span>
-                      <span className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400" title="Contatos">
+                      <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400" title="Contatos">
                         <MessageCircle className="size-2.5" />
                         <span>{whatsappCount}</span>
                       </span>
@@ -504,7 +504,7 @@ function ClassificadosIndex() {
                       onClick={() => handleOpenBoostModal(ad)}
                       disabled={!gatewayAvailable || gatewayLoading}
                       className={cn(
-                        "size-10 min-w-[40px] rounded-xl cursor-pointer transition-all active:scale-95 shadow-none",
+                        "size-10 min-w-[40px] rounded-lg cursor-pointer transition-all active:scale-95 shadow-none",
                         !gatewayAvailable
                           ? "bg-muted text-muted-foreground opacity-50"
                           : isBoosted
@@ -521,20 +521,20 @@ function ClassificadosIndex() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-10 min-w-[40px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                          className="size-10 min-w-[40px] rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60"
                         >
                           <MoreVertical className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-52 rounded-2xl p-1.5 border-border/80">
-                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5">
+                      <DropdownMenuContent align="end" className="w-52 rounded-lg p-2 border-border/80">
+                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold py-3">
                           <Link to="/conta/classificados/novo" search={{ editId: ad.id }}>
                             <Edit3 className="size-4 mr-2 text-muted-foreground" />
                             <span>Editar Anúncio</span>
                           </Link>
                         </DropdownMenuItem>
 
-                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5">
+                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold py-3">
                           <Link to="/classificados/$id" params={{ id: ad.id }}>
                             <ExternalLink className="size-4 mr-2 text-muted-foreground" />
                             <span>Ver na Vitrine</span>
@@ -549,7 +549,7 @@ function ClassificadosIndex() {
                             })
                           }
                           disabled={toggleStatusMutation.isPending}
-                          className="rounded-xl cursor-pointer text-xs font-semibold py-2.5"
+                          className="rounded-lg cursor-pointer text-xs font-semibold py-3"
                         >
                           {isPaused ? (
                             <>
@@ -573,7 +573,7 @@ function ClassificadosIndex() {
                               })
                             }
                             disabled={toggleStatusMutation.isPending}
-                            className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-blue-600 dark:text-blue-400"
+                            className="rounded-lg cursor-pointer text-xs font-semibold py-3 text-blue-600 dark:text-blue-400"
                           >
                             <CheckCircle2 className="size-4 mr-2" />
                             <span>Marcar como Vendido</span>
@@ -582,7 +582,7 @@ function ClassificadosIndex() {
 
                         <DropdownMenuItem
                           onClick={() => setAdToDelete(ad)}
-                          className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-destructive"
+                          className="rounded-lg cursor-pointer text-xs font-semibold py-3 text-destructive"
                         >
                           <Trash2 className="size-4 mr-2" />
                           <span>Excluir Anúncio</span>
@@ -591,7 +591,7 @@ function ClassificadosIndex() {
                         <DropdownMenuSeparator />
 
                         {ad.store_id ? (
-                          <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-primary">
+                          <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold py-3 text-primary">
                             <Link to="/workspace">
                               <Building2 className="size-4 mr-2" />
                               <span>Acessar Loja Pro</span>
@@ -600,7 +600,7 @@ function ClassificadosIndex() {
                         ) : (
                           <DropdownMenuItem
                             onClick={() => setMigratingAd(ad)}
-                            className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-primary"
+                            className="rounded-lg cursor-pointer text-xs font-semibold py-3 text-primary"
                           >
                             <Star className="size-4 mr-2" />
                             <span>Migrar para Loja Pro</span>
@@ -617,7 +617,7 @@ function ClassificadosIndex() {
           {/* ══════════════════════════════════════════════════════════════════
               DESKTOP VIEW: High-Density Bento Cards (>=640px)
           ══════════════════════════════════════════════════════════════════ */}
-          <div className="hidden sm:block space-y-3.5">
+          <div className="hidden sm:block space-y-4">
             {filtered.map((ad: any) => {
               const statusConf = STATUS_CONFIG[ad.status] || STATUS_CONFIG.draft;
               const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
@@ -633,12 +633,12 @@ function ClassificadosIndex() {
               return (
                 <article
                   key={ad.id}
-                  className="relative overflow-hidden rounded-2xl border border-border/60 bg-card min-h-[144px] pl-36 sm:pl-44 transition-all hover:border-primary/40 shadow-xs"
+                  className="relative overflow-hidden rounded-lg border border-border/60 bg-card min-h-[144px] pl-36 sm:pl-44 transition-all hover:border-primary/40 shadow-xs"
                 >
                   <Link
                     to="/classificados/$id"
                     params={{ id: ad.id }}
-                    className="absolute inset-y-0 left-0 w-36 sm:w-44 overflow-hidden rounded-l-2xl bg-muted flex items-center justify-center group"
+                    className="absolute inset-y-0 left-0 w-36 sm:w-44 overflow-hidden rounded-l-lg bg-muted flex items-center justify-center group"
                   >
                     {thumbUrl ? (
                       isVideo ? (
@@ -650,14 +650,14 @@ function ClassificadosIndex() {
                       <ImageIcon className="size-8 text-muted-foreground/35" />
                     )}
                     {isBoosted && (
-                      <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-amber-500 text-black text-[9px] font-black uppercase tracking-wider shadow-xs">
+                      <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-amber-500 text-black text-[9px] font-black uppercase tracking-wider shadow-xs">
                         Boost
                       </span>
                     )}
                   </Link>
 
                   <div className="p-4 sm:p-5 flex flex-col justify-between min-h-[144px] gap-3">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <Link
                           to="/classificados/$id"
@@ -668,7 +668,7 @@ function ClassificadosIndex() {
                         </Link>
                         <Badge
                           variant="outline"
-                          className={cn("text-[10px] font-mono px-2 py-0.5 shrink-0", statusConf.className)}
+                          className={cn("text-[10px] font-mono px-2 py-1 shrink-0", statusConf.className)}
                         >
                           {statusConf.label}
                         </Badge>
@@ -688,7 +688,7 @@ function ClassificadosIndex() {
                         {(ad.location_city || ad.location_name) && (
                           <>
                             <span>•</span>
-                            <span className="truncate max-w-[160px]">
+                            <span className="truncate max-w-40">
                               {ad.location_city || ad.location_name}
                             </span>
                           </>
@@ -697,9 +697,9 @@ function ClassificadosIndex() {
                     </div>
 
                     <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40">
-                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 sm:gap-2 flex-wrap">
                         <span
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground"
                           title="Visualizações reais auditadas"
                         >
                           <Eye className="size-3" />
@@ -707,7 +707,7 @@ function ClassificadosIndex() {
                         </span>
 
                         <span
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground"
                           title="Cliques no anúncio"
                         >
                           <MousePointer className="size-3 text-sky-600 dark:text-sky-400" />
@@ -715,7 +715,7 @@ function ClassificadosIndex() {
                         </span>
 
                         <span
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground"
                           title="Contatos WhatsApp e Propostas"
                         >
                           <MessageCircle className="size-3 text-emerald-600 dark:text-emerald-400" />
@@ -727,13 +727,13 @@ function ClassificadosIndex() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         <Button
                           type="button"
                           onClick={() => handleOpenBoostModal(ad)}
                           disabled={!gatewayAvailable || gatewayLoading}
                           className={cn(
-                            "h-10 px-3.5 rounded-xl font-bold text-xs gap-1.5 cursor-pointer transition-all active:scale-95 shadow-none",
+                            "h-10 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer transition-all active:scale-95 shadow-none",
                             !gatewayAvailable
                               ? "bg-muted text-muted-foreground border border-border/50 cursor-not-allowed opacity-60"
                               : isBoosted
@@ -750,21 +750,21 @@ function ClassificadosIndex() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="size-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
+                              className="size-10 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
                               aria-label="Opções do anúncio"
                             >
                               <MoreVertical className="size-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-52 rounded-2xl p-1.5 border-border/80">
-                            <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5">
+                          <DropdownMenuContent align="end" className="w-52 rounded-lg p-2 border-border/80">
+                            <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold py-3">
                               <Link to="/conta/classificados/novo" search={{ editId: ad.id }}>
                                 <Edit3 className="size-4 mr-2 text-muted-foreground" />
                                 <span>Editar Anúncio</span>
                               </Link>
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5">
+                            <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold py-3">
                               <Link to="/classificados/$id" params={{ id: ad.id }}>
                                 <ExternalLink className="size-4 mr-2 text-muted-foreground" />
                                 <span>Ver na Vitrine</span>
@@ -779,7 +779,7 @@ function ClassificadosIndex() {
                                 })
                               }
                               disabled={toggleStatusMutation.isPending}
-                              className="rounded-xl cursor-pointer text-xs font-semibold py-2.5"
+                              className="rounded-lg cursor-pointer text-xs font-semibold py-3"
                             >
                               {isPaused ? (
                                 <>
@@ -803,7 +803,7 @@ function ClassificadosIndex() {
                                   })
                                 }
                                 disabled={toggleStatusMutation.isPending}
-                                className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-blue-600 dark:text-blue-400"
+                                className="rounded-lg cursor-pointer text-xs font-semibold py-3 text-blue-600 dark:text-blue-400"
                               >
                                 <CheckCircle2 className="size-4 mr-2" />
                                 <span>Marcar como Vendido</span>
@@ -812,7 +812,7 @@ function ClassificadosIndex() {
 
                             <DropdownMenuItem
                               onClick={() => setAdToDelete(ad)}
-                              className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-destructive"
+                              className="rounded-lg cursor-pointer text-xs font-semibold py-3 text-destructive"
                             >
                               <Trash2 className="size-4 mr-2" />
                               <span>Excluir Anúncio</span>
@@ -821,7 +821,7 @@ function ClassificadosIndex() {
                             <DropdownMenuSeparator />
 
                             {ad.store_id ? (
-                              <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-primary">
+                              <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold py-3 text-primary">
                                 <Link to="/workspace">
                                   <Building2 className="size-4 mr-2" />
                                   <span>Acessar Loja Pro</span>
@@ -830,7 +830,7 @@ function ClassificadosIndex() {
                             ) : (
                               <DropdownMenuItem
                                 onClick={() => setMigratingAd(ad)}
-                                className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-primary"
+                                className="rounded-lg cursor-pointer text-xs font-semibold py-3 text-primary"
                               >
                                 <Star className="size-4 mr-2" />
                                 <span>Migrar para Loja Pro</span>
@@ -847,7 +847,7 @@ function ClassificadosIndex() {
           </div>
         </>
       ) : (
-        <div className="mx-4 sm:mx-0 rounded-2xl border border-border/60 bg-card p-8 text-center space-y-3">
+        <div className="mx-4 sm:mx-0 rounded-lg border border-border/60 bg-card p-8 text-center space-y-3">
           <p className="text-sm font-semibold text-foreground">
             {searchTerm ? "Nenhum anúncio encontrado para sua busca" : "Você ainda não possui anúncios ativos"}
           </p>
@@ -856,9 +856,9 @@ function ClassificadosIndex() {
               ? "Tente buscar por outro termo ou ajuste os filtros."
               : "Use o botão + para publicar seu primeiro anúncio."}
           </p>
-          <Button asChild size="sm" className="rounded-xl font-bold mt-2">
+          <Button asChild size="sm" className="rounded-lg font-bold mt-2">
             <Link to="/conta/classificados/novo">
-              <Plus className="size-4 mr-1.5" />
+              <Plus className="size-4 mr-2" />
               <span>Publicar Anúncio</span>
             </Link>
           </Button>
@@ -876,7 +876,7 @@ function ClassificadosIndex() {
 
       {/* ── FILTRO SHEET CANÔNICO (100dvh no Mobile / Dialog no Desktop) ── */}
       <Sheet open={isMlFilterOpen} onOpenChange={setIsMlFilterOpen}>
-        <SheetContent side="bottom" className="h-[90dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-md mx-auto rounded-t-3xl sm:rounded-2xl p-0 overflow-hidden flex flex-col">
+        <SheetContent side="bottom" className="h-[90dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-md mx-auto rounded-t-lg sm:rounded-lg p-0 overflow-hidden flex flex-col">
           <SheetHeader className="p-4 border-b border-border/40 shrink-0 text-left flex flex-row items-center justify-between">
             <SheetTitle className="text-base font-bold text-foreground">
               Filtrar Anúncios
@@ -910,7 +910,7 @@ function ClassificadosIndex() {
                     type="button"
                     onClick={() => setStatusFilter(st.id)}
                     className={cn(
-                      "h-11 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center transition-all cursor-pointer",
+                      "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-center transition-all cursor-pointer",
                       statusFilter === st.id
                         ? "border-primary bg-primary/10 text-primary font-bold"
                         : "border-border/60 bg-card text-foreground"
@@ -931,7 +931,7 @@ function ClassificadosIndex() {
                   type="button"
                   onClick={() => setCategoryFilter("all")}
                   className={cn(
-                    "h-11 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center transition-all cursor-pointer",
+                    "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-center transition-all cursor-pointer",
                     categoryFilter === "all"
                       ? "border-primary bg-primary/10 text-primary font-bold"
                       : "border-border/60 bg-card text-foreground"
@@ -945,7 +945,7 @@ function ClassificadosIndex() {
                     type="button"
                     onClick={() => setCategoryFilter(key)}
                     className={cn(
-                      "h-11 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center transition-all cursor-pointer",
+                      "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-center transition-all cursor-pointer",
                       categoryFilter === key
                         ? "border-primary bg-primary/10 text-primary font-bold"
                         : "border-border/60 bg-card text-foreground"
@@ -968,14 +968,14 @@ function ClassificadosIndex() {
                 setSearchTerm("");
                 setIsMlFilterOpen(false);
               }}
-              className="h-11 flex-1 rounded-xl font-bold text-xs"
+              className="h-11 flex-1 rounded-lg font-bold text-xs"
             >
               Limpar
             </Button>
             <Button
               type="button"
               onClick={() => setIsMlFilterOpen(false)}
-              className="h-11 flex-1 rounded-xl font-bold text-xs bg-primary text-primary-foreground"
+              className="h-11 flex-1 rounded-lg font-bold text-xs bg-primary text-primary-foreground"
             >
               Ver {filtered.length} Anúncio(s)
             </Button>
@@ -1025,9 +1025,9 @@ function ClassificadosIndex() {
 
       {/* ── MODAL DE MIGRAÇÃO PARA LOJA PRO ── */}
       <Dialog open={!!migratingAd} onOpenChange={(open) => !open && setMigratingAd(null)}>
-        <DialogContent className="max-w-md rounded-2xl p-6 space-y-4">
+        <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
           <DialogHeader>
-            <div className="size-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-1">
+            <div className="size-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-1">
               <Building2 className="size-6" />
             </div>
             <DialogTitle className="text-base font-bold text-foreground">
@@ -1038,7 +1038,7 @@ function ClassificadosIndex() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 space-y-2 text-xs text-muted-foreground">
+          <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2 text-foreground font-semibold">
               <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
               <span>Painel de gestão, pedidos e catálogo</span>
@@ -1058,7 +1058,7 @@ function ClassificadosIndex() {
               type="button"
               variant="outline"
               onClick={() => setMigratingAd(null)}
-              className="flex-1 h-10 rounded-xl text-xs font-semibold cursor-pointer"
+              className="flex-1 h-10 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
@@ -1066,7 +1066,7 @@ function ClassificadosIndex() {
               type="button"
               onClick={handleMigrateToPro}
               disabled={isMigrating}
-              className="flex-1 h-10 rounded-xl text-xs font-bold bg-primary text-primary-foreground cursor-pointer shadow-xs"
+              className="flex-1 h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer shadow-xs"
             >
               {isMigrating ? <Loader2 className="size-4 animate-spin mr-1" /> : <Star className="size-4 mr-1" />}
               <span>Confirmar Migração</span>
@@ -1077,9 +1077,9 @@ function ClassificadosIndex() {
 
       {/* ── MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (CORREÇÃO DE GAP LÓGICO E2E) ── */}
       <Dialog open={!!adToDelete} onOpenChange={(open) => !open && setAdToDelete(null)}>
-        <DialogContent className="max-w-md rounded-2xl p-6 space-y-4">
+        <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
           <DialogHeader>
-            <div className="size-12 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive mb-1">
+            <div className="size-12 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive mb-1">
               <Trash2 className="size-6" />
             </div>
             <DialogTitle className="text-base font-bold text-foreground">
@@ -1096,7 +1096,7 @@ function ClassificadosIndex() {
               variant="outline"
               onClick={() => setAdToDelete(null)}
               disabled={deleteMutation.isPending}
-              className="flex-1 h-10 rounded-xl text-xs font-semibold cursor-pointer"
+              className="flex-1 h-10 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
@@ -1109,7 +1109,7 @@ function ClassificadosIndex() {
                 }
               }}
               disabled={deleteMutation.isPending}
-              className="flex-1 h-10 rounded-xl text-xs font-bold cursor-pointer shadow-xs"
+              className="flex-1 h-10 rounded-lg text-xs font-bold cursor-pointer shadow-xs"
             >
               {deleteMutation.isPending ? (
                 <Loader2 className="size-4 animate-spin mr-1" />

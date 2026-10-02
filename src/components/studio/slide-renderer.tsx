@@ -46,7 +46,7 @@ export function SlideRenderer({
  return (
  <div
  style={{ backgroundColor: bgColor }}
- className={`w-full ${aspectClass} rounded-2xl p-8 flex flex-col justify-between relative overflow-hidden shadow-2xl border border-white/10 ${
+ className={`w-full ${aspectClass} rounded-lg p-8 flex flex-col justify-between relative overflow-hidden shadow-2xl border border-white/10 ${
  isDark ? 'text-white' : 'text-slate-900'
  } ${className}`}
  >
@@ -100,7 +100,7 @@ export function SlideRenderer({
  </p>
  )}
  {slide.imageUrl && (
- <div className="rounded-2xl overflow-hidden border border-white/10 shadow-lg max-h-48 mt-2">
+ <div className="rounded-lg overflow-hidden border border-white/10 shadow-lg max-h-48 mt-2">
  <img
  src={slide.imageUrl}
  alt="Slide visual"
@@ -118,7 +118,7 @@ export function SlideRenderer({
  {slide.ctaText ? (
  <div
  style={{ backgroundColor: accent }}
- className="px-4 py-2 rounded-xl text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-lg"
+ className="px-4 py-2 rounded-lg text-slate-950 text-xs font-bold flex items-center gap-2 shadow-lg"
  >
  {slide.ctaText}
  <ArrowRight className="w-3.5 h-3.5" />

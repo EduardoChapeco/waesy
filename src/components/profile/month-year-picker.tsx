@@ -74,9 +74,9 @@ export function MonthYearPicker({
   };
 
   return (
-    <div className={cn("space-y-1.5", className)}>
+    <div className={cn("space-y-2", className)}>
       {label && (
-        <Label className="text-xs font-bold text-foreground/90 flex items-center gap-1.5">
+        <Label className="text-xs font-bold text-foreground/90 flex items-center gap-2">
           <Calendar className="size-3 text-muted-foreground" />
           <span>{label}</span>
         </Label>
@@ -89,10 +89,10 @@ export function MonthYearPicker({
           onValueChange={handleMonthChange}
           disabled={disabled}
         >
-          <SelectTrigger className="h-9 rounded-xl text-xs bg-background border-border/60 focus:border-primary transition-all">
+          <SelectTrigger className="h-9 rounded-lg text-xs bg-background border-border/60 focus:border-primary transition-all">
             <SelectValue placeholder={placeholderMonth} />
           </SelectTrigger>
-          <SelectContent className="rounded-2xl max-h-56">
+          <SelectContent className="rounded-lg max-h-56">
             {MONTHS.map((m) => (
               <SelectItem key={m.value} value={m.value} className="text-xs">
                 {m.label} ({m.short})
@@ -107,10 +107,10 @@ export function MonthYearPicker({
           onValueChange={handleYearChange}
           disabled={disabled}
         >
-          <SelectTrigger className="h-9 rounded-xl text-xs bg-background border-border/60 focus:border-primary font-mono transition-all">
+          <SelectTrigger className="h-9 rounded-lg text-xs bg-background border-border/60 focus:border-primary font-mono transition-all">
             <SelectValue placeholder={placeholderYear} />
           </SelectTrigger>
-          <SelectContent className="rounded-2xl max-h-56">
+          <SelectContent className="rounded-lg max-h-56">
             {YEARS.map((y) => (
               <SelectItem key={y} value={y} className="text-xs font-mono">
                 {y}
@@ -166,7 +166,7 @@ export function ExperienceDateRangeGroup({
   }, [durationMonths]);
 
   return (
-    <div className={cn("space-y-3 p-3.5 rounded-2xl bg-muted/20 border border-border/40", className)}>
+    <div className={cn("space-y-3 p-4 rounded-lg bg-muted/20 border border-border/40", className)}>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Data de Início */}
         <MonthYearPicker
@@ -177,14 +177,14 @@ export function ExperienceDateRangeGroup({
         />
 
         {/* Data de Término ou Cargo Atual */}
-        <div className="space-y-1.5">
-          <Label className="text-xs font-bold text-foreground/90 flex items-center gap-1.5">
+        <div className="space-y-2">
+          <Label className="text-xs font-bold text-foreground/90 flex items-center gap-2">
             <Clock className="size-3 text-muted-foreground" />
             <span>Mês e Ano de Término</span>
           </Label>
 
           {isCurrent ? (
-            <div className="h-9 rounded-xl border border-dashed border-primary/40 bg-primary/5 flex items-center px-3 text-xs text-primary font-bold">
+            <div className="h-9 rounded-lg border border-dashed border-primary/40 bg-primary/5 flex items-center px-3 text-xs text-primary font-bold">
               ⚡ Cargo Atual (Presente)
             </div>
           ) : (
@@ -212,7 +212,7 @@ export function ExperienceDateRangeGroup({
 
         {/* Live Duration Counter */}
         {startYear && durationText && (
-          <div className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+          <div className="inline-flex items-center gap-2 text-[11px] font-mono font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
             <span>Permanência:</span>
             <span>{durationText}</span>
           </div>

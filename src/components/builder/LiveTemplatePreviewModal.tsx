@@ -36,7 +36,7 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
         {/* ── 1. TopBar de Controle do Live Preview (Padrão Wix / Webflow) ── */}
         <header className="h-14 border-b border-border/70 bg-card px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 z-20">
           <div className="flex items-center gap-3 min-w-0">
-            <span className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <span className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <Eye className="size-4" />
             </span>
             <div className="min-w-0">
@@ -55,11 +55,11 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
           </div>
 
           {/* Toggle Responsivo Desktop vs Mobile */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/40 border border-border/60">
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/40 border border-border/60">
             <button
               type="button"
               onClick={() => setViewport("desktop")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 viewport === "desktop"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -71,7 +71,7 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
             <button
               type="button"
               onClick={() => setViewport("mobile")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 viewport === "mobile"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -89,7 +89,7 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="h-9 px-3 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Voltar
             </Button>
@@ -100,7 +100,7 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
                 onSelectTemplate(template.id);
                 onClose();
               }}
-              className="h-9 px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+              className="h-9 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
             >
               <Sparkles className="size-3.5" />
               <span>Usar este Modelo</span>
@@ -113,8 +113,8 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
           <div
             className={`transition-all duration-300 ${
               viewport === "mobile"
-                ? "w-full max-w-[390px] min-h-[780px] shadow-2xl rounded-3xl border border-border/80 overflow-hidden bg-background my-2 shrink-0"
-                : "w-full max-w-6xl shadow-sm bg-background rounded-2xl border border-border/60 my-2"
+                ? "w-full max-w-[390px] min-h-[780px] shadow-2xl rounded-lg border border-border/80 overflow-hidden bg-background my-2 shrink-0"
+                : "w-full max-w-6xl shadow-sm bg-background rounded-lg border border-border/60 my-2"
             }`}
           >
             <OmniPageRenderer document={previewDocument} />

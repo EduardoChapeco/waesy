@@ -197,7 +197,7 @@ function HrFinancePage() {
             onClick={handleExportCsv}
             variant="outline"
             size="sm"
-            className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+            className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
           >
             <FileSpreadsheet className="size-3.5 text-emerald-600" />
             <span>Exportar Folha CSV</span>
@@ -207,8 +207,8 @@ function HrFinancePage() {
 
       {/* ── KPIS CONSOLIDADOS DE FOLHA ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Wallet className="size-3.5 text-primary" />
             Total Líquido a Pagar
           </span>
@@ -220,8 +220,8 @@ function HrFinancePage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ArrowDownRight className="size-3.5 text-rose-600" />
             Total Vales Concedidos (-)
           </span>
@@ -233,8 +233,8 @@ function HrFinancePage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ArrowUpRight className="size-3.5 text-emerald-600" />
             Bônus & Ajustes (+)
           </span>
@@ -246,8 +246,8 @@ function HrFinancePage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Users className="size-3.5 text-foreground" />
             Colaboradores na Folha
           </span>
@@ -261,22 +261,22 @@ function HrFinancePage() {
       </div>
 
       {/* ── BARRA DE CONTROLE & BUSCA ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nome ou cargo..."
-            className="pl-10 h-10 rounded-xl text-xs bg-background"
+            className="pl-10 h-10 rounded-lg text-xs bg-background"
           />
         </div>
 
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60 self-start sm:self-auto">
+        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setRoleFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               roleFilter === "all"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -287,7 +287,7 @@ function HrFinancePage() {
           <button
             type="button"
             onClick={() => setRoleFilter("seller")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               roleFilter === "seller"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -298,7 +298,7 @@ function HrFinancePage() {
           <button
             type="button"
             onClick={() => setRoleFilter("manager")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               roleFilter === "manager"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -320,15 +320,15 @@ function HrFinancePage() {
           {filteredStaff.map((emp: any) => (
             <div
               key={emp.id}
-              className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs hover:border-primary/40 transition-colors"
+              className="bg-card rounded-lg border border-border/70 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs hover:border-primary/40 transition-colors"
             >
-              <div className="flex items-center gap-3.5">
-                <div className="h-11 w-11 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-bold text-base shrink-0 border border-primary/20">
+              <div className="flex items-center gap-4">
+                <div className="h-11 w-11 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-base shrink-0 border border-primary/20">
                   {emp.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-foreground">{emp.name}</h3>
-                  <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-2 mt-1">
                     <Badge variant="outline" className="text-xs font-bold capitalize">
                       {emp.role}
                     </Badge>
@@ -360,7 +360,7 @@ function HrFinancePage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleOpenStatement(emp.id)}
-                    className="rounded-xl text-xs font-bold h-9 gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="rounded-lg text-xs font-bold h-9 gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <FileText className="size-3.5" />
                     <span>Extrato</span>
@@ -369,7 +369,7 @@ function HrFinancePage() {
                   <Button
                     size="sm"
                     onClick={() => handleOpenModal(emp)}
-                    className="rounded-xl text-xs font-bold h-9 gap-1.5 bg-primary text-primary-foreground cursor-pointer shadow-2xs"
+                    className="rounded-lg text-xs font-bold h-9 gap-2 bg-primary text-primary-foreground cursor-pointer shadow-2xs"
                   >
                     <Plus className="size-3.5" />
                     <span>Lançar Vale / Bônus</span>
@@ -396,13 +396,13 @@ function HrFinancePage() {
         ) : statementData ? (
           <div className="space-y-6 py-4">
             {/* Header Colaborador */}
-            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-muted/40 border border-border/60">
-              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shrink-0 border border-primary/20">
+            <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/40 border border-border/60">
+              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shrink-0 border border-primary/20">
                 {statementData.employee.name.charAt(0).toUpperCase()}
               </div>
               <div>
                 <h4 className="font-bold text-base text-foreground">{statementData.employee.name}</h4>
-                <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex items-center gap-2 mt-1">
                   <Badge variant="outline" className="text-xs font-bold capitalize">
                     {statementData.employee.role}
                   </Badge>
@@ -413,21 +413,21 @@ function HrFinancePage() {
 
             {/* Resumo Financeiro */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
+              <div className="p-3 rounded-lg border border-border/70 bg-card space-y-1">
                 <span className="text-xs font-bold text-muted-foreground uppercase">Créditos (+)</span>
                 <div className="text-sm font-mono font-bold text-emerald-600">
                   +{formatMoney(statementData.summary.totalCreditsCents)}
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
+              <div className="p-3 rounded-lg border border-border/70 bg-card space-y-1">
                 <span className="text-xs font-bold text-muted-foreground uppercase">Vales / Débitos (-)</span>
                 <div className="text-sm font-mono font-bold text-rose-600">
                   -{formatMoney(statementData.summary.totalDebitsCents)}
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl border border-border/70 bg-card space-y-0.5">
+              <div className="p-3 rounded-lg border border-border/70 bg-card space-y-1">
                 <span className="text-xs font-bold text-muted-foreground uppercase">Saldo Líquido</span>
                 <div className={`text-sm font-mono font-bold ${
                   statementData.summary.netBalanceCents > 0
@@ -447,7 +447,7 @@ function HrFinancePage() {
                 Histórico de Lançamentos ({statementData.records?.length || 0})
               </h5>
 
-              <div className="rounded-xl border border-border/70 overflow-hidden bg-card">
+              <div className="rounded-lg border border-border/70 overflow-hidden bg-card">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border/60 hover:bg-transparent">
@@ -513,26 +513,26 @@ function HrFinancePage() {
         size="default"
         footer={
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={loading} className="rounded-xl text-xs font-bold">
+            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={loading} className="rounded-lg text-xs font-bold">
               Cancelar
             </Button>
-            <Button onClick={handleSubmit} disabled={loading} className="rounded-xl text-xs font-bold bg-primary text-primary-foreground">
+            <Button onClick={handleSubmit} disabled={loading} className="rounded-lg text-xs font-bold bg-primary text-primary-foreground">
               {loading ? "Registrando..." : "Confirmar Lançamento"}
             </Button>
           </div>
         }
       >
         <div className="space-y-4 py-4">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-bold">Tipo de Lançamento</Label>
             <Select
               value={formData.type}
               onValueChange={(v: any) => setFormData((prev) => ({ ...prev, type: v }))}
             >
-              <SelectTrigger className="h-10 rounded-xl text-xs">
+              <SelectTrigger className="h-10 rounded-lg text-xs">
                 <SelectValue placeholder="Selecione o tipo..." />
               </SelectTrigger>
-              <SelectContent className="rounded-xl">
+              <SelectContent className="rounded-lg">
                 <SelectItem value="advance">
                   <div className="flex items-center text-rose-600 font-medium text-xs">
                     <ArrowDownRight className="w-4 h-4 mr-2" /> Vale / Adiantamento (Débito da Folha)
@@ -552,7 +552,7 @@ function HrFinancePage() {
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-bold">Valor (R$)</Label>
             <Input
               type="number"
@@ -560,17 +560,17 @@ function HrFinancePage() {
               placeholder="Ex: 150.00"
               value={formData.amount}
               onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
-              className="h-10 rounded-xl font-mono text-xs"
+              className="h-10 rounded-lg font-mono text-xs"
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-bold">Descrição</Label>
             <Input
               placeholder="Ex: Adiantamento para transporte, bônus meta..."
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-              className="h-10 rounded-xl text-xs"
+              className="h-10 rounded-lg text-xs"
             />
           </div>
         </div>

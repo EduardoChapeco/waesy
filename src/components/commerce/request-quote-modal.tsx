@@ -151,7 +151,7 @@ export function RequestQuoteModal({
  </DialogHeader>
 
  <div className="space-y-3 pt-2 text-left">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="category" className="text-xs font-semibold">
  Categoria do Serviço
  </Label>
@@ -170,7 +170,7 @@ export function RequestQuoteModal({
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="name" className="text-xs font-semibold">
  Seu Nome *
  </Label>
@@ -183,7 +183,7 @@ export function RequestQuoteModal({
  className="h-10 text-sm"
  />
  </div>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="phone" className="text-xs font-semibold">
  WhatsApp / Telefone *
  </Label>
@@ -198,7 +198,7 @@ export function RequestQuoteModal({
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="email" className="text-xs font-semibold">
  E-mail (Opcional)
  </Label>
@@ -212,7 +212,7 @@ export function RequestQuoteModal({
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="description" className="text-xs font-semibold">
  Descrição do Serviço / Necessidade *
  </Label>
@@ -228,7 +228,7 @@ export function RequestQuoteModal({
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="urgency" className="text-xs font-semibold">
  Nível de Urgência
  </Label>
@@ -245,7 +245,7 @@ export function RequestQuoteModal({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="preferredDate" className="text-xs font-semibold">
  Data ou Prazo Desejado
  </Label>
@@ -259,7 +259,7 @@ export function RequestQuoteModal({
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="address" className="text-xs font-semibold">
  Bairro ou Endereço do Serviço
  </Label>

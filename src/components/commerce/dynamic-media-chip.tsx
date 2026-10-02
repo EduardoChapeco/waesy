@@ -94,9 +94,9 @@ export function DynamicMediaChip({
  };
 
  const heightClasses = {
- sm: "h-10 px-3.5 text-xs rounded-xl",
- md: "h-12 sm:h-14 px-4 sm:px-5 text-xs sm:text-sm rounded-2xl",
- lg: "h-16 px-6 text-sm sm:text-base rounded-2xl",
+ sm: "h-10 px-4 text-xs rounded-lg",
+ md: "h-12 sm:h-14 px-4 sm:px-5 text-xs sm:text-sm rounded-lg",
+ lg: "h-16 px-6 text-sm sm:text-base rounded-lg",
  }[size];
 
  const iconSizes = {
@@ -153,7 +153,7 @@ export function DynamicMediaChip({
  )}
 
  {/* 2. Conteúdo em Primeiro Plano (Ícone + Label + Badges) */}
- <div className="relative z-10 flex items-center gap-2 sm:gap-2.5 w-full min-w-0">
+ <div className="relative z-10 flex items-center gap-2 sm:gap-3 w-full min-w-0">
  {/* Ícone / Emoji / PNG */}
  <div
  className={`relative ${iconSizes} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 ${
@@ -205,7 +205,7 @@ export function DynamicMediaChip({
  {/* Contador Opcional */}
  {typeof count === "number" && (
  <span
- className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold shrink-0 ${
+ className={`text-[10px] font-mono px-2 py-0.2 rounded-full font-bold shrink-0 ${
  hasMedia
  ? "bg-black/40 text-white border border-white/20"
  : isActive
@@ -221,7 +221,7 @@ export function DynamicMediaChip({
  {badge && (
  <Badge
  variant="outline"
- className={`text-[9px] uppercase font-mono px-1.5 py-0 h-4 shrink-0 max-w-[110px] truncate ${
+ className={`text-[9px] uppercase font-mono px-2 py-0 h-4 shrink-0 max-w-[110px] truncate ${
  hasMedia
  ? "bg-amber-500/20 text-amber-300 border-amber-400/40"
  : isActive

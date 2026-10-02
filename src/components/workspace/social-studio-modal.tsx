@@ -49,7 +49,7 @@ export function SocialStudioModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(val) => !val && onClose()}>
-      <DialogContent className="max-w-3xl sm:max-w-4xl p-0 overflow-hidden bg-background rounded-xl border border-border">
+      <DialogContent className="max-w-3xl sm:max-w-4xl p-0 overflow-hidden bg-background rounded-lg border border-border">
         <DialogHeader className="p-4 sm:p-6 border-b border-border bg-surface-paper">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -59,7 +59,7 @@ export function SocialStudioModal({
               <div>
                 <DialogTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
                   Social Studio — Gerador Visual de Posts
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                  <span className="text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
                     1-Click Export
                   </span>
                 </DialogTitle>
@@ -84,9 +84,9 @@ export function SocialStudioModal({
 
             {/* Rendered Frame Preview */}
             <div
-              className={`relative overflow-hidden rounded-xl border border-border/80 bg-zinc-950 text-white shadow-lg transition-all duration-300 flex flex-col justify-between ${
+              className={`relative overflow-hidden rounded-lg border border-border/80 bg-zinc-950 text-white shadow-lg transition-all duration-300 flex flex-col justify-between ${
                 aspectRatio === "9:16"
-                  ? "w-[240px] h-[426px] p-5"
+                  ? "w-60 h-[426px] p-5"
                   : aspectRatio === "1:1"
                   ? "w-[300px] h-[300px] p-4"
                   : "w-[340px] h-[191px] p-3"
@@ -94,10 +94,10 @@ export function SocialStudioModal({
             >
               {/* Top Branding Pill */}
               <div className="flex items-center justify-between z-10">
-                <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md">
+                <span className="text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-white/20 backdrop-blur-md">
                   {storeName}
                 </span>
-                <span className="text-[10px] font-semibold bg-emerald-500 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-[10px] font-semibold bg-emerald-500 text-white px-2 py-1 rounded-full flex items-center gap-1">
                   <Star className="w-3 h-3" /> {product.category || "Destaque"}
                 </span>
               </div>
@@ -122,7 +122,7 @@ export function SocialStudioModal({
                   </span>
                   <span className="text-[10px] text-zinc-300 uppercase tracking-wider">à vista</span>
                 </div>
-                <div className="w-full py-1.5 rounded-lg bg-primary text-primary-foreground text-center text-xs font-bold shadow-md">
+                <div className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-center text-xs font-bold shadow-md">
                   Peça no WhatsApp
                 </div>
               </div>
@@ -145,7 +145,7 @@ export function SocialStudioModal({
                   variant="outline"
                   size="sm"
                   onClick={handleCopyCaption}
-                  className="flex-1 text-xs h-9 gap-1.5"
+                  className="flex-1 text-xs h-9 gap-2"
                 >
                   <Copy className="w-4 h-4" />
                   {copiedCaption ? "Copiado!" : "Copiar Legenda"}
@@ -155,7 +155,7 @@ export function SocialStudioModal({
                   variant="outline"
                   size="sm"
                   onClick={handleShareWhatsApp}
-                  className="flex-1 text-xs h-9 gap-1.5 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                  className="flex-1 text-xs h-9 gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
                 >
                   <WhatsappLogo className="w-4 h-4" />
                   WhatsApp

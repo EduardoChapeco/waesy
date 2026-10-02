@@ -54,7 +54,7 @@ export function IngredientSpotlight({
  )}
  <div>
  <h3 className="text-lg font-bold text-foreground mb-1">{item.title}</h3>
- <span className="inline-block text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full mb-2">
+ <span className="inline-block text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full mb-2">
  {item.benefit}
  </span>
  <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>

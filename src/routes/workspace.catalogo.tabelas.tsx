@@ -170,7 +170,7 @@ function WorkspacePriceTablesPage() {
  <Badge variant="outline" className="text-xs font-mono bg-card">
  {tables.length} {tables.length === 1 ? "tabela" : "tabelas"}
  </Badge>
- <Button onClick={handleOpenCreate} size="sm" className="gap-1.5 font-bold text-xs">
+ <Button onClick={handleOpenCreate} size="sm" className="gap-2 font-bold text-xs">
  <Plus className="size-3.5" />
  Nova Tabela
  </Button>
@@ -181,7 +181,7 @@ function WorkspacePriceTablesPage() {
  {/* Grid Principal: Lista Lateral de Tabelas + Edição In-Page de Preços */}
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
  {/* Coluna 1: Lista de Tabelas (4 cols) */}
- <div className="lg:col-span-4 space-y-2.5">
+ <div className="lg:col-span-4 space-y-3">
  <div className="space-y-2">
  {tables.map((tbl) => {
  const isSelected = selectedTable?.id === tbl.id;
@@ -189,7 +189,7 @@ function WorkspacePriceTablesPage() {
  <div
  key={tbl.id}
  onClick={() => handleSelectTable(tbl)}
- className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-2 ${
+ className={`p-4 rounded-lg border transition-all cursor-pointer space-y-2 ${
  isSelected
  ? "bg-card border-primary ring-2 ring-primary/10 shadow-xs"
  : "bg-card/60 border-border/60 hover:bg-card"
@@ -214,7 +214,7 @@ function WorkspacePriceTablesPage() {
  )}
 
  <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
- <div className="flex items-center gap-1.5 text-muted-foreground">
+ <div className="flex items-center gap-2 text-muted-foreground">
  {tbl.adjustment_type === "percentage_discount" && (
  <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
  <TrendingDown className="size-3.5" />
@@ -253,7 +253,7 @@ function WorkspacePriceTablesPage() {
  {/* Coluna 2: Edição In-Page de Preços dos Produtos (8 cols) */}
  <div className="lg:col-span-8 space-y-4">
  {selectedTable ? (
- <div className="bg-card rounded-2xl border border-border/60 p-5 sm:p-6 space-y-5">
+ <div className="bg-card rounded-lg border border-border/60 p-5 sm:p-6 space-y-5">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/40">
  <div>
  <div className="flex items-center gap-2">
@@ -264,7 +264,7 @@ function WorkspacePriceTablesPage() {
  ?tabela={selectedTable.code}
  </Badge>
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Ajuste os preços dos produtos para esta tabela. Você pode usar a regra geral da tabela ou digitar preços fixos.
  </p>
  </div>
@@ -274,7 +274,7 @@ function WorkspacePriceTablesPage() {
  variant="outline"
  size="sm"
  onClick={() => handleCopyLink(selectedTable.code)}
- className="h-8 text-xs font-bold gap-1.5"
+ className="h-8 text-xs font-bold gap-2"
  >
  <LinkIcon className="size-3.5" />
  Link da Vitrine
@@ -306,7 +306,7 @@ function WorkspacePriceTablesPage() {
                   filteredItems.map((item) => (
                     <div
                       key={item.product_id}
-                      className="rounded-2xl border border-border/50 bg-background p-3.5 space-y-3 shadow-2xs"
+                      className="rounded-lg border border-border/50 bg-background p-4 space-y-3 shadow-2xs"
                     >
                       {/* Topo do Card: Imagem e Dados do Produto */}
                       <div className="flex items-center gap-3">
@@ -314,10 +314,10 @@ function WorkspacePriceTablesPage() {
                           <img
                             src={item.product_image_url}
                             alt={item.product_name}
-                            className="size-12 rounded-xl object-cover shrink-0 border border-border/40"
+                            className="size-12 rounded-lg object-cover shrink-0 border border-border/40"
                           />
                         ) : (
-                          <div className="size-12 rounded-xl bg-muted/60 flex items-center justify-center shrink-0 border border-border/40">
+                          <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 border border-border/40">
                             <Package className="size-6 text-muted-foreground/50" />
                           </div>
                         )}
@@ -325,7 +325,7 @@ function WorkspacePriceTablesPage() {
                           <h3 className="font-bold text-base text-foreground leading-snug truncate">
                             {item.product_name}
                           </h3>
-                          <div className="flex items-center gap-2 mt-0.5">
+                          <div className="flex items-center gap-2 mt-1">
                             {item.product_sku && (
                               <span className="text-xs text-muted-foreground font-mono">
                                 SKU: {item.product_sku}
@@ -339,7 +339,7 @@ function WorkspacePriceTablesPage() {
                       </div>
 
                       {/* Campo de Ajuste de Preço Touch (44px) */}
-                      <div className="pt-2 border-t border-border/30 space-y-1.5">
+                      <div className="pt-2 border-t border-border/30 space-y-2">
                         <Label className="text-xs font-semibold text-muted-foreground">
                           Preço nesta Tabela (R$)
                         </Label>
@@ -351,12 +351,12 @@ function WorkspacePriceTablesPage() {
                             }}
                             onEnter={() => handleSaveInlineItem(item)}
                             placeholder="0,00"
-                            className="h-11 rounded-xl text-base font-mono font-bold flex-1 bg-card border-border/70"
+                            className="h-11 rounded-lg text-base font-mono font-bold flex-1 bg-card border-border/70"
                           />
                           <Button
                             type="button"
                             onClick={() => handleSaveInlineItem(item)}
-                            className="h-11 px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shrink-0 cursor-pointer shadow-2xs"
+                            className="h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shrink-0 cursor-pointer shadow-2xs"
                           >
                             <Save className="size-4" />
                             <span>Salvar</span>
@@ -369,14 +369,14 @@ function WorkspacePriceTablesPage() {
               </div>
 
               {/* Visualização Desktop: Tabela de Produtos com Edição Inline (hidden md:block) */}
-              <div className="hidden md:block rounded-xl border border-border/40 overflow-hidden">
+              <div className="hidden md:block rounded-lg border border-border/40 overflow-hidden">
                 <table className="w-full text-xs">
                   <thead className="bg-muted/40 text-muted-foreground font-semibold">
                     <tr>
-                      <th className="py-2.5 px-3 text-left">Produto</th>
-                      <th className="py-2.5 px-3 text-right">Preço Base</th>
-                      <th className="py-2.5 px-3 text-right">Preço nesta Tabela</th>
-                      <th className="py-2.5 px-3 text-center w-20">Ação</th>
+                      <th className="py-3 px-3 text-left">Produto</th>
+                      <th className="py-3 px-3 text-right">Preço Base</th>
+                      <th className="py-3 px-3 text-right">Preço nesta Tabela</th>
+                      <th className="py-3 px-3 text-center w-20">Ação</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
@@ -391,8 +391,8 @@ function WorkspacePriceTablesPage() {
                     ) : (
                       filteredItems.map((item) => (
                         <tr key={item.product_id} className="hover:bg-muted/20 transition-colors">
-                          <td className="py-2.5 px-3">
-                            <div className="flex items-center gap-2.5">
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-3">
                               {item.product_image_url ? (
                                 <img
                                   src={item.product_image_url}
@@ -417,12 +417,12 @@ function WorkspacePriceTablesPage() {
                             </div>
                           </td>
 
-                          <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                          <td className="py-3 px-3 text-right font-mono text-muted-foreground">
                             {formatMoney(item.base_price_cents)}
                           </td>
 
-                          <td className="py-2.5 px-3 text-right">
-                            <div className="inline-flex items-center gap-1.5 justify-end w-36 ml-auto">
+                          <td className="py-3 px-3 text-right">
+                            <div className="inline-flex items-center gap-2 justify-end w-36 ml-auto">
                               <CurrencyField
                                 compact
                                 value={item.custom_price_cents}
@@ -436,7 +436,7 @@ function WorkspacePriceTablesPage() {
                             </div>
                           </td>
 
-                          <td className="py-2.5 px-3 text-center">
+                          <td className="py-3 px-3 text-center">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -475,7 +475,7 @@ function WorkspacePriceTablesPage() {
  </SheetHeader>
 
  <form id="price-table-form" onSubmit={handleSaveTable} className="space-y-4 py-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Nome da Tabela</Label>
  <Input
  value={tableName}
@@ -486,7 +486,7 @@ function WorkspacePriceTablesPage() {
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Código / Slug da Vitrine</Label>
  <Input
  value={tableCode}
@@ -498,7 +498,7 @@ function WorkspacePriceTablesPage() {
  </div>
 
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Tipo de Regra</Label>
  <Select value={adjustmentType} onValueChange={setAdjustmentType}>
  <SelectTrigger className="text-xs">
@@ -513,7 +513,7 @@ function WorkspacePriceTablesPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Valor do Ajuste (%)</Label>
  <Input
  type="number"
@@ -527,7 +527,7 @@ function WorkspacePriceTablesPage() {
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs">Descrição / Observação</Label>
  <Input
  value={tableDesc}

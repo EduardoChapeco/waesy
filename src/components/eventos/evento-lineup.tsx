@@ -92,7 +92,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">Lineup</h3>
@@ -100,14 +100,14 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
               {lineup.length} {lineup.length === 1 ? "atração confirmada" : "atrações confirmadas"}
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Cronograma oficial de shows, palcos, horários de passagem de som e apresentações.
           </p>
         </div>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Button className="h-11 px-4 rounded-xl text-xs font-bold gap-2">
+            <Button className="h-11 px-4 rounded-lg text-xs font-bold gap-2">
               <Plus className="size-4" />
               <span>Nova Atração</span>
             </Button>
@@ -121,60 +121,60 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
             </SheetHeader>
 
             <form onSubmit={handleCreate} className="space-y-4 mt-6">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Nome do Artista / Banda *</Label>
                 <Input
                   required
                   placeholder="Ex: Alok / Banda Titãs"
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={nomeArtista}
                   onChange={(e) => setNomeArtista(e.target.value)}
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Palco / Espaço</Label>
                 <Input
                   placeholder="Ex: Palco Principal / Tenda Eletrônica"
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={palco}
                   onChange={(e) => setPalco(e.target.value)}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Horário de Início</Label>
                   <Input
                     type="datetime-local"
-                    className="h-11 rounded-xl text-xs"
+                    className="h-11 rounded-lg text-xs"
                     value={horarioInicio}
                     onChange={(e) => setHorarioInicio(e.target.value)}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Horário de Término</Label>
                   <Input
                     type="datetime-local"
-                    className="h-11 rounded-xl text-xs"
+                    className="h-11 rounded-lg text-xs"
                     value={horarioFim}
                     onChange={(e) => setHorarioFim(e.target.value)}
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Bio e Release</Label>
                 <Textarea
                   rows={3}
                   placeholder="Gênero musical, sucessos e informações do rider técnico..."
-                  className="rounded-xl text-xs"
+                  className="rounded-lg text-xs"
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                 />
               </div>
 
-              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-xl text-xs font-bold mt-4">
+              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-lg text-xs font-bold mt-4">
                 {isPending ? "Cadastrando..." : "Confirmar no Lineup"}
               </Button>
             </form>
@@ -183,7 +183,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
       </div>
 
       {lineup.length === 0 ? (
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center bg-card/40">
+        <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <Music className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhuma atração cadastrada</p>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -195,10 +195,10 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
           {lineup.map((art, idx) => (
             <Card
               key={art.id}
-              className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs flex items-center justify-between hover:border-primary/40 transition-all"
+              className="rounded-lg border border-border/80 bg-card p-4 shadow-xs flex items-center justify-between hover:border-primary/40 transition-all"
             >
               <div className="flex items-center gap-4">
-                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
                   <Mic2 className="size-5" />
                 </div>
                 <div>
@@ -209,7 +209,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
                     </Badge>
                   </div>
                   {art.bio && (
-                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                    <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
                       {art.bio}
                     </p>
                   )}
@@ -229,7 +229,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
               <button
                 type="button"
                 onClick={() => handleDelete(art.id)}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors"
+                className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors"
                 title="Excluir atração"
               >
                 <Trash2 className="size-4" />

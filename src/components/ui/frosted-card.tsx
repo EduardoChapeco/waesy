@@ -21,7 +21,7 @@ export interface FrostedCardProps extends React.HTMLAttributes<HTMLDivElement> {
  * Caracteristicas:
  * - Superficie Solida e Calibrada: elimina efeito de vidro/blur conforme diretriz de silencio visual.
  * - Anti-Hardcode: Usa tokens semanticos `bg-card` e `border-border/70`.
- * - Geometria Canonica: rounded-2xl para ergonomia visual.
+ * - Geometria Canonica: rounded-lg para ergonomia visual.
  */
 const FrostedCard = React.forwardRef<HTMLDivElement, FrostedCardProps>(
   ({ className, intensity = "standard", borderless = false, ...props }, ref) => {
@@ -35,7 +35,7 @@ const FrostedCard = React.forwardRef<HTMLDivElement, FrostedCardProps>(
       <div
         ref={ref}
         className={cn(
-          "rounded-2xl text-card-foreground transition-all",
+          "rounded-lg text-card-foreground transition-all",
           intensityMap[intensity],
           !borderless && "border border-border/70",
           className
@@ -53,7 +53,7 @@ const FrostedCardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-4 sm:p-6", className)}
+    className={cn("flex flex-col space-y-2 p-4 sm:p-6", className)}
     {...props}
   />
 ));

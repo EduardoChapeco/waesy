@@ -73,7 +73,7 @@ function ReclamarNovoPage() {
  if (isSuccess) {
  return (
  <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
- <div className="max-w-md w-full p-8 rounded-2xl border border-border bg-card shadow-xs text-center flex flex-col items-center">
+ <div className="max-w-md w-full p-8 rounded-lg border border-border bg-card shadow-xs text-center flex flex-col items-center">
  <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4">
  <CheckCircle2 className="size-8" />
  </div>
@@ -83,7 +83,7 @@ function ReclamarNovoPage() {
  {legalAdviseNeeded && ' Seu caso também foi encaminhado ao Módulo Advocacia (JUS 360°) para triagem jurídica prioritária.'}
  </p>
  <Button 
- className="w-full mt-6 h-12 rounded-2xl font-bold text-sm"
+ className="w-full mt-6 h-12 rounded-lg font-bold text-sm"
  onClick={() => navigate({ to: '/workspace/advocacia' as any })}
  >
  Acessar Painel Jurídico / Notificações
@@ -97,7 +97,7 @@ function ReclamarNovoPage() {
  <div className="min-h-[100dvh] bg-background text-foreground py-12 px-4 sm:px-6">
  <div className="max-w-2xl mx-auto">
  <div className="text-center mb-8">
- <Badge variant="outline" className="px-3 py-1 mb-3 rounded-full text-xs font-semibold gap-1.5 border-rose-500/30 text-rose-500">
+ <Badge variant="outline" className="px-3 py-1 mb-3 rounded-full text-xs font-semibold gap-2 border-rose-500/30 text-rose-500">
  <AlertTriangle className="size-3.5" /> Waesy Reclamar e Proteção ao Consumidor
  </Badge>
  <h1 className="text-3xl font-black tracking-tight">Registrar Manifestação Oficial</h1>
@@ -106,12 +106,12 @@ function ReclamarNovoPage() {
  </p>
  </div>
 
- <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl border border-border bg-card shadow-xs space-y-5">
+ <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-lg border border-border bg-card shadow-xs space-y-5">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
  <label className="text-xs font-semibold text-muted-foreground">Seu Nome Completo</label>
  <Input 
- className="mt-1 h-11 rounded-xl"
+ className="mt-1 h-11 rounded-lg"
  placeholder="Ex: João da Silva"
  value={consumerName}
  onChange={(e) => setConsumerName(e.target.value)}
@@ -122,7 +122,7 @@ function ReclamarNovoPage() {
  <label className="text-xs font-semibold text-muted-foreground">Seu E-mail</label>
  <Input 
  type="email"
- className="mt-1 h-11 rounded-xl"
+ className="mt-1 h-11 rounded-lg"
  placeholder="joao@email.com"
  value={consumerEmail}
  onChange={(e) => setConsumerEmail(e.target.value)}
@@ -134,7 +134,7 @@ function ReclamarNovoPage() {
  <div>
  <label className="text-xs font-semibold text-muted-foreground">Empresa Reclamada</label>
  <Input 
- className="mt-1 h-11 rounded-xl"
+ className="mt-1 h-11 rounded-lg"
  placeholder="Ex: Companhia Aérea, Agência ou Loja..."
  value={targetEntityName}
  onChange={(e) => setTargetEntityName(e.target.value)}
@@ -148,7 +148,7 @@ function ReclamarNovoPage() {
  <select 
  value={category} 
  onChange={(e) => setCategory(e.target.value as any)}
- className="mt-1 w-full h-11 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary min-h-[44px]"
+ className="mt-1 w-full h-11 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary min-h-11"
  >
  {CATEGORIES.map((c) => (
  <option key={c.value} value={c.value}>{c.label}</option>
@@ -159,7 +159,7 @@ function ReclamarNovoPage() {
  <label className="text-xs font-semibold text-muted-foreground">Data do Incidente</label>
  <Input 
  type="date"
- className="mt-1 h-11 rounded-xl"
+ className="mt-1 h-11 rounded-lg"
  value={incidentDate}
  onChange={(e) => setIncidentDate(e.target.value)}
  />
@@ -169,7 +169,7 @@ function ReclamarNovoPage() {
  <div>
  <label className="text-xs font-semibold text-muted-foreground">Título da Reclamação</label>
  <Input 
- className="mt-1 h-11 rounded-xl"
+ className="mt-1 h-11 rounded-lg"
  placeholder="Resumo em poucas palavras..."
  value={title}
  onChange={(e) => setTitle(e.target.value)}
@@ -180,7 +180,7 @@ function ReclamarNovoPage() {
  <div>
  <label className="text-xs font-semibold text-muted-foreground">Relato Detalhado dos Fatos</label>
  <Textarea 
- className="mt-1 rounded-xl resize-none text-sm"
+ className="mt-1 rounded-lg resize-none text-sm"
  rows={4}
  placeholder="Descreva o que aconteceu, prejuízos sofridos e o que você solicita da empresa..."
  value={description}
@@ -190,12 +190,12 @@ function ReclamarNovoPage() {
  </div>
 
  {/* Integração Especial com JUS 360° */}
- <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5 flex items-center justify-between gap-4">
+ <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 flex items-center justify-between gap-4">
  <div className="flex items-start gap-3">
- <Scale className="size-5 text-primary shrink-0 mt-0.5" />
+ <Scale className="size-5 text-primary shrink-0 mt-1" />
  <div>
  <p className="text-sm font-bold text-foreground">Encaminhar para Assessoria Jurídica (JUS 360°)</p>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Se a empresa não responder ou o dano for grave, um advogado parceiro poderá assumir a demanda via mediação ou ação judicial.
  </p>
  </div>
@@ -209,7 +209,7 @@ function ReclamarNovoPage() {
  <Button 
  type="submit" 
  disabled={isSubmitting}
- className="w-full h-13 rounded-2xl font-bold text-base shadow-xs shadow-primary/20 gap-2 min-h-[44px]"
+ className="w-full h-13 rounded-lg font-bold text-base shadow-xs shadow-primary/20 gap-2 min-h-11"
  >
  {isSubmitting ? 'Registrando...' : 'Publicar Reclamação'}
  <ArrowRight className="size-4" />

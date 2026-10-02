@@ -253,12 +253,12 @@ function SupermarketMasterPage() {
 
  {/* ── 3. Seletor de Supermercados Parceiros (Multi-Store Filter - Padrão Botão Grande) ── */}
  {availableStores.length > 0 && (
- <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
+ <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1">
  <button
  type="button"
  onClick={() => setSelectedStore("todos")}
  className={cn(
- "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98",
+ "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98",
  selectedStore === "todos"
  ? "bg-foreground text-background border-foreground font-bold"
  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -273,7 +273,7 @@ function SupermarketMasterPage() {
  type="button"
  onClick={() => setSelectedStore(store)}
  className={cn(
- "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+ "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
  selectedStore === store
  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -306,7 +306,7 @@ function SupermarketMasterPage() {
  />
 
  {/* ── 6. Filtros Especiais de Dieta & Estilo de Vida (Padrão Botão Grande) ── */}
- <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
+ <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1">
  {DIETARY_FILTERS.map((f) => {
  const isSelected = selectedDietary === f.id;
  return (
@@ -315,7 +315,7 @@ function SupermarketMasterPage() {
  type="button"
  onClick={() => setSelectedDietary(f.id)}
  className={cn(
- "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+ "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
  isSelected
  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -369,7 +369,7 @@ function SupermarketMasterPage() {
             })()}
           </div>
         ) : (
-          <div className="py-16 text-center space-y-3 bg-muted/10 rounded-2xl border-0 p-8">
+          <div className="py-16 text-center space-y-3 bg-muted/10 rounded-lg border-0 p-8">
             <EmptyState title="Nenhum produto encontrado neste corredor ou supermercado." />
             <div className="pt-2">
               <Button
@@ -381,7 +381,7 @@ function SupermarketMasterPage() {
                   setSelectedStore("todos");
                   handleSelectDepartment("todos");
                 }}
-                className="rounded-xl font-bold text-xs"
+                className="rounded-lg font-bold text-xs"
               >
                 Ver todos os supermercados
               </Button>
@@ -396,11 +396,11 @@ function SupermarketMasterPage() {
  {currentView === "grid" && (
  <div>
  {displayedProducts.length === 0 ? (
- <div className="py-24 text-center space-y-3 bg-muted/10 rounded-2xl p-8">
+ <div className="py-24 text-center space-y-3 bg-muted/10 rounded-lg p-8">
  <EmptyState title="Nenhum item encontrado nos supermercados" />
  </div>
  ) : (
- <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
+ <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
  {displayedProducts.map((prod) => (
  <GroceryProductCard key={prod.id} product={prod} viewMode="grid" />
  ))}
@@ -413,7 +413,7 @@ function SupermarketMasterPage() {
  {currentView === "list" && (
  <div className="space-y-3 w-full">
  {displayedProducts.length === 0 ? (
- <div className="py-24 text-center space-y-3 bg-muted/10 rounded-2xl p-8">
+ <div className="py-24 text-center space-y-3 bg-muted/10 rounded-lg p-8">
  <EmptyState title="Nenhum item encontrado nos supermercados" />
  </div>
  ) : (

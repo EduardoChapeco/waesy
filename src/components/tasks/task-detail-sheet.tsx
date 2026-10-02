@@ -281,8 +281,8 @@ export function TaskDetailSheet({
           className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none bg-card border-l border-border/70"
         >
           {/* Header Compacto */}
-          <SheetHeader className="px-5 py-3.5 border-b border-border/60 bg-muted/20 flex flex-row items-center justify-between shrink-0">
-            <div className="flex items-center gap-2.5 min-w-0">
+          <SheetHeader className="px-5 py-4 border-b border-border/60 bg-muted/20 flex flex-row items-center justify-between shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
               {/* Checkbox de Conclusão */}
               <button
                 type="button"
@@ -305,7 +305,7 @@ export function TaskDetailSheet({
                   <button
                     type="button"
                     onClick={handleCopyCode}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[11px] font-mono font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-[11px] font-mono font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
                     title="Copiar código"
                   >
                     <Copy className="size-3" />
@@ -362,7 +362,7 @@ export function TaskDetailSheet({
             </div>
 
             {/* Status + Prioridade — ambos editáveis */}
-            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-muted/20 border border-border/60">
+            <div className="grid grid-cols-2 gap-3 p-4 rounded-lg bg-muted/20 border border-border/60">
               <div className="space-y-1">
                 <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
                   Status
@@ -370,7 +370,7 @@ export function TaskDetailSheet({
                 <select
                   value={currentStatus}
                   onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
-                  className="w-full h-9 px-2.5 rounded-lg border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
+                  className="w-full h-9 px-3 rounded-lg border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
                 >
                   {(Object.entries(STATUS_LABELS) as [TaskStatus, string][]).map(([val, label]) => (
                     <option key={val} value={val}>{label}</option>
@@ -385,7 +385,7 @@ export function TaskDetailSheet({
                 <select
                   value={currentPriority}
                   onChange={(e) => handlePriorityChange(e.target.value as TaskPriority)}
-                  className="w-full h-9 px-2.5 rounded-lg border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
+                  className="w-full h-9 px-3 rounded-lg border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
                 >
                   {(Object.entries(PRIORITY_LABELS) as [TaskPriority, string][]).map(([val, label]) => (
                     <option key={val} value={val}>{label}</option>
@@ -395,10 +395,10 @@ export function TaskDetailSheet({
             </div>
 
             {/* Cronômetro */}
-            <div className="p-4 rounded-xl border border-border/70 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="p-4 rounded-lg border border-border/70 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <div className={cn(
-                  "size-10 rounded-xl flex items-center justify-center transition-colors shrink-0",
+                  "size-10 rounded-lg flex items-center justify-center transition-colors shrink-0",
                   isTimerRunning ? "bg-emerald-500/20 text-emerald-600 animate-pulse" : "bg-muted text-muted-foreground"
                 )}>
                   <Clock className="size-5" />
@@ -426,7 +426,7 @@ export function TaskDetailSheet({
                   variant={isTimerRunning ? "destructive" : "default"}
                   size="sm"
                   onClick={handleToggleTimer}
-                  className="h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-1.5 shadow-sm"
+                  className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer gap-2 shadow-sm"
                 >
                   {isTimerRunning ? (
                     <><Pause className="size-3.5 fill-current" /> Pausar</>
@@ -441,7 +441,7 @@ export function TaskDetailSheet({
                   size="sm"
                   onClick={() => setResetTimerDialogOpen(true)}
                   disabled={timerSeconds === 0 && !isTimerRunning}
-                  className="h-9 w-9 p-0 rounded-xl cursor-pointer text-muted-foreground hover:text-foreground"
+                  className="h-9 w-9 p-0 rounded-lg cursor-pointer text-muted-foreground hover:text-foreground"
                   title="Zerar cronômetro"
                 >
                   <RotateCcw className="size-3.5" />
@@ -451,29 +451,29 @@ export function TaskDetailSheet({
 
             {/* Vínculo Multi-Nicho */}
             {(currentTask?.context_label || (currentTask?.context_type && currentTask.context_type !== "general") || (currentTask?.recurrence && currentTask.recurrence !== "none") || currentTask?.due_date) && (
-              <div className="p-3.5 rounded-xl border border-border/60 bg-muted/10 flex flex-wrap gap-2 text-xs">
+              <div className="p-4 rounded-lg border border-border/60 bg-muted/10 flex flex-wrap gap-2 text-xs">
                 {currentTask?.context_type && currentTask.context_type !== "general" && (
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 text-primary font-medium">
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-primary/10 text-primary font-medium">
                     <LinkIcon className="size-3" />
                     <span>{CONTEXT_TYPE_LABELS[currentTask.context_type as keyof typeof CONTEXT_TYPE_LABELS] || currentTask.context_type}</span>
                   </div>
                 )}
 
                 {currentTask?.context_label && (
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted text-foreground font-semibold">
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-muted text-foreground font-semibold">
                     <span>{currentTask.context_label}</span>
                   </div>
                 )}
 
                 {currentTask?.due_date && (
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted text-foreground font-medium">
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-muted text-foreground font-medium">
                     <Calendar className="size-3 text-muted-foreground" />
                     <span>{new Date(currentTask.due_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}</span>
                   </div>
                 )}
 
                 {currentTask?.recurrence && currentTask.recurrence !== "none" && (
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-300 font-medium">
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-300 font-medium">
                     <Repeat className="size-3" />
                     <span>
                       {currentTask.recurrence === "daily" ? "Diária" :
@@ -487,9 +487,9 @@ export function TaskDetailSheet({
 
             {/* Tags */}
             {currentTask?.tags && currentTask.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {currentTask.tags.map((tag: string) => (
-                  <Badge key={tag} variant="secondary" className="text-xs py-0.5 px-2.5 rounded-md">
+                  <Badge key={tag} variant="secondary" className="text-xs py-1 px-3 rounded-md">
                     {tag}
                   </Badge>
                 ))}
@@ -499,7 +499,7 @@ export function TaskDetailSheet({
             {/* Etapas / Checklist */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <CheckSquare className="size-4 text-primary" />
                   <span className="text-xs font-bold text-foreground">
                     Etapas do Processo
@@ -526,12 +526,12 @@ export function TaskDetailSheet({
                 </div>
               )}
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {checklists.map((item) => (
                   <div
                     key={item.id}
                     onClick={() => handleToggleChecklist(item)}
-                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-border/60 bg-card hover:bg-muted/10 transition-colors cursor-pointer"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/10 transition-colors cursor-pointer"
                   >
                     <div className={cn(
                       "size-5 rounded border flex items-center justify-center transition-all shrink-0",
@@ -572,7 +572,7 @@ export function TaskDetailSheet({
 
             {/* Comentários */}
             <div className="space-y-3 pt-2 pb-4">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <MessageSquare className="size-4 text-primary" />
                 <span className="text-xs font-bold text-foreground">Discussão e Histórico</span>
               </div>
@@ -582,7 +582,7 @@ export function TaskDetailSheet({
                   value={newCommentText}
                   onChange={(e) => setNewCommentText(e.target.value)}
                   placeholder="Escreva um comentário ou registro de atualização..."
-                  className="min-h-[72px] rounded-xl text-xs resize-none"
+                  className="min-h-[72px] rounded-lg text-xs resize-none"
                 />
                 <div className="flex justify-end">
                   <Button
@@ -591,7 +591,7 @@ export function TaskDetailSheet({
                     disabled={submittingComment || !newCommentText.trim()}
                     className="h-8 px-3 rounded-lg text-xs font-semibold cursor-pointer"
                   >
-                    <Send className="size-3 mr-1.5" /> Enviar
+                    <Send className="size-3 mr-2" /> Enviar
                   </Button>
                 </div>
               </form>
@@ -605,7 +605,7 @@ export function TaskDetailSheet({
                 {comments.map((comment) => (
                   <div
                     key={comment.id}
-                    className="p-3 rounded-xl bg-muted/20 border border-border/50 space-y-1 text-xs"
+                    className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-1 text-xs"
                   >
                     <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
                       <span>{(comment as any).author_name || "Operador"}</span>

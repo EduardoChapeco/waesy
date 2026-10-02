@@ -218,9 +218,9 @@ export function BusinessHoursEditor({
  <div className={cn("space-y-5", className)}>
  {/* ── 1. Top Bar com Presets Rápidos ── */}
  {showPresets && (
- <div className="space-y-2 p-4 rounded-2xl bg-muted/30 border border-border/50">
+ <div className="space-y-2 p-4 rounded-lg bg-muted/30 border border-border/50">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+ <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <Zap className="size-3.5 text-amber-500" />
  Modelos de Horário Prontos (Clique para Carregar)
  </span>
@@ -232,7 +232,7 @@ export function BusinessHoursEditor({
  key={key}
  type="button"
  onClick={() => handleApplyPreset(key as any)}
- className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-background hover:bg-muted text-foreground border border-border hover:border-primary/50 transition-all cursor-pointer text-left flex items-center gap-1.5 shadow-2xs"
+ className="px-3 py-2 rounded-lg text-xs font-semibold bg-background hover:bg-muted text-foreground border border-border hover:border-primary/50 transition-all cursor-pointer text-left flex items-center gap-2 shadow-2xs"
  title={preset.description}
  >
  <span>{preset.label}</span>
@@ -244,14 +244,14 @@ export function BusinessHoursEditor({
 
  {/* ── 2. Status em Tempo Real & Pausa de Emergência ── */}
  {(showStatusPreview || showEmergencyPause) && (
- <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-3 shadow-2xs">
+ <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3 shadow-2xs">
  <div className="flex flex-wrap items-center justify-between gap-3">
  <div className="flex items-center gap-2 text-xs">
  <span className="text-muted-foreground font-semibold">Status Agora:</span>
  <Badge
  variant="outline"
  className={cn(
- "text-xs font-bold font-mono px-3 py-1 rounded-xl",
+ "text-xs font-bold font-mono px-3 py-1 rounded-lg",
  openStatus.isOpenNow
  ? "bg-success/10 text-success border-success/30"
  : openStatus.status === "paused"
@@ -261,7 +261,7 @@ export function BusinessHoursEditor({
  >
  <span
  className={cn(
- "size-2 rounded-full mr-1.5 inline-block",
+ "size-2 rounded-full mr-2 inline-block",
  openStatus.isOpenNow
  ? "bg-success animate-pulse"
  : openStatus.status === "paused"
@@ -275,13 +275,13 @@ export function BusinessHoursEditor({
 
  {/* Ações Rápidas de Pausa Temporária (iFood / Avec Style) */}
  {showEmergencyPause && onEmergencyPauseChange && (
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  {emergencyPauseUntil ? (
  <Button
  type="button"
  size="sm"
  onClick={() => handleEmergencyPause(null)}
- className="h-9 rounded-xl text-xs font-bold bg-success hover:bg-success/90 text-success-foreground gap-1.5 shadow-xs"
+ className="h-9 rounded-lg text-xs font-bold bg-success hover:bg-success/90 text-success-foreground gap-2 shadow-xs"
  >
  <PlayCircle className="size-3.5" />
  <span>Retomar Loja Agora</span>
@@ -294,7 +294,7 @@ export function BusinessHoursEditor({
  variant="outline"
  size="sm"
  onClick={() => handleEmergencyPause(30)}
- className="h-8 px-2.5 rounded-lg text-[11px] font-semibold"
+ className="h-8 px-3 rounded-lg text-[11px] font-semibold"
  >
  30 min
  </Button>
@@ -303,7 +303,7 @@ export function BusinessHoursEditor({
  variant="outline"
  size="sm"
  onClick={() => handleEmergencyPause(60)}
- className="h-8 px-2.5 rounded-lg text-[11px] font-semibold"
+ className="h-8 px-3 rounded-lg text-[11px] font-semibold"
  >
  1h
  </Button>
@@ -312,7 +312,7 @@ export function BusinessHoursEditor({
  variant="outline"
  size="sm"
  onClick={() => handleEmergencyPause("today")}
- className="h-8 px-2.5 rounded-lg text-[11px] font-semibold text-warning hover:text-warning/90"
+ className="h-8 px-3 rounded-lg text-[11px] font-semibold text-warning hover:text-warning/90"
  >
  Hoje
  </Button>
@@ -335,7 +335,7 @@ export function BusinessHoursEditor({
  <div
  key={key}
  className={cn(
- "p-3.5 sm:p-4 rounded-2xl border transition-all space-y-3",
+ "p-4 sm:p-4 rounded-lg border transition-all space-y-3",
  isOpen
  ? "bg-background border-border/80 shadow-2xs"
  : "bg-muted/15 border-border/30 opacity-75"
@@ -359,7 +359,7 @@ export function BusinessHoursEditor({
  </div>
 
  {isOpen && (
- <div className="flex flex-wrap items-center gap-1.5">
+ <div className="flex flex-wrap items-center gap-2">
  {/* Atalhos Rápidos de Turno em 1 Clique */}
  <button
  type="button"
@@ -421,9 +421,9 @@ export function BusinessHoursEditor({
  {intervals.map((inv, idx) => (
  <div
  key={idx}
- className="flex flex-wrap sm:flex-nowrap items-center gap-2 p-2 rounded-xl bg-muted/30 border border-border/40 text-xs"
+ className="flex flex-wrap sm:flex-nowrap items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/40 text-xs"
  >
- <div className="flex items-center gap-1.5 shrink-0">
+ <div className="flex items-center gap-2 shrink-0">
  <span className="text-[11px] font-bold text-muted-foreground">Das</span>
  <Input
  type="time"
@@ -479,7 +479,7 @@ export function BusinessHoursEditor({
  variant="outline"
  size="sm"
  onClick={() => handleAddInterval(key)}
- className="h-8 px-3 text-xs font-semibold rounded-xl gap-1.5 border-dashed border-border/80 hover:border-primary/50 text-foreground w-full sm:w-auto"
+ className="h-8 px-3 text-xs font-semibold rounded-lg gap-2 border-dashed border-border/80 hover:border-primary/50 text-foreground w-full sm:w-auto"
  >
  <Plus className="size-3.5 text-primary" />
  <span>Adicionar mais um turno / intervalo (ex: Jantar)</span>
@@ -493,7 +493,7 @@ export function BusinessHoursEditor({
 
  {/* ── 4. Exceções de Feriados & Datas Especiais (Google Meu Negócio / Avec Style) ── */}
  {showHolidays && onHolidayExceptionsChange && (
- <div className="p-4 rounded-2xl bg-muted/20 border border-border/60 space-y-4">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-4">
  <div
  className="flex items-center justify-between cursor-pointer select-none"
  onClick={() => setIsHolidaysExpanded(!isHolidaysExpanded)}
@@ -519,8 +519,8 @@ export function BusinessHoursEditor({
  {isHolidaysExpanded && (
  <div className="space-y-4 pt-2 border-t border-border/40">
  {/* Formulário de Adicionar Feriado */}
- <div className="p-3 rounded-xl bg-background border border-border/60 space-y-3">
- <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+ <div className="p-3 rounded-lg bg-background border border-border/60 space-y-3">
+ <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
  <div className="sm:col-span-4 space-y-1">
  <Label className="text-[11px] font-bold text-foreground">Data *</Label>
  <Input
@@ -540,7 +540,7 @@ export function BusinessHoursEditor({
  />
  </div>
  <div className="sm:col-span-3 flex items-center justify-between sm:justify-end gap-2 pt-1">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Switch
  id="holiday_open"
  checked={newHolidayOpen}
@@ -569,13 +569,13 @@ export function BusinessHoursEditor({
  {holidayExceptions.map((hol) => (
  <div
  key={hol.id}
- className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border/60 text-xs"
+ className="flex items-center justify-between p-3 rounded-lg bg-background border border-border/60 text-xs"
  >
  <div className="flex items-center gap-2">
  <Badge
  variant="outline"
  className={cn(
- "text-[10px] font-bold font-mono px-2 py-0.5",
+ "text-[10px] font-bold font-mono px-2 py-1",
  hol.open
  ? "bg-success/10 text-success border-success/30"
  : "bg-destructive/10 text-destructive border-destructive/30"

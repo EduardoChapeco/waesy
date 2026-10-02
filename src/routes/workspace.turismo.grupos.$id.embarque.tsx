@@ -241,7 +241,7 @@ function GroupTourBoardingPage() {
             type="button"
             variant="outline"
             onClick={handleExportCsv}
-            className="h-11 sm:h-10 px-4 sm:px-3 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+            className="h-11 sm:h-10 px-4 sm:px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer"
           >
             <Download className="size-4 sm:size-3.5" /> Planilha CSV
           </Button>
@@ -250,7 +250,7 @@ function GroupTourBoardingPage() {
             type="button"
             variant="outline"
             onClick={() => window.print()}
-            className="h-11 sm:h-10 px-4 sm:px-3 rounded-xl text-xs font-bold gap-1.5 cursor-pointer hidden sm:inline-flex"
+            className="h-11 sm:h-10 px-4 sm:px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer hidden sm:inline-flex"
           >
             <Printer className="size-4 sm:size-3.5" /> Imprimir
           </Button>
@@ -258,7 +258,7 @@ function GroupTourBoardingPage() {
           <Button
             type="button"
             onClick={() => setPointModalOpen(true)}
-            className="h-11 sm:h-10 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer shadow-xs"
+            className="h-11 sm:h-10 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
           >
             <Plus className="size-4 sm:size-3.5" /> Pontos de Parada
           </Button>
@@ -267,7 +267,7 @@ function GroupTourBoardingPage() {
 
       {/* ── 2. Cards de Métricas de Embarque ── */}
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Total de Vagas</span>
           <p className="text-xl font-extrabold text-foreground font-mono">
             {overview?.totalReserved ?? 0}
@@ -275,7 +275,7 @@ function GroupTourBoardingPage() {
           <p className="text-xs text-muted-foreground">Confirmados na lista</p>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-xs font-medium text-muted-foreground">Embarcados</span>
           <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
             {overview?.checkedInCount ?? 0}
@@ -283,7 +283,7 @@ function GroupTourBoardingPage() {
           <p className="text-xs text-muted-foreground">Dentro do veículo</p>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-xs font-medium text-muted-foreground">Aguardando</span>
           <p className="text-xl font-bold text-foreground font-mono">
             {overview?.pendingCount ?? 0}
@@ -291,7 +291,7 @@ function GroupTourBoardingPage() {
           <p className="text-xs text-muted-foreground">Ainda não chegaram</p>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5 col-span-3 sm:col-span-1">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 col-span-3 sm:col-span-1">
           <span className="text-xs font-medium text-muted-foreground">Ausentes (No-show)</span>
           <p className="text-xl font-bold text-destructive font-mono">
             {overview?.noShowCount ?? 0}
@@ -308,7 +308,7 @@ function GroupTourBoardingPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nome, CPF ou nº da poltrona..."
-            className="h-11 pl-10 rounded-xl text-xs sm:text-sm"
+            className="h-11 pl-10 rounded-lg text-xs sm:text-sm"
           />
         </div>
 
@@ -317,7 +317,7 @@ function GroupTourBoardingPage() {
             type="button"
             variant={statusFilter === "all" ? "default" : "outline"}
             onClick={() => setStatusFilter("all")}
-            className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-4 sm:px-3 rounded-xl text-xs font-semibold cursor-pointer"
+            className="min-h-11 sm:min-h-9 h-11 sm:h-9 px-4 sm:px-3 rounded-lg text-xs font-semibold cursor-pointer"
           >
             Todos
           </Button>
@@ -325,7 +325,7 @@ function GroupTourBoardingPage() {
             type="button"
             variant={statusFilter === "pending" ? "default" : "outline"}
             onClick={() => setStatusFilter("pending")}
-            className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-4 sm:px-3 rounded-xl text-xs font-semibold cursor-pointer"
+            className="min-h-11 sm:min-h-9 h-11 sm:h-9 px-4 sm:px-3 rounded-lg text-xs font-semibold cursor-pointer"
           >
             Aguardando ({overview?.pendingCount ?? 0})
           </Button>
@@ -333,7 +333,7 @@ function GroupTourBoardingPage() {
             type="button"
             variant={statusFilter === "checked_in" ? "default" : "outline"}
             onClick={() => setStatusFilter("checked_in")}
-            className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-4 sm:px-3 rounded-xl text-xs font-semibold cursor-pointer"
+            className="min-h-11 sm:min-h-9 h-11 sm:h-9 px-4 sm:px-3 rounded-lg text-xs font-semibold cursor-pointer"
           >
             Embarcados ({overview?.checkedInCount ?? 0})
           </Button>
@@ -341,7 +341,7 @@ function GroupTourBoardingPage() {
       </div>
 
  {/* ── 4. Lista Rápida de Passageiros ── */}
- <div className="space-y-2.5">
+ <div className="space-y-3">
  {filteredPassengers.map((passenger: any) => {
  const checkin = checkinMap.get(passenger.seat_number);
  const isCheckedIn = checkin?.status === "checked_in";
@@ -351,7 +351,7 @@ function GroupTourBoardingPage() {
  <div
  key={passenger.seat_number}
  className={cn(
- "flex items-center justify-between gap-3 p-3.5 rounded-2xl border transition-all",
+ "flex items-center justify-between gap-3 p-4 rounded-lg border transition-all",
  isCheckedIn
  ? "bg-emerald-500/5 border-emerald-500/30"
  : isNoShow
@@ -363,7 +363,7 @@ function GroupTourBoardingPage() {
  <div className="flex items-center gap-3 min-w-0 flex-1">
  <div
  className={cn(
- "size-11 rounded-xl flex items-center justify-center font-mono font-bold text-sm shrink-0 border",
+ "size-11 rounded-lg flex items-center justify-center font-mono font-bold text-sm shrink-0 border",
  isCheckedIn
  ? "bg-emerald-600 text-white border-emerald-600"
  : isNoShow
@@ -374,18 +374,18 @@ function GroupTourBoardingPage() {
  #{passenger.seat_number}
  </div>
 
- <div className="space-y-0.5 min-w-0 flex-1">
+ <div className="space-y-1 min-w-0 flex-1">
  <div className="flex items-center gap-2">
  <p className="text-xs sm:text-sm font-bold text-foreground truncate">
  {passenger.passenger_name || "Nome não informado"}
  </p>
  {isCheckedIn && (
- <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-xs px-1.5 py-0 h-4">
+ <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-xs px-2 py-0 h-4">
  A bordo
  </Badge>
  )}
  {isNoShow && (
- <Badge className="bg-rose-600 hover:bg-rose-600 text-white text-xs px-1.5 py-0 h-4">
+ <Badge className="bg-rose-600 hover:bg-rose-600 text-white text-xs px-2 py-0 h-4">
  Ausente
  </Badge>
  )}
@@ -413,7 +413,7 @@ function GroupTourBoardingPage() {
  </div>
 
  {/* Lado Direito: Ações de Check-in em 1 Toque */}
- <div className="flex items-center gap-1.5 shrink-0">
+ <div className="flex items-center gap-2 shrink-0">
  <Button
  type="button"
  variant={isCheckedIn ? "default" : "outline"}
@@ -425,7 +425,7 @@ function GroupTourBoardingPage() {
  )
  }
  className={cn(
- "h-11 sm:h-10 px-4 sm:px-3.5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer",
+ "h-11 sm:h-10 px-4 sm:px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer",
  isCheckedIn
  ? "bg-primary hover:bg-primary/90 text-primary-foreground border-emerald-600"
  : "border-border/80 hover:border-emerald-500 hover:text-emerald-600"
@@ -449,7 +449,7 @@ function GroupTourBoardingPage() {
  )
  }
  title={isNoShow ? "Cancelar ausência" : "Marcar como ausente"}
- className="size-11 sm:size-10 rounded-xl cursor-pointer text-muted-foreground hover:text-rose-600 shrink-0"
+ className="size-11 sm:size-10 rounded-lg cursor-pointer text-muted-foreground hover:text-rose-600 shrink-0"
  >
  <UserX className="size-4" />
  </Button>
@@ -459,7 +459,7 @@ function GroupTourBoardingPage() {
  })}
 
  {filteredPassengers.length === 0 && (
- <div className="p-8 text-center rounded-2xl border border-dashed border-border/70 text-xs text-muted-foreground">
+ <div className="p-8 text-center rounded-lg border border-dashed border-border/70 text-xs text-muted-foreground">
  Nenhum passageiro encontrado com os filtros selecionados.
  </div>
  )}
@@ -488,11 +488,11 @@ function GroupTourBoardingPage() {
            <span className="text-xs font-mono text-muted-foreground uppercase font-bold">
              Paradas Cadastradas
            </span>
-           <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar">
+           <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar">
              {overview.points.map((p: any) => (
                <div
                  key={p.id}
-                 className="flex items-center justify-between p-2.5 rounded-xl bg-muted/20 border border-border/50 text-xs"
+                 className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/50 text-xs"
                >
                  <div>
                    <strong className="text-foreground">{p.point_name}</strong>
@@ -516,35 +516,35 @@ function GroupTourBoardingPage() {
        )}
 
        {/* Form de Novo Ponto */}
-       <form id="new-boarding-point-form" onSubmit={handleCreatePoint} className="space-y-3.5 pt-4">
-         <div className="space-y-1.5">
+       <form id="new-boarding-point-form" onSubmit={handleCreatePoint} className="space-y-4 pt-4">
+         <div className="space-y-2">
            <label className="text-xs font-semibold text-foreground">Nome do Local *</label>
            <Input
              value={pointName}
              onChange={(e) => setPointName(e.target.value)}
              placeholder="Ex: Posto Ipiranga Centro"
-             className="h-9 text-xs rounded-xl"
+             className="h-9 text-xs rounded-lg"
              autoFocus
            />
          </div>
 
-         <div className="space-y-1.5">
+         <div className="space-y-2">
            <label className="text-xs font-semibold text-foreground">Horário Previsto *</label>
            <Input
              type="time"
              value={scheduledTime}
              onChange={(e) => setScheduledTime(e.target.value)}
-             className="h-9 text-xs rounded-xl font-mono"
+             className="h-9 text-xs rounded-lg font-mono"
            />
          </div>
 
-         <div className="space-y-1.5">
+         <div className="space-y-2">
            <label className="text-xs font-semibold text-foreground">Endereço (opcional)</label>
            <Input
              value={address}
              onChange={(e) => setAddress(e.target.value)}
              placeholder="Ex: Av. Getúlio Vargas, 120"
-             className="h-9 text-xs rounded-xl"
+             className="h-9 text-xs rounded-lg"
            />
          </div>
        </form>
@@ -555,7 +555,7 @@ function GroupTourBoardingPage() {
           type="submit"
           form="new-boarding-point-form"
           disabled={submittingPoint || !pointName.trim()}
-          className="w-full h-11 sm:h-9 rounded-xl text-xs font-bold cursor-pointer shadow-xs"
+          className="w-full h-11 sm:h-9 rounded-lg text-xs font-bold cursor-pointer shadow-xs"
         >
           {submittingPoint ? "Cadastrando..." : "Cadastrar Ponto de Embarque"}
         </Button>

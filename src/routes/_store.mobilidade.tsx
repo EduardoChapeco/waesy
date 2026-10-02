@@ -311,7 +311,7 @@ function MobilityPage() {
 
  {/* Floating Route Info Pill (Top Right on Desktop) */}
  {destination && (
- <div className="absolute top-4 right-4 z-20 hidden sm:flex items-center gap-3 px-4 py-2 rounded-2xl bg-card/95 backdrop-blur-xl border border-border/80 text-foreground text-xs font-mono font-bold">
+ <div className="absolute top-4 right-4 z-20 hidden sm:flex items-center gap-3 px-4 py-2 rounded-lg bg-card/95 backdrop-blur-xl border border-border/80 text-foreground text-xs font-mono font-bold">
  <span className="font-bold text-foreground">{routeStats.distanceKm} km</span>
  <span className="text-muted-foreground">•</span>
  <span className="text-muted-foreground">~{routeStats.durationMin} min</span>
@@ -320,7 +320,7 @@ function MobilityPage() {
 
  {/* Pin Picking Mode Floating Banner */}
  {pinMode && (
- <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 px-5 py-2.5 rounded-2xl bg-foreground text-background text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+ <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 px-5 py-3 rounded-lg bg-foreground text-background text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
  <span>Clique no mapa para marcar {pinMode === "origin" ? "a Origem" : "o Destino"}</span>
  <button
  onClick={() => setPinMode(null)}
@@ -338,9 +338,9 @@ function MobilityPage() {
  className="
  absolute z-30
  /* Mobile: Bottom Sheet ancorado embaixo */
- bottom-0 left-0 right-0 max-h-[85vh] rounded-t-3xl border-t
+ bottom-0 left-0 right-0 max-h-[85vh] rounded-t-lg border-t
  /* Desktop: Card flutuante lateral esquerdo */
- sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-[420px] sm:max-h-none sm:rounded-2xl sm:border
+ sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-[420px] sm:max-h-none sm:rounded-lg sm:border
  overflow-y-auto no-scrollbar bg-card/95 backdrop-blur-2xl p-5 text-foreground border-border/80 space-y-4 animate-in slide-in-from-bottom-4 sm:slide-in-from-left-4 duration-300
  "
  >
@@ -380,7 +380,7 @@ function MobilityPage() {
  key={tab.id}
  type="button"
  onClick={() => setSelectedService(tab.id)}
- className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all select-none cursor-pointer border ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all select-none cursor-pointer border ${
  isSelected
  ? "bg-foreground text-background border-foreground scale-[1.02]"
  : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted/80"
@@ -408,7 +408,7 @@ function MobilityPage() {
  value={originText}
  onChange={(e) => setOriginText(e.target.value)}
  placeholder={activeTabConfig.placeholderOrigin}
- className="h-11 pl-9 pr-10 rounded-2xl bg-muted/20 border-border/70 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
+ className="h-11 pl-9 pr-10 rounded-lg bg-muted/20 border-border/70 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
  />
  <button
  type="button"
@@ -416,7 +416,7 @@ function MobilityPage() {
  disabled={isLocatingGPS}
  title="Usar minha localização GPS atual"
  aria-label="Usar minha localização GPS atual"
- className="absolute right-2 size-7 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+ className="absolute right-2 size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
  >
  <RotateCw className={`size-3.5 ${isLocatingGPS ? "animate-spin text-primary" : ""}`} />
  </button>
@@ -436,14 +436,14 @@ function MobilityPage() {
  value={destinationText}
  onChange={(e) => setDestinationText(e.target.value)}
  placeholder={activeTabConfig.placeholderDest}
- className="h-11 pl-9 pr-10 rounded-2xl bg-muted/20 border-border/70 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
+ className="h-11 pl-9 pr-10 rounded-lg bg-muted/20 border-border/70 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
  />
  <button
  type="button"
  onClick={() => setPinMode("destination")}
  title="Marcar ponto de destino no mapa"
  aria-label="Marcar ponto de destino no mapa"
- className={`absolute right-2 size-7 rounded-xl flex items-center justify-center transition-colors ${
+ className={`absolute right-2 size-7 rounded-lg flex items-center justify-center transition-colors ${
  pinMode === "destination"
  ? "bg-primary text-primary-foreground"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -455,13 +455,13 @@ function MobilityPage() {
  </div>
 
  {/* Atalhos Rápidos de Destinos Frequentes */}
- <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 ">
+ <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 ">
  {PRESET_PLACES.slice(0, 4).map((p, idx) => (
  <button
  key={idx}
  type="button"
  onClick={() => handleSelectPresetDestination(p)}
- className="px-2.5 py-1 rounded-xl bg-muted/40 hover:bg-muted border border-border/40 text-[11px] font-semibold text-muted-foreground hover:text-foreground whitespace-nowrap transition-colors"
+ className="px-3 py-1 rounded-lg bg-muted/40 hover:bg-muted border border-border/40 text-[11px] font-semibold text-muted-foreground hover:text-foreground whitespace-nowrap transition-colors"
  >
  {p.name}
  </button>
@@ -475,7 +475,7 @@ function MobilityPage() {
  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
  Opções Disponíveis
  </span>
- <div className="flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground font-semibold">
+ <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground font-semibold">
  <span>{routeStats.distanceKm} km</span>
  <span>•</span>
  <span>~{routeStats.durationMin} min</span>
@@ -508,15 +508,15 @@ function MobilityPage() {
  key={mod.service_type}
  type="button"
  onClick={() => setSelectedService(mod.service_type)}
- className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between select-none cursor-pointer ${
+ className={`p-3 rounded-lg border text-left transition-all flex flex-col justify-between select-none cursor-pointer ${
  isSelected
  ? "bg-primary/10 border-primary text-foreground ring-1 ring-primary"
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/40"
  }`}
  >
- <div className="flex items-center justify-between w-full mb-1.5">
+ <div className="flex items-center justify-between w-full mb-2">
  <div
- className={`size-7 rounded-xl flex items-center justify-center ${
+ className={`size-7 rounded-lg flex items-center justify-center ${
  isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
  }`}
  >
@@ -529,7 +529,7 @@ function MobilityPage() {
  <span className="text-xs font-bold text-foreground block leading-tight">
  {mod.label}
  </span>
- <span className="text-xs font-black text-foreground mt-0.5 block">
+ <span className="text-xs font-black text-foreground mt-1 block">
  {formatMoney(mod.estimated_price_cents)}
  </span>
  </div>
@@ -541,16 +541,16 @@ function MobilityPage() {
  </div>
 
  {/* ── FORMA DE PAGAMENTO & DETALHES ── */}
- <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/50 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
  Forma de Pagamento
  </span>
- <div className="flex items-center gap-1 bg-background p-0.5 rounded-xl border border-border/60">
+ <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/60">
  <button
  type="button"
  onClick={() => setPaymentMethod("pix")}
- className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
+ className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
  paymentMethod === "pix"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -562,7 +562,7 @@ function MobilityPage() {
  <button
  type="button"
  onClick={() => setPaymentMethod("card")}
- className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
+ className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
  paymentMethod === "card"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -574,7 +574,7 @@ function MobilityPage() {
  <button
  type="button"
  onClick={() => setPaymentMethod("cash")}
- className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
+ className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
  paymentMethod === "cash"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -593,7 +593,7 @@ function MobilityPage() {
  onClick={() => setShowDetails(!showDetails)}
  className="w-full flex items-center justify-between text-xs font-semibold text-muted-foreground hover:text-foreground pt-1"
  >
- <span className="flex items-center gap-1.5">
+ <span className="flex items-center gap-2">
  <MapPin className="size-3.5" />
  <span>Número, complemento e contato</span>
  </span>
@@ -601,7 +601,7 @@ function MobilityPage() {
  </button>
 
  {showDetails && (
- <div className="space-y-2.5 pt-3 animate-in fade-in duration-200">
+ <div className="space-y-3 pt-3 animate-in fade-in duration-200">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  <div>
  <Label className="text-[10px] text-muted-foreground">Número</Label>
@@ -609,7 +609,7 @@ function MobilityPage() {
  value={buildingNumber}
  onChange={(e) => setBuildingNumber(e.target.value)}
  placeholder="Ex: 500"
- className="h-8 rounded-xl bg-background text-xs"
+ className="h-8 rounded-lg bg-background text-xs"
  />
  </div>
  <div>
@@ -618,7 +618,7 @@ function MobilityPage() {
  value={complement}
  onChange={(e) => setComplement(e.target.value)}
  placeholder="Ex: Apto 102"
- className="h-8 rounded-xl bg-background text-xs"
+ className="h-8 rounded-lg bg-background text-xs"
  />
  </div>
  </div>
@@ -629,7 +629,7 @@ function MobilityPage() {
  value={referencePoint}
  onChange={(e) => setReferencePoint(e.target.value)}
  placeholder="Ex: Em frente à praça"
- className="h-8 rounded-xl bg-background text-xs"
+ className="h-8 rounded-lg bg-background text-xs"
  />
  </div>
 
@@ -640,7 +640,7 @@ function MobilityPage() {
  value={recipientName}
  onChange={(e) => setRecipientName(e.target.value)}
  placeholder="Nome"
- className="h-8 rounded-xl bg-background text-xs"
+ className="h-8 rounded-lg bg-background text-xs"
  />
  </div>
  <div>
@@ -649,7 +649,7 @@ function MobilityPage() {
  value={recipientPhone}
  onChange={(e) => setRecipientPhone(e.target.value)}
  placeholder="(49) 99999-9999"
- className="h-8 rounded-xl bg-background text-xs"
+ className="h-8 rounded-lg bg-background text-xs"
  />
  </div>
  </div>
@@ -663,7 +663,7 @@ function MobilityPage() {
  type="button"
  onClick={handleSubmitRequest}
  disabled={createMutation.isPending || requestStatus === "searching"}
- className="w-full h-12 rounded-2xl bg-foreground text-background font-bold text-xs sm:text-sm hover:bg-foreground/90 transition-all active:scale-[0.98] cursor-pointer"
+ className="w-full h-12 rounded-lg bg-foreground text-background font-bold text-xs sm:text-sm hover:bg-foreground/90 transition-all active:scale-[0.98] cursor-pointer"
  >
  {createMutation.isPending || requestStatus === "searching" ? (
  <div className="flex items-center gap-2">
@@ -679,7 +679,7 @@ function MobilityPage() {
 
  {/* ── CONFIRMAÇÃO & RASTREAMENTO EM TEMPO REAL ── */}
  {requestStatus === "confirmed" && activeRequest && (
- <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-3 animate-in fade-in">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-3 animate-in fade-in">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <CheckCircle2 className="size-4 text-emerald-500" />
@@ -693,7 +693,7 @@ function MobilityPage() {
  Notificando motoristas parceiros próximos. Você pode acompanhar o trajeto ao vivo.
  </p>
  <div className="flex gap-2">
- <Button asChild size="sm" className="flex-1 rounded-xl text-xs font-bold bg-foreground text-background">
+ <Button asChild size="sm" className="flex-1 rounded-lg text-xs font-bold bg-foreground text-background">
  <Link to="/conta/mobilidade">Acompanhar Trajeto</Link>
  </Button>
  <Button
@@ -703,7 +703,7 @@ function MobilityPage() {
  setRequestStatus("idle");
  setActiveRequest(null);
  }}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Nova Corrida
  </Button>
@@ -714,10 +714,10 @@ function MobilityPage() {
 
  {/* ── 3. FLOATING WIDGET PWA (Canto Inferior Direito como no Print de Referência) ── */}
  {showPwaBanner && (
- <div className="hidden lg:flex fixed bottom-4 right-4 z-30 max-w-xs w-full p-4 rounded-2xl bg-card/95 backdrop-blur-2xl border border-border/80 flex-col gap-3 animate-in fade-in slide-in-from-bottom-2">
+ <div className="hidden lg:flex fixed bottom-4 right-4 z-30 max-w-xs w-full p-4 rounded-lg bg-card/95 backdrop-blur-2xl border border-border/80 flex-col gap-3 animate-in fade-in slide-in-from-bottom-2">
  <div className="flex items-start justify-between">
- <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-2xl bg-foreground text-background flex items-center justify-center font-bold">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-foreground text-background flex items-center justify-center font-bold">
  <Smartphone className="size-4" />
  </div>
  <div>
@@ -735,15 +735,15 @@ function MobilityPage() {
  </div>
 
  <div className="space-y-1 text-[11px] text-muted-foreground">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Check className="size-3 text-emerald-500 shrink-0" />
  <span>Acesso instantâneo</span>
  </div>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Check className="size-3 text-emerald-500 shrink-0" />
  <span>Funciona offline</span>
  </div>
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Check className="size-3 text-emerald-500 shrink-0" />
  <span>Notificações de status da corrida</span>
  </div>
@@ -756,7 +756,7 @@ function MobilityPage() {
  toast.info("Para instalar no celular, toque em 'Compartilhar' ou no menu do navegador e escolha 'Adicionar à Tela de Início'.");
  }
  }}
- className="w-full h-9 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90"
+ className="w-full h-9 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90"
  >
  Instalar Agora
  </Button>

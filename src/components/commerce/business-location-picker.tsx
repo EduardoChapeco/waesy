@@ -467,7 +467,7 @@ export function BusinessLocationPicker({
  <Label className="text-xs font-bold text-foreground block">
  Como funciona o atendimento do seu negócio? *
  </Label>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  {models.map((model) => {
  const isSelected = value.businessModel === model.id;
  const Icon = model.icon;
@@ -478,7 +478,7 @@ export function BusinessLocationPicker({
  type="button"
  onClick={() => handleModelSelect(model.id)}
  className={cn(
- "flex items-start gap-3 p-3.5 rounded-2xl border text-left transition-all cursor-pointer select-none",
+ "flex items-start gap-3 p-4 rounded-lg border text-left transition-all cursor-pointer select-none",
  isSelected
  ? "bg-primary/5 border-primary ring-1 ring-primary shadow-xs"
  : "bg-card border-border/80 hover:border-foreground/30 hover:bg-muted/40"
@@ -486,7 +486,7 @@ export function BusinessLocationPicker({
  >
  <div
  className={cn(
- "size-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
+ "size-9 rounded-lg flex items-center justify-center shrink-0 mt-1",
  isSelected
  ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground"
@@ -494,7 +494,7 @@ export function BusinessLocationPicker({
  >
  <Icon className="size-4" />
  </div>
- <div className="space-y-0.5 min-w-0">
+ <div className="space-y-1 min-w-0">
  <span className="text-xs font-bold text-foreground block leading-tight">
  {model.title}
  </span>
@@ -509,8 +509,8 @@ export function BusinessLocationPicker({
  </div>
 
  {/* ── 2. CONTROLE DE PRIVACIDADE DO ENDEREÇO ── */}
- <div className="p-4 rounded-2xl bg-card border border-border/80 flex items-center justify-between gap-4 shadow-xs">
- <div className="space-y-0.5 min-w-0">
+ <div className="p-4 rounded-lg bg-card border border-border/80 flex items-center justify-between gap-4 shadow-xs">
+ <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2">
  {value.isAddressPublic ? (
  <Eye className="size-4 text-primary shrink-0" />
@@ -536,7 +536,7 @@ export function BusinessLocationPicker({
  </div>
 
  {/* ── 3. FORMULÁRIO DE ENDEREÇO ESTRUTURADO (COM CEP E AUTOPREENCHIMENTO) ── */}
- <div className="space-y-4 p-4 sm:p-5 rounded-2xl bg-muted/20 border border-border/80">
+ <div className="space-y-4 p-4 sm:p-5 rounded-lg bg-muted/20 border border-border/80">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <MapPin className="size-4 text-primary" />
@@ -550,7 +550,7 @@ export function BusinessLocationPicker({
  size="sm"
  onClick={handleGetGps}
  disabled={isGettingGps}
- className="h-8 rounded-xl text-xs gap-1.5 font-medium border-border/70"
+ className="h-8 rounded-lg text-xs gap-2 font-medium border-border/70"
  >
  {isGettingGps ? (
  <Loader2 className="size-3.5 animate-spin" />
@@ -563,7 +563,7 @@ export function BusinessLocationPicker({
 
  {/* Linha 1: CEP + Cidade + Estado */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
  <span>CEP *</span>
  {isSearchingCep && (
@@ -583,36 +583,36 @@ export function BusinessLocationPicker({
  onBlur={handleCepBlur}
  placeholder="89800-000"
  maxLength={9}
- className="h-10 rounded-xl bg-card text-xs font-mono"
+ className="h-10 rounded-lg bg-card text-xs font-mono"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">Cidade *</Label>
  <Input
  value={value.city}
  onChange={(e) => onChange({ ...value, city: e.target.value })}
  placeholder="Ex: Chapecó"
- className="h-10 rounded-xl bg-card text-xs font-medium"
+ className="h-10 rounded-lg bg-card text-xs font-medium"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">Estado (UF) *</Label>
  <Input
  value={value.state}
  onChange={(e) => onChange({ ...value, state: e.target.value.toUpperCase() })}
  placeholder="SC"
  maxLength={2}
- className="h-10 rounded-xl bg-card text-xs uppercase font-bold"
+ className="h-10 rounded-lg bg-card text-xs uppercase font-bold"
  />
  </div>
  </div>
 
  {/* Linha 2: Rua + Número + Complemento */}
  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
- <div className="sm:col-span-6 space-y-1.5">
+ <div className="sm:col-span-6 space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">
  Rua / Logradouro *
  </Label>
@@ -620,40 +620,40 @@ export function BusinessLocationPicker({
  value={value.street}
  onChange={(e) => onChange({ ...value, street: e.target.value })}
  placeholder="Ex: Av. Getúlio Vargas"
- className="h-10 rounded-xl bg-card text-xs"
+ className="h-10 rounded-lg bg-card text-xs"
  />
  </div>
 
- <div className="sm:col-span-2 space-y-1.5">
+ <div className="sm:col-span-2 space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">Número *</Label>
  <Input
  value={value.number}
  onChange={(e) => onChange({ ...value, number: e.target.value })}
  placeholder="1200"
- className="h-10 rounded-xl bg-card text-xs font-mono"
+ className="h-10 rounded-lg bg-card text-xs font-mono"
  />
  </div>
 
- <div className="sm:col-span-4 space-y-1.5">
+ <div className="sm:col-span-4 space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">Complemento</Label>
  <Input
  value={value.complement}
  onChange={(e) => onChange({ ...value, complement: e.target.value })}
  placeholder="Sala 302, Bloco B..."
- className="h-10 rounded-xl bg-card text-xs"
+ className="h-10 rounded-lg bg-card text-xs"
  />
  </div>
  </div>
 
  {/* Linha 3: Bairro + Botão de Localizar no Mapa */}
  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
- <div className="sm:col-span-8 space-y-1.5">
+ <div className="sm:col-span-8 space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">Bairro *</Label>
  <Input
  value={value.neighborhood}
  onChange={(e) => onChange({ ...value, neighborhood: e.target.value })}
  placeholder="Ex: Centro, Efapi, Passo dos Fortes..."
- className="h-10 rounded-xl bg-card text-xs"
+ className="h-10 rounded-lg bg-card text-xs"
  />
  </div>
 
@@ -666,7 +666,7 @@ export function BusinessLocationPicker({
  geocodeAddress(full);
  }}
  disabled={isGeocoding || !value.street}
- className="w-full h-10 rounded-xl text-xs font-bold gap-1.5 bg-card border border-border/80 hover:bg-muted"
+ className="w-full h-10 rounded-lg text-xs font-bold gap-2 bg-card border border-border/80 hover:bg-muted"
  >
  {isGeocoding ? (
  <Loader2 className="size-3.5 animate-spin" />
@@ -681,7 +681,7 @@ export function BusinessLocationPicker({
  {/* ── 4. MAPA INTERATIVO (MAPLIBRE / OPENSTREETMAP) COM PIN ARRASTÁVEL ── */}
  <div className="space-y-2 pt-2">
  <div className="flex items-center justify-between text-xs">
- <span className="font-bold text-foreground flex items-center gap-1.5">
+ <span className="font-bold text-foreground flex items-center gap-2">
  <CheckCircle2 className="size-3.5 text-emerald-500" />
  Ponto Exato no Mapa (Arraste o pino para ajustar a porta da loja)
  </span>
@@ -692,11 +692,11 @@ export function BusinessLocationPicker({
  )}
  </div>
 
- <div className="relative w-full h-[220px] rounded-2xl overflow-hidden border border-border/80 bg-muted/40 shadow-xs">
+ <div className="relative w-full h-[220px] rounded-lg overflow-hidden border border-border/80 bg-muted/40 shadow-xs">
  <div ref={mapContainer} className="size-full" />
  {!value.latitude && (
  <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center p-4 text-center z-10 pointer-events-none">
- <p className="text-xs font-medium text-muted-foreground bg-card p-3 rounded-xl border border-border/80 shadow-xs max-w-xs">
+ <p className="text-xs font-medium text-muted-foreground bg-card p-3 rounded-lg border border-border/80 shadow-xs max-w-xs">
  Digite seu CEP ou endereço e clique em <strong>Localizar no Mapa</strong> para fixar o ponto exato de entrega.
  </p>
  </div>
@@ -706,10 +706,10 @@ export function BusinessLocationPicker({
  </div>
 
  {/* ── 5. REGIÃO ATENDIDA & RAIO DE COBERTURA EM KM ── */}
- <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 space-y-4 shadow-xs">
+ <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/80 space-y-4 shadow-xs">
  <div className="flex items-center justify-between">
- <div className="space-y-0.5">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="space-y-1">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Sliders className="size-3.5 text-primary" />
  Raio de Atendimento e Região de Entrega
  </span>
@@ -751,7 +751,7 @@ export function BusinessLocationPicker({
  value={newCoverageCity}
  onChange={(e) => setNewCoverageCity(e.target.value)}
  placeholder="Adicionar outra cidade atendida (Ex: Xanxerê, Xaxim, SMO)..."
- className="h-9 rounded-xl bg-background text-xs"
+ className="h-9 rounded-lg bg-background text-xs"
  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCoverageCity())}
  />
  <Button
@@ -759,13 +759,13 @@ export function BusinessLocationPicker({
  variant="outline"
  size="sm"
  onClick={handleAddCoverageCity}
- className="h-9 rounded-xl text-xs font-bold px-4 shrink-0"
+ className="h-9 rounded-lg text-xs font-bold px-4 shrink-0"
  >
  Adicionar
  </Button>
  </div>
 
- <div className="flex flex-wrap gap-1.5 pt-1">
+ <div className="flex flex-wrap gap-2 pt-1">
  <Badge className="bg-primary/10 text-primary border-primary/20 text-[11px] font-bold">
  {value.city || "Cidade Base"} (Sede)
  </Badge>
@@ -773,7 +773,7 @@ export function BusinessLocationPicker({
  <Badge
  key={c}
  variant="secondary"
- className="text-[11px] font-medium gap-1.5 pr-1.5 pl-2.5"
+ className="text-[11px] font-medium gap-2 pr-2 pl-3"
  >
  <span>{c}</span>
  <button

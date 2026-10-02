@@ -66,19 +66,19 @@ function AdminSecurityOverviewPage() {
       <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-xs overflow-x-auto no-scrollbar">
         <Link
           to="/admin-master/seguranca"
-          className="px-3.5 py-1.5 rounded-xl font-bold transition-colors bg-primary text-primary-foreground shadow-sm"
+          className="px-4 py-2 rounded-lg font-bold transition-colors bg-primary text-primary-foreground shadow-sm"
         >
           Visão Geral e Autenticações
         </Link>
         <Link
           to="/admin-master/seguranca/telemetria"
-          className="px-3.5 py-1.5 rounded-xl font-semibold transition-colors hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+          className="px-4 py-2 rounded-lg font-semibold transition-colors hover:bg-muted/60 text-muted-foreground hover:text-foreground"
         >
           Telemetria de Ataques e Invasões
         </Link>
         <Link
           to="/admin-master/seguranca/certificados"
-          className="px-3.5 py-1.5 rounded-xl font-semibold transition-colors hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+          className="px-4 py-2 rounded-lg font-semibold transition-colors hover:bg-muted/60 text-muted-foreground hover:text-foreground"
         >
           Certificados Transacionais
         </Link>
@@ -101,7 +101,7 @@ function AdminSecurityOverviewPage() {
  size="sm"
  onClick={handleRefresh}
  disabled={isRefreshing}
- className="self-start sm:self-auto gap-2 rounded-xl text-xs"
+ className="self-start sm:self-auto gap-2 rounded-lg text-xs"
  >
  <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
  Atualizar
@@ -109,23 +109,23 @@ function AdminSecurityOverviewPage() {
  </div>
 
  {/* Estatísticas de Risco */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <span className="text-xs font-semibold text-muted-foreground">Tabelas com RLS 100%</span>
  <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">396 / 396</p>
  </div>
 
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <span className="text-xs font-semibold text-muted-foreground">Logins Válidos</span>
  <p className="text-xl font-bold text-foreground">{stats.totalSuccess}</p>
  </div>
 
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <span className="text-xs font-semibold text-muted-foreground">Tentativas Falhas</span>
  <p className="text-xl font-bold text-red-600 dark:text-red-400">{stats.totalFailed}</p>
  </div>
 
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <span className="text-xs font-semibold text-muted-foreground">Eventos de Risco</span>
  <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{stats.highRiskCount}</p>
  </div>
@@ -141,7 +141,7 @@ function AdminSecurityOverviewPage() {
 
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
  {highRiskEvents.slice(0, 6).map((ev: any) => (
- <div key={ev.id} className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/30 space-y-2">
+ <div key={ev.id} className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/30 space-y-2">
  <div className="flex items-center justify-between">
  <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]">
  Risco: {ev.risk_score}%
@@ -196,20 +196,20 @@ function AdminSecurityOverviewPage() {
 
  {/* Filtros e Busca */}
  <div className="flex items-center gap-2 flex-wrap">
- <div className="relative min-w-[200px]">
+ <div className="relative min-w-52">
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
  <Input
  placeholder="Filtrar por IP, usuário, cidade..."
  value={searchFilter}
  onChange={(e) => setSearchFilter(e.target.value)}
- className="pl-8 h-9 text-xs rounded-xl bg-card border-border/70"
+ className="pl-8 h-9 text-xs rounded-lg bg-card border-border/70"
  />
  </div>
 
  <select
  value={eventFilter}
  onChange={(e) => setEventFilter(e.target.value)}
- className="h-9 px-3 text-xs rounded-xl bg-card border border-border/70 text-foreground cursor-pointer"
+ className="h-9 px-3 text-xs rounded-lg bg-card border border-border/70 text-foreground cursor-pointer"
  >
  <option value="all">Todos os Eventos</option>
  <option value="login_success">Logins com Sucesso</option>
@@ -222,22 +222,22 @@ function AdminSecurityOverviewPage() {
  </div>
 
  {filteredEvents.length === 0 ? (
- <div className="p-8 text-center rounded-2xl border border-dashed border-border/70 bg-muted/20">
+ <div className="p-8 text-center rounded-lg border border-dashed border-border/70 bg-muted/20">
  <Shield className="size-8 mx-auto text-muted-foreground mb-2" />
  <p className="text-xs font-semibold text-muted-foreground">Nenhum evento encontrado para os filtros aplicados.</p>
  </div>
  ) : (
- <div className="rounded-2xl border border-border/70 bg-card overflow-hidden">
+ <div className="rounded-lg border border-border/70 bg-card overflow-hidden">
  <div className="overflow-x-auto no-scrollbar">
  <table className="w-full text-left text-xs">
  <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase text-[10px] tracking-wider font-bold">
  <tr>
- <th className="p-3.5">Status / Evento</th>
- <th className="p-3.5">Usuário / Perfil</th>
- <th className="p-3.5">IP e Localização</th>
- <th className="p-3.5">Dispositivo</th>
- <th className="p-3.5">Risco</th>
- <th className="p-3.5 text-right">Data e Hora</th>
+ <th className="p-4">Status / Evento</th>
+ <th className="p-4">Usuário / Perfil</th>
+ <th className="p-4">IP e Localização</th>
+ <th className="p-4">Dispositivo</th>
+ <th className="p-4">Risco</th>
+ <th className="p-4 text-right">Data e Hora</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-border/60">
@@ -247,7 +247,7 @@ function AdminSecurityOverviewPage() {
 
  return (
  <tr key={ev.id} className="hover:bg-muted/30 transition-colors">
- <td className="p-3.5">
+ <td className="p-4">
  <div className="flex items-center gap-2">
  <div
  className={`size-2 rounded-full ${
@@ -268,7 +268,7 @@ function AdminSecurityOverviewPage() {
  </div>
  </td>
 
- <td className="p-3.5">
+ <td className="p-4">
  {ev.profiles ? (
  <div>
  <p className="font-bold text-foreground">{ev.profiles.full_name || "Sem Nome"}</p>
@@ -279,7 +279,7 @@ function AdminSecurityOverviewPage() {
  )}
  </td>
 
- <td className="p-3.5">
+ <td className="p-4">
  <div>
  <p className="font-mono font-medium text-foreground">{ev.ip_address || "—"}</p>
  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -289,17 +289,17 @@ function AdminSecurityOverviewPage() {
  </div>
  </td>
 
- <td className="p-3.5">
+ <td className="p-4">
  <span className="text-muted-foreground text-[11px]">
  {ev.metadata?.device_name || ev.device_type || "Navegador"}
  </span>
  </td>
 
- <td className="p-3.5">
- <div className="flex items-center gap-1.5 flex-wrap">
+ <td className="p-4">
+ <div className="flex items-center gap-2 flex-wrap">
  <Badge
  variant="outline"
- className={`text-[10px] px-1.5 py-0 ${
+ className={`text-[10px] px-2 py-0 ${
  ev.risk_score >= 40
  ? "bg-red-500/10 text-red-600 border-red-500/30"
  : ev.risk_score > 0
@@ -318,7 +318,7 @@ function AdminSecurityOverviewPage() {
  </div>
  </td>
 
- <td className="p-3.5 text-right font-mono text-[11px] text-muted-foreground">
+ <td className="p-4 text-right font-mono text-[11px] text-muted-foreground">
  <p>{new Date(ev.created_at).toLocaleDateString("pt-BR")}</p>
  <p className="text-[10px] text-muted-foreground/70">{new Date(ev.created_at).toLocaleTimeString("pt-BR")}</p>
  </td>

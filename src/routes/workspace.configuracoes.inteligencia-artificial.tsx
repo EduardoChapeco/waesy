@@ -175,7 +175,7 @@ function WorkspaceAiSettingsPage() {
  </div>
 
  <Link to="/workspace/configuracoes/integracoes">
- <Button variant="outline" size="sm" className="h-9 px-3.5 text-xs font-semibold rounded-xl gap-2 cursor-pointer border-border/70 hover:bg-muted/50">
+ <Button variant="outline" size="sm" className="h-9 px-4 text-xs font-semibold rounded-lg gap-2 cursor-pointer border-border/70 hover:bg-muted/50">
  <Sliders className="size-3.5 text-primary" />
  Central de Integrações e APIs
  <ExternalLink className="size-3 text-muted-foreground" />
@@ -194,7 +194,7 @@ function WorkspaceAiSettingsPage() {
  return (
  <div
  key={prov}
- className={`p-5 rounded-2xl border transition-all space-y-4 flex flex-col justify-between ${
+ className={`p-5 rounded-lg border transition-all space-y-4 flex flex-col justify-between ${
  isConfigured
  ? "bg-card border-border/80 shadow-xs"
  : "bg-muted/10 border-dashed border-border/70 opacity-80"
@@ -203,7 +203,7 @@ function WorkspaceAiSettingsPage() {
  <div className="space-y-3">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Bot className="size-4" />
  </div>
  <strong className="text-xs sm:text-sm font-bold text-foreground">
@@ -263,7 +263,7 @@ function WorkspaceAiSettingsPage() {
  size="sm"
  disabled={isTesting}
  onClick={() => handleTest(prov)}
- className="flex-1 h-9 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+ className="flex-1 h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer"
  >
  <Zap className={`size-3.5 ${isTesting ? "animate-spin text-primary" : ""}`} />
  {isTesting ? "Testando..." : "Testar"}
@@ -274,7 +274,7 @@ function WorkspaceAiSettingsPage() {
  variant="outline"
  size="sm"
  onClick={() => handleOpenModal(prov)}
- className="h-9 px-3 rounded-xl text-xs cursor-pointer"
+ className="h-9 px-3 rounded-lg text-xs cursor-pointer"
  >
  Editar
  </Button>
@@ -284,7 +284,7 @@ function WorkspaceAiSettingsPage() {
  variant="ghost"
  size="icon"
  onClick={() => handleDelete(prov)}
- className="size-9 rounded-xl text-muted-foreground hover:text-rose-600 cursor-pointer"
+ className="size-9 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -293,7 +293,7 @@ function WorkspaceAiSettingsPage() {
  <Button
  type="button"
  onClick={() => handleOpenModal(prov)}
- className="w-full h-9 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+ className="w-full h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
  >
  <Plus className="size-3.5" /> Configurar Chave
  </Button>
@@ -305,7 +305,7 @@ function WorkspaceAiSettingsPage() {
       </div>
 
       {/* ── 3. Base de Conhecimento e DNA da IA ── */}
-      <div className="bg-card border border-border/60 rounded-2xl p-5 space-y-4 shadow-xs mt-8">
+      <div className="bg-card border border-border/60 rounded-lg p-5 space-y-4 shadow-xs mt-8">
         <div>
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Bot className="size-4 text-primary" />
@@ -320,13 +320,13 @@ function WorkspaceAiSettingsPage() {
           onChange={(e) => setAiKnowledgeBase(e.target.value)}
           placeholder="Ex: O tom de voz deve ser amigável e focado em fechar vendas. Nunca ofereça descontos maiores que 15%. Informe que o frete grátis é apenas para compras acima de R$ 200..."
           rows={6}
-          className="text-xs rounded-xl bg-muted/40 border-dashed focus-visible:ring-primary/50 resize-none"
+          className="text-xs rounded-lg bg-muted/40 border-dashed focus-visible:ring-primary/50 resize-none"
         />
         <div className="flex justify-end">
           <Button
             onClick={handleSaveKnowledgeBase}
             disabled={savingKb}
-            className="h-9 rounded-xl text-xs font-bold gap-2 px-6 cursor-pointer"
+            className="h-9 rounded-lg text-xs font-bold gap-2 px-6 cursor-pointer"
           >
             {savingKb ? "Salvando..." : "Salvar DNA da IA"}
           </Button>
@@ -335,7 +335,7 @@ function WorkspaceAiSettingsPage() {
 
       {/* ── 4. Modal de Configuração ── */}
  <Dialog open={modalOpen} onOpenChange={setModalOpen}>
- <DialogContent className="sm:max-w-md rounded-2xl border-border/70 bg-card p-5 space-y-4">
+ <DialogContent className="sm:max-w-md rounded-lg border-border/70 bg-card p-5 space-y-4">
  <DialogHeader>
  <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
  <Key className="size-4 text-primary" />
@@ -343,14 +343,14 @@ function WorkspaceAiSettingsPage() {
  </DialogTitle>
  </DialogHeader>
 
- <form onSubmit={handleSave} className="space-y-3.5">
+ <form onSubmit={handleSave} className="space-y-4">
  <div className="space-y-1">
  <label className="text-xs font-semibold text-foreground">Modelo Principal *</label>
  <Input
  value={modelName}
  onChange={(e) => setModelName(e.target.value)}
  placeholder="Ex: gpt-4o ou claude-3-5-sonnet"
- className="h-10 text-base sm:text-xs rounded-xl font-mono"
+ className="h-10 text-base sm:text-xs rounded-lg font-mono"
  required
  />
  </div>
@@ -362,7 +362,7 @@ function WorkspaceAiSettingsPage() {
  value={apiKey}
  onChange={(e) => setApiKey(e.target.value)}
  placeholder="sk-proj-..."
- className="h-10 text-base sm:text-xs rounded-xl font-mono"
+ className="h-10 text-base sm:text-xs rounded-lg font-mono"
  required
  autoFocus
  />
@@ -380,7 +380,7 @@ function WorkspaceAiSettingsPage() {
  value={tokenLimitStr}
  onChange={(e) => setTokenLimitStr(e.target.value)}
  placeholder="Ex: 500000"
- className="h-10 text-base sm:text-xs rounded-xl font-mono"
+ className="h-10 text-base sm:text-xs rounded-lg font-mono"
  />
  </div>
 
@@ -388,7 +388,7 @@ function WorkspaceAiSettingsPage() {
  <Button
  type="submit"
  disabled={submitting || !apiKey.trim()}
- className="w-full h-10 rounded-xl text-xs font-bold cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold cursor-pointer"
  >
  {submitting ? "Salvando..." : "Salvar e Habilitar Provedor"}
  </Button>

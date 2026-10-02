@@ -58,7 +58,7 @@ const DialogContent = React.forwardRef<
         className={cn(
           isForceCompact
             ? "fixed inset-0 z-50 flex flex-col w-full h-full max-w-none rounded-none border-none bg-background p-4 sm:p-5 overflow-y-auto no-scrollbar duration-200"
-            : "fixed inset-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col w-full max-h-[90vh] rounded-2xl border border-border bg-background p-6 overflow-y-auto no-scrollbar duration-200",
+            : "fixed inset-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col w-full max-h-[90vh] rounded-lg border border-border bg-background p-6 overflow-y-auto no-scrollbar duration-200",
           !isForceCompact && sizeClasses,
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           className,
@@ -66,7 +66,7 @@ const DialogContent = React.forwardRef<
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-xl p-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-lg p-3 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation">
           <X className="size-4" />
           <span className="sr-only">Fechar</span>
         </DialogPrimitive.Close>

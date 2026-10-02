@@ -215,11 +215,11 @@ export function SwotMatrixPage() {
 
     return (
       <div
-        className={`flex flex-col rounded-xl border bg-card p-5 transition-colors ${meta.borderClass}`}
+        className={`flex flex-col rounded-lg border bg-card p-5 transition-colors ${meta.borderClass}`}
       >
         {/* Cabeçalho do Quadrante */}
         <div className="flex items-start justify-between gap-3 border-b border-border/40 pb-3">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-lg ${meta.colorClass}`}
             >
@@ -251,7 +251,7 @@ export function SwotMatrixPage() {
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
               <p className="text-xs">Nenhum ponto registrado.</p>
-              <p className="text-xs mt-0.5">Clique em Gerar com IA ou adicione manualmente.</p>
+              <p className="text-xs mt-1">Clique em Gerar com IA ou adicione manualmente.</p>
             </div>
           ) : (
             items.map((item, idx) => (
@@ -260,7 +260,7 @@ export function SwotMatrixPage() {
                 className="group relative flex items-start justify-between gap-3 rounded-lg border border-border/40 bg-muted/20 p-3 text-xs transition-colors hover:bg-muted/40"
               >
                 <div className="flex items-start gap-2 flex-1">
-                  <span className="font-mono text-xs text-muted-foreground mt-0.5">
+                  <span className="font-mono text-xs text-muted-foreground mt-1">
                     {String(idx + 1).padStart(2, "0")}
                   </span>
                   <span className="leading-relaxed text-foreground font-medium">
@@ -321,7 +321,7 @@ export function SwotMatrixPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                   Planejamento Estratégico
                 </span>
                 {lastSaved && (
@@ -334,7 +334,7 @@ export function SwotMatrixPage() {
               <h1 className="text-xl font-semibold tracking-tight mt-1 text-foreground">
                 Matriz SWOT Estratégica
               </h1>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1">
                 Mapeamento analítico de forças, fraquezas, oportunidades e ameaças da empresa.
               </p>
             </div>
@@ -345,7 +345,7 @@ export function SwotMatrixPage() {
                 size="sm"
                 onClick={handleGenerateAI}
                 disabled={isGenerating}
-                className="h-11 px-4 rounded-xl text-xs font-medium gap-2"
+                className="h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 <Sparkles className={`w-3.5 h-3.5 ${isGenerating ? "animate-spin" : ""}`} />
                 {isGenerating ? "Analisando Empresa..." : "Gerar com IA"}
@@ -355,7 +355,7 @@ export function SwotMatrixPage() {
                 size="sm"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="h-11 px-4 rounded-xl text-xs font-medium gap-2"
+                className="h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 <Save className={`w-3.5 h-3.5 ${isSaving ? "animate-spin" : ""}`} />
                 {isSaving ? "Salvando..." : "Salvar Matriz"}

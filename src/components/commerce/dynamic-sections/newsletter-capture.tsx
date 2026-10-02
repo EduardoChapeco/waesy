@@ -40,7 +40,7 @@ export function NewsletterCaptureSection({
  </div>
 
  {submitted ? (
- <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center justify-center gap-2 max-w-md mx-auto">
+ <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center justify-center gap-2 max-w-md mx-auto">
  <CheckCircle2 className="size-4" />
  <span>Obrigado! Seu contato foi cadastrado com sucesso.</span>
  </div>
@@ -53,15 +53,15 @@ export function NewsletterCaptureSection({
  value={contact}
  onChange={(e) => setContact(e.target.value)}
  placeholder={placeholder}
- className="h-11 pl-9 rounded-xl bg-background border-border/80 text-xs"
+ className="h-11 pl-9 rounded-lg bg-background border-border/80 text-xs"
  />
  </div>
  <Button
  type="submit"
- className="h-11 rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer px-6 shrink-0"
+ className="h-11 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer px-6 shrink-0"
  >
  <span>{buttonLabel}</span>
- <ArrowRight className="size-3.5 ml-1.5" />
+ <ArrowRight className="size-3.5 ml-2" />
  </Button>
  </form>
  )}

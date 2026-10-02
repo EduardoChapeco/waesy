@@ -535,9 +535,9 @@ export function ConvenienceShowcaseView({
 
   // Componente Reutilizável: Card do Anunciante com Isolamento Estrito (Pessoa vs Empresa)
   const AdvertiserCard = () => (
-    <div className="p-3.5 rounded-2xl border border-border/60 bg-muted/15 space-y-2.5">
+    <div className="p-4 rounded-lg border border-border/60 bg-muted/15 space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="size-9 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
             {advertiserAvatar ? (
               <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
@@ -548,7 +548,7 @@ export function ConvenienceShowcaseView({
             )}
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <p className="text-xs font-bold text-foreground truncate">{advertiserName}</p>
               {isCompany ? (
                 <span title="Loja Oficial Verificada" className="inline-flex shrink-0">
@@ -568,7 +568,7 @@ export function ConvenienceShowcaseView({
 
         <div className="flex items-center gap-1 shrink-0">
           {advertiserProfileUrl && !isPreview && (
-            <Button asChild variant="ghost" size="sm" className="h-7 px-2.5 text-[11px] text-foreground/80 hover:text-foreground gap-1">
+            <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-[11px] text-foreground/80 hover:text-foreground gap-1">
               <Link to={advertiserProfileUrl}>
                 <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
                 <ExternalLink className="size-3" />
@@ -601,7 +601,7 @@ export function ConvenienceShowcaseView({
 
   // Componente Reutilizável: Metadados Textuais Sutis (Sem Badges Chunky, Sem Neon, Sem Emojis)
   const SubtleProductTags = () => (
-    <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap pt-0.5">
+    <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap pt-1">
       {unitSuffix && <span className="font-semibold text-foreground/90">{unitSuffix}</span>}
       {temperature === "gelada" && (
         <>
@@ -644,7 +644,7 @@ export function ConvenienceShowcaseView({
 
   // Componente Reutilizável: Bloco de Preço e Condições de Pagamento com Suporte a Desconto Progressivo
   const PricingBlock = () => (
-    <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-2.5">
+    <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
       <div className="flex items-baseline justify-between flex-wrap gap-2">
         <div>
           <div className="flex items-baseline gap-2">
@@ -680,7 +680,7 @@ export function ConvenienceShowcaseView({
       </div>
 
       {acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 && (
-        <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-1.5">
+        <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-2">
           <span>
             Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
           </span>
@@ -695,7 +695,7 @@ export function ConvenienceShowcaseView({
 
       <div className="pt-2 border-t border-border/40 text-xs text-muted-foreground space-y-1">
         {acceptsCard && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <CreditCard className="size-3.5 text-primary shrink-0" />
             <span>
               {maxInstallments === 1 ? (
@@ -711,7 +711,7 @@ export function ConvenienceShowcaseView({
         )}
 
         {acceptsCash && (
-          <div className="flex items-center gap-1.5 text-[11px]">
+          <div className="flex items-center gap-2 text-[11px]">
             <Banknote className="size-3.5 text-muted-foreground shrink-0" />
             <span>Aceita dinheiro em espécie com troco</span>
           </div>
@@ -725,12 +725,12 @@ export function ConvenienceShowcaseView({
     if (!isFreshPricingActive && !isRipenessActive) return null;
 
     return (
-      <div className="p-3.5 rounded-2xl bg-card border border-border/60 space-y-3">
+      <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
         {/* Toggle Unidade vs Peso */}
         {isFreshPricingActive && (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Scale className="size-3.5 text-primary" />
                 <span>Modo de Compra:</span>
               </span>
@@ -740,12 +740,12 @@ export function ConvenienceShowcaseView({
                 </span>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted/30 rounded-xl border border-border/50">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-muted/30 rounded-lg border border-border/50">
               <button
                 type="button"
                 onClick={() => setPricingMode("unit")}
                 className={cn(
-                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-2",
                   pricingMode === "unit"
                     ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                     : "text-muted-foreground hover:text-foreground"
@@ -757,7 +757,7 @@ export function ConvenienceShowcaseView({
                 type="button"
                 onClick={() => setPricingMode("weight")}
                 className={cn(
-                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-2",
                   pricingMode === "weight"
                     ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                     : "text-muted-foreground hover:text-foreground"
@@ -768,9 +768,9 @@ export function ConvenienceShowcaseView({
             </div>
 
             {pricingMode === "weight" && (
-              <div className="flex items-center justify-between p-2 rounded-xl bg-muted/20 border border-border/40 text-xs">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/20 border border-border/40 text-xs">
                 <span className="text-muted-foreground">Gramas / Peso:</span>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   {[250, 500, 1000, 1500].map((g) => (
                     <button
                       key={g}
@@ -798,7 +798,7 @@ export function ConvenienceShowcaseView({
             <span className="text-xs font-bold text-foreground block">
               Ponto de Maturação (Hortifrúti Fresco):
             </span>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-2">
               {(["menos_maduro", "maduro", "mais_maduro"] as RipenessStage[]).map((stage) => {
                 const info = DEFAULT_RIPENESS_LABELS[stage];
                 const isSelected = selectedRipeness === stage;
@@ -808,7 +808,7 @@ export function ConvenienceShowcaseView({
                     type="button"
                     onClick={() => setSelectedRipeness(stage)}
                     className={cn(
-                      "p-2.5 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5",
+                      "p-3 rounded-lg text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-1",
                       isSelected
                         ? "border-primary bg-primary/10 text-primary font-bold  ring-1 ring-primary/30"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
@@ -835,9 +835,9 @@ export function ConvenienceShowcaseView({
     if (!progressiveDiscountTiers || progressiveDiscountTiers.length === 0) return null;
 
     return (
-      <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-3">
+      <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <BadgePercent className="size-4 text-emerald-600 dark:text-emerald-400" />
             <span className="text-xs font-bold text-foreground">Desconto Progressivo</span>
           </div>
@@ -852,7 +852,7 @@ export function ConvenienceShowcaseView({
           )}
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {progressiveDiscountTiers.map((tier, idx) => {
             const isUnlocked = quantity >= tier.min_quantity;
             const discountLabel =
@@ -864,7 +864,7 @@ export function ConvenienceShowcaseView({
               <div
                 key={idx}
                 className={cn(
-                  "flex items-center justify-between p-2.5 rounded-xl border text-xs transition-all",
+                  "flex items-center justify-between p-3 rounded-lg border text-xs transition-all",
                   isUnlocked
                     ? "border-emerald-500/40 text-foreground font-semibold"
                     : "bg-muted/15 border-border/50 text-muted-foreground"
@@ -907,7 +907,7 @@ export function ConvenienceShowcaseView({
 
   // Componente Reutilizável: Linha Compacta de Entrega
   const DeliveryEstimateLine = () => (
-    <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60 text-xs">
+    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/60 text-xs">
       <div className="flex items-center gap-2 text-foreground min-w-0">
         <Truck className="size-4 text-primary shrink-0" />
         <div className="truncate">
@@ -935,7 +935,7 @@ export function ConvenienceShowcaseView({
               </Link>
             </Button>
           ) : (
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-primary shrink-0">
+            <div className="flex items-center gap-2 text-xs font-semibold text-primary shrink-0">
               <Zap className="size-3.5" />
               <span>Prévia Mercado</span>
             </div>
@@ -946,14 +946,14 @@ export function ConvenienceShowcaseView({
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Botão de Edição Leve e Discreto (Substitui a faixa amarela invasiva anterior!) */}
           {isOwner && onEdit && (
             <Button
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-8 px-2.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground gap-1.5 border-border/60 bg-background/60 hover:bg-muted cursor-pointer"
+              className="h-8 px-3 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground gap-2 border-border/60 bg-background/60 hover:bg-muted cursor-pointer"
             >
               <Edit3 className="size-3.5" />
               <span className="hidden sm:inline">Editar</span>
@@ -984,12 +984,12 @@ export function ConvenienceShowcaseView({
               3. DETALHES DO PRODUTO (DESCRIÇÃO)
               4. ESPECIFICAÇÕES TÉCNICAS E ATRIBUTOS
              ═══════════════════════════════════════════════════════════════════ */}
-          <div className={cn(isForcedMobile ? "w-full space-y-3.5" : "md:col-span-7 space-y-4 sm:space-y-6")}>
+          <div className={cn(isForcedMobile ? "w-full space-y-4" : "md:col-span-7 space-y-4 sm:space-y-6")}>
             
             {/* Box da Foto: Grande, full-bleed, limpo */}
             <div className="space-y-2 sm:space-y-3">
               <div
-                className="relative aspect-square w-full rounded-none sm:rounded-2xl overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm: group cursor-pointer"
+                className="relative aspect-square w-full rounded-none sm:rounded-lg overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm: group cursor-pointer"
                 onClick={() => images.length > 0 && setFullscreenImage(images[activePhotoIdx] || images[0])}
               >
                 {images.length > 0 ? (
@@ -1006,7 +1006,7 @@ export function ConvenienceShowcaseView({
                 )}
                 {images.length > 0 && (
                   <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="px-2.5 py-1 rounded-xl bg-background/90 backdrop-blur-md text-[11px] font-semibold text-foreground border border-border/50 flex items-center gap-1.5">
+                    <span className="px-3 py-1 rounded-lg bg-background/90 backdrop-blur-md text-[11px] font-semibold text-foreground border border-border/50 flex items-center gap-2">
                       <Maximize2 className="size-3.5" />
                       Expandir
                     </span>
@@ -1023,7 +1023,7 @@ export function ConvenienceShowcaseView({
                       type="button"
                       onClick={() => setActivePhotoIdx(idx)}
                       className={cn(
-                        "size-14 rounded-xl overflow-hidden border shrink-0 bg-muted/20 transition-all cursor-pointer",
+                        "size-14 rounded-lg overflow-hidden border shrink-0 bg-muted/20 transition-all cursor-pointer",
                         activePhotoIdx === idx
                           ? "border-primary ring-2 ring-primary/20"
                           : "border-border/60 opacity-60 hover:opacity-100"
@@ -1040,9 +1040,9 @@ export function ConvenienceShowcaseView({
                 BLOCO DE CABEÇALHO DO PRODUTO NO MOBILE (MD:HIDDEN OU FORCED MOBILE)
                 Aparece imediatamente abaixo da foto no smartphone!
                ═════════════════════════════════════════════════════════════════ */}
-            <div className={cn("px-3.5 space-y-3.5", isForcedMobile ? "block" : "md:hidden")}>
+            <div className={cn("px-4 space-y-4", isForcedMobile ? "block" : "md:hidden")}>
               <div className="space-y-1">
-                <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-foreground/90">{advertiserName}</span>
                   <span>•</span>
                   <span>{department}</span>
@@ -1070,11 +1070,11 @@ export function ConvenienceShowcaseView({
 
               {/* Seletor de Opções de Preparo / Corte se configurado */}
               {prepOptions && prepOptions.length > 0 && (
-                <div className="p-3 rounded-2xl bg-card border border-border/60 space-y-1.5">
+                <div className="p-3 rounded-lg bg-card border border-border/60 space-y-2">
                   <Label className="text-xs font-bold text-foreground block">
                     Opção de Corte / Preparo:
                   </Label>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {prepOptions.map((opt) => {
                       const isSelected = selectedPrepOption === opt;
                       return (
@@ -1083,7 +1083,7 @@ export function ConvenienceShowcaseView({
                           type="button"
                           onClick={() => setSelectedPrepOption(isSelected ? "" : opt)}
                           className={cn(
-                            "px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer",
+                            "px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary font-bold "
                               : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -1102,7 +1102,7 @@ export function ConvenienceShowcaseView({
                 SEÇÃO: DETALHES DO PRODUTO (DESCRIÇÃO SEMPRE ABAIXO DA FOTO)
                ───────────────────────────────────────────────────────────── */}
             {description && (
-              <div className="mx-3.5 sm:mx-0 p-4 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-3">
+              <div className="mx-4 sm:mx-0 p-4 sm:p-6 rounded-lg bg-card border border-border/60 space-y-3">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                   <FileText className="size-4 text-primary" />
                   <span>Detalhes do Produto</span>
@@ -1116,40 +1116,40 @@ export function ConvenienceShowcaseView({
             {/* ─────────────────────────────────────────────────────────────
                 SEÇÃO: ESPECIFICAÇÕES TÉCNICAS E TABELA DE ATRIBUTOS
                ───────────────────────────────────────────────────────────── */}
-            <div className="mx-3.5 sm:mx-0 p-4 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4">
+            <div className="mx-4 sm:mx-0 p-4 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4">
               <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-primary" />
                 <span>Especificações e Características</span>
               </h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                 {brand && (
-                  <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
+                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Marca</span>
                     <p className="font-semibold text-foreground truncate">{brand}</p>
                   </div>
                 )}
 
-                <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
+                <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
                   <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Departamento</span>
                   <p className="font-semibold text-foreground truncate">{department}</p>
                 </div>
 
                 {unitSuffix && (
-                  <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
+                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Conteúdo / Peso</span>
                     <p className="font-semibold text-foreground truncate font-mono">{unitSuffix}</p>
                   </div>
                 )}
 
                 {estimatedWeightPerUnit && (
-                  <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
+                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Peso Aprox. Peça</span>
                     <p className="font-semibold text-foreground truncate font-mono">{estimatedWeightPerUnit}</p>
                   </div>
                 )}
 
-                <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
+                <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
                   <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Conservação</span>
                   <p className="font-semibold text-foreground capitalize">
                     {temperature === "gelada"
@@ -1162,7 +1162,7 @@ export function ConvenienceShowcaseView({
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
+                <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
                   <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Disponibilidade</span>
                   <p className="font-semibold text-foreground">
                     {readyDelivery ? "Em estoque para envio" : "Sob encomenda"}
@@ -1170,14 +1170,14 @@ export function ConvenienceShowcaseView({
                 </div>
 
                 {barcodeEan && (
-                  <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
+                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Código EAN</span>
                     <p className="font-semibold text-foreground font-mono truncate">{barcodeEan}</p>
                   </div>
                 )}
 
                 {containsGluten !== undefined && (
-                  <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
+                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Glúten</span>
                     <p className="font-semibold text-foreground">
                       {containsGluten ? "Contém Glúten" : "Sem Glúten"}
@@ -1186,7 +1186,7 @@ export function ConvenienceShowcaseView({
                 )}
 
                 {containsLactose !== undefined && (
-                  <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
+                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Lactose</span>
                     <p className="font-semibold text-foreground">
                       {containsLactose ? "Contém Lactose" : "Sem Lactose"}
@@ -1205,8 +1205,8 @@ export function ConvenienceShowcaseView({
 
             {/* Aviso Legal Regulatório */}
             {isAlcoholic && (
-              <div className="mx-3.5 sm:mx-0 p-3.5 rounded-xl border border-rose-500/20 bg-rose-500/5 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-400">
-                <Info className="size-4 shrink-0 mt-0.5" />
+              <div className="mx-4 sm:mx-0 p-4 rounded-lg border border-rose-500/20 bg-rose-500/5 flex items-start gap-3 text-xs text-rose-700 dark:text-rose-400">
+                <Info className="size-4 shrink-0 mt-1" />
                 <div>
                   <p className="font-bold">Aviso Regulatório — Venda Restrita</p>
                   <p className="text-[11px] opacity-90 leading-relaxed">
@@ -1217,7 +1217,7 @@ export function ConvenienceShowcaseView({
             )}
 
             {/* Card do Anunciante / Loja no Mobile */}
-            <div className="md:hidden mx-3.5">
+            <div className="md:hidden mx-4">
               <AdvertiserCard />
             </div>
           </div>
@@ -1237,8 +1237,8 @@ export function ConvenienceShowcaseView({
           <div className={cn(isForcedMobile ? "hidden" : "hidden md:block md:col-span-5 space-y-4 md:sticky md:top-16")}>
             
             {/* Header de Categoria / Loja */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                 <span className="font-semibold text-foreground/90">{advertiserName}</span>
                 <span>•</span>
                 <span>{department}</span>
@@ -1266,11 +1266,11 @@ export function ConvenienceShowcaseView({
 
             {/* Seletor de Opções de Preparo / Corte (Açougue / Padaria) se configurado */}
             {prepOptions && prepOptions.length > 0 && (
-              <div className="p-3.5 rounded-2xl bg-card border border-border/60 space-y-2">
+              <div className="p-4 rounded-lg bg-card border border-border/60 space-y-2">
                 <Label className="text-xs font-bold text-foreground block">
                   Opção de Corte / Preparo:
                 </Label>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {prepOptions.map((opt) => {
                     const isSelected = selectedPrepOption === opt;
                     return (
@@ -1279,7 +1279,7 @@ export function ConvenienceShowcaseView({
                         type="button"
                         onClick={() => setSelectedPrepOption(isSelected ? "" : opt)}
                         className={cn(
-                          "px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer",
+                          "px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
                           isSelected
                             ? "bg-primary text-primary-foreground border-primary font-bold "
                             : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -1294,14 +1294,14 @@ export function ConvenienceShowcaseView({
             )}
 
             {/* Seletor de Quantidade & Ações de Compra */}
-            <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-4">
+            <div className="p-4 rounded-lg bg-card border border-border/60 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-foreground block">Quantidade</span>
                   <span className="text-[11px] text-muted-foreground">Adicione ao seu pedido</span>
                 </div>
 
-                <div className="flex items-center gap-2 border border-border/70 rounded-xl bg-background p-1">
+                <div className="flex items-center gap-2 border border-border/70 rounded-lg bg-background p-1">
                   <Button
                     type="button"
                     variant="ghost"
@@ -1348,7 +1348,7 @@ export function ConvenienceShowcaseView({
               <div className="space-y-2 pt-1">
                 <Button
                   onClick={() => setIsOrderModalOpen(true)}
-                  className="w-full h-12 rounded-xl text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer transition-all active:scale-[0.99]"
+                  className="w-full h-12 rounded-lg text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer transition-all active:scale-[0.99]"
                 >
                   <ShoppingBag className="size-4" />
                   <span>
@@ -1360,7 +1360,7 @@ export function ConvenienceShowcaseView({
                   <Button
                     onClick={handleDirectWhatsApp}
                     variant="outline"
-                    className="w-full h-10 rounded-xl text-xs font-semibold gap-1.5 border-border/70 hover:bg-muted/40 text-foreground cursor-pointer"
+                    className="w-full h-10 rounded-lg text-xs font-semibold gap-2 border-border/70 hover:bg-muted/40 text-foreground cursor-pointer"
                   >
                     <MessageCircle className="size-3.5 text-emerald-600" />
                     <span>Pedir via WhatsApp Direto</span>
@@ -1382,10 +1382,10 @@ export function ConvenienceShowcaseView({
       <div className={cn(
         "z-40 bg-background border-t border-border/60 p-3 pb-safe flex items-center gap-3",
         isForcedMobile || isPreview
-          ? "sticky bottom-0 inset-x-0 block rounded-none sm:rounded-b-2xl pb-safe"
+          ? "sticky bottom-0 inset-x-0 block rounded-none sm:rounded-b-lg pb-safe"
           : "md:hidden fixed bottom-0 inset-x-0 pb-safe"
       )}>
-        <div className="flex items-center border border-border/70 rounded-xl bg-card p-0.5 shrink-0">
+        <div className="flex items-center border border-border/70 rounded-lg bg-card p-1 shrink-0">
           <Button
             type="button"
             variant="ghost"
@@ -1421,7 +1421,7 @@ export function ConvenienceShowcaseView({
 
         <Button
           onClick={() => setIsOrderModalOpen(true)}
-          className="h-11 px-4 rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shrink-0"
+          className="h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shrink-0"
         >
           <ShoppingBag className="size-4" />
           <span>Pedir Agora</span>
@@ -1432,7 +1432,7 @@ export function ConvenienceShowcaseView({
           MODAL / SHEET DE FINALIZAÇÃO DE PEDIDO (CHECKOUT DE CONVENIÊNCIA)
          ═══════════════════════════════════════════════════════════════════════ */}
       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
-        <DialogContent className="max-w-lg p-0 overflow-hidden rounded-2xl sm:rounded-3xl border border-border">
+        <DialogContent className="max-w-lg p-0 overflow-hidden rounded-lg sm:rounded-lg border border-border">
           <DialogHeader className="p-4 sm:p-5 border-b border-border/50 bg-muted/20">
             <DialogTitle className="text-base sm:text-lg font-black text-foreground flex items-center gap-2">
               <ShoppingBag className="size-5 text-primary" />
@@ -1445,7 +1445,7 @@ export function ConvenienceShowcaseView({
 
           <div className="p-4 sm:p-5 space-y-4 max-h-[75vh] overflow-y-auto">
             {/* Resumo do Item */}
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/60">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/60">
               {images[0] ? (
                 <img src={images[0]} alt={title} className="size-14 rounded-lg aspect-square object-cover border shrink-0" />
               ) : (
@@ -1467,7 +1467,7 @@ export function ConvenienceShowcaseView({
                   </p>
                 )}
                 {selectedPrepOption && (
-                  <p className="text-[10px] text-primary font-medium mt-0.5">
+                  <p className="text-[10px] text-primary font-medium mt-1">
                     Preparo: {selectedPrepOption}
                   </p>
                 )}
@@ -1478,7 +1478,7 @@ export function ConvenienceShowcaseView({
             </div>
 
             {/* Identificação do Cliente */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 rounded-xl bg-muted/20 border border-border/40">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-muted/20 border border-border/40">
               <div className="space-y-1">
                 <Label className="text-[11px] font-semibold text-foreground">
                   Seu Nome *
@@ -1505,17 +1505,17 @@ export function ConvenienceShowcaseView({
 
             {/* Oferta Relâmpago (Order Bump / Cross-sell no Carrinho) */}
             {orderBumpOffer?.enabled && (
-              <div className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
+              <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400">
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-400">
                     <Zap className="size-3.5 fill-amber-500 text-amber-500" />
                     <span>{orderBumpOffer.badge_text || "Oferta Relâmpago no Carrinho"}</span>
                   </div>
                   <span className="text-[10px] text-muted-foreground">Adicione com 1 clique</span>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 pt-0.5">
-                  <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex items-center justify-between gap-3 pt-1">
+                  <div className="flex items-center gap-3 min-w-0">
                     {orderBumpOffer.target_image_url ? (
                       <img
                         src={orderBumpOffer.target_image_url}
@@ -1529,7 +1529,7 @@ export function ConvenienceShowcaseView({
                     )}
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-foreground truncate">{orderBumpOffer.target_title}</p>
-                      <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                      <div className="flex items-center gap-2 text-[11px] font-mono">
                         {orderBumpOffer.original_price_cents && (
                           <span className="line-through text-muted-foreground text-[10px]">
                             {formatMoney(orderBumpOffer.original_price_cents)}
@@ -1569,7 +1569,7 @@ export function ConvenienceShowcaseView({
                 </span>
               </Label>
 
-              <div className="grid grid-cols-3 gap-1.5 p-1 bg-muted/30 rounded-xl border border-border/50">
+              <div className="grid grid-cols-3 gap-2 p-1 bg-muted/30 rounded-lg border border-border/50">
                 <button
                   type="button"
                   onClick={() => setOrderDeliveryMode("immediate")}
@@ -1609,8 +1609,8 @@ export function ConvenienceShowcaseView({
               </div>
 
               {orderDeliveryMode === "immediate" && (
-                <div className="p-3 rounded-xl bg-muted/20 border border-border/40 text-xs space-y-1">
-                  <p className="font-semibold text-foreground flex items-center gap-1.5">
+                <div className="p-3 rounded-lg bg-muted/20 border border-border/40 text-xs space-y-1">
+                  <p className="font-semibold text-foreground flex items-center gap-2">
                     <Clock3 className="size-3.5 text-primary" />
                     <span>Despacho Sob Demanda via MotoLink</span>
                   </p>
@@ -1621,12 +1621,12 @@ export function ConvenienceShowcaseView({
               )}
 
               {orderDeliveryMode === "scheduled" && (
-                <div className="p-3 rounded-xl bg-muted/20 border border-border/40 space-y-2">
-                  <Label className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-2">
+                  <Label className="text-[11px] font-semibold text-foreground flex items-center gap-2">
                     <Calendar className="size-3.5 text-primary" />
                     <span>Selecione o Melhor Horário</span>
                   </Label>
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className="grid grid-cols-2 gap-2">
                     {SCHEDULE_WINDOWS.map((win) => (
                       <button
                         key={win.id}
@@ -1647,8 +1647,8 @@ export function ConvenienceShowcaseView({
               )}
 
               {orderDeliveryMode === "pickup" && (
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1 text-emerald-800 dark:text-emerald-300">
-                  <p className="font-semibold flex items-center gap-1.5">
+                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1 text-emerald-800 dark:text-emerald-300">
+                  <p className="font-semibold flex items-center gap-2">
                     <Store className="size-3.5" />
                     <span>Retirada no Balcão da Loja (Taxa Grátis)</span>
                   </p>
@@ -1659,7 +1659,7 @@ export function ConvenienceShowcaseView({
               )}
 
               {orderDeliveryMode !== "pickup" && (
-                <div className="space-y-1.5 pt-1">
+                <div className="space-y-2 pt-1">
                   <Label className="text-xs font-semibold text-foreground">
                     Endereço de Entrega & Referência *
                   </Label>
@@ -1667,7 +1667,7 @@ export function ConvenienceShowcaseView({
                     value={orderAddress}
                     onChange={(e) => setOrderAddress(e.target.value)}
                     placeholder="Rua, número, bairro e ponto de referência"
-                    className="h-11 rounded-xl text-xs bg-background"
+                    className="h-11 rounded-lg text-xs bg-background"
                   />
                 </div>
               )}
@@ -1684,7 +1684,7 @@ export function ConvenienceShowcaseView({
                     type="button"
                     onClick={() => setOrderPaymentMethod("pix")}
                     className={cn(
-                      "p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
+                      "p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
                       orderPaymentMethod === "pix"
                         ? "border-emerald-600 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -1705,7 +1705,7 @@ export function ConvenienceShowcaseView({
                     type="button"
                     onClick={() => setOrderPaymentMethod("card")}
                     className={cn(
-                      "p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
+                      "p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
                       orderPaymentMethod === "card"
                         ? "border-primary bg-primary/10 text-primary font-bold"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -1722,7 +1722,7 @@ export function ConvenienceShowcaseView({
                     type="button"
                     onClick={() => setOrderPaymentMethod("cash")}
                     className={cn(
-                      "p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
+                      "p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
                       orderPaymentMethod === "cash"
                         ? "border-amber-600 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -1744,14 +1744,14 @@ export function ConvenienceShowcaseView({
                     value={cashChangeFor}
                     onChange={(e) => setCashChangeFor(e.target.value)}
                     placeholder="Ex: R$ 50 ou R$ 100"
-                    className="h-10 rounded-xl text-xs bg-background"
+                    className="h-10 rounded-lg text-xs bg-background"
                   />
                 </div>
               )}
             </div>
 
             {/* Discriminativo Financeiro */}
-            <div className="p-3 rounded-xl bg-muted/30 border border-border/50 space-y-1.5 text-xs">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2 text-xs">
               <div className="flex justify-between text-muted-foreground">
                 <span>Subtotal dos Itens:</span>
                 <span className="font-mono font-medium">{formatMoney(subtotalCents)}</span>
@@ -1774,7 +1774,7 @@ export function ConvenienceShowcaseView({
                   {orderDeliveryMode === "pickup" ? "Grátis (R$ 0,00)" : formatMoney(deliveryFeeCents)}
                 </span>
               </div>
-              <div className="pt-1.5 border-t border-border/50 flex justify-between items-baseline text-sm font-bold text-foreground">
+              <div className="pt-2 border-t border-border/50 flex justify-between items-baseline text-sm font-bold text-foreground">
                 <span>Total a Pagar:</span>
                 <span className="text-base font-black font-mono text-emerald-600 dark:text-emerald-400">
                   {formatMoney(grandTotalCents)}
@@ -1788,14 +1788,14 @@ export function ConvenienceShowcaseView({
               variant="outline"
               disabled={isSubmittingOrder}
               onClick={() => setIsOrderModalOpen(false)}
-              className="h-11 rounded-xl text-xs font-semibold"
+              className="h-11 rounded-lg text-xs font-semibold"
             >
               Voltar
             </Button>
             <Button
               onClick={handleConfirmOrder}
               disabled={isSubmittingOrder}
-              className="flex-1 h-11 rounded-xl text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer disabled:opacity-50"
+              className="flex-1 h-11 rounded-lg text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer disabled:opacity-50"
             >
               {isSubmittingOrder ? (
                 <>
@@ -1815,7 +1815,7 @@ export function ConvenienceShowcaseView({
 
       {/* ── Dialog para Vincular Anúncio a uma Loja do Workspace (Modo Proprietário) ── */}
       <Dialog open={isLinkStoreModalOpen} onOpenChange={setIsLinkStoreModalOpen}>
-        <DialogContent className="sm:max-w-md sm:rounded-2xl">
+        <DialogContent className="sm:max-w-md sm:rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Building2 className="size-4 text-primary" />
@@ -1833,7 +1833,7 @@ export function ConvenienceShowcaseView({
                 <span>Buscando suas empresas...</span>
               </div>
             ) : userStoresList.length === 0 ? (
-              <div className="p-4 rounded-xl border border-dashed text-center space-y-2">
+              <div className="p-4 rounded-lg border border-dashed text-center space-y-2">
                 <Store className="size-8 mx-auto text-muted-foreground/50" />
                 <p className="text-xs text-muted-foreground">
                   Você ainda não possui lojas cadastradas no Workspace.
@@ -1850,13 +1850,13 @@ export function ConvenienceShowcaseView({
                     <div
                       key={st.id}
                       className={cn(
-                        "p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors",
+                        "p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors",
                         isCurrent
                           ? "border-primary bg-primary/5"
                           : "border-border/70 hover:border-primary/40 bg-card"
                       )}
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background border border-border/70 overflow-hidden flex items-center justify-center shrink-0">
                           {st.logo_url ? (
                             <img src={st.logo_url} alt={st.name} className="size-full object-cover" />
@@ -1881,7 +1881,7 @@ export function ConvenienceShowcaseView({
                           size="sm"
                           disabled={isLinkingStore}
                           onClick={() => handleSelectStoreLink(st.id)}
-                          className="h-7 px-2.5 text-xs font-bold cursor-pointer"
+                          className="h-7 px-3 text-xs font-bold cursor-pointer"
                         >
                           {isLinkingStore ? <Loader2 className="size-3 animate-spin" /> : "Vincular"}
                         </Button>
@@ -1909,12 +1909,12 @@ export function ConvenienceShowcaseView({
       </Dialog>
       {/* Modal de Foto em Tela Cheia (Lightbox) */}
       <Dialog open={!!fullscreenImage} onOpenChange={(open) => !open && setFullscreenImage(null)}>
-        <DialogContent className="max-w-4xl p-2 bg-background/95 backdrop-blur-xl border-border/80 rounded-2xl overflow-hidden">
+        <DialogContent className="max-w-4xl p-2 bg-background/95 backdrop-blur-xl border-border/80 rounded-lg overflow-hidden">
           <DialogHeader className="sr-only">
             <DialogTitle>Foto do Produto</DialogTitle>
           </DialogHeader>
           {fullscreenImage && (
-            <div className="relative aspect-square sm:aspect-[4/3] w-full max-h-[85vh] rounded-xl overflow-hidden flex items-center justify-center bg-black/5">
+            <div className="relative aspect-square sm:aspect-[4/3] w-full max-h-[85vh] rounded-lg overflow-hidden flex items-center justify-center bg-black/5">
               <img
                 src={fullscreenImage}
                 alt={title}

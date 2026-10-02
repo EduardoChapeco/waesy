@@ -182,7 +182,7 @@ function PwaOmniBuilderPage() {
         />
 
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="px-3 py-1 font-semibold text-xs border-border gap-1.5">
+          <Badge variant="outline" className="px-3 py-1 font-semibold text-xs border-border gap-2">
             <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>PWA Whitelabel Ativo</span>
           </Badge>
@@ -190,7 +190,7 @@ function PwaOmniBuilderPage() {
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
-            className="min-h-11 rounded-xl font-bold bg-primary text-primary-foreground shadow-xs gap-2"
+            className="min-h-11 rounded-lg font-bold bg-primary text-primary-foreground shadow-xs gap-2"
           >
             <Layers className="size-4" />
             <span>{saveMutation.isPending ? "Publicando..." : "Salvar & Publicar"}</span>
@@ -203,7 +203,7 @@ function PwaOmniBuilderPage() {
         <button
           type="button"
           onClick={() => setActiveMainTab("builder")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer min-h-11 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer min-h-11 ${
             activeMainTab === "builder"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -216,7 +216,7 @@ function PwaOmniBuilderPage() {
         <button
           type="button"
           onClick={() => setActiveMainTab("manifest")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer min-h-11 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer min-h-11 ${
             activeMainTab === "manifest"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -229,7 +229,7 @@ function PwaOmniBuilderPage() {
         <button
           type="button"
           onClick={() => setActiveMainTab("telemetry")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer min-h-11 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer min-h-11 ${
             activeMainTab === "telemetry"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -238,7 +238,7 @@ function PwaOmniBuilderPage() {
           <BarChart3 className="size-4" />
           <span>Telemetria de Downloads</span>
           {Boolean(telemetry?.totalInstalls && telemetry.totalInstalls > 0) && (
-            <Badge variant="secondary" className="px-1.5 py-0 text-xs ml-1">
+            <Badge variant="secondary" className="px-2 py-0 text-xs ml-1">
               {telemetry?.totalInstalls}
             </Badge>
           )}
@@ -247,7 +247,7 @@ function PwaOmniBuilderPage() {
         <button
           type="button"
           onClick={() => setActiveMainTab("governance")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer min-h-11 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer min-h-11 ${
             activeMainTab === "governance"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -264,43 +264,43 @@ function PwaOmniBuilderPage() {
           {/* Painel Esquerdo: Controles dos Blocos Exclusivos do App */}
           <div className="lg:col-span-6 space-y-6">
             {/* Bloco 1: Paleta & Cores de Superfície */}
-            <div className="bg-card border border-border/70 p-5 rounded-2xl space-y-4 shadow-xs">
+            <div className="bg-card border border-border/70 p-5 rounded-lg space-y-4 shadow-xs">
               <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <Palette className="size-4 text-primary" />
                 <span>Paleta & Identidade do App</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-muted-foreground">Cor de Destaque / Botões</Label>
                   <div className="flex gap-2 items-center">
                     <input
                       type="color"
                       value={themeColor}
                       onChange={(e) => setThemeColor(e.target.value)}
-                      className="size-11 rounded-xl cursor-pointer border border-border shrink-0"
+                      className="size-11 rounded-lg cursor-pointer border border-border shrink-0"
                     />
                     <Input
                       value={themeColor}
                       onChange={(e) => setThemeColor(e.target.value)}
-                      className="min-h-11 rounded-xl font-mono text-xs flex-1"
+                      className="min-h-11 rounded-lg font-mono text-xs flex-1"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-muted-foreground">Fundo da Splash Screen</Label>
                   <div className="flex gap-2 items-center">
                     <input
                       type="color"
                       value={backgroundColor}
                       onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="size-11 rounded-xl cursor-pointer border border-border shrink-0"
+                      className="size-11 rounded-lg cursor-pointer border border-border shrink-0"
                     />
                     <Input
                       value={backgroundColor}
                       onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="min-h-11 rounded-xl font-mono text-xs flex-1"
+                      className="min-h-11 rounded-lg font-mono text-xs flex-1"
                     />
                   </div>
                 </div>
@@ -308,7 +308,7 @@ function PwaOmniBuilderPage() {
             </div>
 
             {/* Bloco 2: Seções e Componentes da Home do App */}
-            <div className="bg-card border border-border/70 p-5 rounded-2xl space-y-4 shadow-xs">
+            <div className="bg-card border border-border/70 p-5 rounded-lg space-y-4 shadow-xs">
               <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <Layers className="size-4 text-primary" />
                 <span>Blocos da Home do Aplicativo</span>
@@ -316,8 +316,8 @@ function PwaOmniBuilderPage() {
 
               <div className="space-y-3">
                 {/* Toggle Stories Bar */}
-                <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/30">
-                  <div className="space-y-0.5">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/30">
+                  <div className="space-y-1">
                     <span className="text-xs font-bold text-foreground">Destaques & Stories</span>
                     <p className="text-xs text-muted-foreground">Barra horizontal circular no topo do app.</p>
                   </div>
@@ -330,9 +330,9 @@ function PwaOmniBuilderPage() {
                 </div>
 
                 {/* Banner Promocional */}
-                <div className="p-3 rounded-xl border border-border/60 bg-muted/30 space-y-2.5">
+                <div className="p-3 rounded-lg border border-border/60 bg-muted/30 space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <span className="text-xs font-bold text-foreground">Banner Promocional</span>
                       <p className="text-xs text-muted-foreground">Destaque de novidades e promoções com gradiente.</p>
                     </div>
@@ -367,8 +367,8 @@ function PwaOmniBuilderPage() {
                 </div>
 
                 {/* Toggle Categorias */}
-                <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/30">
-                  <div className="space-y-0.5">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/30">
+                  <div className="space-y-1">
                     <span className="text-xs font-bold text-foreground">Grid Rápido de Categorias</span>
                     <p className="text-xs text-muted-foreground">Atalhos em 2 colunas com ícones segmentados.</p>
                   </div>
@@ -381,9 +381,9 @@ function PwaOmniBuilderPage() {
                 </div>
 
                 {/* Toggle Compra Rápida / Quick Checkout */}
-                <div className="p-3 rounded-xl border border-border/60 bg-muted/30 space-y-2.5">
+                <div className="p-3 rounded-lg border border-border/60 bg-muted/30 space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <span className="text-xs font-bold text-foreground">Barra Flutuante de Compra Rápida</span>
                       <p className="text-xs text-muted-foreground">Botão inferior fixo com resumo de carrinho.</p>
                     </div>
@@ -408,8 +408,8 @@ function PwaOmniBuilderPage() {
                 </div>
 
                 {/* Toggle Barra Inferior (MobileBottomNav) */}
-                <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/30">
-                  <div className="space-y-0.5">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/30">
+                  <div className="space-y-1">
                     <span className="text-xs font-bold text-foreground">Barra Inferior Nativa (Bottom Nav)</span>
                     <p className="text-xs text-muted-foreground">Navegação Apple HIG com 5 abas e badges.</p>
                   </div>
@@ -424,7 +424,7 @@ function PwaOmniBuilderPage() {
             </div>
 
             {/* Bloco 3: Animação de Abertura (Splash) */}
-            <div className="bg-card border border-border/70 p-5 rounded-2xl space-y-4 shadow-xs">
+            <div className="bg-card border border-border/70 p-5 rounded-lg space-y-4 shadow-xs">
               <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <Sparkles className="size-4 text-primary" />
                 <span>Animação de Abertura do App</span>
@@ -436,10 +436,10 @@ function PwaOmniBuilderPage() {
                   value={splashAnimation}
                   onValueChange={(val: any) => setSplashAnimation(val)}
                 >
-                  <SelectTrigger className="min-h-11 rounded-xl text-xs font-medium">
+                  <SelectTrigger className="min-h-11 rounded-lg text-xs font-medium">
                     <SelectValue placeholder="Selecione a animação" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="pulse" className="text-xs">Pulsação Gradual (Recomendado)</SelectItem>
                     <SelectItem value="bounce" className="text-xs">Salto Rítmico (Bounce)</SelectItem>
                     <SelectItem value="fade" className="text-xs">Fade Silencioso (Minimalista)</SelectItem>
@@ -454,11 +454,11 @@ function PwaOmniBuilderPage() {
             {/* Controles do Simulador */}
             <div className="flex items-center gap-2 mb-4 w-full justify-between max-w-xs">
               {/* Seletor de Tela */}
-              <div className="flex items-center gap-1 p-1 bg-muted rounded-xl border border-border/60">
+              <div className="flex items-center gap-1 p-1 bg-muted rounded-lg border border-border/60">
                 <button
                   type="button"
                   onClick={() => setPhonePreviewScreen("app")}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                  className={`px-3 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
                     phonePreviewScreen === "app"
                       ? "bg-card text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -469,7 +469,7 @@ function PwaOmniBuilderPage() {
                 <button
                   type="button"
                   onClick={() => setPhonePreviewScreen("splash")}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                  className={`px-3 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
                     phonePreviewScreen === "splash"
                       ? "bg-card text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -487,7 +487,7 @@ function PwaOmniBuilderPage() {
                 <SelectTrigger className="h-8 text-xs font-medium w-32 rounded-lg">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent className="rounded-lg">
                   <SelectItem value="iphone" className="text-xs">iPhone 16 Pro</SelectItem>
                   <SelectItem value="android" className="text-xs">Android Canvas</SelectItem>
                 </SelectContent>
@@ -495,7 +495,7 @@ function PwaOmniBuilderPage() {
             </div>
 
             {/* Frame do Smartphone */}
-            <div className="w-80 h-168 bg-neutral-950 rounded-3xl p-3.5 border-4 border-neutral-800 shadow-2xl relative flex flex-col select-none overflow-hidden">
+            <div className="w-80 h-168 bg-neutral-950 rounded-lg p-4 border-4 border-neutral-800 shadow-2xl relative flex flex-col select-none overflow-hidden">
               {/* Dynamic Island / Notch */}
               <div className="h-6 w-28 bg-neutral-900 rounded-full mx-auto mb-2 flex items-center justify-center shrink-0 z-30">
                 <div className="size-2 rounded-full bg-neutral-950/80 mr-2" />
@@ -503,7 +503,7 @@ function PwaOmniBuilderPage() {
               </div>
 
               {/* Tela do Smartphone */}
-              <div className="flex-1 rounded-3xl bg-background text-foreground flex flex-col overflow-hidden relative border border-neutral-900">
+              <div className="flex-1 rounded-lg bg-background text-foreground flex flex-col overflow-hidden relative border border-neutral-900">
                 {phonePreviewScreen === "app" ? (
                   <>
                     {/* Header do App */}
@@ -528,11 +528,11 @@ function PwaOmniBuilderPage() {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5">
-                        <button type="button" className="p-1 rounded-lg hover:bg-muted text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <button type="button" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring p-1 rounded-lg hover:bg-muted text-muted-foreground">
                           <Search className="size-4" />
                         </button>
-                        <button type="button" className="p-1 rounded-lg hover:bg-muted text-muted-foreground relative">
+                        <button type="button" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring p-1 rounded-lg hover:bg-muted text-muted-foreground relative">
                           <Bell className="size-4" />
                           <span className="size-1.5 rounded-full bg-destructive absolute top-1 right-1" />
                         </button>
@@ -603,59 +603,59 @@ function PwaOmniBuilderPage() {
       {activeMainTab === "manifest" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-8 space-y-6">
-            <div className="bg-card border border-border/70 p-5 rounded-2xl space-y-4 shadow-xs">
+            <div className="bg-card border border-border/70 p-5 rounded-lg space-y-4 shadow-xs">
               <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <Smartphone className="size-4 text-primary" />
                 <span>Nomenclatura do Aplicativo</span>
               </h3>
 
               <div className="space-y-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-muted-foreground">Nome Completo do App</Label>
                   <Input
                     value={appName}
                     onChange={(e) => setAppName(e.target.value)}
                     placeholder="Ex: Armazém & Empório da Esquina"
-                    className="min-h-11 rounded-xl text-sm"
+                    className="min-h-11 rounded-lg text-sm"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold text-muted-foreground">Nome Curto (Ícone na Home)</Label>
                     <Input
                       value={shortName}
                       onChange={(e) => setShortName(e.target.value)}
                       placeholder="Ex: Armazém"
                       maxLength={30}
-                      className="min-h-11 rounded-xl text-sm"
+                      className="min-h-11 rounded-lg text-sm"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold text-muted-foreground">Rota de Abertura Inicial</Label>
                     <Input
                       value={startUrl}
                       onChange={(e) => setStartUrl(e.target.value)}
                       placeholder="/"
-                      className="min-h-11 rounded-xl text-sm font-mono text-xs"
+                      className="min-h-11 rounded-lg text-sm font-mono text-xs"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-muted-foreground">Descrição no Manifesto</Label>
                   <Input
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Faça seus pedidos e consulte produtos direto pelo app oficial."
-                    className="min-h-11 rounded-xl text-sm"
+                    className="min-h-11 rounded-lg text-sm"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="bg-card border border-border/70 p-5 rounded-2xl space-y-4 shadow-xs">
+            <div className="bg-card border border-border/70 p-5 rounded-lg space-y-4 shadow-xs">
               <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <ImageIcon className="size-4 text-primary" />
                 <span>Ícones e Imagens de Abertura</span>
@@ -700,23 +700,23 @@ function PwaOmniBuilderPage() {
               </div>
             </div>
 
-            <div className="bg-card border border-border/70 p-5 rounded-2xl space-y-4 shadow-xs">
+            <div className="bg-card border border-border/70 p-5 rounded-lg space-y-4 shadow-xs">
               <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <Globe className="size-4 text-primary" />
                 <span>Janela & Domínio Personalizado</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-muted-foreground">Modo de Exibição</Label>
                   <Select
                     value={displayMode}
                     onValueChange={(val: any) => setDisplayMode(val)}
                   >
-                    <SelectTrigger className="min-h-11 rounded-xl text-xs font-medium">
+                    <SelectTrigger className="min-h-11 rounded-lg text-xs font-medium">
                       <SelectValue placeholder="Selecione o modo" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl">
+                    <SelectContent className="rounded-lg">
                       <SelectItem value="standalone" className="text-xs">Standalone (Janela de App nativo)</SelectItem>
                       <SelectItem value="fullscreen" className="text-xs">Fullscreen (Imersivo)</SelectItem>
                       <SelectItem value="minimal-ui" className="text-xs">Minimal UI (Comandos simplificados)</SelectItem>
@@ -725,16 +725,16 @@ function PwaOmniBuilderPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-muted-foreground">Orientação do Dispositivo</Label>
                   <Select
                     value={orientation}
                     onValueChange={(val: any) => setOrientation(val)}
                   >
-                    <SelectTrigger className="min-h-11 rounded-xl text-xs font-medium">
+                    <SelectTrigger className="min-h-11 rounded-lg text-xs font-medium">
                       <SelectValue placeholder="Selecione a orientação" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl">
+                    <SelectContent className="rounded-lg">
                       <SelectItem value="portrait" className="text-xs">Retrato (Vertical Smartphone)</SelectItem>
                       <SelectItem value="landscape" className="text-xs">Paisagem (Horizontal Tablet)</SelectItem>
                       <SelectItem value="any" className="text-xs">Livre (Giro automático)</SelectItem>
@@ -743,22 +743,22 @@ function PwaOmniBuilderPage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5 pt-2 border-t border-border/40">
+              <div className="space-y-2 pt-2 border-t border-border/40">
                 <Label className="text-xs font-semibold text-muted-foreground">Domínio Personalizado para o App</Label>
                 <Input
                   value={customDomain}
                   onChange={(e) => setCustomDomain(e.target.value)}
                   placeholder="app.minhaloja.com.br"
-                  className="min-h-11 rounded-xl text-sm font-mono text-xs"
+                  className="min-h-11 rounded-lg text-sm font-mono text-xs"
                 />
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-4 space-y-4">
-            <div className="p-4 rounded-2xl border border-border/70 bg-card space-y-3 shadow-xs">
+            <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3 shadow-xs">
               <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Resumo do Manifesto</h4>
-              <div className="p-3 rounded-xl bg-muted font-mono text-xs space-y-1 text-muted-foreground overflow-x-auto">
+              <div className="p-3 rounded-lg bg-muted font-mono text-xs space-y-1 text-muted-foreground overflow-x-auto">
                 <p><span className="text-primary font-bold">name:</span> {appName}</p>
                 <p><span className="text-primary font-bold">short_name:</span> {shortName}</p>
                 <p><span className="text-primary font-bold">display:</span> {displayMode}</p>
@@ -770,7 +770,7 @@ function PwaOmniBuilderPage() {
               <Button
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending}
-                className="w-full min-h-11 rounded-xl font-bold bg-primary text-primary-foreground shadow-xs gap-2"
+                className="w-full min-h-11 rounded-lg font-bold bg-primary text-primary-foreground shadow-xs gap-2"
               >
                 <Layers className="size-4" />
                 <span>Salvar Manifesto</span>
@@ -785,7 +785,7 @@ function PwaOmniBuilderPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Card 1: Total de Instalações */}
-            <div className="p-5 rounded-2xl border border-border/70 bg-card shadow-xs space-y-2">
+            <div className="p-5 rounded-lg border border-border/70 bg-card shadow-xs space-y-2">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-semibold">Total de Instalações</span>
                 <Download className="size-4 text-emerald-500" />
@@ -800,7 +800,7 @@ function PwaOmniBuilderPage() {
             </div>
 
             {/* Card 2: Prompts Exibidos */}
-            <div className="p-5 rounded-2xl border border-border/70 bg-card shadow-xs space-y-2">
+            <div className="p-5 rounded-lg border border-border/70 bg-card shadow-xs space-y-2">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-semibold">Banners de Instalação</span>
                 <Smartphone className="size-4 text-primary" />
@@ -815,7 +815,7 @@ function PwaOmniBuilderPage() {
             </div>
 
             {/* Card 3: Taxa de Aceite / Conversão */}
-            <div className="p-5 rounded-2xl border border-border/70 bg-card shadow-xs space-y-2">
+            <div className="p-5 rounded-lg border border-border/70 bg-card shadow-xs space-y-2">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-semibold">Conversão de Instalação</span>
                 <BarChart3 className="size-4 text-amber-500" />
@@ -830,7 +830,7 @@ function PwaOmniBuilderPage() {
             </div>
 
             {/* Card 4: Aberturas em Modo App */}
-            <div className="p-5 rounded-2xl border border-border/70 bg-card shadow-xs space-y-2">
+            <div className="p-5 rounded-lg border border-border/70 bg-card shadow-xs space-y-2">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-semibold">Sessões Standalone</span>
                 <Eye className="size-4 text-purple-500" />
@@ -847,7 +847,7 @@ function PwaOmniBuilderPage() {
 
           {/* Breakdown por Plataforma e Linha do Tempo */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div className="lg:col-span-5 bg-card border border-border/70 p-5 rounded-2xl space-y-4 shadow-xs">
+            <div className="lg:col-span-5 bg-card border border-border/70 p-5 rounded-lg space-y-4 shadow-xs">
               <h4 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <Smartphone className="size-4 text-primary" />
                 <span>Instalações por Plataforma</span>
@@ -928,7 +928,7 @@ function PwaOmniBuilderPage() {
             </div>
 
             {/* Eventos Recentes */}
-            <div className="lg:col-span-7 bg-card border border-border/70 p-5 rounded-2xl space-y-4 shadow-xs">
+            <div className="lg:col-span-7 bg-card border border-border/70 p-5 rounded-lg space-y-4 shadow-xs">
               <h4 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <BarChart3 className="size-4 text-primary" />
                 <span>Histórico Recente de Interações PWA</span>
@@ -937,7 +937,7 @@ function PwaOmniBuilderPage() {
               {telemetry?.recentEvents && telemetry.recentEvents.length > 0 ? (
                 <div className="divide-y divide-border/50 text-xs">
                   {telemetry.recentEvents.map((evt) => (
-                    <div key={evt.id} className="py-2.5 flex items-center justify-between">
+                    <div key={evt.id} className="py-3 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span
                           className={`size-2 rounded-full ${

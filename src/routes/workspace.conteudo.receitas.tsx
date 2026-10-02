@@ -270,7 +270,7 @@ function WorkspaceRecipesManagementPage() {
             <h1 className="text-xl font-bold text-foreground tracking-tight">
               Curadoria e Gestão de Receitas
             </h1>
-            <Badge variant="outline" className="text-xs font-mono py-0 px-1.5">
+            <Badge variant="outline" className="text-xs font-mono py-0 px-2">
               {recipes.length} extrações
             </Badge>
           </div>
@@ -280,7 +280,7 @@ function WorkspaceRecipesManagementPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-9 gap-1.5">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-9 gap-2">
             <Link to="/receitas">
               <Eye className="size-3.5" />
               <span>Ver Vitrine Pública</span>
@@ -291,19 +291,19 @@ function WorkspaceRecipesManagementPage() {
 
       {/* ── 2. Quick KPIs ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-xl border border-border/50 bg-card space-y-1">
+        <div className="p-4 rounded-lg border border-border/50 bg-card space-y-1">
           <span className="text-xs font-mono uppercase text-muted-foreground">Total Extraídas</span>
           <p className="text-xl font-bold text-foreground">{recipes.length}</p>
         </div>
-        <div className="p-3.5 rounded-xl border border-border/50 bg-card space-y-1">
+        <div className="p-4 rounded-lg border border-border/50 bg-card space-y-1">
           <span className="text-xs font-mono uppercase text-emerald-600">Ativas na Vitrine</span>
           <p className="text-xl font-bold text-emerald-600">{activeCount}</p>
         </div>
-        <div className="p-3.5 rounded-xl border border-border/50 bg-card space-y-1">
+        <div className="p-4 rounded-lg border border-border/50 bg-card space-y-1">
           <span className="text-xs font-mono uppercase text-amber-600">Ocultas / Moderação</span>
           <p className="text-xl font-bold text-amber-600">{hiddenCount}</p>
         </div>
-        <div className="p-3.5 rounded-xl border border-border/50 bg-card space-y-1">
+        <div className="p-4 rounded-lg border border-border/50 bg-card space-y-1">
           <span className="text-xs font-mono uppercase text-muted-foreground">Categorias Ativas</span>
           <p className="text-xl font-bold text-foreground">
             {new Set(recipes.map((r) => r.category)).size}
@@ -319,16 +319,16 @@ function WorkspaceRecipesManagementPage() {
             placeholder="Buscar por título, ingrediente ou categoria..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 text-xs rounded-xl bg-card border-border/60"
+            className="pl-9 h-9 text-xs rounded-lg bg-card border-border/60"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           <Button
             size="sm"
             variant={filterStatus === "all" ? "default" : "outline"}
             onClick={() => setFilterStatus("all")}
-            className="rounded-xl text-xs h-8 px-3"
+            className="rounded-lg text-xs h-8 px-3"
           >
             Todas ({recipes.length})
           </Button>
@@ -336,7 +336,7 @@ function WorkspaceRecipesManagementPage() {
             size="sm"
             variant={filterStatus === "active" ? "default" : "outline"}
             onClick={() => setFilterStatus("active")}
-            className="rounded-xl text-xs h-8 px-3"
+            className="rounded-lg text-xs h-8 px-3"
           >
             Ativas ({activeCount})
           </Button>
@@ -344,7 +344,7 @@ function WorkspaceRecipesManagementPage() {
             size="sm"
             variant={filterStatus === "hidden" ? "default" : "outline"}
             onClick={() => setFilterStatus("hidden")}
-            className="rounded-xl text-xs h-8 px-3"
+            className="rounded-lg text-xs h-8 px-3"
           >
             Ocultas ({hiddenCount})
           </Button>
@@ -353,7 +353,7 @@ function WorkspaceRecipesManagementPage() {
 
       {/* ── 4. Recipes Table (WhatsApp List / Depth Table Pattern) ── */}
       {filtered.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border border-border/60 bg-card space-y-3">
+        <div className="p-12 text-center rounded-lg border border-border/60 bg-card space-y-3">
           <ChefHat className="size-10 text-muted-foreground/30 mx-auto" />
           <h3 className="text-sm font-bold text-foreground">Nenhuma receita encontrada</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -361,19 +361,19 @@ function WorkspaceRecipesManagementPage() {
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-border/50 bg-card divide-y divide-border/30 overflow-hidden">
+        <div className="rounded-lg border border-border/50 bg-card divide-y divide-border/30 overflow-hidden">
           {filtered.map((rec) => {
             const isHidden = rec.status === "hidden";
             return (
               <div
                 key={rec.id}
                 className={cn(
-                  "p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors",
+                  "p-4 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors",
                   isHidden && "opacity-60 bg-muted/10"
                 )}
               >
                 {/* Visual Thumbnail & Metadata */}
-                <div className="flex items-center gap-3.5 min-w-0">
+                <div className="flex items-center gap-4 min-w-0">
                   <div className="size-12 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/40 relative">
                     <img
                       src={
@@ -400,7 +400,7 @@ function WorkspaceRecipesManagementPage() {
                       <Badge
                         variant={isHidden ? "secondary" : "outline"}
                         className={cn(
-                          "text-xs uppercase font-mono py-0 px-1.5",
+                          "text-xs uppercase font-mono py-0 px-2",
                           isHidden
                             ? "bg-zinc-800 text-zinc-300"
                             : "border-emerald-500/40 text-emerald-600"
@@ -422,13 +422,13 @@ function WorkspaceRecipesManagementPage() {
                 </div>
 
                 {/* Operations Bar */}
-                <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0">
+                <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                   {/* Visibilidade */}
                   <Button
                     onClick={() => handleToggleVisibility(rec)}
                     variant="ghost"
                     size="sm"
-                    className="rounded-xl h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+                    className="rounded-lg h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
                     title={isHidden ? "Publicar na vitrine" : "Ocultar da vitrine"}
                   >
                     {isHidden ? (
@@ -449,7 +449,7 @@ function WorkspaceRecipesManagementPage() {
                     onClick={() => openEditModal(rec)}
                     variant="outline"
                     size="sm"
-                    className="rounded-xl h-8 px-2.5 text-xs gap-1"
+                    className="rounded-lg h-8 px-3 text-xs gap-1"
                     title="Editar dados da receita"
                   >
                     <Edit2 className="size-3.5" />
@@ -475,7 +475,7 @@ function WorkspaceRecipesManagementPage() {
 
       {/* ── 5. Modal de Edição Completa da Receita ── */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card border border-border/60 p-5 space-y-4">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg bg-card border border-border/60 p-5 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <ChefHat className="size-4 text-primary" />
@@ -490,7 +490,7 @@ function WorkspaceRecipesManagementPage() {
               <Input
                 value={editForm.title}
                 onChange={(e) => setEditForm((p) => ({ ...p, title: e.target.value }))}
-                className="h-9 text-xs rounded-xl bg-background"
+                className="h-9 text-xs rounded-lg bg-background"
               />
             </div>
 
@@ -502,7 +502,7 @@ function WorkspaceRecipesManagementPage() {
                   value={editForm.category}
                   onChange={(e) => setEditForm((p) => ({ ...p, category: e.target.value }))}
                   placeholder="Doces, Carnes, Massas..."
-                  className="h-9 text-xs rounded-xl bg-background"
+                  className="h-9 text-xs rounded-lg bg-background"
                 />
               </div>
               <div className="space-y-1">
@@ -511,7 +511,7 @@ function WorkspaceRecipesManagementPage() {
                   value={editForm.cuisine}
                   onChange={(e) => setEditForm((p) => ({ ...p, cuisine: e.target.value }))}
                   placeholder="Italiana, Regional, Alemã..."
-                  className="h-9 text-xs rounded-xl bg-background"
+                  className="h-9 text-xs rounded-lg bg-background"
                 />
               </div>
             </div>
@@ -524,7 +524,7 @@ function WorkspaceRecipesManagementPage() {
                   value={editForm.prep_time}
                   onChange={(e) => setEditForm((p) => ({ ...p, prep_time: e.target.value }))}
                   placeholder="ex: 20 min"
-                  className="h-9 text-xs rounded-xl bg-background"
+                  className="h-9 text-xs rounded-lg bg-background"
                 />
               </div>
               <div className="space-y-1">
@@ -533,7 +533,7 @@ function WorkspaceRecipesManagementPage() {
                   value={editForm.cook_time}
                   onChange={(e) => setEditForm((p) => ({ ...p, cook_time: e.target.value }))}
                   placeholder="ex: 45 min"
-                  className="h-9 text-xs rounded-xl bg-background"
+                  className="h-9 text-xs rounded-lg bg-background"
                 />
               </div>
               <div className="space-y-1">
@@ -542,7 +542,7 @@ function WorkspaceRecipesManagementPage() {
                   value={editForm.recipe_yield}
                   onChange={(e) => setEditForm((p) => ({ ...p, recipe_yield: e.target.value }))}
                   placeholder="ex: 8 porções"
-                  className="h-9 text-xs rounded-xl bg-background"
+                  className="h-9 text-xs rounded-lg bg-background"
                 />
               </div>
             </div>
@@ -554,7 +554,7 @@ function WorkspaceRecipesManagementPage() {
                 value={editForm.cover_image_url}
                 onChange={(e) => setEditForm((p) => ({ ...p, cover_image_url: e.target.value }))}
                 placeholder="https://..."
-                className="h-9 text-xs rounded-xl bg-background"
+                className="h-9 text-xs rounded-lg bg-background"
               />
             </div>
 
@@ -570,7 +570,7 @@ function WorkspaceRecipesManagementPage() {
                 value={editForm.ingredientsText}
                 onChange={(e) => setEditForm((p) => ({ ...p, ingredientsText: e.target.value }))}
                 rows={5}
-                className="w-full rounded-xl border border-border/60 bg-background p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                className="w-full rounded-lg border border-border/60 bg-background p-3 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
 
@@ -586,7 +586,7 @@ function WorkspaceRecipesManagementPage() {
                 value={editForm.instructionsText}
                 onChange={(e) => setEditForm((p) => ({ ...p, instructionsText: e.target.value }))}
                 rows={5}
-                className="w-full rounded-xl border border-border/60 bg-background p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                className="w-full rounded-lg border border-border/60 bg-background p-3 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
           </div>
@@ -596,7 +596,7 @@ function WorkspaceRecipesManagementPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsModalOpen(false)}
-              className="rounded-xl text-xs h-9"
+              className="rounded-lg text-xs h-9"
             >
               Cancelar
             </Button>
@@ -605,7 +605,7 @@ function WorkspaceRecipesManagementPage() {
               size="sm"
               onClick={handleSaveRecipe}
               disabled={isPending}
-              className="rounded-xl text-xs h-9 gap-1.5 font-semibold"
+              className="rounded-lg text-xs h-9 gap-2 font-semibold"
             >
               <Save className="size-3.5" />
               {isPending ? "Salvando..." : editingRecipe ? "Salvar Alterações" : "Publicar Receita"}

@@ -136,7 +136,7 @@ export function RmaWizard({
 
  return (
  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
- <DialogContent className="sm:max-w-[600px]">
+ <DialogContent className="sm:max-w-xl">
  <DialogHeader>
  <DialogTitle>Solicitar Troca ou Devolução</DialogTitle>
  <DialogDescription>Passo {step} de 2</DialogDescription>
@@ -160,7 +160,7 @@ export function RmaWizard({
 
  <div className="space-y-3">
  <Label>Quais itens deseja incluir?</Label>
- <div className="space-y-2 border rounded-xl p-2 max-h-[300px] overflow-y-auto no-scrollbar">
+ <div className="space-y-2 border rounded-lg p-2 max-h-[300px] overflow-y-auto no-scrollbar">
  {items.map((item) => {
  const state = selectedItems[item.id] || {
  selected: false,

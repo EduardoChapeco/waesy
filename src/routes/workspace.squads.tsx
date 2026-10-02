@@ -60,7 +60,7 @@ function SquadsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/40">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/40">
           <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
           <span>Orçamento e arbitragem fiscalizados por Supervisor Central.</span>
         </div>
@@ -84,7 +84,7 @@ function SquadsPage() {
                   setPromptInput("Comprovante PIX de R$ 1.250,00 pago pela Fornecedora de Embalagens Brasil LTDA em 28/09/2026");
                 }
               }}
-              className={`p-4 rounded-2xl border text-left transition-all ${
+              className={`p-4 rounded-lg border text-left transition-all ${
                 isSelected
                   ? "bg-card border-primary shadow-sm ring-1 ring-primary/20"
                   : "bg-card/50 border-border/60 hover:border-border hover:bg-card"
@@ -111,13 +111,13 @@ function SquadsPage() {
       {/* Detalhes do Squad Selecionado & Pipeline de Agentes */}
       {selectedSquad && (
         <div className="space-y-5">
-          <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-4">
+          <div className="bg-card border border-border/60 rounded-lg p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
               <div>
                 <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                   <Layers className="size-4 text-primary" /> Pipeline de Handoff do Squad
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{selectedSquad.goal}</p>
+                <p className="text-xs text-muted-foreground mt-1">{selectedSquad.goal}</p>
               </div>
               <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
                 Política: {selectedSquad.arbitration_policy}
@@ -128,7 +128,7 @@ function SquadsPage() {
             <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
               {selectedSquad.members.map((member, idx) => (
                 <div key={member.agent_slug} className="flex-1 flex flex-col md:flex-row items-center gap-3">
-                  <div className="w-full p-4 rounded-xl border border-border/60 bg-muted/20 space-y-2">
+                  <div className="w-full p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-primary uppercase tracking-wider">
                         Passo {member.step_order}
@@ -151,7 +151,7 @@ function SquadsPage() {
           </div>
 
           {/* Console de Execução Interativa */}
-          <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-4">
+          <div className="bg-card border border-border/60 rounded-lg p-6 space-y-4">
             <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
               <Play className="size-4 text-primary" /> Disparar Execução do Squad
             </h3>
@@ -163,7 +163,7 @@ function SquadsPage() {
               <textarea
                 value={promptInput}
                 onChange={(e) => setPromptInput(e.target.value)}
-                className="w-full p-3 rounded-xl bg-muted/20 border border-border/60 text-xs min-h-[90px] focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full p-3 rounded-lg bg-muted/20 border border-border/60 text-xs min-h-[90px] focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Insira a demanda inicial para o squad processar..."
               />
             </div>
@@ -179,7 +179,7 @@ function SquadsPage() {
                     },
                   })
                 }
-                className="rounded-xl text-xs h-10 px-5"
+                className="rounded-lg text-xs h-10 px-5"
               >
                 {executeMutation.isPending ? (
                   <>
@@ -196,7 +196,7 @@ function SquadsPage() {
             {/* Resultado da Execução com Trilha de Auditoria Forense */}
             {runResult && (
               <div className="mt-6 border-t border-border/40 pt-5 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-muted/30 border border-border/40">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-muted/30 border border-border/40">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="size-5 text-emerald-500" />
                     <div>
@@ -214,7 +214,7 @@ function SquadsPage() {
                 <div className="space-y-3">
                   <h4 className="text-xs font-bold text-foreground">Registro de Transições (Handoff Log):</h4>
                   {runResult.handoffs.map((h, i) => (
-                    <div key={i} className="p-4 rounded-xl border border-border/40 bg-card space-y-2">
+                    <div key={i} className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-foreground">
                           Etapa {h.stepIndex}: {h.toAgent}

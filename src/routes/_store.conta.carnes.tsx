@@ -130,20 +130,20 @@ function ClientCarnesPage() {
             Carnês
           </h1>
           {carnes.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {carnes.length}
             </Badge>
           )}
         </div>
 
-        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
+        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer">
           <Link to="/mercado">Explorar Lojas</Link>
         </Button>
       </div>
 
         {/* Dashboard de Métricas Rápidas (Apple HIG Cards) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+          <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
             <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               Saldo Devedor
             </span>
@@ -155,7 +155,7 @@ function ClientCarnesPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+          <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
             <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               Total Liquidado
             </span>
@@ -165,7 +165,7 @@ function ClientCarnesPage() {
             <div className="text-[11px] text-muted-foreground">Parcelas já pagas</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+          <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
             <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               Em Atraso
             </span>
@@ -184,7 +184,7 @@ function ClientCarnesPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+          <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
             <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               Em Análise
             </span>
@@ -197,14 +197,14 @@ function ClientCarnesPage() {
 
         {/* Card de Próximo Vencimento em Destaque */}
         {metrics?.nextDueInstallment && (
-          <div className="p-4 sm:p-5 rounded-2xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="p-4 sm:p-5 rounded-lg bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-primary/10 text-primary">
                   <Calendar className="h-3 w-3" /> Próximo Vencimento
                 </span>
                 {metrics.nextDueInstallment.isLate && (
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600">
+                  <span className="text-xs font-semibold px-2 py-1 rounded-full bg-rose-500/10 text-rose-600">
                     Vencida
                   </span>
                 )}
@@ -228,12 +228,12 @@ function ClientCarnesPage() {
         )}
 
         {/* Segmented Control / Tabs */}
-        <div className="flex items-center gap-2 p-1 rounded-xl bg-muted/60 border border-border/50 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab("all")}
             className={cn(
-              "px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
               activeTab === "all"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -245,7 +245,7 @@ function ClientCarnesPage() {
             type="button"
             onClick={() => setActiveTab("pending")}
             className={cn(
-              "px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
               activeTab === "pending"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -257,7 +257,7 @@ function ClientCarnesPage() {
             type="button"
             onClick={() => setActiveTab("overdue")}
             className={cn(
-              "px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
               activeTab === "overdue"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -269,7 +269,7 @@ function ClientCarnesPage() {
             type="button"
             onClick={() => setActiveTab("settled")}
             className={cn(
-              "px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
+              "px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
               activeTab === "settled"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -281,8 +281,8 @@ function ClientCarnesPage() {
 
         {/* Lista de Carnês */}
         {filteredCarnes.length === 0 ? (
-          <div className="bg-card border border-border/60 rounded-2xl p-10 text-center space-y-3 shadow-xs">
-            <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+          <div className="bg-card border border-border/60 rounded-lg p-10 text-center space-y-3 shadow-xs">
+            <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
               <CreditCard className="h-6 w-6" />
             </div>
             <h3 className="font-semibold text-base text-foreground">Nenhum carnê encontrado</h3>
@@ -301,11 +301,11 @@ function ClientCarnesPage() {
               return (
                 <div
                   key={carne.id}
-                  className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-xs space-y-4 p-5"
+                  className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs space-y-4 p-5"
                 >
                   {/* Cabeçalho do Carnê */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-border/50">
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-base text-foreground">{carne.title}</span>
                         {isSettled ? (
@@ -318,7 +318,7 @@ function ClientCarnesPage() {
                           </Badge>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-0.5">
+                      <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-1">
                         <span className="flex items-center gap-1">
                           <Building2 className="h-3.5 w-3.5" /> {storeName}
                         </span>
@@ -365,7 +365,7 @@ function ClientCarnesPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setSelectedCompanionCarne(carne)}
-                        className="h-8 px-2.5 rounded-xl text-xs font-bold gap-1 text-primary border-primary/25 hover:bg-primary/5 cursor-pointer shrink-0"
+                        className="h-8 px-3 rounded-lg text-xs font-bold gap-1 text-primary border-primary/25 hover:bg-primary/5 cursor-pointer shrink-0"
                         title="Visualizar Carnê Digital 9:16 para WhatsApp"
                       >
                         <Smartphone className="size-3.5" />
@@ -414,31 +414,31 @@ function ClientCarnesPage() {
                               </span>
 
                               {isPaid && (
-                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
+                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
                                   <CheckCircle2 className="h-3 w-3" /> Paga
                                 </span>
                               )}
 
                               {!isPaid && isPendingConciliation && (
-                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-medium">
+                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 font-medium">
                                   <Clock className="h-3 w-3" /> Em Análise
                                 </span>
                               )}
 
                               {!isPaid && isRejected && (
-                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 font-medium">
+                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-rose-500/10 text-rose-600 font-medium">
                                   <AlertCircle className="h-3 w-3" /> Comprovante Recusado
                                 </span>
                               )}
 
                               {!isPaid && !isPendingConciliation && isLate && (
-                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 font-medium">
+                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-rose-500/10 text-rose-600 font-medium">
                                   <AlertCircle className="h-3 w-3" /> Vencida ({inst.late_days || 1}d)
                                 </span>
                               )}
 
                               {!isPaid && !isPendingConciliation && !isLate && (
-                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-muted text-muted-foreground font-medium">
                                   A Vencer
                                 </span>
                               )}
@@ -468,7 +468,7 @@ function ClientCarnesPage() {
                             )}
 
                             {isRejected && inst.conciliation_notes && (
-                              <div className="text-xs text-rose-600 font-medium bg-rose-50 dark:bg-rose-950/20 p-1.5 rounded-md">
+                              <div className="text-xs text-rose-600 font-medium bg-rose-50 dark:bg-rose-950/20 p-2 rounded-md">
                                 Motivo da recusa: {inst.conciliation_notes}
                               </div>
                             )}
@@ -481,7 +481,7 @@ function ClientCarnesPage() {
                                 {formatMoney(finalAmount)}
                               </div>
                               {isPaid && (
-                                <div className="text-[11px] text-emerald-600 flex items-center gap-0.5 justify-end">
+                                <div className="text-[11px] text-emerald-600 flex items-center gap-1 justify-end">
                                   <ShieldCheck className="h-3 w-3" /> No Ledger
                                 </div>
                               )}
@@ -492,7 +492,7 @@ function ClientCarnesPage() {
                                 size="sm"
                                 variant={isPendingConciliation ? "outline" : "default"}
                                 className={cn(
-                                  "h-9 px-3 text-xs font-medium rounded-xl",
+                                  "h-9 px-3 text-xs font-medium rounded-lg",
                                   isPendingConciliation
                                     ? "border-amber-400/50 text-amber-700 dark:text-amber-300"
                                     : "bg-primary text-primary-foreground",
@@ -523,7 +523,7 @@ function ClientCarnesPage() {
 
       {/* Modal / Drawer de Pagamento e Envio de Comprovante */}
       <Dialog open={isPayModalOpen} onOpenChange={setIsPayModalOpen}>
-        <DialogContent className="max-w-md rounded-2xl p-6 space-y-4">
+        <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-primary" />
@@ -535,7 +535,7 @@ function ClientCarnesPage() {
           </DialogHeader>
 
           {/* Resumo Financeiro Transparente */}
-          <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-2 text-xs">
+          <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-2 text-xs">
             <div className="flex justify-between text-muted-foreground">
               <span>Valor Nominal da Parcela:</span>
               <span>
@@ -568,7 +568,7 @@ function ClientCarnesPage() {
               </div>
             )}
 
-            <div className="flex justify-between text-sm font-bold text-foreground pt-1.5 border-t border-border/40">
+            <div className="flex justify-between text-sm font-bold text-foreground pt-2 border-t border-border/40">
               <span>Total Atual a Pagar:</span>
               <span className="text-primary">
                 {formatMoney(
@@ -583,12 +583,12 @@ function ClientCarnesPage() {
 
           {/* Chave PIX da Loja / Código Copia e Cola & Notificação Rápida */}
           {(selectedInstallment?.pix_copy_paste || selectedCarne?.store?.phone) && (
-            <div className="p-3.5 rounded-2xl border border-dashed border-border bg-card space-y-2.5">
+            <div className="p-4 rounded-lg border border-dashed border-border bg-card space-y-3">
               <span className="text-[11px] font-medium text-muted-foreground uppercase">
                 {selectedInstallment?.pix_copy_paste ? "PIX Copia e Cola da Parcela" : "Chave PIX da Loja (Telefone)"}
               </span>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                <span className="font-mono text-xs sm:text-sm font-semibold text-foreground bg-muted/40 p-2 rounded-xl border border-border/60 truncate max-w-full">
+                <span className="font-mono text-xs sm:text-sm font-semibold text-foreground bg-muted/40 p-2 rounded-lg border border-border/60 truncate max-w-full">
                   {selectedInstallment?.pix_copy_paste || selectedCarne?.store?.phone}
                 </span>
                 <div className="flex items-center gap-2">
@@ -596,16 +596,16 @@ function ClientCarnesPage() {
                     type="button"
                     size="sm"
                     variant="outline"
-                    className="h-10 sm:h-9 px-3 text-xs rounded-xl font-medium cursor-pointer flex-1 sm:flex-initial"
+                    className="h-10 sm:h-9 px-3 text-xs rounded-lg font-medium cursor-pointer flex-1 sm:flex-initial"
                     onClick={() => handleCopyPix(selectedInstallment?.pix_copy_paste || selectedCarne?.store?.phone)}
                   >
                     {copiedPix ? (
                       <>
-                        <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-500" /> Copiado
+                        <Check className="h-3.5 w-3.5 mr-2 text-emerald-500" /> Copiado
                       </>
                     ) : (
                       <>
-                        <Copy className="h-3.5 w-3.5 mr-1.5" /> Copiar PIX
+                        <Copy className="h-3.5 w-3.5 mr-2" /> Copiar PIX
                       </>
                     )}
                   </Button>
@@ -614,7 +614,7 @@ function ClientCarnesPage() {
                     type="button"
                     size="sm"
                     variant="ghost"
-                    className="h-10 sm:h-9 px-3 text-xs rounded-xl font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border border-emerald-500/20 cursor-pointer flex-1 sm:flex-initial"
+                    className="h-10 sm:h-9 px-3 text-xs rounded-lg font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border border-emerald-500/20 cursor-pointer flex-1 sm:flex-initial"
                     onClick={() => {
                       const phone = (selectedCarne.store.phone || "").replace(/\D/g, "");
                       const amount = formatMoney(
@@ -629,7 +629,7 @@ function ClientCarnesPage() {
                       window.open(`https://wa.me/55${phone}?text=${msg}`, "_blank");
                     }}
                   >
-                    <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+                    <MessageSquare className="h-3.5 w-3.5 mr-2" />
                     Avisar no WhatsApp
                   </Button>
                 </div>
@@ -639,7 +639,7 @@ function ClientCarnesPage() {
 
           {/* Formulário de Envio do Comprovante */}
           <form onSubmit={handleConfirmProof} className="space-y-4 pt-1">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">
                 Foto ou Print do Comprovante Bancário *
               </Label>
@@ -652,7 +652,7 @@ function ClientCarnesPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">
                 Observação para a Loja (opcional)
               </Label>
@@ -660,7 +660,7 @@ function ClientCarnesPage() {
                 placeholder="Ex: Pago via Nubank às 14:30 em nome de Maria..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="text-xs min-h-[65px] rounded-xl"
+                className="text-xs min-h-[65px] rounded-lg"
               />
             </div>
 
@@ -668,7 +668,7 @@ function ClientCarnesPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-xl h-10 text-xs"
+                className="rounded-lg h-10 text-xs"
                 onClick={() => setIsPayModalOpen(false)}
               >
                 Cancelar
@@ -676,7 +676,7 @@ function ClientCarnesPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting || !proofUrl}
-                className="rounded-xl h-10 text-xs px-4 bg-primary text-primary-foreground font-medium"
+                className="rounded-lg h-10 text-xs px-4 bg-primary text-primary-foreground font-medium"
               >
                 {isSubmitting ? "Enviando..." : "Enviar Comprovante"}
               </Button>
@@ -692,7 +692,7 @@ function ClientCarnesPage() {
           if (!open) setSelectedCompanionCarne(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
           <DialogHeader className="sr-only">
             <DialogTitle>Carnê Digital 9:16 de Pagamento</DialogTitle>
           </DialogHeader>

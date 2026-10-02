@@ -38,7 +38,7 @@ export function JobDetailDesktop({
           variant="outline"
           size="sm"
           onClick={onShare}
-          className="rounded-xl font-semibold text-xs gap-1.5 h-8 border-border/70"
+          className="rounded-lg font-semibold text-xs gap-2 h-8 border-border/70"
         >
           <ShareNetwork size={15} weight="bold" />
           <span>Compartilhar</span>
@@ -50,9 +50,9 @@ export function JobDetailDesktop({
         {/* Coluna Esquerda (7 cols): Detalhes da Vaga, Descrição, Requisitos & Benchmark */}
         <div className="col-span-7 space-y-6">
           {/* Header da Vaga */}
-          <div className="rounded-2xl border border-border/70 bg-card p-6 space-y-5 shadow-xs">
+          <div className="rounded-lg border border-border/70 bg-card p-6 space-y-5 shadow-xs">
             <div className="flex items-start gap-4">
-              <div className="size-16 rounded-2xl bg-muted flex items-center justify-center text-foreground font-black text-xl shrink-0 overflow-hidden border border-border/50">
+              <div className="size-16 rounded-lg bg-muted flex items-center justify-center text-foreground font-black text-xl shrink-0 overflow-hidden border border-border/50">
                 {job.company_logo_url ? (
                   <img
                     src={job.company_logo_url}
@@ -70,7 +70,7 @@ export function JobDetailDesktop({
                     {job.company_name}
                   </span>
                   {job.is_featured && (
-                    <Badge variant="default" className="rounded-md font-mono text-[9px] uppercase px-1.5 py-0">
+                    <Badge variant="default" className="rounded-md font-mono text-[9px] uppercase px-2 py-0">
                       Destaque
                     </Badge>
                   )}
@@ -101,17 +101,17 @@ export function JobDetailDesktop({
 
             {/* Tags Rápidas de Contratação */}
             <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/40">
-              <Badge variant="secondary" className="rounded-xl px-3 py-1 text-xs font-bold gap-1.5">
+              <Badge variant="secondary" className="rounded-lg px-3 py-1 text-xs font-bold gap-2">
                 <Briefcase size={14} weight="bold" />
                 {job.contract_type}
               </Badge>
               {job.work_model && (
-                <Badge variant="outline" className="rounded-xl px-3 py-1 text-xs font-semibold">
+                <Badge variant="outline" className="rounded-lg px-3 py-1 text-xs font-semibold">
                   {job.work_model === "remote" ? "Remoto" : job.work_model === "hybrid" ? "Híbrido" : "Presencial"}
                 </Badge>
               )}
               {job.experience_level && (
-                <Badge variant="outline" className="rounded-xl px-3 py-1 text-xs font-semibold capitalize">
+                <Badge variant="outline" className="rounded-lg px-3 py-1 text-xs font-semibold capitalize">
                   Nível: {job.experience_level}
                 </Badge>
               )}
@@ -119,7 +119,7 @@ export function JobDetailDesktop({
           </div>
 
           {/* Descrição */}
-          <div className="rounded-2xl border border-border/70 bg-card p-6 space-y-3 shadow-xs">
+          <div className="rounded-lg border border-border/70 bg-card p-6 space-y-3 shadow-xs">
             <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Descrição da Vaga</h2>
             <div className="text-sm text-foreground/85 leading-relaxed whitespace-pre-line">
               {job.description}
@@ -128,11 +128,11 @@ export function JobDetailDesktop({
 
           {/* Requisitos & Benefícios */}
           {job.requirements && job.requirements.length > 0 && (
-            <div className="rounded-2xl border border-border/70 bg-card p-6 space-y-3 shadow-xs">
+            <div className="rounded-lg border border-border/70 bg-card p-6 space-y-3 shadow-xs">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Requisitos</h2>
               <ul className="space-y-2 text-sm text-foreground/85">
                 {job.requirements.map((req: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2.5">
+                  <li key={i} className="flex items-start gap-3">
                     <span className="size-1.5 rounded-full bg-primary mt-2 shrink-0" />
                     <span>{req}</span>
                   </li>
@@ -142,11 +142,11 @@ export function JobDetailDesktop({
           )}
 
           {job.benefits && job.benefits.length > 0 && (
-            <div className="rounded-2xl border border-border/70 bg-card p-6 space-y-3 shadow-xs">
+            <div className="rounded-lg border border-border/70 bg-card p-6 space-y-3 shadow-xs">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Benefícios Oferecidos</h2>
               <div className="flex flex-wrap gap-2">
                 {job.benefits.map((benefit: string, i: number) => (
-                  <Badge key={i} variant="outline" className="text-xs py-1 px-3 rounded-xl border-border/60 bg-muted/20">
+                  <Badge key={i} variant="outline" className="text-xs py-1 px-3 rounded-lg border-border/60 bg-muted/20">
                     {benefit}
                   </Badge>
                 ))}
@@ -156,7 +156,7 @@ export function JobDetailDesktop({
 
           {/* Inteligência Salarial & Guia de Carreira */}
           {matchedProfession && (
-            <div className="rounded-2xl border border-border/70 bg-card p-6 space-y-4 shadow-xs">
+            <div className="rounded-lg border border-border/70 bg-card p-6 space-y-4 shadow-xs">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
@@ -171,20 +171,20 @@ export function JobDetailDesktop({
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-4 gap-2.5">
-                <div className="p-3 rounded-xl bg-muted/30 border border-border/40 text-center">
+              <div className="grid grid-cols-4 gap-3">
+                <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-center">
                   <span className="text-[10px] text-muted-foreground block font-medium">Júnior</span>
                   <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.junior_salary_cents)}</span>
                 </div>
-                <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
                   <span className="text-[10px] text-primary block font-medium">Pleno</span>
                   <span className="text-xs font-bold font-mono text-primary">{formatMoney(matchedProfession.mid_salary_cents)}</span>
                 </div>
-                <div className="p-3 rounded-xl bg-muted/30 border border-border/40 text-center">
+                <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-center">
                   <span className="text-[10px] text-muted-foreground block font-medium">Sênior</span>
                   <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.senior_salary_cents)}</span>
                 </div>
-                <div className="p-3 rounded-xl bg-muted/30 border border-border/40 text-center">
+                <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-center">
                   <span className="text-[10px] text-muted-foreground block font-medium">Lead</span>
                   <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.lead_salary_cents)}</span>
                 </div>
@@ -194,7 +194,7 @@ export function JobDetailDesktop({
 
           {/* Employer Insights */}
           {employerInsights && employerInsights.total_reviews > 0 && (
-            <div className="rounded-2xl border border-border/70 bg-card p-6 space-y-3 shadow-xs">
+            <div className="rounded-lg border border-border/70 bg-card p-6 space-y-3 shadow-xs">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Perfil do Empregador
@@ -213,7 +213,7 @@ export function JobDetailDesktop({
 
         {/* Coluna Direita (5 cols Sticky): Salário, Candidatura & Contato */}
         <div className="col-span-5 space-y-5 sticky top-24">
-          <div className="rounded-2xl border border-border/80 bg-card p-6 space-y-5 shadow-sm">
+          <div className="rounded-lg border border-border/80 bg-card p-6 space-y-5 shadow-sm">
             {/* Salário */}
             <div className="space-y-1">
               <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block font-bold">
@@ -228,7 +228,7 @@ export function JobDetailDesktop({
             {job.is_external && job.external_url ? (
               <Button
                 asChild
-                className="w-full rounded-xl font-bold h-12 text-sm bg-foreground text-background gap-2 hover:bg-foreground/90 transition-colors shadow-sm"
+                className="w-full rounded-lg font-bold h-12 text-sm bg-foreground text-background gap-2 hover:bg-foreground/90 transition-colors shadow-sm"
               >
                 <a
                   href={job.external_url}
@@ -243,7 +243,7 @@ export function JobDetailDesktop({
             ) : (
               <Button
                 onClick={onOpenApply}
-                className="w-full rounded-xl font-bold h-12 text-sm bg-foreground text-background gap-2 hover:bg-foreground/90 transition-colors shadow-sm"
+                className="w-full rounded-lg font-bold h-12 text-sm bg-foreground text-background gap-2 hover:bg-foreground/90 transition-colors shadow-sm"
               >
                 <PaperPlaneTilt size={18} weight="bold" />
                 <span>Enviar Candidatura</span>
@@ -262,7 +262,7 @@ export function JobDetailDesktop({
                 variant="outline"
                 size="lg"
                 label="Falar com o Recrutador via WhatsApp"
-                className="w-full rounded-xl font-bold h-11 text-xs border-border/80 gap-2"
+                className="w-full rounded-lg font-bold h-11 text-xs border-border/80 gap-2"
               />
             )}
 

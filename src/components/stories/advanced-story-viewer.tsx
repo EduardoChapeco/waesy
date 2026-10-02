@@ -208,7 +208,7 @@ export function AdvancedStoryViewer({
  {/* Botão de Fechar no Topo Direito */}
  <button
  onClick={onClose}
- className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-white/15 hover:bg-white/25 text-white backdrop-blur-md transition-all active:scale-95"
+ className="absolute top-4 right-4 z-50 p-3 rounded-full bg-white/15 hover:bg-white/25 text-white backdrop-blur-md transition-all active:scale-95"
  aria-label="Fechar visualizador de stories"
  >
  <X size={22} weight="bold" />
@@ -245,12 +245,12 @@ export function AdvancedStoryViewer({
 
  {/* ── Frame Central do Story (Proporção 9:16 Responsiva) ── */}
  <div
- className="relative w-full max-w-[420px] h-full sm:h-[92vh] sm:max-h-[840px] sm:rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 shadow-2xl flex flex-col justify-between"
+ className="relative w-full max-w-[420px] h-full sm:h-[92vh] sm:max-h-[840px] sm:rounded-lg overflow-hidden bg-zinc-950 border border-white/10 shadow-2xl flex flex-col justify-between"
  onPointerDown={handlePointerDown}
  onPointerUp={handlePointerUp}
  >
  {/* ── 1. Barras de Progresso Segmentadas no Topo ── */}
- <div className="absolute top-3 inset-x-3 z-30 flex items-center gap-1.5 pointer-events-none">
+ <div className="absolute top-3 inset-x-3 z-30 flex items-center gap-2 pointer-events-none">
  {currentGroup.stories.map((s, idx) => (
  <div key={s.id} className="h-1 flex-1 rounded-full bg-white/30 overflow-hidden backdrop-blur-xs">
  <div
@@ -265,7 +265,7 @@ export function AdvancedStoryViewer({
 
  {/* ── 2. Cabeçalho do Autor / Loja / Criador ── */}
  <div className="absolute top-7 inset-x-3 z-30 flex items-center justify-between pointer-events-auto">
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <div className="size-10 rounded-full overflow-hidden border-2 border-primary bg-zinc-800 shrink-0">
  {currentGroup.entityAvatarUrl ? (
  <img
@@ -281,26 +281,26 @@ export function AdvancedStoryViewer({
  </div>
 
  <div className="min-w-0">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="text-sm font-bold text-white leading-none truncate drop-shadow-md">
  {currentGroup.entityName}
  </span>
 
  {currentGroup.isOfficialAmbassador && (
- <Badge className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md border-0">
- <SealCheck size={11} weight="fill" className="mr-0.5" />
+ <Badge className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[9px] font-black px-2 py-0.2 rounded-md border-0">
+ <SealCheck size={11} weight="fill" className="mr-1" />
  {currentGroup.ambassadorBadgeLabel || "Embaixador"}
  </Badge>
  )}
 
  {currentStory.is_sponsored && (
- <Badge className="bg-amber-500/90 text-black text-[9px] font-black px-1.5 py-0.2 rounded-md">
+ <Badge className="bg-amber-500/90 text-black text-[9px] font-black px-2 py-0.2 rounded-md">
  Patrocinado
  </Badge>
  )}
  </div>
 
- <div className="flex items-center gap-1.5 text-[11px] text-white/70">
+ <div className="flex items-center gap-2 text-[11px] text-white/70">
  {currentGroup.entityHandle && <span>{currentGroup.entityHandle}</span>}
  <span>•</span>
  <span>Há 3h</span>
@@ -351,7 +351,7 @@ export function AdvancedStoryViewer({
  {/* ── 4. Prompt Interativo de Vídeo Longo (>60s com Countdown de 5s) ── */}
  {showLongPrompt && (
  <div className="absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
- <div className="size-14 rounded-2xl bg-primary/20 text-primary flex items-center justify-center">
+ <div className="size-14 rounded-lg bg-primary/20 text-primary flex items-center justify-center">
  <Clock size={32} weight="bold" />
  </div>
 
@@ -362,13 +362,13 @@ export function AdvancedStoryViewer({
  </p>
  </div>
 
- <div className="flex flex-col gap-2.5 w-full max-w-xs pt-2">
+ <div className="flex flex-col gap-3 w-full max-w-xs pt-2">
  <Button
  onClick={(e) => {
  e.stopPropagation();
  handleContinueLongStory();
  }}
- className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 shadow-lg"
+ className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 shadow-lg"
  >
  <span>Continuar assistindo</span>
  <ArrowRight size={14} weight="bold" />
@@ -380,7 +380,7 @@ export function AdvancedStoryViewer({
  e.stopPropagation();
  handleNext();
  }}
- className="w-full h-10 rounded-xl text-white/80 hover:text-white hover:bg-white/10 text-xs font-semibold"
+ className="w-full h-10 rounded-lg text-white/80 hover:text-white hover:bg-white/10 text-xs font-semibold"
  >
  Pular em {longPromptCountdown}s...
  </Button>
@@ -392,16 +392,16 @@ export function AdvancedStoryViewer({
  <div className="relative z-30 p-4 space-y-3 pointer-events-auto">
  {/* Card Flutuante de Produto Marcado */}
  {currentStory.product_info && (
- <div className="flex items-center justify-between p-2.5 rounded-2xl bg-white/15 backdrop-blur-xl border border-white/20 text-white shadow-lg">
- <div className="flex items-center gap-2.5 min-w-0">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-white/15 backdrop-blur-xl border border-white/20 text-white shadow-lg">
+ <div className="flex items-center gap-3 min-w-0">
  {currentStory.product_info.image_url ? (
  <img
  src={currentStory.product_info.image_url}
  alt={currentStory.product_info.title}
- className="size-10 rounded-xl object-cover shrink-0"
+ className="size-10 rounded-lg object-cover shrink-0"
  />
  ) : (
- <div className="size-10 rounded-xl bg-primary/30 flex items-center justify-center shrink-0">
+ <div className="size-10 rounded-lg bg-primary/30 flex items-center justify-center shrink-0">
  <ShoppingBag size={18} weight="bold" />
  </div>
  )}
@@ -421,7 +421,7 @@ export function AdvancedStoryViewer({
  <Button
  size="sm"
  asChild
- className="h-8 rounded-xl bg-white text-black font-bold text-xs px-3 shrink-0"
+ className="h-8 rounded-lg bg-white text-black font-bold text-xs px-3 shrink-0"
  >
  <a href={`/produto/${currentStory.product_info.id}`}>Comprar</a>
  </Button>
@@ -432,7 +432,7 @@ export function AdvancedStoryViewer({
  {currentStory.link_url && (
  <Button
  asChild
- className="w-full h-11 rounded-2xl bg-white/20 hover:bg-white/30 text-white backdrop-blur-xl border border-white/20 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+ className="w-full h-11 rounded-lg bg-white/20 hover:bg-white/30 text-white backdrop-blur-xl border border-white/20 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
  >
  <a href={currentStory.link_url} target="_blank" rel="noopener noreferrer">
  <span>{currentStory.link_cta || "Acessar Oferta"}</span>
@@ -443,7 +443,7 @@ export function AdvancedStoryViewer({
 
  {/* Hashtags e Badge de Co-Publicação */}
  {currentStory.collab_info && (
- <div className="flex items-center gap-1.5 text-[11px] text-white/80 font-medium">
+ <div className="flex items-center gap-2 text-[11px] text-white/80 font-medium">
  <Handshake size={13} weight="bold" className="text-purple-300" />
  <span>Publicado em parceria com {currentStory.collab_info.creator_name}</span>
  </div>

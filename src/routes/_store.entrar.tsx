@@ -444,9 +444,9 @@ function StepByStepAuthPage() {
  <header className="relative z-10 flex items-center justify-between w-full max-w-5xl mx-auto">
  <Link
  to="/"
- className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-card/80 backdrop-blur-xl border border-border/40 text-foreground hover:border-border transition-colors min-h-[44px]"
+ className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-card/80 backdrop-blur-xl border border-border/40 text-foreground hover:border-border transition-colors min-h-11"
  >
- <span className="bg-primary text-primary-foreground font-black text-xs px-2 py-0.5 rounded-lg tracking-wider uppercase">
+ <span className="bg-primary text-primary-foreground font-black text-xs px-2 py-1 rounded-lg tracking-wider uppercase">
  {brand?.platform_name && brand.platform_name !== "Waesy" ? brand.platform_name : "Waesy"}
  </span>
  </Link>
@@ -454,7 +454,7 @@ function StepByStepAuthPage() {
  <Link
  to="/"
  aria-label="Voltar ao início"
- className="size-11 rounded-xl bg-card/80 backdrop-blur-xl border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all"
+ className="size-11 rounded-lg bg-card/80 backdrop-blur-xl border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all"
  >
  <ArrowLeft className="size-5" />
  </Link>
@@ -462,14 +462,14 @@ function StepByStepAuthPage() {
 
  {/* ── 3. Card Centralizado: Experiência em Etapas (Step-by-Step) ── */}
  <div className="relative z-10 w-full max-w-md mx-auto my-auto py-6">
- <div className="bg-card/95 dark:bg-card/90 backdrop-blur-2xl border border-border/60 rounded-2xl p-6 sm:p-8 shadow-xs text-foreground animate-in fade-in zoom-in-95 duration-300">
+ <div className="bg-card/95 dark:bg-card/90 backdrop-blur-2xl border border-border/60 rounded-lg p-6 sm:p-8 shadow-xs text-foreground animate-in fade-in zoom-in-95 duration-300">
  
  {/* Logo / Glifo Superior */}
  <div className="flex justify-center mb-4">
  {brand?.logo_url ? (
  <img src={brand.logo_url} alt="Logo" className="h-10 w-auto object-contain" />
  ) : (
- <div className="size-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black text-xl">{brand?.platform_name?.charAt(0) || "W"}</div>
+ <div className="size-11 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-black text-xl">{brand?.platform_name?.charAt(0) || "W"}</div>
  )}
  </div>
 
@@ -500,7 +500,7 @@ function StepByStepAuthPage() {
 
  {/* Indicador Minimalista de Progresso em Etapas */}
  {!isForgotMode && (
- <div className="flex items-center justify-center gap-1.5 pt-3">
+ <div className="flex items-center justify-center gap-2 pt-3">
  {isRegisterMode ? (
  <>
  <div className={`h-1.5 rounded-full transition-all duration-300 ${view === "register-step1" ? "w-6 bg-primary" : "w-2 bg-muted"}`} />
@@ -526,7 +526,7 @@ function StepByStepAuthPage() {
  {/* ── FLUXO DE LOGIN: ETAPA 1 (E-MAIL / IDENTIFICADOR) ── */}
  {view === "login-step1" && (
  <form onSubmit={handleProceedLoginStep1} className="space-y-4 animate-in fade-in duration-200">
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <label className="text-xs font-bold text-foreground">Qual é seu e-mail?</label>
  <div className="relative mt-1">
  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -539,14 +539,14 @@ function StepByStepAuthPage() {
  value={identifier}
  onChange={(e) => setIdentifier(e.target.value)}
  placeholder="seu@email.com"
- className="pl-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 h-11 rounded-lg text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
 
  <Button
  type="submit"
- className="w-full h-11 rounded-xl font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
+ className="w-full h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
  >
  <span>Prosseguir</span>
  <ArrowRight className="size-3.5" />
@@ -577,7 +577,7 @@ function StepByStepAuthPage() {
  type="button"
  variant="outline"
  onClick={() => { setIdentifier(""); setPassword(""); setPortalSlug(""); setView("portal-step1"); }}
- className="w-full h-11 rounded-xl text-xs font-semibold border-border/80 text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
+ className="w-full h-11 rounded-lg text-xs font-semibold border-border/80 text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
  >
  Entrar no Workspace
  </Button>
@@ -587,7 +587,7 @@ function StepByStepAuthPage() {
  {/* ── PORTAL COMERCIAL: STEP 1 (@EMPRESA) ── */}
  {view === "portal-step1" && (
  <form onSubmit={handlePortalSlugSubmit} className="space-y-4 animate-in fade-in duration-200">
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <label className="text-xs font-bold text-foreground">@ da empresa</label>
  <div className="relative mt-1">
  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-sm">@</span>
@@ -600,14 +600,14 @@ function StepByStepAuthPage() {
  value={portalSlug}
  onChange={(e) => setPortalSlug(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))}
  placeholder="minhaloja"
- className="pl-8 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-8 h-11 rounded-lg text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
 
  <Button
  type="submit"
- className="w-full h-11 rounded-xl font-bold text-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+ className="w-full h-11 rounded-lg font-bold text-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
  >
  Continuar
  </Button>
@@ -616,7 +616,7 @@ function StepByStepAuthPage() {
  <button
  type="button"
  onClick={() => setView("login-step1")}
- className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors cursor-pointer"
+ className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors cursor-pointer"
  >
  <ArrowLeft className="size-3" />
  Voltar para conta pessoal
@@ -629,7 +629,7 @@ function StepByStepAuthPage() {
  {view === "portal-step2" && (
  <form onSubmit={handlePortalIdentifierSubmit} className="space-y-4 animate-in fade-in duration-200">
  {/* Identificador da empresa */}
- <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-muted/40 border border-border/50 text-xs">
+ <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/40 border border-border/50 text-xs">
  <span className="font-bold text-foreground">@{portalSlug}</span>
  <button
  type="button"
@@ -640,7 +640,7 @@ function StepByStepAuthPage() {
  </button>
  </div>
 
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <label className="text-xs font-bold text-foreground">E-mail ou usuário</label>
  <div className="relative mt-1">
  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -653,7 +653,7 @@ function StepByStepAuthPage() {
  value={identifier}
  onChange={(e) => setIdentifier(e.target.value)}
  placeholder="seu@email.com ou @usuario"
- className="pl-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 h-11 rounded-lg text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
@@ -661,14 +661,14 @@ function StepByStepAuthPage() {
  <Button
  type="submit"
  disabled={isLoading}
- className="w-full h-11 rounded-xl font-bold text-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+ className="w-full h-11 rounded-lg font-bold text-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
  >
  {isLoading ? "Verificando..." : "Continuar"}
  </Button>
 
  <div className="pt-2 text-center">
  <button type="button" onClick={() => setView("portal-step1")}
- className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors cursor-pointer">
+ className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors cursor-pointer">
  <ArrowLeft className="size-3" /> Voltar
  </button>
  </div>
@@ -679,12 +679,12 @@ function StepByStepAuthPage() {
  {view === "portal-step3" && (
  <form onSubmit={handlePortalLoginSubmit} className="space-y-4 animate-in fade-in duration-200">
  {/* Resumo */}
- <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-muted/40 border border-border/50 text-xs">
+ <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/40 border border-border/50 text-xs">
  <span className="font-bold text-foreground">@{portalSlug}</span>
  <span className="truncate text-muted-foreground font-medium">{identifier}</span>
  </div>
 
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <label className="text-xs font-bold text-foreground">Senha</label>
  <div className="relative mt-1">
  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -697,7 +697,7 @@ function StepByStepAuthPage() {
  value={password}
  onChange={(e) => setPassword(e.target.value)}
  placeholder="••••••••"
- className="pl-10 pr-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 pr-10 h-11 rounded-lg text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  <button
  type="button"
@@ -713,14 +713,14 @@ function StepByStepAuthPage() {
  <Button
  type="submit"
  disabled={isLoading}
- className="w-full h-11 rounded-xl font-bold text-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+ className="w-full h-11 rounded-lg font-bold text-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
  >
  {isLoading ? "Acessando..." : "Entrar no Workspace"}
  </Button>
 
  <div className="pt-2 text-center">
  <button type="button" onClick={() => setView("portal-step2")}
- className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors cursor-pointer">
+ className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors cursor-pointer">
  <ArrowLeft className="size-3" /> Voltar
  </button>
  </div>
@@ -731,7 +731,7 @@ function StepByStepAuthPage() {
  {view === "login-step2" && (
  <form onSubmit={handleLoginSubmit} className="space-y-4 animate-in fade-in duration-200">
  {/* Badge de E-mail Escolhido com Ação de Voltar */}
- <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/40 border border-border/50 text-xs">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border/50 text-xs">
  <div className="flex items-center gap-2 min-w-0">
  <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] shrink-0">
  <Check className="size-3" />
@@ -747,7 +747,7 @@ function StepByStepAuthPage() {
  </button>
  </div>
 
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <div className="flex items-center justify-between">
  <label className="text-xs font-bold text-foreground">Digite sua senha</label>
  <button
@@ -772,7 +772,7 @@ function StepByStepAuthPage() {
  value={password}
  onChange={(e) => setPassword(e.target.value)}
  placeholder="Sua senha secreta"
- className="pl-10 pr-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 pr-10 h-11 rounded-lg text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  <button
  type="button"
@@ -790,7 +790,7 @@ function StepByStepAuthPage() {
  type="button"
  variant="outline"
  onClick={() => setView("login-step1")}
- className="h-11 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shrink-0"
+ className="h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer shrink-0"
  >
  <ArrowLeft className="size-3.5" />
  <span>Voltar</span>
@@ -799,7 +799,7 @@ function StepByStepAuthPage() {
  <Button
  type="submit"
  disabled={isLoading}
- className="flex-1 h-11 rounded-xl font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
+ className="flex-1 h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
  >
  <span>{isLoading ? "Entrando..." : "Entrar na Conta"}</span>
  <ArrowRight className="size-3.5" />
@@ -811,7 +811,7 @@ function StepByStepAuthPage() {
  {/* ── FLUXO DE CADASTRO: ETAPA 1 (E-MAIL) ── */}
  {view === "register-step1" && (
  <form onSubmit={handleProceedRegisterStep1} className="space-y-4 animate-in fade-in duration-200">
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <label className="text-xs font-bold text-foreground">Qual é o seu melhor e-mail?</label>
  <div className="relative mt-1">
  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -822,14 +822,14 @@ function StepByStepAuthPage() {
  value={identifier}
  onChange={(e) => setIdentifier(e.target.value)}
  placeholder="seuemail@exemplo.com"
- className="pl-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 h-11 rounded-lg text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
 
  <Button
  type="submit"
- className="w-full h-11 rounded-xl font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
+ className="w-full h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
  >
  <span>Prosseguir</span>
  <ArrowRight className="size-3.5" />
@@ -849,7 +849,7 @@ function StepByStepAuthPage() {
  variant="outline"
  onClick={handleGoogleAuth}
  disabled={isOAuthLoading}
- className="w-full h-11 rounded-xl font-semibold text-xs gap-2.5 cursor-pointer border-border/70 hover:bg-muted/50 bg-background/50"
+ className="w-full h-11 rounded-lg font-semibold text-xs gap-3 cursor-pointer border-border/70 hover:bg-muted/50 bg-background/50"
  >
  <svg className="size-4" viewBox="0 0 24 24">
  <path
@@ -887,7 +887,7 @@ function StepByStepAuthPage() {
  {/* ── FLUXO DE CADASTRO: ETAPA 2 (NOME COMPLETO) ── */}
  {view === "register-step2" && (
  <form onSubmit={handleProceedRegisterStep2} className="space-y-4 animate-in fade-in duration-200">
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <label className="text-xs font-bold text-foreground">Como devemos te chamar?</label>
  <div className="relative mt-1">
  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -898,7 +898,7 @@ function StepByStepAuthPage() {
  value={fullName}
  onChange={(e) => setFullName(e.target.value)}
  placeholder="Seu nome completo"
- className="pl-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 h-11 rounded-lg text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
@@ -908,7 +908,7 @@ function StepByStepAuthPage() {
  type="button"
  variant="outline"
  onClick={() => setView("register-step1")}
- className="h-11 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shrink-0"
+ className="h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer shrink-0"
  >
  <ArrowLeft className="size-3.5" />
  <span>Voltar</span>
@@ -916,7 +916,7 @@ function StepByStepAuthPage() {
 
  <Button
  type="submit"
- className="flex-1 h-11 rounded-xl font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
+ className="flex-1 h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
  >
  <span>Continuar</span>
  <ArrowRight className="size-3.5" />
@@ -928,7 +928,7 @@ function StepByStepAuthPage() {
  {/* ── FLUXO DE CADASTRO: ETAPA 3 (SENHA + TERMOS) ── */}
  {view === "register-step3" && (
  <form onSubmit={handleRegisterSubmit} className="space-y-4 animate-in fade-in duration-200">
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <label className="text-xs font-bold text-foreground">Crie uma senha de acesso (min. 6)</label>
  <div className="relative mt-1">
  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -939,7 +939,7 @@ function StepByStepAuthPage() {
  value={password}
  onChange={(e) => setPassword(e.target.value)}
  placeholder="Crie sua senha segura"
- className="pl-10 pr-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 pr-10 h-11 rounded-lg text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  <button
  type="button"
@@ -953,9 +953,9 @@ function StepByStepAuthPage() {
  </div>
 
  {/* Box de Aceite dos Termos */}
- <div className="p-3 rounded-2xl bg-muted/30 border border-border/60 text-left text-xs space-y-1.5">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/60 text-left text-xs space-y-2">
  <div className="flex items-start gap-2">
- <ShieldCheck className="size-4 text-primary shrink-0 mt-0.5" />
+ <ShieldCheck className="size-4 text-primary shrink-0 mt-1" />
  <div className="space-y-1">
  <p className="text-[11px] text-muted-foreground leading-snug">
  Ao criar sua conta, você concorda com nossos{" "}
@@ -976,7 +976,7 @@ function StepByStepAuthPage() {
  type="button"
  variant="outline"
  onClick={() => setView("register-step2")}
- className="h-11 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shrink-0"
+ className="h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer shrink-0"
  >
  <ArrowLeft className="size-3.5" />
  <span>Voltar</span>
@@ -985,7 +985,7 @@ function StepByStepAuthPage() {
  <Button
  type="submit"
  disabled={isLoading}
- className="flex-1 h-11 rounded-xl font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
+ className="flex-1 h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
  >
  <span>{isLoading ? "Criando Conta..." : "Finalizar Cadastro"}</span>
  <ArrowRight className="size-3.5" />
@@ -998,7 +998,7 @@ function StepByStepAuthPage() {
  {view === "forgot-password" && (
  <div className="space-y-4 animate-in fade-in duration-200">
  {forgotSentSuccess ? (
- <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-2">
+ <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center space-y-2">
  <div className="size-10 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
  <Check className="size-5" />
  </div>
@@ -1012,14 +1012,14 @@ function StepByStepAuthPage() {
  setForgotSentSuccess(false);
  setView("login-step1");
  }}
- className="w-full h-10 rounded-xl text-xs font-bold mt-2"
+ className="w-full h-10 rounded-lg text-xs font-bold mt-2"
  >
  Voltar para o Login
  </Button>
  </div>
  ) : (
  <form onSubmit={handleSendResetPassword} className="space-y-4">
- <div className="space-y-1.5 text-left">
+ <div className="space-y-2 text-left">
  <label className="text-xs font-bold text-foreground">E-mail cadastrado</label>
  <div className="relative mt-1">
  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -1029,7 +1029,7 @@ function StepByStepAuthPage() {
  value={forgotEmail}
  onChange={(e) => setForgotEmail(e.target.value)}
  placeholder="seu@email.com"
- className="pl-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 h-11 rounded-lg text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
@@ -1039,7 +1039,7 @@ function StepByStepAuthPage() {
  type="button"
  variant="outline"
  onClick={() => setView("login-step1")}
- className="h-11 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shrink-0"
+ className="h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer shrink-0"
  >
  <ArrowLeft className="size-3.5" />
  <span>Voltar</span>
@@ -1048,7 +1048,7 @@ function StepByStepAuthPage() {
  <Button
  type="submit"
  disabled={isSendingReset}
- className="flex-1 h-11 rounded-xl font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
+ className="flex-1 h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90"
  >
  <span>{isSendingReset ? "Enviando..." : "Enviar Instruções"}</span>
  <ArrowRight className="size-3.5" />
@@ -1065,11 +1065,11 @@ function StepByStepAuthPage() {
  {showPwaBanner && (
  <aside
  aria-label="Sugestão de Instalação do App"
- className="fixed bottom-4 right-4 z-40 max-w-xs w-full bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl p-3.5 animate-in slide-in-from-bottom-4 duration-300 hidden sm:block"
+ className="fixed bottom-4 right-4 z-40 max-w-xs w-full bg-card/95 backdrop-blur-xl border border-border/60 rounded-lg p-4 animate-in slide-in-from-bottom-4 duration-300 hidden sm:block"
  >
  <div className="flex items-start justify-between gap-2">
- <div className="flex items-center gap-2.5">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="flex items-center gap-3">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <Download className="size-4" />
  </div>
  <div className="min-w-0">
@@ -1091,7 +1091,7 @@ function StepByStepAuthPage() {
  toast.info("PWA pronto para instalação pelo navegador.");
  setShowPwaBanner(false);
  }}
- className="w-full h-10 rounded-xl text-xs font-bold mt-2.5 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold mt-3 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
  >
  Instalar Agora
  </Button>

@@ -61,7 +61,7 @@ function RelatoriosPage() {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="gap-1.5 text-xs font-bold min-h-[44px]"
+            className="gap-2 text-xs font-bold min-h-11"
           >
             <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
             Atualizar
@@ -72,7 +72,7 @@ function RelatoriosPage() {
       {/* ── KPIs Principais ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {/* Vendas Hoje */}
-        <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2 col-span-2 sm:col-span-1">
+        <div className="bg-card rounded-lg border border-border/60 p-5 space-y-2 col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Vendas Hoje
@@ -88,7 +88,7 @@ function RelatoriosPage() {
         </div>
 
         {/* Vendas do Mês */}
-        <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2 col-span-2 sm:col-span-1">
+        <div className="bg-card rounded-lg border border-border/60 p-5 space-y-2 col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Mês Atual
@@ -115,7 +115,7 @@ function RelatoriosPage() {
         </div>
 
         {/* Novos Clientes */}
-        <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2">
+        <div className="bg-card rounded-lg border border-border/60 p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Novos Clientes
@@ -129,7 +129,7 @@ function RelatoriosPage() {
         </div>
 
         {/* Carrinhos Abandonados */}
-        <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2">
+        <div className="bg-card rounded-lg border border-border/60 p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Carrinhos Abandon.
@@ -146,7 +146,7 @@ function RelatoriosPage() {
       {/* ── Pipeline de Pedidos & Estoque Crítico ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Pipeline de Status de Pedidos */}
-        <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+        <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
           <h3 className="font-bold text-sm text-foreground">Pipeline de Pedidos</h3>
           <div className="space-y-3">
             {[
@@ -188,9 +188,9 @@ function RelatoriosPage() {
               ) as number;
               const pct = total > 0 ? Math.round((item.count / total) * 100) : 0;
               return (
-                <div key={item.label} className="space-y-1.5">
+                <div key={item.label} className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <Icon className="size-3.5" />
                       <span>{item.label}</span>
                     </div>
@@ -209,7 +209,7 @@ function RelatoriosPage() {
         </div>
 
         {/* Estoque Crítico */}
-        <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+        <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-sm text-foreground">Estoque em Alerta</h3>
             {(data.criticalStockCount ?? 0) > 0 && (
@@ -229,7 +229,7 @@ function RelatoriosPage() {
               {(data.lowStockItems ?? []).map((item: any) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-destructive/5 border border-destructive/20"
+                  className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/20"
                 >
                   <div className="min-w-0">
                     <h4 className="text-xs font-bold text-foreground truncate">
@@ -239,7 +239,7 @@ function RelatoriosPage() {
                       SKU: {item.sku}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <AlertTriangle className="size-3.5 text-destructive" />
                     <span className="text-xs font-black text-destructive">
                       {item.stockOnHand} un.
@@ -253,7 +253,7 @@ function RelatoriosPage() {
       </div>
 
       {/* ── Atividades Recentes ── */}
-      <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+      <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
         <h3 className="font-bold text-sm text-foreground">Atividade Recente</h3>
         {(data.recentActivities ?? []).length === 0 ? (
           <EmptyState
@@ -265,10 +265,10 @@ function RelatoriosPage() {
             {(data.recentActivities ?? []).map((activity: any) => (
               <div
                 key={activity.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/30"
+                className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border/30"
               >
                 <div className="flex items-center gap-3">
-                  <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                     <ShoppingCart className="size-4 text-primary" />
                   </div>
                   <div>
@@ -292,7 +292,7 @@ function RelatoriosPage() {
 
       {/* ── Rodapé com LTV e Crescimento ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2">
+        <div className="bg-card rounded-lg border border-border/60 p-5 space-y-2">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Faturamento Mês Anterior
           </span>
@@ -301,7 +301,7 @@ function RelatoriosPage() {
           </div>
           <span className="text-xs text-muted-foreground">Referência para cálculo de crescimento</span>
         </div>
-        <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-2">
+        <div className="bg-card rounded-lg border border-border/60 p-5 space-y-2">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Pedidos no Mês
           </span>

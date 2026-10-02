@@ -49,7 +49,7 @@ export function ShopTheLookSection({
  return (
  <section className="py-12 bg-background w-full">
  <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
- <div className="text-center max-w-xl mx-auto space-y-1.5">
+ <div className="text-center max-w-xl mx-auto space-y-2">
  <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
  Editorial de Moda
  </Badge>
@@ -59,7 +59,7 @@ export function ShopTheLookSection({
 
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
  {/* Foto Principal com Pontos Interativos */}
- <div className="lg:col-span-8 relative rounded-2xl overflow-hidden aspect-4/3 sm:aspect-16/10 bg-muted border border-border/80 shadow-2xs group">
+ <div className="lg:col-span-8 relative rounded-lg overflow-hidden aspect-4/3 sm:aspect-16/10 bg-muted border border-border/80 shadow-2xs group">
  <img
  src={lookImageUrl}
  alt={title}
@@ -91,13 +91,13 @@ export function ShopTheLookSection({
  {/* Card Lateral do Produto em Foco */}
  <div className="lg:col-span-4">
  {activeHotspot ? (
- <div className="p-6 rounded-2xl border border-border/80 bg-card space-y-4 shadow-2xs">
+ <div className="p-6 rounded-lg border border-border/80 bg-card space-y-4 shadow-2xs">
  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
  Peça Selecionada
  </span>
 
  {activeHotspot.imageUrl && (
- <div className="aspect-square rounded-2xl overflow-hidden bg-muted border border-border/60">
+ <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border/60">
  <img
  src={activeHotspot.imageUrl}
  alt={activeHotspot.title}
@@ -117,14 +117,14 @@ export function ShopTheLookSection({
  type="button"
  size="lg"
  onClick={() => activeHotspot.productSlug && onSelectProduct?.(activeHotspot.productSlug)}
- className="w-full rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer gap-2"
+ className="w-full rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer gap-2"
  >
  <ShoppingBag className="size-4" />
  <span>Comprar Esta Peça</span>
  </Button>
  </div>
  ) : (
- <div className="p-6 rounded-2xl border border-dashed border-border/80 text-center text-xs text-muted-foreground">
+ <div className="p-6 rounded-lg border border-dashed border-border/80 text-center text-xs text-muted-foreground">
  Selecione um ponto no look para ver a peça.
  </div>
  )}

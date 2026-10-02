@@ -23,11 +23,11 @@ export function VideoStudioEditor({
 
  return (
  <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
- <div className="w-full max-w-5xl h-[85vh] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+ <div className="w-full max-w-5xl h-[85vh] bg-card border border-border rounded-lg shadow-2xl flex flex-col overflow-hidden">
  {/* Header */}
  <div className="p-4 border-b border-border flex items-center justify-between bg-muted/20">
- <div className="flex items-center gap-2.5">
- <div className="p-2 rounded-xl bg-primary/10 text-primary">
+ <div className="flex items-center gap-3">
+ <div className="p-2 rounded-lg bg-primary/10 text-primary">
  <Video className="w-5 h-5" />
  </div>
  <div>
@@ -41,7 +41,7 @@ export function VideoStudioEditor({
  </div>
 
  <div className="flex items-center gap-2">
- <div className="flex items-center bg-muted/60 p-1 rounded-xl gap-1">
+ <div className="flex items-center bg-muted/60 p-1 rounded-lg gap-1">
  <button
  type="button"
  onClick={() => setAspect('9:16')}
@@ -78,7 +78,7 @@ export function VideoStudioEditor({
  {/* Video Canvas Preview */}
  <div className="flex-1 bg-black/40 flex items-center justify-center p-6 overflow-hidden">
  <div
- className={'relative rounded-2xl overflow-hidden shadow-2xl bg-black border border-white/10 flex items-center justify-center ' + (
+ className={'relative rounded-lg overflow-hidden shadow-2xl bg-black border border-white/10 flex items-center justify-center ' + (
  aspect === '9:16' ? 'h-full aspect-[9/16]' : 'w-full max-w-2xl aspect-video'
  )}
  >

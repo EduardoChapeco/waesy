@@ -167,9 +167,9 @@ export function OnboardingReviewPage() {
   return (
     <div className="flex-1 flex flex-col w-full min-h-full bg-background text-foreground pb-20">
       {/* TopBar Operacional */}
-      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/40 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/40 px-4 sm:px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
+          <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
             <Cpu className="size-5 text-foreground" />
           </div>
           <div>
@@ -183,11 +183,11 @@ export function OnboardingReviewPage() {
         </div>
 
         {/* Abas Superiores sem scrollbar visível */}
-        <nav className="flex items-center gap-1.5 overflow-x-auto no-scrollbar bg-muted/40 p-1 rounded-xl border border-border/40">
+        <nav className="flex items-center gap-2 overflow-x-auto no-scrollbar bg-muted/40 p-1 rounded-lg border border-border/40">
           <button
             type="button"
             onClick={() => setActiveTab("multimodal")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all min-h-[36px] flex items-center gap-1.5 ${
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9 flex items-center gap-2 ${
               activeTab === "multimodal"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -203,7 +203,7 @@ export function OnboardingReviewPage() {
           <button
             type="button"
             onClick={() => setActiveTab("master_catalog")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all min-h-[36px] flex items-center gap-1.5 ${
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9 flex items-center gap-2 ${
               activeTab === "master_catalog"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -216,7 +216,7 @@ export function OnboardingReviewPage() {
           <button
             type="button"
             onClick={() => setActiveTab("traditional")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all min-h-[36px] flex items-center gap-1.5 ${
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9 flex items-center gap-2 ${
               activeTab === "traditional"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -235,7 +235,7 @@ export function OnboardingReviewPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Coluna Esquerda: Imagem Original do Cardápio */}
             <section className="lg:col-span-5 space-y-4">
-              <div className="rounded-2xl bg-card border border-border/80 overflow-hidden shadow-xs">
+              <div className="rounded-lg bg-card border border-border/80 overflow-hidden shadow-xs">
                 <div className="p-4 border-b border-border/40 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Camera className="size-4 text-muted-foreground" />
@@ -245,7 +245,7 @@ export function OnboardingReviewPage() {
                     Gemini 2.5 Flash
                   </Badge>
                 </div>
-                <div className="relative aspect-[3/4] bg-muted/30 flex flex-col items-center justify-center p-6 text-center border border-border/40 rounded-xl overflow-hidden">
+                <div className="relative aspect-[3/4] bg-muted/30 flex flex-col items-center justify-center p-6 text-center border border-border/40 rounded-lg overflow-hidden">
                   <Camera className="size-12 text-muted-foreground/40 mb-3" />
                   <p className="text-xs font-bold text-foreground">Documento Processado via OCR</p>
                   <p className="text-xs text-muted-foreground mt-1">Extração multimodal concluída</p>
@@ -257,7 +257,7 @@ export function OnboardingReviewPage() {
               </div>
 
               {/* Card Resumo do Niche Detector */}
-              <div className="rounded-2xl bg-card border border-border/80 p-4 space-y-3 shadow-xs">
+              <div className="rounded-lg bg-card border border-border/80 p-4 space-y-3 shadow-xs">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <ShieldCheck className="size-4 text-emerald-600" />
                   <span>Diagnóstico do The Visual Parser</span>
@@ -287,7 +287,7 @@ export function OnboardingReviewPage() {
 
               <div className="space-y-3">
                 {items.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-border/80 p-8 text-center space-y-2 bg-card/40">
+                  <div className="rounded-lg border border-dashed border-border/80 p-8 text-center space-y-2 bg-card/40">
                     <Package className="size-8 mx-auto text-muted-foreground/60" />
                     <p className="text-xs font-semibold text-foreground">Nenhum item pendente de revisão</p>
                     <p className="text-xs text-muted-foreground">Envie fotos na etapa multimodal ou utilize o catálogo mestre ao lado para adicionar produtos.</p>
@@ -296,7 +296,7 @@ export function OnboardingReviewPage() {
                   items.map((item, idx) => (
                     <div
                       key={item.id}
-                      className="rounded-2xl bg-card border border-border/80 p-4 space-y-3 shadow-xs transition-colors hover:border-foreground/30"
+                      className="rounded-lg bg-card border border-border/80 p-4 space-y-3 shadow-xs transition-colors hover:border-foreground/30"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-mono text-muted-foreground">#{idx + 1}</span>
@@ -353,7 +353,7 @@ export function OnboardingReviewPage() {
         {/* ABA 2: MASTER CATALOG GLOBAL (500 SKUs COM EAN E FOTOS) */}
         {activeTab === "master_catalog" && (
           <div className="space-y-6">
-            <div className="rounded-2xl bg-card border border-border/80 p-5 shadow-xs space-y-4">
+            <div className="rounded-lg bg-card border border-border/80 p-5 shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <div className="space-y-1">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -410,10 +410,10 @@ export function OnboardingReviewPage() {
                 {catalogItems.map((sku) => (
                   <div
                     key={sku.id}
-                    className="rounded-2xl bg-card border border-border/80 p-4 flex flex-col justify-between space-y-3 shadow-xs hover:border-foreground/40 transition-colors"
+                    className="rounded-lg bg-card border border-border/80 p-4 flex flex-col justify-between space-y-3 shadow-xs hover:border-foreground/40 transition-colors"
                   >
                     <div className="space-y-2">
-                      <div className="aspect-square rounded-xl bg-muted/20 overflow-hidden flex items-center justify-center p-2">
+                      <div className="aspect-square rounded-lg bg-muted/20 overflow-hidden flex items-center justify-center p-2">
                         {sku.image_urls?.[0] ? (
                           <img
                             src={sku.image_urls[0]}
@@ -427,7 +427,7 @@ export function OnboardingReviewPage() {
                         )}
                       </div>
                       <div className="flex items-center justify-between gap-1">
-                        <Badge variant="outline" className="text-xs px-1.5 py-0">
+                        <Badge variant="outline" className="text-xs px-2 py-0">
                           {sku.category}
                         </Badge>
                         <span className="text-xs font-mono text-muted-foreground">{sku.barcode_ean}</span>
@@ -444,7 +444,7 @@ export function OnboardingReviewPage() {
                         size="sm"
                         disabled={importingId === sku.id}
                         onClick={() => handleImportSku(sku)}
-                        className="h-8 rounded-lg text-xs font-medium px-3 bg-foreground text-background hover:opacity-90 gap-1.5"
+                        className="h-8 rounded-lg text-xs font-medium px-3 bg-foreground text-background hover:opacity-90 gap-2"
                       >
                         {importingId === sku.id ? (
                           <Loader2 className="size-3 animate-spin" />
@@ -464,7 +464,7 @@ export function OnboardingReviewPage() {
         {/* ABA 3: MODO TRADICIONAL MANUAL (IA 100% OPCIONAL) */}
         {activeTab === "traditional" && (
           <div className="max-w-2xl mx-auto space-y-6">
-            <div className="rounded-2xl bg-card border border-border/80 p-6 space-y-5 shadow-xs">
+            <div className="rounded-lg bg-card border border-border/80 p-6 space-y-5 shadow-xs">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Table className="size-4 text-muted-foreground" />
@@ -476,7 +476,7 @@ export function OnboardingReviewPage() {
               </div>
 
               <form onSubmit={handleAddManualProduct} className="space-y-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-xs font-medium text-foreground">Nome do Produto *</label>
                   <Input
                     placeholder="Ex: Suco Natural de Laranja 500ml"
@@ -488,7 +488,7 @@ export function OnboardingReviewPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <label className="text-xs font-medium text-foreground">Categoria</label>
                     <Input
                       placeholder="Ex: Bebidas"
@@ -497,7 +497,7 @@ export function OnboardingReviewPage() {
                       className="h-11 rounded-lg text-xs"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <label className="text-xs font-medium text-foreground">Preço de Venda (R$) *</label>
                     <Input
                       placeholder="Ex: 12,50"
@@ -509,7 +509,7 @@ export function OnboardingReviewPage() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-xs font-medium text-foreground">Descrição do Produto</label>
                   <Input
                     placeholder="Ex: Suco 100% fruta espremido na hora sem adição de açúcar."

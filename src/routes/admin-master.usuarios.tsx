@@ -176,7 +176,7 @@ function AdminUsuariosPage() {
  </div>
  </div>
 
- <div className=" bg-card rounded-xl overflow-hidden ">
+ <div className=" bg-card rounded-lg overflow-hidden ">
  <div className="divide-y divide-border">
  {filteredUsers.length === 0 ? (
  <div className="p-8 text-center text-muted-foreground text-sm">
@@ -241,7 +241,7 @@ function AdminUsuariosPage() {
  <Button
  variant="outline"
  size="sm"
- className="text-xs gap-1.5"
+ className="text-xs gap-2"
  onClick={() => handleOpenDossier(u)}
  >
  <FileText className="size-3.5" />
@@ -251,7 +251,7 @@ function AdminUsuariosPage() {
  <Button
  variant="outline"
  size="sm"
- className="text-xs gap-1.5 text-amber-600 border-amber-500/30"
+ className="text-xs gap-2 text-amber-600 border-amber-500/30"
  onClick={() => {
  setSelectedUser(u);
  setIsSanctionModalOpen(true);
@@ -286,7 +286,7 @@ function AdminUsuariosPage() {
  setDossierData(null);
  setSelectedUser(null);
  }}
- className="h-11 px-4 rounded-xl text-xs font-bold"
+ className="h-11 px-4 rounded-lg text-xs font-bold"
  >
  Fechar
  </Button>
@@ -299,7 +299,7 @@ function AdminUsuariosPage() {
  </div>
  ) : dossierData ? (
  <div className="space-y-4 py-2">
- <div className="bg-muted/40 p-3 rounded-xl space-y-1">
+ <div className="bg-muted/40 p-3 rounded-lg space-y-1">
  <div className="flex items-center justify-between text-xs">
  <span className="font-bold text-muted-foreground">ID de Verificação de Segurança:</span>
  <Button
@@ -381,10 +381,10 @@ function AdminUsuariosPage() {
  size="default"
  footer={
  <>
- <Button variant="outline" onClick={() => setIsSanctionModalOpen(false)} className="h-11 px-4 rounded-xl text-xs font-bold">
+ <Button variant="outline" onClick={() => setIsSanctionModalOpen(false)} className="h-11 px-4 rounded-lg text-xs font-bold">
  Cancelar
  </Button>
- <Button variant="destructive" onClick={handleApplySanction} disabled={isApplyingSanction} className="h-11 px-6 rounded-xl text-xs font-bold">
+ <Button variant="destructive" onClick={handleApplySanction} disabled={isApplyingSanction} className="h-11 px-6 rounded-lg text-xs font-bold">
  {isApplyingSanction ? "Aplicando..." : "Confirmar Sanção"}
  </Button>
  </>

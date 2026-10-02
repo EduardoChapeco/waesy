@@ -188,7 +188,7 @@ export function SectionItinerary({ draft, save }: Props) {
             </div>
 
             {showUnsplash === i && (
-              <div className="rounded-2xl border border-border bg-surface p-3 mb-2">
+              <div className="rounded-lg border border-border bg-surface p-3 mb-2">
                 <div className="flex items-center justify-between mb-2">
                   <span className="ds-meta uppercase tracking-wide font-semibold">
                     Buscar imagem para o dia
@@ -229,7 +229,7 @@ export function SectionItinerary({ draft, save }: Props) {
                         newArr.splice(imgIdx, 1);
                         upd(i, { images: newArr });
                       }}
-                      className="absolute right-0 top-0 rounded bg-red-500/80 px-1 py-0.5 text-[8px] text-white hover:bg-red-500"
+                      className="absolute right-0 top-0 rounded bg-red-500/80 px-1 py-1 text-[8px] text-white hover:bg-red-500"
                     >
                       X
                     </Button>
@@ -242,7 +242,7 @@ export function SectionItinerary({ draft, save }: Props) {
               </div>
             )}
             <Textarea
-              className={SMALL_INPUT + " resize-none py-1.5 text-xs"}
+              className={SMALL_INPUT + " resize-none py-2 text-xs"}
               value={(d.images ?? []).join(",\n")}
               placeholder="Ou cole URLs de imagens aqui (separadas por vírgula)..."
               onChange={(e) =>
@@ -260,7 +260,7 @@ export function SectionItinerary({ draft, save }: Props) {
               type="button"
               onClick={() => refineWithAI(i)}
               disabled={refining === i}
-              className="flex items-center gap-1.5 ds-meta font-semibold text-brand hover:text-brand/80 disabled:opacity-60 transition-all"
+              className="flex items-center gap-2 ds-meta font-semibold text-brand hover:text-brand/80 disabled:opacity-60 transition-all"
             >
               {refining === i ? (
                 <Loader2 className="h-3 w-3 animate-spin" />

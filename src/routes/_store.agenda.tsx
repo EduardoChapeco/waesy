@@ -387,16 +387,16 @@ function AgendaPadronizadaPage() {
 
           <div className="flex items-center gap-2">
             {!isAuthenticated ? (
-              <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
+              <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
                 <Link to="/entrar" search={{ returnUrl: "/agenda" }}>
                   <span>Entrar na Conta</span>
-                  <ArrowRight size={13} className="ml-1.5" />
+                  <ArrowRight size={13} className="ml-2" />
                 </Link>
               </Button>
             ) : (
-              <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
+              <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
                 <Link to="/servicos">
-                  <Plus size={14} weight="bold" className="mr-1.5" />
+                  <Plus size={14} weight="bold" className="mr-2" />
                   <span>Agendar Serviço</span>
                 </Link>
               </Button>
@@ -413,7 +413,7 @@ function AgendaPadronizadaPage() {
               <button
                 type="button"
                 className={cn(
-                  "h-10 px-4 rounded-xl border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer shadow-xs",
+                  "h-10 px-4 rounded-lg border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer shadow-xs",
                   selectedDate !== "all"
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-card border-border/80 text-foreground hover:bg-muted/50"
@@ -428,7 +428,7 @@ function AgendaPadronizadaPage() {
                 <ChevronDown className="size-3.5 opacity-70" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-3 rounded-2xl bg-card border-border/60 shadow-xs" align="start">
+            <PopoverContent className="w-auto p-3 rounded-lg bg-card border-border/60 shadow-xs" align="start">
               <Calendar
                 mode="single"
                 selected={selectedDate !== "all" ? new Date(selectedDate + "T12:00:00") : undefined}
@@ -440,7 +440,7 @@ function AgendaPadronizadaPage() {
                     setSelectedDate(`${year}-${month}-${day}`);
                   }
                 }}
-                className="rounded-xl"
+                className="rounded-lg"
               />
               {selectedDate !== "all" && (
                 <div className="pt-2 border-t border-border/40 flex justify-end">
@@ -458,7 +458,7 @@ function AgendaPadronizadaPage() {
 
           {/* Atalhos Rápidos Inteligentes em Pílulas Flat (Snap & Fade Physics) */}
           <div
-            className="flex items-center gap-1.5 overflow-x-auto no-scrollbar snap-x snap-mandatory pr-6"
+            className="flex items-center gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory pr-6"
             style={{
               maskImage: "linear-gradient(to right, black 88%, transparent 100%)",
               WebkitMaskImage: "linear-gradient(to right, black 88%, transparent 100%)",
@@ -469,7 +469,7 @@ function AgendaPadronizadaPage() {
               type="button"
               onClick={() => setSelectedDate("all")}
               className={cn(
-                "h-9 px-3.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap snap-start",
+                "h-9 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap snap-start",
                 selectedDate === "all"
                   ? "bg-foreground text-background font-bold shadow-2xs"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -484,7 +484,7 @@ function AgendaPadronizadaPage() {
                 type="button"
                 onClick={() => setSelectedDate(nextDays[0].dateKey)}
                 className={cn(
-                  "h-9 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                  "h-9 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2",
                   selectedDate === nextDays[0].dateKey
                     ? "bg-foreground text-background font-bold shadow-2xs"
                     : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -503,7 +503,7 @@ function AgendaPadronizadaPage() {
                 type="button"
                 onClick={() => setSelectedDate(nextDays[1].dateKey)}
                 className={cn(
-                  "h-9 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                  "h-9 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2",
                   selectedDate === nextDays[1].dateKey
                     ? "bg-foreground text-background font-bold shadow-2xs"
                     : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -525,7 +525,7 @@ function AgendaPadronizadaPage() {
                   type="button"
                   onClick={() => setSelectedDate(weekendDay.dateKey)}
                   className={cn(
-                    "h-9 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                    "h-9 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2",
                     selectedDate === weekendDay.dateKey
                       ? "bg-foreground text-background font-bold shadow-2xs"
                       : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -544,7 +544,7 @@ function AgendaPadronizadaPage() {
               <button
                 type="button"
                 onClick={() => setSelectedDate("all")}
-                className="h-9 size-9 rounded-xl text-muted-foreground hover:text-foreground bg-muted/30 flex items-center justify-center cursor-pointer transition-colors"
+                className="h-9 size-9 rounded-lg text-muted-foreground hover:text-foreground bg-muted/30 flex items-center justify-center cursor-pointer transition-colors"
                 title="Limpar data selecionada"
               >
                 <X className="size-3.5" />
@@ -573,7 +573,7 @@ function AgendaPadronizadaPage() {
           <CircleNotch size={32} className="animate-spin text-muted-foreground" />
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="p-10 rounded-2xl border border-border/60 bg-card text-center space-y-3">
+        <div className="p-10 rounded-lg border border-border/60 bg-card text-center space-y-3">
           <CalendarBlank size={36} className="text-muted-foreground/50 mx-auto" />
           <h3 className="text-sm font-bold text-foreground">Nenhuma programação encontrada</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -588,7 +588,7 @@ function AgendaPadronizadaPage() {
                 setSelectedFilter("todos");
                 setSearch("");
               }}
-              className="rounded-xl text-xs font-bold"
+              className="rounded-lg text-xs font-bold"
             >
               Ver Toda a Programação
             </Button>
@@ -614,7 +614,7 @@ function AgendaPadronizadaPage() {
                     {group.items.map((item) => (
                       <div
                         key={item.id}
-                        className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 group flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 shadow-2xs hover:shadow-xs transition-all select-none"
+                        className="min-w-72 sm:min-w-[310px] max-w-80 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 shadow-2xs hover:shadow-xs transition-all select-none"
                       >
                         <Link to={item.to as any} className="block">
                           <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40">
@@ -642,13 +642,13 @@ function AgendaPadronizadaPage() {
                               </Badge>
                             </div>
                             <div className="absolute bottom-2.5 right-2.5">
-                              <span className="bg-black/75 backdrop-blur-md text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md">
+                              <span className="bg-black/75 backdrop-blur-md text-white text-[10px] font-mono font-bold px-2 py-1 rounded-md">
                                 {item.dateDisplay}
                               </span>
                             </div>
                           </div>
 
-                          <div className="p-3.5 space-y-1">
+                          <div className="p-4 space-y-1">
                             <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
                               {item.title}
                             </h3>
@@ -661,7 +661,7 @@ function AgendaPadronizadaPage() {
                           </div>
                         </Link>
 
-                        <div className="p-3.5 pt-0 flex items-center justify-between border-t border-border/30 mt-2">
+                        <div className="p-4 pt-0 flex items-center justify-between border-t border-border/30 mt-2">
                           <span className="text-xs font-bold text-primary font-mono">
                             {item.priceOrStatus}
                           </span>
@@ -686,7 +686,7 @@ function AgendaPadronizadaPage() {
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-all flex flex-col justify-between"
+                  className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-all flex flex-col justify-between"
                 >
                   <Link to={item.to as any} className="flex-1 flex flex-col cursor-pointer">
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40 shrink-0">
@@ -703,24 +703,24 @@ function AgendaPadronizadaPage() {
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5">
-                        <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded-md border border-border/40">
+                        <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[9px] uppercase font-bold px-2 py-1 rounded-md border border-border/40">
                           {item.badge}
                         </Badge>
                       </div>
                       <div className="absolute bottom-2.5 right-2.5">
-                        <span className="bg-black/75 backdrop-blur-md text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md">
+                        <span className="bg-black/75 backdrop-blur-md text-white text-[10px] font-mono font-bold px-2 py-1 rounded-md">
                           {item.dateDisplay}
                         </span>
                       </div>
                     </div>
 
-                    <div className="p-3.5 space-y-1 flex-1 flex flex-col justify-between">
+                    <div className="p-4 space-y-1 flex-1 flex flex-col justify-between">
                       <div>
                         <h3 className="font-bold text-sm text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
                           {item.title}
                         </h3>
                         {item.subtitle && (
-                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                          <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
                             {item.subtitle}
                           </p>
                         )}
@@ -737,11 +737,11 @@ function AgendaPadronizadaPage() {
                     </div>
                   </Link>
 
-                  <div className="p-3.5 pt-0 flex items-center justify-between border-t border-border/30">
+                  <div className="p-4 pt-0 flex items-center justify-between border-t border-border/30">
                     <span className="text-xs font-bold text-primary font-mono">
                       {item.priceOrStatus}
                     </span>
-                    <Button asChild size="sm" className="h-8 px-3 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
+                    <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
                       <Link to={item.to as any}>
                         <span>{item.actionLabel}</span>
                       </Link>
@@ -758,11 +758,11 @@ function AgendaPadronizadaPage() {
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-foreground/30 hover:shadow-xs transition-all min-h-[136px] pl-32 sm:pl-44 w-full"
+                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover:shadow-xs transition-all min-h-[136px] pl-32 sm:pl-44 w-full"
                 >
                   <Link
                     to={item.to as any}
-                    className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-2xl bg-muted/40 cursor-pointer"
+                    className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-lg bg-muted/40 cursor-pointer"
                   >
                     {item.image ? (
                       <img
@@ -777,13 +777,13 @@ function AgendaPadronizadaPage() {
                       </div>
                     )}
                     <div className="absolute top-2.5 left-2.5">
-                      <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded-md border border-border/40">
+                      <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[9px] uppercase font-bold px-2 py-1 rounded-md border border-border/40">
                         {item.badge}
                       </Badge>
                     </div>
                   </Link>
 
-                  <div className="p-3.5 sm:p-4 flex flex-col justify-between min-h-[136px] gap-2">
+                  <div className="p-4 sm:p-4 flex flex-col justify-between min-h-[136px] gap-2">
                     <Link to={item.to as any} className="space-y-1 block cursor-pointer">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono font-bold text-primary uppercase">
@@ -806,11 +806,11 @@ function AgendaPadronizadaPage() {
                         <span className="truncate">{item.location || "Na região"}</span>
                       </span>
 
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-3">
                         <span className="text-xs font-bold text-primary font-mono">
                           {item.priceOrStatus}
                         </span>
-                        <Button asChild size="sm" className="h-8 px-3 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
+                        <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
                           <Link to={item.to as any}>
                             <span>{item.actionLabel}</span>
                             <ArrowRight size={13} className="ml-1" />

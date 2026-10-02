@@ -1,27 +1,25 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-02T21:55:30.996Z",
+  "timestamp": "2026-10-02T22:00:44.299Z",
   "inspectedFiles": 1798,
-  "totalViolations": 37702,
+  "totalViolations": 18624,
   "summary": {
-    "totalViolations": 37702,
+    "totalViolations": 18624,
     "bySeverity": {
-      "P0": 7194,
-      "P1": 17917,
-      "P2": 11120,
+      "P0": 7187,
+      "P1": 8526,
+      "P2": 1440,
       "P3": 1471
     },
     "byRule": {
-      "DL-09": 9681,
       "DL-18": 1317,
-      "DL-02": 5753,
-      "DL-03": 8985,
-      "DL-15": 5467,
+      "DL-02": 5361,
+      "DL-15": 5460,
       "DL-28": 310,
       "DL-07": 499,
       "DL-27": 1210,
       "DL-30": 261,
-      "DL-14": 324,
+      "DL-14": 310,
       "DL-26": 116,
       "DL-01": 1014,
       "DL-04": 1727,
@@ -35,42 +33,43 @@
       "DL-13": 12,
       "DL-25": 30,
       "DL-06": 4,
-      "DL-19": 2
+      "DL-19": 2,
+      "DL-09": 1
     },
     "byModule": {
       "components/app": {
-        "total": 12801,
+        "total": 7037,
         "P0": 2217,
-        "P1": 6651,
-        "P2": 3354,
+        "P1": 3609,
+        "P2": 632,
         "P3": 579
       },
       "components/builder": {
-        "total": 361,
+        "total": 191,
         "P0": 107,
-        "P1": 134,
-        "P2": 103,
+        "P1": 46,
+        "P2": 21,
         "P3": 17
       },
       "components/chat": {
-        "total": 97,
+        "total": 49,
         "P0": 13,
-        "P1": 62,
-        "P2": 21,
+        "P1": 35,
+        "P2": 0,
         "P3": 1
       },
       "components/tourism": {
-        "total": 2785,
+        "total": 1622,
         "P0": 446,
-        "P1": 1507,
-        "P2": 757,
+        "P1": 910,
+        "P2": 191,
         "P3": 75
       },
       "components/ui": {
-        "total": 890,
+        "total": 629,
         "P0": 126,
-        "P1": 581,
-        "P2": 152,
+        "P1": 465,
+        "P2": 7,
         "P3": 31
       },
       "hooks": {
@@ -81,24 +80,24 @@
         "P3": 0
       },
       "lib": {
-        "total": 369,
+        "total": 368,
         "P0": 89,
         "P1": 219,
-        "P2": 61,
+        "P2": 60,
         "P3": 0
       },
       "routes/other": {
-        "total": 535,
+        "total": 218,
         "P0": 78,
-        "P1": 231,
-        "P2": 217,
+        "P1": 113,
+        "P2": 18,
         "P3": 9
       },
       "routes/admin": {
-        "total": 2742,
-        "P0": 458,
-        "P1": 1422,
-        "P2": 740,
+        "total": 1312,
+        "P0": 456,
+        "P1": 677,
+        "P2": 57,
         "P3": 122
       },
       "routes/api": {
@@ -109,24 +108,24 @@
         "P3": 0
       },
       "routes/workspace": {
-        "total": 9513,
-        "P0": 1869,
-        "P1": 3842,
-        "P2": 3521,
+        "total": 3094,
+        "P0": 1866,
+        "P1": 827,
+        "P2": 120,
         "P3": 281
       },
       "routes/store": {
-        "total": 6648,
-        "P0": 1182,
-        "P1": 3011,
-        "P2": 2101,
+        "total": 3147,
+        "P0": 1180,
+        "P1": 1370,
+        "P2": 243,
         "P3": 354
       },
       "services": {
-        "total": 899,
+        "total": 895,
         "P0": 578,
-        "P1": 239,
-        "P2": 80,
+        "P1": 237,
+        "P2": 78,
         "P3": 2
       },
       "styles": {
@@ -144,7 +143,7 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 1124,
+    "filesWithViolations": 1092,
     "filesCount": 1798
   },
   "config": {
@@ -313,17 +312,6 @@
   },
   "violationsSample": [
     {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
-      "module": "components/app",
-      "line": 144,
-      "column": 74,
-      "severity": "P2",
-      "match": "rounded-2xl",
-      "message": "Raio de curvatura não-canônico \"rounded-2xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
       "id": "DL-18",
       "rule": "DL-18",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
@@ -346,50 +334,6 @@
       "message": "Classe arbitrária com colchetes \"max-h-[50vh]\". Use tokens canônicos."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
-      "module": "components/app",
-      "line": 182,
-      "column": 58,
-      "severity": "P1",
-      "match": "space-y-2.5",
-      "message": "Espaçamento \"space-y-2.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
-      "module": "components/app",
-      "line": 187,
-      "column": 22,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
-      "module": "components/app",
-      "line": 193,
-      "column": 40,
-      "severity": "P1",
-      "match": "mt-0.5",
-      "message": "Espaçamento \"mt-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
-      "module": "components/app",
-      "line": 205,
-      "column": 39,
-      "severity": "P1",
-      "match": "mt-0.5",
-      "message": "Espaçamento \"mt-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
@@ -401,17 +345,6 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
-      "module": "components/app",
-      "line": 218,
-      "column": 29,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
@@ -421,28 +354,6 @@
       "severity": "P0",
       "match": "onClick/button sem focus-visible",
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
-      "module": "components/app",
-      "line": 227,
-      "column": 62,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
-      "module": "components/app",
-      "line": 227,
-      "column": 29,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
     },
     {
       "id": "DL-28",
@@ -533,17 +444,6 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
-      "module": "components/app",
-      "line": 94,
-      "column": 33,
-      "severity": "P2",
-      "match": "rounded-2xl",
-      "message": "Raio de curvatura não-canônico \"rounded-2xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
@@ -553,50 +453,6 @@
       "severity": "P0",
       "match": "onClick/button sem focus-visible",
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
-      "module": "components/app",
-      "line": 105,
-      "column": 59,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
-      "module": "components/app",
-      "line": 105,
-      "column": 26,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
-      "module": "components/app",
-      "line": 113,
-      "column": 41,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
-      "module": "components/app",
-      "line": 125,
-      "column": 30,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
     },
     {
       "id": "DL-15",
@@ -654,39 +510,6 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 88,
-      "column": 31,
-      "severity": "P2",
-      "match": "rounded-2xl",
-      "message": "Raio de curvatura não-canônico \"rounded-2xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 102,
-      "column": 25,
-      "severity": "P1",
-      "match": "space-y-1.5",
-      "message": "Espaçamento \"space-y-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 107,
-      "column": 42,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
@@ -709,28 +532,6 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 117,
-      "column": 30,
-      "severity": "P1",
-      "match": "px-2.5",
-      "message": "Espaçamento \"px-2.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 142,
-      "column": 29,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
@@ -742,39 +543,6 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 150,
-      "column": 29,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 163,
-      "column": 62,
-      "severity": "P1",
-      "match": "p-2.5",
-      "message": "Espaçamento \"p-2.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 163,
-      "column": 68,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
@@ -784,39 +552,6 @@
       "severity": "P0",
       "match": "onClick/button sem focus-visible",
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 185,
-      "column": 31,
-      "severity": "P2",
-      "match": "rounded-2xl",
-      "message": "Raio de curvatura não-canônico \"rounded-2xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 199,
-      "column": 25,
-      "severity": "P1",
-      "match": "space-y-1.5",
-      "message": "Espaçamento \"space-y-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 204,
-      "column": 42,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
     },
     {
       "id": "DL-15",
@@ -841,28 +576,6 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 214,
-      "column": 30,
-      "severity": "P1",
-      "match": "px-2.5",
-      "message": "Espaçamento \"px-2.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 239,
-      "column": 29,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
@@ -872,39 +585,6 @@
       "severity": "P0",
       "match": "onClick/button sem focus-visible",
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 247,
-      "column": 29,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 260,
-      "column": 62,
-      "severity": "P1",
-      "match": "p-2.5",
-      "message": "Espaçamento \"p-2.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 260,
-      "column": 68,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
     },
     {
       "id": "DL-15",
@@ -918,17 +598,6 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 105,
-      "column": 35,
-      "severity": "P2",
-      "match": "rounded-2xl",
-      "message": "Raio de curvatura não-canônico \"rounded-2xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
@@ -938,94 +607,6 @@
       "severity": "P0",
       "match": "onClick/button sem focus-visible",
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 116,
-      "column": 61,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 116,
-      "column": 28,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 124,
-      "column": 43,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 136,
-      "column": 32,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 144,
-      "column": 37,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 154,
-      "column": 37,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 165,
-      "column": 37,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 175,
-      "column": 39,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
     },
     {
       "id": "DL-15",
@@ -1039,28 +620,6 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 183,
-      "column": 40,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 199,
-      "column": 33,
-      "severity": "P2",
-      "match": "rounded-2xl",
-      "message": "Raio de curvatura não-canônico \"rounded-2xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
@@ -1072,94 +631,6 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 210,
-      "column": 59,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 210,
-      "column": 26,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 218,
-      "column": 41,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 230,
-      "column": 30,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 238,
-      "column": 35,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 248,
-      "column": 35,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 259,
-      "column": 35,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 269,
-      "column": 37,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
@@ -1169,17 +640,6 @@
       "severity": "P0",
       "match": "onClick/button sem focus-visible",
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 277,
-      "column": 38,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
     },
     {
       "id": "DL-18",
@@ -1270,39 +730,6 @@
       "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
-      "module": "components/app",
-      "line": 233,
-      "column": 89,
-      "severity": "P1",
-      "match": "pt-0.5",
-      "message": "Espaçamento \"pt-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
-      "module": "components/app",
-      "line": 257,
-      "column": 68,
-      "severity": "P1",
-      "match": "space-y-0.5",
-      "message": "Espaçamento \"space-y-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
-      "module": "components/app",
-      "line": 285,
-      "column": 75,
-      "severity": "P1",
-      "match": "mt-0.5",
-      "message": "Espaçamento \"mt-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
@@ -1334,28 +761,6 @@
       "severity": "P0",
       "match": "onClick/button sem focus-visible",
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
-      "module": "components/app",
-      "line": 371,
-      "column": 87,
-      "severity": "P1",
-      "match": "mt-0.5",
-      "message": "Espaçamento \"mt-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
-      "module": "components/app",
-      "line": 387,
-      "column": 82,
-      "severity": "P1",
-      "match": "mt-0.5",
-      "message": "Espaçamento \"mt-0.5\" viola a grade estrita de múltiplos de 4px."
     },
     {
       "id": "DL-15",
@@ -1433,17 +838,6 @@
       "severity": "P1",
       "match": "animate-* sem motion-reduce",
       "message": "Animação ativa sem tratamento para preferências de movimento reduzido (motion-reduce:transition-none)."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
-      "module": "components/app",
-      "line": 261,
-      "column": 37,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
     },
     {
       "id": "DL-02",
@@ -1754,28 +1148,6 @@
       "message": "Sombra decorativa \"shadow-xl\" em superfície de aplicação. Sombras restritas a overlays."
     },
     {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
-      "module": "components/app",
-      "line": 72,
-      "column": 55,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
-      "module": "components/app",
-      "line": 85,
-      "column": 21,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
-    },
-    {
       "id": "DL-27",
       "rule": "DL-27",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
@@ -1798,39 +1170,6 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
-      "module": "components/app",
-      "line": 127,
-      "column": 49,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
-      "module": "components/app",
-      "line": 135,
-      "column": 18,
-      "severity": "P1",
-      "match": "space-y-1.5",
-      "message": "Espaçamento \"space-y-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
-      "module": "components/app",
-      "line": 155,
-      "column": 18,
-      "severity": "P1",
-      "match": "space-y-1.5",
-      "message": "Espaçamento \"space-y-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
       "id": "DL-02",
       "rule": "DL-02",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
@@ -1840,17 +1179,6 @@
       "severity": "P1",
       "match": "min-h-[80px]",
       "message": "Classe arbitrária com colchetes \"min-h-[80px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-09",
-      "rule": "DL-09",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
-      "module": "components/app",
-      "line": 174,
-      "column": 39,
-      "severity": "P2",
-      "match": "rounded-xl",
-      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
     },
     {
       "id": "DL-01",
@@ -1919,28 +1247,6 @@
       "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
-      "module": "components/app",
-      "line": 275,
-      "column": 37,
-      "severity": "P1",
-      "match": "px-1.5",
-      "message": "Espaçamento \"px-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
-      "module": "components/app",
-      "line": 276,
-      "column": 18,
-      "severity": "P1",
-      "match": "space-y-0.5",
-      "message": "Espaçamento \"space-y-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
@@ -1961,6 +1267,699 @@
       "severity": "P0",
       "match": "onClick/button sem focus-visible",
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 290,
+      "column": 73,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 311,
+      "column": 19,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 320,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 323,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 325,
+      "column": 39,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 337,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 340,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 342,
+      "column": 39,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 357,
+      "column": 18,
+      "severity": "P1",
+      "match": "w-[380px]",
+      "message": "Classe arbitrária com colchetes \"w-[380px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 373,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 387,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 391,
+      "column": 109,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 398,
+      "column": 17,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 413,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 417,
+      "column": 108,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 423,
+      "column": 38,
+      "severity": "P1",
+      "match": "text-[9px]",
+      "message": "Classe arbitrária com colchetes \"text-[9px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 439,
+      "column": 19,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 443,
+      "column": 77,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 443,
+      "column": 152,
+      "severity": "P2",
+      "match": "shadow-md",
+      "message": "Sombra decorativa \"shadow-md\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "module": "components/app",
+      "line": 450,
+      "column": 16,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 60,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 80,
+      "column": 20,
+      "severity": "P1",
+      "match": "max-w-[1440px]",
+      "message": "Classe arbitrária com colchetes \"max-w-[1440px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 80,
+      "column": 35,
+      "severity": "P1",
+      "match": "min-h-[calc(100dvh-100px)]",
+      "message": "Classe arbitrária com colchetes \"min-h-[calc(100dvh-100px)]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 80,
+      "column": 161,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 81,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 84,
+      "column": 137,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 88,
+      "column": 19,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 91,
+      "column": 18,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 96,
+      "column": 19,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 110,
+      "column": 67,
+      "severity": "P1",
+      "match": "min-h-[460px]",
+      "message": "Classe arbitrária com colchetes \"min-h-[460px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 121,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 142,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 160,
+      "column": 13,
+      "severity": "P1",
+      "match": "w-[390px]",
+      "message": "Classe arbitrária com colchetes \"w-[390px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 160,
+      "column": 23,
+      "severity": "P1",
+      "match": "min-h-[844px]",
+      "message": "Classe arbitrária com colchetes \"min-h-[844px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 160,
+      "column": 153,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 161,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 164,
+      "column": 137,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 182,
+      "column": 67,
+      "severity": "P1",
+      "match": "min-h-[400px]",
+      "message": "Classe arbitrária com colchetes \"min-h-[400px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 186,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 206,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 224,
+      "column": 13,
+      "severity": "P1",
+      "match": "w-[360px]",
+      "message": "Classe arbitrária com colchetes \"w-[360px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 224,
+      "column": 23,
+      "severity": "P1",
+      "match": "min-h-[640px]",
+      "message": "Classe arbitrária com colchetes \"min-h-[640px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 224,
+      "column": 153,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 225,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 227,
+      "column": 137,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 234,
+      "column": 67,
+      "severity": "P1",
+      "match": "min-h-[320px]",
+      "message": "Classe arbitrária com colchetes \"min-h-[320px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "module": "components/app",
+      "line": 238,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "module": "components/app",
+      "line": 88,
+      "column": 27,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "module": "components/app",
+      "line": 95,
+      "column": 28,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "module": "components/app",
+      "line": 99,
+      "column": 25,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "module": "components/app",
+      "line": 119,
+      "column": 40,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "module": "components/app",
+      "line": 125,
+      "column": 134,
+      "severity": "P1",
+      "match": "text-[9px]",
+      "message": "Classe arbitrária com colchetes \"text-[9px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "module": "components/app",
+      "line": 130,
+      "column": 31,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "module": "components/app",
+      "line": 137,
+      "column": 32,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "module": "components/app",
+      "line": 146,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "module": "components/app",
+      "line": 150,
+      "column": 43,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "module": "components/app",
+      "line": 56,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "module": "components/app",
+      "line": 59,
+      "column": 1,
+      "severity": "P0",
+      "match": "onClick/button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "module": "components/app",
+      "line": 62,
+      "column": 54,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-04",
+      "rule": "DL-04",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "module": "components/app",
+      "line": 63,
+      "column": 19,
+      "severity": "P0",
+      "match": " !isActive",
+      "message": "Uso proibido de especificidade forçada \" !isActive\"."
+    },
+    {
+      "id": "DL-04",
+      "rule": "DL-04",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "module": "components/app",
+      "line": 70,
+      "column": 49,
+      "severity": "P0",
+      "match": " !isActive",
+      "message": "Uso proibido de especificidade forçada \" !isActive\"."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "module": "components/app",
+      "line": 78,
+      "column": 87,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "module": "components/app",
+      "line": 78,
+      "column": 205,
+      "severity": "P2",
+      "match": "shadow-md",
+      "message": "Sombra decorativa \"shadow-md\" em superfície de aplicação. Sombras restritas a overlays."
     }
   ]
 }

@@ -156,7 +156,7 @@ function WorkspaceProposalsIndexPage() {
 
  {/* ── 4. GRID DE PROPOSTAS ── */}
  {proposalsList.length === 0 ? (
- <div className="py-20 text-center space-y-3 bg-card rounded-2xl border border-border/60 p-8">
+ <div className="py-20 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
  <FileText className="size-10 mx-auto text-muted-foreground" />
  <h3 className="text-sm font-bold text-foreground">Nenhuma proposta de viagem encontrada</h3>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -165,7 +165,7 @@ function WorkspaceProposalsIndexPage() {
  <div className="pt-2">
  <Button
  onClick={() => setIsNewModalOpen(true)}
- className="rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1.5"
+ className="rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2"
  >
  <Plus className="size-4" />
  Criar Nova Proposta
@@ -179,11 +179,11 @@ function WorkspaceProposalsIndexPage() {
  return (
  <Card
  key={p.id}
- className="p-5 rounded-2xl border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-all flex flex-col justify-between group"
+ className="p-5 rounded-lg border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-all flex flex-col justify-between group"
  >
- <div className="space-y-2.5">
+ <div className="space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary">
+ <span className="text-xs font-mono font-bold px-2 py-1 rounded-md bg-primary/10 text-primary">
  {p.destination_city}
  </span>
  <Badge
@@ -255,16 +255,16 @@ function WorkspaceProposalsIndexPage() {
  <Button
  size="sm"
  variant="outline"
- className="flex-1 rounded-xl text-xs font-bold h-9 cursor-pointer"
+ className="flex-1 rounded-lg text-xs font-bold h-9 cursor-pointer"
  >
  <Link to="/proposta/$token" params={{ token: p.public_token }} target="_blank">
- <ExternalLink className="mr-1.5 size-3" />
+ <ExternalLink className="mr-2 size-3" />
  Ver Online
  </Link>
  </Button>
  <Button
  size="sm"
- className="flex-1 rounded-xl text-xs font-bold h-9 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+ className="flex-1 rounded-lg text-xs font-bold h-9 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
  >
  <Link to="/workspace/turismo/propostas/$id" params={{ id: p.id }}>
  Abrir Studio
@@ -279,7 +279,7 @@ function WorkspaceProposalsIndexPage() {
                   size="sm"
                   onClick={() => convertMutation.mutate(p.id)}
                   disabled={convertMutation.isPending}
-                  className="w-full rounded-xl text-xs font-bold h-9 bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer"
+                  className="w-full rounded-lg text-xs font-bold h-9 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer"
                 >
                   <Plane className="size-3.5" />
                   {convertMutation.isPending ? "Gerando Viagem..." : "Gerar Viagem & Vouchers"}

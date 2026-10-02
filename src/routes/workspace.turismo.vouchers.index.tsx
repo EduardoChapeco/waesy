@@ -229,7 +229,7 @@ export default function WorkspaceVouchersPage() {
           Carregando vouchers emitidos...
         </div>
       ) : filtered.length === 0 ? (
-        <div className="p-8 sm:p-12 text-center rounded-2xl border border-dashed border-border/70 bg-card space-y-3">
+        <div className="p-8 sm:p-12 text-center rounded-lg border border-dashed border-border/70 bg-card space-y-3">
           <FileText className="size-8 text-muted-foreground mx-auto" />
           <p className="text-sm font-bold text-foreground">Nenhum voucher emitido no momento</p>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
@@ -241,7 +241,7 @@ export default function WorkspaceVouchersPage() {
               setCreationType("flight");
               setIsCreationSheetOpen(true);
             }}
-            className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-2 cursor-pointer shadow-xs"
+            className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
           >
             <Plus className="size-4 sm:size-3.5" />
             <span>Emitir Primeiro Voucher</span>
@@ -252,11 +252,11 @@ export default function WorkspaceVouchersPage() {
           {filtered.map((v) => (
             <div
               key={v.id}
-              className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 hover:border-foreground/20 transition-all shadow-2xs flex flex-col justify-between space-y-4"
+              className="p-4 sm:p-5 rounded-lg bg-card border border-border/70 hover:border-foreground/20 transition-all shadow-2xs flex flex-col justify-between space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground font-bold">
                       {v.voucher_number}
                     </span>
@@ -274,8 +274,8 @@ export default function WorkspaceVouchersPage() {
                 </p>
 
                 {v.voucher_type === "flight" && v.flight_data && (
-                  <div className="p-3 rounded-xl bg-sky-500/5 border border-sky-500/20 text-xs space-y-1">
-                    <p className="font-bold text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
+                  <div className="p-3 rounded-lg bg-sky-500/5 border border-sky-500/20 text-xs space-y-1">
+                    <p className="font-bold text-sky-700 dark:text-sky-400 flex items-center gap-2">
                       <Plane className="size-3.5 shrink-0" />
                       <span>{v.flight_data.airline || "Cia Aérea"} ({v.flight_data.origin || "ORIG"} → {v.flight_data.destination || "DEST"})</span>
                     </p>
@@ -287,8 +287,8 @@ export default function WorkspaceVouchersPage() {
                 )}
 
                 {v.voucher_type === "hotel" && v.hotel_data && (
-                  <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs space-y-1">
-                    <p className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                  <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs space-y-1">
+                    <p className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
                       <Building2 className="size-3.5 shrink-0" />
                       <span>{v.hotel_data.hotelName || "Hotel / Resort"}</span>
                     </p>
@@ -299,8 +299,8 @@ export default function WorkspaceVouchersPage() {
                 )}
 
                 {v.voucher_type === "transfer" && v.transfer_data && (
-                  <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/20 text-xs space-y-1">
-                    <p className="font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1.5">
+                  <div className="p-3 rounded-lg bg-purple-500/5 border border-purple-500/20 text-xs space-y-1">
+                    <p className="font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2">
                       <Car className="size-3.5 shrink-0" />
                       <span>{v.transfer_data.pickupLocation || "Origem"} → {v.transfer_data.dropoffLocation || "Destino"}</span>
                     </p>
@@ -312,12 +312,12 @@ export default function WorkspaceVouchersPage() {
               </div>
 
               <div className="border-t border-border/50 pt-3 flex items-center gap-2 justify-between text-xs">
-                <div className="flex items-center gap-1.5 flex-1">
+                <div className="flex items-center gap-2 flex-1">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setCompanionModalVoucher(v)}
-                    className="h-11 sm:h-8 px-3 rounded-xl text-xs font-bold gap-1.5 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                    className="h-11 sm:h-8 px-3 rounded-lg text-xs font-bold gap-2 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
                     title="Visualizar Cartão"
                   >
                     <Smartphone className="size-4 sm:size-3.5" />
@@ -328,7 +328,7 @@ export default function WorkspaceVouchersPage() {
                     type="button"
                     variant="outline"
                     onClick={() => handleDownloadPdf(v)}
-                    className="h-11 sm:h-8 px-3 rounded-xl text-xs font-bold gap-1.5 border-border/70 cursor-pointer"
+                    className="h-11 sm:h-8 px-3 rounded-lg text-xs font-bold gap-2 border-border/70 cursor-pointer"
                     title="Baixar em formato A4 tradicional"
                   >
                     <Download className="size-4 sm:size-3.5" />
@@ -381,7 +381,7 @@ export default function WorkspaceVouchersPage() {
 
       {/* ── 3.2 MODAL DE SCANNER MULTIMODAL OCR (GERADOR 9:16 & WHATSAPP) ── */}
       <Dialog open={isUniversalOcrOpen} onOpenChange={setIsUniversalOcrOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Smartphone className="size-4 text-primary" />
@@ -417,7 +417,7 @@ export default function WorkspaceVouchersPage() {
           if (!open) setCompanionModalVoucher(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
+        <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
           <DialogHeader className="sr-only">
             <DialogTitle>Visualizador de Voucher e Bilhete</DialogTitle>
           </DialogHeader>
@@ -436,13 +436,13 @@ export default function WorkspaceVouchersPage() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-2xl border border-border/40">
+                <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-lg border border-border/40">
                   <Button
                     type="button"
                     size="sm"
                     variant={previewFormat === "story" ? "default" : "ghost"}
                     onClick={() => setPreviewFormat("story")}
-                    className="h-8 rounded-xl text-xs font-bold gap-1 cursor-pointer"
+                    className="h-8 rounded-lg text-xs font-bold gap-1 cursor-pointer"
                   >
                     <Smartphone className="size-3.5" />
                     <span>Story 9:16</span>
@@ -452,7 +452,7 @@ export default function WorkspaceVouchersPage() {
                     size="sm"
                     variant={previewFormat === "companion" ? "default" : "ghost"}
                     onClick={() => setPreviewFormat("companion")}
-                    className="h-8 rounded-xl text-xs font-bold gap-1 cursor-pointer"
+                    className="h-8 rounded-lg text-xs font-bold gap-1 cursor-pointer"
                   >
                     <Layers className="size-3.5" />
                     <span>Interativo</span>
@@ -462,7 +462,7 @@ export default function WorkspaceVouchersPage() {
                     size="sm"
                     variant={previewFormat === "a4" ? "default" : "ghost"}
                     onClick={() => setPreviewFormat("a4")}
-                    className="h-8 rounded-xl text-xs font-bold gap-1 cursor-pointer"
+                    className="h-8 rounded-lg text-xs font-bold gap-1 cursor-pointer"
                   >
                     <Download className="size-3.5" />
                     <span>Padrão A4</span>
@@ -512,13 +512,13 @@ export default function WorkspaceVouchersPage() {
                       type="button"
                       size="sm"
                       onClick={() => handleDownloadPdf(companionModalVoucher)}
-                      className="rounded-xl text-xs font-bold gap-1.5"
+                      className="rounded-lg text-xs font-bold gap-2"
                     >
                       <Download className="size-3.5" />
                       <span>Baixar PDF (A4)</span>
                     </Button>
                   </div>
-                  <div className="w-full overflow-x-auto p-4 bg-muted/30 rounded-2xl border border-border/40 flex justify-center">
+                  <div className="w-full overflow-x-auto p-4 bg-muted/30 rounded-lg border border-border/40 flex justify-center">
                     <div className="scale-75 sm:scale-85 md:scale-90 origin-top shadow-xs">
                       <TemplateVoucherA4
                         voucher={companionModalVoucher}

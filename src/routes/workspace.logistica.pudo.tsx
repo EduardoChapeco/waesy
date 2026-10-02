@@ -266,7 +266,7 @@ function WorkspacePudoLogisticsPage() {
               onClick={handleExportCSV}
               variant="outline"
               size="sm"
-              className="font-bold text-xs gap-1.5 h-10 px-3.5 rounded-xl cursor-pointer"
+              className="font-bold text-xs gap-2 h-10 px-4 rounded-lg cursor-pointer"
             >
               <FileSpreadsheet className="size-4 text-emerald-600" />
               <span>Exportar Manifesto (CSV)</span>
@@ -274,7 +274,7 @@ function WorkspacePudoLogisticsPage() {
             <Button
               onClick={() => setIsCheckInModalOpen(true)}
               size="sm"
-              className="rounded-xl font-bold bg-primary text-primary-foreground text-xs gap-1.5 h-10 px-4 cursor-pointer shadow-2xs"
+              className="rounded-lg font-bold bg-primary text-primary-foreground text-xs gap-2 h-10 px-4 cursor-pointer shadow-2xs"
             >
               <Plus className="size-4" />
               <span>Receber Novo Pacote</span>
@@ -285,8 +285,8 @@ function WorkspacePudoLogisticsPage() {
 
       {/* ── 4 KPIS NO PARADIGMA CLEAN ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Boxes className="size-3.5 text-amber-600" />
             Em Custódia
           </span>
@@ -298,8 +298,8 @@ function WorkspacePudoLogisticsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
             Entregas Concluídas
           </span>
@@ -311,8 +311,8 @@ function WorkspacePudoLogisticsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <RotateCcw className="size-3.5 text-destructive" />
             Logística Reversa / Avarias
           </span>
@@ -324,8 +324,8 @@ function WorkspacePudoLogisticsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Percent className="size-3.5 text-primary" />
             Taxa de Eficiência PUDO
           </span>
@@ -339,7 +339,7 @@ function WorkspacePudoLogisticsPage() {
       </div>
 
       {/* ── BALCÃO DE RETIRADA RÁPIDA COM VALIDAÇÃO DE TOKEN ── */}
-      <div className="p-5 rounded-2xl border border-border/70 bg-card space-y-3 shadow-2xs">
+      <div className="p-5 rounded-lg border border-border/70 bg-card space-y-3 shadow-2xs">
         <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-tight">
           <KeyRound className="size-4" />
           <span>Balcão de Entrega ao Cliente (Validação de Token)</span>
@@ -353,13 +353,13 @@ function WorkspacePudoLogisticsPage() {
             placeholder="Código de 4 dígitos (Ex: 8492)..."
             value={quickPickupCode}
             onChange={(e) => setQuickPickupCode(e.target.value)}
-            className="h-11 text-sm font-mono font-bold tracking-widest text-center bg-background rounded-xl border-border/80"
+            className="h-11 text-sm font-mono font-bold tracking-widest text-center bg-background rounded-lg border-border/80"
             maxLength={6}
           />
           <Button
             type="submit"
             disabled={isProcessing}
-            className="h-11 px-6 rounded-xl font-bold bg-primary text-primary-foreground text-xs shrink-0 cursor-pointer shadow-2xs"
+            className="h-11 px-6 rounded-lg font-bold bg-primary text-primary-foreground text-xs shrink-0 cursor-pointer shadow-2xs"
           >
             Validar e Entregar Pacote
           </Button>
@@ -367,18 +367,18 @@ function WorkspacePudoLogisticsPage() {
       </div>
 
       {/* ── BARRA DE BUSCA E TABS ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/70 shadow-2xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/70 shadow-2xs">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por rastreio, destinatário ou telefone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-10 rounded-xl bg-background border-border/80 text-xs font-mono"
+            className="pl-9 h-10 rounded-lg bg-background border-border/80 text-xs font-mono"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
           {[
             { id: "all", label: "Todos", count: packages.length },
             { id: "ready", label: "Aguardando", count: kpis.ready },
@@ -390,7 +390,7 @@ function WorkspacePudoLogisticsPage() {
               variant={statusTab === tab.id ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusTab(tab.id)}
-              className="h-9 rounded-xl text-xs font-bold cursor-pointer whitespace-nowrap"
+              className="h-9 rounded-lg text-xs font-bold cursor-pointer whitespace-nowrap"
             >
               {tab.label} ({tab.count})
             </Button>
@@ -400,8 +400,8 @@ function WorkspacePudoLogisticsPage() {
 
       {/* ── GRID DE PACOTES EM CUSTÓDIA ── */}
       {filteredPackages.length === 0 ? (
-        <div className="p-16 text-center space-y-4 rounded-2xl bg-card border border-border/70 shadow-2xs">
-          <div className="size-12 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="p-16 text-center space-y-4 rounded-lg bg-card border border-border/70 shadow-2xs">
+          <div className="size-12 rounded-lg bg-muted/50 flex items-center justify-center mx-auto text-muted-foreground">
             <Package className="size-6" />
           </div>
           <div className="space-y-1 max-w-sm mx-auto">
@@ -416,11 +416,11 @@ function WorkspacePudoLogisticsPage() {
           {filteredPackages.map((pkg) => (
             <div
               key={pkg.id}
-              className="p-5 rounded-2xl bg-card border border-border/70 flex flex-col justify-between gap-4 shadow-2xs hover:border-primary/40 transition-colors"
+              className="p-5 rounded-lg bg-card border border-border/70 flex flex-col justify-between gap-4 shadow-2xs hover:border-primary/40 transition-colors"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="font-mono text-xs text-muted-foreground uppercase font-bold">
                       {pkg.tracking_code}
                     </span>
@@ -447,19 +447,19 @@ function WorkspacePudoLogisticsPage() {
                 </div>
 
                 <div className="space-y-1 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <User className="size-3.5" />
                     <span>Remetente: {pkg.sender_name}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <Phone className="size-3.5" />
                     <span>Contato: {pkg.recipient_phone}</span>
                   </div>
                 </div>
 
                 {/* Código de Retirada Seguro */}
-                <div className="p-3 rounded-xl bg-muted/40 border border-border/50 flex items-center justify-between">
-                  <div className="space-y-0.5">
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-between">
+                  <div className="space-y-1">
                     <span className="text-xs uppercase font-bold text-muted-foreground">
                       Código de Segurança
                     </span>
@@ -471,7 +471,7 @@ function WorkspacePudoLogisticsPage() {
                 </div>
 
                 {pkg.damage_notes && (
-                  <p className="text-xs text-destructive bg-destructive/10 p-2.5 rounded-xl border border-destructive/20 font-medium">
+                  <p className="text-xs text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20 font-medium">
                     Avaria relatada: {pkg.damage_notes}
                   </p>
                 )}
@@ -491,7 +491,7 @@ function WorkspacePudoLogisticsPage() {
                       setDamageModalPkg(pkg);
                       setDamageNotes("");
                     }}
-                    className="rounded-xl text-xs font-bold gap-1 text-destructive hover:bg-destructive/10 h-8 cursor-pointer"
+                    className="rounded-lg text-xs font-bold gap-1 text-destructive hover:bg-destructive/10 h-8 cursor-pointer"
                   >
                     <RotateCcw className="size-3" />
                     <span>Avaria / Reversa</span>
@@ -505,7 +505,7 @@ function WorkspacePudoLogisticsPage() {
 
       {/* ── MODAL: RECEBER NOVO PACOTE ── */}
       <Dialog open={isCheckInModalOpen} onOpenChange={setIsCheckInModalOpen}>
-        <DialogContent className="sm:max-w-md sm:p-6 rounded-2xl bg-card">
+        <DialogContent className="sm:max-w-md sm:p-6 rounded-lg bg-card">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
               Registrar Entrada de Pacote PUDO
@@ -516,43 +516,43 @@ function WorkspacePudoLogisticsPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Código de Rastreio / Etiqueta</Label>
               <Input
                 value={trackingCode}
                 onChange={(e) => setTrackingCode(e.target.value)}
                 placeholder="Ex: WDR-PUDO-99123"
-                className="rounded-xl text-xs font-mono uppercase"
+                className="rounded-lg text-xs font-mono uppercase"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Empresa Remetente</Label>
               <Input
                 value={senderName}
                 onChange={(e) => setSenderName(e.target.value)}
                 placeholder="Ex: Magazine Oeste, Loja Alpha..."
-                className="rounded-xl text-xs"
+                className="rounded-lg text-xs"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Nome do Destinatário</Label>
                 <Input
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
                   placeholder="Nome completo"
-                  className="rounded-xl text-xs"
+                  className="rounded-lg text-xs"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Telefone (WhatsApp)</Label>
                 <Input
                   value={recipientPhone}
                   onChange={(e) => setRecipientPhone(e.target.value)}
                   placeholder="(49) 99999-0000"
-                  className="rounded-xl text-xs"
+                  className="rounded-lg text-xs"
                 />
               </div>
             </div>
@@ -562,14 +562,14 @@ function WorkspacePudoLogisticsPage() {
             <Button
               variant="outline"
               onClick={() => setIsCheckInModalOpen(false)}
-              className="rounded-xl text-xs font-bold"
+              className="rounded-lg text-xs font-bold"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleCheckInPackage}
               disabled={isProcessing}
-              className="rounded-xl font-bold bg-primary text-primary-foreground text-xs shadow-2xs"
+              className="rounded-lg font-bold bg-primary text-primary-foreground text-xs shadow-2xs"
             >
               Salvar Entrada
             </Button>
@@ -579,7 +579,7 @@ function WorkspacePudoLogisticsPage() {
 
       {/* ── MODAL: RELATAR AVARIA & DEVOLUÇÃO REVERSA ── */}
       <Dialog open={!!damageModalPkg} onOpenChange={(open) => !open && setDamageModalPkg(null)}>
-        <DialogContent className="sm:max-w-md sm:p-6 rounded-2xl bg-card">
+        <DialogContent className="sm:max-w-md sm:p-6 rounded-lg bg-card">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-destructive">
               Solicitar Logística Reversa e Avaria
@@ -590,13 +590,13 @@ function WorkspacePudoLogisticsPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Descrição da Avaria / Motivo</Label>
               <Textarea
                 value={damageNotes}
                 onChange={(e) => setDamageNotes(e.target.value)}
                 placeholder="Ex: Embalagem violada na lateral, pacote molhado ou cliente não retirou em 7 dias."
-                className="rounded-xl text-xs"
+                className="rounded-lg text-xs"
                 rows={3}
               />
             </div>
@@ -606,14 +606,14 @@ function WorkspacePudoLogisticsPage() {
             <Button
               variant="outline"
               onClick={() => setDamageModalPkg(null)}
-              className="rounded-xl text-xs font-bold"
+              className="rounded-lg text-xs font-bold"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleReportDamage}
               disabled={isProcessing}
-              className="rounded-xl font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs"
+              className="rounded-lg font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs"
             >
               Confirmar Logística Reversa
             </Button>

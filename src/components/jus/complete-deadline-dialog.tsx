@@ -53,7 +53,7 @@ export function CompleteDeadlineDialog({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-md rounded-2xl p-6">
+ <DialogContent className="sm:max-w-md rounded-lg p-6">
  <DialogHeader className="space-y-2">
  <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold uppercase tracking-wider">
  <ShieldCheck className="size-4" />
@@ -69,7 +69,7 @@ export function CompleteDeadlineDialog({
 
  <form onSubmit={handleComplete} className="space-y-4 py-2">
  {deadline.process_number && (
- <div className="p-3 rounded-xl bg-muted/30 border border-border/80 space-y-1">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/80 space-y-1">
  <span className="text-[10px] font-bold text-muted-foreground uppercase font-mono">
  Processo Vinculado
  </span>
@@ -79,7 +79,7 @@ export function CompleteDeadlineDialog({
  </div>
  )}
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono">
  Nº do Protocolo / Recibo Judicial (Opcional)
  </label>
@@ -87,7 +87,7 @@ export function CompleteDeadlineDialog({
  value={protocolReceipt}
  onChange={(e) => setProtocolReceipt(e.target.value)}
  placeholder="Ex: 2026.0019283-1 ou recibo PJe/Eproc..."
- className="h-11 rounded-xl bg-background font-mono text-xs font-medium"
+ className="h-11 rounded-lg bg-background font-mono text-xs font-medium"
  />
  <p className="text-[10px] text-muted-foreground">
  Guarda probatória do cumprimento tempestivo da obrigação processual.
@@ -99,14 +99,14 @@ export function CompleteDeadlineDialog({
  type="button"
  variant="outline"
  onClick={() => onOpenChange(false)}
- className="h-11 px-4 rounded-xl text-xs font-bold"
+ className="h-11 px-4 rounded-lg text-xs font-bold"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isSubmitting}
- className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2"
+ className="h-11 px-6 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2"
  >
  <CheckCircle2 className="size-4" />
  <span>{isSubmitting ? "Registrando..." : "Confirmar Protocolo"}</span>

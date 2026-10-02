@@ -122,11 +122,11 @@ export function TaskCalendarView({
  }, [tasks]);
 
  return (
- <div className="flex flex-col h-full bg-card rounded-2xl border border-border/70 overflow-hidden shadow-sm">
+ <div className="flex flex-col h-full bg-card rounded-lg border border-border/70 overflow-hidden shadow-sm">
  {/* Barra de Controles do Calendário */}
  <div className="flex items-center justify-between px-6 py-4 border-b border-border/60 bg-muted/20">
  <div className="flex items-center gap-3">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <CalendarIcon className="size-5 text-primary" />
  <h2 className="text-base sm:text-lg font-bold text-foreground">
  {MONTH_NAMES[currentMonth]} {currentYear}
@@ -165,7 +165,7 @@ export function TaskCalendarView({
  </div>
 
  {/* Cabeçalho dos Dias da Semana */}
- <div className="grid grid-cols-7 border-b border-border/60 bg-muted/10 text-center text-[11px] font-bold text-muted-foreground uppercase tracking-wider py-2.5">
+ <div className="grid grid-cols-7 border-b border-border/60 bg-muted/10 text-center text-[11px] font-bold text-muted-foreground uppercase tracking-wider py-3">
  {DAYS_OF_WEEK.map((d, i) => (
  <div key={d} className={cn(i === 0 || i === 6 ? "text-muted-foreground/70" : "")}>
  {d}
@@ -190,7 +190,7 @@ export function TaskCalendarView({
  )}
  >
  {/* Header do Dia */}
- <div className="flex items-center justify-between mb-1.5">
+ <div className="flex items-center justify-between mb-2">
  <span
  className={cn(
  "size-6 flex items-center justify-center rounded-full text-xs font-semibold font-mono",
@@ -223,7 +223,7 @@ export function TaskCalendarView({
  key={task.id}
  onClick={() => onSelectTask(task)}
  className={cn(
- "group/chip flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer truncate border shadow-2xs",
+ "group/chip flex items-center gap-2 px-2 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer truncate border shadow-2xs",
  isDone
  ? "bg-muted/40 text-muted-foreground border-border/40 line-through"
  : task.priority === "urgent"
@@ -255,7 +255,7 @@ export function TaskCalendarView({
  {dayTasks.length > 3 && (
  <div
  onClick={() => onSelectTask(dayTasks[3])}
- className="text-[10px] font-bold text-muted-foreground hover:text-primary px-1 cursor-pointer pt-0.5"
+ className="text-[10px] font-bold text-muted-foreground hover:text-primary px-1 cursor-pointer pt-1"
  >
  +{dayTasks.length - 3} mais
  </div>

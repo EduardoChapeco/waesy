@@ -442,10 +442,10 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
         className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 overflow-y-auto no-scrollbar bg-card flex flex-col justify-between shadow-2xl"
       >
  {/* ── 1. Top Header ── */}
- <SheetHeader className="p-5 sm:p-6 border-b border-border/80 bg-muted/20 text-left space-y-1.5">
+ <SheetHeader className="p-5 sm:p-6 border-b border-border/80 bg-muted/20 text-left space-y-2">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
- <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="flex items-center gap-3">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <Plane className="size-5" />
  </div>
  <div>
@@ -464,13 +464,13 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  </SheetHeader>
 
  {/* ── 2. AI Parser Box (WhatsApp / Texto Livre) ── */}
- <div className="p-4 mx-5 sm:mx-6 mt-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-2.5">
+ <div className="p-4 mx-5 sm:mx-6 mt-4 rounded-lg bg-primary/5 border border-primary/20 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+ <span className="text-xs font-bold text-primary flex items-center gap-2">
  <Sliders className="size-3.5" />
  <span>Interpretar com IA (WhatsApp ou Texto Livre)</span>
  </span>
- <Badge variant="secondary" className="text-[9px] py-0 px-1.5 font-mono">
+ <Badge variant="secondary" className="text-[9px] py-0 px-2 font-mono">
  Auto-Preenchimento
  </Badge>
  </div>
@@ -478,9 +478,9 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  placeholder="Cole aqui a mensagem do WhatsApp do passageiro... Ex: 'Casal quer ir pra Porto de Galinhas em novembro saindo de Chapecó, hotel com café da manhã e transfer, orçamento até 8 mil. Carlos whats (49) 99912-3456'"
  value={aiText}
  onChange={(e) => setAiText(e.target.value)}
- className="min-h-[65px] text-xs bg-background rounded-xl resize-none"
+ className="min-h-[65px] text-xs bg-background rounded-lg resize-none"
  />
- <div className="flex items-center justify-between gap-2 pt-0.5">
+ <div className="flex items-center justify-between gap-2 pt-1">
  <span className="text-[10px] text-muted-foreground">
  Detecta automaticamente destino, datas, passageiros, regime e orçamento.
  </span>
@@ -489,7 +489,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  size="sm"
  disabled={!aiText.trim() || isAiParsing}
  onClick={handleParseAi}
- className="h-8 rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground cursor-pointer shadow-xs shrink-0"
+ className="h-8 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs shrink-0"
  >
  <Sliders className="size-3.5" />
  <span>{isAiParsing ? "Interpretando..." : "Interpretar Texto"}</span>
@@ -499,20 +499,20 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
 
  {/* ── 3. Tabs Navigation ── */}
  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full px-5 sm:px-6 pt-3 flex-1 flex flex-col">
- <TabsList className="grid grid-cols-4 bg-muted/60 p-1 rounded-2xl h-10 mb-4 shrink-0">
- <TabsTrigger value="viajantes" className="rounded-xl text-xs font-bold gap-1.5">
+ <TabsList className="grid grid-cols-4 bg-muted/60 p-1 rounded-lg h-10 mb-4 shrink-0">
+ <TabsTrigger value="viajantes" className="rounded-lg text-xs font-bold gap-2">
  <MapPin className="size-3.5" />
  <span className="hidden sm:inline">Destino</span>
  </TabsTrigger>
- <TabsTrigger value="hospedagem" className="rounded-xl text-xs font-bold gap-1.5">
+ <TabsTrigger value="hospedagem" className="rounded-lg text-xs font-bold gap-2">
  <Hotel className="size-3.5" />
  <span className="hidden sm:inline">Hotel</span>
  </TabsTrigger>
- <TabsTrigger value="transporte" className="rounded-xl text-xs font-bold gap-1.5">
+ <TabsTrigger value="transporte" className="rounded-lg text-xs font-bold gap-2">
  <Plane className="size-3.5" />
  <span className="hidden sm:inline">Logística</span>
  </TabsTrigger>
- <TabsTrigger value="condicoes" className="rounded-xl text-xs font-bold gap-1.5">
+ <TabsTrigger value="condicoes" className="rounded-lg text-xs font-bold gap-2">
  <DollarSign className="size-3.5" />
  <span className="hidden sm:inline">Valores</span>
  </TabsTrigger>
@@ -527,7 +527,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Carlos Eduardo de Souza"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -536,7 +536,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  value={whatsapp}
  onChange={(e) => setWhatsapp(e.target.value)}
  placeholder="(49) 99999-9999"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -544,7 +544,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  {/* Origem e Destino com Gateways IATA */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  {/* Origem */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">Origem da Viagem</Label>
  {originIata && (
@@ -559,7 +559,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  value={originCity}
  onChange={(e) => setOriginCity(e.target.value)}
  placeholder="Chapecó"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div>
@@ -568,13 +568,13 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  onChange={(e) => setOriginIata(e.target.value.toUpperCase())}
  placeholder="IATA"
  maxLength={3}
- className="h-9 rounded-xl text-xs font-mono font-bold bg-background text-center uppercase"
+ className="h-9 rounded-lg text-xs font-mono font-bold bg-background text-center uppercase"
  />
  </div>
  </div>
 
  {/* Atalhos Rápidos de Origem */}
- <div className="flex flex-wrap gap-1 pt-0.5">
+ <div className="flex flex-wrap gap-1 pt-1">
  {COMMON_ORIGINS.map((orig) => (
  <button
  key={orig.iata}
@@ -584,7 +584,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  setOriginIata(orig.iata);
  }}
  className={cn(
- "text-[10px] font-medium px-2 py-0.5 rounded-lg border transition-all cursor-pointer",
+ "text-[10px] font-medium px-2 py-1 rounded-lg border transition-all cursor-pointer",
  originIata === orig.iata
  ? "bg-primary/10 border-primary text-primary font-bold"
  : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60"
@@ -597,7 +597,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  </div>
 
  {/* Destino */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">Destino Almejado *</Label>
  {destinationIata && (
@@ -622,7 +622,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  }
  }}
  placeholder="Ex: Porto de Galinhas, PE"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div>
@@ -631,7 +631,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  onChange={(e) => setDestinationIata(e.target.value.toUpperCase())}
  placeholder="IATA"
  maxLength={3}
- className="h-9 rounded-xl text-xs font-mono font-bold bg-background text-center uppercase"
+ className="h-9 rounded-lg text-xs font-mono font-bold bg-background text-center uppercase"
  />
  </div>
  </div>
@@ -639,9 +639,9 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  </div>
 
  {/* Datas com Cálculo de Noites */}
- <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-2 mt-4">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-2 mt-4">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Calendar className="size-3.5 text-primary" />
  <span>Janela de Datas Prevista</span>
  </Label>
@@ -659,7 +659,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  type="date"
  value={departureDate}
  onChange={(e) => setDepartureDate(e.target.value)}
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div>
@@ -668,7 +668,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  type="date"
  value={returnDate}
  onChange={(e) => setReturnDate(e.target.value)}
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -689,17 +689,17 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   onFocus={() => hotelSearchQuery.length >= 2 && setShowHotelDropdown(hotelSuggestions.length > 0)}
   onBlur={() => setTimeout(() => setShowHotelDropdown(false), 180)}
   placeholder="Digite o nome do hotel ou resort..."
-  className="h-10 rounded-xl text-xs bg-background pl-8"
+  className="h-10 rounded-lg text-xs bg-background pl-8"
   />
   </div>
   {showHotelDropdown && hotelSuggestions.length > 0 && (
-  <div className="absolute z-50 left-0 right-0 mt-1 bg-popover border border-border/80 rounded-2xl shadow-xl overflow-hidden">
+  <div className="absolute z-50 left-0 right-0 mt-1 bg-popover border border-border/80 rounded-lg shadow-xl overflow-hidden">
   {hotelSuggestions.map((h) => (
   <button
   key={h.id}
   type="button"
   onMouseDown={() => handleSelectHotel(h)}
-  className="w-full px-4 py-2.5 text-left hover:bg-muted/50 flex items-center justify-between gap-3 transition-colors border-b border-border/40 last:border-0"
+  className="w-full px-4 py-3 text-left hover:bg-muted/50 flex items-center justify-between gap-3 transition-colors border-b border-border/40 last:border-0"
   >
   <div>
   <span className="text-xs font-bold text-foreground block">{h.name}</span>
@@ -712,7 +712,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   ))}
   </div>
   )}
-  <p className="text-[10px] text-muted-foreground pt-0.5">Digite para buscar hotéis cadastrados ou escreva livremente.</p>
+  <p className="text-[10px] text-muted-foreground pt-1">Digite para buscar hotéis cadastrados ou escreva livremente.</p>
   </div>
 
   {/* Categoria sem estrelas */}
@@ -730,7 +730,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   type="button"
   onClick={() => setHotelCategory(cat.id as any)}
   className={cn(
-  "p-3 rounded-2xl border text-left flex flex-col gap-0.5 transition-all cursor-pointer",
+  "p-3 rounded-lg border text-left flex flex-col gap-1 transition-all cursor-pointer",
   hotelCategory === cat.id
   ? "bg-primary/10 border-primary text-foreground shadow-2xs"
   : "bg-card border-border/70 text-muted-foreground hover:bg-muted/40"
@@ -760,13 +760,13 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   type="button"
   onClick={() => setMealPlan(plan.id as any)}
   className={cn(
-  "p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer",
+  "p-3 rounded-lg border text-left flex items-start gap-3 transition-all cursor-pointer",
   mealPlan === plan.id
   ? "bg-primary/10 border-primary text-foreground shadow-2xs font-bold"
   : "bg-card border-border/70 text-muted-foreground hover:bg-muted/40"
   )}
   >
-  <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+  <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
   <Icon className="size-3.5" />
   </div>
   <div>
@@ -788,7 +788,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   variant="outline"
   size="sm"
   onClick={() => setRoomDistribution(prev => [...prev, { adults: 2, children: [] }])}
-  className="h-7 rounded-xl text-xs gap-1"
+  className="h-7 rounded-lg text-xs gap-1"
   >
   <Plus className="size-3" /> Quarto
   </Button>
@@ -798,7 +798,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   variant="outline"
   size="sm"
   onClick={() => setRoomDistribution(prev => prev.slice(0, -1))}
-  className="h-7 rounded-xl text-xs gap-1 text-destructive border-destructive/40"
+  className="h-7 rounded-lg text-xs gap-1 text-destructive border-destructive/40"
   >
   <Minus className="size-3" /> Remover
   </Button>
@@ -813,7 +813,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
 
   <div className="space-y-2">
   {roomDistribution.map((room, ri) => (
-  <div key={ri} className="p-3 rounded-2xl border border-border/70 bg-card space-y-2">
+  <div key={ri} className="p-3 rounded-lg border border-border/70 bg-card space-y-2">
   <div className="flex items-center justify-between">
   <span className="text-[11px] font-bold text-foreground">Quarto {ri + 1}</span>
   <Badge variant="secondary" className="text-[9px]">
@@ -857,7 +857,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   <select
   value={age}
   onChange={(e) => setRoomDistribution(prev => prev.map((r, i) => i === ri ? { ...r, children: r.children.map((a, j) => j === ci ? parseInt(e.target.value) : a) } : r))}
-  className="h-6 px-1.5 rounded-lg border border-input bg-background text-xs font-medium cursor-pointer"
+  className="h-6 px-2 rounded-lg border border-input bg-background text-xs font-medium cursor-pointer"
   >
   {Array.from({ length: 12 }, (_, a) => a).map(a => (
   <option key={a} value={a}>{a === 0 ? "< 1 ano" : `${a} anos`}</option>
@@ -892,7 +892,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  type="button"
  onClick={() => setTripType(t.id as any)}
  className={cn(
- "p-3 rounded-2xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer",
+ "p-3 rounded-lg border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer",
  tripType === t.id
  ? "bg-primary/10 border-primary text-primary font-bold shadow-2xs"
  : "bg-card border-border/70 text-muted-foreground hover:bg-muted/40"
@@ -908,10 +908,10 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
 
  {/* Preferência de Aéreo & Bagagem */}
  {tripType === "air_package" && (
- <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-3">
- <div className="space-y-1.5">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-3">
+ <div className="space-y-2">
  <span className="text-xs font-bold text-foreground block">Cia Aérea Preferencial</span>
- <div className="grid grid-cols-4 gap-1.5">
+ <div className="grid grid-cols-4 gap-2">
  {[
  { id: "qualquer", label: "Melhor Tarifa" },
  { id: "azul", label: "Azul" },
@@ -923,7 +923,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  type="button"
  onClick={() => setPreferredAirline(air.id as any)}
  className={cn(
- "h-8 text-xs font-semibold rounded-xl border transition-all cursor-pointer",
+ "h-8 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
  preferredAirline === air.id
  ? "bg-primary text-primary-foreground border-primary font-bold"
  : "bg-background text-muted-foreground border-border/60 hover:text-foreground"
@@ -935,14 +935,14 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  </div>
  </div>
 
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <span className="text-xs font-bold text-foreground block">Franquia de Bagagem</span>
  <div className="grid grid-cols-2 gap-2">
  <button
  type="button"
  onClick={() => setBaggage("mao")}
  className={cn(
- "p-2.5 rounded-xl border text-left flex items-center gap-2 cursor-pointer transition-all",
+ "p-3 rounded-lg border text-left flex items-center gap-2 cursor-pointer transition-all",
  baggage === "mao"
  ? "bg-primary/10 border-primary text-foreground font-bold"
  : "bg-card border-border/60 text-muted-foreground"
@@ -958,7 +958,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  type="button"
  onClick={() => setBaggage("despachada")}
  className={cn(
- "p-2.5 rounded-xl border text-left flex items-center gap-2 cursor-pointer transition-all",
+ "p-3 rounded-lg border text-left flex items-center gap-2 cursor-pointer transition-all",
  baggage === "despachada"
  ? "bg-primary/10 border-primary text-foreground font-bold"
  : "bg-card border-border/60 text-muted-foreground"
@@ -1001,12 +1001,12 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  type="button"
  onClick={item.toggle}
  className={cn(
- "w-full p-3 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer",
+ "w-full p-3 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer",
  item.checked ? "bg-primary/5 border-primary/40 text-foreground" : "bg-card border-border/60 text-muted-foreground"
  )}
  >
- <div className="flex items-center gap-2.5">
- <div className={cn("size-8 rounded-xl flex items-center justify-center shrink-0", item.checked ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>
+ <div className="flex items-center gap-3">
+ <div className={cn("size-8 rounded-lg flex items-center justify-center shrink-0", item.checked ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>
  <Icon className="size-4" />
  </div>
  <div>
@@ -1034,17 +1034,17 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
 
  {/* Tags Adicionadas */}
  {excursionTags.length > 0 && (
- <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-muted/30 border border-border/50">
+ <div className="flex flex-wrap gap-2 p-3 rounded-lg bg-muted/30 border border-border/50">
  {excursionTags.map((tag) => (
  <span
  key={tag}
- className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold border border-primary/20"
+ className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold border border-primary/20"
  >
  {tag}
  <button
  type="button"
  onClick={() => removeExcursion(tag)}
- className="ml-0.5 text-primary/60 hover:text-primary cursor-pointer leading-none"
+ className="ml-1 text-primary/60 hover:text-primary cursor-pointer leading-none"
  >
  ×
  </button>
@@ -1054,15 +1054,15 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  )}
 
  {/* Atalhos rápidos */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <span className="text-[10px] text-muted-foreground">Adicionar rapidamente:</span>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {presetExcursions.filter((p) => !excursionTags.includes(p)).slice(0, 8).map((preset) => (
  <button
  key={preset}
  type="button"
  onClick={() => addExcursion(preset)}
- className="px-2.5 py-1 rounded-full bg-card border border-border/70 text-[11px] text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer"
+ className="px-3 py-1 rounded-full bg-card border border-border/70 text-[11px] text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer"
  >
  + {preset}
  </button>
@@ -1077,7 +1077,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  onChange={(e) => setExcursionInput(e.target.value)}
  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addExcursion(excursionInput); } }}
  placeholder="Ex: Mergulho em Noronha, Passeio à Praia do Francês..."
- className="h-9 rounded-xl text-xs bg-background flex-1"
+ className="h-9 rounded-lg text-xs bg-background flex-1"
  />
  <Button
  type="button"
@@ -1085,7 +1085,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  size="sm"
  onClick={() => addExcursion(excursionInput)}
  disabled={!excursionInput.trim()}
- className="h-9 rounded-xl text-xs shrink-0"
+ className="h-9 rounded-lg text-xs shrink-0"
  >
  <Plus className="size-3.5" />
  </Button>
@@ -1102,13 +1102,13 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  value={quoteAmountStr}
  onChange={(e) => setQuoteAmountStr(e.target.value)}
  placeholder="Ex: 8500,00"
- className="h-10 rounded-xl text-sm font-bold font-mono bg-background"
+ className="h-10 rounded-lg text-sm font-bold font-mono bg-background"
  />
  </div>
 
  <div className="space-y-1">
  <Label className="text-xs font-bold text-foreground">Padrão Orçamentário</Label>
- <div className="grid grid-cols-2 gap-1 pt-0.5">
+ <div className="grid grid-cols-2 gap-1 pt-1">
  {[
  { id: "economy", label: "Econômico" },
  { id: "standard", label: "Conforto" },
@@ -1120,7 +1120,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  type="button"
  onClick={() => setBudgetTier(b.id as any)}
  className={cn(
- "h-8 text-xs font-semibold rounded-xl border transition-all cursor-pointer",
+ "h-8 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
  budgetTier === b.id
  ? "bg-primary text-primary-foreground border-primary font-bold"
  : "bg-background text-muted-foreground border-border/60 hover:text-foreground"
@@ -1135,9 +1135,9 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
 
  {/* Simulador de Parcelas Automático */}
  {quoteAmountCents > 0 && (
- <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-950 dark:text-emerald-200 space-y-2.5">
+ <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-950 dark:text-emerald-200 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
+ <span className="text-xs font-bold flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
  <DollarSign className="size-3.5" />
  <span>Simulação de Pagamento Automática</span>
  </span>
@@ -1147,28 +1147,28 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  </div>
 
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
- <div className="p-2.5 rounded-xl bg-background border border-emerald-500/20 text-foreground">
+ <div className="p-3 rounded-lg bg-background border border-emerald-500/20 text-foreground">
  <span className="text-[10px] text-muted-foreground block">À Vista no Pix (5% off)</span>
  <span className="text-xs font-black text-emerald-600 font-mono">
  {formatMoney(Math.round(quoteAmountCents * 0.95))}
  </span>
  </div>
 
- <div className="p-2.5 rounded-xl bg-background border border-emerald-500/20 text-foreground">
+ <div className="p-3 rounded-lg bg-background border border-emerald-500/20 text-foreground">
  <span className="text-[10px] text-muted-foreground block">10x sem juros (Cartão)</span>
  <span className="text-xs font-black text-foreground font-mono">
  10x de {formatMoney(Math.round(quoteAmountCents / 10))}
  </span>
  </div>
 
- <div className="p-2.5 rounded-xl bg-background border border-emerald-500/20 text-foreground col-span-2 sm:col-span-1">
+ <div className="p-3 rounded-lg bg-background border border-emerald-500/20 text-foreground col-span-2 sm:col-span-1">
  <span className="text-[10px] text-muted-foreground block">Entrada 20% + Saldo 10x</span>
  <span className="text-xs font-bold text-foreground font-mono">
  {formatMoney(Math.round(quoteAmountCents * 0.2))} + 10x {formatMoney(Math.round((quoteAmountCents * 0.8) / 10))}
  </span>
 
             {Math.max(1, totalRoomsAdults + totalRoomsChildren) > 1 && (
-              <div className="p-2.5 rounded-xl bg-background border border-emerald-500/20 text-foreground">
+              <div className="p-3 rounded-lg bg-background border border-emerald-500/20 text-foreground">
                 <span className="text-[10px] text-muted-foreground block">Por Pessoa ({Math.max(1, totalRoomsAdults + totalRoomsChildren)} pax)</span>
                 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 font-mono">
                   {formatMoney(Math.round(quoteAmountCents / Math.max(1, totalRoomsAdults + totalRoomsChildren)))}
@@ -1178,7 +1178,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
             )}
 
             {roomDistribution.length > 1 && (
-              <div className="p-2.5 rounded-xl bg-background border border-emerald-500/20 text-foreground">
+              <div className="p-3 rounded-lg bg-background border border-emerald-500/20 text-foreground">
                 <span className="text-[10px] text-muted-foreground block">Por Quarto ({roomDistribution.length} qtos)</span>
                 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 font-mono">
                   {formatMoney(Math.round(quoteAmountCents / roomDistribution.length))}
@@ -1197,7 +1197,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  value={specialNotes}
  onChange={(e) => setSpecialNotes(e.target.value)}
  placeholder="Ex: Quarto com berço para bebê, hotel pé na areia com piscina aquecida..."
- className="rounded-xl text-xs resize-none bg-background"
+ className="rounded-lg text-xs resize-none bg-background"
  rows={2}
  />
  </div>
@@ -1208,7 +1208,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  value={agencyNotes}
  onChange={(e) => setAgencyNotes(e.target.value)}
  placeholder="Ex: Cotação de operadora de viagens. Passageiro com flexibilidade de voo noturno."
- className="rounded-xl text-xs resize-none bg-background"
+ className="rounded-lg text-xs resize-none bg-background"
  rows={2}
  />
  </div>
@@ -1216,13 +1216,13 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  </Tabs>
 
  {/* ── 4. Footer Action Bar ── */}
- <div className="p-4 sm:p-5 border-t border-border/80 bg-card flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
+ <div className="p-4 sm:p-5 border-t border-border/80 bg-card flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
  <Button
  type="button"
  variant="outline"
  size="sm"
  onClick={copyFormattedWhatsApp}
- className="w-full sm:w-auto h-10 px-3.5 rounded-xl text-xs font-bold gap-1.5 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+ className="w-full sm:w-auto h-10 px-4 rounded-lg text-xs font-bold gap-2 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
  >
  <Copy className="size-3.5" />
  <span>Copiar para WhatsApp</span>
@@ -1234,7 +1234,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  variant="ghost"
  size="sm"
  onClick={() => onOpenChange(false)}
- className="h-10 rounded-xl text-xs font-semibold"
+ className="h-10 rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
@@ -1242,7 +1242,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  type="button"
  disabled={!name || !whatsapp || !destinationCity || createMutation.isPending}
  onClick={() => createMutation.mutate()}
- className="h-10 px-5 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shadow-2xs cursor-pointer"
+ className="h-10 px-5 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-2xs cursor-pointer"
  >
  <CheckCircle2 className="size-4" />
  <span>{createMutation.isPending ? "Salvando..." : "Salvar no CRM"}</span>

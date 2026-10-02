@@ -78,7 +78,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
             <span className="block ds-meta uppercase tracking-wide text-muted-foreground">
               Imagem de Capa
             </span>
-            <div className="flex gap-1.5">
+            <div className="flex gap-2">
               <Input
                 type="text"
                 className="w-full border-border/50 bg-surface-alt/50 hover:bg-surface focus:bg-surface focus:border-border-strong"
@@ -87,7 +87,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                 onChange={(e) => save({ cover_image_url: e.target.value })}
               />
               <label
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-surface text-xs cursor-pointer hover:bg-surface-alt transition-colors"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-surface text-xs cursor-pointer hover:bg-surface-alt transition-colors"
                 title="Upload"
               >
                 {uploadingCover ? "..." : <Image className="h-3.5 w-3.5" />}
@@ -109,7 +109,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                   setShowUnsplashCover(true);
                   setShowAiPrompt(false);
                 }}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-surface text-xs hover:bg-surface-alt transition-colors"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-surface text-xs hover:bg-surface-alt transition-colors"
               >
                 <Search className="h-3.5 w-3.5" />
               </Button>
@@ -125,14 +125,14 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                     );
                   }
                 }}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-brand/40 bg-brand/5 text-brand text-xs hover:bg-brand/10 transition-colors"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand/40 bg-brand/5 text-brand text-xs hover:bg-brand/10 transition-colors"
               >
                 <Zap className="h-3.5 w-3.5" />
               </Button>
             </div>
 
             {showAiPrompt && (
-              <div className="mt-2 rounded-2xl border border-brand/20 bg-brand/5 p-3 space-y-2">
+              <div className="mt-2 rounded-lg border border-brand/20 bg-brand/5 p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="ds-meta uppercase tracking-wide font-bold text-brand flex items-center gap-1">
                     <Zap className="w-3 h-3" /> Gerar Capa com IA
@@ -180,7 +180,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                       setGeneratingCover(false);
                     }
                   }}
-                  className="w-full flex h-8 items-center justify-center gap-1.5 rounded-2xl bg-brand text-brand-foreground text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-colors"
+                  className="w-full flex h-8 items-center justify-center gap-2 rounded-lg bg-brand text-brand-foreground text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-colors"
                 >
                   {generatingCover ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -193,7 +193,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
             )}
 
             {showUnsplashCover && (
-              <div className="mt-2 rounded-2xl border border-border bg-surface p-3">
+              <div className="mt-2 rounded-lg border border-border bg-surface p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="ds-meta uppercase tracking-wide font-semibold">
                     Buscar imagem
@@ -219,7 +219,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
             )}
 
             {draft.cover_image_url && !showUnsplashCover && (
-              <div className="relative mt-2 h-20 w-full overflow-hidden rounded-2xl border border-border">
+              <div className="relative mt-2 h-20 w-full overflow-hidden rounded-lg border border-border">
                 <img
                   src={draft.cover_image_url}
                   alt="Preview Cover"
@@ -228,7 +228,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                 <Button
                   type="button"
                   onClick={() => save({ cover_image_url: null })}
-                  className="absolute right-1 top-1 rounded bg-destructive/80 px-1.5 py-0.5 text-[9px] text-white hover:bg-destructive"
+                  className="absolute right-1 top-1 rounded bg-destructive/80 px-2 py-1 text-[9px] text-white hover:bg-destructive"
                 >
                   Remover
                 </Button>
@@ -294,7 +294,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                 value={draft.agent_photo_url ?? ""}
                 onChange={(e) => save({ agent_photo_url: e.target.value })}
               />
-              <label className="flex h-8 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-surface px-3 text-xs font-semibold cursor-pointer hover:bg-surface-alt transition-colors">
+              <label className="flex h-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-surface px-3 text-xs font-semibold cursor-pointer hover:bg-surface-alt transition-colors">
                 {uploadingAgent ? "..." : <User className="h-4 w-4" />}
                 <Input
                   type="file"
@@ -309,7 +309,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
               </label>
             </div>
             {draft.agent_photo_url && (
-              <div className="flex items-center gap-3 mt-2 p-2 rounded-2xl border border-border bg-surface-alt/25">
+              <div className="flex items-center gap-3 mt-2 p-2 rounded-lg border border-border bg-surface-alt/25">
                 <img
                   src={draft.agent_photo_url}
                   alt="Agent Photo"
@@ -319,7 +319,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                 <Button
                   type="button"
                   onClick={() => save({ agent_photo_url: null })}
-                  className="ml-auto rounded bg-destructive/80 px-2 py-0.5 text-[9px] text-white hover:bg-destructive"
+                  className="ml-auto rounded bg-destructive/80 px-2 py-1 text-[9px] text-white hover:bg-destructive"
                 >
                   Remover
                 </Button>

@@ -20,7 +20,7 @@ export function FeedBannerBlock({
  actionHref = "/mercado",
 }: FeedBannerBlockProps) {
  return (
- <div className="relative my-4 overflow-hidden rounded-2xl bg-card p-5">
+ <div className="relative my-4 overflow-hidden rounded-lg bg-card p-5">
  {imageUrl && (
  <>
  <img
@@ -34,7 +34,7 @@ export function FeedBannerBlock({
 
  <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="space-y-1 max-w-md">
- <div className="flex items-center gap-1.5 text-xs font-semibold text-primary uppercase tracking-wider">
+ <div className="flex items-center gap-2 text-xs font-semibold text-primary uppercase tracking-wider">
  <Layers className="size-3.5" />
  <span>{badge}</span>
  </div>
@@ -45,11 +45,11 @@ export function FeedBannerBlock({
  <Button
  asChild
  size="sm"
- className="rounded-xl shrink-0 font-semibold self-start sm:self-center"
+ className="rounded-lg shrink-0 font-semibold self-start sm:self-center"
  >
  <Link to={actionHref}>
  {actionLabel}
- <ArrowRight className="size-3.5 ml-1.5" />
+ <ArrowRight className="size-3.5 ml-2" />
  </Link>
  </Button>
  </div>

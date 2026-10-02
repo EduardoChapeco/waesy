@@ -46,7 +46,7 @@ export function HorizontalRail({
  };
 
  return (
- <section className={`w-full ${hideHeader ? "" : "space-y-3.5"} ${className}`} aria-label={title}>
+ <section className={`w-full ${hideHeader ? "" : "space-y-4"} ${className}`} aria-label={title}>
  {/* ── Rail Header — oculto em páginas de vitrine pública (hideHeader) ── */}
  {!hideHeader && (
  <div className="flex items-end justify-between gap-4 px-1">
@@ -56,7 +56,7 @@ export function HorizontalRail({
  {title}
  </h2>
  {badge && (
- <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 shrink-0">
+ <span className="px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 shrink-0">
  {badge}
  </span>
  )}
@@ -71,7 +71,7 @@ export function HorizontalRail({
  asChild
  variant="ghost"
  size="sm"
- className="text-xs font-semibold text-primary hover:text-primary/80 h-8 px-2.5 rounded-lg"
+ className="text-xs font-semibold text-primary hover:text-primary/80 h-8 px-3 rounded-lg"
  >
  <Link to={actionTo as any}>{actionLabel}</Link>
  </Button>
@@ -81,7 +81,7 @@ export function HorizontalRail({
  variant="ghost"
  size="sm"
  onClick={onAction}
- className="text-xs font-semibold text-primary hover:text-primary/80 h-8 px-2.5 rounded-lg"
+ className="text-xs font-semibold text-primary hover:text-primary/80 h-8 px-3 rounded-lg"
  >
  {actionLabel}
  </Button>

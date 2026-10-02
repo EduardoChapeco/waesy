@@ -222,7 +222,7 @@ function CustomerRmaPage() {
               Trocas
             </h1>
             {rmas && rmas.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full">
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-3 py-1 rounded-full">
                 {rmas.length}
               </Badge>
             )}
@@ -235,7 +235,7 @@ function CustomerRmaPage() {
         <Button
           size="default"
           onClick={() => setIsModalOpen(true)} /* focus-visible:ring-2 */
-          className="rounded-2xl h-11 px-5 text-sm font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer"
+          className="rounded-lg h-11 px-5 text-sm font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer"
         >
           <Plus className="size-4" />
           <span>Solicitar</span>
@@ -244,8 +244,8 @@ function CustomerRmaPage() {
 
       {/* ── 2. Lista de Solicitações no padrão Apple HIG Grouped Cards ── */}
       {rmas.length === 0 ? (
-        <div className="rounded-2xl border border-border/70 bg-card p-10 sm:p-14 text-center space-y-4 shadow-xs">
-          <div className="size-14 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mx-auto">
+        <div className="rounded-lg border border-border/70 bg-card p-10 sm:p-14 text-center space-y-4 shadow-xs">
+          <div className="size-14 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
             <RefreshCw className="size-7" />
           </div>
           <div className="max-w-md mx-auto space-y-2">
@@ -257,12 +257,12 @@ function CustomerRmaPage() {
           <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             <Button
               onClick={() => setIsModalOpen(true)} /* focus-visible:ring-2 */
-              className="h-11 rounded-2xl px-6 text-sm font-semibold cursor-pointer"
+              className="h-11 rounded-lg px-6 text-sm font-semibold cursor-pointer"
             >
               <Plus className="size-4 mr-2" />
               Solicitar Troca
             </Button>
-            <Button asChild variant="outline" className="h-11 rounded-2xl px-5 text-sm font-semibold cursor-pointer">
+            <Button asChild variant="outline" className="h-11 rounded-lg px-5 text-sm font-semibold cursor-pointer">
               <Link to="/conta/pedidos">Pedidos</Link>
             </Button>
           </div>
@@ -272,12 +272,12 @@ function CustomerRmaPage() {
           {rmas.map((rma: any) => (
             <div
               key={rma.id}
-              className="bg-card rounded-2xl border border-border/70 shadow-xs overflow-hidden transition-all hover:border-foreground/20 hover:shadow-sm"
+              className="bg-card rounded-lg border border-border/70 shadow-xs overflow-hidden transition-all hover:border-foreground/20 hover:shadow-sm"
             >
               {/* Header do Card Agrupado */}
               <div className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 bg-muted/30 border-b border-border/50">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <Package className="size-4.5" />
                   </div>
                   <div className="min-w-0">
@@ -289,7 +289,7 @@ function CustomerRmaPage() {
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                    <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
                       <Clock className="size-3" />
                       Solicitado em {formatDate(rma.requestedAt || rma.createdAt)}
                     </p>
@@ -307,7 +307,7 @@ function CustomerRmaPage() {
               {/* Corpo do Card */}
               <div className="p-4 sm:p-5 space-y-4">
                 {rma.notes && (
-                  <div className="bg-muted/40 p-4 rounded-xl border border-border/40 space-y-1">
+                  <div className="bg-muted/40 p-4 rounded-lg border border-border/40 space-y-1">
                     <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                       Motivo / Observação do Cliente
                     </p>
@@ -360,7 +360,7 @@ function CustomerRmaPage() {
 
                 {/* Bloco de Logística Reversa (se autorizado pela loja) */}
                 {rma.trackingCode && (
-                  <div className="p-4 rounded-2xl bg-muted/20 border border-border/60 space-y-3">
+                  <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-3">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 font-semibold text-foreground text-sm">
                         <Truck className="size-4 text-primary" />
@@ -375,7 +375,7 @@ function CustomerRmaPage() {
                       Leve o produto devidamente embalado a uma agência e informe o código abaixo:
                     </p>
 
-                    <div className="bg-background p-3.5 rounded-xl text-center border border-border/70 select-all font-mono text-base sm:text-lg font-bold tracking-widest text-primary">
+                    <div className="bg-background p-4 rounded-lg text-center border border-border/70 select-all font-mono text-base sm:text-lg font-bold tracking-widest text-primary">
                       {rma.trackingCode}
                     </div>
 
@@ -383,7 +383,7 @@ function CustomerRmaPage() {
                       <Button
                         asChild
                         variant="outline"
-                        className="w-full h-11 rounded-xl text-xs font-semibold cursor-pointer"
+                        className="w-full h-11 rounded-lg text-xs font-semibold cursor-pointer"
                       >
                         <a href={rma.labelUrl} target="_blank" rel="noopener noreferrer">
                           <FileText className="size-4 mr-2" />
@@ -401,7 +401,7 @@ function CustomerRmaPage() {
 
       {/* ── 3. Apple HIG Modal: Abertura Direta de Solicitação de RMA ── */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-lg rounded-2xl p-0 overflow-hidden border border-border/80 shadow-xs">
+        <DialogContent className="sm:max-w-lg rounded-lg p-0 overflow-hidden border border-border/80 shadow-xs">
           <DialogHeader className="p-5 pb-4 bg-muted/30 border-b border-border/50">
             <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
               <RefreshCw className="size-5 text-primary" />
@@ -414,20 +414,20 @@ function CustomerRmaPage() {
 
           <form onSubmit={handleSubmitRma} className="p-5 sm:p-6 space-y-4">
             {/* Seleção do Pedido */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-semibold text-foreground">
                 Selecione o Pedido *
               </label>
               {orders.length === 0 ? (
-                <div className="p-3.5 bg-muted/40 rounded-xl text-xs text-muted-foreground border border-border/50">
+                <div className="p-4 bg-muted/40 rounded-lg text-xs text-muted-foreground border border-border/50">
                   Nenhum pedido elegível encontrado na sua conta.
                 </div>
               ) : (
                 <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
-                  <SelectTrigger className="h-11 rounded-xl bg-background border-border/70 text-sm">
+                  <SelectTrigger className="h-11 rounded-lg bg-background border-border/70 text-sm">
                     <SelectValue placeholder="Escolha um pedido recente..." />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     {orders.map((order) => (
                       <SelectItem key={order.id} value={order.id}>
                         Pedido #{order.public_token || order.id.slice(0, 8)} — {formatMoney(order.total_cents || 0)} ({order.status})
@@ -439,15 +439,15 @@ function CustomerRmaPage() {
             </div>
 
             {/* Tipo de Solicitação */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-semibold text-foreground">
                 Tipo de Atendimento *
               </label>
               <Select value={rmaType} onValueChange={setRmaType}>
-                <SelectTrigger className="h-11 rounded-xl bg-background border-border/70 text-sm">
+                <SelectTrigger className="h-11 rounded-lg bg-background border-border/70 text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent className="rounded-lg">
                   <SelectItem value="return">Devolução e Estorno do Valor</SelectItem>
                   <SelectItem value="exchange">Troca por Outro Tamanho ou Item</SelectItem>
                   <SelectItem value="warranty">Garantia / Produto com Avaria</SelectItem>
@@ -456,15 +456,15 @@ function CustomerRmaPage() {
             </div>
 
             {/* Motivo Principal */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-semibold text-foreground">
                 Motivo Principal *
               </label>
               <Select value={reason} onValueChange={setReason}>
-                <SelectTrigger className="h-11 rounded-xl bg-background border-border/70 text-sm">
+                <SelectTrigger className="h-11 rounded-lg bg-background border-border/70 text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent className="rounded-lg">
                   <SelectItem value="Arrependimento de compra (Art. 49 CDC)">Arrependimento de compra (Art. 49 CDC)</SelectItem>
                   <SelectItem value="Produto com defeito ou avaria">Produto com defeito ou avaria</SelectItem>
                   <SelectItem value="Tamanho ou modelo incompatível">Tamanho ou modelo incompatível</SelectItem>
@@ -475,7 +475,7 @@ function CustomerRmaPage() {
             </div>
 
             {/* Observações / Detalhes Adicionais */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-semibold text-foreground">
                 Observações Adicionais (Opcional)
               </label>
@@ -484,7 +484,7 @@ function CustomerRmaPage() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="rounded-xl bg-background border-border/70 text-xs sm:text-sm resize-none focus-visible:ring-primary/20"
+                className="rounded-lg bg-background border-border/70 text-xs sm:text-sm resize-none focus-visible:ring-primary/20"
               />
             </div>
 
@@ -569,14 +569,14 @@ function CustomerRmaPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsModalOpen(false)} /* focus-visible:ring-2 */
-                className="h-11 rounded-xl px-5 text-sm font-semibold cursor-pointer"
+                className="h-11 rounded-lg px-5 text-sm font-semibold cursor-pointer"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting || orders.length === 0}
-                className="h-11 rounded-xl px-6 text-sm font-semibold bg-foreground text-background hover:bg-foreground/90 shadow-xs cursor-pointer"
+                className="h-11 rounded-lg px-6 text-sm font-semibold bg-foreground text-background hover:bg-foreground/90 shadow-xs cursor-pointer"
               >
                 {isSubmitting ? (
                   <>

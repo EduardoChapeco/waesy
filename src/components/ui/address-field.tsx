@@ -255,7 +255,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleCepLookup())}
             placeholder="CEP 00000-000"
             maxLength={9}
-            className="h-10 rounded-xl text-xs font-mono bg-card"
+            className="h-10 rounded-lg text-xs font-mono bg-card"
           />
         </div>
 
@@ -265,7 +265,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
           size="sm"
           onClick={handleCepLookup}
           disabled={isSearchingCep || !cepInput}
-          className="h-10 rounded-xl text-xs font-bold gap-1.5 shrink-0"
+          className="h-10 rounded-lg text-xs font-bold gap-2 shrink-0"
         >
           {isSearchingCep ? <Loader2 className="size-3.5 animate-spin" /> : <Navigation className="size-3.5 text-primary" />}
           <span>Buscar CEP</span>
@@ -276,7 +276,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
           variant="ghost"
           size="sm"
           onClick={() => setShowAiPaste(!showAiPaste)}
-          className="h-10 rounded-xl text-xs font-bold gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
+          className="h-10 rounded-lg text-xs font-bold gap-2 text-muted-foreground hover:text-foreground shrink-0"
         >
           <Zap className="size-3.5 text-amber-500" />
           <span>Colar com IA</span>
@@ -285,8 +285,8 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
 
       {/* Caixa Expansível de Colar Endereço Livre com IA */}
       {showAiPaste && (
-        <div className="p-3.5 rounded-2xl bg-primary/5 border border-primary/20 space-y-2.5 animate-in fade-in slide-in-from-top-2">
-          <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+        <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-3 animate-in fade-in slide-in-from-top-2">
+          <span className="text-xs font-bold text-foreground flex items-center gap-2">
             <Zap className="size-3.5 text-primary" />
             Autopreenchimento Cirúrgico por IA (Cole o endereço completo)
           </span>
@@ -295,7 +295,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
               value={aiText}
               onChange={(e) => setAiText(e.target.value)}
               placeholder="Ex: Av. Getúlio Vargas 1200, Centro, Chapecó - SC, CEP 89801-000"
-              className="h-9 text-xs bg-background rounded-xl flex-1"
+              className="h-9 text-xs bg-background rounded-lg flex-1"
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleApplyAiAddress())}
             />
             <Button
@@ -303,7 +303,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
               size="sm"
               onClick={handleApplyAiAddress}
               disabled={isParsingAi || !aiText.trim()}
-              className="h-9 rounded-xl font-bold text-xs shrink-0"
+              className="h-9 rounded-lg font-bold text-xs shrink-0"
             >
               {isParsingAi ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
               <span>Preencher</span>
@@ -323,7 +323,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
               onChange?.({ ...value, text: e.target.value, lat: value?.lat, lng: value?.lng });
             }}
             placeholder="Endereço, rua, número ou ponto de referência..."
-            className="pl-9 h-10 rounded-xl text-xs bg-card"
+            className="pl-9 h-10 rounded-lg text-xs bg-card"
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleSearch())}
           />
         </div>
@@ -332,7 +332,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
           variant="secondary"
           onClick={handleSearch}
           disabled={loading || !query.trim()}
-          className="h-10 rounded-xl px-4 text-xs font-bold gap-1.5 shrink-0"
+          className="h-10 rounded-lg px-4 text-xs font-bold gap-2 shrink-0"
         >
           {loading ? <Loader2 className="size-3.5 animate-spin" /> : <Search className="size-3.5 text-primary" />}
           <span>Localizar</span>
@@ -340,11 +340,11 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
       </div>
 
       {/* Mapa Real Interativo MapLibre GL (Carto Voyager / OpenStreetMap) */}
-      <div className="rounded-2xl overflow-hidden border border-border/70 relative bg-muted/20 shadow-2xs">
+      <div className="rounded-lg overflow-hidden border border-border/70 relative bg-muted/20 shadow-2xs">
         <div ref={mapContainer} className="w-full h-[220px]" />
         {!value?.lat && (
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center p-4 text-center z-10 pointer-events-none">
-            <p className="text-xs font-medium text-muted-foreground bg-card p-2.5 rounded-xl border border-border/70 shadow-xs max-w-xs">
+            <p className="text-xs font-medium text-muted-foreground bg-card p-3 rounded-lg border border-border/70 shadow-xs max-w-xs">
               Digite seu CEP ou endereço e clique em <strong>Localizar</strong> para fixar o ponto exato no mapa.
             </p>
           </div>

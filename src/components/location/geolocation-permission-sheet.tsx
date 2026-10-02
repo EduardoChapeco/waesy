@@ -112,12 +112,12 @@ export function GeolocationPermissionSheet() {
  return (
  <Sheet open={open} onOpenChange={(val) => !val && handleDismiss()}>
  <SheetContent
- side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 flex flex-col justify-between overflow-y-auto no-scrollbar bg-card text-foreground border-border/60 sm:rounded-l-3xl rounded-none"
+ side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 flex flex-col justify-between overflow-y-auto no-scrollbar bg-card text-foreground border-border/60 sm:rounded-l-lg rounded-none"
  >
  <div className="space-y-6">
  {/* Header com Ícone de Pin */}
  <SheetHeader className="text-left space-y-3 p-0">
- <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+ <div className="size-14 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
  <MapPin className="size-7 animate-pulse" />
  </div>
 
@@ -133,9 +133,9 @@ export function GeolocationPermissionSheet() {
  </SheetHeader>
 
  {/* Lista de Benefícios (Print 2) */}
- <div className="space-y-3.5 py-1">
- <div className="flex items-start gap-3 p-3 rounded-2xl bg-muted/40 border border-border/40">
- <div className="size-8 rounded-xl bg-background text-primary flex items-center justify-center shrink-0 shadow-xs">
+ <div className="space-y-4 py-1">
+ <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
+ <div className="size-8 rounded-lg bg-background text-primary flex items-center justify-center shrink-0 shadow-xs">
  <Store className="size-4" />
  </div>
  <div>
@@ -146,8 +146,8 @@ export function GeolocationPermissionSheet() {
  </div>
  </div>
 
- <div className="flex items-start gap-3 p-3 rounded-2xl bg-muted/40 border border-border/40">
- <div className="size-8 rounded-xl bg-background text-amber-500 flex items-center justify-center shrink-0 shadow-xs">
+ <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
+ <div className="size-8 rounded-lg bg-background text-amber-500 flex items-center justify-center shrink-0 shadow-xs">
  <Compass className="size-4" />
  </div>
  <div>
@@ -158,8 +158,8 @@ export function GeolocationPermissionSheet() {
  </div>
  </div>
 
- <div className="flex items-start gap-3 p-3 rounded-2xl bg-muted/40 border border-border/40">
- <div className="size-8 rounded-xl bg-background text-info flex items-center justify-center shrink-0 shadow-xs">
+ <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
+ <div className="size-8 rounded-lg bg-background text-info flex items-center justify-center shrink-0 shadow-xs">
  <Users className="size-4" />
  </div>
  <div>
@@ -197,8 +197,8 @@ export function GeolocationPermissionSheet() {
  </div>
 
  {/* Aviso de Privacidade */}
- <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/20 border border-border/30 text-[11px] text-muted-foreground">
- <ShieldCheck className="size-4 text-emerald-500 shrink-0 mt-0.5" />
+ <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/20 border border-border/30 text-[11px] text-muted-foreground">
+ <ShieldCheck className="size-4 text-emerald-500 shrink-0 mt-1" />
  <span>
  Sua privacidade é importante. Você pode alterar ou desativar isso a qualquer momento.
  </span>
@@ -211,7 +211,7 @@ export function GeolocationPermissionSheet() {
  type="button"
  disabled={isVerifying}
  onClick={handleAllowLocation}
- className="w-full h-11 rounded-2xl font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90 transition-all active:scale-[0.98]"
+ className="w-full h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90 transition-all active:scale-[0.98]"
  >
  {isVerifying ? (
  <>
@@ -231,7 +231,7 @@ export function GeolocationPermissionSheet() {
  variant="ghost"
  onClick={handleDismiss}
  disabled={isVerifying}
- className="w-full h-10 rounded-2xl text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
  >
  Agora Não
  </Button>

@@ -213,7 +213,7 @@ export default function WorkspaceEventosPage() {
 
         {/* ── 2. GRID DE EVENTOS ── */}
         {filteredEvents.length === 0 ? (
-          <div className="py-20 text-center space-y-3 bg-card rounded-2xl border border-dashed border-border/70 p-8">
+          <div className="py-20 text-center space-y-3 bg-card rounded-lg border border-dashed border-border/70 p-8">
             <Calendar className="size-12 mx-auto text-muted-foreground/40" />
             <h3 className="text-sm font-bold text-foreground">Nenhum evento encontrado</h3>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -222,7 +222,7 @@ export default function WorkspaceEventosPage() {
             <Button
               size="sm"
               onClick={() => setIsOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5 h-9 mt-2 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-9 mt-2 cursor-pointer"
             >
               <Plus className="size-4" />
               <span>Criar Primeiro Evento</span>
@@ -237,7 +237,7 @@ export default function WorkspaceEventosPage() {
               return (
                 <Card
                   key={event.id}
-                  className="rounded-2xl border border-border/70 bg-card overflow-hidden hover:border-foreground/20 transition-all flex flex-col justify-between shadow-2xs"
+                  className="rounded-lg border border-border/70 bg-card overflow-hidden hover:border-foreground/20 transition-all flex flex-col justify-between shadow-2xs"
                 >
                   <div>
                     {event.cover_image ? (
@@ -278,7 +278,7 @@ export default function WorkspaceEventosPage() {
                       </h3>
 
                       {event.event_date && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-mono">
+                        <p className="text-xs text-muted-foreground flex items-center gap-2 font-mono">
                           <Clock className="size-3.5 shrink-0" />
                           <span>
                             {new Date(event.event_date).toLocaleDateString("pt-BR", {
@@ -293,14 +293,14 @@ export default function WorkspaceEventosPage() {
                       )}
 
                       {event.location && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 line-clamp-1 font-mono">
+                        <p className="text-xs text-muted-foreground flex items-center gap-2 line-clamp-1 font-mono">
                           <MapPin className="size-3.5 shrink-0" />
                           <span>{event.location}</span>
                         </p>
                       )}
 
                       {event.capacity && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-mono pt-1">
+                        <p className="text-xs text-muted-foreground flex items-center gap-2 font-mono pt-1">
                           <Users className="size-3.5 shrink-0" />
                           <span>Capacidade: {event.capacity} pessoas</span>
                         </p>
@@ -314,7 +314,7 @@ export default function WorkspaceEventosPage() {
                       asChild
                       variant="default"
                       size="sm"
-                      className="flex-1 h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs"
+                      className="flex-1 h-9 rounded-lg text-xs font-semibold gap-2 cursor-pointer shadow-2xs"
                     >
                       <Link to="/workspace/eventos/$id" params={{ id: event.id }}>
                         <Ticket className="size-3.5" />
@@ -357,7 +357,7 @@ export default function WorkspaceEventosPage() {
             </SheetHeader>
 
             <form onSubmit={handleSave} className="p-6 space-y-4 flex-1">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="evt-title" className="text-xs font-bold">Título do Evento *</Label>
                 <Input
                   id="evt-title"
@@ -369,7 +369,7 @@ export default function WorkspaceEventosPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="evt-date" className="text-xs font-bold">Data e Hora de Início *</Label>
                   <Input
                     id="evt-date"
@@ -380,13 +380,13 @@ export default function WorkspaceEventosPage() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="evt-cat" className="text-xs font-bold">Categoria</Label>
                   <select
                     id="evt-cat"
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex h-12 w-full rounded-lg border border-input bg-background px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <option value="shows">Shows e Festivais</option>
                     <option value="corporate">Corporativo e Palestras</option>
@@ -398,7 +398,7 @@ export default function WorkspaceEventosPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="evt-loc" className="text-xs font-bold">Local / Endereço</Label>
                   <Input
                     id="evt-loc"
@@ -408,7 +408,7 @@ export default function WorkspaceEventosPage() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="evt-cap" className="text-xs font-bold">Capacidade Estimada (Público)</Label>
                   <Input
                     id="evt-cap"
@@ -421,7 +421,7 @@ export default function WorkspaceEventosPage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Capa do Evento (16:9)</Label>
                 <ImageUpload
                   value={form.cover_image}
@@ -433,7 +433,7 @@ export default function WorkspaceEventosPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="evt-desc" className="text-xs font-bold">Descrição / Regulamento</Label>
                 <Textarea
                   id="evt-desc"
@@ -449,7 +449,7 @@ export default function WorkspaceEventosPage() {
                 <p className="text-xs font-bold text-foreground">Informações Adicionais</p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="evt-city" className="text-xs font-bold">Cidade</Label>
                     <Input
                       id="evt-city"
@@ -458,7 +458,7 @@ export default function WorkspaceEventosPage() {
                       placeholder="Ex: Chapecó"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="evt-state" className="text-xs font-bold">Estado (UF)</Label>
                     <Input
                       id="evt-state"
@@ -468,13 +468,13 @@ export default function WorkspaceEventosPage() {
                       maxLength={2}
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="evt-age" className="text-xs font-bold">Classificação Etária</Label>
                     <select
                       id="evt-age"
                       value={form.age_rating}
                       onChange={(e) => setForm({ ...form, age_rating: e.target.value })}
-                      className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="livre">Livre</option>
                       <option value="12">12+</option>
@@ -486,7 +486,7 @@ export default function WorkspaceEventosPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="evt-organizer" className="text-xs font-bold">Produtor / Organizador</Label>
                     <Input
                       id="evt-organizer"
@@ -495,7 +495,7 @@ export default function WorkspaceEventosPage() {
                       placeholder="Ex: Waesy Eventos e Cultura"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="evt-org-phone" className="text-xs font-bold">Contato do Produtor</Label>
                     <Input
                       id="evt-org-phone"
@@ -508,7 +508,7 @@ export default function WorkspaceEventosPage() {
                 </div>
 
                 {/* Toggle: Ingresso Externo */}
-                <div className="p-4 rounded-xl border border-border/60 bg-muted/20 space-y-3">
+                <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-bold text-foreground">Ingresso por Link Externo</p>
@@ -530,7 +530,7 @@ export default function WorkspaceEventosPage() {
                   </div>
 
                   {form.is_external_ticket && (
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="evt-ext-url" className="text-xs font-bold">URL de Compra de Ingressos</Label>
                       <Input
                         id="evt-ext-url"

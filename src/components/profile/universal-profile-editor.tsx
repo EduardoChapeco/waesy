@@ -103,7 +103,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
   }[formData.personaType];
 
   return (
-    <div className={cn("w-full max-w-4xl mx-auto bg-card border border-border/80 rounded-3xl overflow-hidden shadow-xs font-sans", className)}>
+    <div className={cn("w-full max-w-4xl mx-auto bg-card border border-border/80 rounded-lg overflow-hidden shadow-xs font-sans", className)}>
       
       {/* ── 1. Capa Panorâmica Canônica (Proporção 3:1) ── */}
       <div className="relative w-full aspect-[3/1] bg-muted overflow-hidden border-b border-border/60 group">
@@ -116,7 +116,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
         )}
 
         {/* Trigger de Upload da Capa */}
-        <label className="absolute top-4 right-4 bg-background/80 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95">
+        <label className="absolute top-4 right-4 bg-background/80 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95">
           <ImageIcon className="size-3.5" />
           <span>Alterar Capa</span>
           <input type="file" accept="image/*" onChange={handleCoverFile} className="hidden" />
@@ -128,7 +128,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 sm:-mt-14 mb-4">
           
           {/* Avatar Squircle Sobreposto */}
-          <div className="relative size-24 sm:size-28 rounded-2xl sm:rounded-3xl bg-card border-4 border-card shadow-md overflow-hidden group shrink-0">
+          <div className="relative size-24 sm:size-28 rounded-lg sm:rounded-lg bg-card border-4 border-card shadow-md overflow-hidden group shrink-0">
             {formData.avatarUrl ? (
               <img src={formData.avatarUrl} alt={formData.name} className="size-full object-cover" />
             ) : (
@@ -147,7 +147,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
 
           {/* Badge de Persona & Ação Salvar Rápida */}
           <div className="flex items-center gap-3">
-            <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border", personaBadge.color)}>
+            <div className={cn("inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border", personaBadge.color)}>
               <personaBadge.icon className="size-3.5" />
               <span>{personaBadge.label}</span>
             </div>
@@ -157,7 +157,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
               onClick={handleSubmit}
               disabled={isSaving}
               size="sm"
-              className="h-9 px-5 rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs active:scale-95"
+              className="h-9 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs active:scale-95"
             >
               {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5 mr-1" />}
               <span>Salvar Alterações</span>
@@ -216,7 +216,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
         {/* ── Conteúdo Tab: Identidade Básica ── */}
         <TabsContent value="identity" className="p-6 sm:p-10 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground">
                 {formData.personaType === "company" ? "Nome da Empresa / Fantasia" : "Nome de Exibição"}
               </label>
@@ -224,11 +224,11 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
                 value={formData.name}
                 onChange={(e) => handleFieldChange("name", e.target.value)}
                 placeholder="Ex: João Silva ou Café Central"
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground">
                 {formData.personaType === "company" ? "Slug da Vitrine (@link)" : "Nome de Usuário (@handle)"}
               </label>
@@ -236,12 +236,12 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
                 value={formData.handle}
                 onChange={(e) => handleFieldChange("handle", e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
                 placeholder="Ex: joaosilva ou cafecentral"
-                className="h-10 text-xs font-mono rounded-xl"
+                className="h-10 text-xs font-mono rounded-lg"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-foreground">Biografia / Descrição Curta</label>
               <span className="text-[10px] text-muted-foreground font-mono">
@@ -253,17 +253,17 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
               onChange={(e) => handleFieldChange("bio", e.target.value.slice(0, 160))}
               placeholder="Descreva você, seu trabalho ou sua empresa em poucas palavras..."
               rows={3}
-              className="text-xs rounded-xl resize-none"
+              className="text-xs rounded-lg resize-none"
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="text-xs font-bold text-foreground">Categoria / Segmento Principal</label>
             <Input
               value={formData.category || ""}
               onChange={(e) => handleFieldChange("category", e.target.value)}
               placeholder="Ex: Gastronomia, Turismo, Fotografia, Imóveis"
-              className="h-10 text-xs rounded-xl"
+              className="h-10 text-xs rounded-lg"
             />
           </div>
         </TabsContent>
@@ -272,22 +272,22 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
         {formData.personaType === "company" && (
           <TabsContent value="company_details" className="p-6 sm:p-10 space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-bold text-foreground">CNPJ da Empresa</label>
                 <Input
                   value={formData.companyCnpj || ""}
                   onChange={(e) => handleFieldChange("companyCnpj", e.target.value)}
                   placeholder="00.000.000/0001-00"
-                  className="h-10 text-xs font-mono rounded-xl"
+                  className="h-10 text-xs font-mono rounded-lg"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-bold text-foreground">Cidade / Estado</label>
                 <Input
                   value={formData.cityState || ""}
                   onChange={(e) => handleFieldChange("cityState", e.target.value)}
                   placeholder="Ex: Florianópolis, SC"
-                  className="h-10 text-xs rounded-xl"
+                  className="h-10 text-xs rounded-lg"
                 />
               </div>
             </div>
@@ -297,13 +297,13 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
         {/* ── Conteúdo Tab: Criador ── */}
         {formData.personaType === "creator" && (
           <TabsContent value="creator_details" className="p-6 sm:p-10 space-y-5">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground">Link do Mídia Kit ou Apresentação</label>
               <Input
                 value={formData.creatorMediaKitUrl || ""}
                 onChange={(e) => handleFieldChange("creatorMediaKitUrl", e.target.value)}
                 placeholder="https://waesy.com/u/seu-nome/kit"
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
           </TabsContent>
@@ -312,8 +312,8 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
         {/* ── Conteúdo Tab: Links & Contato ── */}
         <TabsContent value="links" className="p-6 sm:p-10 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Phone className="size-3.5 text-muted-foreground" />
                 <span>WhatsApp de Atendimento</span>
               </label>
@@ -321,12 +321,12 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
                 value={formData.whatsapp || ""}
                 onChange={(e) => handleFieldChange("whatsapp", e.target.value)}
                 placeholder="(00) 00000-0000"
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Globe className="size-3.5 text-muted-foreground" />
                 <span>Website / Link Externo</span>
               </label>
@@ -334,7 +334,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
                 value={formData.website || ""}
                 onChange={(e) => handleFieldChange("website", e.target.value)}
                 placeholder="https://seusite.com.br"
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-lg"
               />
             </div>
           </div>

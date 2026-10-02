@@ -392,7 +392,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  return (
  <div className="space-y-6 animate-in fade-in duration-200">
  {/* ── 1. DESTINO TURÍSTICO & BANCO CANÔNICO ── */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <MapPin className="size-4 text-primary" />
@@ -404,7 +404,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  size="sm"
  variant="outline"
  onClick={() => setShowNewDestModal(!showNewDestModal)}
- className="rounded-xl text-xs font-semibold gap-1 h-8 cursor-pointer"
+ className="rounded-lg text-xs font-semibold gap-1 h-8 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>+ Novo Destino Rápido</span>
@@ -413,13 +413,13 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
 
  {/* Seletor de Destino Pré-cadastrado */}
  {destinationsList.length > 0 && (
- <div className="p-3 rounded-xl bg-muted/20 border border-border/50 space-y-1.5">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
  <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
  <Sliders className="size-3 text-primary" />
  <span>Vincular do Banco de Destinos Cadastrados</span>
  </Label>
  <Select onValueChange={handleSelectDestinationFromBank}>
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Escolher um destino do banco..." />
  </SelectTrigger>
  <SelectContent>
@@ -435,7 +435,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
 
  {/* Modal Inline de Cadastro Rápido de Destino */}
  {showNewDestModal && (
- <div className="p-4 rounded-xl bg-muted/40 border border-primary/30 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/40 border border-primary/30 space-y-3">
  <div className="flex items-center justify-between">
  <h4 className="text-xs font-bold text-foreground">Cadastrar Novo Destino no Banco</h4>
  <button
@@ -453,7 +453,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={quickDestName}
  onChange={(e) => setQuickDestName(e.target.value)}
  placeholder="Ex: Ilhéus, Maceió, Natal"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  disabled={isSavingDest}
  />
  </div>
@@ -463,7 +463,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={quickDestRegion}
  onChange={(e) => setQuickDestRegion(e.target.value)}
  placeholder="Ex: Bahia, Alagoas, Rio Grande do Norte"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  disabled={isSavingDest}
  />
  </div>
@@ -475,7 +475,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  variant="ghost"
  onClick={() => setShowNewDestModal(false)}
  disabled={isSavingDest}
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  >
  Cancelar
  </Button>
@@ -484,7 +484,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  size="sm"
  onClick={handleQuickAddDest}
  disabled={isSavingDest || !quickDestName.trim()}
- className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground gap-1.5"
+ className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2"
  >
  {isSavingDest ? (
  <>
@@ -509,7 +509,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={destination.name || ""}
  onChange={(e) => updateDestination("name", e.target.value)}
  placeholder="Ex: Ilhéus, Gramado, Maceió"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -518,7 +518,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={destination.region || ""}
  onChange={(e) => updateDestination("region", e.target.value)}
  placeholder="Ex: Bahia, Brasil"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1 sm:col-span-3">
@@ -527,14 +527,14 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={destination.flight_summary || ""}
  onChange={(e) => updateDestination("flight_summary", e.target.value)}
  placeholder="Ex: Voo fretado direto + transfer in/out garantido com saída regional..."
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
  </div>
 
  {/* ── 1b. TIPO DE TRANSPORTE ── */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
  <div className="flex items-center gap-2 pb-2 border-b border-border/40 text-xs font-bold uppercase tracking-wider text-foreground">
  <Plane className="size-4 text-primary" />
  <span>Tipo de Transporte do Pacote</span>
@@ -555,7 +555,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  type="button"
  onClick={() => onChange({ ...value, transport_type: type })}
  className={[
- "rounded-xl border py-2 px-3 text-xs font-semibold transition-all cursor-pointer text-center",
+ "rounded-lg border py-2 px-3 text-xs font-semibold transition-all cursor-pointer text-center",
  isSelected
  ? "border-primary bg-primary/10 text-primary"
  : "border-border/60 bg-background text-muted-foreground hover:border-primary/50",
@@ -581,7 +581,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={value.flight_details?.origin_airport || ""}
  onChange={(e) => updateFlightDetails("origin_airport", e.target.value)}
  placeholder="Ex: Terminal Rodoviário de Chapecó"
- className="flex h-9 w-full rounded-xl border border-input bg-background px-3 text-xs"
+ className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
  />
  </div>
  <div className="space-y-1">
@@ -590,7 +590,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={value.flight_details?.destination_iata || ""}
  onChange={(e) => updateFlightDetails("destination_iata", e.target.value)}
  placeholder="Ex: Terminal Turístico de Ilhéus"
- className="flex h-9 w-full rounded-xl border border-input bg-background px-3 text-xs"
+ className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
  />
  </div>
  </div>
@@ -603,7 +603,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={value.flight_details?.origin_airport || ""}
  onChange={(e) => updateFlightDetails("origin_airport", e.target.value)}
  placeholder="Ex: Porto de Santos, Terminal Marítimo"
- className="flex h-9 w-full rounded-xl border border-input bg-background px-3 text-xs"
+ className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
  />
  </div>
  <div className="space-y-1">
@@ -612,7 +612,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={value.flight_details?.airline_partner || ""}
  onChange={(e) => updateFlightDetails("airline_partner", e.target.value)}
  placeholder="Ex: MSC Seashore, Costa Diadema"
- className="flex h-9 w-full rounded-xl border border-input bg-background px-3 text-xs"
+ className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
  />
  </div>
  </div>
@@ -625,7 +625,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  {/* ── 2. HOSPEDAGEM & BANCO DE HOTÉIS ── */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Hotel className="size-4 text-primary" />
@@ -643,7 +643,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  size="sm"
  variant="outline"
  onClick={() => setShowNewHotelModal(!showNewHotelModal)}
- className="rounded-xl text-xs font-semibold gap-1 h-8 cursor-pointer"
+ className="rounded-lg text-xs font-semibold gap-1 h-8 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>+ Novo Hotel Rápido</span>
@@ -653,7 +653,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
 
  {/* Modal Inline de Cadastro Rápido de Hotel */}
  {showNewHotelModal && (
- <div className="p-4 rounded-xl bg-muted/40 border border-primary/30 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/40 border border-primary/30 space-y-3">
  <div className="flex items-center justify-between">
  <h4 className="text-xs font-bold text-foreground">Cadastrar Novo Hotel no Banco</h4>
  <button
@@ -671,7 +671,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={quickHotelName}
  onChange={(e) => setQuickHotelName(e.target.value)}
  placeholder="Ex: Resort Tororomba, Carmel Charme Resort"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  disabled={isSavingHotel}
  />
  </div>
@@ -681,7 +681,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={quickHotelCity}
  onChange={(e) => setQuickHotelCity(e.target.value)}
  placeholder="Ex: Ilhéus, BA"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  disabled={isSavingHotel}
  />
  </div>
@@ -689,7 +689,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  <div className="space-y-1">
  <Label className="text-[11px] font-semibold text-muted-foreground">Regime Alimentar</Label>
  <Select value={quickHotelRegime} onValueChange={setQuickHotelRegime} disabled={isSavingHotel}>
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -706,7 +706,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  variant="ghost"
  onClick={() => setShowNewHotelModal(false)}
  disabled={isSavingHotel}
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  >
  Cancelar
  </Button>
@@ -715,7 +715,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  size="sm"
  onClick={handleQuickAddHotel}
  disabled={isSavingHotel || !quickHotelName.trim() || !quickHotelCity.trim()}
- className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground gap-1.5"
+ className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2"
  >
  {isSavingHotel ? (
  <>
@@ -735,13 +735,13 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
 
  {/* Seletor de Hotel do Banco para Auto-preenchimento */}
  {hotelsBankList.length > 0 && (
- <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 space-y-1.5">
- <Label className="text-[11px] font-semibold text-primary flex items-center gap-1.5">
+ <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+ <Label className="text-[11px] font-semibold text-primary flex items-center gap-2">
  <Sliders className="size-3.5 text-primary" />
  <span>Auto-preencher pelo Banco de Hotéis / Resorts</span>
  </Label>
  <Select onValueChange={handleSelectHotelFromBank}>
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Selecione um hotel parceiro para carregar fotos e dados..." />
  </SelectTrigger>
  <SelectContent>
@@ -756,23 +756,23 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  )}
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-[11px] font-semibold text-muted-foreground">Nome do Hotel / Resort</Label>
  <Input
  value={resort.name || ""}
  onChange={(e) => updateResort("name", e.target.value)}
  placeholder="Ex: Resort Tororomba, Hotel Fasano"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-[11px] font-semibold text-muted-foreground">Regime de Alimentação</Label>
  <Select
  value={resort.meal_plan || ""}
  onValueChange={(val) => updateResort("meal_plan", val)}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -787,23 +787,23 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-[11px] font-semibold text-muted-foreground">Duração da Estadia</Label>
  <Input
  value={resort.duration_text || ""}
  onChange={(e) => updateResort("duration_text", e.target.value)}
  placeholder="Ex: 5 Dias / 4 Noites, 7 Dias"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-[11px] font-semibold text-muted-foreground">Hóspedes / Acomodação</Label>
  <Input
  value={resort.guests_text || ""}
  onChange={(e) => updateResort("guests_text", e.target.value)}
  placeholder="Ex: 2 Adultos, 2 Adultos + 1 Criança Free"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -815,7 +815,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  {(resort.badges || []).map((badge, idx) => (
  <span
  key={idx}
- className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs bg-muted text-foreground border border-border/60"
+ className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs bg-muted text-foreground border border-border/60"
  >
  <span>{badge}</span>
  <button
@@ -827,13 +827,13 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </button>
  </span>
  ))}
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Input
  value={newBadgeText}
  onChange={(e) => setNewBadgeText(e.target.value)}
  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addBadge())}
  placeholder="Ex: Pé na Areia..."
- className="h-8 w-36 rounded-xl text-xs bg-background"
+ className="h-8 w-36 rounded-lg text-xs bg-background"
  />
  <Button type="button" size="sm" variant="ghost" onClick={addBadge} className="h-8 px-2 text-xs">
  +
@@ -845,7 +845,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  {/* Destaques da Hospedagem & Especificações (Bio Bullets — Regra 19 Paridade CMS ↔ Vitrine) */}
  <div className="space-y-2 pt-3 border-t border-border/30">
  <div className="flex items-center justify-between">
- <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+ <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-2">
  <CheckCircle2 className="size-3.5 text-primary" />
  <span>Destaques da Hospedagem (Bio Bullets na Vitrine)</span>
  </Label>
@@ -858,7 +858,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  {(resort.bio_bullets || []).map((bullet, idx) => (
  <div
  key={idx}
- className="flex items-center justify-between gap-2 p-2 rounded-xl bg-muted/30 border border-border/50 text-xs"
+ className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/30 border border-border/50 text-xs"
  >
  <div className="flex items-center gap-2 min-w-0">
  <CheckCircle2 className="size-3.5 text-primary shrink-0" />
@@ -881,14 +881,14 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  onChange={(e) => setNewBioBulletText(e.target.value)}
  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addBioBullet())}
  placeholder="Ex: Piscina térmica com bar molhado, Spa completo..."
- className="h-9 rounded-xl text-xs bg-background flex-1"
+ className="h-9 rounded-lg text-xs bg-background flex-1"
  />
  <Button
  type="button"
  size="sm"
  variant="outline"
  onClick={addBioBullet}
- className="rounded-xl text-xs font-semibold gap-1 h-9 cursor-pointer"
+ className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
@@ -899,7 +899,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  {/* ── 3. CHECKLIST INTERATIVO DE INCLUSÕES ("O QUE INCLUI") ── */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <ShieldCheck className="size-4 text-emerald-500" />
@@ -922,7 +922,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  key={preset.id}
  type="button"
  onClick={() => toggleInclusion(preset.label)}
- className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+ className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
  active
  ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-2xs"
  : "bg-muted/40 border-border/60 text-muted-foreground hover:text-foreground"
@@ -943,14 +943,14 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  onChange={(e) => setNewInclusionText(e.target.value)}
  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomInclusion())}
  placeholder="Adicionar item personalizado (ex: Passeio de Escuna, Aluguel de Carro)..."
- className="h-9 rounded-xl text-xs bg-background flex-1"
+ className="h-9 rounded-lg text-xs bg-background flex-1"
  />
  <Button
  type="button"
  size="sm"
  variant="outline"
  onClick={addCustomInclusion}
- className="rounded-xl text-xs font-semibold gap-1 h-9 cursor-pointer"
+ className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
@@ -959,7 +959,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  {/* ── 4. CHECKLIST DE EXCLUSÕES ("O QUE NÃO INCLUI") ── */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <ShieldAlert className="size-4 text-amber-500" />
@@ -982,7 +982,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  key={preset.id}
  type="button"
  onClick={() => toggleExclusion(preset.label)}
- className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+ className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
  active
  ? "bg-amber-500/10 border-amber-500/40 text-amber-700 dark:text-amber-300 shadow-2xs"
  : "bg-muted/40 border-border/60 text-muted-foreground hover:text-foreground"
@@ -1003,14 +1003,14 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  onChange={(e) => setNewExclusionText(e.target.value)}
  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomExclusion())}
  placeholder="Adicionar exclusão personalizada (ex: Bebidas destiladas fora do buffet)..."
- className="h-9 rounded-xl text-xs bg-background flex-1"
+ className="h-9 rounded-lg text-xs bg-background flex-1"
  />
  <Button
  type="button"
  size="sm"
  variant="outline"
  onClick={addCustomExclusion}
- className="rounded-xl text-xs font-semibold gap-1 h-9 cursor-pointer"
+ className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
@@ -1019,7 +1019,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  {/* ── 4B. CONDIÇÕES COMERCIAIS & PARCELAMENTO REAL (Bilateral) ── */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <CreditCard className="size-4 text-primary" />
@@ -1028,7 +1028,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-foreground">Máximo de Parcelas (Cartão)</Label>
  <Select
  value={String(value.payment_conditions?.installments_max || 12)}
@@ -1042,7 +1042,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  })
  }
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1057,7 +1057,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-foreground">Parcelas Sem Juros</Label>
  <Select
  value={String(value.payment_conditions?.installments_fee_free || 6)}
@@ -1071,7 +1071,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  })
  }
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1084,7 +1084,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-foreground">Desconto no PIX (%)</Label>
  <Input
  type="number"
@@ -1102,13 +1102,13 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  })
  }
  placeholder="Ex: 5"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-foreground">Sinal / Entrada para Reserva (%)</Label>
  <Input
  type="number"
@@ -1125,11 +1125,11 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  })
  }
  placeholder="Ex: 30 (% do total)"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-foreground">Prazo do Saldo Restante (Dias antes do embarque)</Label>
  <Input
  type="number"
@@ -1146,14 +1146,14 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  })
  }
  placeholder="Ex: 15 dias"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
  </div>
 
  {/* ── 5. ROTEIRO DIA A DIA (ITINERÁRIO ENRIQUECIDO) ── */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Calendar className="size-4 text-primary" />
@@ -1165,7 +1165,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  size="sm"
  variant="outline"
  onClick={addItineraryDay}
- className="rounded-xl text-xs font-semibold gap-1.5 h-8 cursor-pointer"
+ className="rounded-lg text-xs font-semibold gap-2 h-8 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>+ Adicionar Dia</span>
@@ -1176,7 +1176,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  {itinerary.map((day, idx) => (
  <div
  key={day.id || idx}
- className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-3 relative group"
+ className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3 relative group"
  >
  <div className="flex items-center justify-between pb-1 border-b border-border/30">
  <div className="flex items-center gap-2">
@@ -1229,7 +1229,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={day.title}
  onChange={(e) => updateItineraryDay(idx, "title", e.target.value)}
  placeholder="Ex: Chegada e Check-in, City Tour Histórico"
- className="h-9 rounded-xl text-xs bg-background font-semibold"
+ className="h-9 rounded-lg text-xs bg-background font-semibold"
  />
  </div>
  <div className="space-y-1">
@@ -1238,7 +1238,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={day.period || ""}
  onChange={(e) => updateItineraryDay(idx, "period", e.target.value)}
  placeholder="Ex: Manhã, Tarde, Dia Todo"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -1247,7 +1247,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={day.date || ""}
  onChange={(e) => updateItineraryDay(idx, "date", e.target.value)}
  placeholder="Ex: 23 Out"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
@@ -1259,7 +1259,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  onChange={(e) => updateItineraryDay(idx, "description", e.target.value)}
  rows={2}
  placeholder="Detalhes das atividades, paradas para fotos, almoço e dicas do guia..."
- className="rounded-xl text-xs bg-background"
+ className="rounded-lg text-xs bg-background"
  />
  </div>
 
@@ -1280,7 +1280,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  {/* ── 6. SEÇÃO EXPANSÍVEL: LOGÍSTICA MULTIMODAL & HORÁRIOS REAIS ── */}
- <div className="bg-card rounded-2xl border border-border/70 shadow-2xs overflow-hidden">
+ <div className="bg-card rounded-lg border border-border/70 shadow-2xs overflow-hidden">
  <button
  type="button"
  onClick={() => setIsAdvancedFlightsOpen(!isAdvancedFlightsOpen)}
@@ -1327,7 +1327,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  {(value.transport_type === "aereo" || !value.transport_type || value.transport_type === "misto") && (
  <div className="space-y-4 pt-3">
  {value.transport_type === "misto" && (
- <span className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+ <span className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-2">
  <Plane className="size-3.5" /> 1. Trecho Aéreo do Pacote
  </span>
  )}
@@ -1343,7 +1343,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  updateFlightDetails("airline_partner", val);
  }}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Selecione a Cia Aérea..." />
  </SelectTrigger>
  <SelectContent>
@@ -1362,27 +1362,27 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.flight_duration || ""}
  onChange={(e) => updateFlightDetails("flight_duration", e.target.value)}
  placeholder="Ex: 2h15 direto"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
 
  {/* Voo de Ida */}
- <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Plane className="size-3.5 text-primary" /> Voo de Ida (Embarque)
  </span>
  <span className="text-[10px] text-muted-foreground font-mono">Trecho 1</span>
  </div>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-1">
  <Label className="text-[11px] text-muted-foreground">Nº do Voo</Label>
  <Input
  value={flightDetails.flight_number_out || ""}
  onChange={(e) => updateFlightDetails("flight_number_out", e.target.value)}
  placeholder="Ex: LA3001"
- className="h-9 rounded-xl text-xs bg-background font-mono font-semibold"
+ className="h-9 rounded-lg text-xs bg-background font-mono font-semibold"
  />
  </div>
  <div className="space-y-1">
@@ -1391,7 +1391,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.departure_time_out || ""}
  onChange={(e) => updateFlightDetails("departure_time_out", e.target.value)}
  placeholder="Ex: 08:30"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -1400,11 +1400,11 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.arrival_time_out || ""}
  onChange={(e) => updateFlightDetails("arrival_time_out", e.target.value)}
  placeholder="Ex: 10:45"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
  <Label className="text-[11px] text-muted-foreground">Aeroporto de Origem</Label>
  <Input
@@ -1414,7 +1414,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  updateFlightDetails("origin_airport", e.target.value);
  }}
  placeholder="Ex: GRU - São Paulo / Guarulhos ou XAP - Chapecó"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -1426,28 +1426,28 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  updateFlightDetails("destination_iata", e.target.value);
  }}
  placeholder="Ex: IOS - Ilhéus / Bahia"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
  </div>
 
  {/* Voo de Volta */}
- <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Plane className="size-3.5 text-primary rotate-180" /> Voo de Retorno (Volta)
  </span>
  <span className="text-[10px] text-muted-foreground font-mono">Trecho 2</span>
  </div>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-1">
  <Label className="text-[11px] text-muted-foreground">Nº do Voo</Label>
  <Input
  value={flightDetails.flight_number_return || ""}
  onChange={(e) => updateFlightDetails("flight_number_return", e.target.value)}
  placeholder="Ex: LA3002"
- className="h-9 rounded-xl text-xs bg-background font-mono font-semibold"
+ className="h-9 rounded-lg text-xs bg-background font-mono font-semibold"
  />
  </div>
  <div className="space-y-1">
@@ -1456,7 +1456,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.departure_time_return || ""}
  onChange={(e) => updateFlightDetails("departure_time_return", e.target.value)}
  placeholder="Ex: 16:30"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -1465,7 +1465,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.arrival_time_return || ""}
  onChange={(e) => updateFlightDetails("arrival_time_return", e.target.value)}
  placeholder="Ex: 18:45"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
@@ -1477,7 +1477,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  {(value.transport_type === "terrestre" || value.transport_type === "misto") && (
  <div className="space-y-4 pt-3">
  {value.transport_type === "misto" && (
- <span className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+ <span className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-2">
  <Bus className="size-3.5" /> 2. Trecho Rodoviário do Pacote
  </span>
  )}
@@ -1489,7 +1489,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.bus_company || ""}
  onChange={(e) => updateFlightDetails("bus_company", e.target.value)}
  placeholder="Ex: Auto Viação Catarinense, Fretamento Especial"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
 
@@ -1499,7 +1499,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.bus_category || ""}
  onValueChange={(val) => updateFlightDetails("bus_category", val)}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Selecione a categoria..." />
  </SelectTrigger>
  <SelectContent>
@@ -1514,8 +1514,8 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  {/* Embarque e Desembarque Rodoviário */}
- <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-3">
- <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
+ <span className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Bus className="size-3.5 text-primary" /> Trecho Rodoviário de Ida e Volta
  </span>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1528,7 +1528,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  updateFlightDetails("origin_airport", e.target.value);
  }}
  placeholder="Ex: Terminal Rodoviário de Chapecó (Plataforma 04)"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -1540,7 +1540,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  updateFlightDetails("departure_time_out", e.target.value);
  }}
  placeholder="Ex: 21:00"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
@@ -1555,7 +1555,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  updateFlightDetails("destination_iata", e.target.value);
  }}
  placeholder="Ex: Rodoviária de Gramado / Centro Turístico"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -1567,7 +1567,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  updateFlightDetails("arrival_time_out", e.target.value);
  }}
  placeholder="Ex: 07:30"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
@@ -1582,7 +1582,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  updateFlightDetails("departure_time_return", e.target.value);
  }}
  placeholder="Ex: 18:00 (Check-out e Embarque)"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -1594,7 +1594,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  updateFlightDetails("arrival_time_return", e.target.value);
  }}
  placeholder="Ex: 06:00 (Dia seguinte)"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
@@ -1606,7 +1606,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  {(value.transport_type === "cruzeiro" || value.transport_type === "misto") && (
  <div className="space-y-4 pt-3">
  {value.transport_type === "misto" && (
- <span className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+ <span className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-2">
  <Ship className="size-3.5" /> 3. Trecho de Cruzeiro Marítimo
  </span>
  )}
@@ -1618,7 +1618,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.cruise_line || ""}
  onValueChange={(val) => updateFlightDetails("cruise_line", val)}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Selecione a Armadora..." />
  </SelectTrigger>
  <SelectContent>
@@ -1637,7 +1637,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.ship_name || ""}
  onChange={(e) => updateFlightDetails("ship_name", e.target.value)}
  placeholder="Ex: MSC Seaview, Costa Diadema"
- className="h-9 rounded-xl text-xs bg-background font-semibold"
+ className="h-9 rounded-lg text-xs bg-background font-semibold"
  />
  </div>
 
@@ -1647,7 +1647,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.cabin_category || ""}
  onValueChange={(val) => updateFlightDetails("cabin_category", val)}
  >
- <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Tipo de cabine..." />
  </SelectTrigger>
  <SelectContent>
@@ -1662,19 +1662,19 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  {/* Portos e Horários de Embarque / Desatracação */}
- <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-3">
- <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
+ <span className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Anchor className="size-3.5 text-primary" /> Portos e Horários Portuários
  </span>
 
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-1">
  <Label className="text-[11px] text-muted-foreground">Porto de Embarque</Label>
  <Input
  value={flightDetails.embarkation_port || ""}
  onChange={(e) => updateFlightDetails("embarkation_port", e.target.value)}
  placeholder="Ex: Porto de Santos / Concais"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -1683,7 +1683,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.boarding_checkin_time || ""}
  onChange={(e) => updateFlightDetails("boarding_checkin_time", e.target.value)}
  placeholder="Ex: 11:00 às 14:00"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  <div className="space-y-1">
@@ -1692,19 +1692,19 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.ship_departure_time || ""}
  onChange={(e) => updateFlightDetails("ship_departure_time", e.target.value)}
  placeholder="Ex: 18:00"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-border/40">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/40">
  <div className="space-y-1">
  <Label className="text-[11px] text-muted-foreground">Porto de Desembarque Final</Label>
  <Input
  value={flightDetails.disembarkation_port || ""}
  onChange={(e) => updateFlightDetails("disembarkation_port", e.target.value)}
  placeholder="Ex: Porto de Santos ou Salvador"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -1713,7 +1713,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.ship_arrival_time || ""}
  onChange={(e) => updateFlightDetails("ship_arrival_time", e.target.value)}
  placeholder="Ex: 08:00 (Atracação)"
- className="h-9 rounded-xl text-xs bg-background font-mono"
+ className="h-9 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
@@ -1723,21 +1723,21 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
 
  {/* ─── RESUMO MISTO ─── */}
  {value.transport_type === "misto" && (
- <div className="space-y-1.5 pt-2">
+ <div className="space-y-2 pt-2">
  <Label className="text-xs font-medium text-muted-foreground">Resumo das Conexões Multimodais</Label>
  <Textarea
  value={flightDetails.mixed_transport_summary || ""}
  onChange={(e) => updateFlightDetails("mixed_transport_summary", e.target.value)}
  placeholder="Ex: Voo SP -> Salvador + Transfer privativo em van executiva até o terminal náutico + Lancha rápida até Morro de São Paulo..."
  rows={2}
- className="rounded-xl text-xs bg-background"
+ className="rounded-lg text-xs bg-background"
  />
  </div>
  )}
 
  {/* ─── TRANSFER BILATERAL (COMUM A TODOS OS MODAIS) ─── */}
- <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-3">
- <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
+ <span className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Car className="size-3.5 text-primary" /> Transfer Bilateral (In / Out)
  </span>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1747,7 +1747,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.transfer_pickup_time || ""}
  onChange={(e) => updateFlightDetails("transfer_pickup_time", e.target.value)}
  placeholder="Ex: 11:15 (Recepção com placa nominal)"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  <div className="space-y-1">
@@ -1756,7 +1756,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={flightDetails.transfer_return_time || ""}
  onChange={(e) => updateFlightDetails("transfer_return_time", e.target.value)}
  placeholder="Ex: 13:30 (Saída pontual do lobby)"
- className="h-9 rounded-xl text-xs bg-background"
+ className="h-9 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -1766,7 +1766,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  {/* ── 7. SEÇÃO EXPANSÍVEL: CURADORIA DE RECOMENDAÇÕES LOCAIS ── */}
- <div className="bg-card rounded-2xl border border-border/70 shadow-2xs overflow-hidden">
+ <div className="bg-card rounded-lg border border-border/70 shadow-2xs overflow-hidden">
  <button
  type="button"
  onClick={() => setIsRecommendationsOpen(!isRecommendationsOpen)}
@@ -1790,7 +1790,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  size="sm"
  variant="outline"
  onClick={addRecommendation}
- className="rounded-xl text-xs font-semibold gap-1.5 h-8 cursor-pointer"
+ className="rounded-lg text-xs font-semibold gap-2 h-8 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>+ Adicionar Recomendação</span>
@@ -1799,7 +1799,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
 
  <div className="space-y-3">
  {recommendations.map((rec, i) => (
- <div key={rec.id || i} className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-2.5">
+ <div key={rec.id || i} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground">Recomendação #{i + 1}</span>
  <button
@@ -1847,7 +1847,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  {/* ── 8. CONDIÇÕES COMERCIAIS & PARCELAMENTO BILATERAL (REGRA 22) ── */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <CreditCard className="size-4 text-primary" />
@@ -1860,7 +1860,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  {/* Slider de Parcelamento Máximo */}
- <div className="space-y-2 sm:col-span-2 p-3.5 rounded-xl bg-muted/20 border border-border/50">
+ <div className="space-y-2 sm:col-span-2 p-4 rounded-lg bg-muted/20 border border-border/50">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-semibold text-foreground">
  Parcelamento Máximo no Cartão
@@ -1888,7 +1888,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Parcelas Sem Juros</Label>
  <Input
  type="number"
@@ -1897,12 +1897,12 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={feeFreeInstallments}
  onChange={(e) => updatePaymentConditions("installments_fee_free", Number(e.target.value))}
  placeholder="12"
- className="h-10 rounded-xl text-xs bg-background font-mono"
+ className="h-10 rounded-lg text-xs bg-background font-mono"
  />
  <p className="text-[10px] text-muted-foreground">Quantas parcelas o lojista assume a taxa do cartão.</p>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs text-foreground font-medium">Desconto à Vista no PIX (%)</Label>
  <Input
  type="number"
@@ -1911,7 +1911,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={pixDiscountPercent}
  onChange={(e) => updatePaymentConditions("pix_discount_percent", Number(e.target.value))}
  placeholder="5"
- className="h-10 rounded-xl text-xs bg-background font-mono"
+ className="h-10 rounded-lg text-xs bg-background font-mono"
  />
  {pixDiscountPercent > 0 && priceCents > 0 && (
  <p className="text-[10px] text-emerald-600 font-semibold font-mono">
@@ -1920,7 +1920,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  )}
  </div>
 
- <div className="space-y-1.5 sm:col-span-2">
+ <div className="space-y-2 sm:col-span-2">
  <Label className="text-xs text-foreground font-medium">Sinal Mínimo de Entrada (%)</Label>
  <Input
  type="number"
@@ -1929,7 +1929,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={depositPercent}
  onChange={(e) => updatePaymentConditions("deposit_percent", Number(e.target.value))}
  placeholder="0 (Sem entrada obrigatória)"
- className="h-10 rounded-xl text-xs bg-background font-mono"
+ className="h-10 rounded-lg text-xs bg-background font-mono"
  />
  <p className="text-[10px] text-muted-foreground">Porcentagem exigida no ato da confirmação da reserva.</p>
  </div>
@@ -1937,7 +1937,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
 
  {/* ── 9. DESTAQUES VISUAIS EM CÍRCULOS (STORY HIGHLIGHTS — REGRAS 19 & 20) ── */}
- <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Star className="size-4 text-primary" />

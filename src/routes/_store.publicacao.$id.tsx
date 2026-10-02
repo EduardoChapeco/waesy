@@ -140,7 +140,7 @@ function PostThreadPage() {
         <p className="text-sm text-muted-foreground mb-6">
           Esta publicação pode ter sido removida pelo autor ou não está disponível.
         </p>
-        <Button asChild className="h-11 px-5 rounded-xl font-semibold">
+        <Button asChild className="h-11 px-5 rounded-lg font-semibold">
           <Link to="/mural">Voltar ao Mural</Link>
         </Button>
       </div>
@@ -153,7 +153,7 @@ function PostThreadPage() {
     <div className="w-full max-w-2xl mx-auto px-0 sm:px-4 md:px-0 py-4 sm:py-6 space-y-6 animate-in fade-in duration-200">
       {/* Barra de Retorno */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" asChild className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-3 rounded-xl text-xs">
+        <Button variant="ghost" size="sm" asChild className="min-h-11 sm:min-h-9 h-11 sm:h-9 px-3 rounded-lg text-xs">
           <Link to="/mural">
             <ChevronLeft className="h-4 w-4 mr-1" /> Mural da Comunidade
           </Link>
@@ -164,7 +164,7 @@ function PostThreadPage() {
       </div>
 
       {/* Cartão Central da Thread */}
-      <article className="bg-card border border-border/80 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+      <article className="bg-card border border-border/80 rounded-lg p-5 sm:p-6 shadow-xs space-y-4">
         {/* Cabeçalho do Autor */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -200,7 +200,7 @@ function PostThreadPage() {
 
         {/* Galeria de Mídias */}
         {post.media_urls && post.media_urls.length > 0 && (
-          <div className="rounded-xl overflow-hidden border border-border/60 bg-black/5">
+          <div className="rounded-lg overflow-hidden border border-border/60 bg-black/5">
             {post.media_urls.map((url: string, idx: number) => (
               <img
                 key={idx}
@@ -215,7 +215,7 @@ function PostThreadPage() {
 
         {/* Card de Referência Embutido (Produto ou Evento) */}
         {post.reference_data && (
-          <div className="border border-border/70 rounded-xl p-3 bg-muted/20 flex items-center justify-between gap-3">
+          <div className="border border-border/70 rounded-lg p-3 bg-muted/20 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               {post.reference_data.image_url || post.reference_data.cover_image ? (
                 <img
@@ -242,14 +242,14 @@ function PostThreadPage() {
             </div>
 
             {post.reference_type === "product" && post.reference_id && (
-              <Button size="sm" asChild className="h-9 px-3 rounded-xl text-xs font-semibold shrink-0">
+              <Button size="sm" asChild className="h-9 px-3 rounded-lg text-xs font-semibold shrink-0">
                 <Link to={`/produto/${post.reference_id}` as any}>
                   Ver <ExternalLink className="h-3 w-3 ml-1" />
                 </Link>
               </Button>
             )}
             {post.reference_type === "event" && post.reference_id && (
-              <Button size="sm" asChild className="h-9 px-3 rounded-xl text-xs font-semibold shrink-0">
+              <Button size="sm" asChild className="h-9 px-3 rounded-lg text-xs font-semibold shrink-0">
                 <Link to={`/evento/${post.reference_id}` as any}>
                   Ingresso <ExternalLink className="h-3 w-3 ml-1" />
                 </Link>
@@ -264,7 +264,7 @@ function PostThreadPage() {
             <button
               type="button"
               onClick={() => likeMutation.mutate()}
-              className={`h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+              className={`h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors cursor-pointer ${
                 post.user_liked ? "text-red-500 bg-red-500/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
               }`}
             >
@@ -272,7 +272,7 @@ function PostThreadPage() {
               <span>{post.likes_count || 0}</span>
             </button>
 
-            <div className="h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+            <div className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <MessageSquare className="h-4 w-4" />
               <span>{comments.length}</span>
             </div>
@@ -282,7 +282,7 @@ function PostThreadPage() {
             <button
               type="button"
               onClick={handleShare}
-              className="size-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
+              className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
               title="Compartilhar"
             >
               <Share2 className="h-4 w-4" />
@@ -294,7 +294,7 @@ function PostThreadPage() {
                 setIsSaved(!isSaved);
                 toast.success(isSaved ? "Removido dos salvos" : "Publicação salva nos seus favoritos!");
               }}
-              className={`size-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
+              className={`size-9 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
                 isSaved ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
               }`}
               title="Salvar"
@@ -317,13 +317,13 @@ function PostThreadPage() {
             value={commentInput}
             onChange={(e) => setCommentInput(e.target.value)}
             placeholder="Deixe um comentário respeitoso..."
-            className="h-11 rounded-xl text-sm flex-1"
+            className="h-11 rounded-lg text-sm flex-1"
             disabled={commentMutation.isPending}
           />
           <Button
             type="submit"
             disabled={commentMutation.isPending || !commentInput.trim()}
-            className="h-11 px-4 rounded-xl font-semibold bg-foreground text-background cursor-pointer shrink-0"
+            className="h-11 px-4 rounded-lg font-semibold bg-foreground text-background cursor-pointer shrink-0"
           >
             <Send className="h-4 w-4" />
           </Button>
@@ -333,13 +333,13 @@ function PostThreadPage() {
         {isCommentsLoading ? (
           <div className="py-6 text-center text-xs text-muted-foreground">Carregando comentários...</div>
         ) : comments.length === 0 ? (
-          <div className="py-8 text-center text-xs text-muted-foreground border border-dashed rounded-xl p-4">
+          <div className="py-8 text-center text-xs text-muted-foreground border border-dashed rounded-lg p-4">
             Seja o primeiro a comentar nesta publicação.
           </div>
         ) : (
           <div className="space-y-3">
             {comments.map((c: any) => (
-              <div key={c.id} className="bg-card border border-border/60 rounded-xl p-3.5 space-y-1.5 shadow-xs">
+              <div key={c.id} className="bg-card border border-border/60 rounded-lg p-4 space-y-2 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Avatar className="size-7 rounded-full border">

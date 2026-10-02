@@ -355,7 +355,7 @@ function AdminMasterHotpagesPage() {
  disabled={isSubmitting}
  size="sm"
  variant="outline"
- className="h-11 px-4 rounded-xl font-semibold text-xs gap-2 shrink-0 border-border/80 bg-card hover:bg-muted shadow-xs"
+ className="h-11 px-4 rounded-lg font-semibold text-xs gap-2 shrink-0 border-border/80 bg-card hover:bg-muted shadow-xs"
  >
  <Sliders className="size-3.5 text-primary" />
  <span>Restaurar Padrões</span>
@@ -364,7 +364,7 @@ function AdminMasterHotpagesPage() {
  <Button
  onClick={handleOpenCreate}
  size="sm"
- className="h-11 px-4 rounded-xl font-semibold text-xs gap-2 bg-primary text-primary-foreground shrink-0 shadow-xs"
+ className="h-11 px-4 rounded-lg font-semibold text-xs gap-2 bg-primary text-primary-foreground shrink-0 shadow-xs"
  >
  <Plus className="size-3.5" />
  <span>
@@ -379,11 +379,11 @@ function AdminMasterHotpagesPage() {
  </div>
 
  {/* ── 3 Abas Principais de Segregação Arquitetural ── */}
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 rounded-2xl bg-muted/40 border border-border/60">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2 rounded-lg bg-muted/40 border border-border/60">
  <button
  onClick={() => setActiveMainTab("hero_module")}
  className={cn(
- "flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all",
+ "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
  activeMainTab === "hero_module"
  ? "bg-background text-foreground shadow-sm border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
@@ -396,7 +396,7 @@ function AdminMasterHotpagesPage() {
  <button
  onClick={() => setActiveMainTab("category_hub")}
  className={cn(
- "flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all",
+ "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
  activeMainTab === "category_hub"
  ? "bg-background text-foreground shadow-sm border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
@@ -409,7 +409,7 @@ function AdminMasterHotpagesPage() {
  <button
  onClick={() => setActiveMainTab("editorial_card")}
  className={cn(
- "flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all",
+ "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
  activeMainTab === "editorial_card"
  ? "bg-background text-foreground shadow-sm border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
@@ -421,7 +421,7 @@ function AdminMasterHotpagesPage() {
  </div>
 
  {/* ── Informações Explicativas da Aba Ativa ── */}
- <div className="p-3.5 rounded-2xl bg-card border border-border/60 text-xs text-muted-foreground flex items-center justify-between">
+ <div className="p-4 rounded-lg bg-card border border-border/60 text-xs text-muted-foreground flex items-center justify-between">
  <div>
  {activeMainTab === "hero_module" && (
  <p>
@@ -448,7 +448,7 @@ function AdminMasterHotpagesPage() {
 
  {/* ── Sub-Filtro por Módulo (Visível principalmente na aba de Hotpages Editoriais) ── */}
         {(activeMainTab === "editorial_card" || activeMainTab === "category_hub") && (
- <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 scrollbar-hide border-b border-border/40">
+ <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 scrollbar-hide border-b border-border/40">
  {MODULE_TABS.map((tab) => {
  const isSelected = selectedModuleTab === tab.id;
  const count =
@@ -461,7 +461,7 @@ function AdminMasterHotpagesPage() {
  key={tab.id}
  onClick={() => setSelectedModuleTab(tab.id)}
  className={cn(
- "px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5",
+ "px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2",
  isSelected
  ? "bg-foreground text-background shadow-xs font-bold"
  : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -470,7 +470,7 @@ function AdminMasterHotpagesPage() {
  <span>{tab.label}</span>
  <span
  className={cn(
- "text-[11px] px-2 py-0.5 rounded-md font-medium",
+ "text-[11px] px-2 py-1 rounded-md font-medium",
  isSelected
  ? "bg-background/20 text-background"
  : "bg-background/80 text-muted-foreground"
@@ -486,8 +486,8 @@ function AdminMasterHotpagesPage() {
 
  {/* ── Grid de Renderização por Tipo de Item ── */}
  {filteredItems.length === 0 ? (
- <div className="p-12 text-center border border-dashed border-border/80 rounded-2xl space-y-3 bg-card">
- <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+ <div className="p-12 text-center border border-dashed border-border/80 rounded-lg space-y-3 bg-card">
+ <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
  <ImageIcon className="size-6" />
  </div>
  <h3 className="text-sm font-bold text-foreground">Nenhum item nesta seção</h3>
@@ -499,7 +499,7 @@ function AdminMasterHotpagesPage() {
  onClick={handleSyncDefaults}
  size="sm"
  variant="outline"
- className="rounded-xl text-xs font-bold gap-1.5"
+ className="rounded-lg text-xs font-bold gap-2"
  >
  <Sliders className="size-3.5 text-primary" />
  <span>Sincronizar Padrões</span>
@@ -507,7 +507,7 @@ function AdminMasterHotpagesPage() {
  <Button
  onClick={handleOpenCreate}
  size="sm"
- className="rounded-xl text-xs font-bold gap-1.5"
+ className="rounded-lg text-xs font-bold gap-2"
  >
  <Plus className="size-3.5" />
  <span>Cadastrar Novo</span>
@@ -520,7 +520,7 @@ function AdminMasterHotpagesPage() {
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group relative flex flex-col justify-end aspect-16/9 rounded-2xl sm:rounded-2xl border border-border/80 bg-card overflow-hidden transition-all duration-300 shadow-xs hover:border-foreground/30 hover:shadow-xs"
+ className="group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-all duration-300 shadow-xs hover:border-foreground/30 hover:shadow-xs"
  >
  {item.cover_image_url ? (
  <img
@@ -546,14 +546,14 @@ function AdminMasterHotpagesPage() {
 
  {/* Rota Tag */}
  <div className="absolute bottom-2 left-2 z-20">
- <span className="text-[10px] font-mono font-bold bg-black/75 text-white/90 px-2 py-0.5 rounded-lg border border-white/10 backdrop-blur-xs">
+ <span className="text-[10px] font-mono font-bold bg-black/75 text-white/90 px-2 py-1 rounded-lg border border-white/10 backdrop-blur-xs">
  {item.target_route || `/${item.slug.replace(/^home-/, "")}`}
  </span>
  </div>
 
  {/* Ações de Hover */}
  <div className="absolute top-2 right-2 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-background/90 backdrop-blur-md p-0.5 rounded-xl border border-border/80 flex items-center gap-0.5 shadow-sm">
+ <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1 shadow-sm">
  <Button
  size="sm"
  variant="ghost"
@@ -583,10 +583,10 @@ function AdminMasterHotpagesPage() {
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group relative p-3 rounded-2xl border border-border/80 bg-card hover:border-foreground/30 transition-all flex items-center justify-between gap-2 shadow-xs"
+ className="group relative p-3 rounded-lg border border-border/80 bg-card hover:border-foreground/30 transition-all flex items-center justify-between gap-2 shadow-xs"
  >
- <div className="flex items-center gap-2.5 min-w-0">
- <div className="size-10 rounded-xl bg-muted/60 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
+ <div className="flex items-center gap-3 min-w-0">
+ <div className="size-10 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
  {item.custom_icon_url ? (
  <img
  src={item.custom_icon_url}
@@ -640,7 +640,7 @@ function AdminMasterHotpagesPage() {
  return (
  <div
  key={item.id}
- className={`group relative flex flex-col justify-end aspect-16/9 rounded-2xl sm:rounded-2xl border border-border/80 bg-card overflow-hidden transition-all duration-300 hover:border-foreground/30 ${showShadowOnCard ? "shadow-xs hover:shadow-xs" : "shadow-xs"}`}
+ className={`group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-all duration-300 hover:border-foreground/30 ${showShadowOnCard ? "shadow-xs hover:shadow-xs" : "shadow-xs"}`}
  >
  {item.cover_image_url ? (
  <img
@@ -664,16 +664,16 @@ function AdminMasterHotpagesPage() {
  />
  )}
 
- <div className="relative z-10 p-3 space-y-1.5 text-left w-full">
+ <div className="relative z-10 p-3 space-y-2 text-left w-full">
  {showBadgeOnCard && (
- <div className="flex items-center gap-1.5 flex-wrap">
+ <div className="flex items-center gap-2 flex-wrap">
  {item.badge_label && (
- <span className="inline-block px-2 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider bg-white/25 backdrop-blur-md text-white border border-white/20">
+ <span className="inline-block px-2 py-1 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider bg-white/25 backdrop-blur-md text-white border border-white/20">
  {item.badge_label}
  </span>
  )}
  {item.hero_stat_badge && (
- <span className="inline-block px-2 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground border border-primary/30">
+ <span className="inline-block px-2 py-1 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground border border-primary/30">
  {item.hero_stat_badge}
  </span>
  )}
@@ -688,7 +688,7 @@ function AdminMasterHotpagesPage() {
  </div>
 
  <div className="absolute top-2 right-2 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-background/90 backdrop-blur-md p-0.5 rounded-xl border border-border/80 flex items-center gap-0.5 shadow-sm">
+ <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1 shadow-sm">
  <Button
  size="sm"
  variant="ghost"
@@ -740,15 +740,15 @@ function AdminMasterHotpagesPage() {
  >
  <form onSubmit={handleSubmit} className="space-y-4 p-1 max-h-[85vh] overflow-y-auto no-scrollbar pr-1">
  {/* Pré-visualização ao Vivo */}
- <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/80 space-y-2">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/80 space-y-2">
+ <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <Eye className="size-3.5 text-primary" />
  Pré-visualização em Tempo Real
  </span>
 
  {templateType === "category_hub" ? (
- <div className="p-3 rounded-xl bg-card border border-border/80 flex items-center gap-3">
- <div className="size-11 rounded-xl bg-muted/60 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
+ <div className="p-3 rounded-lg bg-card border border-border/80 flex items-center gap-3">
+ <div className="size-11 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
  {customIconUrl ? (
  <img src={customIconUrl} alt="Preview" className="size-7 object-contain" />
  ) : (
@@ -761,7 +761,7 @@ function AdminMasterHotpagesPage() {
  </div>
  </div>
  ) : (
- <div className={`relative aspect-16/9 rounded-xl overflow-hidden bg-card border border-border/80 ${showShadow ? "shadow-xs" : "shadow-xs"}`}>
+ <div className={`relative aspect-16/9 rounded-lg overflow-hidden bg-card border border-border/80 ${showShadow ? "shadow-xs" : "shadow-xs"}`}>
  {coverImageUrl ? (
  <img src={coverImageUrl} alt="Preview Capa" className="size-full object-cover" />
  ) : (
@@ -782,12 +782,12 @@ function AdminMasterHotpagesPage() {
  {showBadge && (badgeLabel || heroStatBadge) && (
  <div className="absolute top-2 right-2 flex items-center gap-1">
  {badgeLabel && (
- <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-white/25 backdrop-blur-md text-white px-2 py-0.5 rounded-md border border-white/20 shadow-xs">
+ <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-white/25 backdrop-blur-md text-white px-2 py-1 rounded-md border border-white/20 shadow-xs">
  {badgeLabel}
  </span>
  )}
  {heroStatBadge && (
- <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-md border border-primary/30 shadow-xs">
+ <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1 rounded-md border border-primary/30 shadow-xs">
  {heroStatBadge}
  </span>
  )}
@@ -803,7 +803,7 @@ function AdminMasterHotpagesPage() {
  )}
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Tipo de Componente *</Label>
  <Select
  value={templateType}
@@ -816,10 +816,10 @@ function AdminMasterHotpagesPage() {
  }
  }}
  >
- <SelectTrigger className="h-10 rounded-xl bg-card text-xs">
+ <SelectTrigger className="h-10 rounded-lg bg-card text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="hero_module" className="text-xs">
  Card Herói do Topo (Módulo 16:9 Limpo)
  </SelectItem>
@@ -833,7 +833,7 @@ function AdminMasterHotpagesPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Título / Rótulo *</Label>
  <Input
  value={title}
@@ -845,24 +845,24 @@ function AdminMasterHotpagesPage() {
  }
  }}
  placeholder="Ex: Classificados, Supermercado, Farmácia..."
- className="h-10 rounded-xl bg-card text-xs"
+ className="h-10 rounded-lg bg-card text-xs"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Slug Identificador (URL) *</Label>
  <Input
  value={slug}
  onChange={(e) => setSlug(e.target.value)}
  placeholder="classificados"
- className="h-10 rounded-xl bg-card text-xs font-mono"
+ className="h-10 rounded-lg bg-card text-xs font-mono"
  required
  />
  </div>
 
  {templateType !== "category_hub" && (
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <Label className="text-xs font-bold flex items-center justify-between">
  <span>Foto de Capa do Card (16:9) *</span>
  <span className="text-[10px] text-primary font-bold">16:9 Panorâmica</span>
@@ -883,7 +883,7 @@ function AdminMasterHotpagesPage() {
 
  {templateType === "category_hub" && (
  <>
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <Label className="text-xs font-bold flex items-center justify-between">
  <span>Ícone Personalizado Transparente (1:1)</span>
  <span className="text-[10px] text-muted-foreground">PNG Transparente / SVG</span>
@@ -901,43 +901,43 @@ function AdminMasterHotpagesPage() {
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Emoji de Fallback</Label>
  <Input
  value={emoji}
  onChange={(e) => setEmoji(e.target.value)}
  placeholder="Ex: 💊, 🍕, 🥦, 📱"
- className="h-10 rounded-xl bg-card text-xs"
+ className="h-10 rounded-lg bg-card text-xs"
  />
  </div>
  </>
  )}
 
  {templateType === "editorial_card" && (
- <div className="p-3 rounded-2xl bg-muted/20 border border-border/60 space-y-3">
- <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-3">
+ <span className="text-xs font-bold flex items-center gap-2 text-foreground">
  <Tag className="size-3.5 text-primary" />
  Badges e Tags Promocionais
  </span>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-[11px] font-bold text-muted-foreground">Badge</Label>
  <Input
  value={badgeLabel}
  onChange={(e) => setBadgeLabel(e.target.value)}
  placeholder="Ex: OFERTAS, SABOR"
- className="h-9 rounded-xl bg-card text-xs"
+ className="h-9 rounded-lg bg-card text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-[11px] font-bold text-muted-foreground">Pill de Destaque</Label>
  <Input
  value={heroStatBadge}
  onChange={(e) => setHeroStatBadge(e.target.value)}
  placeholder="Ex: ATÉ 50% OFF"
- className="h-9 rounded-xl bg-card text-xs"
+ className="h-9 rounded-lg bg-card text-xs"
  />
  </div>
  </div>
@@ -957,13 +957,13 @@ function AdminMasterHotpagesPage() {
  helperText="Ex: /classificados, /mercado, /gastronomia, /farmacia..."
  />
 
- <div className="p-3 rounded-2xl bg-muted/20 border border-border/60 space-y-3">
- <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-3">
+ <span className="text-xs font-bold flex items-center gap-2 text-foreground">
  <SlidersHorizontal className="size-3.5 text-primary" />
  Configurações de Exibição
  </span>
 
- <div className="space-y-2.5">
+ <div className="space-y-3">
  {/* Título: disponível para todos os tipos */}
  <div className="flex items-center justify-between">
  <div>
@@ -994,7 +994,7 @@ function AdminMasterHotpagesPage() {
  {/* Controles de Overlay (visíveis somente quando overlay ativado) */}
  {showOverlay && (
  <div className="pl-2 border-l-2 border-primary/30 space-y-3 mt-1">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <div className="flex items-center justify-between">
  <Label className="text-[11px] font-bold text-muted-foreground">Opacidade do Overlay</Label>
  <span className="text-[11px] font-mono text-primary font-bold">{bgOverlayOpacity}%</span>
@@ -1014,21 +1014,21 @@ function AdminMasterHotpagesPage() {
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-[11px] font-bold text-muted-foreground">Cor do Overlay</Label>
  <div className="flex items-center gap-2">
  <input
  type="color"
  value={bgColor}
  onChange={(e) => setBgColor(e.target.value)}
- className="size-8 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
+ className="size-8 rounded-lg border border-border cursor-pointer bg-transparent p-1"
  title="Escolher cor do overlay"
  />
  <Input
  value={bgColor}
  onChange={(e) => setBgColor(e.target.value)}
  placeholder="#000000"
- className="h-8 rounded-xl bg-card text-xs font-mono flex-1"
+ className="h-8 rounded-lg bg-card text-xs font-mono flex-1"
  maxLength={7}
  />
  {/* Paleta rápida */}
@@ -1051,7 +1051,7 @@ function AdminMasterHotpagesPage() {
 
                 {/* Cor do Texto — Sempre configurável quando showTitle estiver ativo */}
                 {showTitle && (
-                  <div className="space-y-1.5 border-t border-border/40 pt-2">
+                  <div className="space-y-2 border-t border-border/40 pt-2">
                     <div className="flex items-center justify-between">
                       <Label className="text-[11px] font-bold text-muted-foreground">Cor do Título</Label>
                       {textColor && (
@@ -1069,14 +1069,14 @@ function AdminMasterHotpagesPage() {
                         type="color"
                         value={textColor || "#ffffff"}
                         onChange={(e) => setTextColor(e.target.value)}
-                        className="size-8 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
+                        className="size-8 rounded-lg border border-border cursor-pointer bg-transparent p-1"
                         title="Cor do título"
                       />
                       <Input
                         value={textColor}
                         onChange={(e) => setTextColor(e.target.value)}
                         placeholder="Ex: #ffffff ou #000000"
-                        className="h-8 rounded-xl bg-card text-xs font-mono flex-1"
+                        className="h-8 rounded-lg bg-card text-xs font-mono flex-1"
                       />
                       {/* Presets rápidos de cores para o título */}
                       <div className="flex gap-1 shrink-0">
@@ -1105,14 +1105,14 @@ function AdminMasterHotpagesPage() {
               </div>
             </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Ordem de Exibição (Sort Order)</Label>
  <Input
  type="number"
  value={sortOrder}
  onChange={(e) => setSortOrder(Number(e.target.value))}
  placeholder="0"
- className="h-10 rounded-xl bg-card text-xs font-mono"
+ className="h-10 rounded-lg bg-card text-xs font-mono"
  />
  </div>
 
@@ -1121,14 +1121,14 @@ function AdminMasterHotpagesPage() {
  type="button"
  variant="outline"
  onClick={() => setIsSheetOpen(false)}
- className="rounded-xl text-xs"
+ className="rounded-lg text-xs"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isSubmitting}
- className="rounded-xl font-bold text-xs min-w-28"
+ className="rounded-lg font-bold text-xs min-w-28"
  >
  {isSubmitting ? "Salvando..." : editingId ? "Salvar Alterações" : "Criar Item"}
  </Button>

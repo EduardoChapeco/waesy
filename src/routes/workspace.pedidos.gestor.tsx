@@ -373,12 +373,12 @@ function KDSPage() {
  </div>
  </div>
  <div className="flex items-center gap-2">
- <div className="flex items-center bg-muted/50 p-1 rounded-xl border border-border/80">
+ <div className="flex items-center bg-muted/50 p-1 rounded-lg border border-border/80">
  <Button
  variant={viewMode === "kanban" ? "default" : "ghost"}
  size="sm"
  onClick={() => setViewMode("kanban")}
- className="h-8 text-xs font-bold rounded-lg gap-1.5"
+ className="h-8 text-xs font-bold rounded-lg gap-2"
  >
  <Kanban className="size-3.5" />
  Kanban KDS
@@ -387,7 +387,7 @@ function KDSPage() {
  variant={viewMode === "live_dashboard" ? "default" : "ghost"}
  size="sm"
  onClick={() => setViewMode("live_dashboard")}
- className="h-8 text-xs font-bold rounded-lg gap-1.5"
+ className="h-8 text-xs font-bold rounded-lg gap-2"
  >
  <LayoutDashboard className="size-3.5" />
  Live Dashboard
@@ -398,7 +398,7 @@ function KDSPage() {
  variant="outline"
  size="sm"
  asChild
- className="gap-1.5 text-xs font-bold bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
+ className="gap-2 text-xs font-bold bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
  >
  <Link to="/workspace/pdv/cozinha">
  <ChefHat className="size-3.5" />
@@ -417,7 +417,7 @@ function KDSPage() {
             Ativar Áudio
           </Badge>
         )}
- <Button variant="outline" size="sm" onClick={toggleFullscreen} className="gap-1.5 text-xs font-bold">
+ <Button variant="outline" size="sm" onClick={toggleFullscreen} className="gap-2 text-xs font-bold">
  <Maximize className="size-3.5" />
  {isFullscreen ? "Sair" : "Tela Cheia"}
  </Button>
@@ -425,21 +425,21 @@ function KDSPage() {
  </header>
 
  {/* Subheader: Abas Operacionais (Agora vs Agendados), Filtros Omnichannel & Busca Instantânea */}
- <div className="flex-none bg-card border-b border-border/80 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 no-print">
+ <div className="flex-none bg-card border-b border-border/80 px-4 py-3 flex flex-wrap items-center justify-between gap-3 no-print">
  {/* Abas Agora vs Agendados */}
- <div className="flex items-center gap-1.5 bg-muted/50 p-1 rounded-xl border border-border/70">
+ <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg border border-border/70">
  <button
  type="button"
  onClick={() => setTimingTab("now")}
  className={cn(
- "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+ "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
  timingTab === "now"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
  )}
  >
  <span>Agora</span>
- <Badge variant="secondary" className="font-mono text-xs text-muted-foreground/75 px-1.5 py-0 h-4">
+ <Badge variant="secondary" className="font-mono text-xs text-muted-foreground/75 px-2 py-0 h-4">
  {nowCount}
  </Badge>
  </button>
@@ -448,21 +448,21 @@ function KDSPage() {
  type="button"
  onClick={() => setTimingTab("scheduled")}
  className={cn(
- "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+ "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
  timingTab === "scheduled"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
  )}
  >
  <span>Agendados</span>
- <Badge variant="secondary" className="font-mono text-xs text-muted-foreground/75 px-1.5 py-0 h-4">
+ <Badge variant="secondary" className="font-mono text-xs text-muted-foreground/75 px-2 py-0 h-4">
  {scheduledCount}
  </Badge>
  </button>
  </div>
 
  {/* Chips de Canais Omnichannel */}
- <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+ <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
  {[
  { id: "all", label: "Todos os Canais" },
  { id: "ifood", label: "iFood" },
@@ -476,7 +476,7 @@ function KDSPage() {
  type="button"
  onClick={() => setChannelFilter(ch.id)}
  className={cn(
- "px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border",
+ "px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border",
  channelFilter === ch.id
  ? "bg-foreground text-background border-foreground"
  : "bg-background text-muted-foreground border-border hover:text-foreground hover:border-foreground/40",
@@ -493,7 +493,7 @@ function KDSPage() {
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Buscar cliente, pedido, rua..."
- className="h-8 text-xs rounded-xl pl-3 pr-8 bg-background border-border/80"
+ className="h-8 text-xs rounded-lg pl-3 pr-8 bg-background border-border/80"
  />
  {searchQuery && (
  <button
@@ -509,7 +509,7 @@ function KDSPage() {
 
  {/* Alerta Inteligente de SLA Operacional (Tempo Real) */}
  {delayedOrders.length > 0 && (
- <div className="bg-rose-500/10 border-b border-rose-500/30 px-4 py-2.5 flex items-center justify-between text-xs text-rose-700 dark:text-rose-400 no-print">
+ <div className="bg-rose-500/10 border-b border-rose-500/30 px-4 py-3 flex items-center justify-between text-xs text-rose-700 dark:text-rose-400 no-print">
  <div className="flex items-center gap-2 font-bold">
  <AlertTriangle className="size-4 text-rose-500 animate-bounce" />
  <span>
@@ -531,42 +531,42 @@ function KDSPage() {
  <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-6 bg-muted/20 no-print">
  {/* 8 KPIs do Turno Operacional */}
  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase">Total Pedidos</span>
  <p className="text-2xl font-black text-foreground font-mono">{kpis.total}</p>
  </div>
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs text-muted-foreground/75 font-bold text-emerald-600 uppercase">Concluídos</span>
  <p className="text-2xl font-black text-emerald-600 font-mono">{kpis.completed}</p>
  </div>
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs text-muted-foreground/75 font-bold text-blue-600 uppercase">Em Fila</span>
  <p className="text-2xl font-black text-blue-600 font-mono">{kpis.active}</p>
  </div>
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs text-muted-foreground/75 font-bold text-rose-600 uppercase">Cancelados</span>
  <p className="text-2xl font-black text-rose-600 font-mono">{kpis.cancelled}</p>
  </div>
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase">Faturamento</span>
  <p className="text-lg font-black text-foreground font-mono truncate">{formatMoney(kpis.revenue)}</p>
  </div>
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase">Ticket Médio</span>
  <p className="text-lg font-black text-foreground font-mono truncate">{formatMoney(kpis.avgTicket)}</p>
  </div>
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs text-muted-foreground/75 font-bold text-amber-600 uppercase">TMP (Preparo)</span>
  <p className="text-xl font-black text-foreground font-mono">~{kpis.avgPrepTime}m</p>
  </div>
- <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs text-muted-foreground/75 font-bold text-purple-600 uppercase">TME (Entrega)</span>
  <p className="text-xl font-black text-foreground font-mono">~{kpis.avgDeliveryTime}m</p>
  </div>
  </div>
 
  {/* Tabela de Operações ao Vivo */}
- <div className="rounded-2xl border border-border bg-card overflow-hidden">
+ <div className="rounded-lg border border-border bg-card overflow-hidden">
  <div className="p-4 border-b border-border/80 flex items-center justify-between">
  <div>
  <h3 className="text-sm font-bold text-foreground">Live Dashboard de Pedidos e Acompanhamento de SLA</h3>
@@ -613,7 +613,7 @@ function KDSPage() {
  </span>
  </div>
 
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  <div className="flex items-center justify-between text-xs font-mono">
  <span className={isLate ? "text-rose-500 font-bold" : "text-muted-foreground"}>
  {elapsed} min {isLate && "• ATRASO"}
@@ -638,7 +638,7 @@ function KDSPage() {
  variant="outline"
  title="Avisar cliente WhatsApp"
  onClick={(e) => handleNotifyCustomerWhatsApp(ord, e)}
- className="size-11 sm:size-9 rounded-xl text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+ className="size-11 sm:size-9 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
  >
  <MessageCircle className="size-4" />
  </Button>
@@ -647,7 +647,7 @@ function KDSPage() {
  size="sm"
  variant="outline"
  onClick={() => setSelectedOrder(ord)}
- className="flex-1 h-11 sm:h-9 rounded-xl text-xs font-bold cursor-pointer"
+ className="flex-1 h-11 sm:h-9 rounded-lg text-xs font-bold cursor-pointer"
  >
  Ver Detalhes
  </Button>
@@ -718,7 +718,7 @@ function KDSPage() {
  </div>
  </TableCell>
  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
- <div className="flex items-center justify-end gap-1.5">
+ <div className="flex items-center justify-end gap-2">
  {(ord.customer_snapshot?.phone || ord.customer?.phone) && (
  <Button
  size="icon"
@@ -751,7 +751,7 @@ function KDSPage() {
  {/* Relatórios de Curva ABC & Canais do Turno (Diggy / Food Intelligence) */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
  {/* Mais Vendidos */}
- <div className="p-5 rounded-2xl border border-border bg-card space-y-3">
+ <div className="p-5 rounded-lg border border-border bg-card space-y-3">
  <div className="flex items-center justify-between">
  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Top 5 Mais Vendidos do Turno
@@ -768,7 +768,7 @@ function KDSPage() {
  ) : (
  <div className="space-y-2">
  {topProducts.map((prod, idx) => (
- <div key={prod.title} className="flex items-center justify-between p-2 rounded-xl bg-muted/20 text-xs">
+ <div key={prod.title} className="flex items-center justify-between p-2 rounded-lg bg-muted/20 text-xs">
  <div className="flex items-center gap-2">
  <span className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs text-muted-foreground/75 font-mono">
  {idx + 1}
@@ -786,7 +786,7 @@ function KDSPage() {
  </div>
 
  {/* Vendas por Canal / Método */}
- <div className="p-5 rounded-2xl border border-border bg-card space-y-3">
+ <div className="p-5 rounded-lg border border-border bg-card space-y-3">
  <div className="flex items-center justify-between">
  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
  Vendas por Canal de Origem
@@ -803,7 +803,7 @@ function KDSPage() {
  ) : (
  <div className="space-y-2">
  {channelStats.map((st) => (
- <div key={st.label} className="flex items-center justify-between p-2 rounded-xl bg-muted/20 text-xs">
+ <div key={st.label} className="flex items-center justify-between p-2 rounded-lg bg-muted/20 text-xs">
  <span className="font-semibold text-foreground">{st.label}</span>
  <div className="flex items-center gap-3 font-mono">
  <span className="text-muted-foreground">{st.count} pedido(s)</span>
@@ -865,7 +865,7 @@ function KDSPage() {
  return (
  <div key={col.id} className="flex-shrink-0 w-[350px] flex flex-col gap-3 h-full">
  <div
- className={`rounded-xl border ${col.color} p-3 flex items-center justify-between bg-surface-paper `}
+ className={`rounded-lg border ${col.color} p-3 flex items-center justify-between bg-surface-paper `}
  >
  <div className="flex items-center gap-2 font-bold text-sm">
  {col.icon}
@@ -886,7 +886,7 @@ function KDSPage() {
  return (
  <div
  key={order.id}
- className="bg-card border border-border/80 rounded-2xl p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-all shadow-2xs"
+ className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-all shadow-2xs"
  onClick={() => setSelectedOrder(order)}
  >
  <div className="flex justify-between items-start gap-2">
@@ -897,7 +897,7 @@ function KDSPage() {
  </span>
  <span
  className={cn(
- "text-xs text-muted-foreground/75 font-semibold px-2 py-0.5 rounded-md font-mono flex items-center gap-1",
+ "text-xs text-muted-foreground/75 font-semibold px-2 py-1 rounded-md font-mono flex items-center gap-1",
  isLate
  ? "bg-rose-500/10 text-rose-500 border border-rose-500/20"
  : "bg-muted text-muted-foreground",
@@ -915,13 +915,13 @@ function KDSPage() {
  </h4>
 
  {/* Canal de Venda & Origem Omnichannel */}
- <div className="flex items-center gap-1.5 pt-0.5">
+ <div className="flex items-center gap-2 pt-1">
  {(() => {
  const ch = getChannelInfo(order);
  return (
  <Badge
  variant="outline"
- className={cn("text-xs text-muted-foreground/75 px-1.5 py-0 h-4 font-bold border", ch.color)}
+ className={cn("text-xs text-muted-foreground/75 px-2 py-0 h-4 font-bold border", ch.color)}
  >
  {ch.label}
  </Badge>
@@ -957,7 +957,7 @@ function KDSPage() {
  </Badge>
  </div>
 
- <div className="py-2 border-y border-border/60 text-xs space-y-1.5">
+ <div className="py-2 border-y border-border/60 text-xs space-y-2">
  {order.order_items?.map((item: any) => {
  const options = item.selected_options
  ? Object.values(item.selected_options)
@@ -971,7 +971,7 @@ function KDSPage() {
  </span>
  </div>
  {options.length > 0 && (
- <div className="text-xs text-muted-foreground/75 text-muted-foreground mt-0.5 ml-4 pl-1.5 border-l border-border/60 space-y-0.5">
+ <div className="text-xs text-muted-foreground/75 text-muted-foreground mt-1 ml-4 pl-2 border-l border-border/60 space-y-1">
  {options.map((opt: any, idx: number) => (
  <div key={idx}>+ {opt.label || opt.name}</div>
  ))}
@@ -990,7 +990,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Imprimir comanda térmica (80mm)"
- className="size-11 sm:size-9 rounded-xl text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
+ className="size-11 sm:size-9 rounded-lg text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
  onClick={(e) => {
  e.stopPropagation();
  setSelectedOrder(order);
@@ -1006,7 +1006,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Imprimir Recibo"
- className="size-11 sm:size-9 rounded-xl text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
+ className="size-11 sm:size-9 rounded-lg text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
  onClick={(e) => {
  e.stopPropagation();
  window.open(`/workspace/pedidos/${order.id}/recibo`, "_blank");
@@ -1022,7 +1022,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Avisar cliente no WhatsApp"
- className="size-11 sm:size-9 rounded-xl text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+ className="size-11 sm:size-9 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
  onClick={(e) => handleNotifyCustomerWhatsApp(order, e)}
  >
  <MessageCircle className="size-4" />
@@ -1033,7 +1033,7 @@ function KDSPage() {
  type="button"
  variant="outline"
  size="sm"
- className="flex-1 h-11 sm:h-9 rounded-xl text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 cursor-pointer"
+ className="flex-1 h-11 sm:h-9 rounded-lg text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 cursor-pointer"
  onClick={(e) => {
  e.stopPropagation();
  handleStatusChange(e, order.id, "cancelled");
@@ -1046,7 +1046,7 @@ function KDSPage() {
  <Button
  type="button"
  size="sm"
- className="flex-1 h-11 sm:h-9 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
+ className="flex-1 h-11 sm:h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
  onClick={(e) => handleStatusChange(e, order.id, col.nextStatus!)}
  >
  {col.nextLabel}
@@ -1057,7 +1057,7 @@ function KDSPage() {
  );
  })}
  {colOrders.length === 0 && (
- <div className="h-24 flex items-center justify-center border-0/60 rounded-xl text-muted-foreground text-sm font-medium bg-surface-paper/50">
+ <div className="h-24 flex items-center justify-center border-0/60 rounded-lg text-muted-foreground text-sm font-medium bg-surface-paper/50">
  Nenhum pedido nesta fila
  </div>
  )}
@@ -1098,7 +1098,7 @@ function KDSPage() {
  );
  })()}
  </div>
- <p className="text-muted-foreground text-xs mt-0.5 flex items-center gap-1 font-mono">
+ <p className="text-muted-foreground text-xs mt-1 flex items-center gap-1 font-mono">
  <Clock className="size-3" /> {formatDateTime(selectedOrder.created_at)}
  </p>
  </div>
@@ -1111,12 +1111,12 @@ function KDSPage() {
  </div>
 
  {/* Segmented Control de 3 Abas (Apple HIG / Nielsen Norman) */}
- <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl mt-3 border border-border/60">
+ <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg mt-3 border border-border/60">
  <button
  type="button"
  onClick={() => setSheetTab("details")}
  className={cn(
- "flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
  sheetTab === "details"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -1128,7 +1128,7 @@ function KDSPage() {
  type="button"
  onClick={() => setSheetTab("customer")}
  className={cn(
- "flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
  sheetTab === "customer"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -1140,7 +1140,7 @@ function KDSPage() {
  type="button"
  onClick={() => setSheetTab("history")}
  className={cn(
- "flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
  sheetTab === "history"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -1157,7 +1157,7 @@ function KDSPage() {
  {sheetTab === "details" && (
  <div className="space-y-4">
  {/* Lista de Itens */}
- <div className="space-y-2.5">
+ <div className="space-y-3">
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
  Itens Solicitados ({selectedOrder.order_items?.length || 0})
  </span>
@@ -1167,10 +1167,10 @@ function KDSPage() {
  ? Object.values(item.selected_options)
  : [];
  return (
- <div key={item.id} className="p-3.5 rounded-xl bg-muted/40 border border-border/60 space-y-1.5">
+ <div key={item.id} className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2">
  <div className="flex justify-between items-start">
  <span className="font-bold text-sm text-foreground">
- <span className="text-primary mr-1.5">{item.qty}x</span>
+ <span className="text-primary mr-2">{item.qty}x</span>
  {item.product_title || item.title || "Item"}
  </span>
  <span className="font-mono font-bold text-foreground">
@@ -1179,7 +1179,7 @@ function KDSPage() {
  </div>
  {/* Complementos e Modificadores */}
  {options.length > 0 && (
- <div className="ml-5 pl-2 border-l border-primary/40 space-y-0.5 text-xs text-muted-foreground">
+ <div className="ml-5 pl-2 border-l border-primary/40 space-y-1 text-xs text-muted-foreground">
  {options.map((opt: any, idx: number) => (
  <div key={idx} className="flex justify-between">
  <span>+ {opt.label || opt.name}</span>
@@ -1200,14 +1200,14 @@ function KDSPage() {
 
  {/* Observações da Comanda */}
  {selectedOrder.customer_snapshot?.notes && (
- <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 space-y-0.5">
+ <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 space-y-1">
  <span className="font-bold text-xs text-muted-foreground/75 uppercase">Observações do Cliente:</span>
  <p className="text-xs">{selectedOrder.customer_snapshot.notes}</p>
  </div>
  )}
 
  {/* Resumo Financeiro */}
- <div className="p-4 rounded-xl bg-muted/30 border border-border/60 space-y-2">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-2">
  <div className="flex justify-between text-muted-foreground">
  <span>Subtotal</span>
  <span className="font-mono font-semibold text-foreground">
@@ -1245,13 +1245,13 @@ function KDSPage() {
  {sheetTab === "customer" && (
  <div className="space-y-4">
  {/* Dados do Cliente */}
- <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2">
  <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase">Cliente</span>
  <p className="text-base font-bold text-foreground">
  {selectedOrder.customer_snapshot?.name || selectedOrder.customer?.name || "Cliente Avulso"}
  </p>
  {selectedOrder.customer_snapshot?.phone && (
- <p className="font-mono text-muted-foreground flex items-center gap-1.5">
+ <p className="font-mono text-muted-foreground flex items-center gap-2">
  <Phone className="size-3.5" />
  {selectedOrder.customer_snapshot.phone}
  </p>
@@ -1259,7 +1259,7 @@ function KDSPage() {
  </div>
 
  {/* Modalidade de Expedição */}
- <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-3">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-3">
  <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase">
  Tipo de Atendimento
  </span>
@@ -1301,7 +1301,7 @@ function KDSPage() {
  const addr = encodeURIComponent(`${selectedOrder.shipping_address.street}, ${selectedOrder.shipping_address.number || ""}, ${selectedOrder.shipping_address.city || ""}`);
  window.open(`https://www.google.com/maps/search/?api=1&query=${addr}`, "_blank");
  }}
- className="h-9 rounded-xl text-xs font-semibold gap-1.5"
+ className="h-9 rounded-lg text-xs font-semibold gap-2"
  >
  <Navigation className="size-3.5 text-primary" />
  Google Maps
@@ -1314,7 +1314,7 @@ function KDSPage() {
  const addr = encodeURIComponent(`${selectedOrder.shipping_address.street}, ${selectedOrder.shipping_address.number || ""}, ${selectedOrder.shipping_address.city || ""}`);
  window.open(`https://waze.com/ul?q=${addr}`, "_blank");
  }}
- className="h-9 rounded-xl text-xs font-semibold gap-1.5"
+ className="h-9 rounded-lg text-xs font-semibold gap-2"
  >
  <Navigation className="size-3.5 text-info" />
  Waze
@@ -1397,7 +1397,7 @@ function KDSPage() {
  size="icon"
  onClick={handlePrint}
  title="Imprimir comanda térmica 80mm"
- className="size-11 rounded-xl shrink-0 cursor-pointer"
+ className="size-11 rounded-lg shrink-0 cursor-pointer"
  >
  <Printer className="size-5" />
  </Button>
@@ -1408,7 +1408,7 @@ function KDSPage() {
  size="icon"
  onClick={() => window.open(`/workspace/pedidos/${selectedOrder.id}/recibo`, "_blank")}
  title="Imprimir Recibo"
- className="size-11 rounded-xl shrink-0 text-foreground/80 hover:bg-muted cursor-pointer"
+ className="size-11 rounded-lg shrink-0 text-foreground/80 hover:bg-muted cursor-pointer"
  >
  <FileText className="size-5" />
  </Button>
@@ -1420,7 +1420,7 @@ function KDSPage() {
  size="icon"
  onClick={() => handleNotifyCustomerWhatsApp(selectedOrder)}
  title="Avisar cliente no WhatsApp"
- className="size-11 rounded-xl shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+ className="size-11 rounded-lg shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
  >
  <MessageCircle className="size-5" />
  </Button>
@@ -1429,7 +1429,7 @@ function KDSPage() {
  {selectedOrder.status !== "delivered" && selectedOrder.status !== "completed" ? (
  <Button
  type="button"
- className="flex-1 h-11 rounded-xl font-bold text-xs bg-foreground text-background hover:opacity-90 cursor-pointer"
+ className="flex-1 h-11 rounded-lg font-bold text-xs bg-foreground text-background hover:opacity-90 cursor-pointer"
  onClick={(e) => {
  const nextSt = selectedOrder.status === "paid"
  ? "processing"
@@ -1444,7 +1444,7 @@ function KDSPage() {
  {selectedOrder.status === "shipped" && "Finalizar (Entregue)"}
  </Button>
  ) : (
- <Badge variant="outline" className="flex-1 h-11 justify-center rounded-xl text-xs font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+ <Badge variant="outline" className="flex-1 h-11 justify-center rounded-lg text-xs font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
   Pedido Finalizado
  </Badge>
  )}
@@ -1559,9 +1559,9 @@ function KDSPage() {
  return (
  <div
  key={ord.id}
- className="p-3.5 rounded-xl bg-muted/30 border border-border/80 flex items-center justify-between gap-3"
+ className="p-4 rounded-lg bg-muted/30 border border-border/80 flex items-center justify-between gap-3"
  >
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <div className="flex items-center gap-2">
  <span className="font-mono font-bold text-xs">
  #{ord.id.split("-")[0].toUpperCase()}
@@ -1581,7 +1581,7 @@ function KDSPage() {
  size="sm"
  variant="outline"
  onClick={() => handleNotifyCustomerWhatsApp(ord)}
- className="h-8 text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-xl"
+ className="h-8 text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg"
  >
  <MessageCircle className="size-3.5 mr-1" />
  WhatsApp
@@ -1593,7 +1593,7 @@ function KDSPage() {
  setSelectedOrder(ord);
  setAlertModalOpen(false);
  }}
- className="h-8 text-xs font-bold rounded-xl"
+ className="h-8 text-xs font-bold rounded-lg"
  >
  Abrir
  </Button>
@@ -1609,7 +1609,7 @@ function KDSPage() {
  variant="outline"
  size="sm"
  onClick={() => setAlertModalOpen(false)}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Fechar
  </Button>

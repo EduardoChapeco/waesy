@@ -118,12 +118,12 @@ function IntegrationCard({
   };
 
   return (
-    <Card className="bg-card rounded-2xl border border-border/70 shadow-none flex flex-col justify-between">
+    <Card className="bg-card rounded-lg border border-border/70 shadow-none flex flex-col justify-between">
       <div>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-primary/10 rounded-xl text-primary shrink-0">
+              <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
                 <Icon className="size-5" />
               </div>
               <div>
@@ -139,7 +139,7 @@ function IntegrationCard({
                     </Badge>
                   )}
                 </CardTitle>
-                <CardDescription className="text-xs mt-0.5">{description}</CardDescription>
+                <CardDescription className="text-xs mt-1">{description}</CardDescription>
               </div>
             </div>
             <Switch checked={isActive} onCheckedChange={(checked) => setIsActive(checked)} />
@@ -151,7 +151,7 @@ function IntegrationCard({
             <CardContent className="space-y-4 pt-2">
               {testResult && (
                 <div
-                  className={`p-2.5 rounded-xl text-xs flex items-center gap-2 border ${
+                  className={`p-3 rounded-lg text-xs flex items-center gap-2 border ${
                     testResult.success
                       ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
                       : "bg-destructive/10 text-destructive border-destructive/20"
@@ -167,7 +167,7 @@ function IntegrationCard({
               )}
 
               {fields.map((field) => (
-                <div key={field.key} className="space-y-1.5">
+                <div key={field.key} className="space-y-2">
                   <Label htmlFor={`${provider}-${field.key}`} className="text-xs font-semibold">
                     {field.label}
                   </Label>
@@ -178,7 +178,7 @@ function IntegrationCard({
                     required={!existingSetting?.is_active}
                     value={formData[field.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                    className="rounded-xl border-border/70 text-xs h-9"
+                    className="rounded-lg border-border/70 text-xs h-9"
                   />
                 </div>
               ))}
@@ -192,9 +192,9 @@ function IntegrationCard({
                     variant="ghost"
                     size="sm"
                     onClick={() => onDelete(provider)}
-                    className="h-8 px-2.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                    className="h-8 px-3 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg"
                   >
-                    <Trash2 className="size-3.5 mr-1.5" />
+                    <Trash2 className="size-3.5 mr-2" />
                     Remover
                   </Button>
                 )}
@@ -208,15 +208,15 @@ function IntegrationCard({
                     size="sm"
                     onClick={handleRunTest}
                     disabled={isTesting}
-                    className="h-8 px-3 text-xs rounded-xl font-medium cursor-pointer"
+                    className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer"
                   >
-                    <RefreshCw className={`size-3.5 mr-1.5 ${isTesting ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`size-3.5 mr-2 ${isTesting ? "animate-spin" : ""}`} />
                     {isTesting ? "Testando..." : "Testar Conexão"}
                   </Button>
                 )}
 
-                <Button type="submit" size="sm" disabled={isSaving} className="h-8 px-3 text-xs rounded-xl font-bold cursor-pointer">
-                  <Save className="size-3.5 mr-1.5" />
+                <Button type="submit" size="sm" disabled={isSaving} className="h-8 px-3 text-xs rounded-lg font-bold cursor-pointer">
+                  <Save className="size-3.5 mr-2" />
                   {isSaving ? "Salvando..." : "Salvar"}
                 </Button>
               </div>
@@ -300,12 +300,12 @@ function SecretVaultCard({
   };
 
   return (
-    <Card className="bg-card rounded-2xl border border-border/70 shadow-none flex flex-col justify-between">
+    <Card className="bg-card rounded-lg border border-border/70 shadow-none flex flex-col justify-between">
       <div>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-primary/10 rounded-xl text-primary shrink-0">
+              <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
                 <Icon className="size-5" />
               </div>
               <div>
@@ -321,7 +321,7 @@ function SecretVaultCard({
                     </Badge>
                   )}
                 </CardTitle>
-                <CardDescription className="text-xs mt-0.5">{description}</CardDescription>
+                <CardDescription className="text-xs mt-1">{description}</CardDescription>
               </div>
             </div>
             <Switch checked={isActive} onCheckedChange={(checked) => setIsActive(checked)} />
@@ -329,14 +329,14 @@ function SecretVaultCard({
         </CardHeader>
 
         <CardContent className="space-y-3 pt-1">
-          <div className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/50 flex items-center justify-between">
+          <div className="text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/50 flex items-center justify-between">
             <span>Recursos / Modelos:</span>
             <span className="font-semibold text-foreground">{modelsLabel}</span>
           </div>
 
           {existingSecret && (
-            <div className="bg-primary/10 text-primary p-2.5 rounded-xl text-xs flex items-center justify-between border border-primary/20">
-              <div className="flex items-center gap-1.5">
+            <div className="bg-primary/10 text-primary p-3 rounded-lg text-xs flex items-center justify-between border border-primary/20">
+              <div className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 shrink-0 text-primary" />
                 <span className="font-medium">Chave Pessoal Salva:</span>
               </div>
@@ -360,7 +360,7 @@ function SecretVaultCard({
 
           {testResult && (
             <div
-              className={`p-2.5 rounded-xl text-xs flex items-center gap-2 border ${
+              className={`p-3 rounded-lg text-xs flex items-center gap-2 border ${
                 testResult.success
                   ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
                   : "bg-destructive/10 text-destructive border-destructive/20"
@@ -377,7 +377,7 @@ function SecretVaultCard({
 
           {isActive && (
             <form onSubmit={handleSave} className="space-y-3 pt-1">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor={`${provider}-key`} className="text-xs font-semibold">
                   {existingSecret ? "Sobrescrever Chave da API" : "Chave da API (API Key)"}
                 </Label>
@@ -396,7 +396,7 @@ function SecretVaultCard({
                   required={!existingSecret}
                   value={secretKey}
                   onChange={(e) => setSecretKey(e.target.value)}
-                  className="rounded-xl border-border/70 text-xs h-9 font-mono"
+                  className="rounded-lg border-border/70 text-xs h-9 font-mono"
                 />
                 <p className="text-xs text-muted-foreground">
                   Sua chave é encriptada no Secret Vault. Prioridade máxima em carrosséis, contratos e mineração.
@@ -411,14 +411,14 @@ function SecretVaultCard({
                     size="sm"
                     onClick={handleRunTest}
                     disabled={isTesting || (!secretKey.trim() && !existingSecret)}
-                    className="h-8 px-3 text-xs rounded-xl font-medium cursor-pointer"
+                    className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer"
                   >
-                    <RefreshCw className={`size-3.5 mr-1.5 ${isTesting ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`size-3.5 mr-2 ${isTesting ? "animate-spin" : ""}`} />
                     {isTesting ? "Testando..." : "Testar Conexão"}
                   </Button>
                 )}
-                <Button type="submit" size="sm" disabled={isSaving} className="h-8 px-3 text-xs rounded-xl font-bold cursor-pointer">
-                  <Save className="size-3.5 mr-1.5" />
+                <Button type="submit" size="sm" disabled={isSaving} className="h-8 px-3 text-xs rounded-lg font-bold cursor-pointer">
+                  <Save className="size-3.5 mr-2" />
                   {isSaving ? "Salvando..." : "Salvar no Cofre"}
                 </Button>
               </div>
@@ -701,7 +701,7 @@ function UnifiedIntegrationsHubPage() {
         </div>
 
         <Link to="/workspace/integracoes/marketplaces">
-          <Button variant="outline" size="sm" className="h-9 px-3.5 gap-2 rounded-xl text-xs font-semibold">
+          <Button variant="outline" size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-semibold">
             <Store className="size-4 text-primary" />
             Marketplaces
             <ExternalLink className="size-3 text-muted-foreground" />
@@ -711,43 +711,43 @@ function UnifiedIntegrationsHubPage() {
 
       {/* TABS NAVEGAÇÃO DO HUB */}
       <Tabs defaultValue="payments_gateways" className="w-full space-y-6">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 h-auto p-1.5 gap-1.5 bg-muted/60 rounded-2xl border border-border/70">
-          <TabsTrigger value="payments_gateways" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 h-auto p-2 gap-2 bg-muted/60 rounded-lg border border-border/70">
+          <TabsTrigger value="payments_gateways" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <CreditCard className="size-3.5 text-emerald-500" />
             Pagamentos
           </TabsTrigger>
 
-          <TabsTrigger value="ai_vault" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+          <TabsTrigger value="ai_vault" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <Bot className="size-3.5 text-primary" />
             Cofre IA (BYOK)
           </TabsTrigger>
 
-          <TabsTrigger value="marketplaces" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+          <TabsTrigger value="marketplaces" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <Store className="size-3.5 text-emerald-500" />
             Marketplaces
           </TabsTrigger>
 
-          <TabsTrigger value="erp_fiscal" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+          <TabsTrigger value="erp_fiscal" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <FileText className="size-3.5 text-blue-500" />
             Fiscal
           </TabsTrigger>
 
-          <TabsTrigger value="logistics" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+          <TabsTrigger value="logistics" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <Truck className="size-3.5 text-amber-500" />
             Logística
           </TabsTrigger>
 
-          <TabsTrigger value="messaging" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+          <TabsTrigger value="messaging" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <MessageCircle className="size-3.5 text-purple-500" />
             Mensageria
           </TabsTrigger>
 
-          <TabsTrigger value="growth_pixels" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+          <TabsTrigger value="growth_pixels" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <BarChart className="size-3.5 text-pink-500" />
             Pixels
           </TabsTrigger>
 
-          <TabsTrigger value="maps" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+          <TabsTrigger value="maps" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <MapPin className="size-3.5 text-teal-500" />
             Mapas
           </TabsTrigger>
@@ -900,7 +900,7 @@ function UnifiedIntegrationsHubPage() {
               Pool Ativo (Gemini / Groq / OpenAI)
             </Badge>
             <Link to="/workspace/configuracoes/inteligencia-artificial">
-              <Button variant="outline" size="sm" className="h-8 px-3 text-xs rounded-xl font-medium cursor-pointer gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
+              <Button variant="outline" size="sm" className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer gap-2 border-primary/30 text-primary hover:bg-primary/10">
                 <Bot className="size-3.5 text-primary" />
                 Modelos de IA
                 <ExternalLink className="size-3 text-muted-foreground" />
@@ -1000,7 +1000,7 @@ function UnifiedIntegrationsHubPage() {
           <div className="flex items-center justify-between gap-4 pb-1">
             <h4 className="text-sm font-semibold text-foreground">Canais Integrados</h4>
             <Link to="/workspace/integracoes/marketplaces">
-              <Button size="sm" variant="outline" className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer">
+              <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer">
                 Gerenciar Conexões
                 <ExternalLink className="size-3 text-muted-foreground" />
               </Button>
@@ -1022,7 +1022,7 @@ function UnifiedIntegrationsHubPage() {
               const isConnected = conn && conn.status === "connected";
 
               return (
-                <div key={mkt.id} className="p-4 rounded-2xl bg-card border border-border/70 flex flex-col justify-between space-y-3">
+                <div key={mkt.id} className="p-4 rounded-lg bg-card border border-border/70 flex flex-col justify-between space-y-3">
                   <div>
                     <div className="flex items-center justify-between">
                       <h5 className="font-bold text-sm text-foreground">{mkt.name}</h5>
@@ -1324,12 +1324,12 @@ function UnifiedIntegrationsHubPage() {
         <TabsContent value="growth_pixels" className="space-y-4 outline-none">
           <div className="grid lg:grid-cols-2 gap-6">
             {/* LinkedIn Company Page Integration Card */}
-            <Card className="bg-card rounded-2xl border border-border/70 shadow-none flex flex-col justify-between">
+            <Card className="bg-card rounded-lg border border-border/70 shadow-none flex flex-col justify-between">
               <div>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-[#0A66C2]/10 rounded-xl text-[#0A66C2] shrink-0">
+                      <div className="p-3 bg-[#0A66C2]/10 rounded-lg text-[#0A66C2] shrink-0">
                         <Linkedin className="size-5 fill-current" />
                       </div>
                       <div>
@@ -1351,7 +1351,7 @@ function UnifiedIntegrationsHubPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-3 pt-1">
-                  <div className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/50 flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/50 flex items-center justify-between">
                     <span>Status da Sindicação:</span>
                     <span className="font-semibold text-foreground">
                       {linkedInStatus?.isPro ? "Plano PRO Ativo (Habilitado)" : "Requer Plano PRO"}
@@ -1359,9 +1359,9 @@ function UnifiedIntegrationsHubPage() {
                   </div>
 
                   {linkedInStatus?.isConnected ? (
-                    <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-2 text-xs">
+                    <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 space-y-2 text-xs">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 font-bold text-emerald-800 dark:text-emerald-300">
+                        <div className="flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300">
                           <CheckCircle2 className="size-4 text-emerald-600" />
                           <span>Página Vinculada com Sucesso</span>
                         </div>
@@ -1394,7 +1394,7 @@ function UnifiedIntegrationsHubPage() {
                         type="button"
                         onClick={handleConnectLinkedIn}
                         disabled={isConnectingLinkedIn}
-                        className="w-full h-10 rounded-xl text-xs font-bold gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+                        className="w-full h-10 rounded-lg text-xs font-bold gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
                       >
                         {isConnectingLinkedIn ? (
                           <>

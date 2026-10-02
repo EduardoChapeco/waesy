@@ -57,7 +57,7 @@ export const Route = createFileRoute("/workspace/marketing/anuncios")({
 function WorkspaceAnunciosErrorComponent({ error }: { error: any }) {
   return (
     <div className="w-full max-w-lg mx-auto p-4 sm:p-8 text-center space-y-4">
-      <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-1">
         <Megaphone className="size-7" />
       </div>
       <div className="space-y-1">
@@ -67,7 +67,7 @@ function WorkspaceAnunciosErrorComponent({ error }: { error: any }) {
         </p>
       </div>
       {error?.message && (
-        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
           {error.message}
         </pre>
       )}
@@ -75,7 +75,7 @@ function WorkspaceAnunciosErrorComponent({ error }: { error: any }) {
         <Button
           variant="default"
           size="sm"
-          className="rounded-xl text-xs h-10 px-5 font-bold cursor-pointer"
+          className="rounded-lg text-xs h-10 px-5 font-bold cursor-pointer"
           onClick={() => window.location.reload()}
         >
           Recarregar Página
@@ -369,7 +369,7 @@ function AnunciosWorkspacePage() {
         />
 
         {/* ── FASE 4: DASHBOARD DE ROI & TELEMETRIA FECHADA (V125 + V139 + V141) ── */}
-        <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-4">
+        <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -393,7 +393,7 @@ function AnunciosWorkspacePage() {
                   size="sm"
                   variant="outline"
                   onClick={() => setMaxUpsellOpen(true)}
-                  className="h-11 rounded-xl text-xs font-semibold gap-1.5"
+                  className="h-11 rounded-lg text-xs font-semibold gap-2"
                 >
                   <Lock className="size-3.5" />
                   Desbloquear Tráfego Externo
@@ -410,7 +410,7 @@ function AnunciosWorkspacePage() {
                 value={selectedCatalogItemId}
                 onValueChange={(v) => setSelectedCatalogItemId(v)}
               >
-                <SelectTrigger className="h-11 rounded-xl bg-background text-xs">
+                <SelectTrigger className="h-11 rounded-lg bg-background text-xs">
                   <SelectValue placeholder="Selecione um item do catálogo para gerar copy e arte..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -453,7 +453,7 @@ function AnunciosWorkspacePage() {
                   setIsGeneratingAiCreative(false);
                 }
               }}
-              className="h-11 rounded-xl text-xs font-semibold px-4"
+              className="h-11 rounded-lg text-xs font-semibold px-4"
             >
               {isGeneratingAiCreative ? "Processando..." : "1. Gerar Anúncio do Catálogo"}
             </Button>
@@ -487,7 +487,7 @@ function AnunciosWorkspacePage() {
                     setIsPublishingExternal(false);
                   }
                 }}
-                className="h-11 rounded-xl text-xs font-bold px-4"
+                className="h-11 rounded-lg text-xs font-bold px-4"
               >
                 {isPublishingExternal ? "Publicando..." : "2. Publicar Campanha Agora"}
               </Button>
@@ -495,7 +495,7 @@ function AnunciosWorkspacePage() {
           </div>
 
           {aiCreativePreview && (
-            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/50 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <span className="text-xs font-bold uppercase text-muted-foreground">Headline Estruturada</span>
                 <p className="text-xs font-bold text-foreground">{aiCreativePreview.creative.headline}</p>
@@ -514,7 +514,7 @@ function AnunciosWorkspacePage() {
 
         {/* ── SHEET SILENCIOSO DE UPSELL WAESY MAX (FASE 2 MAX TIER GATE) ── */}
         <Sheet open={maxUpsellOpen} onOpenChange={setMaxUpsellOpen}>
-          <SheetContent side="bottom" className="rounded-t-2xl max-w-xl mx-auto p-6 space-y-5">
+          <SheetContent side="bottom" className="rounded-t-lg max-w-xl mx-auto p-6 space-y-5">
             <SheetHeader className="space-y-1 text-left">
               <Badge variant="default" className="w-fit text-xs">Exclusivo Waesy Max</Badge>
               <SheetTitle className="text-lg font-bold">Tráfego Externo</SheetTitle>
@@ -522,22 +522,22 @@ function AnunciosWorkspacePage() {
                 Conecte Meta Ads e Google Ads via OAuth 2.0, gere anúncios direto do seu catálogo e receba 50% de subsídio em todos os destaques internos da vitrine.
               </SheetDescription>
             </SheetHeader>
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border/50">
                 <span className="font-medium">Conector Oficial Meta Graph API</span>
                 <Badge variant="outline" className="text-xs">Incluído</Badge>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border/50">
                 <span className="font-medium">Subsídio em Destaques na Vitrine</span>
                 <Badge variant="outline" className="text-xs">50% OFF</Badge>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border/50">
                 <span className="font-medium">Atribuição Determinística de Receita</span>
                 <Badge variant="outline" className="text-xs">Incluído</Badge>
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 pt-2">
-              <Button variant="ghost" size="sm" onClick={() => setMaxUpsellOpen(false)} className="h-11 rounded-xl text-xs">
+              <Button variant="ghost" size="sm" onClick={() => setMaxUpsellOpen(false)} className="h-11 rounded-lg text-xs">
                 Agora não
               </Button>
               <Button
@@ -559,7 +559,7 @@ function AnunciosWorkspacePage() {
                     setIsUpgradingMax(false);
                   }
                 }}
-                className="h-11 rounded-xl text-xs font-bold px-5"
+                className="h-11 rounded-lg text-xs font-bold px-5"
               >
                 {isUpgradingMax ? "Ativando..." : "Ativar Waesy Max (R$ 99/mês)"}
               </Button>
@@ -570,8 +570,8 @@ function AnunciosWorkspacePage() {
         {/* ── CONDICIONAL: META ADS & INSTAGRAM (V143 TRUTH ENGINE EMPTY STATE) ── */}
         {activeTab === "meta_ads" && (
           !isMetaConnected ? (
-            <div className="rounded-2xl border border-border/60 bg-card p-12 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="size-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground grayscale">
+            <div className="rounded-lg border border-border/60 bg-card p-12 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="size-14 rounded-lg bg-muted flex items-center justify-center text-muted-foreground grayscale">
                 <Globe className="size-7" />
               </div>
               <div className="space-y-1 max-w-md">
@@ -583,20 +583,20 @@ function AnunciosWorkspacePage() {
               <Button
                 size="sm"
                 onClick={() => setActivationSheetPlatform("meta_ads")}
-                className="h-11 rounded-xl text-xs font-bold px-6"
+                className="h-11 rounded-lg text-xs font-bold px-6"
               >
                 Ativar Integração
               </Button>
             </div>
           ) : (
-            <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-6">
+            <div className="rounded-lg border border-border/60 bg-card p-6 space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-foreground">Meta Ads</h3>
                     <Badge variant="default" className="text-xs">Conectado (AES-256-GCM)</Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Conta Business sincronizada via Graph API v20.0 e Catálogo CSV ativo.
                   </p>
                 </div>
@@ -604,15 +604,15 @@ function AnunciosWorkspacePage() {
                   size="sm"
                   variant="outline"
                   onClick={() => setActivationSheetPlatform("meta_ads")}
-                  className="h-11 rounded-xl text-xs font-semibold"
+                  className="h-11 rounded-lg text-xs font-semibold"
                 >
                   Atualizar Credenciais OAuth
                 </Button>
               </div>
 
-              <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-2">
                     <Globe className="size-3.5 text-primary" />
                     Feed de Produtos para o Meta Catalog (CSV Oficial)
                   </span>
@@ -643,8 +643,8 @@ function AnunciosWorkspacePage() {
         {/* ── CONDICIONAL: GOOGLE ADS & SHOPPING (V143 TRUTH ENGINE EMPTY STATE) ── */}
         {activeTab === "google_ads" && (
           !isGoogleConnected ? (
-            <div className="rounded-2xl border border-border/60 bg-card p-12 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="size-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground grayscale">
+            <div className="rounded-lg border border-border/60 bg-card p-12 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="size-14 rounded-lg bg-muted flex items-center justify-center text-muted-foreground grayscale">
                 <Globe className="size-7" />
               </div>
               <div className="space-y-1 max-w-md">
@@ -656,20 +656,20 @@ function AnunciosWorkspacePage() {
               <Button
                 size="sm"
                 onClick={() => setActivationSheetPlatform("google_ads")}
-                className="h-11 rounded-xl text-xs font-bold px-6"
+                className="h-11 rounded-lg text-xs font-bold px-6"
               >
                 Ativar Integração
               </Button>
             </div>
           ) : (
-            <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-6">
+            <div className="rounded-lg border border-border/60 bg-card p-6 space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-foreground">Google Ads e Merchant Center</h3>
                     <Badge variant="default" className="text-xs">Conectado (AES-256-GCM)</Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Sincronização ativa com Google Ads API v17 e Merchant Center XML.
                   </p>
                 </div>
@@ -677,15 +677,15 @@ function AnunciosWorkspacePage() {
                   size="sm"
                   variant="outline"
                   onClick={() => setActivationSheetPlatform("google_ads")}
-                  className="h-11 rounded-xl text-xs font-semibold"
+                  className="h-11 rounded-lg text-xs font-semibold"
                 >
                   Atualizar Credenciais OAuth
                 </Button>
               </div>
 
-              <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-2">
                     <Globe className="size-3.5 text-primary" />
                     Feed XML para o Google Merchant Center (RSS 2.0 Oficial)
                   </span>
@@ -715,7 +715,7 @@ function AnunciosWorkspacePage() {
 
         {/* ── SHEET DE ATIVAÇÃO AUTÊNTICA DE API COM COFRE AES-256-GCM (FASE 3) ── */}
         <Sheet open={Boolean(activationSheetPlatform)} onOpenChange={(open) => !open && setActivationSheetPlatform(null)}>
-          <SheetContent side="bottom" className="rounded-t-2xl max-w-xl mx-auto p-6 space-y-5">
+          <SheetContent side="bottom" className="rounded-t-lg max-w-xl mx-auto p-6 space-y-5">
             <SheetHeader className="space-y-1 text-left">
               <Badge variant="outline" className="w-fit text-xs">Cofre AES-256-GCM</Badge>
               <SheetTitle className="text-lg font-bold">
@@ -726,7 +726,7 @@ function AnunciosWorkspacePage() {
               </SheetDescription>
             </SheetHeader>
             <div className="space-y-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">
                   {activationSheetPlatform === "google_ads" ? "Customer ID (Ex: 123-456-7890)" : "Ad Account ID (Ex: act_123456789)"}
                 </Label>
@@ -738,10 +738,10 @@ function AnunciosWorkspacePage() {
                       : setMetaAdAccountId(e.target.value)
                   }
                   placeholder={activationSheetPlatform === "google_ads" ? "123-456-7890" : "act_123456789"}
-                  className="h-11 rounded-xl bg-background text-xs font-mono"
+                  className="h-11 rounded-lg bg-background text-xs font-mono"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">
                   {activationSheetPlatform === "google_ads" ? "Conversion ID (Opcional)" : "Pixel ID (Opcional)"}
                 </Label>
@@ -753,22 +753,22 @@ function AnunciosWorkspacePage() {
                       : setMetaPixelId(e.target.value)
                   }
                   placeholder={activationSheetPlatform === "google_ads" ? "AW-123456789" : "123456789012345"}
-                  className="h-11 rounded-xl bg-background text-xs font-mono"
+                  className="h-11 rounded-lg bg-background text-xs font-mono"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">OAuth 2.0 Access Token / Client Secret</Label>
                 <Input
                   type="password"
                   value={oauthTokenInput}
                   onChange={(e) => setOauthTokenInput(e.target.value)}
                   placeholder="Cole o token OAuth 2.0 oficial..."
-                  className="h-11 rounded-xl bg-background text-xs font-mono"
+                  className="h-11 rounded-lg bg-background text-xs font-mono"
                 />
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 pt-2">
-              <Button variant="ghost" size="sm" onClick={() => setActivationSheetPlatform(null)} className="h-11 rounded-xl text-xs">
+              <Button variant="ghost" size="sm" onClick={() => setActivationSheetPlatform(null)} className="h-11 rounded-lg text-xs">
                 Cancelar
               </Button>
               <Button
@@ -803,7 +803,7 @@ function AnunciosWorkspacePage() {
                     setIsSavingChannels(false);
                   }
                 }}
-                className="h-11 rounded-xl text-xs font-bold px-6"
+                className="h-11 rounded-lg text-xs font-bold px-6"
               >
                 {isSavingChannels ? "Encriptando..." : "Salvar e Conectar API"}
               </Button>
@@ -813,29 +813,29 @@ function AnunciosWorkspacePage() {
 
         {/* ── CONDICIONAL: GERADOR DE LINKS UTM ── */}
         {activeTab === "utm_builder" && (
-          <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-6 shadow-xs">
+          <div className="rounded-lg border border-border/60 bg-card p-6 space-y-6 shadow-xs">
             <div className="border-b border-border/40 pb-4">
               <h3 className="text-base font-bold text-foreground">Gerador de Links Rastreados (Parâmetros UTM)</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1">
                 Construa URLs parametrizadas para anúncios no Instagram, TikTok, Google ou parcerias com influenciadores.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Página de Destino</Label>
                 <Input
                   value={utmPath}
                   onChange={(e) => setUtmPath(e.target.value)}
                   placeholder="Ex: / ou /produto/vestido"
-                  className="h-9 rounded-xl bg-background text-xs"
+                  className="h-9 rounded-lg bg-background text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Origem do Tráfego (utm_source)</Label>
                 <Select value={utmSource} onValueChange={(v) => setUtmSource(v as any)}>
-                  <SelectTrigger className="h-9 rounded-xl bg-background text-xs">
+                  <SelectTrigger className="h-9 rounded-lg bg-background text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -847,20 +847,20 @@ function AnunciosWorkspacePage() {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Nome da Campanha (utm_campaign)</Label>
                 <Input
                   value={utmCampaign}
                   onChange={(e) => setUtmCampaign(e.target.value)}
                   placeholder="Ex: verao_2026"
-                  className="h-9 rounded-xl bg-background text-xs"
+                  className="h-9 rounded-lg bg-background text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Mídia / Posicionamento (utm_medium)</Label>
                 <Select value={utmMedium} onValueChange={(v) => setUtmMedium(v as any)}>
-                  <SelectTrigger className="h-9 rounded-xl bg-background text-xs">
+                  <SelectTrigger className="h-9 rounded-lg bg-background text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -896,14 +896,14 @@ function AnunciosWorkspacePage() {
                     setIsGeneratingUtm(false);
                   }
                 }}
-                className="rounded-xl text-xs font-semibold px-4"
+                className="rounded-lg text-xs font-semibold px-4"
               >
                 Gerar Link Rastreado
               </Button>
             </div>
 
             {generatedUtmUrl && (
-              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground">Link Pronto para o Anúncio</span>
                   <Button
@@ -931,7 +931,7 @@ function AnunciosWorkspacePage() {
         {["all", "active", "paused"].includes(activeTab) && (
         <>
         {/* ── ASSISTENTE IA & PROTOCOLO MCP AD-TECH ── */}
-        <div className="rounded-2xl border border-border/80 bg-card p-3 sm:p-4 shadow-xs space-y-3">
+        <div className="rounded-lg border border-border/80 bg-card p-3 sm:p-4 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -940,7 +940,7 @@ function AnunciosWorkspacePage() {
               <span className="text-xs font-bold text-foreground">
                 Criador de Anúncios com IA (Protocolo MCP)
               </span>
-              <Badge variant="outline" className="text-xs h-5 px-1.5 font-mono text-muted-foreground border-border/60">
+              <Badge variant="outline" className="text-xs h-5 px-2 font-mono text-muted-foreground border-border/60">
                 Linguagem Natural e Voz
               </Badge>
             </div>
@@ -969,13 +969,13 @@ function AnunciosWorkspacePage() {
                 onChange={(e) => setMcpPrompt(e.target.value)}
                 placeholder="Ex: Cria anúncio no Instagram de R$ 50/dia para a Oktoberfest..."
                 disabled={isGeneratingMcp}
-                className="h-11 rounded-xl text-xs bg-muted/20 border-border/60 pr-10 focus-visible:ring-1"
+                className="h-11 rounded-lg text-xs bg-muted/20 border-border/60 pr-10 focus-visible:ring-1"
               />
               <button
                 type="button"
                 onClick={handleToggleVoice}
                 title={isListeningVoice ? "Parar de ouvir" : "Falar comando por voz"}
-                className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors ${
+                className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors ${
                   isListeningVoice
                     ? "bg-destructive text-destructive-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -988,7 +988,7 @@ function AnunciosWorkspacePage() {
             <Button
               type="submit"
               disabled={isGeneratingMcp || !mcpPrompt.trim()}
-              className="h-11 px-4 rounded-xl text-xs font-semibold gap-1.5 shrink-0"
+              className="h-11 px-4 rounded-lg text-xs font-semibold gap-2 shrink-0"
             >
               {isGeneratingMcp ? (
                 <>
@@ -1005,7 +1005,7 @@ function AnunciosWorkspacePage() {
           </form>
 
           {/* Sugestões Rápidas de Prompt em 1 Toque */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
             <span className="text-xs font-medium text-muted-foreground shrink-0 mr-1">
               Sugestões:
             </span>
@@ -1023,7 +1023,7 @@ function AnunciosWorkspacePage() {
                   handleGenerateMcp(sug);
                 }}
                 disabled={isGeneratingMcp}
-                className="text-xs whitespace-nowrap px-2.5 py-1 rounded-lg border border-border/60 bg-muted/10 hover:bg-muted/30 text-foreground transition-colors cursor-pointer shrink-0"
+                className="text-xs whitespace-nowrap px-3 py-1 rounded-lg border border-border/60 bg-muted/10 hover:bg-muted/30 text-foreground transition-colors cursor-pointer shrink-0"
               >
                 {sug}
               </button>
@@ -1045,7 +1045,7 @@ function AnunciosWorkspacePage() {
         )}
 
         
-        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-xs">
+        <div className="rounded-lg border border-border/60 bg-card overflow-hidden shadow-xs">
           <div className="p-4 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40">
             <div className="flex items-center gap-2">
               <Megaphone className="size-4 text-primary" />
@@ -1054,17 +1054,17 @@ function AnunciosWorkspacePage() {
               </h2>
             </div>
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
-              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs font-medium shrink-0">
+              <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs font-medium shrink-0">
                 <Link to="/workspace/marketing/pixels">
                   Pixels CAPI
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs font-medium shrink-0">
+              <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs font-medium shrink-0">
                 <Link to="/workspace/integracoes/marketplaces">
                   Marketplaces
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs font-medium shrink-0">
+              <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs font-medium shrink-0">
                 <Link to="/workspace/marketing/afiliados">
                   Afiliados
                 </Link>
@@ -1085,7 +1085,7 @@ function AnunciosWorkspacePage() {
 
           {filteredCampaigns.length === 0 ? (
             <div className="p-12 text-center space-y-3">
-              <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+              <div className="inline-flex size-12 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                 <Megaphone className="size-6" />
               </div>
               <p className="text-sm font-semibold text-foreground">Nenhuma campanha encontrada</p>
@@ -1096,9 +1096,9 @@ function AnunciosWorkspacePage() {
               <Button
                 size="sm"
                 onClick={() => setQuickCreateOpen(true)}
-                className="rounded-xl mt-2 h-11 px-5 font-bold min-h-[44px]"
+                className="rounded-lg mt-2 h-11 px-5 font-bold min-h-11"
               >
-                <Plus className="size-4 mr-1.5" />
+                <Plus className="size-4 mr-2" />
                 Criar Anúncio Rápido
               </Button>
             </div>
@@ -1109,15 +1109,15 @@ function AnunciosWorkspacePage() {
                   key={c.id}
                   className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 transition-colors"
                 >
-                  <div className="space-y-1.5 min-w-0 flex-1">
+                  <div className="space-y-2 min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge
                         variant={c.status === "active" ? "default" : "secondary"}
-                        className="text-xs rounded-md font-bold px-2 py-0.5 uppercase tracking-wider"
+                        className="text-xs rounded-md font-bold px-2 py-1 uppercase tracking-wider"
                       >
                         {c.status === "active" ? "Veiculando" : "Pausada"}
                       </Badge>
-                      <Badge variant="outline" className="text-xs rounded-md font-medium px-2 py-0.5">
+                      <Badge variant="outline" className="text-xs rounded-md font-medium px-2 py-1">
                         {FORMAT_LABELS[c.format] || c.format}
                       </Badge>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -1176,7 +1176,7 @@ function AnunciosWorkspacePage() {
                         }
                       }}
                       disabled={updatingId === c.id}
-                      className="rounded-xl text-xs font-bold gap-1.5 h-11 px-3.5 min-h-[44px]"
+                      className="rounded-lg text-xs font-bold gap-2 h-11 px-4 min-h-11"
                     >
                       <Zap className="size-3.5" />
                       <span>Impulsionar</span>
@@ -1187,7 +1187,7 @@ function AnunciosWorkspacePage() {
                       size="sm"
                       onClick={() => handleToggle(c)}
                       disabled={updatingId === c.id}
-                      className="rounded-xl text-xs font-bold gap-1.5 h-11 px-4 min-h-[44px]"
+                      className="rounded-lg text-xs font-bold gap-2 h-11 px-4 min-h-11"
                     >
                       {c.status === "active" ? (
                         <>
@@ -1220,7 +1220,7 @@ function AnunciosWorkspacePage() {
                         }
                       }}
                       disabled={updatingId === c.id}
-                      className="rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 size-11 min-h-[44px]"
+                      className="rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 size-11 min-h-11"
                     >
                       <Trash2 className="size-4" />
                     </Button>
@@ -1247,7 +1247,7 @@ function AnunciosWorkspacePage() {
           <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] overflow-y-auto p-6 space-y-6">
             <SheetHeader className="space-y-1 text-left">
               <div className="flex items-center gap-2">
-                <span className="p-2 rounded-xl bg-primary/10 text-primary">
+                <span className="p-2 rounded-lg bg-primary/10 text-primary">
                   <Zap className="size-4" />
                 </span>
                 <SheetTitle className="text-base font-bold">Lançar Anúncio em 3 Toques</SheetTitle>
@@ -1267,7 +1267,7 @@ function AnunciosWorkspacePage() {
                       key={fmt.id}
                       type="button"
                       onClick={() => setFormFormat(fmt.id)}
-                      className={`p-3 rounded-xl border text-left transition-all ${
+                      className={`p-3 rounded-lg border text-left transition-all ${
                         formFormat === fmt.id
                           ? "border-primary bg-primary/5 text-primary font-bold"
                           : "border-border/60 hover:bg-muted/30 text-muted-foreground"
@@ -1288,7 +1288,7 @@ function AnunciosWorkspacePage() {
                     value={formTitle}
                     onChange={(e) => setFormTitle(e.target.value)}
                     required
-                    className="h-11 rounded-xl text-sm"
+                    className="h-11 rounded-lg text-sm"
                   />
                 </div>
 
@@ -1298,7 +1298,7 @@ function AnunciosWorkspacePage() {
                     placeholder="Ex: Peça pelo WhatsApp com frete grátis"
                     value={formHeadline}
                     onChange={(e) => setFormHeadline(e.target.value)}
-                    className="h-11 rounded-xl text-sm"
+                    className="h-11 rounded-lg text-sm"
                   />
                 </div>
               </div>
@@ -1314,9 +1314,9 @@ function AnunciosWorkspacePage() {
               </div>
 
               {/* Truthful Preview Compacto */}
-              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/40 space-y-2">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border/40 space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-2">
                     <Eye className="size-3 text-primary" />
                     Prévia Real
                   </span>
@@ -1324,7 +1324,7 @@ function AnunciosWorkspacePage() {
                 </div>
 
                 <div
-                  className="w-full rounded-xl overflow-hidden bg-background border border-border/60 relative flex items-center justify-center"
+                  className="w-full rounded-lg overflow-hidden bg-background border border-border/60 relative flex items-center justify-center"
                   style={{
                     aspectRatio: `${currentFormatConfig.aspect}`,
                     maxHeight: formFormat === "banner_destaque" ? "140px" : "200px",
@@ -1349,7 +1349,7 @@ function AnunciosWorkspacePage() {
                   </div>
                 </div>
 
-                <div className="text-xs space-y-0.5 pt-1">
+                <div className="text-xs space-y-1 pt-1">
                   <p className="font-bold text-foreground truncate">
                     {formHeadline || formTitle || "Título da chamada"}
                   </p>
@@ -1367,7 +1367,7 @@ function AnunciosWorkspacePage() {
                   <Input
                     value={formLocation}
                     onChange={(e) => setFormLocation(e.target.value)}
-                    className="h-11 rounded-xl text-sm"
+                    className="h-11 rounded-lg text-sm"
                   />
                 </div>
                 <div className="space-y-1">
@@ -1390,7 +1390,7 @@ function AnunciosWorkspacePage() {
                   <CurrencyField
                     value={formDailyCents}
                     onChange={(val) => setFormDailyCents(val || 0)}
-                    className="h-11 rounded-xl text-sm"
+                    className="h-11 rounded-lg text-sm"
                   />
                 </div>
                 <div className="space-y-1">
@@ -1398,7 +1398,7 @@ function AnunciosWorkspacePage() {
                   <CurrencyField
                     value={formTotalCents}
                     onChange={(val) => setFormTotalCents(val || 0)}
-                    className="h-11 rounded-xl text-sm"
+                    className="h-11 rounded-lg text-sm"
                   />
                 </div>
               </div>
@@ -1408,7 +1408,7 @@ function AnunciosWorkspacePage() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-12 rounded-xl text-sm font-bold min-h-[44px]"
+                  className="w-full h-12 rounded-lg text-sm font-bold min-h-11"
                 >
                   {isSubmitting ? (
                     <>

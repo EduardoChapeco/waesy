@@ -183,16 +183,16 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
     <div className="space-y-6">
       {/* ── 1. Painel de Métricas & Check-in Rápido da Portaria de Staff ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card rounded-2xl p-4 border border-border/60 shadow-2xs space-y-1">
-          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+        <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-1">
+          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
             <Users className="size-3.5 text-primary" /> Total de Credenciados
           </span>
           <div className="text-2xl font-bold text-foreground">{total}</div>
           <p className="text-[11px] text-muted-foreground">Staff, convidados, parceiros e imprensa</p>
         </div>
 
-        <div className="bg-card rounded-2xl p-4 border border-border/60 shadow-2xs space-y-1">
-          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+        <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-1">
+          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
             <CheckCircle2 className="size-3.5 text-emerald-500" /> Presenças Confirmadas
           </span>
           <div className="text-2xl font-bold text-foreground">
@@ -201,8 +201,8 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
           <p className="text-[11px] text-muted-foreground">Check-ins validados na portaria</p>
         </div>
 
-        <div className="bg-card rounded-2xl p-4 border border-border/60 shadow-2xs space-y-2">
-          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+        <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-2">
+          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
             <QrCode className="size-3.5 text-primary" /> Validador de Crachá
           </span>
           <form onSubmit={handleQuickCheckin} className="flex gap-2">
@@ -210,13 +210,13 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               value={checkinCode}
               onChange={(e) => setCheckinCode(e.target.value)}
               placeholder="Cole ou leia o código..."
-              className="h-9 rounded-xl text-xs font-mono"
+              className="h-9 rounded-lg text-xs font-mono"
             />
             <Button
               type="submit"
               size="sm"
               disabled={isValidating || !checkinCode.trim()}
-              className="h-9 rounded-xl font-bold text-xs shrink-0 cursor-pointer"
+              className="h-9 rounded-lg font-bold text-xs shrink-0 cursor-pointer"
             >
               {isValidating ? "Validando..." : "Validar"}
             </Button>
@@ -233,7 +233,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por nome, cargo ou código..."
-              className="h-9 pl-9 rounded-xl text-xs bg-muted/30"
+              className="h-9 pl-9 rounded-lg text-xs bg-muted/30"
             />
           </div>
         </div>
@@ -245,7 +245,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               resetForm();
               setIsSheetOpen(true);
             }}
-            className="h-9 rounded-xl font-bold text-xs gap-1.5 cursor-pointer shadow-xs"
+            className="h-9 rounded-lg font-bold text-xs gap-2 cursor-pointer shadow-xs"
           >
             <Plus className="size-4" />
             <span>Emitir Credencial</span>
@@ -254,11 +254,11 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
       </div>
 
       {/* Filtros em Pílulas */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
         <button
           type="button"
           onClick={() => setFilterType("all")}
-          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+          className={`px-3 py-2 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
             filterType === "all"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -274,7 +274,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               key={t.value}
               type="button"
               onClick={() => setFilterType(t.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+              className={`px-3 py-2 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                 isSelected
                   ? "bg-primary text-primary-foreground shadow-2xs"
                   : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -291,7 +291,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
         {loading ? (
           <div className="p-8 text-center text-xs text-muted-foreground">Carregando credenciais...</div>
         ) : filteredCredentials.length === 0 ? (
-          <div className="p-8 text-center text-xs text-muted-foreground bg-muted/20 rounded-2xl border border-dashed border-border/70">
+          <div className="p-8 text-center text-xs text-muted-foreground bg-muted/20 rounded-lg border border-dashed border-border/70">
             Nenhuma credencial encontrada.
           </div>
         ) : (
@@ -303,14 +303,14 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               <div
                 key={c.id}
                 onClick={() => setSelectedBadge(c)}
-                className="p-3 rounded-2xl bg-card border border-border/60 flex items-center justify-between gap-3 shadow-2xs active:bg-muted/40 cursor-pointer"
+                className="p-3 rounded-lg bg-card border border-border/60 flex items-center justify-between gap-3 shadow-2xs active:bg-muted/40 cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="size-10 rounded-xl bg-muted/50 flex items-center justify-center shrink-0 border border-border/40">
+                  <div className="size-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 border border-border/40">
                     <Icon className="size-5 text-muted-foreground" />
                   </div>
-                  <div className="min-w-0 space-y-0.5">
-                    <div className="flex items-center gap-1.5">
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex items-center gap-2">
                       <h4 className="text-xs font-bold text-foreground truncate">{c.nome}</h4>
                       {c.checkin_realizado && (
                         <span className="inline-flex size-2 rounded-full bg-emerald-500 shrink-0" title="Check-in feito" />
@@ -324,7 +324,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant="outline" className={`text-[10px] font-mono py-0 px-1.5 ${typeConfig?.badgeStyle || ""}`}>
+                  <Badge variant="outline" className={`text-[10px] font-mono py-0 px-2 ${typeConfig?.badgeStyle || ""}`}>
                     {c.nivel_acesso.toUpperCase()}
                   </Badge>
                   <QrCode className="size-4 text-muted-foreground" />
@@ -340,7 +340,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
         {loading ? (
           <div className="col-span-full p-8 text-center text-xs text-muted-foreground">Carregando credenciais...</div>
         ) : filteredCredentials.length === 0 ? (
-          <div className="col-span-full p-12 text-center text-xs text-muted-foreground bg-muted/20 rounded-2xl border border-dashed border-border/70">
+          <div className="col-span-full p-12 text-center text-xs text-muted-foreground bg-muted/20 rounded-lg border border-dashed border-border/70">
             Nenhuma credencial encontrada.
           </div>
         ) : (
@@ -351,12 +351,12 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
             return (
               <div
                 key={c.id}
-                className="rounded-2xl border border-border/60 bg-card p-4 space-y-3 shadow-2xs hover:border-border transition-all flex flex-col justify-between group"
+                className="rounded-lg border border-border/60 bg-card p-4 space-y-3 shadow-2xs hover:border-border transition-all flex flex-col justify-between group"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="size-9 rounded-xl bg-muted/50 flex items-center justify-center shrink-0 border border-border/40">
+                    <div className="flex items-center gap-3">
+                      <div className="size-9 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 border border-border/40">
                         <Icon className="size-4 text-muted-foreground" />
                       </div>
                       <div>
@@ -368,12 +368,12 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                       </div>
                     </div>
 
-                    <Badge variant="outline" className={`text-[10px] font-mono shrink-0 py-0.5 px-2 ${typeConfig?.badgeStyle || ""}`}>
+                    <Badge variant="outline" className={`text-[10px] font-mono shrink-0 py-1 px-2 ${typeConfig?.badgeStyle || ""}`}>
                       {typeConfig?.label}
                     </Badge>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 flex items-center justify-between text-xs">
+                  <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between text-xs">
                     <div>
                       <span className="text-[10px] text-muted-foreground block font-mono">CÓDIGO DE ACESSO</span>
                       <span className="font-mono font-bold text-foreground">{c.qr_code}</span>
@@ -407,7 +407,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                     size="sm"
                     variant="outline"
                     onClick={() => setSelectedBadge(c)}
-                    className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+                    className="h-8 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
                   >
                     <QrCode className="size-3.5" />
                     <span>Ver Crachá</span>
@@ -432,7 +432,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                         });
                         setIsSheetOpen(true);
                       }}
-                      className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       Editar
                     </Button>
@@ -441,7 +441,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                       size="sm"
                       variant="ghost"
                       onClick={() => handleDeleteCredential(c.id)}
-                      className="size-8 p-0 rounded-xl text-destructive hover:bg-destructive/10 cursor-pointer"
+                      className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                     >
                       <Trash2 className="size-3.5" />
                     </Button>
@@ -467,13 +467,13 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
 
           <form onSubmit={handleSaveCredential} className="flex-1 flex flex-col justify-between overflow-hidden">
             <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Tipo de Credencial *</Label>
                 <Select
                   value={formData.tipo}
                   onValueChange={(val) => setFormData({ ...formData, tipo: val as any })}
                 >
-                  <SelectTrigger className="h-9 rounded-xl text-xs">
+                  <SelectTrigger className="h-9 rounded-lg text-xs">
                     <SelectValue placeholder="Selecione o tipo..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -486,55 +486,55 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Nome Completo *</Label>
                 <Input
                   value={formData.nome}
                   onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                   placeholder="Ex: Carlos Eduardo de Oliveira"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-9 rounded-lg text-xs"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Função / Cargo</Label>
                   <Input
                     value={formData.cargo}
                     onChange={(e) => setFormData({ ...formData, cargo: e.target.value })}
                     placeholder="Ex: Chefe de Segurança"
-                    className="h-9 rounded-xl text-xs"
+                    className="h-9 rounded-lg text-xs"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Empresa / Órgão</Label>
                   <Input
                     value={formData.empresaOrigem}
                     onChange={(e) => setFormData({ ...formData, empresaOrigem: e.target.value })}
                     placeholder="Ex: PM / TV Globo"
-                    className="h-9 rounded-xl text-xs"
+                    className="h-9 rounded-lg text-xs"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Documento (CPF/RG)</Label>
                   <Input
                     value={formData.documento}
                     onChange={(e) => setFormData({ ...formData, documento: e.target.value })}
                     placeholder="000.000.000-00"
-                    className="h-9 rounded-xl text-xs font-mono"
+                    className="h-9 rounded-lg text-xs font-mono"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Nível de Acesso</Label>
                   <Select
                     value={formData.nivelAcesso}
                     onValueChange={(val) => setFormData({ ...formData, nivelAcesso: val as any })}
                   >
-                    <SelectTrigger className="h-9 rounded-xl text-xs">
+                    <SelectTrigger className="h-9 rounded-lg text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -548,23 +548,23 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Telefone / WhatsApp</Label>
                   <Input
                     value={formData.telefone}
                     onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                     placeholder="(00) 00000-0000"
-                    className="h-9 rounded-xl text-xs"
+                    className="h-9 rounded-lg text-xs"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">E-mail</Label>
                   <Input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="email@dominio.com"
-                    className="h-9 rounded-xl text-xs"
+                    className="h-9 rounded-lg text-xs"
                   />
                 </div>
               </div>
@@ -576,7 +576,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSheetOpen(false)}
-                className="rounded-xl text-xs"
+                className="rounded-lg text-xs"
               >
                 Cancelar
               </Button>
@@ -584,7 +584,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                 type="submit"
                 size="sm"
                 disabled={isPending}
-                className="rounded-xl text-xs font-bold px-4 cursor-pointer"
+                className="rounded-lg text-xs font-bold px-4 cursor-pointer"
               >
                 {isPending ? "Salvando..." : formData.id ? "Atualizar" : "Provisionar Crachá"}
               </Button>
@@ -596,10 +596,10 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
       {/* ── 6. Modal de Crachá Visual / Impressão (Design Apple HIG & WhatsApp Preview) ── */}
       {selectedBadge && (
         <Dialog open={Boolean(selectedBadge)} onOpenChange={(op) => !op && setSelectedBadge(null)}>
-          <DialogContent className="sm:max-w-sm p-0 rounded-3xl overflow-hidden border border-border bg-card">
+          <DialogContent className="sm:max-w-sm p-0 rounded-lg overflow-hidden border border-border bg-card">
             <div className="p-6 space-y-6 text-center">
               <div className="space-y-1">
-                <Badge variant="outline" className="text-[10px] font-mono uppercase px-2.5 py-0.5">
+                <Badge variant="outline" className="text-[10px] font-mono uppercase px-3 py-1">
                   {eventTitle || "Credencial Oficial"}
                 </Badge>
                 <h3 className="text-lg font-black text-foreground pt-1">{selectedBadge.nome}</h3>
@@ -610,7 +610,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               </div>
 
               {/* QR Code Container */}
-              <div className="size-48 mx-auto bg-white p-4 rounded-2xl shadow-inner border border-border/40 flex flex-col items-center justify-center">
+              <div className="size-48 mx-auto bg-white p-4 rounded-lg shadow-inner border border-border/40 flex flex-col items-center justify-center">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
                     selectedBadge.qr_code
@@ -645,7 +645,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                 variant="outline"
                 size="sm"
                 onClick={() => window.print()}
-                className="h-9 rounded-xl text-xs font-bold gap-1.5 flex-1 cursor-pointer"
+                className="h-9 rounded-lg text-xs font-bold gap-2 flex-1 cursor-pointer"
               >
                 <Printer className="size-3.5" />
                 <span>Imprimir Crachá</span>
@@ -654,7 +654,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                 type="button"
                 size="sm"
                 onClick={() => setSelectedBadge(null)}
-                className="h-9 rounded-xl text-xs font-bold px-4 cursor-pointer"
+                className="h-9 rounded-lg text-xs font-bold px-4 cursor-pointer"
               >
                 Fechar
               </Button>

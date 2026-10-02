@@ -86,7 +86,7 @@ function CategoryPage() {
       {/* Breadcrumb Limpo */}
       <nav
         aria-label="Navegação estrutural"
-        className="flex items-center gap-1.5 text-xs text-muted-foreground overflow-x-auto no-scrollbar py-0.5"
+        className="flex items-center gap-2 text-xs text-muted-foreground overflow-x-auto no-scrollbar py-1"
       >
         <Link to="/" className="hover:text-foreground whitespace-nowrap">
           Início
@@ -106,7 +106,7 @@ function CategoryPage() {
             asChild
             variant="outline"
             size="sm"
-            className="rounded-full text-xs font-semibold h-8 px-3.5 border-border/80 text-muted-foreground hover:text-foreground shrink-0"
+            className="rounded-full text-xs font-semibold h-8 px-4 border-border/80 text-muted-foreground hover:text-foreground shrink-0"
           >
             <Link to="/mercado">
               Todas
@@ -120,7 +120,7 @@ function CategoryPage() {
                 asChild
                 variant={isActive ? "default" : "outline"}
                 size="sm"
-                className={`rounded-full text-xs font-semibold h-8 px-3.5 shrink-0 transition-all ${
+                className={`rounded-full text-xs font-semibold h-8 px-4 shrink-0 transition-all ${
                   isActive
                     ? "shadow-xs font-bold"
                     : "border-border/80 text-muted-foreground hover:text-foreground"
@@ -136,7 +136,7 @@ function CategoryPage() {
       )}
 
       {/* Título Limpo & Contagem */}
-      <div className="space-y-0.5 pt-1">
+      <div className="space-y-1 pt-1">
         <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
           {category?.name ?? slug}
         </h1>
@@ -150,13 +150,13 @@ function CategoryPage() {
           <EmptyState
             title="Nenhum produto nesta categoria"
             action={
-              <Button asChild className="rounded-xl">
+              <Button asChild className="rounded-lg">
                 <Link to="/mercado">Ver todos os produtos</Link>
               </Button>
             }
           />
         ) : (
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {products.map((product: ProductCardDTO) => (
               <ProductCard key={product.id} product={product} />
             ))}

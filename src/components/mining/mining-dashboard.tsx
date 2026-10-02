@@ -798,7 +798,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 onClick={() => handleRunScraper("continuous-crawler")}
                 disabled={Boolean(isRunningScraper)}
               >
-                <Globe className="w-4 h-4 mr-2.5 text-muted-foreground shrink-0" />
+                <Globe className="w-4 h-4 mr-3 text-muted-foreground shrink-0" />
                 <div className="text-left truncate">
                   <div className="font-medium text-xs text-foreground truncate">Continuous Crawler</div>
                   <div className="text-xs text-muted-foreground truncate">Processar próxima URL</div>
@@ -811,7 +811,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 onClick={() => handleRunScraper("rss-fetcher")}
                 disabled={Boolean(isRunningScraper)}
               >
-                <Rss className="w-4 h-4 mr-2.5 text-muted-foreground shrink-0" />
+                <Rss className="w-4 h-4 mr-3 text-muted-foreground shrink-0" />
                 <div className="text-left truncate">
                   <div className="font-medium text-xs text-foreground truncate">RSS Ingester</div>
                   <div className="text-xs text-muted-foreground truncate">Sincronizar feeds ativos</div>
@@ -824,7 +824,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 onClick={() => handleRunScraper("market-data")}
                 disabled={Boolean(isRunningScraper)}
               >
-                <TrendingUp className="w-4 h-4 mr-2.5 text-muted-foreground shrink-0" />
+                <TrendingUp className="w-4 h-4 mr-3 text-muted-foreground shrink-0" />
                 <div className="text-left truncate">
                   <div className="font-medium text-xs text-foreground truncate">Indicadores BCB</div>
                   <div className="text-xs text-muted-foreground truncate">IPCA, SELIC, Câmbio</div>
@@ -836,7 +836,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 className="h-14 justify-start px-4 rounded-lg border border-border/50 hover:bg-muted/40 font-normal"
                 onClick={() => setIsSeedModalOpen(true)}
               >
-                <Plus className="w-4 h-4 mr-2.5 text-muted-foreground shrink-0" />
+                <Plus className="w-4 h-4 mr-3 text-muted-foreground shrink-0" />
                 <div className="text-left truncate">
                   <div className="font-medium text-xs text-foreground truncate">Nova Semente</div>
                   <div className="text-xs text-muted-foreground truncate">Cadastrar domínio na fila</div>
@@ -1001,7 +1001,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             </div>
 
             {/* Quick Filter Chips */}
-            <div className="flex items-center gap-2 flex-wrap pt-0.5">
+            <div className="flex items-center gap-2 flex-wrap pt-1">
               <span className="text-xs text-muted-foreground">Exemplos:</span>
               {["Smartphone", "Cimento", "Pneu", "Café 500g"].map((chip) => (
                 <button
@@ -1133,7 +1133,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     disabled={isProcessingBatch}
                     onClick={handleBatchApproveProducts}
-                    className="h-7 px-2.5 rounded-lg text-xs font-normal"
+                    className="h-7 px-3 rounded-lg text-xs font-normal"
                   >
                     Aprovar
                   </Button>
@@ -1142,7 +1142,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     disabled={isProcessingBatch}
                     onClick={handleBatchRejectProducts}
-                    className="h-7 px-2.5 rounded-lg text-xs font-normal"
+                    className="h-7 px-3 rounded-lg text-xs font-normal"
                   >
                     Rejeitar
                   </Button>
@@ -1151,7 +1151,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     disabled={isProcessingBatch}
                     onClick={handleBatchDeleteProducts}
-                    className="h-7 px-2.5 rounded-lg text-xs font-normal text-destructive hover:bg-destructive/10"
+                    className="h-7 px-3 rounded-lg text-xs font-normal text-destructive hover:bg-destructive/10"
                   >
                     Excluir
                   </Button>
@@ -1265,7 +1265,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     <TableHead className="w-[130px] text-xs font-normal text-muted-foreground">Origem</TableHead>
                     <TableHead className="w-[110px] text-xs font-normal text-muted-foreground">Preço</TableHead>
                     <TableHead className="w-[100px] text-xs font-normal text-muted-foreground">Status</TableHead>
-                    <TableHead className="w-[200px] text-right text-xs font-normal text-muted-foreground">Ações</TableHead>
+                    <TableHead className="w-52 text-right text-xs font-normal text-muted-foreground">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1407,7 +1407,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               variant="outline"
               size="sm"
               onClick={loadCooldowns}
-              className="h-8 px-2.5 rounded-lg text-xs font-normal gap-1 cursor-pointer"
+              className="h-8 px-3 rounded-lg text-xs font-normal gap-1 cursor-pointer"
             >
               <RefreshCw className={`w-3 h-3 ${isLoadingCooldowns ? "animate-spin" : ""}`} /> Atualizar
             </Button>
@@ -1438,7 +1438,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     onClick={() => handleResetCooldown(cd.domain)}
                     disabled={isResettingCooldown === cd.domain}
-                    className="h-8 px-2.5 rounded-lg text-xs font-normal shrink-0"
+                    className="h-8 px-3 rounded-lg text-xs font-normal shrink-0"
                   >
                     {isResettingCooldown === cd.domain ? (
                       <Loader2 className="w-3 h-3 animate-spin" />
@@ -1461,7 +1461,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   <TableHead className="w-[180px] text-xs font-normal text-muted-foreground">Motivo</TableHead>
                   <TableHead className="w-[100px] text-xs font-normal text-muted-foreground">Status HTTP</TableHead>
                   <TableHead className="w-[90px] text-xs font-normal text-muted-foreground">Falhas</TableHead>
-                  <TableHead className="w-[160px] text-xs font-normal text-muted-foreground">Repouso Até</TableHead>
+                  <TableHead className="w-40 text-xs font-normal text-muted-foreground">Repouso Até</TableHead>
                   <TableHead className="w-[110px] text-right text-xs font-normal text-muted-foreground">Ação</TableHead>
                 </TableRow>
               </TableHeader>
@@ -1531,7 +1531,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   variant={queueStatusFilter === st ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setQueueStatusFilter(st)}
-                  className="h-8 px-2.5 rounded-lg text-xs font-normal capitalize"
+                  className="h-8 px-3 rounded-lg text-xs font-normal capitalize"
                 >
                   {st === "all" ? "Todos" : st}
                 </Button>
@@ -1542,7 +1542,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               variant="outline"
               size="sm"
               onClick={() => setIsSeedModalOpen(true)}
-              className="h-8 px-2.5 rounded-lg text-xs font-normal gap-1"
+              className="h-8 px-3 rounded-lg text-xs font-normal gap-1"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar Semente
             </Button>
@@ -1705,7 +1705,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <TableRow className="bg-muted/20 border-b border-border/40">
                   <TableHead className="text-xs font-normal text-muted-foreground">Empresa</TableHead>
                   <TableHead className="w-[140px] text-xs font-normal text-muted-foreground">CNPJ</TableHead>
-                  <TableHead className="w-[160px] text-xs font-normal text-muted-foreground">Localização</TableHead>
+                  <TableHead className="w-40 text-xs font-normal text-muted-foreground">Localização</TableHead>
                   <TableHead className="w-[100px] text-xs font-normal text-muted-foreground">Qualidade</TableHead>
                   <TableHead className="w-[120px] text-xs font-normal text-muted-foreground">Ghost Tenant</TableHead>
                   <TableHead className="w-[90px] text-right text-xs font-normal text-muted-foreground">Fonte</TableHead>
@@ -1775,7 +1775,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 size="sm"
                 onClick={() => handleDispatchCron("market-data")}
                 disabled={isDispatchingCron === "market-data"}
-                className="h-8 px-2.5 rounded-lg text-xs font-normal cursor-pointer"
+                className="h-8 px-3 rounded-lg text-xs font-normal cursor-pointer"
               >
                 {isDispatchingCron === "market-data" ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
@@ -1789,7 +1789,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 size="sm"
                 onClick={loadIndicators}
                 disabled={isLoadingIndicators}
-                className="h-8 px-2.5 rounded-lg text-xs font-normal cursor-pointer"
+                className="h-8 px-3 rounded-lg text-xs font-normal cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 mr-2 ${isLoadingIndicators ? "animate-spin" : ""}`} />
                 Recarregar
@@ -1811,7 +1811,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               indicators.map((ind) => (
                 <div key={ind.code} className="p-4 rounded-lg border border-border/40 bg-card space-y-2">
                   <div className="flex items-center justify-between text-muted-foreground">
-                    <span className="text-xs font-medium text-foreground truncate max-w-[200px]">{ind.name}</span>
+                    <span className="text-xs font-medium text-foreground truncate max-w-52">{ind.name}</span>
                     <span className="text-xs text-muted-foreground uppercase font-mono">{ind.type}</span>
                   </div>
                   <div className="flex items-baseline gap-2">
@@ -1847,7 +1847,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 size="sm"
                 onClick={() => handleDispatchCron("rss-fetcher")}
                 disabled={isDispatchingCron === "rss-fetcher"}
-                className="h-8 px-2.5 rounded-lg text-xs font-normal cursor-pointer"
+                className="h-8 px-3 rounded-lg text-xs font-normal cursor-pointer"
               >
                 {isDispatchingCron === "rss-fetcher" ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
@@ -1860,7 +1860,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 variant="outline"
                 size="sm"
                 onClick={() => setIsFeedModalOpen(true)}
-                className="h-8 px-2.5 rounded-lg text-xs font-normal gap-1 cursor-pointer"
+                className="h-8 px-3 rounded-lg text-xs font-normal gap-1 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> Adicionar Feed
               </Button>
@@ -2119,7 +2119,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3.5 py-2">
+          <div className="space-y-4 py-2">
             <div className="space-y-1">
               <label className="text-xs font-medium text-foreground">Título do Produto</label>
               <Input
@@ -2148,7 +2148,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <select
                   value={editProductStatus}
                   onChange={(e) => setEditProductStatus(e.target.value)}
-                  className="w-full h-9 rounded-lg text-xs bg-background border border-border/60 px-2.5"
+                  className="w-full h-9 rounded-lg text-xs bg-background border border-border/60 px-3"
                 >
                   <option value="pending_review">Pendente</option>
                   <option value="approved">Aprovado</option>
@@ -2212,7 +2212,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3.5 py-2">
+          <div className="space-y-4 py-2">
             <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
               <div className="text-xs font-bold text-foreground">{importingProduct?.title}</div>
               <div className="text-xs text-muted-foreground">

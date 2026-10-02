@@ -57,7 +57,7 @@ export interface TaskDetailSheetProps {
  * TaskDetailSheet — Bifurcação Nativa para Detalhes de Tarefa (MASTER PROMPT V148)
  *
  * Desktop: Painel lateral slide-over (side="right", sm:max-w-xl).
- * Mobile / Chat: Bottom Sheet nativo fluido (side="bottom", rounded-t-3xl).
+ * Mobile / Chat: Bottom Sheet nativo fluido (side="bottom", rounded-t-lg).
  *
  * Apresenta:
  * - Metadados de prioridade, categoria e código
@@ -121,7 +121,7 @@ export function TaskDetailSheet({
         className={cn(
           "overflow-y-auto bg-card text-card-foreground border-border/70 p-6 flex flex-col gap-6",
           side === "bottom"
-            ? "max-h-dvh sm:max-h-4/5 rounded-t-3xl border-t shadow-2xl"
+            ? "max-h-dvh sm:max-h-4/5 rounded-t-lg border-t shadow-2xl"
             : "sm:max-w-xl border-l"
         )}
       >
@@ -131,7 +131,7 @@ export function TaskDetailSheet({
             <div className="flex items-center gap-2">
               <Badge
                 variant="outline"
-                className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border-border/60 bg-muted/50 text-muted-foreground"
+                className="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md border-border/60 bg-muted/50 text-muted-foreground"
               >
                 {task.category}
               </Badge>
@@ -142,7 +142,7 @@ export function TaskDetailSheet({
 
             {/* Presença em Tempo Real */}
             {task.activeEditor && (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold font-mono animate-in fade-in duration-200">
+              <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold font-mono animate-in fade-in duration-200">
                 <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
                 <span>{task.activeEditor.name} editando</span>
               </div>
@@ -164,8 +164,8 @@ export function TaskDetailSheet({
 
         {/* ── Seção: Metadados Operacionais ── */}
         <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1">
-            <span className="text-muted-foreground flex items-center gap-1.5 font-medium">
+          <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
+            <span className="text-muted-foreground flex items-center gap-2 font-medium">
               <Tag className="size-3.5" />
               Prioridade
             </span>
@@ -174,8 +174,8 @@ export function TaskDetailSheet({
             </span>
           </div>
 
-          <div className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1">
-            <span className="text-muted-foreground flex items-center gap-1.5 font-medium">
+          <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
+            <span className="text-muted-foreground flex items-center gap-2 font-medium">
               <Calendar className="size-3.5" />
               Prazo
             </span>
@@ -188,7 +188,7 @@ export function TaskDetailSheet({
         {/* ── Seção: Responsáveis (Cluster) ── */}
         {task.assignees && task.assignees.length > 0 && (
           <div className="space-y-2">
-            <h5 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <h5 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <Users className="size-3.5" />
               Responsáveis
             </h5>
@@ -199,7 +199,7 @@ export function TaskDetailSheet({
                   <div
                     key={user.id}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium",
+                      "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium",
                       isActive
                         ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                         : "border-border/60 bg-card text-foreground"
@@ -228,7 +228,7 @@ export function TaskDetailSheet({
         {/* ── Seção: Checklist de Subtarefas ── */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h5 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <h5 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <CheckCircle2 className="size-3.5" />
               Subtarefas ({defaultSubtasks.filter((s) => s.completed).length}/{defaultSubtasks.length})
             </h5>
@@ -240,7 +240,7 @@ export function TaskDetailSheet({
                 key={subtask.id}
                 type="button"
                 onClick={() => onToggleSubtask?.(task.id, subtask.id)}
-                className="w-full flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/30 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 min-h-11"
+                className="w-full flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 min-h-11"
               >
                 {subtask.completed ? (
                   <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -264,7 +264,7 @@ export function TaskDetailSheet({
 
         {/* ── Seção: Histórico de Aprovações e Governança ── */}
         <div className="space-y-3">
-          <h5 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <h5 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
             <ShieldCheck className="size-3.5" />
             Histórico de Aprovações
           </h5>
@@ -273,10 +273,10 @@ export function TaskDetailSheet({
             {defaultApprovals.map((approval) => (
               <div
                 key={approval.id}
-                className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1.5 text-xs"
+                className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2 text-xs"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-foreground flex items-center gap-1.5">
+                  <span className="font-semibold text-foreground flex items-center gap-2">
                     <FileCheck className="size-3.5 text-primary" />
                     {approval.authorName}
                   </span>
@@ -293,7 +293,7 @@ export function TaskDetailSheet({
         </div>
 
         {/* ── Footer: Ações de Status com Alvo de Toque Mínimo 44px ── */}
-        <div className="mt-auto pt-4 border-t border-border/40 flex flex-col sm:flex-row items-stretch gap-2.5">
+        <div className="mt-auto pt-4 border-t border-border/40 flex flex-col sm:flex-row items-stretch gap-3">
           <Button
             variant="outline"
             onClick={() => onStatusChange?.(task.id, task.status === "done" ? "todo" : "done")}

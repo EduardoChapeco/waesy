@@ -96,15 +96,15 @@ export function NewsSponsorBanner({
   return (
     <div
       ref={containerRef}
-      className="my-6 p-4 sm:p-5 rounded-2xl border border-primary/20 bg-linear-to-br from-card via-muted/30 to-primary/5 overflow-hidden"
+      className="my-6 p-4 sm:p-5 rounded-lg border border-primary/20 bg-linear-to-br from-card via-muted/30 to-primary/5 overflow-hidden"
     >
       <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
           <Megaphone className="size-3.5 text-primary" />
           <span>Conteúdo Patrocinado</span>
         </div>
         {sponsor.tier === "gold" && (
-          <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+          <span className="px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
             ★ Patrocinador Master
           </span>
         )}
@@ -114,7 +114,7 @@ export function NewsSponsorBanner({
         {sponsor.video_url ? (
           <div
             onClick={handleClick}
-            className="w-full sm:w-1/3 aspect-16/9 rounded-2xl overflow-hidden bg-black cursor-pointer hover:opacity-95 transition-opacity shrink-0 relative"
+            className="w-full sm:w-1/3 aspect-16/9 rounded-lg overflow-hidden bg-black cursor-pointer hover:opacity-95 transition-opacity shrink-0 relative"
           >
             <video
               src={sponsor.video_url}
@@ -128,7 +128,7 @@ export function NewsSponsorBanner({
         ) : sponsor.banner_url ? (
           <div
             onClick={handleClick}
-            className="w-full sm:w-1/3 aspect-16/9 rounded-2xl overflow-hidden bg-muted cursor-pointer hover:opacity-95 transition-opacity shrink-0"
+            className="w-full sm:w-1/3 aspect-16/9 rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-95 transition-opacity shrink-0"
           >
             <img
               src={sponsor.banner_url}
@@ -139,7 +139,7 @@ export function NewsSponsorBanner({
         ) : sponsor.logo_url ? (
           <div
             onClick={handleClick}
-            className="size-16 rounded-2xl bg-card p-2 flex items-center justify-center cursor-pointer shrink-0"
+            className="size-16 rounded-lg bg-card p-2 flex items-center justify-center cursor-pointer shrink-0"
           >
             <img src={sponsor.logo_url} alt={sponsor.name} className="max-h-full max-w-full object-contain aspect-square" width={48} height={48} loading="lazy" />
           </div>
@@ -155,7 +155,7 @@ export function NewsSponsorBanner({
         <Button
           onClick={handleClick}
           size="sm"
-          className="rounded-xl font-bold gap-1.5 text-xs shrink-0 w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0"
+          className="rounded-lg font-bold gap-2 text-xs shrink-0 w-full sm:w-auto h-11 sm:h-9 min-h-11 sm:min-h-0"
         >
           <span>{sponsor.cta_label || "Conhecer"}</span>
           <ExternalLink className="size-3.5" />

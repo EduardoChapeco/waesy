@@ -58,7 +58,7 @@ export function FilterBottomSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="p-0 rounded-t-3xl max-h-[85dvh] bg-background border-t border-border flex flex-col overflow-hidden outline-none"
+        className="p-0 rounded-t-lg max-h-[85dvh] bg-background border-t border-border flex flex-col overflow-hidden outline-none"
       >
         {/* Puxador táctil estilo iOS / iFood */}
         <div className="pt-3 pb-1 flex justify-center shrink-0">
@@ -69,7 +69,7 @@ export function FilterBottomSheet({
         <SheetHeader className="px-5 pt-1 pb-3 border-b border-border/40 shrink-0 text-left">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <SlidersHorizontal className="size-4" />
               </div>
               <div>
@@ -83,7 +83,7 @@ export function FilterBottomSheet({
             </div>
 
             {activeFiltersCount > 0 && (
-              <Badge variant="secondary" className="text-xs font-mono px-2 py-0.5">
+              <Badge variant="secondary" className="text-xs font-mono px-2 py-1">
                 {activeFiltersCount} ativo{activeFiltersCount > 1 ? "s" : ""}
               </Badge>
             )}
@@ -97,7 +97,7 @@ export function FilterBottomSheet({
               filter.value !== (filter.defaultValue || "all") && filter.value !== "";
 
             return (
-              <div key={filter.id} className="space-y-2.5">
+              <div key={filter.id} className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     {filter.label}
@@ -125,7 +125,7 @@ export function FilterBottomSheet({
                         type="button"
                         onClick={() => filter.onChange(opt.value)}
                         className={cn(
-                          "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all border text-left cursor-pointer min-h-[44px]",
+                          "flex items-center justify-between px-4 py-3 rounded-lg text-xs font-semibold transition-all border text-left cursor-pointer min-h-11",
                           isSelected
                             ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
                             : "bg-muted/40 text-foreground border-border/60 hover:bg-muted/70 hover:border-border"
@@ -162,7 +162,7 @@ export function FilterBottomSheet({
             size="lg"
             onClick={handleReset}
             disabled={activeFiltersCount === 0}
-            className="rounded-xl h-11 px-4 text-xs font-semibold gap-1.5 border-border/70 cursor-pointer shrink-0"
+            className="rounded-lg h-11 px-4 text-xs font-semibold gap-2 border-border/70 cursor-pointer shrink-0"
           >
             <RotateCcw className="size-3.5" />
             <span>Limpar</span>
@@ -172,7 +172,7 @@ export function FilterBottomSheet({
             type="button"
             size="lg"
             onClick={() => onOpenChange(false)}
-            className="rounded-xl h-11 flex-1 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+            className="rounded-lg h-11 flex-1 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
           >
             Aplicar Filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Button>
@@ -201,7 +201,7 @@ export function FilterTriggerButton({
       variant="outline"
       onClick={onClick}
       className={cn(
-        "h-10 px-3 sm:px-3.5 rounded-xl text-xs font-semibold border-border/70 gap-2 shrink-0 cursor-pointer relative shadow-none",
+        "h-10 px-3 sm:px-4 rounded-lg text-xs font-semibold border-border/70 gap-2 shrink-0 cursor-pointer relative shadow-none",
         activeCount > 0
           ? "border-primary/50 text-foreground bg-primary/5"
           : "text-muted-foreground hover:text-foreground hover:bg-muted/60",

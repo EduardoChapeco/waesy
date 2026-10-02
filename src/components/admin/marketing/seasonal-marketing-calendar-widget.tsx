@@ -52,9 +52,9 @@ export function SeasonalMarketingCalendarWidget({
 
   if (isLoading) {
     return (
-      <Card className="p-4 border-border/40 bg-card/60 rounded-2xl animate-pulse space-y-3 shadow-none">
+      <Card className="p-4 border-border/40 bg-card/60 rounded-lg animate-pulse space-y-3 shadow-none">
         <div className="h-4 bg-muted/40 rounded w-1/3" />
-        <div className="h-16 bg-muted/20 rounded-xl" />
+        <div className="h-16 bg-muted/20 rounded-lg" />
       </Card>
     );
   }
@@ -78,15 +78,15 @@ export function SeasonalMarketingCalendarWidget({
   };
 
   return (
-    <Card className="p-4 sm:p-5 border-border/50 bg-card rounded-2xl space-y-4">
+    <Card className="p-4 sm:p-5 border-border/50 bg-card rounded-lg space-y-4">
       {/* CABEÇALHO DO WIDGET */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+          <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
             <Calendar className="size-4" />
           </div>
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <span>Calendário Sazonal</span>
               <Star className="size-3 text-amber-500" />
             </h3>
@@ -105,7 +105,7 @@ export function SeasonalMarketingCalendarWidget({
       </div>
 
       {/* EVENTO EM DESTAQUE (PRÓXIMA JANELA) */}
-      <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 rounded-lg border border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
@@ -117,7 +117,7 @@ export function SeasonalMarketingCalendarWidget({
             </span>
             {getImpactBadge(primaryEvent.commercial_impact)}
             {primaryEvent.city_name && (
-              <Badge variant="outline" className="text-xs gap-1 px-1.5 py-0 h-4">
+              <Badge variant="outline" className="text-xs gap-1 px-2 py-0 h-4">
                 <MapPin className="size-2.5" />
                 <span>{primaryEvent.city_name}</span>
               </Badge>
@@ -132,9 +132,9 @@ export function SeasonalMarketingCalendarWidget({
             </p>
           )}
           {primaryEvent.suggested_promotional_actions && primaryEvent.suggested_promotional_actions.length > 0 && (
-            <div className="flex items-center gap-1.5 pt-1 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 pt-1 overflow-x-auto no-scrollbar">
               {primaryEvent.suggested_promotional_actions.map((act, i) => (
-                <span key={i} className="text-xs bg-background border border-border/40 text-muted-foreground px-2 py-0.5 rounded-full whitespace-nowrap">
+                <span key={i} className="text-xs bg-background border border-border/40 text-muted-foreground px-2 py-1 rounded-full whitespace-nowrap">
                   {act}
                 </span>
               ))}
@@ -146,7 +146,7 @@ export function SeasonalMarketingCalendarWidget({
           to="/workspace/marketing/promocoes"
           className="shrink-0"
         >
-          <Button size="sm" className="rounded-xl text-xs font-bold min-h-11 sm:min-h-9 sm:h-9 gap-1.5 bg-primary text-primary-foreground">
+          <Button size="sm" className="rounded-lg text-xs font-bold min-h-11 sm:min-h-9 sm:h-9 gap-2 bg-primary text-primary-foreground">
             <Gift className="size-3.5" />
             <span>Ativar Oferta</span>
           </Button>
@@ -159,7 +159,7 @@ export function SeasonalMarketingCalendarWidget({
           {upcomingList.map((item) => (
             <div
               key={item.id}
-              className="p-2.5 rounded-xl border border-border/30 bg-muted/20 flex flex-col justify-between gap-1 text-xs"
+              className="p-3 rounded-lg border border-border/30 bg-muted/20 flex flex-col justify-between gap-1 text-xs"
             >
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-foreground truncate">{item.name}</span>

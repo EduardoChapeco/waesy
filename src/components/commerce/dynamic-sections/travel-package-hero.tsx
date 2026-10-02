@@ -50,7 +50,7 @@ export function TravelPackageHero({
  };
 
  return (
- <section className="relative w-full rounded-2xl overflow-hidden border border-border/70 min-h-[460px] flex flex-col justify-end p-6 sm:p-10 shadow-lg group">
+ <section className="relative w-full rounded-lg overflow-hidden border border-border/70 min-h-[460px] flex flex-col justify-end p-6 sm:p-10 shadow-lg group">
  {/* Imagem de Fundo com Parallax e Gradiente Editorial */}
  <img
  src={coverImageUrl}
@@ -74,7 +74,7 @@ export function TravelPackageHero({
  </div>
 
  <div>
- <div className="flex items-center gap-1.5 text-xs text-white/80 mb-1">
+ <div className="flex items-center gap-2 text-xs text-white/80 mb-1">
  <MapPin className="size-3.5 text-rose-400" />
  <span>{destination}</span>
  </div>
@@ -88,7 +88,7 @@ export function TravelPackageHero({
  {inclusions.slice(0, 4).map((inc, i) => (
  <span
  key={i}
- className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs bg-black/40 backdrop-blur-md border border-white/15 text-white/90"
+ className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs bg-black/40 backdrop-blur-md border border-white/15 text-white/90"
  >
  <ShieldCheck className="size-3 text-emerald-400" />
  <span>{inc}</span>
@@ -98,11 +98,11 @@ export function TravelPackageHero({
 
  {/* Bloco de Preço & Conversão */}
  <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-white/20">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <span className="text-[11px] text-white/75 font-semibold uppercase tracking-wider">
  A partir de (para 2 pessoas)
  </span>
- <div className="flex items-baseline gap-1.5">
+ <div className="flex items-baseline gap-2">
  {count > 1 && <span className="text-sm font-semibold text-white/80">{count}x</span>}
  <span className="text-2xl sm:text-3xl font-black text-white font-mono">
  {formatMoney(count > 1 ? installmentCents : priceCents)}

@@ -223,12 +223,12 @@ export function DigitalCompanionCard({
   return (
     <div className={`w-full flex flex-col space-y-4 ${className}`}>
       {/* ── 1. Top Bar de Navegação das 4 Abas (Apple HIG Touch Targets) ── */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2 bg-card border border-border/80 rounded-2xl shadow-2xs">
-        <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl w-full sm:w-auto overflow-x-auto text-xs font-semibold">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2 bg-card border border-border/80 rounded-lg shadow-2xs">
+        <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-lg w-full sm:w-auto overflow-x-auto text-xs font-semibold">
           <button
             type="button"
             onClick={() => setActiveTab("visual")}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-[40px] ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
               activeTab === "visual"
                 ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
@@ -241,7 +241,7 @@ export function DigitalCompanionCard({
           <button
             type="button"
             onClick={() => setActiveTab("rules")}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-[40px] ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
               activeTab === "rules"
                 ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
@@ -254,7 +254,7 @@ export function DigitalCompanionCard({
           <button
             type="button"
             onClick={() => setActiveTab("emergency")}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-[40px] ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
               activeTab === "emergency"
                 ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
@@ -267,7 +267,7 @@ export function DigitalCompanionCard({
           <button
             type="button"
             onClick={() => setActiveTab("whatsapp")}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-[40px] ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
               activeTab === "whatsapp"
                 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-500/20"
                 : "text-muted-foreground hover:text-foreground"
@@ -296,10 +296,10 @@ export function DigitalCompanionCard({
                         : emergencyPagesRef;
                   exportImages(ref, activeTab);
                 }}
-                className="rounded-xl text-xs font-semibold h-11 sm:h-9 px-3"
+                className="rounded-lg text-xs font-semibold h-11 sm:h-9 px-3"
                 title="Salvar Imagens 9:16"
               >
-                <ImageIcon className="size-4 mr-1.5" />
+                <ImageIcon className="size-4 mr-2" />
                 <span>Salvar Imagens</span>
               </Button>
 
@@ -316,10 +316,10 @@ export function DigitalCompanionCard({
                         : emergencyPagesRef;
                   exportPDF(ref, `${companyName}-${title}`);
                 }}
-                className="rounded-xl text-xs font-semibold h-10 px-3 min-h-[44px] sm:min-h-[36px] bg-foreground text-background hover:bg-foreground/90"
+                className="rounded-lg text-xs font-semibold h-10 px-3 min-h-11 sm:min-h-9 bg-foreground text-background hover:bg-foreground/90"
                 title="Baixar PDF de Bolso"
               >
-                {isExporting ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Download className="size-4 mr-1.5" />}
+                {isExporting ? <Loader2 className="size-4 animate-spin mr-2" /> : <Download className="size-4 mr-2" />}
                 <span>Baixar PDF</span>
               </Button>
             </>
@@ -336,7 +336,7 @@ export function DigitalCompanionCard({
                   toast.success("Link público copiado com sucesso!");
                 }
               }}
-              className="rounded-xl text-xs font-semibold h-10 px-3 min-h-[44px] sm:min-h-[36px]"
+              className="rounded-lg text-xs font-semibold h-10 px-3 min-h-11 sm:min-h-9"
               title="Copiar Link de Acesso"
             >
               <Share2 className="size-4" />
@@ -346,7 +346,7 @@ export function DigitalCompanionCard({
       </div>
 
       {isExporting && (
-        <div className="p-3 bg-primary/10 border border-primary/20 rounded-xl text-xs font-semibold text-primary flex items-center justify-center gap-2">
+        <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-xs font-semibold text-primary flex items-center justify-center gap-2">
           <Loader2 className="size-4 animate-spin" />
           <span>{exportMessage}</span>
         </div>
@@ -359,7 +359,7 @@ export function DigitalCompanionCard({
           <div ref={visualPagesRef} className="flex flex-wrap justify-center gap-6 sm:gap-8 pb-12 w-full">
             {/* PÁGINA 1: CAPA CINEMATOGRÁFICA DE TELA DE BLOQUEIO */}
             <div
-              className="companion-story-page relative flex flex-col overflow-hidden bg-zinc-950 text-white shadow-xl rounded-3xl border border-border/60"
+              className="companion-story-page relative flex flex-col overflow-hidden bg-zinc-950 text-white shadow-xl rounded-lg border border-border/60"
               style={{ width: "400px", height: "711px" }}
             >
               {coverImageUrl && (
@@ -377,7 +377,7 @@ export function DigitalCompanionCard({
                   {companyLogoUrl ? (
                     <img src={companyLogoUrl} alt={companyName} className="h-9 w-auto object-contain brightness-0 invert" />
                   ) : (
-                    <div className="size-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
+                    <div className="size-9 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
                       <Star className="size-5" />
                     </div>
                   )}
@@ -390,7 +390,7 @@ export function DigitalCompanionCard({
                 {/* Bloco Central / Inferior */}
                 <div className="space-y-4">
                   {code && (
-                    <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
+                    <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 py-2 rounded-full border border-white/20">
                       <Ticket className="size-3 text-white/80" />
                       <span className="text-[10px] font-mono font-bold tracking-widest text-white">ID: {code}</span>
                     </div>
@@ -404,11 +404,11 @@ export function DigitalCompanionCard({
                   </div>
 
                   {participants.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 space-y-2">
+                    <div className="p-4 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 space-y-2">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">
                         {participantsLabel}
                       </p>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {participants.map((p, idx) => (
                           <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-white">
                             <User className="size-3.5 text-white/70 shrink-0" />
@@ -430,7 +430,7 @@ export function DigitalCompanionCard({
             {sectionChunks.map((chunk, pageIndex) => (
               <div
                 key={`page-section-${pageIndex}`}
-                className="companion-story-page relative flex flex-col overflow-hidden bg-muted/40 text-foreground shadow-xl rounded-3xl border border-border/70 p-6"
+                className="companion-story-page relative flex flex-col overflow-hidden bg-muted/40 text-foreground shadow-xl rounded-lg border border-border/70 p-6"
                 style={{ width: "400px", height: "711px" }}
               >
                 {/* Topo da Página */}
@@ -448,11 +448,11 @@ export function DigitalCompanionCard({
                   {chunk.map((item, itemIdx) => (
                     <div
                       key={itemIdx}
-                      className="p-5 rounded-2xl bg-card border border-border/80  space-y-3 shrink-0"
+                      className="p-5 rounded-lg bg-card border border-border/80  space-y-3 shrink-0"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <div className="size-9 rounded-xl bg-muted/70 flex items-center justify-center shrink-0">
+                          <div className="size-9 rounded-lg bg-muted/70 flex items-center justify-center shrink-0">
                             {getSectionIcon(item.type)}
                           </div>
                           <div>
@@ -473,14 +473,14 @@ export function DigitalCompanionCard({
                         {item.details.map((d, dIdx) => (
                           <div
                             key={dIdx}
-                            className={`p-2.5 rounded-xl border border-border/50 ${
+                            className={`p-3 rounded-lg border border-border/50 ${
                               d.highlight ? "bg-primary/5 text-primary" : "bg-muted/30"
                             }`}
                           >
                             <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">
                               {d.label}
                             </p>
-                            <p className="text-xs font-bold truncate mt-0.5">{d.value}</p>
+                            <p className="text-xs font-bold truncate mt-1">{d.value}</p>
                           </div>
                         ))}
                       </div>
@@ -503,11 +503,11 @@ export function DigitalCompanionCard({
         {activeTab === "rules" && (
           <div ref={rulesPagesRef} className="flex flex-wrap justify-center gap-6 sm:gap-8 pb-12 w-full">
             <div
-              className="companion-story-page relative flex flex-col overflow-hidden bg-muted/40 text-foreground shadow-xl rounded-3xl border border-border/70 p-6"
+              className="companion-story-page relative flex flex-col overflow-hidden bg-muted/40 text-foreground shadow-xl rounded-lg border border-border/70 p-6"
               style={{ width: "400px", height: "711px" }}
             >
               <div className="flex items-center gap-3 pb-3 border-b border-border/60">
-                <div className="size-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                <div className="size-10 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
                   <Info className="size-5" />
                 </div>
                 <div>
@@ -520,19 +520,19 @@ export function DigitalCompanionCard({
                 {rules.map((rule, rIdx) => (
                   <div
                     key={rIdx}
-                    className={`p-4 rounded-2xl border ${
+                    className={`p-4 rounded-lg border ${
                       rule.highlight
                         ? "bg-blue-500/5 border-blue-500/30 text-foreground"
                         : "bg-card border-border/80"
                     } space-y-1`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+                      <p className="text-xs font-bold flex items-center gap-2 text-foreground">
                         <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
                         {rule.title}
                       </p>
                       {rule.badge && (
-                        <Badge variant="secondary" className="text-[9px] px-1.5 h-4">
+                        <Badge variant="secondary" className="text-[9px] px-2 h-4">
                           {rule.badge}
                         </Badge>
                       )}
@@ -544,7 +544,7 @@ export function DigitalCompanionCard({
                 ))}
 
                 {observations && (
-                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs space-y-1">
+                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs space-y-1">
                     <p className="font-bold flex items-center gap-1">
                       <HelpCircle className="size-3.5 text-amber-600" />
                       Observações:
@@ -567,11 +567,11 @@ export function DigitalCompanionCard({
             {emergencyChunks.map((chunk, eIdx) => (
               <div
                 key={`page-emerg-${eIdx}`}
-                className="companion-story-page relative flex flex-col overflow-hidden bg-muted/40 text-foreground shadow-xl rounded-3xl border border-border/70 p-6"
+                className="companion-story-page relative flex flex-col overflow-hidden bg-muted/40 text-foreground shadow-xl rounded-lg border border-border/70 p-6"
                 style={{ width: "400px", height: "711px" }}
               >
                 <div className="flex items-center gap-3 pb-3 border-b border-border/60">
-                  <div className="size-10 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
+                  <div className="size-10 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
                     <Siren className="size-5" />
                   </div>
                   <div>
@@ -584,7 +584,7 @@ export function DigitalCompanionCard({
                   {chunk.map((contact, cIdx) => (
                     <div
                       key={cIdx}
-                      className="p-4 rounded-2xl bg-card border border-border/80  space-y-3"
+                      className="p-4 rounded-lg bg-card border border-border/80  space-y-3"
                     >
                       <div>
                         <p className="text-[9px] uppercase tracking-wider font-bold text-blue-600 dark:text-blue-400">
@@ -593,7 +593,7 @@ export function DigitalCompanionCard({
                         <p className="text-sm font-bold text-foreground">{contact.name}</p>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/20 flex items-center justify-between gap-3">
+                      <div className="p-3 rounded-lg bg-rose-500/5 border border-rose-500/20 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0">
                           <PhoneCall className="size-4 text-rose-600 shrink-0" />
                           <div className="min-w-0">
@@ -624,7 +624,7 @@ export function DigitalCompanionCard({
 
         {/* ABA 4: TEXTO PRONTO PARA WHATSAPP */}
         {activeTab === "whatsapp" && (
-          <div className="w-full max-w-2xl bg-card rounded-2xl p-6 sm:p-8 border border-border/80  space-y-4">
+          <div className="w-full max-w-2xl bg-card rounded-lg p-6 sm:p-8 border border-border/80  space-y-4">
             <div className="flex items-center justify-between border-b border-border/60 pb-4">
               <div className="flex items-center gap-2">
                 <WhatsappLogo className="size-5 text-emerald-600" weight="fill" />
@@ -635,14 +635,14 @@ export function DigitalCompanionCard({
                 type="button"
                 size="sm"
                 onClick={copyWhatsApp}
-                className="rounded-xl text-xs font-bold h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+                className="rounded-lg text-xs font-bold h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
               >
                 {copied ? <CheckCircle2 className="size-4" /> : <Copy className="size-4" />}
                 <span>{copied ? "Copiado!" : "Copiar Texto"}</span>
               </Button>
             </div>
 
-            <div className="bg-muted/40 p-4 sm:p-5 rounded-xl border border-border/60 font-sans text-xs sm:text-sm leading-relaxed whitespace-pre-wrap select-text text-foreground">
+            <div className="bg-muted/40 p-4 sm:p-5 rounded-lg border border-border/60 font-sans text-xs sm:text-sm leading-relaxed whitespace-pre-wrap select-text text-foreground">
               {generateWhatsAppMessage()}
             </div>
           </div>

@@ -54,7 +54,7 @@ export function UnifiedEntityTimeline({
         {[1, 2, 3].map((i) => (
           <div key={i} className="flex gap-3 animate-pulse">
             <div className="size-7 rounded-full bg-muted shrink-0" />
-            <div className="flex-1 space-y-1.5 pt-0.5">
+            <div className="flex-1 space-y-2 pt-1">
               <div className="h-3 w-1/3 bg-muted rounded" />
               <div className="h-2.5 w-2/3 bg-muted/60 rounded" />
             </div>
@@ -94,7 +94,7 @@ export function UnifiedEntityTimeline({
             </div>
 
             {/* Conteúdo do Evento */}
-            <div className="min-w-0 flex flex-col gap-0.5">
+            <div className="min-w-0 flex flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-foreground truncate">
                   {entry.title}
@@ -110,7 +110,7 @@ export function UnifiedEntityTimeline({
                 </p>
               )}
 
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground/80 pt-0.5">
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground/80 pt-1">
                 <span>Por {entry.actorName}</span>
                 {entry.entityType && (
                   <>

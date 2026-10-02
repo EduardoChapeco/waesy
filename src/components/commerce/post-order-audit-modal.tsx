@@ -83,9 +83,9 @@ export function PostOrderAuditModal({
 
  return (
  <Dialog open={isOpen} onOpenChange={onClose}>
- <DialogContent className="sm:max-w-[420px] sm:rounded-2xl bg-card sm:p-6 p-5">
+ <DialogContent className="sm:max-w-[420px] sm:rounded-lg bg-card sm:p-6 p-5">
  <DialogHeader className="space-y-2">
- <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-1">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-1">
  <ShieldCheck className="size-5" />
  </div>
  <DialogTitle className="text-base font-bold text-foreground">
@@ -102,7 +102,7 @@ export function PostOrderAuditModal({
  variant="outline"
  disabled={isSubmitting}
  onClick={() => handleAnswer(false)}
- className="h-12 rounded-2xl font-bold text-xs flex items-center gap-2 border-border hover:bg-muted/70 cursor-pointer"
+ className="h-12 rounded-lg font-bold text-xs flex items-center gap-2 border-border hover:bg-muted/70 cursor-pointer"
  >
  <X className="size-4 text-destructive" />
  <span className="truncate">{config.noLabel}</span>
@@ -112,7 +112,7 @@ export function PostOrderAuditModal({
  type="button"
  disabled={isSubmitting}
  onClick={() => handleAnswer(true)}
- className="h-12 rounded-2xl font-bold text-xs bg-foreground text-background flex items-center gap-2 hover:bg-foreground/90 cursor-pointer"
+ className="h-12 rounded-lg font-bold text-xs bg-foreground text-background flex items-center gap-2 hover:bg-foreground/90 cursor-pointer"
  >
  <Check className="size-4 text-emerald-400" />
  <span className="truncate">{config.yesLabel}</span>

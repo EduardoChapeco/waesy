@@ -93,7 +93,7 @@ export function BuilderPagesPanel({
  {/* Header */}
  <div className="p-4 border-b border-border/80 flex items-center justify-between bg-muted/20">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <FileText className="size-4" />
  </div>
  <div>
@@ -109,7 +109,7 @@ export function BuilderPagesPanel({
  size="sm"
  variant="outline"
  onClick={() => setIsAdding(!isAdding)}
- className="rounded-xl text-xs h-7 px-2.5 gap-1 font-bold cursor-pointer"
+ className="rounded-lg text-xs h-7 px-3 gap-1 font-bold cursor-pointer"
  >
  <Plus className="size-3.5 text-primary" />
  <span>Nova</span>
@@ -119,9 +119,9 @@ export function BuilderPagesPanel({
  <ScrollArea className="flex-1 p-3">
  {/* Formulário de Adicionar Página */}
  {isAdding && (
- <form onSubmit={handleCreate} className="p-3.5 rounded-2xl bg-muted/40 border border-primary/30 space-y-3 mb-3 animate-in zoom-in-95 duration-150">
+ <form onSubmit={handleCreate} className="p-4 rounded-lg bg-muted/40 border border-primary/30 space-y-3 mb-3 animate-in zoom-in-95 duration-150">
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <Layers className="size-3.5 text-primary" />
  Criar Nova Página
  </span>
@@ -150,7 +150,7 @@ export function BuilderPagesPanel({
  }
  }}
  placeholder="Ex: Sobre Nós, Destinos, Contato"
- className="h-8 text-xs rounded-xl bg-background"
+ className="h-8 text-xs rounded-lg bg-background"
  required
  />
  </div>
@@ -161,11 +161,11 @@ export function BuilderPagesPanel({
  value={newSlug}
  onChange={(e) => setNewSlug(e.target.value)}
  placeholder="/sobre-nos"
- className="h-8 text-xs rounded-xl font-mono bg-background"
+ className="h-8 text-xs rounded-lg font-mono bg-background"
  />
  </div>
 
- <div className="flex justify-end gap-1.5 pt-1">
+ <div className="flex justify-end gap-2 pt-1">
  <Button
  type="button"
  size="sm"
@@ -187,7 +187,7 @@ export function BuilderPagesPanel({
  )}
 
  {/* Lista de Páginas */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  {pages.map((p) => {
  const isActive = p.id === activePageId;
  const isEditingSeo = editingSeoPageId === p.id;
@@ -196,7 +196,7 @@ export function BuilderPagesPanel({
  <div
  key={p.id}
  className={cn(
- "rounded-2xl border transition-all overflow-hidden",
+ "rounded-lg border transition-all overflow-hidden",
  isActive
  ? "bg-primary/5 border-primary/50 shadow-2xs"
  : "bg-card border-border/70 hover:border-border"
@@ -206,7 +206,7 @@ export function BuilderPagesPanel({
  onClick={() => onSelectPage(p.id)}
  className="p-3 flex items-center justify-between cursor-pointer"
  >
- <div className="flex items-center gap-2.5 min-w-0">
+ <div className="flex items-center gap-3 min-w-0">
  <div className={cn(
  "size-7 rounded-lg flex items-center justify-center shrink-0",
  p.is_home
@@ -219,7 +219,7 @@ export function BuilderPagesPanel({
  </div>
 
  <div className="min-w-0">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <span className="text-xs font-bold text-foreground truncate block">
  {p.title}
  </span>

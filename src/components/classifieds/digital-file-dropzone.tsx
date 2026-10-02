@@ -117,8 +117,8 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
       />
 
       {value ? (
-        <div className="flex items-center justify-between p-4 rounded-xl border border-border/80 bg-muted/30 hover:bg-muted/50 transition-colors">
-          <div className="flex items-center gap-3.5 min-w-0 flex-1">
+        <div className="flex items-center justify-between p-4 rounded-lg border border-border/80 bg-muted/30 hover:bg-muted/50 transition-colors">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
             <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
               <FileArchive className="size-5" />
             </div>
@@ -126,7 +126,7 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
               <p className="text-sm font-semibold text-foreground truncate">
                 {fileName || "Arquivo Digital Anexado"}
               </p>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                 {fileSizeBytes ? <span>{formatFileSize(fileSizeBytes)}</span> : null}
                 <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
                   <CheckCircle2 className="size-3.5" /> Pronto para entrega
@@ -168,7 +168,7 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
           onDrop={handleDrop}
           onClick={() => !isUploading && fileInputRef.current?.click()}
           className={cn(
-            "relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-2xl border-2 border-dashed transition-all cursor-pointer text-center",
+            "relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-lg border-2 border-dashed transition-all cursor-pointer text-center",
             isDragOver
               ? "border-primary bg-primary/5"
               : "border-border/70 hover:border-border hover:bg-muted/20",
@@ -190,10 +190,10 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <div className="size-12 rounded-xl bg-muted/60 text-muted-foreground flex items-center justify-center border border-border/50">
+              <div className="size-12 rounded-lg bg-muted/60 text-muted-foreground flex items-center justify-center border border-border/50">
                 <UploadCloud className="size-6 text-foreground/80" />
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <p className="text-sm font-semibold text-foreground">
                   Arraste ou clique para selecionar o arquivo digital
                 </p>

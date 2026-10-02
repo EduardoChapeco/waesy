@@ -49,7 +49,7 @@ export function TaskItemCard({
  <div
  onClick={() => onClick(task)}
  className={cn(
- "group relative flex items-center justify-between gap-3 p-3.5 rounded-xl border border-border/70 bg-card hover:border-primary/40 hover:bg-muted/10 transition-all cursor-pointer select-none",
+ "group relative flex items-center justify-between gap-3 p-4 rounded-lg border border-border/70 bg-card hover:border-primary/40 hover:bg-muted/10 transition-all cursor-pointer select-none",
  isDone && "opacity-60 bg-muted/20",
  className
  )}
@@ -89,7 +89,7 @@ export function TaskItemCard({
  {/* Prioridade */}
  <Badge
  variant="outline"
- className={cn("text-[10px] px-1.5 py-0 h-4 border", priorityInfo.className)}
+ className={cn("text-[10px] px-2 py-0 h-4 border", priorityInfo.className)}
  >
  {priorityInfo.label}
  </Badge>
@@ -125,7 +125,7 @@ export function TaskItemCard({
 
  {/* Contexto se não for geral */}
  {task.context_type !== "general" && (
- <span className="px-1.5 py-0 rounded bg-muted/60 text-[10px] text-foreground/80">
+ <span className="px-2 py-0 rounded bg-muted/60 text-[10px] text-foreground/80">
  {task.context_type === "order" && `Pedido #${task.context_id?.slice(0, 6)}`}
  {task.context_type === "group_tour" && `Excursão #${task.context_id?.slice(0, 6)}`}
  {task.context_type === "lead" && `Lead #${task.context_id?.slice(0, 6)}`}

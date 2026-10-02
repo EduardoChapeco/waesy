@@ -119,7 +119,7 @@ function CmsNavigationPage() {
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="font-bold min-h-[44px] gap-1.5"
+            className="font-bold min-h-11 gap-2"
           >
             <Save className="mr-2 h-4 w-4" />
             {isSaving ? "Salvando..." : "Salvar Menu"}
@@ -130,9 +130,9 @@ function CmsNavigationPage() {
       <div className="flex justify-center">
         <div className="w-full max-w-3xl space-y-6">
           {/* Configurações do Menu */}
-          <div className="bg-card rounded-2xl border border-border/60 p-6 space-y-4">
+          <div className="bg-card rounded-lg border border-border/60 p-6 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Nome do Menu</Label>
                 <Input
                   value={activeMenu.name}
@@ -141,7 +141,7 @@ function CmsNavigationPage() {
                   className="text-xs"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Identificador (Handle)</Label>
                 <Input
                   value={activeMenu.handle}
@@ -158,7 +158,7 @@ function CmsNavigationPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-foreground">Links do Menu</h3>
-              <Button onClick={handleAddItem} variant="outline" size="sm" className="gap-1.5 text-xs min-h-[44px]">
+              <Button onClick={handleAddItem} variant="outline" size="sm" className="gap-2 text-xs min-h-11">
                 <Plus className="h-3.5 w-3.5" />
                 Adicionar Link
               </Button>
@@ -174,7 +174,7 @@ function CmsNavigationPage() {
                 {activeMenu.items.map((item, index) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-3 p-4 bg-card rounded-2xl border border-border/60"
+                    className="flex items-center gap-3 p-4 bg-card rounded-lg border border-border/60"
                   >
                     <GripVertical className="h-5 w-5 text-muted-foreground cursor-move shrink-0" />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">

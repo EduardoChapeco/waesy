@@ -27,7 +27,7 @@ export function TicketPreview({
 }: TicketPreviewProps) {
   return (
     <div className="w-full max-w-[340px] mx-auto perspective-1000 select-none">
-      <div className="relative bg-card rounded-2xl overflow-hidden shadow-xl border border-border/60 transition-transform hover:scale-[1.02] duration-300">
+      <div className="relative bg-card rounded-lg overflow-hidden shadow-xl border border-border/60 transition-transform hover:scale-[1.02] duration-300">
         {/* Upper Section: Event Info */}
         <div className="relative h-44 bg-muted">
           {coverImage ? (
@@ -43,24 +43,24 @@ export function TicketPreview({
           )}
 
           {/* Floating Price Tag */}
-          <div className="absolute top-3 right-3 bg-background/95 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-black tracking-tight shadow-sm text-foreground border border-border/40">
+          <div className="absolute top-3 right-3 bg-background/95 backdrop-blur-md px-3 py-2 rounded-lg text-xs font-black tracking-tight shadow-sm text-foreground border border-border/40">
             {priceCents === 0 ? "Cortesia / Grátis" : formatMoney(priceCents)}
           </div>
 
           {/* Logo Overlay */}
           {logoUrl && (
-            <div className="absolute -bottom-5 left-5 h-11 w-11 rounded-xl bg-card p-1 shadow-md z-10 ring-1 ring-border">
+            <div className="absolute -bottom-5 left-5 h-11 w-11 rounded-lg bg-card p-1 shadow-md z-10 ring-1 ring-border">
               <img src={logoUrl} alt="Logo" className="w-full h-full object-contain rounded-lg" />
             </div>
           )}
         </div>
 
         {/* Middle Section: Details */}
-        <div className="pt-7 pb-5 px-5 space-y-3.5 bg-card">
+        <div className="pt-7 pb-5 px-5 space-y-4 bg-card">
           <div>
             <Badge
               variant="secondary"
-              className="mb-1.5 text-[10px] uppercase font-bold tracking-wider text-muted-foreground"
+              className="mb-2 text-[10px] uppercase font-bold tracking-wider text-muted-foreground"
             >
               {ticketType || "Ingresso Geral"}
             </Badge>
@@ -69,7 +69,7 @@ export function TicketPreview({
             </h3>
           </div>
 
-          <div className="space-y-1.5 text-xs text-muted-foreground">
+          <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <Calendar className="size-3.5 shrink-0 text-primary" />
               <span>{date || "Data a definir"}</span>
@@ -96,7 +96,7 @@ export function TicketPreview({
 
         {/* Lower Section: QR Code Pass */}
         <div className="p-5 bg-card flex flex-col items-center justify-center gap-2">
-          <div className="p-3 bg-white rounded-xl shadow-sm border border-border/20 flex flex-col items-center">
+          <div className="p-3 bg-white rounded-lg shadow-sm border border-border/20 flex flex-col items-center">
             {qrCodeValue ? (
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=${encodeURIComponent(qrCodeValue)}`}

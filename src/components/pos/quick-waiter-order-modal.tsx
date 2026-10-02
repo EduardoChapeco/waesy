@@ -169,8 +169,8 @@ export function QuickWaiterOrderModal({
  {/* Header */}
  <SheetHeader className="p-4 sm:p-5 border-b border-border/80 bg-muted/20 text-left">
  <div className="flex items-center justify-between">
- <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <UtensilsCrossed className="size-4" />
  </div>
  <div>
@@ -201,18 +201,18 @@ export function QuickWaiterOrderModal({
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  placeholder="Buscar produto por nome..."
- className="pl-9 h-9 text-xs rounded-xl bg-background"
+ className="pl-9 h-9 text-xs rounded-lg bg-background"
  autoFocus
  />
  </div>
 
  {categories.length > 0 && (
- <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+ <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
  <button
  type="button"
  onClick={() => setSelectedCategory("all")}
  className={cn(
- "px-2.5 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer",
+ "px-3 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer",
  selectedCategory === "all"
  ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground hover:text-foreground",
@@ -226,7 +226,7 @@ export function QuickWaiterOrderModal({
  type="button"
  onClick={() => setSelectedCategory(cat)}
  className={cn(
- "px-2.5 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer",
+ "px-3 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer",
  selectedCategory === cat
  ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground hover:text-foreground",
@@ -252,7 +252,7 @@ export function QuickWaiterOrderModal({
  Nenhum produto encontrado.
  </div>
  ) : (
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  {flatProducts.map((prod: any) => {
  const inDraft = draftItems[prod.id];
  const qty = inDraft?.qty || 0;
@@ -262,7 +262,7 @@ export function QuickWaiterOrderModal({
  <div
  key={prod.id}
  className={cn(
- "p-3 rounded-xl border flex items-center justify-between gap-3 transition-all",
+ "p-3 rounded-lg border flex items-center justify-between gap-3 transition-all",
  qty > 0
  ? "border-primary/50 bg-primary/5 shadow-2xs"
  : "border-border/60 bg-card hover:border-border",
@@ -278,7 +278,7 @@ export function QuickWaiterOrderModal({
  </div>
 
  {/* Stepper (+ / -) */}
- <div className="flex items-center gap-1.5 shrink-0">
+ <div className="flex items-center gap-2 shrink-0">
  {qty > 0 ? (
  <>
  <Button
@@ -325,7 +325,7 @@ export function QuickWaiterOrderModal({
 
  {/* Barra de Ação Inferior — Thumb Zone (44px min-height) */}
  <div className="p-4 border-t border-border/80 bg-card flex items-center justify-between gap-3 shrink-0">
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <span className="text-[10px] uppercase font-bold text-muted-foreground block">
  {totalItemsCount === 1 ? "1 item selecionado" : `${totalItemsCount} itens selecionados`}
  </span>
@@ -340,7 +340,7 @@ export function QuickWaiterOrderModal({
  variant="ghost"
  size="sm"
  onClick={() => onOpenChange(false)}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
@@ -349,7 +349,7 @@ export function QuickWaiterOrderModal({
  size="sm"
  disabled={totalItemsCount === 0 || sendMutation.isPending}
  onClick={() => sendMutation.mutate()}
- className="h-11 px-5 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-sm"
+ className="h-11 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-sm"
  >
  {sendMutation.isPending ? (
  <Loader2 className="size-4 animate-spin" />

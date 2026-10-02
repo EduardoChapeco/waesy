@@ -43,7 +43,7 @@ export function OfflineIndicator() {
       role="status"
       aria-live="polite"
       className={cn(
-        "fixed top-3 left-1/2 -translate-x-1/2 z-50 px-3.5 py-1.5 rounded-full text-xs font-medium shadow-lg backdrop-blur-md border transition-all duration-300 flex items-center gap-2",
+        "fixed top-3 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full text-xs font-medium shadow-lg backdrop-blur-md border transition-all duration-300 flex items-center gap-2",
         !isOnline
           ? "bg-amber-500/90 text-amber-950 border-amber-600/30 animate-in fade-in slide-in-from-top-2"
           : "bg-emerald-600/90 text-white border-emerald-500/30 animate-in fade-in"

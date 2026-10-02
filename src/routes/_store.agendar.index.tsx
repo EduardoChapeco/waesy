@@ -51,14 +51,14 @@ export const Route = createFileRoute("/_store/agendar/")({
 function BookingIndexErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <WarningCircle size={32} />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar agendamentos</h2>
       <p className="text-sm text-muted-foreground max-w-md mx-auto">
         {error?.message || "Não foi possível carregar os serviços e agendamentos no momento."}
       </p>
-      <Button onClick={reset} className="rounded-xl font-bold">
+      <Button onClick={reset} className="rounded-lg font-bold">
         Tentar Novamente
       </Button>
     </div>
@@ -255,7 +255,7 @@ function BookingIndexPage() {
           <CircleNotch size={32} className="animate-spin text-muted-foreground" />
         </div>
       ) : services.length === 0 ? (
-        <div className="py-24 text-center space-y-3 bg-card rounded-2xl border border-border/40 p-8">
+        <div className="py-24 text-center space-y-3 bg-card rounded-lg border border-border/40 p-8">
           <Scissors size={40} className="text-muted-foreground/40 mx-auto" />
           <h2 className="text-base font-bold text-foreground">
             Nenhum serviço disponível no momento
@@ -285,7 +285,7 @@ function BookingIndexPage() {
                       key={service.id}
                       to="/agendar/$id"
                       params={{ id: service.id }}
-                      className="min-w-[280px] sm:min-w-[310px] max-w-[330px] rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between shrink-0 group select-none block"
+                      className="min-w-72 sm:min-w-[310px] max-w-[330px] rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between shrink-0 group select-none block"
                     >
                       <div>
                         {/* Imagem do Serviço */}
@@ -302,12 +302,12 @@ function BookingIndexPage() {
                               <Storefront size={32} />
                             </div>
                           )}
-                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                            <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border border-border/40">
+                          <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
+                            <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
                               {service.category || "Geral"}
                             </span>
                             {service.duration_minutes && (
-                              <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border border-border/40 flex items-center gap-1">
+                              <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
                                 <Clock size={11} />
                                 <span>{service.duration_minutes}m</span>
                               </span>
@@ -342,7 +342,7 @@ function BookingIndexPage() {
                         <Button
                           size="sm"
                           onClick={(e) => handleOpenBookingSheet(service, e)}
-                          className="h-8 px-3 rounded-xl font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
+                          className="h-8 px-3 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
                         >
                           Agendar
                         </Button>
@@ -362,7 +362,7 @@ function BookingIndexPage() {
                       key={service.id}
                       to="/agendar/$id"
                       params={{ id: service.id }}
-                      className="rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group block"
+                      className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group block"
                     >
                       <div>
                         <div className="aspect-[16/10] relative overflow-hidden bg-muted">
@@ -378,12 +378,12 @@ function BookingIndexPage() {
                               <Storefront size={32} />
                             </div>
                           )}
-                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                            <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border border-border/40">
+                          <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
+                            <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
                               {service.category || "Geral"}
                             </span>
                             {service.duration_minutes && (
-                              <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border border-border/40 flex items-center gap-1">
+                              <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
                                 <Clock size={11} />
                                 <span>{service.duration_minutes}m</span>
                               </span>
@@ -416,7 +416,7 @@ function BookingIndexPage() {
                         <Button
                           size="sm"
                           onClick={(e) => handleOpenBookingSheet(service, e)}
-                          className="h-8 px-3.5 rounded-xl font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
+                          className="h-8 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
                         >
                           Agendar
                         </Button>
@@ -436,7 +436,7 @@ function BookingIndexPage() {
                   key={service.id}
                   to="/agendar/$id"
                   params={{ id: service.id }}
-                  className="rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group block shadow-xs"
+                  className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group block shadow-xs"
                 >
                   <div>
                     {/* Imagem */}
@@ -453,12 +453,12 @@ function BookingIndexPage() {
                           <Storefront size={32} />
                         </div>
                       )}
-                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                        <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border border-border/40">
+                      <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
+                        <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
                           {service.category || "Geral"}
                         </span>
                         {service.duration_minutes && (
-                          <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border border-border/40 flex items-center gap-1">
+                          <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
                             <Clock size={11} />
                             <span>{service.duration_minutes}m</span>
                           </span>
@@ -496,7 +496,7 @@ function BookingIndexPage() {
                     <Button
                       size="sm"
                       onClick={(e) => handleOpenBookingSheet(service, e)}
-                      className="h-9 px-4 rounded-xl font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
+                      className="h-9 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
                     >
                       Agendar Horário
                     </Button>
@@ -512,12 +512,12 @@ function BookingIndexPage() {
               {services.map((service: any) => (
                 <div
                   key={service.id}
-                  className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card min-h-[136px] pl-32 sm:pl-44 p-3.5 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-3.5 sm:gap-4 w-full"
+                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-card min-h-[136px] pl-32 sm:pl-44 p-4 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-4 sm:gap-4 w-full"
                 >
                   <Link
                     to="/agendar/$id"
                     params={{ id: service.id }}
-                    className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-2xl bg-muted border-r border-border/40"
+                    className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-lg bg-muted border-r border-border/40"
                   >
                     {service.image_url ? (
                       <img
@@ -536,10 +536,10 @@ function BookingIndexPage() {
                   <Link
                     to="/agendar/$id"
                     params={{ id: service.id }}
-                    className="min-w-0 flex-1 space-y-1.5 pl-1 block"
+                    className="min-w-0 flex-1 space-y-2 pl-1 block"
                   >
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-[9px] font-mono font-bold uppercase px-1.5 py-0 rounded-md">
+                      <Badge variant="outline" className="text-[9px] font-mono font-bold uppercase px-2 py-0 rounded-md">
                         {service.category || "Geral"}
                       </Badge>
                       {service.duration_minutes && (
@@ -573,7 +573,7 @@ function BookingIndexPage() {
                     <Button
                       size="sm"
                       onClick={(e) => handleOpenBookingSheet(service, e)}
-                      className="h-9 px-4 rounded-xl font-bold text-xs bg-primary text-primary-foreground shrink-0 cursor-pointer hover:opacity-90 shadow-sm"
+                      className="h-9 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground shrink-0 cursor-pointer hover:opacity-90 shadow-sm"
                     >
                       Agendar
                     </Button>
@@ -603,7 +603,7 @@ function BookingIndexPage() {
 
             {isSuccess ? (
               <div className="py-12 text-center space-y-4">
-                <div className="size-16 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+                <div className="size-16 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
                   <CheckCircle size={36} weight="bold" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground">Agendamento Confirmado!</h3>
@@ -612,13 +612,13 @@ function BookingIndexPage() {
                   <strong>{selectedDate}</strong> às <strong>{selectedSlot ? new Date(selectedSlot).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "horário comercial"}</strong>.
                 </p>
                 <div className="pt-4 flex flex-col gap-2">
-                  <Button asChild className="rounded-xl font-bold text-xs h-10">
+                  <Button asChild className="rounded-lg font-bold text-xs h-10">
                     <Link to="/conta/agendamentos">Ver Meus Agendamentos</Link>
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => setSelectedService(null)}
-                    className="rounded-xl font-bold text-xs h-10"
+                    className="rounded-lg font-bold text-xs h-10"
                   >
                     Fechar
                   </Button>
@@ -630,7 +630,7 @@ function BookingIndexPage() {
                   {/* 1. Escolha do Dia */}
                   <div className="space-y-2">
                     <Label className="text-xs font-bold text-foreground">1. Escolha a Data</Label>
-                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
                       {nextDays.map((day) => {
                         const isSelected = selectedDate === day.iso;
                         return (
@@ -642,14 +642,14 @@ function BookingIndexPage() {
                               setSelectedSlot(null);
                             }}
                             className={cn(
-                              "p-2 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center",
+                              "p-2 rounded-lg text-center border transition-all cursor-pointer flex flex-col items-center justify-center",
                               isSelected
                                 ? "bg-foreground text-background border-foreground font-bold shadow-sm"
                                 : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted"
                             )}
                           >
                             <span className="text-[9px] font-mono tracking-wider">{day.weekday}</span>
-                            <span className="text-sm font-bold mt-0.5">{day.dayNum}</span>
+                            <span className="text-sm font-bold mt-1">{day.dayNum}</span>
                           </button>
                         );
                       })}
@@ -670,7 +670,7 @@ function BookingIndexPage() {
                         <CircleNotch size={24} className="animate-spin text-muted-foreground" />
                       </div>
                     ) : slots.length === 0 ? (
-                      <div className="p-3.5 rounded-xl bg-muted/40 text-center text-xs text-muted-foreground">
+                      <div className="p-4 rounded-lg bg-muted/40 text-center text-xs text-muted-foreground">
                         Nenhum horário disponível para esta data. Selecione outro dia.
                       </div>
                     ) : (
@@ -688,7 +688,7 @@ function BookingIndexPage() {
                               type="button"
                               onClick={() => setSelectedSlot(slotIso)}
                               className={cn(
-                                "h-9 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer flex items-center justify-center",
+                                "h-9 rounded-lg text-xs font-mono font-bold border transition-all cursor-pointer flex items-center justify-center",
                                 isSelected
                                 ? "bg-primary text-primary-foreground border-primary"
                                 : "bg-card border-border/60 hover:bg-muted text-foreground"
@@ -704,8 +704,8 @@ function BookingIndexPage() {
 
                   {/* 3. Pacotes de Sessões Ativos */}
                   {activePasses && activePasses.length > 0 && (
-                    <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
-                      <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                      <span className="text-xs font-bold text-primary flex items-center gap-2">
                         <Ticket size={15} weight="bold" />
                         Usar Crédito de Pacote
                       </span>
@@ -739,7 +739,7 @@ function BookingIndexPage() {
                           placeholder="Seu nome completo"
                           value={guestName}
                           onChange={(e) => setGuestName(e.target.value)}
-                          className="pl-9 h-10 rounded-xl text-base sm:text-xs"
+                          className="pl-9 h-10 rounded-lg text-base sm:text-xs"
                           required
                         />
                       </div>
@@ -749,7 +749,7 @@ function BookingIndexPage() {
                           placeholder="WhatsApp (ex: 49 99999-9999)"
                           value={guestPhone}
                           onChange={(e) => setGuestPhone(e.target.value)}
-                          className="pl-9 h-10 rounded-xl text-base sm:text-xs"
+                          className="pl-9 h-10 rounded-lg text-base sm:text-xs"
                           required
                         />
                       </div>
@@ -757,7 +757,7 @@ function BookingIndexPage() {
                         placeholder="Observações ou preferências para o profissional (opcional)"
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="rounded-xl text-base sm:text-xs min-h-16 resize-none"
+                        className="rounded-lg text-base sm:text-xs min-h-16 resize-none"
                       />
                     </div>
                   </div>
@@ -778,7 +778,7 @@ function BookingIndexPage() {
                 type="submit"
                 form="quick-booking-form"
                 disabled={appointmentMutation.isPending}
-                className="h-11 px-6 rounded-xl font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm"
+                className="h-11 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm"
               >
                 {appointmentMutation.isPending ? (
                   <CircleNotch size={16} className="animate-spin" />

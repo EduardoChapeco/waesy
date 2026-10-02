@@ -143,13 +143,13 @@ function JobsMasterPage() {
       {/* ── 2.5. Barra de Ações do Candidato & Guia Salarial ── */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-1">
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold h-9 min-h-[44px] gap-1.5 cursor-pointer">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9 min-h-11 gap-2 cursor-pointer">
             <Link to="/conta/curriculo">
               <FileText size={16} weight="bold" className="text-primary" />
               <span>Meu Currículo Digital</span>
             </Link>
           </Button>
-          <Button asChild size="sm" variant="ghost" className="rounded-xl text-xs font-semibold h-9 min-h-[44px] gap-1.5 cursor-pointer">
+          <Button asChild size="sm" variant="ghost" className="rounded-lg text-xs font-semibold h-9 min-h-11 gap-2 cursor-pointer">
             <Link to="/conta/candidaturas">
               <UserCheck size={16} weight="bold" />
               <span className="hidden sm:inline">Minhas Candidaturas</span>
@@ -161,7 +161,7 @@ function JobsMasterPage() {
         <button
           type="button"
           onClick={() => setIsProfessionGuideOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all ml-auto cursor-pointer min-h-[44px]"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all ml-auto cursor-pointer min-h-11"
         >
           <Briefcase size={15} weight="bold" />
           <span>Guia Salarial</span>
@@ -204,7 +204,7 @@ function JobsMasterPage() {
  onAction={() => setViewMode("grid")}
  >
  {featuredJobs.map((job: any) => (
- <div key={job.id} className="min-w-[290px] sm:min-w-[320px] max-w-[340px] shrink-0">
+ <div key={job.id} className="min-w-[290px] sm:min-w-80 max-w-[340px] shrink-0">
  <JobPostCard job={job} />
  </div>
  ))}
@@ -224,7 +224,7 @@ function JobsMasterPage() {
  }}
  >
  {items.map((job: any) => (
- <div key={job.id} className="min-w-[290px] sm:min-w-[320px] max-w-[340px] shrink-0">
+ <div key={job.id} className="min-w-[290px] sm:min-w-80 max-w-[340px] shrink-0">
  <JobPostCard job={job} />
  </div>
  ))}
@@ -243,7 +243,7 @@ function JobsMasterPage() {
  </div>
 
  {jobsList.length === 0 && !isLoading && (
- <div className="py-16 text-center space-y-3 bg-card rounded-2xl border border-border/60 p-8">
+ <div className="py-16 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
  <EmptyState title="Nenhuma vaga encontrada com os filtros selecionados." />
  <div className="pt-2">
  <Button
@@ -253,7 +253,7 @@ function JobsMasterPage() {
  setSelectedCategory("todos");
  setSearch("");
  }}
- className="rounded-xl font-bold text-xs"
+ className="rounded-lg font-bold text-xs"
  >
  Ver todas as vagas
  </Button>
@@ -267,7 +267,7 @@ function JobsMasterPage() {
  {viewMode === "grid" && (
  <div>
  {jobsList.length === 0 && !isLoading ? (
- <div className="py-24 text-center space-y-3 bg-card rounded-2xl border border-border/60 p-8">
+ <div className="py-24 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
  <EmptyState title="Nenhuma vaga disponível no momento com estes critérios." />
  </div>
  ) : (
@@ -284,7 +284,7 @@ function JobsMasterPage() {
  {viewMode === "list" && (
  <div className="space-y-3 w-full">
  {jobsList.length === 0 && !isLoading ? (
- <div className="py-24 text-center space-y-3 bg-card rounded-2xl border border-border/60 p-8">
+ <div className="py-24 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
  <EmptyState title="Nenhuma vaga encontrada no momento." />
  </div>
  ) : (
@@ -307,7 +307,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
  const matchedProfession = useMemo(() => findProfessionByTitle(job.title), [job.title]);
 
  return (
- <div className="group relative flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/25 transition-all duration-300">
+ <div className="group relative flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/25 transition-all duration-300">
  <Link
  to="/empregos/$id"
  params={{ id: job.id }}
@@ -332,12 +332,12 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
         {/* Badge de Modalidade e Vaga Externa */}
-        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-          <Badge className="bg-background/90 text-foreground text-[10px] font-bold px-2 py-0.5 rounded-lg">
+        <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
+          <Badge className="bg-background/90 text-foreground text-[10px] font-bold px-2 py-1 rounded-lg">
             {job.workplace_type || "Presencial"}
           </Badge>
           {job.is_external && (
-            <Badge className="bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-lg">
+            <Badge className="bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-lg">
               Oficial
             </Badge>
           )}
@@ -345,7 +345,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
 
  {/* Badge de Regime de Contrato */}
  <div className="absolute top-2.5 right-2.5">
- <Badge className="bg-foreground/90 text-background text-[10px] font-black px-2 py-0.5 rounded-lg">
+ <Badge className="bg-foreground/90 text-background text-[10px] font-black px-2 py-1 rounded-lg">
  {job.contract_type || "CLT"}
  </Badge>
  </div>
@@ -356,7 +356,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
  <div className="space-y-2">
  <div className="flex items-start gap-3">
  {/* Logo da Empresa Flutuante */}
- <div className="size-12 rounded-2xl bg-card border-2 border-background overflow-hidden shrink-0 flex items-center justify-center -mt-8 sm:-mt-9 relative z-10">
+ <div className="size-12 rounded-lg bg-card border-2 border-background overflow-hidden shrink-0 flex items-center justify-center -mt-8 sm:-mt-9 relative z-10">
  {job.company_logo_url ? (
  <img
  src={job.company_logo_url}
@@ -370,7 +370,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
  )}
  </div>
 
- <div className="min-w-0 flex-1 pt-0.5">
+ <div className="min-w-0 flex-1 pt-1">
  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block truncate">
  {job.company_name}
  </span>
@@ -381,15 +381,15 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
  </div>
 
               {/* Faixa Salarial em Destaque */}
-              <div className="flex flex-wrap items-center gap-1.5">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/10 text-primary font-bold text-xs font-mono">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs font-mono">
                   <Money size={14} weight="bold" />
                   <span>{job.salary_display || "Salário a combinar"}</span>
                 </div>
                 {matchedProfession && (
                   <Badge
                     variant="outline"
-                    className="text-[10px] border-primary/20 text-muted-foreground font-medium px-2 py-0.5"
+                    className="text-[10px] border-primary/20 text-muted-foreground font-medium px-2 py-1"
                     title={`Faixa de mercado: ${formatMoney(matchedProfession.junior_salary_cents)} até ${formatMoney(matchedProfession.senior_salary_cents)}`}
                   >
                     {matchedProfession.sector}
@@ -398,7 +398,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
               </div>
 
  {/* Localização / Cidade */}
- <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
  <MapPin size={14} weight="bold" className="text-foreground shrink-0" />
  <span className="truncate">{job.location || "Regional"}</span>
  </div>
@@ -409,7 +409,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
  {job.benefits.slice(0, 3).map((b, i) => (
  <span
  key={i}
- className="text-[10px] font-semibold bg-muted text-muted-foreground px-2 py-0.5 rounded-md truncate max-w-[140px]"
+ className="text-[10px] font-semibold bg-muted text-muted-foreground px-2 py-1 rounded-md truncate max-w-[140px]"
  >
  {b}
  </span>
@@ -419,7 +419,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
 
  {/* Resumo da descrição */}
  {job.description && (
- <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed pt-0.5">
+ <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed pt-1">
  {job.description}
  </p>
  )}
@@ -435,7 +435,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
  target="_blank"
  rel="noopener noreferrer"
  onClick={(e) => e.stopPropagation()}
- className="size-9 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 flex items-center justify-center transition-all shrink-0 cursor-pointer"
+ className="size-9 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 flex items-center justify-center transition-all shrink-0 cursor-pointer"
  title="Falar no WhatsApp"
  >
  <WhatsappLogo size={18} weight="bold" />
@@ -448,7 +448,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
           <Button
             asChild
             size="sm"
-            className="rounded-xl font-bold text-xs h-9 px-4 flex-1 bg-primary text-primary-foreground hover:bg-primary/90 transition-all gap-1.5"
+            className="rounded-lg font-bold text-xs h-9 px-4 flex-1 bg-primary text-primary-foreground hover:bg-primary/90 transition-all gap-2"
           >
             <a href={job.external_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
               <span>Site Oficial</span>
@@ -459,7 +459,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
           <Button
             asChild
             size="sm"
-            className="rounded-xl font-bold text-xs h-9 px-4 flex-1 bg-foreground text-background hover:bg-foreground/90 transition-all gap-1.5"
+            className="rounded-lg font-bold text-xs h-9 px-4 flex-1 bg-foreground text-background hover:bg-foreground/90 transition-all gap-2"
           >
             <Link to="/empregos/$id" params={{ id: job.id }}>
               <span>Ver Vaga</span>
@@ -481,11 +481,11 @@ function JobListItem({ job }: { job: JobItemDTO }) {
   const matchedProfession = useMemo(() => findProfessionByTitle(job.title), [job.title]);
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card min-h-[128px] pl-28 sm:pl-36 p-3.5 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-3.5">
+    <div className="group relative overflow-hidden rounded-lg border border-border/60 bg-card min-h-[128px] pl-28 sm:pl-36 p-4 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-4">
       <Link
         to="/empregos/$id"
         params={{ id: job.id }}
-        className="absolute inset-y-0 left-0 w-28 sm:w-36 overflow-hidden rounded-l-2xl bg-muted/40 border-r border-border/40 flex items-center justify-center focus-visible:outline-none"
+        className="absolute inset-y-0 left-0 w-28 sm:w-36 overflow-hidden rounded-l-lg bg-muted/40 border-r border-border/40 flex items-center justify-center focus-visible:outline-none"
       >
         {coverUrl ? (
           <img
@@ -509,10 +509,10 @@ function JobListItem({ job }: { job: JobItemDTO }) {
       <Link
         to="/empregos/$id"
         params={{ id: job.id }}
-        className="min-w-0 flex-1 space-y-1.5 pl-1 focus-visible:outline-none"
+        className="min-w-0 flex-1 space-y-2 pl-1 focus-visible:outline-none"
       >
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-[9px] font-mono font-bold uppercase px-1.5 py-0 h-4">
+          <Badge variant="outline" className="text-[9px] font-mono font-bold uppercase px-2 py-0 h-4">
             {job.workplace_type || "Presencial"}
           </Badge>
           <span className="text-xs text-muted-foreground font-bold truncate">
@@ -532,7 +532,7 @@ function JobListItem({ job }: { job: JobItemDTO }) {
             <>
               <span>•</span>
               <span
-                className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-foreground font-semibold"
+                className="text-[10px] font-mono px-2 py-1 rounded bg-muted text-foreground font-semibold"
                 title={`CBO ${matchedProfession.cbo_code} • Piso ${formatMoney(matchedProfession.junior_salary_cents)}`}
               >
                 {matchedProfession.sector}
@@ -553,7 +553,7 @@ function JobListItem({ job }: { job: JobItemDTO }) {
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="size-10 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 flex items-center justify-center transition-all cursor-pointer"
+            className="size-10 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 flex items-center justify-center transition-all cursor-pointer"
             title="WhatsApp"
           >
             <WhatsappLogo size={18} weight="bold" />
@@ -564,7 +564,7 @@ function JobListItem({ job }: { job: JobItemDTO }) {
           <Button
             asChild
             size="sm"
-            className="h-9 px-3 rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 gap-1"
+            className="h-9 px-3 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 gap-1"
           >
             <a href={job.external_url} target="_blank" rel="noopener noreferrer">
               <span>Site</span>
@@ -575,7 +575,7 @@ function JobListItem({ job }: { job: JobItemDTO }) {
           <Button
             asChild
             size="sm"
-            className="h-9 px-3 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90"
+            className="h-9 px-3 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90"
           >
             <Link to="/empregos/$id" params={{ id: job.id }}>
               Ver

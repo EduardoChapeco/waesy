@@ -40,7 +40,7 @@ function WorkspaceDoacoesHubPage() {
           </p>
         </div>
 
-        <Button asChild size="sm" className="h-9 px-3.5 gap-1.5 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs">
+        <Button asChild size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs">
           <Link to="/conta/classificados/novo" search={{ tipo: "doacao" }}>
             <Plus className="size-3.5" />
             <span>Cadastrar Doação Gratuita</span>
@@ -50,7 +50,7 @@ function WorkspaceDoacoesHubPage() {
 
       {/* ── CARDS DE IMPACTO COMUNITÁRIO ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 space-y-2">
+        <div className="bg-card rounded-lg border border-border/70 p-4 sm:p-5 space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Itens em Doação</span>
             <Gift className="size-4 text-emerald-500" />
@@ -61,7 +61,7 @@ function WorkspaceDoacoesHubPage() {
           <span className="text-xs text-muted-foreground block">Disponíveis gratuitamente</span>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 space-y-2">
+        <div className="bg-card rounded-lg border border-border/70 p-4 sm:p-5 space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Custo para a Comunidade</span>
             <Heart className="size-4 text-rose-500" />
@@ -72,7 +72,7 @@ function WorkspaceDoacoesHubPage() {
           <span className="text-xs text-muted-foreground block">100% solidário e sem taxas</span>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border/70 p-4 sm:p-5 space-y-2">
+        <div className="bg-card rounded-lg border border-border/70 p-4 sm:p-5 space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Retirada / Localização</span>
             <MapPin className="size-4 text-primary" />
@@ -85,7 +85,7 @@ function WorkspaceDoacoesHubPage() {
       </div>
 
       {/* ── LISTAGEM DE DOAÇÕES ── */}
-      <div className="bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+      <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
         <div className="p-4 sm:p-5 border-b border-border/40 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Heart className="size-4 text-rose-500" />
@@ -107,9 +107,9 @@ function WorkspaceDoacoesHubPage() {
                 Ajude famílias e projetos sociais da sua cidade doando itens excedentes, mostruários ou organizando campanhas solidárias.
               </p>
             </div>
-            <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-bold">
+            <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold">
               <Link to="/conta/classificados/novo" search={{ tipo: "doacao" }}>
-                <Plus className="size-3.5 mr-1.5" />
+                <Plus className="size-3.5 mr-2" />
                 <span>Criar Primeira Doação</span>
               </Link>
             </Button>
@@ -123,8 +123,8 @@ function WorkspaceDoacoesHubPage() {
                   key={item.id}
                   className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/20 transition-colors"
                 >
-                  <div className="flex items-start gap-3.5 min-w-0">
-                    <div className="size-14 rounded-xl bg-muted/40 border border-border/50 overflow-hidden shrink-0 flex items-center justify-center">
+                  <div className="flex items-start gap-4 min-w-0">
+                    <div className="size-14 rounded-lg bg-muted/40 border border-border/50 overflow-hidden shrink-0 flex items-center justify-center">
                       {img ? (
                         <img src={img} alt={item.title} className="size-full object-cover" />
                       ) : (
@@ -144,7 +144,7 @@ function WorkspaceDoacoesHubPage() {
                         {item.content || "Sem descrição adicional informada."}
                       </p>
 
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground pt-0.5">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1">
                         <span className="flex items-center gap-1">
                           <MapPin className="size-3" />
                           {item.location_name || "No balcão da loja"}
@@ -159,15 +159,15 @@ function WorkspaceDoacoesHubPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-                    <Button asChild variant="outline" size="sm" className="min-h-[44px] px-3.5 rounded-xl text-xs font-semibold">
+                    <Button asChild variant="outline" size="sm" className="min-h-11 px-4 rounded-lg text-xs font-semibold">
                       <Link to="/classificados/$id" params={{ id: item.id }}>
-                        <Eye className="size-3.5 mr-1.5" />
+                        <Eye className="size-3.5 mr-2" />
                         <span>Vitrine</span>
-                        <ArrowUpRight className="size-3 ml-0.5 opacity-60" />
+                        <ArrowUpRight className="size-3 ml-1 opacity-60" />
                       </Link>
                     </Button>
 
-                    <Button asChild size="sm" className="min-h-[44px] px-3.5 rounded-xl text-xs font-semibold">
+                    <Button asChild size="sm" className="min-h-11 px-4 rounded-lg text-xs font-semibold">
                       <Link to="/conta/classificados/novo" search={{ tipo: "doacao", editId: item.id }}>
                         <span>Editar</span>
                       </Link>

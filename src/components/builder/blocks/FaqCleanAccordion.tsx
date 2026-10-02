@@ -30,9 +30,9 @@ export const FaqCleanAccordion: React.FC<FaqCleanAccordionProps> = ({
     sm: "rounded-sm",
     md: "rounded-md",
     lg: "rounded-lg",
-    xl: "rounded-xl",
-    "2xl": "rounded-2xl",
-    full: "rounded-3xl",
+    xl: "rounded-lg",
+    "2xl": "rounded-lg",
+    full: "rounded-lg",
   }[styling?.borderRadius || "xl"];
 
   const customStyle: React.CSSProperties = {

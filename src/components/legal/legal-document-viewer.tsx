@@ -39,7 +39,7 @@ export function LegalDocumentViewer({ document }: LegalDocumentProps) {
 
  {/* Header Documento */}
  <div className="space-y-3">
- <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-muted/60 text-muted-foreground text-xs font-semibold ">
+ <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/60 text-muted-foreground text-xs font-semibold ">
  <FileText className="size-3.5 text-primary" />
  <span>Documento Legal Oficial e Conformidade LGPD</span>
  </div>
@@ -47,7 +47,7 @@ export function LegalDocumentViewer({ document }: LegalDocumentProps) {
  {document.title}
  </h1>
  {document.summary && (
- <p className="text-sm sm:text-base text-muted-foreground leading-relaxed bg-card p-4 rounded-2xl ">
+ <p className="text-sm sm:text-base text-muted-foreground leading-relaxed bg-card p-4 rounded-lg ">
  {document.summary}
  </p>
  )}
@@ -56,22 +56,22 @@ export function LegalDocumentViewer({ document }: LegalDocumentProps) {
  {/* Links Rápidos de Outras Políticas */}
  <div className="flex flex-wrap gap-2 pt-2 pb-4 ">
  <span className="text-xs font-bold text-muted-foreground self-center mr-1">Políticas Relacionadas:</span>
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
  <Link to="/termos">Termos de Uso</Link>
  </Button>
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
  <Link to="/privacidade">Privacidade (LGPD)</Link>
  </Button>
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
  <Link to="/politicas/$slug" params={{ slug: "cookies" }}>Cookies</Link>
  </Button>
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
  <Link to="/politicas/$slug" params={{ slug: "isencao" }}>Isenção de Negociações</Link>
  </Button>
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
  <Link to="/politicas/$slug" params={{ slug: "lojistas" }}>Lojistas</Link>
  </Button>
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
  <Link to="/trocas-e-devolucoes">Devoluções</Link>
  </Button>
  </div>
@@ -124,9 +124,9 @@ export function LegalDocumentViewer({ document }: LegalDocumentProps) {
  </article>
 
  {/* Confirmação de Consentimento */}
- <div className="mt-12 p-4 sm:p-5 rounded-2xl border border-primary/20 bg-primary/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+ <div className="mt-12 p-4 sm:p-5 rounded-lg border border-primary/20 bg-primary/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
  <div className="flex items-center gap-3">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <ShieldCheck className="size-4" />
  </div>
  <div>

@@ -112,7 +112,7 @@ function SecurityAndDevicesPage() {
           size="sm"
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="rounded-xl text-xs sm:text-sm font-semibold h-10 sm:h-11 px-3.5 sm:px-4 gap-2 cursor-pointer border-border/70 bg-card hover:bg-muted/50 shadow-2xs active:scale-98"
+          className="rounded-lg text-xs sm:text-sm font-semibold h-10 sm:h-11 px-4 sm:px-4 gap-2 cursor-pointer border-border/70 bg-card hover:bg-muted/50 shadow-2xs active:scale-98"
         >
           <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`} />
           <span>Atualizar</span>
@@ -128,7 +128,7 @@ function SecurityAndDevicesPage() {
  </div>
 
  {devices.length === 0 ? (
- <div className="p-8 text-center rounded-2xl border border-dashed border-border/70 bg-muted/20">
+ <div className="p-8 text-center rounded-lg border border-dashed border-border/70 bg-muted/20">
  <Shield className="size-8 mx-auto text-muted-foreground mb-2" />
  <p className="text-xs font-semibold text-muted-foreground">Nenhum dispositivo registrado ainda.</p>
  </div>
@@ -147,10 +147,10 @@ function SecurityAndDevicesPage() {
               return (
                 <div
                   key={device.id}
-                  className="p-4 rounded-2xl bg-card border border-border/70 flex flex-col justify-between gap-3 shadow-2xs transition-all"
+                  className="p-4 rounded-lg bg-card border border-border/70 flex flex-col justify-between gap-3 shadow-2xs transition-all"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="size-9 rounded-xl bg-muted/60 flex items-center justify-center shrink-0 mt-0.5 text-foreground/80">
+                    <div className="size-9 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 mt-1 text-foreground/80">
                       {isMobile ? (
                         <Smartphone className="size-4.5" strokeWidth={1.75} />
                       ) : (
@@ -164,17 +164,17 @@ function SecurityAndDevicesPage() {
                           {device.device_name || (isMobile ? "Dispositivo Móvel" : "Computador")}
                         </p>
                         {device.is_trusted && (
-                          <Badge variant="secondary" className="text-[9px] font-medium px-1.5 py-0">
+                          <Badge variant="secondary" className="text-[9px] font-medium px-2 py-0">
                             Confiável
                           </Badge>
                         )}
                       </div>
 
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p className="text-[11px] text-muted-foreground mt-1">
                         {locationText} • {relativeTime}
                       </p>
 
-                      <p className="text-[10px] font-mono text-muted-foreground/60 mt-0.5">
+                      <p className="text-[10px] font-mono text-muted-foreground/60 mt-1">
                         {ipText}
                       </p>
                     </div>
@@ -187,7 +187,7 @@ function SecurityAndDevicesPage() {
                         size="sm"
                         disabled={loadingDeviceId === device.id}
                         onClick={() => handleTrustDevice(device.id)}
-                        className="h-8 px-2.5 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer shadow-2xs active:scale-98"
+                        className="h-8 px-3 text-xs font-semibold rounded-lg gap-2 cursor-pointer shadow-2xs active:scale-98"
                       >
                         <CheckCircle2 className="size-3.5 text-emerald-600" strokeWidth={1.75} />
                         <span>Confiar</span>
@@ -199,7 +199,7 @@ function SecurityAndDevicesPage() {
                       size="sm"
                       disabled={loadingDeviceId === device.id}
                       onClick={() => setDeviceToRevoke(device)}
-                      className="h-8 px-2.5 text-xs font-semibold rounded-xl gap-1 text-destructive hover:bg-destructive/10 cursor-pointer shadow-2xs active:scale-98"
+                      className="h-8 px-3 text-xs font-semibold rounded-lg gap-1 text-destructive hover:bg-destructive/10 cursor-pointer shadow-2xs active:scale-98"
                     >
                       <Trash2 className="size-3.5" strokeWidth={1.75} />
                       <span>Desconectar</span>
@@ -221,12 +221,12 @@ function SecurityAndDevicesPage() {
  </div>
 
  {logs.length === 0 ? (
- <div className="p-8 text-center rounded-2xl border border-dashed border-border/70 bg-muted/20">
+ <div className="p-8 text-center rounded-lg border border-dashed border-border/70 bg-muted/20">
  <Clock className="size-8 mx-auto text-muted-foreground mb-2" />
  <p className="text-xs font-semibold text-muted-foreground">Nenhum evento registrado recentemente.</p>
  </div>
  ) : (
- <div className="rounded-2xl border border-border/70 bg-card overflow-hidden">
+ <div className="rounded-lg border border-border/70 bg-card overflow-hidden">
  <div className="divide-y divide-border/60">
  {logs.map((log: any) => {
                 const isSuccess = log.event_type === "login_success" || log.event_type === "signup";
@@ -242,9 +242,9 @@ function SecurityAndDevicesPage() {
                 const deviceName = log.metadata?.device_name || log.device_type || "Navegador Web";
 
                 return (
-                  <div key={log.id} className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
+                  <div key={log.id} className="p-4 sm:p-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="size-8 rounded-xl bg-muted/60 flex items-center justify-center shrink-0">
+                      <div className="size-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
                         {isSuccess ? (
                           <ShieldCheck className="size-4 text-emerald-600" strokeWidth={1.75} />
                         ) : isFailed ? (
@@ -283,7 +283,7 @@ function SecurityAndDevicesPage() {
                           )}
                         </div>
 
-                        <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                        <p className="text-[11px] text-muted-foreground mt-1 truncate">
                           {deviceName} • {locationText}
                         </p>
                       </div>
@@ -302,7 +302,7 @@ function SecurityAndDevicesPage() {
  </section>
 
  <Dialog open={Boolean(deviceToRevoke)} onOpenChange={(open) => !open && setDeviceToRevoke(null)}>
- <DialogContent className="sm:max-w-md rounded-2xl">
+ <DialogContent className="sm:max-w-md rounded-lg">
  <DialogHeader>
  <DialogTitle className="text-base font-bold text-foreground">Desconectar dispositivo?</DialogTitle>
  <DialogDescription className="text-xs text-muted-foreground">
@@ -310,16 +310,16 @@ function SecurityAndDevicesPage() {
  </DialogDescription>
  </DialogHeader>
  <DialogFooter className="gap-2 sm:gap-0">
- <Button variant="ghost" onClick={() => setDeviceToRevoke(null)} className="rounded-xl text-xs">
+ <Button variant="ghost" onClick={() => setDeviceToRevoke(null)} className="rounded-lg text-xs">
  Cancelar
  </Button>
  <Button
  variant="destructive"
  onClick={() => deviceToRevoke && handleRevokeDevice(deviceToRevoke.id)}
  disabled={loadingDeviceId === deviceToRevoke?.id}
- className="rounded-xl text-xs font-semibold"
+ className="rounded-lg text-xs font-semibold"
  >
- {loadingDeviceId === deviceToRevoke?.id ? <Loader2 className="size-3.5 animate-spin mr-1.5" /> : null}
+ {loadingDeviceId === deviceToRevoke?.id ? <Loader2 className="size-3.5 animate-spin mr-2" /> : null}
  Desconectar
  </Button>
  </DialogFooter>

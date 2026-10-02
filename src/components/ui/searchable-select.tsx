@@ -126,7 +126,7 @@ export function SearchableSelect({
         >
           <span className="flex-1 truncate text-left">
             {selectedOption ? (
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-2">
                 <span className="font-medium text-foreground">{selectedOption.label}</span>
                 {selectedOption.sublabel && (
                   <span className="text-xs text-muted-foreground">({selectedOption.sublabel})</span>
@@ -142,7 +142,7 @@ export function SearchableSelect({
               <span
                 role="button"
                 onClick={handleClear}
-                className="rounded p-0.5 text-muted-foreground hover:bg-surface-alt hover:text-foreground"
+                className="rounded p-1 text-muted-foreground hover:bg-surface-alt hover:text-foreground"
               >
                 <X className="h-3.5 w-3.5" />
               </span>
@@ -163,7 +163,7 @@ export function SearchableSelect({
 
       <PopoverContent
         align="start"
-        className="w-[var(--radix-popover-trigger-width)] p-0 rounded-xl border border-border bg-popover text-popover-foreground shadow-md"
+        className="w-[var(--radix-popover-trigger-width)] p-0 rounded-lg border border-border bg-popover text-popover-foreground shadow-md"
       >
         {/* Search input */}
         <div className="flex items-center gap-2 border-b border-border px-3 py-2">

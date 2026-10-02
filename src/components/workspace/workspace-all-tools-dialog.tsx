@@ -517,12 +517,12 @@ export function WorkspaceAllToolsDialog({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-4xl max-h-[90vh] p-0 rounded-2xl border border-border/80 bg-background/98 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col">
+ <DialogContent className="sm:max-w-4xl max-h-[90vh] p-0 rounded-lg border border-border/80 bg-background/98 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col">
  {/* ── 1. Top Header com Busca Ampla (Padrão Meta Studio) ── */}
  <div className="p-4 sm:p-6 pb-4 border-b border-border/60 bg-muted/15 shrink-0 space-y-3">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
  <Sliders className="size-4" />
  </div>
  <DialogTitle className="text-base sm:text-lg font-black tracking-tight text-foreground">
@@ -549,7 +549,7 @@ export function WorkspaceAllToolsDialog({
                 }
               }}
               placeholder="Pesquisar ferramentas ou ditar comando (ex: 'Criar anúncio de R$ 50 para o produto X')..."
-              className="h-10 pl-10 pr-20 text-xs sm:text-sm rounded-xl bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary shadow-xs"
+              className="h-10 pl-10 pr-20 text-xs sm:text-sm rounded-lg bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary shadow-xs"
               autoFocus
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -586,7 +586,7 @@ export function WorkspaceAllToolsDialog({
           {searchQuery.trim().length >= 3 && !mcpBlock && !isOrchestrating && (
             <div
               onClick={() => handleExecuteAiCommand()}
-              className="p-2.5 px-3 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between cursor-pointer group animate-in fade-in"
+              className="p-3 px-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between cursor-pointer group animate-in fade-in"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div className="size-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
@@ -614,8 +614,8 @@ export function WorkspaceAllToolsDialog({
           <div className="space-y-6 max-w-5xl mx-auto pb-4">
             {/* Estado de Carregamento da IA MCP */}
             {isOrchestrating && (
-              <div className="py-12 p-6 rounded-2xl border border-border/80 bg-card text-center space-y-3 animate-pulse">
-                <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+              <div className="py-12 p-6 rounded-lg border border-border/80 bg-card text-center space-y-3 animate-pulse">
+                <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
                   <Loader2 className="size-6 animate-spin" />
                 </div>
                 <h4 className="text-sm font-bold text-foreground">
@@ -661,11 +661,11 @@ export function WorkspaceAllToolsDialog({
               <>
             {/* Seção: Usadas com frequência (Exibida quando não há busca ativa) */}
  {!searchQuery && (
- <div className="space-y-2.5 pb-5 border-b border-border/60">
+ <div className="space-y-3 pb-5 border-b border-border/60">
  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
  Usadas com frequência
  </span>
- <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+ <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
  {frequentTools.map((tool) => {
  const Icon = tool.icon;
  return (
@@ -673,12 +673,12 @@ export function WorkspaceAllToolsDialog({
  key={tool.path}
  to={tool.path}
  onClick={() => onOpenChange(false)}
- className="group flex flex-col items-center justify-center p-3 rounded-2xl border border-border/60 bg-card hover:border-primary/40 hover:bg-primary/5 transition-all text-center gap-2 shadow-2xs cursor-pointer active:scale-98"
+ className="group flex flex-col items-center justify-center p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 hover:bg-primary/5 transition-all text-center gap-2 shadow-2xs cursor-pointer active:scale-98"
  >
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
  <Icon className="size-5" />
  </div>
- <div className="space-y-0.5">
+ <div className="space-y-1">
  <p className="text-xs font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
  {tool.title}
  </p>
@@ -698,10 +698,10 @@ export function WorkspaceAllToolsDialog({
  {filteredSectors.map((sector) => (
  <div
  key={sector.id}
- className="rounded-2xl border border-border/60 bg-card/60 p-4 space-y-3 shadow-2xs"
+ className="rounded-lg border border-border/60 bg-card/60 p-4 space-y-3 shadow-2xs"
  >
  <div className="border-b border-border/40 pb-2">
- <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
  <span>{sector.title}</span>
  </h3>
  <p className="text-[10px] text-muted-foreground leading-tight">
@@ -709,7 +709,7 @@ export function WorkspaceAllToolsDialog({
  </p>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  {sector.tools.map((tool) => {
  const Icon = tool.icon;
  return (
@@ -717,7 +717,7 @@ export function WorkspaceAllToolsDialog({
  key={tool.path}
  to={tool.path}
  onClick={() => onOpenChange(false)}
- className="flex items-center justify-between p-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors group cursor-pointer"
+ className="flex items-center justify-between p-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors group cursor-pointer"
  >
  <div className="flex items-center gap-2 min-w-0">
  <Icon className="size-3.5 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />

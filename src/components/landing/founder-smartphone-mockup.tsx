@@ -95,9 +95,9 @@ export function FounderSmartphoneMockup({
   return (
     <div className="w-full max-w-lg sm:max-w-sm mx-auto animate-in zoom-in-95 duration-500">
       {/* Moldura do Smartphone Adaptativa: Card fluido no Mobile, Bezel Apple no Desktop */}
-      <div className="relative rounded-2xl sm:rounded-3xl border border-border/80 sm:border-4 sm:border-neutral-900 bg-card  overflow-hidden ring-0 sm:ring-1 sm:ring-border/80">
+      <div className="relative rounded-lg sm:rounded-lg border border-border/80 sm:border-4 sm:border-neutral-900 bg-card  overflow-hidden ring-0 sm:ring-1 sm:ring-border/80">
         {/* Dynamic Island / Notch — Apenas Desktop/Tablet */}
-        <div className="hidden sm:flex absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-neutral-900 rounded-full z-30 items-center justify-between px-2.5">
+        <div className="hidden sm:flex absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-neutral-900 rounded-full z-30 items-center justify-between px-3">
           <div className="size-2 rounded-full bg-neutral-800" />
           <div className="size-1.5 rounded-full bg-sky-500/40" />
         </div>
@@ -105,21 +105,21 @@ export function FounderSmartphoneMockup({
         {/* Barra de Status — Apenas Desktop/Tablet */}
         <div className="hidden sm:flex pt-2 px-6 pb-2 items-center justify-between text-[11px] font-bold text-muted-foreground z-20 relative bg-background/80 ">
           <span>09:41</span>
-          <div className="flex items-center gap-1.5 text-[10px]">
+          <div className="flex items-center gap-2 text-[10px]">
             <span>5G</span>
             <span>100%</span>
           </div>
         </div>
 
         {/* Conteúdo do Perfil da Empresa */}
-        <div className="p-3.5 sm:px-4 sm:pt-2 sm:pb-6 space-y-4 max-h-none sm:max-h-[580px] overflow-y-visible sm:overflow-y-auto scrollbar-none text-left">
+        <div className="p-4 sm:px-4 sm:pt-2 sm:pb-6 space-y-4 max-h-none sm:max-h-[580px] overflow-y-visible sm:overflow-y-auto scrollbar-none text-left">
           {/* Topo do Perfil com Avatar e Capa Compacta */}
           <div className="flex items-center gap-3">
-            <div className="size-16 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/5 to-muted border border-border flex items-center justify-center font-bold text-xl text-primary shrink-0 shadow-xs uppercase">
+            <div className="size-16 rounded-lg bg-gradient-to-br from-primary/20 via-primary/5 to-muted border border-border flex items-center justify-center font-bold text-xl text-primary shrink-0 shadow-xs uppercase">
               {companyName.charAt(0) || "W"}
             </div>
             <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-foreground truncate leading-tight">
                   {companyName}
                 </h3>
@@ -130,7 +130,7 @@ export function FounderSmartphoneMockup({
                 <span>{displayCity}</span>
               </p>
               <div className="flex items-center gap-2 text-[10px] font-medium text-muted-foreground">
-                <span className="flex items-center gap-0.5 text-amber-500 font-bold">
+                <span className="flex items-center gap-1 text-amber-500 font-bold">
                   <Star className="size-3 fill-amber-400 text-amber-400" /> 5.0
                 </span>
                 <span>•</span>
@@ -142,9 +142,9 @@ export function FounderSmartphoneMockup({
           </div>
 
           {/* Badge Oficial de Membro Fundador */}
-          <div className="rounded-2xl bg-card border border-border/80 p-3 space-y-1">
+          <div className="rounded-lg bg-card border border-border/80 p-3 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-foreground flex items-center gap-2">
                 <Star className="size-3 text-primary" />
                 Membro Fundador 2027
               </span>
@@ -158,7 +158,7 @@ export function FounderSmartphoneMockup({
           </div>
 
           {/* Cartão de Sorteio de Viagens (Número da Sorte) */}
-          <div className="rounded-2xl bg-primary/10 border border-primary/20 p-3 space-y-1.5">
+          <div className="rounded-lg bg-primary/10 border border-primary/20 p-3 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-1">
                 <Ticket className="size-3.5" />
@@ -166,11 +166,11 @@ export function FounderSmartphoneMockup({
               </span>
               <span className="text-[10px] text-primary/80 font-medium">Chances 2x</span>
             </div>
-            <div className="flex items-center justify-between bg-card/80 rounded-xl px-3 py-1.5 border border-border/80">
+            <div className="flex items-center justify-between bg-card/80 rounded-lg px-3 py-2 border border-border/80">
               <span className="text-xs font-mono font-bold text-foreground">
                 {ticketNumber}
               </span>
-              <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
+              <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded-md">
                 Ativo
               </span>
             </div>
@@ -181,7 +181,7 @@ export function FounderSmartphoneMockup({
             <Button
               asChild
               size="sm"
-              className="w-full rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground h-10 gap-1.5 shadow-xs"
+              className="w-full rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground h-10 gap-2 shadow-xs"
             >
               <a
                 href={cleanWa ? `https://wa.me/55${cleanWa}` : "#"}
@@ -195,7 +195,7 @@ export function FounderSmartphoneMockup({
             <Button
               variant="outline"
               size="sm"
-              className="w-full rounded-xl text-xs font-bold h-10 gap-1.5 border-border"
+              className="w-full rounded-lg text-xs font-bold h-10 gap-2 border-border"
               onClick={handleShare}
             >
               <Share2 className="size-3.5" />
@@ -206,7 +206,7 @@ export function FounderSmartphoneMockup({
           {/* Vitrine Demonstrativa de Produtos */}
           <div className="space-y-2 pt-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <ShoppingBag className="size-3.5 text-primary" />
                 Vitrine Digital da Loja
               </span>
@@ -218,7 +218,7 @@ export function FounderSmartphoneMockup({
                 <div
                   key={idx}
                   onClick={() => toast.info(`Demonstração: ${p.name}`, { description: `Valor anunciado: ${p.price}. No app Waesy, seus clientes compram em até 3 toques com Pix instantâneo.` })}
-                  className="rounded-xl border border-border/80 bg-muted/20 hover:bg-muted/50 overflow-hidden space-y-1 p-1 text-center cursor-pointer transition-all active:scale-95"
+                  className="rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/50 overflow-hidden space-y-1 p-1 text-center cursor-pointer transition-all active:scale-95"
                 >
                   <img
                     src={p.image}
@@ -226,7 +226,7 @@ export function FounderSmartphoneMockup({
                     className="w-full aspect-square object-cover rounded-lg"
                     loading="lazy"
                   />
-                  <p className="text-[9px] font-semibold text-foreground truncate px-0.5">
+                  <p className="text-[9px] font-semibold text-foreground truncate px-1">
                     {p.name}
                   </p>
                   <p className="text-[10px] font-bold text-primary font-mono">
@@ -239,7 +239,7 @@ export function FounderSmartphoneMockup({
 
           {/* Informações Oficiais de Enriquecimento (se houver CNPJ) */}
           {companyDetails && (
-            <div className="pt-2 border-t border-border/60 text-[10px] text-muted-foreground space-y-0.5">
+            <div className="pt-2 border-t border-border/60 text-[10px] text-muted-foreground space-y-1">
               <p className="truncate">
                 <strong className="text-foreground">Razão Social:</strong> {companyDetails.corporateName}
               </p>

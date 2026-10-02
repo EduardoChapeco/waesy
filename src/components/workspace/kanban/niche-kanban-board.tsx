@@ -66,7 +66,7 @@ export function NicheKanbanBoard({
             key={item.id}
             onClick={() => onCardClick?.(item)}
             className={cn(
-              "group relative flex flex-col gap-2 p-3 rounded-xl border border-border/70 bg-card hover:border-primary/40 hover:shadow-xs transition-all duration-150 cursor-pointer select-none",
+              "group relative flex flex-col gap-2 p-3 rounded-lg border border-border/70 bg-card hover:border-primary/40 hover:shadow-xs transition-all duration-150 cursor-pointer select-none",
               item.status === "won" && "border-success/30 bg-success/5",
               item.status === "lost" && "opacity-70 border-destructive/20 bg-destructive/5"
             )}
@@ -106,11 +106,11 @@ export function NicheKanbanBoard({
 
             {/* Tags do Item */}
             {item.tags && item.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 pt-0.5">
+              <div className="flex flex-wrap gap-1 pt-1">
                 {item.tags.slice(0, 3).map((tag: string, idx: number) => (
                   <span
                     key={idx}
-                    className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground"
+                    className="text-[10px] font-medium px-2 py-1 rounded-md bg-muted text-muted-foreground"
                   >
                     {tag}
                   </span>
@@ -133,7 +133,7 @@ export function NicheKanbanBoard({
                         key={nextStatus}
                         type="button"
                         onClick={() => onTransitionStatus(item.id, nextStatus)}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-colors"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-colors"
                       >
                         <span>{meta.label}</span>
                         <ArrowRight className="h-2.5 w-2.5" />
@@ -158,7 +158,7 @@ export function NicheKanbanBoard({
     <FullViewportKanban
       columns={columns}
       className={className}
-      columnWidthClass="w-[280px] sm:w-[310px]"
+      columnWidthClass="w-72 sm:w-[310px]"
     />
   );
 }

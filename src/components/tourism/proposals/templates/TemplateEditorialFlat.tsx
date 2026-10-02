@@ -44,7 +44,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
           )}
 
           <div>
-            <div className="inline-flex items-center rounded-full px-4 py-1.5 mb-6 ds-label-caps glass-dark backdrop-blur-sm">
+            <div className="inline-flex items-center rounded-full px-4 py-2 mb-6 ds-label-caps glass-dark backdrop-blur-sm">
               Proposta #{p.number}
             </div>
             <h1
@@ -81,7 +81,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
       <div className="px-12 py-10">
         {/* Resumo Executivo */}
         <div className="grid grid-cols-2 gap-4 mb-16 break-inside-avoid">
-          <div className="bg-slate-50 border border-slate-100 p-6 rounded-2xl">
+          <div className="bg-slate-50 border border-slate-100 p-6 rounded-lg">
             <div className="ds-meta uppercase text-slate-500 font-bold tracking-widest mb-2">
               Para
             </div>
@@ -92,7 +92,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
               <div className="text-sm text-slate-500 mt-1">{vm.client.email}</div>
             )}
           </div>
-          <div className="bg-slate-50 border border-slate-100 p-6 rounded-2xl grid grid-cols-2 gap-4">
+          <div className="bg-slate-50 border border-slate-100 p-6 rounded-lg grid grid-cols-2 gap-4">
             <div>
               <div className="ds-meta uppercase text-slate-500 font-bold tracking-widest mb-1">
                 Destino
@@ -140,7 +140,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 {p.flights!.map((f, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl overflow-hidden border border-slate-200 bg-white break-inside-avoid"
+                    className="rounded-lg overflow-hidden border border-slate-200 bg-white break-inside-avoid"
                   >
                     <div
                       className="px-5 py-2 flex items-center justify-between"
@@ -203,9 +203,9 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 {p.hotels!.map((h, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl overflow-hidden border border-slate-200 bg-white break-inside-avoid"
+                    className="rounded-lg overflow-hidden border border-slate-200 bg-white break-inside-avoid"
                   >
-                    <div className="bg-[#FFFBEB] px-5 py-2.5 flex items-center gap-2 border-b border-amber-100">
+                    <div className="bg-[#FFFBEB] px-5 py-3 flex items-center gap-2 border-b border-amber-100">
                       <span className="ds-label-caps text-amber-700">Hospedagem</span>
                     </div>
                     <div className="p-6">
@@ -290,7 +290,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
               >
                 Mapa da Rota
               </h2>
-              <div className="w-full h-auto max-h-[280px] rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 flex justify-center">
+              <div className="w-full h-auto max-h-[280px] rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex justify-center">
                 <img
                   src={p.map_image_url}
                   crossOrigin="anonymous"
@@ -313,7 +313,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                   <ul className="space-y-3">
                     {p.includes!.map((inc, i) => (
                       <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
-                        <Check className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                        <Check className="w-4 h-4 text-emerald-500 mt-1 shrink-0" />
                         {inc}
                       </li>
                     ))}
@@ -331,7 +331,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                   <ul className="space-y-3">
                     {p.excludes!.map((exc, i) => (
                       <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
-                        <X className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+                        <X className="w-4 h-4 text-red-400 mt-1 shrink-0" />
                         {exc}
                       </li>
                     ))}
@@ -349,7 +349,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
             >
               Investimento
             </h2>
-            <div className="flex flex-col md:flex-row gap-8 items-center justify-between p-10 bg-slate-50 rounded-3xl border border-slate-100">
+            <div className="flex flex-col md:flex-row gap-8 items-center justify-between p-10 bg-slate-50 rounded-lg border border-slate-100">
               <div>
                 <div className="ds-meta uppercase tracking-widest font-bold text-slate-400 mb-2">
                   Total à Vista (PIX)
@@ -357,7 +357,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 <div className="text-5xl font-light text-slate-800 mb-2">
                   {formatCurrency(vm.totals.totalPix, p.currency)}
                 </div>
-                <div className="inline-block bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded ds-meta font-bold">
+                <div className="inline-block bg-emerald-100 text-emerald-800 px-2 py-1 rounded ds-meta font-bold">
                   Com desconto de {vm.totals.descontoPixPercentual}%
                 </div>
               </div>
@@ -408,7 +408,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 src={vm.agency.logo_url}
                 crossOrigin="anonymous"
                 alt="Logo Agência"
-                className="h-10 w-auto max-w-[160px] aspect-[4/1] object-contain"
+                className="h-10 w-auto max-w-40 aspect-[4/1] object-contain"
                 width={160}
                 height={40}
               />

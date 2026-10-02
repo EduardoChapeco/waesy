@@ -98,7 +98,7 @@ export function BoostBottomSheet({
       <div className="space-y-4">
         <div className="space-y-1 text-left">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
+            <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
               <Zap className="size-4 fill-current" />
             </div>
             <div>
@@ -115,8 +115,8 @@ export function BoostBottomSheet({
         </div>
 
         {/* ── Resumo do Anúncio (Miniatura Elegante) ── */}
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 border border-border/50">
-          <div className="size-14 rounded-xl overflow-hidden bg-muted shrink-0 border border-border/40">
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+          <div className="size-14 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/40">
             {targetItem.imageUrl ? (
               <img
                 src={targetItem.imageUrl}
@@ -129,7 +129,7 @@ export function BoostBottomSheet({
               </div>
             )}
           </div>
-          <div className="min-w-0 flex-1 space-y-0.5">
+          <div className="min-w-0 flex-1 space-y-1">
             <p className="text-xs font-bold text-foreground truncate">{targetItem.title}</p>
             {targetItem.priceCents != null && (
               <p className="text-xs font-mono font-bold text-foreground">
@@ -146,13 +146,13 @@ export function BoostBottomSheet({
         {!paymentResult && (
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] text-muted-foreground font-medium">Veiculação:</span>
-            <Badge variant="outline" className="text-[10px] gap-1.5 py-1 px-2.5 bg-background font-medium border-primary/30 text-foreground">
+            <Badge variant="outline" className="text-[10px] gap-2 py-1 px-3 bg-background font-medium border-primary/30 text-foreground">
               <Star className="size-3 text-primary" /> Waesy Vitrine
             </Badge>
-            <Badge variant="outline" className="text-[10px] gap-1.5 py-1 px-2.5 bg-background font-medium border-pink-500/30 text-foreground">
+            <Badge variant="outline" className="text-[10px] gap-2 py-1 px-3 bg-background font-medium border-pink-500/30 text-foreground">
               <Instagram className="size-3 text-pink-500" /> Instagram Feed
             </Badge>
-            <Badge variant="outline" className="text-[10px] gap-1.5 py-1 px-2.5 bg-background font-medium border-blue-500/30 text-foreground">
+            <Badge variant="outline" className="text-[10px] gap-2 py-1 px-3 bg-background font-medium border-blue-500/30 text-foreground">
               <Globe className="size-3 text-blue-500" /> Google Search
             </Badge>
           </div>
@@ -174,17 +174,17 @@ export function BoostBottomSheet({
                     key={plan.days}
                     type="button"
                     onClick={() => setSelectedDays(plan.days)}
-                    className={`min-h-[64px] p-2.5 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer active:scale-97 select-none ${
+                    className={`min-h-[64px] p-3 rounded-lg border text-center flex flex-col items-center justify-center transition-all cursor-pointer active:scale-97 select-none ${
                       isSelected
                         ? "border-amber-500 bg-amber-500/12 ring-2 ring-amber-500/20 shadow-xs"
                         : "border-border/60 bg-card hover:bg-muted/30"
                     }`}
                   >
                     <span className="text-xs font-bold text-foreground">{plan.title}</span>
-                    <span className="font-mono text-xs font-black text-amber-700 dark:text-amber-400 mt-0.5">
+                    <span className="font-mono text-xs font-black text-amber-700 dark:text-amber-400 mt-1">
                       {formatMoney(plan.priceCents)}
                     </span>
-                    <span className="text-[9px] text-muted-foreground font-mono mt-0.5">
+                    <span className="text-[9px] text-muted-foreground font-mono mt-1">
                       {plan.dailyEstimate}
                     </span>
                   </button>
@@ -193,9 +193,9 @@ export function BoostBottomSheet({
             </div>
 
             {/* Estimativa de Alcance Dinâmico */}
-            <div className="p-3.5 rounded-2xl bg-amber-500/8 border border-amber-500/20 space-y-1">
+            <div className="p-4 rounded-lg bg-amber-500/8 border border-amber-500/20 space-y-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5 font-medium">
+                <span className="text-muted-foreground flex items-center gap-2 font-medium">
                   <TrendingUp className="size-3.5 text-amber-600 dark:text-amber-400" />
                   Alcance Estimado na Cidade:
                 </span>
@@ -213,7 +213,7 @@ export function BoostBottomSheet({
           <div className="space-y-4 py-2">
             {paymentResult.pixQrCode && (
               <div className="space-y-3 text-center">
-                <div className="size-48 sm:size-52 mx-auto bg-white p-3 rounded-2xl border border-border/60 shadow-xs flex items-center justify-center">
+                <div className="size-48 sm:size-52 mx-auto bg-white p-3 rounded-lg border border-border/60 shadow-xs flex items-center justify-center">
                   <img
                     src={`data:image/png;base64,${paymentResult.pixQrCode}`}
                     alt="QR Code PIX"
@@ -226,7 +226,7 @@ export function BoostBottomSheet({
                     type="button"
                     variant="outline"
                     onClick={handleCopyPix}
-                    className="w-full h-11 rounded-xl text-xs font-bold gap-2 cursor-pointer"
+                    className="w-full h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer"
                   >
                     {copiedPix ? (
                       <>
@@ -245,7 +245,7 @@ export function BoostBottomSheet({
             )}
 
             {paymentResult.paymentLink && (
-              <Button asChild className="w-full h-11 rounded-xl text-xs font-bold gap-2">
+              <Button asChild className="w-full h-11 rounded-lg text-xs font-bold gap-2">
                 <a href={paymentResult.paymentLink} target="_blank" rel="noopener noreferrer">
                   <span>Pagar no Cartão</span>
                   <ExternalLink className="size-4" />
@@ -267,7 +267,7 @@ export function BoostBottomSheet({
             type="button"
             disabled={isLoading}
             onClick={() => onConfirmBoost(selectedDays)}
-            className="w-full h-11 rounded-xl text-xs font-bold gap-2 bg-amber-500 text-black hover:bg-amber-400 cursor-pointer shadow-xs active:scale-98 transition-all"
+            className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-amber-500 text-black hover:bg-amber-400 cursor-pointer shadow-xs active:scale-98 transition-all"
           >
             {isLoading ? (
               <span>Gerando Pagamento Seguro...</span>
@@ -286,7 +286,7 @@ export function BoostBottomSheet({
               if (onResetPayment) onResetPayment();
               onOpenChange(false);
             }}
-            className="w-full h-10 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground"
+            className="w-full h-10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground"
           >
             Fechar Janela
           </Button>
@@ -298,7 +298,7 @@ export function BoostBottomSheet({
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="rounded-t-3xl p-0 max-h-[90dvh] bg-card border-t border-border/70 overflow-y-auto no-scrollbar">
+        <SheetContent side="bottom" className="rounded-t-lg p-0 max-h-[90dvh] bg-card border-t border-border/70 overflow-y-auto no-scrollbar">
           {content}
         </SheetContent>
       </Sheet>
@@ -307,7 +307,7 @@ export function BoostBottomSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-3xl p-0 overflow-hidden bg-card border border-border/70 shadow-2xl">
+      <DialogContent className="max-w-md rounded-lg p-0 overflow-hidden bg-card border border-border/70 shadow-2xl">
         {content}
       </DialogContent>
     </Dialog>

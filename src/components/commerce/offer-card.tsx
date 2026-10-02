@@ -116,7 +116,7 @@ export function OfferCard({
       to="/produto/$slug"
       params={{ slug }}
       className={cn(
-        "group relative flex flex-row items-stretch w-full h-36 sm:h-40 rounded-2xl bg-card border border-border/70 hover:border-primary/50 transition-colors duration-200 content-auto-card overflow-hidden select-none p-0 shadow-2xs",
+        "group relative flex flex-row items-stretch w-full h-36 sm:h-40 rounded-lg bg-card border border-border/70 hover:border-primary/50 transition-colors duration-200 content-auto-card overflow-hidden select-none p-0 shadow-2xs",
         className,
       )}
     >
@@ -132,7 +132,7 @@ export function OfferCard({
         {/* Badge de Desconto no Topo da Imagem */}
         {discountVal > 0 && (
           <div className="absolute top-2 left-2 z-10">
-            <span className="px-1.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-black/90 text-white border border-white/20">
+            <span className="px-2 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-black/90 text-white border border-white/20">
               {discountVal}% OFF
             </span>
           </div>
@@ -141,7 +141,7 @@ export function OfferCard({
         {/* Timer de Oferta Relâmpago no Rodapé da Imagem */}
         {timeLeft && (
           <div className="absolute bottom-2 inset-x-1.5 flex items-center justify-center z-10">
-            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-mono font-bold bg-black/90 text-white">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-mono font-bold bg-black/90 text-white">
               <Clock className="size-2.5" />
               <span>{timeLeft}</span>
             </div>
@@ -150,7 +150,7 @@ export function OfferCard({
       </div>
 
       {/* ── LADO DIREITO: Informações da Loja, Produto e Preço ──── */}
-      <div className="flex-1 flex flex-col justify-between h-full min-w-0 p-3 sm:p-3.5">
+      <div className="flex-1 flex flex-col justify-between h-full min-w-0 p-3 sm:p-4">
         <div className="space-y-1">
           {store_name && (
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider line-clamp-1 block">
@@ -172,7 +172,7 @@ export function OfferCard({
             )}
             <div className="text-xs sm:text-sm font-black text-foreground font-mono leading-tight truncate">
               {formatMoney(price_cents)}
-              <span className="text-xs text-muted-foreground font-normal ml-0.5">
+              <span className="text-xs text-muted-foreground font-normal ml-1">
                 /{selling_unit}
               </span>
             </div>
@@ -183,7 +183,7 @@ export function OfferCard({
             size="sm"
             onClick={handleQuickAdd}
             disabled={isAdding || !in_stock}
-            className="size-9 rounded-xl p-0 font-bold bg-foreground text-background shrink-0 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            className="size-9 rounded-lg p-0 font-bold bg-foreground text-background shrink-0 hover:scale-105 active:scale-95 transition-all cursor-pointer"
             aria-label={`Adicionar ${title} ao carrinho`}
           >
             {isAdding ? (

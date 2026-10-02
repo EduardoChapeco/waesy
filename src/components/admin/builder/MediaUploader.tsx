@@ -166,7 +166,7 @@ export function MediaUploader({
 
  {/* ── 1. PREVIEW DO ARQUIVO ATIVO (SE HOUVER) ── */}
  {value ? (
- <div className="relative rounded-xl overflow-hidden border border-border/80 bg-muted/30 group transition-all">
+ <div className="relative rounded-lg overflow-hidden border border-border/80 bg-muted/30 group transition-all">
  <div className="h-32 w-full flex items-center justify-center p-1 bg-[radial-gradient(#00000010_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:12px_12px]">
  {isVideo ? (
  <video src={value} className="w-full h-full object-cover rounded-lg" muted />
@@ -189,7 +189,7 @@ export function MediaUploader({
  type="button"
  variant="secondary"
  size="sm"
- className="h-8 text-xs font-semibold rounded-lg gap-1.5 cursor-pointer bg-white text-black hover:bg-white/90"
+ className="h-8 text-xs font-semibold rounded-lg gap-2 cursor-pointer bg-white text-black hover:bg-white/90"
  onClick={() => fileInputRef.current?.click()}
  >
  <Upload className="size-3.5" />
@@ -211,7 +211,7 @@ export function MediaUploader({
  /* ── 2. ÁREA DE DROP / UPLOAD QUANDO VAZIO ── */
  <div
  className={cn(
- "h-28 rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20 hover:bg-muted/40 hover:border-primary/60 transition-all cursor-pointer select-none",
+ "h-28 rounded-lg border border-dashed border-border/80 flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20 hover:bg-muted/40 hover:border-primary/60 transition-all cursor-pointer select-none",
  isUploading && "pointer-events-none opacity-60",
  )}
  onClick={() => fileInputRef.current?.click()}
@@ -223,10 +223,10 @@ export function MediaUploader({
  </>
  ) : (
  <>
- <div className="size-9 rounded-xl bg-background border border-border/60 flex items-center justify-center shadow-2xs">
+ <div className="size-9 rounded-lg bg-background border border-border/60 flex items-center justify-center shadow-2xs">
  <Upload className="size-4.5 text-muted-foreground" />
  </div>
- <div className="text-center space-y-0.5">
+ <div className="text-center space-y-1">
  <p className="text-xs font-bold text-foreground">Clique para enviar arquivo</p>
  <p className="text-[10px] text-muted-foreground">PNG, JPG, WEBP, GIF ou MP4</p>
  </div>
@@ -236,8 +236,8 @@ export function MediaUploader({
  )}
 
  {/* ── 3. ENTRADA MANUAL DE URL / PRESETS ── */}
- <div className="space-y-1.5 pt-1">
- <div className="flex gap-1.5">
+ <div className="space-y-2 pt-1">
+ <div className="flex gap-2">
  <div className="relative flex-1">
  <Input
  className="h-8 pl-7 pr-2 text-xs bg-background rounded-lg border-border/70 font-sans"
@@ -263,11 +263,11 @@ export function MediaUploader({
 
  {/* Menu rápido de Presets de Imagens */}
  {showPresets && (
- <div className="p-2 rounded-xl bg-muted/40 border border-border/60 space-y-1.5 animate-in fade-in duration-150">
+ <div className="p-2 rounded-lg bg-muted/40 border border-border/60 space-y-2 animate-in fade-in duration-150">
  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
  Imagens de Exemplo em Alta Definição:
  </div>
- <div className="grid grid-cols-2 gap-1.5">
+ <div className="grid grid-cols-2 gap-2">
  {PRESET_DEMO_IMAGES.map((preset) => (
  <button
  key={preset.label}
@@ -277,7 +277,7 @@ export function MediaUploader({
  setShowPresets(false);
  toast.success(`Exemplo "${preset.label}" aplicado!`);
  }}
- className="text-left text-[11px] p-1.5 rounded-lg bg-background hover:bg-primary/10 hover:text-primary border border-border/50 truncate cursor-pointer transition-colors"
+ className="text-left text-[11px] p-2 rounded-lg bg-background hover:bg-primary/10 hover:text-primary border border-border/50 truncate cursor-pointer transition-colors"
  >
  {preset.label}
  </button>

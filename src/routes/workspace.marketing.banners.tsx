@@ -202,7 +202,7 @@ function WorkspaceStoreBannersPage() {
           <Button
             onClick={handleOpenCreate}
             size="sm"
-            className="h-9 px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground cursor-pointer"
+            className="h-9 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer"
           >
             <Plus className="size-3.5" />
             <span>Novo Banner</span>
@@ -211,8 +211,8 @@ function WorkspaceStoreBannersPage() {
       />
 
       {banners.length === 0 ? (
-        <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
-          <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+          <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
             <ImageIcon className="size-6" />
           </div>
           <div className="space-y-1">
@@ -221,7 +221,7 @@ function WorkspaceStoreBannersPage() {
               Crie banners para destacar promoções, lançamentos ou categorias na vitrine da sua loja.
             </p>
           </div>
-          <Button onClick={handleOpenCreate} size="sm" variant="outline" className="rounded-xl text-xs font-bold h-9">
+          <Button onClick={handleOpenCreate} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
             <Plus className="size-3.5 mr-1" />
             Criar Primeiro Banner
           </Button>
@@ -231,7 +231,7 @@ function WorkspaceStoreBannersPage() {
           {banners.map((b) => (
             <div
               key={b.id}
-              className="bg-card rounded-2xl border border-border/60 overflow-hidden flex flex-col justify-between group shadow-none"
+              className="bg-card rounded-lg border border-border/60 overflow-hidden flex flex-col justify-between group shadow-none"
             >
               <div className="relative aspect-[2.35/1] sm:aspect-[2.6/1] bg-muted overflow-hidden">
                 <img
@@ -245,7 +245,7 @@ function WorkspaceStoreBannersPage() {
                   alt={b.title}
                   className="relative size-full object-contain sm:object-cover group-hover:scale-102 transition-transform duration-300 select-none"
                 />
-                <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10">
+                <div className="absolute top-2 right-2 flex items-center gap-2 z-10">
                   {b.city_filter && (
                     <Badge
                       variant="outline"
@@ -267,16 +267,16 @@ function WorkspaceStoreBannersPage() {
                 <div>
                   <h3 className="font-bold text-sm text-foreground truncate">{b.title}</h3>
                   {b.target_url && (
-                    <p className="text-xs text-muted-foreground truncate font-mono mt-0.5">
+                    <p className="text-xs text-muted-foreground truncate font-mono mt-1">
                       Link: {b.target_url}
                     </p>
                   )}
                 </div>
-                <div className="flex items-center justify-between pt-2.5 border-t border-border/40 text-xs">
+                <div className="flex items-center justify-between pt-3 border-t border-border/40 text-xs">
                   <Badge
                     variant={b.is_active ? "default" : "outline"}
                     className={cn(
-                      "text-xs font-semibold px-2 py-0.5 rounded-full",
+                      "text-xs font-semibold px-2 py-1 rounded-full",
                       b.is_active
                         ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                         : "text-muted-foreground"
@@ -306,7 +306,7 @@ function WorkspaceStoreBannersPage() {
         title={editingId ? "Editar Banner da Loja" : "Novo Banner da Loja"}
       >
         <form onSubmit={handleSave} className="space-y-5 p-4 sm:p-6">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="title" className="text-xs font-bold text-foreground">
               Título Identificador *
             </Label>
@@ -316,17 +316,17 @@ function WorkspaceStoreBannersPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="rounded-xl text-sm h-11"
+              className="rounded-lg text-sm h-11"
             />
           </div>
 
           {/* Seletor de Cidade / Localidade Alvo */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="cityFilter" className="text-xs font-bold text-foreground">
               Localidade / Cidade Alvo
             </Label>
             <Select value={cityFilter} onValueChange={setCityFilter}>
-              <SelectTrigger id="cityFilter" className="rounded-xl text-sm h-11">
+              <SelectTrigger id="cityFilter" className="rounded-lg text-sm h-11">
                 <SelectValue placeholder="Selecione a cidade do público" />
               </SelectTrigger>
               <SelectContent className="max-h-60">
@@ -343,7 +343,7 @@ function WorkspaceStoreBannersPage() {
             </p>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-bold text-foreground">Mídia do Banner Panorâmico (21:9) *</Label>
             <MediaUploader
               value={mediaUrl ? [mediaUrl] : []}
@@ -368,7 +368,7 @@ function WorkspaceStoreBannersPage() {
 
           {/* Textos de Ação e Destaque */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="ctaLabel" className="text-xs font-bold text-foreground">
                 Texto do Botão de Ação (CTA)
               </Label>
@@ -377,11 +377,11 @@ function WorkspaceStoreBannersPage() {
                 placeholder="Ex: Ver Oferta, Pedir no WhatsApp, Comprar"
                 value={ctaLabel}
                 onChange={(e) => setCtaLabel(e.target.value)}
-                className="rounded-xl text-sm h-11"
+                className="rounded-lg text-sm h-11"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="badgeText" className="text-xs font-bold text-foreground">
                 Badge Promocional (Opcional)
               </Label>
@@ -390,12 +390,12 @@ function WorkspaceStoreBannersPage() {
                 placeholder="Ex: 50% OFF, Destaque, Lançamento"
                 value={badgeText}
                 onChange={(e) => setBadgeText(e.target.value)}
-                className="rounded-xl text-sm h-11"
+                className="rounded-lg text-sm h-11"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="subtitle" className="text-xs font-bold text-foreground">
               Subtítulo / Descrição Rápida (Opcional)
             </Label>
@@ -404,27 +404,27 @@ function WorkspaceStoreBannersPage() {
               placeholder="Ex: Válido para pedidos realizados até domingo"
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
-              className="rounded-xl text-sm h-11"
+              className="rounded-lg text-sm h-11"
             />
           </div>
 
           {/* Configuração Visual */}
-          <div className="p-4 rounded-2xl bg-muted/20 space-y-3">
+          <div className="p-4 rounded-lg bg-muted/20 space-y-3">
             <h4 className="text-xs font-bold text-foreground">Configuração Visual da Vitrine</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-background border border-border/50">
+              <div className="flex items-center justify-between text-xs p-3 rounded-lg bg-background border border-border/50">
                 <span className="text-foreground font-medium">Título sobre Imagem</span>
                 <Switch checked={showTitle} onCheckedChange={setShowTitle} />
               </div>
-              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-background border border-border/50">
+              <div className="flex items-center justify-between text-xs p-3 rounded-lg bg-background border border-border/50">
                 <span className="text-foreground font-medium">Botão de Ação (CTA)</span>
                 <Switch checked={showCta} onCheckedChange={setShowCta} />
               </div>
-              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-background border border-border/50">
+              <div className="flex items-center justify-between text-xs p-3 rounded-lg bg-background border border-border/50">
                 <span className="text-foreground font-medium">Badge Promocional</span>
                 <Switch checked={showBadge} onCheckedChange={setShowBadge} />
               </div>
-              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-background border border-border/50">
+              <div className="flex items-center justify-between text-xs p-3 rounded-lg bg-background border border-border/50">
                 <span className="text-foreground font-medium">Sombra / Overlay Escuro</span>
                 <Switch checked={showOverlay} onCheckedChange={setShowOverlay} />
               </div>
@@ -435,18 +435,18 @@ function WorkspaceStoreBannersPage() {
               type="button"
               variant="outline"
               onClick={() => setIsModalOpen(false)}
-              className="rounded-xl text-xs font-bold h-11 px-5"
+              className="rounded-lg text-xs font-bold h-11 px-5"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl text-xs font-bold h-11 px-6 bg-primary text-primary-foreground cursor-pointer"
+              className="rounded-lg text-xs font-bold h-11 px-6 bg-primary text-primary-foreground cursor-pointer"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="size-4 animate-spin mr-1.5" />
+                  <Loader2 className="size-4 animate-spin mr-2" />
                   <span>Salvando...</span>
                 </>
               ) : (

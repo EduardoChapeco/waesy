@@ -284,7 +284,7 @@ export function CarouselStudioEditor({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-6xl! w-[96vw] h-[92vh] max-h-[92vh] p-0 flex flex-col bg-background border-border overflow-hidden rounded-2xl shadow-2xl">
+      <DialogContent className="max-w-6xl! w-[96vw] h-[92vh] max-h-[92vh] p-0 flex flex-col bg-background border-border overflow-hidden rounded-lg shadow-2xl">
         {/* TOPBAR DO STUDIO */}
         <div className="h-14 border-b border-border px-4 flex items-center justify-between shrink-0 bg-card">
           <div className="flex items-center gap-3 min-w-0">
@@ -302,7 +302,7 @@ export function CarouselStudioEditor({
           </div>
 
           {/* SLIDE STEPPER CHIPS */}
-          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/70">
+          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/70">
             {slides.map((s, idx) => (
               <button
                 key={s.id}
@@ -318,7 +318,7 @@ export function CarouselStudioEditor({
             ))}
           </div>
           {/* SELETOR DE PROPORÇÃO DE TELA (MULTI-ASPECT RATIO) */}
-          <div className="hidden sm:flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/50 text-xs">
+          <div className="hidden sm:flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/50 text-xs">
             {[
               { id: "portrait_4_5" as const, label: "4:5 Post" },
               { id: "story_9_16" as const, label: "9:16 Story" },
@@ -352,7 +352,7 @@ export function CarouselStudioEditor({
               size="sm"
               onClick={() => handlePublish("feed")}
               disabled={isPublishing}
-              className="gap-1.5 h-9 rounded-xl text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+              className="gap-2 h-9 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
             >
               <Star className="size-3.5" />
               {isPublishing ? "Publicando..." : "Publicar Feed"}
@@ -363,7 +363,7 @@ export function CarouselStudioEditor({
               size="sm"
               onClick={handleSaveToDatabase}
               disabled={isSaving}
-              className="gap-1.5 h-9 rounded-xl text-xs font-semibold"
+              className="gap-2 h-9 rounded-lg text-xs font-semibold"
             >
               <Save className="size-3.5" />
               {isSaving ? "Salvando..." : "Salvar"}
@@ -374,7 +374,7 @@ export function CarouselStudioEditor({
               size="sm"
               onClick={handleCopyToClipboard}
               disabled={isExporting}
-              className="gap-1.5 h-9 rounded-xl text-xs font-semibold"
+              className="gap-2 h-9 rounded-lg text-xs font-semibold"
             >
               {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
               {copied ? "Copiado!" : "Copiar"}
@@ -385,7 +385,7 @@ export function CarouselStudioEditor({
               size="sm"
               onClick={handleExportPNG}
               disabled={isExporting}
-              className="gap-1.5 h-9 rounded-xl text-xs font-semibold"
+              className="gap-2 h-9 rounded-lg text-xs font-semibold"
             >
               <Download className="size-3.5" />
               {isExporting ? "Gerando HD..." : "Baixar PNG"}
@@ -395,7 +395,7 @@ export function CarouselStudioEditor({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="size-9 rounded-xl"
+              className="size-9 rounded-lg"
             >
               <X className="size-4" />
             </Button>
@@ -409,7 +409,7 @@ export function CarouselStudioEditor({
             {/* CANVAS RENDERER CONTAINER */}
             <div
               ref={containerRef}
-              className="relative shadow-2xl rounded-xl overflow-hidden border border-border/60 transition-transform duration-200"
+              className="relative shadow-2xl rounded-lg overflow-hidden border border-border/60 transition-transform duration-200"
               style={{
                 width: activeDimensions.width * canvasScale,
                 height: activeDimensions.height * canvasScale,
@@ -426,7 +426,7 @@ export function CarouselStudioEditor({
             </div>
 
             {/* CONTROLE DE ZOOM & SLIDE ANTERIOR/PRÓXIMO */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-card/90 backdrop-blur-md border border-border px-3 py-1.5 rounded-full shadow-lg">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-card/90 backdrop-blur-md border border-border px-3 py-2 rounded-full shadow-lg">
               <Button
                 variant="ghost"
                 size="icon"
@@ -483,7 +483,7 @@ export function CarouselStudioEditor({
           <aside className="w-84 border-l border-border bg-card p-5 overflow-y-auto space-y-6 shrink-0">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Type className="size-3.5" />
                   Textos do Slide {currentSlideIndex + 1}
                 </h4>
@@ -497,7 +497,7 @@ export function CarouselStudioEditor({
                       handleTriggerAiRefinement();
                     }
                   }}
-                  className="h-7 px-2.5 gap-1 rounded-lg text-[11px] font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                  className="h-7 px-3 gap-1 rounded-lg text-[11px] font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
                 >
                   <Star className="size-3 text-primary" />
                   Refinar com IA
@@ -511,7 +511,7 @@ export function CarouselStudioEditor({
                     value={currentSlide.text_content.badge || ""}
                     onChange={(e) => updateTextContent("badge", e.target.value)}
                     placeholder="Ex: Oficial • Giro de Notícias"
-                    className="h-9 mt-1 text-xs rounded-xl"
+                    className="h-9 mt-1 text-xs rounded-lg"
                   />
                 </div>
 
@@ -521,7 +521,7 @@ export function CarouselStudioEditor({
                     value={currentSlide.text_content.kicker || ""}
                     onChange={(e) => updateTextContent("kicker", e.target.value)}
                     placeholder="Ex: POLÍTICA • TRANSPARÊNCIA"
-                    className="h-9 mt-1 text-xs rounded-xl"
+                    className="h-9 mt-1 text-xs rounded-lg"
                   />
                 </div>
 
@@ -532,7 +532,7 @@ export function CarouselStudioEditor({
                     onChange={(e) => updateTextContent("headline", e.target.value)}
                     placeholder="Manchete principal..."
                     rows={3}
-                    className="mt-1 text-xs rounded-xl font-bold uppercase"
+                    className="mt-1 text-xs rounded-lg font-bold uppercase"
                   />
                 </div>
 
@@ -543,7 +543,7 @@ export function CarouselStudioEditor({
                     onChange={(e) => updateTextContent("body", e.target.value)}
                     placeholder="Descrição detalhada..."
                     rows={4}
-                    className="mt-1 text-xs rounded-xl leading-relaxed"
+                    className="mt-1 text-xs rounded-lg leading-relaxed"
                   />
                 </div>
 
@@ -554,7 +554,7 @@ export function CarouselStudioEditor({
                       value={currentSlide.text_content.cta_text || ""}
                       onChange={(e) => updateTextContent("cta_text", e.target.value)}
                       placeholder="Ex: Ver no Waesy"
-                      className="h-9 mt-1 text-xs rounded-xl font-bold"
+                      className="h-9 mt-1 text-xs rounded-lg font-bold"
                     />
                   </div>
                 )}
@@ -563,7 +563,7 @@ export function CarouselStudioEditor({
 
             {/* CONTROLE DE FUNDO */}
             <div className="border-t border-border pt-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
                 <Palette className="size-3.5" />
                 Imagem de Fundo
               </h4>
@@ -575,7 +575,7 @@ export function CarouselStudioEditor({
                     value={currentSlide.background_url || ""}
                     onChange={(e) => updateCurrentSlide({ background_url: e.target.value })}
                     placeholder="https://..."
-                    className="h-9 mt-1 text-xs rounded-xl font-mono text-[11px]"
+                    className="h-9 mt-1 text-xs rounded-lg font-mono text-[11px]"
                   />
                 </div>
 
@@ -599,12 +599,12 @@ export function CarouselStudioEditor({
 
             {/* BRAND KIT APLICADO */}
             <div className="border-t border-border pt-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2">
                 <Star className="size-3.5" />
                 Identidade da Loja
               </h4>
 
-              <div className="p-3 rounded-xl bg-muted/40 border border-border/80 space-y-2">
+              <div className="p-3 rounded-lg bg-muted/40 border border-border/80 space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Nome:</span>
                   <span className="font-bold text-foreground">{project.brand.name}</span>
@@ -615,7 +615,7 @@ export function CarouselStudioEditor({
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Cores:</span>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <div
                       className="size-3.5 rounded-full border border-black/20"
                       style={{ backgroundColor: project.brand.primaryColor }}
@@ -637,7 +637,7 @@ export function CarouselStudioEditor({
 
         {/* MODAL DE REFINAMENTO DE TEXTO COM IA UNIVERSAL (ORQUESTRADOR) */}
         <Dialog open={showAiModal} onOpenChange={setShowAiModal}>
-          <DialogContent className="max-w-3xl w-[92vw] max-h-[85vh] p-6 flex flex-col bg-background border-border rounded-2xl shadow-2xl overflow-hidden">
+          <DialogContent className="max-w-3xl w-[92vw] max-h-[85vh] p-6 flex flex-col bg-background border-border rounded-lg shadow-2xl overflow-hidden">
             <DialogHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -658,7 +658,7 @@ export function CarouselStudioEditor({
 
             {/* BARRA DE TONS & RE-GERAR */}
             <div className="flex flex-wrap items-center justify-between gap-3 py-3 border-b border-border/60">
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 {[
                   { id: "journalistic_editorial" as const, label: "Jornalístico" },
                   { id: "direct_punchy" as const, label: "Impacto e Curto" },
@@ -688,7 +688,7 @@ export function CarouselStudioEditor({
                 size="sm"
                 onClick={() => handleTriggerAiRefinement()}
                 disabled={isRefiningAI}
-                className="h-8 gap-1.5 text-xs font-medium rounded-xl"
+                className="h-8 gap-2 text-xs font-medium rounded-lg"
               >
                 <RefreshCw className={`size-3.5 ${isRefiningAI ? "animate-spin" : ""}`} />
                 {isRefiningAI ? "Refinando..." : "Gerar Novas Variações"}
@@ -710,7 +710,7 @@ export function CarouselStudioEditor({
                   <Button
                     size="sm"
                     onClick={() => handleTriggerAiRefinement()}
-                    className="h-8 rounded-xl text-xs font-semibold"
+                    className="h-8 rounded-lg text-xs font-semibold"
                   >
                     Gerar Variações Agora
                   </Button>
@@ -719,7 +719,7 @@ export function CarouselStudioEditor({
                 aiVariants.map((variant, idx) => (
                   <div
                     key={idx}
-                    className="p-4 rounded-xl border border-border/80 bg-card hover:border-primary/50 transition-all space-y-2.5"
+                    className="p-4 rounded-lg border border-border/80 bg-card hover:border-primary/50 transition-all space-y-3"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -744,7 +744,7 @@ export function CarouselStudioEditor({
 
                     <div>
                       {variant.kicker && (
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                           {variant.kicker}
                         </p>
                       )}

@@ -231,7 +231,7 @@ export function SectionHotels({ draft, save }: Props) {
           {/* Unsplash picker */}
           <div className="mt-2">
             {unsplashOpenIndex === i ? (
-              <div className="rounded-2xl border border-border bg-surface p-3 mt-1">
+              <div className="rounded-lg border border-border bg-surface p-3 mt-1">
                 <div className="flex items-center justify-between mb-2">
                   <span className="ds-meta uppercase tracking-wide font-semibold">
                     Buscar imagem
@@ -260,7 +260,7 @@ export function SectionHotels({ draft, save }: Props) {
               <Button
                 type="button"
                 onClick={() => setUnsplashOpenIndex(i)}
-                className="flex w-full items-center justify-center gap-1.5 rounded-full border border-dashed border-border py-2 ds-meta text-muted-foreground hover:bg-surface-alt transition-colors mt-1"
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-dashed border-border py-2 ds-meta text-muted-foreground hover:bg-surface-alt transition-colors mt-1"
               >
                 <Search className="h-3 w-3" /> Buscar foto do hotel no Unsplash
               </Button>
@@ -284,7 +284,7 @@ export function SectionHotels({ draft, save }: Props) {
         <Button
           type="button"
           onClick={() => setInfotravelOpen(true)}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 h-[34px] rounded border border-border bg-surface text-xs font-semibold text-muted-foreground hover:bg-surface-alt hover:text-foreground transition-all cursor-pointer"
+          className="flex-1 inline-flex items-center justify-center gap-2 h-[34px] rounded border border-border bg-surface text-xs font-semibold text-muted-foreground hover:bg-surface-alt hover:text-foreground transition-all cursor-pointer"
         >
           <Search className="h-3.5 w-3.5" /> Buscar no Infotravel
         </Button>
@@ -293,7 +293,7 @@ export function SectionHotels({ draft, save }: Props) {
       {infotravelOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4">
           <div
-            className="w-full max-w-lg rounded-2xl border border-border bg-surface p-5 flex flex-col max-h-[85vh] overflow-hidden shadow-none"
+            className="w-full max-w-lg rounded-lg border border-border bg-surface p-5 flex flex-col max-h-[85vh] overflow-hidden shadow-none"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
@@ -397,7 +397,7 @@ export function SectionHotels({ draft, save }: Props) {
                         <Button
                           type="button"
                           onClick={() => importHotel(hotel)}
-                          className="px-2.5 py-1 ds-meta bg-primary text-primary-foreground font-semibold rounded hover:bg-primary/95 transition-all cursor-pointer"
+                          className="px-3 py-1 ds-meta bg-primary text-primary-foreground font-semibold rounded hover:bg-primary/95 transition-all cursor-pointer"
                         >
                           Selecionar
                         </Button>

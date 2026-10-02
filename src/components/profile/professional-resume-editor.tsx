@@ -344,7 +344,7 @@ export function ProfessionalResumeEditor({
        
 
  {/* ── 3. Headline & Resumo (Sobre Mim) ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4 shadow-none">
  <div className="flex items-center justify-between pb-3 border-b border-border/40">
  <h3 className="text-sm font-bold text-foreground">Apresentação Profissional</h3>
  <Button
@@ -352,7 +352,7 @@ export function ProfessionalResumeEditor({
  variant="outline"
  size="sm"
  onClick={() => setIsProfessionSearchOpen(true)}
- className="h-8 rounded-xl text-xs gap-1.5 font-bold border-border/60 hover:bg-muted/30 text-foreground"
+ className="h-8 rounded-lg text-xs gap-2 font-bold border-border/60 hover:bg-muted/30 text-foreground"
  >
  <Search className="size-3.5 text-primary" />
  <span>Buscar Cargo CBO</span>
@@ -378,7 +378,7 @@ export function ProfessionalResumeEditor({
  maxLength={120}
  onChange={(e) => onChange({ ...resumeData, headline: e.target.value })}
  placeholder="Ex: Engenheiro de Software Sênior • Especialista em Cloud & Alta Performance"
- className="h-10 rounded-xl text-xs"
+ className="h-10 rounded-lg text-xs"
  />
  </div>
 
@@ -389,14 +389,14 @@ export function ProfessionalResumeEditor({
  onChange={(e) => onChange({ ...resumeData, summary: e.target.value })}
  rows={4}
  placeholder="Descreva sua trajetória, principais realizações e diferenciais profissionais..."
- className="rounded-2xl text-xs leading-relaxed resize-none"
+ className="rounded-lg text-xs leading-relaxed resize-none"
  />
  </div>
  </div>
  </div>
 
  {/* ── 4. Competências & Habilidades (Tags Interativas) ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-3 shadow-none">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-3 shadow-none">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -414,13 +414,13 @@ export function ProfessionalResumeEditor({
  value={newSkillInput}
  onChange={(e) => setNewSkillInput(e.target.value)}
  placeholder="Digite uma habilidade e pressione Enter (ex: React, Vendas, Gestão de Projetos)"
- className="h-9 rounded-xl text-xs flex-1"
+ className="h-11 rounded-lg text-xs flex-1"
  />
  <Button
  type="submit"
  size="sm"
  variant="outline"
- className="rounded-xl text-xs font-bold h-9 px-3 gap-1"
+ className="rounded-lg text-xs font-bold h-11 px-3 gap-1"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
@@ -432,12 +432,12 @@ export function ProfessionalResumeEditor({
  Nenhuma habilidade adicionada. Digite acima para criar tags.
  </p>
  ) : (
- <div className="flex flex-wrap gap-1.5 pt-1">
+ <div className="flex flex-wrap gap-2 pt-1">
  {skills.map((skill, idx) => (
  <Badge
  key={idx}
  variant="secondary"
- className="rounded-lg text-xs font-medium pl-2.5 pr-1 py-1 gap-1.5 bg-muted/60 text-foreground hover:bg-muted"
+ className="rounded-lg text-xs font-medium pl-3 pr-1 py-1 gap-2 bg-muted/60 text-foreground hover:bg-muted"
  >
  <span>{skill}</span>
  <button
@@ -454,7 +454,7 @@ export function ProfessionalResumeEditor({
  </div>
 
  {/* ── 5. Experiências Profissionais ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4 shadow-none">
  <div className="flex items-center justify-between pb-3 border-b border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -473,7 +473,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("experience");
  }}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
@@ -481,7 +481,7 @@ export function ProfessionalResumeEditor({
  </div>
 
  {experiences.length === 0 ? (
- <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-2xl">
+ <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-lg">
  Nenhuma experiência profissional cadastrada até o momento.
  </p>
  ) : (
@@ -489,10 +489,10 @@ export function ProfessionalResumeEditor({
  {experiences.map((exp, idx) => (
  <div
  key={exp.id || idx}
- className="p-4 rounded-2xl bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
+ className="p-4 rounded-lg bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
  >
  <div className="flex items-start gap-3 min-w-0">
- <div className="size-10 rounded-xl bg-muted/60 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
+ <div className="size-10 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
  {exp.store_logo ? (
  <img src={exp.store_logo} alt={exp.company} className="size-full object-cover" />
  ) : (
@@ -526,7 +526,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(exp);
  setActiveModal("experience");
  }}
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  >
  <Edit3 className="size-3.5" />
  </Button>
@@ -537,7 +537,7 @@ export function ProfessionalResumeEditor({
  </div>
 
  {/* ── 6. Formação Acadêmica ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4 shadow-none">
  <div className="flex items-center justify-between pb-3 border-b border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -556,7 +556,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("education");
  }}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
@@ -564,7 +564,7 @@ export function ProfessionalResumeEditor({
  </div>
 
  {normalizedEducations.length === 0 ? (
- <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-2xl">
+ <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-lg">
  Nenhuma formação acadêmica cadastrada.
  </p>
  ) : (
@@ -572,10 +572,10 @@ export function ProfessionalResumeEditor({
  {normalizedEducations.map((edu: any, idx: number) => (
  <div
  key={edu.id || idx}
- className="p-4 rounded-2xl bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
+ className="p-4 rounded-lg bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
  >
  <div className="flex items-start gap-3 min-w-0">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+ <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
  <GraduationCap className="size-5" />
  </div>
  <div className="space-y-1 min-w-0">
@@ -600,7 +600,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(edu);
  setActiveModal("education");
  }}
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  >
  <Edit3 className="size-3.5" />
  </Button>
@@ -611,7 +611,7 @@ export function ProfessionalResumeEditor({
  </div>
 
  {/* ── 7. Licenças & Certificados ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4 shadow-none">
  <div className="flex items-center justify-between pb-3 border-b border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -630,7 +630,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("certification");
  }}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
@@ -638,7 +638,7 @@ export function ProfessionalResumeEditor({
  </div>
 
  {certifications.length === 0 ? (
- <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-2xl">
+ <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-lg">
  Nenhum certificado ou licença cadastrado.
  </p>
  ) : (
@@ -646,10 +646,10 @@ export function ProfessionalResumeEditor({
  {certifications.map((cert, idx) => (
  <div
  key={cert.id || idx}
- className="p-4 rounded-2xl bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
+ className="p-4 rounded-lg bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
  >
  <div className="flex items-start gap-3 min-w-0">
- <div className="size-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 border border-amber-500/20">
+ <div className="size-10 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 border border-amber-500/20">
  <Award className="size-5" />
  </div>
  <div className="space-y-1 min-w-0">
@@ -667,7 +667,7 @@ export function ProfessionalResumeEditor({
  href={cert.credential_url}
  target="_blank"
  rel="noopener noreferrer"
- className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline pt-0.5"
+ className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline pt-1"
  >
  <span>Exibir Credencial</span>
  <ExternalLink className="size-3" />
@@ -684,7 +684,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(cert);
  setActiveModal("certification");
  }}
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  >
  <Edit3 className="size-3.5" />
  </Button>
@@ -695,7 +695,7 @@ export function ProfessionalResumeEditor({
  </div>
 
     {/* ── 7.1 Carteiras Profissionais & Alvarás Verificados (OAB, CRM, CREA, Alvarás) ── */}
-    <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
+    <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4 shadow-none">
       <div className="flex items-center justify-between pb-3 border-b border-border/40">
         <div>
           <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -714,7 +714,7 @@ export function ProfessionalResumeEditor({
             setActiveItem(null);
             setActiveModal("license");
           }}
-          className="rounded-xl text-xs font-bold gap-1.5 h-8 px-3 cursor-pointer"
+          className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
         >
           <Plus className="size-3.5" />
           <span>Adicionar</span>
@@ -722,7 +722,7 @@ export function ProfessionalResumeEditor({
       </div>
 
       {licenses.length === 0 ? (
-        <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-2xl">
+        <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-lg">
           Nenhuma carteira profissional ou alvará cadastrado.
         </p>
       ) : (
@@ -730,10 +730,10 @@ export function ProfessionalResumeEditor({
           {licenses.map((lic, idx) => (
             <div
               key={lic.id || idx}
-              className="p-4 rounded-2xl bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
+              className="p-4 rounded-lg bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
             >
               <div className="flex items-start gap-3 min-w-0">
-                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
                   <ShieldCheck className="size-5" />
                 </div>
                 <div className="space-y-1 min-w-0">
@@ -750,7 +750,7 @@ export function ProfessionalResumeEditor({
                       {lic.specialty}
                     </p>
                   )}
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-0.5">
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-1">
                     <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
                       <CheckCircle2 className="size-3" />
                       <span>Ativo</span>
@@ -781,7 +781,7 @@ export function ProfessionalResumeEditor({
                   setActiveItem(lic);
                   setActiveModal("license");
                 }}
-                className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
               >
                 <Edit3 className="size-3.5" />
               </Button>
@@ -792,7 +792,7 @@ export function ProfessionalResumeEditor({
     </div>
 
  {/* ── 8. Projetos & Portfólio (com Mídia & Recorte) ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4 shadow-none">
  <div className="flex items-center justify-between pb-3 border-b border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -811,7 +811,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("project");
  }}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
@@ -819,7 +819,7 @@ export function ProfessionalResumeEditor({
  </div>
 
  {projects.length === 0 ? (
- <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-2xl">
+ <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-lg">
  Nenhum projeto cadastrado no portfólio.
  </p>
  ) : (
@@ -827,7 +827,7 @@ export function ProfessionalResumeEditor({
  {projects.map((proj, idx) => (
  <div
  key={proj.id || idx}
- className="p-4 rounded-2xl bg-muted/20 border border-border/40 space-y-2.5 flex flex-col justify-between hover:border-border transition-colors"
+ className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3 flex flex-col justify-between hover:border-border transition-colors"
  >
  <div className="space-y-2">
  <div className="flex items-start justify-between gap-2">
@@ -866,7 +866,7 @@ export function ProfessionalResumeEditor({
  {proj.media_urls.map((mUrl, mIdx) => (
  <div
  key={mIdx}
- className="size-16 rounded-xl overflow-hidden bg-muted/40 border border-border/40 shrink-0"
+ className="size-16 rounded-lg overflow-hidden bg-muted/40 border border-border/40 shrink-0"
  >
  <img src={mUrl} alt="Mídia do projeto" className="size-full object-cover" />
  </div>
@@ -895,7 +895,7 @@ export function ProfessionalResumeEditor({
  {/* ── 9. Voluntariado & Causas Sociais ── */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  {/* Voluntariado */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-3 shadow-none">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-3 shadow-none">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <HeartHandshake className="size-4 text-rose-500" />
@@ -909,7 +909,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("volunteering");
  }}
- className="rounded-xl text-xs font-bold gap-1 h-7 px-2.5 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-1 h-7 px-3 cursor-pointer"
  >
  <Plus className="size-3" />
  <span>Adicionar</span>
@@ -925,7 +925,7 @@ export function ProfessionalResumeEditor({
  {volunteering.map((vol, idx) => (
  <div
  key={vol.id || idx}
- className="p-3 rounded-xl bg-muted/20 border border-border/40 flex items-center justify-between gap-2"
+ className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-center justify-between gap-2"
  >
  <div className="min-w-0">
  <span className="text-xs font-bold text-foreground block truncate">
@@ -954,7 +954,7 @@ export function ProfessionalResumeEditor({
  </div>
 
  {/* Causas Sociais */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-3 shadow-none">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-3 shadow-none">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Layers className="size-4 text-emerald-500" />
@@ -965,7 +965,7 @@ export function ProfessionalResumeEditor({
  size="sm"
  variant="outline"
  onClick={() => setActiveModal("causes")}
- className="rounded-xl text-xs font-bold gap-1 h-7 px-2.5 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-1 h-7 px-3 cursor-pointer"
  >
  <Edit3 className="size-3" />
  <span>Editar</span>
@@ -977,12 +977,12 @@ export function ProfessionalResumeEditor({
  Nenhuma causa social selecionada.
  </p>
  ) : (
- <div className="flex flex-wrap gap-1.5 pt-1">
+ <div className="flex flex-wrap gap-2 pt-1">
  {causes.map((c, idx) => (
  <Badge
  key={idx}
  variant="outline"
- className="rounded-lg text-xs font-medium py-1 px-2.5 bg-muted/40 text-foreground border-border/60"
+ className="rounded-lg text-xs font-medium py-1 px-3 bg-muted/40 text-foreground border-border/60"
  >
  {c}
  </Badge>
@@ -993,7 +993,7 @@ export function ProfessionalResumeEditor({
  </div>
 
  {/* ── 10. Idiomas & Proficiência ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4 shadow-none">
  <div className="flex items-center justify-between pb-3 border-b border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -1012,7 +1012,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("language");
  }}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
@@ -1020,7 +1020,7 @@ export function ProfessionalResumeEditor({
  </div>
 
  {languages.length === 0 ? (
- <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-2xl">
+ <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-lg">
  Nenhum idioma cadastrado.
  </p>
  ) : (
@@ -1028,7 +1028,7 @@ export function ProfessionalResumeEditor({
  {languages.map((lang, idx) => (
  <div
  key={lang.id || idx}
- className="p-3.5 rounded-2xl bg-muted/20 border border-border/40 flex items-center justify-between gap-2"
+ className="p-4 rounded-lg bg-muted/20 border border-border/40 flex items-center justify-between gap-2"
  >
  <div>
  <h4 className="text-xs font-bold text-foreground">{lang.name}</h4>
@@ -1230,15 +1230,15 @@ export function ProfessionalResumeEditor({
 
       {/* ── MODAL: IMPORTAR DO LINKEDIN (OMNI-BRIDGE B2C) ── */}
       <Dialog open={isLinkedInModalOpen} onOpenChange={setIsLinkedInModalOpen}>
-        <DialogContent className="sm:max-w-xl sm:rounded-2xl p-0 overflow-hidden bg-background border border-border">
+        <DialogContent className="sm:max-w-xl sm:rounded-lg p-0 overflow-hidden bg-background border border-border">
           <DialogHeader className="p-6 pb-4 border-b border-border/40">
             <div className="flex items-center gap-3">
-              <div className="size-10 rounded-xl bg-[#0A66C2] text-white flex items-center justify-center shrink-0">
+              <div className="size-10 rounded-lg bg-[#0A66C2] text-white flex items-center justify-center shrink-0">
                 <Linkedin className="size-5 fill-current" />
               </div>
               <div>
                 <DialogTitle className="text-base font-bold text-foreground">Importar do LinkedIn</DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground mt-0.5">Sincronize experiências e formação diretamente para o seu currículo.</DialogDescription>
+                <DialogDescription className="text-xs text-muted-foreground mt-1">Sincronize experiências e formação diretamente para o seu currículo.</DialogDescription>
               </div>
             </div>
           </DialogHeader>
@@ -1248,7 +1248,7 @@ export function ProfessionalResumeEditor({
             <button
               type="button"
               onClick={() => setLinkedInActiveTab("oauth")}
-              className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+              className={`px-4 py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
                 linkedInActiveTab === "oauth"
                   ? "border-[#0A66C2] text-[#0A66C2]"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -1259,7 +1259,7 @@ export function ProfessionalResumeEditor({
             <button
               type="button"
               onClick={() => setLinkedInActiveTab("json")}
-              className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+              className={`px-4 py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
                 linkedInActiveTab === "json"
                   ? "border-[#0A66C2] text-[#0A66C2]"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -1272,10 +1272,10 @@ export function ProfessionalResumeEditor({
           <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar">
             {linkedInActiveTab === "oauth" ? (
               <div className="space-y-4 text-center py-4">
-                <div className="size-16 rounded-3xl bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center mx-auto border border-[#0A66C2]/20">
+                <div className="size-16 rounded-lg bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center mx-auto border border-[#0A66C2]/20">
                   <Linkedin className="size-8 fill-current" />
                 </div>
-                <div className="space-y-1.5 max-w-sm mx-auto">
+                <div className="space-y-2 max-w-sm mx-auto">
                   <h4 className="text-sm font-bold text-foreground">Conectar Perfil</h4>
                   <p className="text-xs text-muted-foreground">Autorize a importação direta dos seus cargos e formações.</p>
                 </div>
@@ -1286,7 +1286,7 @@ export function ProfessionalResumeEditor({
                   type="button"
                   onClick={handleStartLinkedInOAuth}
                   disabled={isConnectingLinkedIn}
-                  className="w-full h-11 rounded-xl font-bold text-xs gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+                  className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
                 >
                   {isConnectingLinkedIn ? (
                     <>
@@ -1321,7 +1321,7 @@ export function ProfessionalResumeEditor({
                     setLinkedInPreview(null);
                   }}
                   placeholder="Cole aqui o JSON do perfil ou exportação do LinkedIn..."
-                  className="h-32 text-xs font-mono rounded-xl bg-background border-border resize-none"
+                  className="h-32 text-xs font-mono rounded-lg bg-background border-border resize-none"
                 />
 
                 {!linkedInPreview ? (
@@ -1329,7 +1329,7 @@ export function ProfessionalResumeEditor({
                     type="button"
                     onClick={handleParseLinkedInJson}
                     disabled={isParsingLinkedIn || !linkedInJsonText.trim()}
-                    className="w-full h-10 rounded-xl font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                    className="w-full h-10 rounded-lg font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                   >
                     {isParsingLinkedIn ? (
                       <>
@@ -1344,7 +1344,7 @@ export function ProfessionalResumeEditor({
                     )}
                   </Button>
                 ) : (
-                  <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
+                  <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Check className="size-4 text-emerald-600" />
@@ -1366,7 +1366,7 @@ export function ProfessionalResumeEditor({
                     <Button
                       type="button"
                       onClick={handleApplyLinkedInData}
-                      className="w-full h-10 rounded-xl font-bold text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+                      className="w-full h-10 rounded-lg font-bold text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
                     >
                       <ArrowRight className="size-4" />
                       <span>Aplicar ao Meu Currículo Waesy (1s)</span>
@@ -1383,7 +1383,7 @@ export function ProfessionalResumeEditor({
               variant="outline"
               size="sm"
               onClick={() => setIsLinkedInModalOpen(false)}
-              className="rounded-xl text-xs h-9"
+              className="rounded-lg text-xs h-11"
             >
               Fechar
             </Button>
@@ -1462,13 +1462,13 @@ function AvailabilityEditSheet({
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
  {/* Status de Busca */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Status Atual de Carreira</Label>
  <Select value={status} onValueChange={setStatus}>
- <SelectTrigger className="h-9 rounded-xl text-xs">
+ <SelectTrigger className="h-11 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="open_to_work">🟢 #OpenToWork (Buscando recolocação ativa)</SelectItem>
  <SelectItem value="open_to_proposals">🟡 Aberto a Novas Propostas</SelectItem>
  <SelectItem value="hiring">🔵 #Contratando Talentos (Recrutador / Empresa)</SelectItem>
@@ -1478,25 +1478,25 @@ function AvailabilityEditSheet({
  </div>
 
  {/* Cargo Alvo */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Cargo ou Função Desejada *</Label>
  <Input
  value={jobTitle}
  onChange={(e) => setJobTitle(e.target.value)}
  placeholder="Ex: Gerente Comercial, Analista de Dados, Desenvolvedor"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
  {/* Senioridade e Regime */}
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Senioridade</Label>
  <Select value={seniority} onValueChange={setSeniority}>
- <SelectTrigger className="h-9 rounded-xl text-xs">
+ <SelectTrigger className="h-11 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="internship">Estágio / Trainee</SelectItem>
  <SelectItem value="junior">Júnior</SelectItem>
  <SelectItem value="mid">Pleno</SelectItem>
@@ -1508,13 +1508,13 @@ function AvailabilityEditSheet({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Modalidade Aceita</Label>
  <Select value={workplacePreference} onValueChange={setWorkplacePreference}>
- <SelectTrigger className="h-9 rounded-xl text-xs">
+ <SelectTrigger className="h-11 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="any">Qualquer Modalidade</SelectItem>
  <SelectItem value="remote">Somente Remoto</SelectItem>
  <SelectItem value="hybrid">Híbrido</SelectItem>
@@ -1525,19 +1525,19 @@ function AvailabilityEditSheet({
  </div>
 
  {/* Pretensão Salarial */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Pretensão Salarial Mensal (R$)</Label>
  <Input
  value={salaryExpectation}
  onChange={(e) => setSalaryExpectation(e.target.value)}
  placeholder="Ex: 5500,00"
- className="h-9 rounded-xl text-xs font-mono"
+ className="h-11 rounded-lg text-xs font-mono"
  />
  </div>
 
  {/* Checkboxes de Disponibilidade */}
- <div className="pt-2 space-y-2.5">
- <label className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/30 border border-border/40 cursor-pointer">
+ <div className="pt-2 space-y-3">
+ <label className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/40 cursor-pointer">
  <input
  type="checkbox"
  checked={immediateStart}
@@ -1549,7 +1549,7 @@ function AvailabilityEditSheet({
  </span>
  </label>
 
- <label className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/30 border border-border/40 cursor-pointer">
+ <label className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/40 cursor-pointer">
  <input
  type="checkbox"
  checked={willingToRelocate}
@@ -1561,7 +1561,7 @@ function AvailabilityEditSheet({
  </span>
  </label>
 
- <label className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/30 border border-border/40 cursor-pointer">
+ <label className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/40 cursor-pointer">
  <input
  type="checkbox"
  checked={willingToTravel}
@@ -1576,10 +1576,10 @@ function AvailabilityEditSheet({
  </div>
 
  <div className="p-4 border-t border-border/40 flex items-center justify-end gap-2 shrink-0">
- <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-xl text-xs h-9">
+ <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-lg text-xs h-11">
  Cancelar
  </Button>
- <Button type="submit" size="sm" className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground">
+ <Button type="submit" size="sm" className="rounded-lg text-xs h-11 font-bold bg-primary text-primary-foreground">
  Salvar Metas
  </Button>
  </div>
@@ -1727,27 +1727,27 @@ function ExperienceEditSheet({
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
           <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Cargo *</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Ex: Coordenador de Marketing"
-                className="h-9 rounded-xl text-xs"
+                className="h-11 rounded-lg text-xs"
               />
             </div>
 
-            <div className="space-y-1.5 relative">
+            <div className="space-y-2 relative">
               <Label className="text-xs font-bold">Empresa / Negócio *</Label>
               <Input
                 value={company}
                 onChange={(e) => handleCompanyChange(e.target.value)}
                 placeholder="Digite o nome da empresa..."
-                className="h-9 rounded-xl text-xs"
+                className="h-11 rounded-lg text-xs"
               />
 
               {suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-xl bg-popover border border-border shadow-lg p-1 space-y-0.5">
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg bg-popover border border-border shadow-lg p-1 space-y-1">
                   {suggestions.map((s) => (
                     <button
                       key={s.id}
@@ -1765,13 +1765,13 @@ function ExperienceEditSheet({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Regime de Contratação</Label>
                 <Select value={employmentType} onValueChange={setEmploymentType}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs">
+                  <SelectTrigger className="h-11 rounded-lg text-xs">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-lg">
                     <SelectItem value="CLT">CLT (Efetivo)</SelectItem>
                     <SelectItem value="PJ">PJ (Pessoa Jurídica)</SelectItem>
                     <SelectItem value="Estágio">Estágio</SelectItem>
@@ -1781,13 +1781,13 @@ function ExperienceEditSheet({
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Localidade</Label>
                 <Input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="Chapecó, SC"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                 />
               </div>
             </div>
@@ -1811,21 +1811,21 @@ function ExperienceEditSheet({
               onCurrentToggle={setIsCurrent}
             />
 
-            <div className="space-y-1.5 pt-2">
+            <div className="space-y-2 pt-2">
               <Label className="text-xs font-bold">Descrição das Realizações e Atividades</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
                 placeholder="Destaque seus projetos liderados, metas alcançadas e tecnologias utilizadas..."
-                className="rounded-xl text-xs resize-none"
+                className="rounded-lg text-xs resize-none"
               />
             </div>
 
             {/* Mídias da Experiência (Padrão LinkedIn) */}
             <div className="space-y-2 pt-2 border-t border-border/40">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-bold flex items-center gap-1.5">
+                <Label className="text-xs font-bold flex items-center gap-2">
                   <span>Mídias e Portfólio do Cargo</span>
                 </Label>
                 <span className="text-[10px] text-muted-foreground">Fotos do local, certificados, projetos</span>
@@ -1842,9 +1842,9 @@ function ExperienceEditSheet({
             </div>
 
             {/* ── Avaliação da Empresa & Transparência Corporativa ── */}
-            <div className="pt-4 border-t border-border/40 space-y-3.5">
+            <div className="pt-4 border-t border-border/40 space-y-4">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Building2 className="size-3.5 text-primary" />
                   <span>Avaliação e Salário (Comunidade de Talentos)</span>
                 </Label>
@@ -1852,7 +1852,7 @@ function ExperienceEditSheet({
               </div>
 
               {/* Campo de Salário */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-[11px] font-medium text-foreground/80">
                   Remuneração / Salário Mensal (R$)
                 </Label>
@@ -1860,21 +1860,21 @@ function ExperienceEditSheet({
                   value={salaryCents || 0}
                   onChange={(val) => setSalaryCents(val && val > 0 ? val : undefined)}
                   placeholder="R$ 0,00"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                 />
               </div>
 
               {/* Motivo de Saída (se não for trabalho atual) */}
               {!isCurrent && (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-[11px] font-medium text-foreground/80">
                     Motivo da Saída
                   </Label>
                   <Select value={exitReason} onValueChange={setExitReason}>
-                    <SelectTrigger className="h-9 rounded-xl text-xs">
+                    <SelectTrigger className="h-11 rounded-lg text-xs">
                       <SelectValue placeholder="Selecione o motivo..." />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl">
+                    <SelectContent className="rounded-lg">
                       <SelectItem value="Transição de Carreira">Transição de Carreira</SelectItem>
                       <SelectItem value="Proposta Mais Atraente">Proposta Mais Atraente</SelectItem>
                       <SelectItem value="Mudança Geográfica / Familiar">Mudança Geográfica / Familiar</SelectItem>
@@ -1889,11 +1889,11 @@ function ExperienceEditSheet({
               )}
 
               {/* Avaliação em Estrelas (1 a 5) */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-[11px] font-medium text-foreground/80">
                   Como você avalia sua experiência trabalhando nesta empresa?
                 </Label>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -1921,7 +1921,7 @@ function ExperienceEditSheet({
               </div>
 
               {/* Recomendação */}
-              <label className="flex items-center gap-2.5 cursor-pointer">
+              <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={wouldRecommend}
@@ -1934,7 +1934,7 @@ function ExperienceEditSheet({
               </label>
 
               {/* Review / Feedback Cultural */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-[11px] font-medium text-foreground/80">
                   Comentário sobre ambiente, cultura ou liderança
                 </Label>
@@ -1943,12 +1943,12 @@ function ExperienceEditSheet({
                   onChange={(e) => setReviewText(e.target.value)}
                   rows={2}
                   placeholder="O que os futuros candidatos deveriam saber sobre o clima organizacional?"
-                  className="rounded-xl text-xs resize-none"
+                  className="rounded-lg text-xs resize-none"
                 />
               </div>
 
               {/* Anonimato */}
-              <label className="flex items-center gap-2.5 cursor-pointer p-2.5 rounded-xl bg-muted/30 border border-border/40">
+              <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-muted/30 border border-border/40">
                 <input
                   type="checkbox"
                   checked={isAnonymous}
@@ -1969,17 +1969,17 @@ function ExperienceEditSheet({
                 variant="ghost"
                 size="sm"
                 onClick={() => onSave(null, true)}
-                className="text-destructive text-xs hover:bg-destructive/10 rounded-xl"
+                className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
               >
                 <Trash2 className="size-3.5 mr-1" /> Excluir
               </Button>
             ) : <div />}
 
             <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-xl text-xs h-9">
+              <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-lg text-xs h-11">
                 Cancelar
               </Button>
-              <Button type="submit" size="sm" className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground">
+              <Button type="submit" size="sm" className="rounded-lg text-xs h-11 font-bold bg-primary text-primary-foreground">
                 Salvar
               </Button>
             </div>
@@ -2104,13 +2104,13 @@ export function ProfessionalLicenseEditSheet({
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
           <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Conselho / Tipo de Registro *</Label>
               <Select value={council} onValueChange={setCouncil}>
-                <SelectTrigger className="h-9 rounded-xl text-xs">
+                <SelectTrigger className="h-11 rounded-lg text-xs">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl max-h-60">
+                <SelectContent className="rounded-lg max-h-60">
                   {PROFESSIONAL_COUNCILS.map((c) => (
                     <SelectItem key={c.value} value={c.value} className="text-xs">
                       {c.label}
@@ -2121,37 +2121,37 @@ export function ProfessionalLicenseEditSheet({
             </div>
 
             {council === "Outro" && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Nome do Conselho / Órgão Personalizado *</Label>
                 <Input
                   value={customCouncil}
                   onChange={(e) => setCustomCouncil(e.target.value)}
                   placeholder="Ex: CRA, CRN, CFT, Alvará Municipal"
-                  className="h-9 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   required
                 />
               </div>
             )}
 
             <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-2 space-y-1.5">
+              <div className="col-span-2 space-y-2">
                 <Label className="text-xs font-bold">Número de Registro *</Label>
                 <Input
                   value={registerNumber}
                   onChange={(e) => setRegisterNumber(e.target.value)}
                   placeholder="Ex: 58.123 ou 123456"
-                  className="h-9 rounded-xl text-xs font-mono font-bold"
+                  className="h-11 rounded-lg text-xs font-mono font-bold"
                   required
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">UF / Estado</Label>
                 <Select value={uf} onValueChange={setUf}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs font-mono">
+                  <SelectTrigger className="h-11 rounded-lg text-xs font-mono">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl max-h-48">
+                  <SelectContent className="rounded-lg max-h-48">
                     {BRAZIL_UFS.map((u) => (
                       <SelectItem key={u} value={u} className="text-xs font-mono">
                         {u}
@@ -2162,23 +2162,23 @@ export function ProfessionalLicenseEditSheet({
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Especialidade / Ramo de Atuação</Label>
               <Input
                 value={specialty}
                 onChange={(e) => setSpecialty(e.target.value)}
                 placeholder="Ex: Direito Imobiliário, Cardiologia Clínica, Perícia Contábil"
-                className="h-9 rounded-xl text-xs"
+                className="h-11 rounded-lg text-xs"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Data de Validade (se houver)</Label>
               <Input
                 value={expirationDate}
                 onChange={(e) => setExpirationDate(e.target.value)}
                 placeholder="Ex: 12/2028 ou Indeterminada"
-                className="h-9 rounded-xl text-xs"
+                className="h-11 rounded-lg text-xs"
               />
             </div>
 
@@ -2198,7 +2198,7 @@ export function ProfessionalLicenseEditSheet({
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploadingDoc}
-                  className="h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+                  className="h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
                 >
                   <Upload className="size-3.5" />
                   <span>{isUploadingDoc ? "Enviando..." : documentUrl ? "Alterar Arquivo" : "Anexar Comprovante"}</span>
@@ -2225,17 +2225,17 @@ export function ProfessionalLicenseEditSheet({
                 variant="ghost"
                 size="sm"
                 onClick={() => onSave(null, true)}
-                className="text-destructive text-xs hover:bg-destructive/10 rounded-xl"
+                className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
               >
                 <Trash2 className="size-3.5 mr-1" /> Excluir
               </Button>
             ) : <div />}
 
             <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-xl text-xs h-9">
+              <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-lg text-xs h-11">
                 Cancelar
               </Button>
-              <Button type="submit" size="sm" className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground">
+              <Button type="submit" size="sm" className="rounded-lg text-xs h-11 font-bold bg-primary text-primary-foreground">
                 Salvar Registro
               </Button>
             </div>
@@ -2309,24 +2309,24 @@ function EducationEditSheet({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Instituição de Ensino *</Label>
  <Input
  value={school}
  onChange={(e) => setSchool(e.target.value)}
  placeholder="Ex: UFFS, UNOCHAPECÓ, USP, Harvard"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Grau / Formação</Label>
  <Select value={degree} onValueChange={setDegree}>
- <SelectTrigger className="h-9 rounded-xl text-xs">
+ <SelectTrigger className="h-11 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="Bacharelado">Bacharelado</SelectItem>
  <SelectItem value="Licenciatura">Licenciatura</SelectItem>
  <SelectItem value="Tecnólogo">Tecnólogo</SelectItem>
@@ -2338,47 +2338,47 @@ function EducationEditSheet({
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Curso / Área de Estudo</Label>
  <Input
  value={fieldOfStudy}
  onChange={(e) => setFieldOfStudy(e.target.value)}
  placeholder="Ex: Administração, Ciência da Computação"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Ano Início</Label>
  <Input
  value={startDate}
  onChange={(e) => setStartDate(e.target.value)}
  placeholder="Ex: 2020"
- className="h-9 rounded-xl text-xs font-mono"
+ className="h-11 rounded-lg text-xs font-mono"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Ano Conclusão</Label>
  <Input
  value={endDate}
  onChange={(e) => setEndDate(e.target.value)}
  placeholder="Ex: 2024"
- className="h-9 rounded-xl text-xs font-mono"
+ className="h-11 rounded-lg text-xs font-mono"
  />
  </div>
  </div>
 
- <div className="space-y-1.5 pt-2">
+ <div className="space-y-2 pt-2">
  <Label className="text-xs font-bold">Atividades e Sociedades</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  rows={3}
  placeholder="Iniciação científica, projetos acadêmicos ou trabalho de conclusão..."
- className="rounded-xl text-xs resize-none"
+ className="rounded-lg text-xs resize-none"
  />
  </div>
  </div>
@@ -2390,17 +2390,17 @@ function EducationEditSheet({
  variant="ghost"
  size="sm"
  onClick={() => onSave(null, true)}
- className="text-destructive text-xs hover:bg-destructive/10 rounded-xl"
+ className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
  >
  <Trash2 className="size-3.5 mr-1" /> Excluir
  </Button>
  ) : <div />}
 
  <div className="flex items-center gap-2">
- <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-xl text-xs h-9">
+ <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-lg text-xs h-11">
  Cancelar
  </Button>
- <Button type="submit" size="sm" className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground">
+ <Button type="submit" size="sm" className="rounded-lg text-xs h-11 font-bold bg-primary text-primary-foreground">
  Salvar
  </Button>
  </div>
@@ -2466,43 +2466,43 @@ function CertificationEditSheet({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Nome do Certificado *</Label>
  <Input
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: AWS Solutions Architect, Scrum Master, Google Analytics"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Organização Emissora *</Label>
  <Input
  value={issuer}
  onChange={(e) => setIssuer(e.target.value)}
  placeholder="Ex: Amazon Web Services, Scrum Alliance, Alura"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Data de Emissão</Label>
  <Input
  value={issueDate}
  onChange={(e) => setIssueDate(e.target.value)}
  placeholder="Ex: Mai 2024"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">URL de Verificação da Credencial</Label>
  <Input
  value={credentialUrl}
  onChange={(e) => setCredentialUrl(e.target.value)}
  placeholder="https://..."
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
  </div>
@@ -2514,17 +2514,17 @@ function CertificationEditSheet({
  variant="ghost"
  size="sm"
  onClick={() => onSave(null, true)}
- className="text-destructive text-xs hover:bg-destructive/10 rounded-xl"
+ className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
  >
  <Trash2 className="size-3.5 mr-1" /> Excluir
  </Button>
  ) : <div />}
 
  <div className="flex items-center gap-2">
- <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-xl text-xs h-9">
+ <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-lg text-xs h-11">
  Cancelar
  </Button>
- <Button type="submit" size="sm" className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground">
+ <Button type="submit" size="sm" className="rounded-lg text-xs h-11 font-bold bg-primary text-primary-foreground">
  Salvar
  </Button>
  </div>
@@ -2632,44 +2632,44 @@ function ProjectEditSheet({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Título do Projeto *</Label>
  <Input
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Plataforma de E-commerce B2B"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Empresa / Negócio Vinculado</Label>
  <Input
  value={associatedWith}
  onChange={(e) => setAssociatedWith(e.target.value)}
  placeholder="Ex: Projeto autônomo ou Empresa X"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Link do Projeto (GitHub, Behance, Site)</Label>
  <Input
  value={projectUrl}
  onChange={(e) => setProjectUrl(e.target.value)}
  placeholder="https://..."
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Descrição do Case</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  rows={4}
  placeholder="Explique o desafio resolvido, arquitetura e resultados alcançados..."
- className="rounded-xl text-xs resize-none"
+ className="rounded-lg text-xs resize-none"
  />
  </div>
 
@@ -2677,7 +2677,7 @@ function ProjectEditSheet({
  <div className="space-y-2 pt-1">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold">Fotos / Mídias do Projeto</Label>
- <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted text-xs font-bold text-foreground cursor-pointer transition-colors">
+ <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 hover:bg-muted text-xs font-bold text-foreground cursor-pointer transition-colors">
  <Upload className="size-3.5" />
  <span>{isUploading ? "Enviando..." : "+ Foto com Recorte"}</span>
  <input type="file" accept="image/*" onChange={handleSelectFile} className="hidden" />
@@ -2687,7 +2687,7 @@ function ProjectEditSheet({
  {mediaUrls.length > 0 ? (
  <div className="flex flex-wrap gap-2 pt-1">
  {mediaUrls.map((url, idx) => (
- <div key={idx} className="relative group size-20 rounded-xl overflow-hidden border border-border/60">
+ <div key={idx} className="relative group size-20 rounded-lg overflow-hidden border border-border/60">
  <img src={url} alt="" className="size-full object-cover" />
  <button
  type="button"
@@ -2714,17 +2714,17 @@ function ProjectEditSheet({
  variant="ghost"
  size="sm"
  onClick={() => onSave(null, true)}
- className="text-destructive text-xs hover:bg-destructive/10 rounded-xl"
+ className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
  >
  <Trash2 className="size-3.5 mr-1" /> Excluir
  </Button>
  ) : <div />}
 
  <div className="flex items-center gap-2">
- <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-xl text-xs h-9">
+ <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-lg text-xs h-11">
  Cancelar
  </Button>
- <Button type="submit" size="sm" className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground">
+ <Button type="submit" size="sm" className="rounded-lg text-xs h-11 font-bold bg-primary text-primary-foreground">
  Salvar
  </Button>
  </div>
@@ -2798,33 +2798,33 @@ function VolunteeringEditSheet({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Organização / Instituição *</Label>
  <Input
  value={organization}
  onChange={(e) => setOrganization(e.target.value)}
  placeholder="Ex: Cruz Vermelha, ONG Amigos dos Animais"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Papel / Função *</Label>
  <Input
  value={role}
  onChange={(e) => setRole(e.target.value)}
  placeholder="Ex: Mentor de Jovens, Coordenador de Doações"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Causa Social Defendida</Label>
  <Input
  value={cause}
  onChange={(e) => setCause(e.target.value)}
  placeholder="Ex: Educação Infantil, Proteção Animal"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
  </div>
@@ -2836,17 +2836,17 @@ function VolunteeringEditSheet({
  variant="ghost"
  size="sm"
  onClick={() => onSave(null, true)}
- className="text-destructive text-xs hover:bg-destructive/10 rounded-xl"
+ className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
  >
  <Trash2 className="size-3.5 mr-1" /> Excluir
  </Button>
  ) : <div />}
 
  <div className="flex items-center gap-2">
- <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-xl text-xs h-9">
+ <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-lg text-xs h-11">
  Cancelar
  </Button>
- <Button type="submit" size="sm" className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground">
+ <Button type="submit" size="sm" className="rounded-lg text-xs h-11 font-bold bg-primary text-primary-foreground">
  Salvar
  </Button>
  </div>
@@ -2895,7 +2895,7 @@ function CausesEditSheet({
  </SheetDescription>
  </div>
 
- <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-2.5">
+ <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-3">
  {CAUSES_PRESETS.map((cause) => {
  const isChecked = selected.includes(cause);
  return (
@@ -2904,7 +2904,7 @@ function CausesEditSheet({
  type="button"
  onClick={() => toggleCause(cause)}
  className={cn(
- "w-full text-left p-3.5 rounded-2xl border transition-all flex items-center justify-between text-xs font-semibold cursor-pointer",
+ "w-full text-left p-4 rounded-lg border transition-all flex items-center justify-between text-xs font-semibold cursor-pointer",
  isChecked
  ? "bg-primary/10 border-primary text-primary"
  : "bg-muted/30 border-border/40 text-foreground hover:bg-muted/60"
@@ -2918,14 +2918,14 @@ function CausesEditSheet({
  </div>
 
  <div className="p-4 border-t border-border/40 flex items-center justify-end gap-2 shrink-0">
- <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-xl text-xs h-9">
+ <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-lg text-xs h-11">
  Cancelar
  </Button>
  <Button
  type="button"
  size="sm"
  onClick={() => onSave(selected)}
- className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground"
+ className="rounded-lg text-xs h-11 font-bold bg-primary text-primary-foreground"
  >
  Salvar Causas
  </Button>
@@ -2984,23 +2984,23 @@ function LanguageEditSheet({
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
  <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Idioma *</Label>
  <Input
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Inglês, Espanhol, Alemão, Italiano"
- className="h-9 rounded-xl text-xs"
+ className="h-11 rounded-lg text-xs"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Nível de Fluência / Proficiência</Label>
  <Select value={proficiency} onValueChange={setProficiency}>
- <SelectTrigger className="h-9 rounded-xl text-xs">
+ <SelectTrigger className="h-11 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  <SelectItem value="basic">Básico</SelectItem>
  <SelectItem value="intermediate">Intermediário</SelectItem>
  <SelectItem value="advanced">Avançado</SelectItem>
@@ -3018,17 +3018,17 @@ function LanguageEditSheet({
  variant="ghost"
  size="sm"
  onClick={() => onSave(null, true)}
- className="text-destructive text-xs hover:bg-destructive/10 rounded-xl"
+ className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
  >
  <Trash2 className="size-3.5 mr-1" /> Excluir
  </Button>
  ) : <div />}
 
  <div className="flex items-center gap-2">
- <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-xl text-xs h-9">
+ <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-lg text-xs h-11">
  Cancelar
  </Button>
- <Button type="submit" size="sm" className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground">
+ <Button type="submit" size="sm" className="rounded-lg text-xs h-11 font-bold bg-primary text-primary-foreground">
  Salvar
  </Button>
  </div>

@@ -240,20 +240,20 @@ function SubPainelEventoPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsTeamSheetOpen(true)}
- className="gap-1.5"
+ className="gap-2"
  >
  <Users className="size-4" />
  Escalar Equipe
  </Button>
 
- <Button asChild variant="outline" size="sm" className="gap-1.5">
+ <Button asChild variant="outline" size="sm" className="gap-2">
  <Link to="/workspace/eventos/$id/checkin" params={{ id: event.id }}>
  <QrCode className="size-4" />
  Portaria Fullscreen
  </Link>
  </Button>
 
- <Button asChild variant="ghost" size="sm" className="gap-1.5">
+ <Button asChild variant="ghost" size="sm" className="gap-2">
  <Link to="/evento/$id" params={{ id: event.id }} target="_blank">
  <ExternalLink className="size-4" />
  Vitrine Pública
@@ -264,28 +264,28 @@ function SubPainelEventoPage() {
 
  {/* KPI Cards do Evento */}
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
- <div className="bg-card rounded-2xl p-4 border border-border/60">
+ <div className="bg-card rounded-lg p-4 border border-border/60">
  <span className="text-xs font-semibold text-muted-foreground">Ingressos Vendidos</span>
  <div className="text-2xl font-bold text-foreground mt-1">
  {totalSold} / {totalCapacity || "∞"}
  </div>
  </div>
 
- <div className="bg-card rounded-2xl p-4 border border-border/60">
+ <div className="bg-card rounded-lg p-4 border border-border/60">
  <span className="text-xs font-semibold text-muted-foreground">Faturamento Bruto</span>
  <div className="text-2xl font-bold text-foreground mt-1">
  {formatMoney(totalRevenueCents)}
  </div>
  </div>
 
- <div className="bg-card rounded-2xl p-4 border border-border/60">
+ <div className="bg-card rounded-lg p-4 border border-border/60">
  <span className="text-xs font-semibold text-muted-foreground">Entradas Validadas</span>
  <div className="text-2xl font-bold text-foreground mt-1">
  {totalCheckins} ({totalSold > 0 ? Math.round((totalCheckins / totalSold) * 100) : 0}%)
  </div>
  </div>
 
- <div className="bg-card rounded-2xl p-4 border border-border/60">
+ <div className="bg-card rounded-lg p-4 border border-border/60">
  <span className="text-xs font-semibold text-muted-foreground">Lucro Líquido Estimado</span>
  <div
  className={`text-2xl font-bold mt-1 ${
@@ -299,60 +299,60 @@ function SubPainelEventoPage() {
 
  {/* Abas do Sub-Painel Recursivo */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
- <TabsList className="flex items-center gap-1.5 w-full overflow-x-auto no-scrollbar p-1.5 rounded-2xl h-auto mb-6 bg-muted/40 border border-border/40">
- <TabsTrigger value="ingressos" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsList className="flex items-center gap-2 w-full overflow-x-auto no-scrollbar p-2 rounded-lg h-auto mb-6 bg-muted/40 border border-border/40">
+ <TabsTrigger value="ingressos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <Ticket className="size-3.5" />
  Lotes ({lots.length})
  </TabsTrigger>
- <TabsTrigger value="participantes" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="participantes" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <Users className="size-3.5" />
  Inscritos ({tickets.length})
  </TabsTrigger>
- <TabsTrigger value="portaria" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="portaria" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <QrCode className="size-3.5" />
  Portaria
  </TabsTrigger>
- <TabsTrigger value="kanban" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="kanban" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <Kanban className="size-3.5" />
  Produção
  </TabsTrigger>
- <TabsTrigger value="lineup" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="lineup" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <Mic2 className="size-3.5" />
  Line-up
  </TabsTrigger>
- <TabsTrigger value="setores" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="setores" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <Layers className="size-3.5" />
  Setores e Mapa
  </TabsTrigger>
- <TabsTrigger value="subpaineis" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="subpaineis" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <Utensils className="size-3.5" />
  Bares e PDVs
  </TabsTrigger>
- <TabsTrigger value="orcamentos" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="orcamentos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <FileSpreadsheet className="size-3.5" />
  Orçamentos
  </TabsTrigger>
- <TabsTrigger value="custos" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="custos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <TrendingUp className="size-3.5" />
  DRE / Custos
  </TabsTrigger>
- <TabsTrigger value="patrocinadores" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="patrocinadores" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <Megaphone className="size-3.5" />
  Patrocínio
  </TabsTrigger>
- <TabsTrigger value="documentos" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="documentos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <FileText className="size-3.5" />
  Alvarás e Legal
  </TabsTrigger>
- <TabsTrigger value="credenciais" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="credenciais" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <QrCode className="size-3.5" />
  Credenciais e Staff
  </TabsTrigger>
- <TabsTrigger value="auditoria" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <TabsTrigger value="auditoria" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
  <ShieldCheck className="size-3.5" />
  Auditoria
  </TabsTrigger>
-  <TabsTrigger value="loja" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+  <TabsTrigger value="loja" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
   <ShoppingBag className="size-3.5" />
   Lojinha
   </TabsTrigger>
@@ -367,13 +367,13 @@ function SubPainelEventoPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsCompModalOpen(true)}
- className="gap-1.5"
+ className="gap-2"
  disabled={lots.length === 0}
  >
  <Gift className="size-4" />
  Emitir Cortesia
  </Button>
- <Button size="sm" onClick={() => setIsLotModalOpen(true)} className="gap-1.5">
+ <Button size="sm" onClick={() => setIsLotModalOpen(true)} className="gap-2">
  <Plus className="size-4" />
  Novo Lote
  </Button>
@@ -390,7 +390,7 @@ function SubPainelEventoPage() {
  {lots.map((lot) => (
  <div
  key={lot.id}
- className="bg-card rounded-2xl p-4 border border-border/60 space-y-3"
+ className="bg-card rounded-lg p-4 border border-border/60 space-y-3"
  >
  <div className="flex items-center justify-between">
  <Badge variant="outline" className="text-xs uppercase font-mono">
@@ -414,7 +414,7 @@ function SubPainelEventoPage() {
 
  <div>
  <h4 className="font-bold text-base text-foreground">{lot.name}</h4>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Capacidade: {lot.capacity || "Ilimitada"} ingressos
  </p>
  </div>
@@ -444,7 +444,7 @@ function SubPainelEventoPage() {
  description="Quando os participantes comprarem na vitrine ou receberem cortesias, eles aparecerão aqui."
  />
  ) : (
- <div className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+ <div className="bg-card rounded-lg border border-border/60 overflow-hidden">
  <Table>
  <TableHeader>
  <TableRow>
@@ -505,7 +505,7 @@ function SubPainelEventoPage() {
  <TabsContent value="portaria" className="space-y-4">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
  {/* Validador In-Place */}
- <div className="bg-card rounded-2xl p-6 border border-border/60 space-y-4">
+ <div className="bg-card rounded-lg p-6 border border-border/60 space-y-4">
  <div>
  <h3 className="text-base font-bold text-foreground">Validador Rápido de Portaria</h3>
  <p className="text-xs text-muted-foreground mt-1">
@@ -533,7 +533,7 @@ function SubPainelEventoPage() {
  </div>
 
  {/* Acesso Câmera Fullscreen */}
- <div className="bg-card rounded-2xl p-6 border border-border/60 space-y-4 flex flex-col justify-between">
+ <div className="bg-card rounded-lg p-6 border border-border/60 space-y-4 flex flex-col justify-between">
  <div>
  <h3 className="text-base font-bold text-foreground">Scanner com Câmera ao Vivo</h3>
  <p className="text-xs text-muted-foreground mt-1">
@@ -706,7 +706,7 @@ function SubPainelEventoPage() {
  required
  value={compForm.lotId}
  onChange={(e) => setCompForm({ ...compForm, lotId: e.target.value })}
- className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm"
+ className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm"
  >
  <option value="">Selecione o Lote...</option>
  {lots.map((l) => (

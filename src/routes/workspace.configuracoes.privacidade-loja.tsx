@@ -110,7 +110,7 @@ function StorePrivacySettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* â”€â”€ 1. VISIBILIDADE NO DIRETÃ“RIO & BUSCA PÃšBLICA â”€â”€ */}
-        <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6 space-y-4">
+        <div className="rounded-lg border border-border/60 bg-card p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -126,7 +126,7 @@ function StorePrivacySettingsPage() {
         </div>
 
         {/* â”€â”€ 2. MODO DE ACESSO (PÃšBLICO VS SENHA VS MEMBROS) â”€â”€ */}
-        <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6 space-y-5">
+        <div className="rounded-lg border border-border/60 bg-card p-5 sm:p-6 space-y-5">
           <div className="space-y-1">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <LockKey size={18} weight="bold" className="text-primary" />
@@ -162,7 +162,7 @@ function StorePrivacySettingsPage() {
                 key={opt.id}
                 type="button"
                 onClick={() => setAccessType(opt.id as any)}
-                className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between space-y-2 ${
+                className={`p-4 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between space-y-2 ${
                   accessType === opt.id
                     ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary/20"
                     : "border-border/60 bg-muted/20 hover:border-foreground/20"
@@ -178,7 +178,7 @@ function StorePrivacySettingsPage() {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-foreground">{opt.label}</h3>
-                  <p className="text-xs text-muted-foreground leading-tight mt-0.5">{opt.desc}</p>
+                  <p className="text-xs text-muted-foreground leading-tight mt-1">{opt.desc}</p>
                 </div>
               </button>
             ))}
@@ -186,7 +186,7 @@ function StorePrivacySettingsPage() {
 
           {/* Campo de Senha se Protegida por Senha */}
           {accessType === "password_protected" && (
-            <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2 pt-3">
+            <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2 pt-3">
               <Label htmlFor="storePass" className="text-xs font-semibold">
                 {settings?.hasPasswordConfigured
                   ? "Alterar Senha de Acesso da Loja (Deixe em branco para manter a atual)"
@@ -199,7 +199,7 @@ function StorePrivacySettingsPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Ex: VIP2026"
-                  className="h-10 rounded-xl text-xs max-w-xs font-mono"
+                  className="h-10 rounded-lg text-xs max-w-xs font-mono"
                 />
                 {settings?.hasPasswordConfigured && (
                   <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
@@ -212,7 +212,7 @@ function StorePrivacySettingsPage() {
         </div>
 
         {/* â”€â”€ 3. CANAL DE VENDAS & COMISSÃƒO DO MARKETPLACE â”€â”€ */}
-        <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6 space-y-4">
+        <div className="rounded-lg border border-border/60 bg-card p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -247,7 +247,7 @@ function StorePrivacySettingsPage() {
           <Button
             type="submit"
             disabled={isPending}
-            className="rounded-xl h-11 px-6 font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+            className="rounded-lg h-11 px-6 font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
           >
             {isPending ? "Salvando AlteraÃ§Ãµes..." : "Salvar ConfiguraÃ§Ãµes"}
           </Button>

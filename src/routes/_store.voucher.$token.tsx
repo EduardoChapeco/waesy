@@ -41,7 +41,7 @@ function PublicTravelVoucherPage() {
   if (!data || !data.voucher) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
-        <div className="size-14 rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground">
+        <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground">
           <Compass className="size-7" />
         </div>
         <div className="space-y-1">
@@ -50,7 +50,7 @@ function PublicTravelVoucherPage() {
             Este voucher de viagem não está mais disponível ou o link informado expirou.
           </p>
         </div>
-        <Button asChild size="sm" variant="outline" className="rounded-xl">
+        <Button asChild size="sm" variant="outline" className="rounded-lg">
           <Link to="/">Ir para a Página Inicial</Link>
         </Button>
       </div>
@@ -231,9 +231,9 @@ function PublicTravelVoucherPage() {
   return (
     <div className="min-h-[100dvh] bg-muted/20 py-4 sm:py-8 px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
       {/* ── BARRA DE AÇÕES SUPERIOR (OCULTA NA IMPRESSÃO) ── */}
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/80 print:hidden">
+      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/80 print:hidden">
         <div className="flex items-center gap-2">
-          <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
             <Compass className="size-4" />
           </div>
           <div>
@@ -245,12 +245,12 @@ function PublicTravelVoucherPage() {
         </div>
 
         {/* ── SELETOR DE FORMATO APPLE HIG ── */}
-        <div className="flex items-center p-1 rounded-xl bg-muted/60 border border-border/60">
+        <div className="flex items-center p-1 rounded-lg bg-muted/60 border border-border/60">
           <button
             type="button"
             onClick={() => setViewMode("stories")}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+              "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
               viewMode === "stories"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -263,7 +263,7 @@ function PublicTravelVoucherPage() {
             type="button"
             onClick={() => setViewMode("a4")}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+              "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
               viewMode === "a4"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -280,7 +280,7 @@ function PublicTravelVoucherPage() {
             size="sm"
             variant="outline"
             onClick={handleCopyLink}
-            className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px] sm:min-h-[36px] h-11 sm:h-9"
+            className="rounded-lg text-xs font-bold gap-2 min-h-11 sm:min-h-9 h-11 sm:h-9"
           >
             {isCopied ? <Check className="size-3.5 text-emerald-600" /> : <Share2 className="size-3.5" />}
             <span>{isCopied ? "Copiado" : "Compartilhar"}</span>
@@ -294,7 +294,7 @@ function PublicTravelVoucherPage() {
                 variant="outline"
                 disabled={isExportingPdf}
                 onClick={handleExportPdf}
-                className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px] sm:min-h-[36px] h-11 sm:h-9"
+                className="rounded-lg text-xs font-bold gap-2 min-h-11 sm:min-h-9 h-11 sm:h-9"
               >
                 {isExportingPdf ? (
                   <Loader2 className="size-3.5 animate-spin" />
@@ -308,7 +308,7 @@ function PublicTravelVoucherPage() {
                 type="button"
                 size="sm"
                 onClick={handlePrint}
-                className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 bg-foreground text-background hover:bg-foreground/90"
+                className="rounded-lg text-xs font-bold gap-2 min-h-11 sm:min-h-9 h-11 sm:h-9 bg-foreground text-background hover:bg-foreground/90"
               >
                 <Printer className="size-3.5" />
                 <span>Imprimir</span>
@@ -320,7 +320,7 @@ function PublicTravelVoucherPage() {
             <Button
               asChild
               size="sm"
-              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <a
                 href={`https://wa.me/55${cleanPhone}?text=Ol%C3%A1%2C%20estou%20com%20meu%20voucher%20${voucher.voucher_code}%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida.`}

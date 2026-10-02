@@ -103,7 +103,7 @@ function WorkspaceAffiliatesPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-2">
+        <div className="bg-card border border-border rounded-lg p-5 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Saques Pendentes</span>
             <Clock className="h-4 w-4 text-amber-500" />
@@ -116,7 +116,7 @@ function WorkspaceAffiliatesPage() {
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-2">
+        <div className="bg-card border border-border rounded-lg p-5 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Comissões Quitadas</span>
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -129,7 +129,7 @@ function WorkspaceAffiliatesPage() {
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-2">
+        <div className="bg-card border border-border rounded-lg p-5 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Total de Solicitações</span>
             <Coins className="h-4 w-4 text-primary" />
@@ -144,7 +144,7 @@ function WorkspaceAffiliatesPage() {
       </div>
 
       {/* Tabela de Saques e Filtros */}
-      <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-4">
+      <div className="bg-card border border-border rounded-lg p-6 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-2">
             <div className="relative w-full sm:w-72">
@@ -153,14 +153,14 @@ function WorkspaceAffiliatesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar por parceiro ou chave PIX..."
-                className="pl-9 h-10 rounded-xl text-xs"
+                className="pl-9 h-10 rounded-lg text-xs"
               />
             </div>
 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-10 px-3 rounded-xl border border-input bg-background text-xs font-medium"
+              className="h-10 px-3 rounded-lg border border-input bg-background text-xs font-medium"
             >
               <option value="all">Todos os Status</option>
               <option value="pending">Apenas Pendentes</option>
@@ -173,7 +173,7 @@ function WorkspaceAffiliatesPage() {
         {isLoading ? (
           <div className="py-12 text-center text-sm text-muted-foreground">Carregando solicitações de saque...</div>
         ) : filteredPayouts.length === 0 ? (
-          <div className="py-12 text-center text-sm text-muted-foreground border border-dashed rounded-xl p-8">
+          <div className="py-12 text-center text-sm text-muted-foreground border border-dashed rounded-lg p-8">
             Nenhuma solicitação de saque encontrada com os filtros selecionados.
           </div>
         ) : (
@@ -217,7 +217,7 @@ function WorkspaceAffiliatesPage() {
                       </td>
                       <td className="py-3 font-mono">
                         <span className="text-foreground">{payout.pix_key}</span>
-                        <span className="text-muted-foreground ml-1.5 uppercase text-xs">
+                        <span className="text-muted-foreground ml-2 uppercase text-xs">
                           ({payout.pix_key_type})
                         </span>
                       </td>
@@ -225,7 +225,7 @@ function WorkspaceAffiliatesPage() {
                         {formatDate(payout.created_at)}
                       </td>
                       <td className="py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-semibold ${currentStatus.badge}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold ${currentStatus.badge}`}>
                           <StatusIcon className="h-3 w-3" /> {currentStatus.label}
                         </span>
                       </td>
@@ -262,14 +262,14 @@ function WorkspaceAffiliatesPage() {
 
       {/* Modal de Revisão e Quitação de Saque */}
       <Dialog open={isProcessModalOpen} onOpenChange={setIsProcessModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-lg">
           <DialogHeader>
             <DialogTitle>Processar Repasse de Comissão</DialogTitle>
           </DialogHeader>
 
           {selectedPayout && (
             <div className="space-y-4 py-2 text-sm">
-              <div className="bg-muted/30 border rounded-xl p-4 space-y-2">
+              <div className="bg-muted/30 border rounded-lg p-4 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Parceiro:</span>
                   <span className="font-bold">{selectedPayout.affiliate?.display_name} (@{selectedPayout.affiliate?.handle})</span>
@@ -286,25 +286,25 @@ function WorkspaceAffiliatesPage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">URL do Comprovante Bancário (opcional)</Label>
                 <Input
                   type="url"
                   value={receiptUrl}
                   onChange={(e) => setReceiptUrl(e.target.value)}
                   placeholder="https://storage.exemplo.com/comprovante.pdf"
-                  className="h-10 rounded-xl text-xs"
+                  className="h-10 rounded-lg text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold">Observações / Motivo</Label>
                 <Input
                   type="text"
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
                   placeholder="Ex: Transferido via PIX chave celular"
-                  className="h-10 rounded-xl text-xs"
+                  className="h-10 rounded-lg text-xs"
                 />
               </div>
 
@@ -320,7 +320,7 @@ function WorkspaceAffiliatesPage() {
                       notes: adminNotes || "Repasse rejeitado pela administração.",
                     })
                   }
-                  className="h-10 rounded-xl font-semibold text-xs cursor-pointer"
+                  className="h-10 rounded-lg font-semibold text-xs cursor-pointer"
                 >
                   Rejeitar Saque
                 </Button>
@@ -335,7 +335,7 @@ function WorkspaceAffiliatesPage() {
                       notes: adminNotes.trim() || undefined,
                     })
                   }
-                  className="h-10 rounded-xl font-semibold text-xs bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                  className="h-10 rounded-lg font-semibold text-xs bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                 >
                   <Check className="h-4 w-4 mr-1" />
                   {processMutation.isPending ? "Processando..." : "Confirmar Quitação"}

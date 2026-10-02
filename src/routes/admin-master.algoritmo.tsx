@@ -129,7 +129,7 @@ export default function AdminAlgorithmSettingsPage() {
  <h1 className="text-xl font-bold tracking-tight text-foreground">
  Algoritmo e Recomendações
  </h1>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Controle central dos pesos do algoritmo de ranking (Waesy Pulse). Ajustes entram em vigor imediatamente na vitrine pública.
  </p>
  </div>
@@ -139,7 +139,7 @@ export default function AdminAlgorithmSettingsPage() {
  onClick={handleSave}
  disabled={isSaving}
  size="sm"
- className="rounded-xl text-xs font-semibold gap-1.5 h-9"
+ className="rounded-lg text-xs font-semibold gap-2 h-9"
  >
  {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
  <span>Salvar Pesos em Produção</span>
@@ -148,8 +148,8 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
 
  {/* Presets Rápidos */}
- <div className="p-4 rounded-2xl border border-border/60 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
- <div className="space-y-0.5">
+ <div className="p-4 rounded-lg border border-border/60 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+ <div className="space-y-1">
  <span className="font-semibold text-foreground">Presets Estratégicos de Calibragem</span>
  <p className="text-muted-foreground text-[11px]">
  Carregue configurações prontas para diferentes cenários operacionais da cidade.
@@ -161,7 +161,7 @@ export default function AdminAlgorithmSettingsPage() {
  size="sm"
  variant="outline"
  onClick={() => applyPreset("default")}
- className="text-xs h-8 rounded-xl"
+ className="text-xs h-8 rounded-lg"
  >
  Equilíbrio Padrão
  </Button>
@@ -169,7 +169,7 @@ export default function AdminAlgorithmSettingsPage() {
  size="sm"
  variant="outline"
  onClick={() => applyPreset("rain_hyperlocal")}
- className="text-xs h-8 rounded-xl"
+ className="text-xs h-8 rounded-lg"
  >
  Modo Chuva / Hiperlocal
  </Button>
@@ -177,7 +177,7 @@ export default function AdminAlgorithmSettingsPage() {
  size="sm"
  variant="outline"
  onClick={() => applyPreset("new_growth")}
- className="text-xs h-8 rounded-xl"
+ className="text-xs h-8 rounded-lg"
  >
  Aceleração de Novos Negócios
  </Button>
@@ -185,7 +185,7 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
 
  {/* Barra de Distribuição Percentual */}
- <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-3">
+ <div className="p-4 rounded-lg border border-border/60 bg-card space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground">Distribuição Total dos Pesos</span>
  <Badge
@@ -197,7 +197,7 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
 
  {/* Barra Segmentada */}
- <div className="h-3.5 w-full rounded-full overflow-hidden flex bg-muted/40 p-0.5 gap-0.5">
+ <div className="h-3.5 w-full rounded-full overflow-hidden flex bg-muted/40 p-1 gap-1">
  <div style={{ width: `${params.weight_geo * 100}%` }} className="bg-info rounded-full transition-all" title="Geo" />
  <div style={{ width: `${params.weight_open_status * 100}%` }} className="bg-emerald-500 rounded-full transition-all" title="Aberto Agora" />
  <div style={{ width: `${params.weight_user_affinity * 100}%` }} className="bg-primary rounded-full transition-all" title="Afinidade" />
@@ -210,10 +210,10 @@ export default function AdminAlgorithmSettingsPage() {
  {/* Sliders dos 6 Sinais do Algoritmo */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  {/* Sinal 1: Geolocalização */}
- <Card className="p-5 rounded-2xl border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-info/10 text-info flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-info/10 text-info flex items-center justify-center">
  <MapPin className="size-4" />
  </div>
  <div>
@@ -235,10 +235,10 @@ export default function AdminAlgorithmSettingsPage() {
  </Card>
 
  {/* Sinal 2: Aberto Agora */}
- <Card className="p-5 rounded-2xl border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
  <Clock className="size-4" />
  </div>
  <div>
@@ -260,10 +260,10 @@ export default function AdminAlgorithmSettingsPage() {
  </Card>
 
  {/* Sinal 3: Afinidade Comportamental */}
- <Card className="p-5 rounded-2xl border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Heart className="size-4" />
  </div>
  <div>
@@ -285,10 +285,10 @@ export default function AdminAlgorithmSettingsPage() {
  </Card>
 
  {/* Sinal 4: Recência do Item */}
- <Card className="p-5 rounded-2xl border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
  <TrendingUp className="size-4" />
  </div>
  <div>
@@ -310,10 +310,10 @@ export default function AdminAlgorithmSettingsPage() {
  </Card>
 
  {/* Sinal 5: Qualidade & Avaliações */}
- <Card className="p-5 rounded-2xl border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <Award className="size-4" />
  </div>
  <div>
@@ -335,10 +335,10 @@ export default function AdminAlgorithmSettingsPage() {
  </Card>
 
  {/* Sinal 6: Impulso de Tokens no Radar */}
- <Card className="p-5 rounded-2xl border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center">
  <Coins className="size-4" />
  </div>
  <div>
@@ -361,7 +361,7 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
 
  {/* Parâmetros Espaciais Globais */}
- <Card className="p-5 rounded-2xl border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
  <div>
  <h2 className="text-sm font-bold text-foreground">Parâmetros Espaciais e Meia-Vida</h2>
  <p className="text-xs text-muted-foreground">
@@ -370,7 +370,7 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Raio Máximo Padrão de Descoberta (km)</Label>
  <Input
  type="number"
@@ -384,7 +384,7 @@ export default function AdminAlgorithmSettingsPage() {
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Meia-Vida da Recência (dias)</Label>
  <Input
  type="number"

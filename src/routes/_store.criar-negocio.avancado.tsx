@@ -339,14 +339,14 @@ function CriarNegocioPage() {
  <NativeBackButton fallbackHref={session?.memberships && session.memberships.length > 0 ? "/workspace" : "/"} />
  </div>
  {step > 1 && (
- <div className="bg-card p-4 rounded-2xl border border-border/70 space-y-3">
+ <div className="bg-card p-4 rounded-lg border border-border/70 space-y-3">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div className="flex items-center gap-3">
  <Button
  variant="ghost"
  size="sm"
  onClick={() => setStep((prev) => Math.max(1, prev - 1) as OnboardingStep)}
- className="h-8 rounded-xl px-2.5 text-xs font-bold text-muted-foreground hover:text-foreground gap-1.5"
+ className="h-8 rounded-lg px-3 text-xs font-bold text-muted-foreground hover:text-foreground gap-2"
  >
  <ArrowLeft className="size-3.5" />
  <span>Voltar</span>
@@ -356,7 +356,7 @@ function CriarNegocioPage() {
  <div className={cn("size-6 rounded-lg flex items-center justify-center text-xs font-bold", selectedSegment.iconBg, selectedSegment.iconColor)}>
  <selectedSegment.icon className="size-3.5" />
  </div>
- <span className="text-xs font-bold text-foreground truncate max-w-[200px] sm:max-w-none">
+ <span className="text-xs font-bold text-foreground truncate max-w-52 sm:max-w-none">
  {name || selectedSegment.title}
  </span>
  <Badge variant="outline" className="text-[10px] hidden sm:inline-flex bg-muted/30">
@@ -369,7 +369,7 @@ function CriarNegocioPage() {
  variant="outline"
  size="sm"
  onClick={() => setStep(1)}
- className="h-8 rounded-xl text-[11px] font-medium text-muted-foreground hover:text-foreground ml-auto sm:ml-0"
+ className="h-8 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground ml-auto sm:ml-0"
  >
  Trocar Segmento
  </Button>
@@ -392,7 +392,7 @@ function CriarNegocioPage() {
  }
  }}
  className={cn(
- "flex items-center gap-2 p-2 rounded-xl text-left transition-all",
+ "flex items-center gap-2 p-2 rounded-lg text-left transition-all",
  isActive && "bg-primary text-primary-foreground font-bold shadow-xs",
  isPassed && "bg-muted/40 text-foreground hover:bg-muted/60 cursor-pointer",
  !isActive && !isPassed && "text-muted-foreground/60 opacity-60 cursor-default"
@@ -435,15 +435,15 @@ function CriarNegocioPage() {
  </div>
 
  {/* Filtros e Busca */}
- <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
- <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
+ <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
+ <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
  {BUSINESS_CATEGORIES.map((cat) => (
  <button
  key={cat.id}
  type="button"
  onClick={() => setActiveCategoryFilter(cat.id)}
  className={cn(
- "px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all",
+ "px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all",
  activeCategoryFilter === cat.id
  ? "bg-foreground text-background font-bold"
  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70"
@@ -460,7 +460,7 @@ function CriarNegocioPage() {
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Buscar segmento..."
- className="h-9 pl-9 rounded-xl text-xs bg-background"
+ className="h-9 pl-9 rounded-lg text-xs bg-background"
  />
  </div>
  </div>
@@ -476,7 +476,7 @@ function CriarNegocioPage() {
  key={segment.id}
  onClick={() => handleSelectNicheAndProceed(segment.id)}
  className={cn(
- "group relative h-64 rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 border flex flex-col justify-between p-5 select-none active:scale-[0.98]",
+ "group relative h-64 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 border flex flex-col justify-between p-5 select-none active:scale-[0.98]",
  isSelected
  ? "border-primary ring-2 ring-primary shadow-xs"
  : "border-border/60 hover:border-foreground/30 hover:shadow-xs"
@@ -490,10 +490,10 @@ function CriarNegocioPage() {
  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />
 
  <div className="relative z-10 flex items-start justify-between gap-2">
- <div className="size-9 rounded-xl flex items-center justify-center backdrop-blur-md bg-black/40 border border-white/15 text-white">
+ <div className="size-9 rounded-lg flex items-center justify-center backdrop-blur-md bg-black/40 border border-white/15 text-white">
  <IconComp className="size-4" />
  </div>
- <Badge className="bg-white/15 backdrop-blur-md text-white border-white/20 text-[10px] font-semibold px-2 py-0.5">
+ <Badge className="bg-white/15 backdrop-blur-md text-white border-white/20 text-[10px] font-semibold px-2 py-1">
  {segment.badge}
  </Badge>
  </div>
@@ -512,7 +512,7 @@ function CriarNegocioPage() {
  </div>
 
  {filteredSegments.length === 0 && (
- <div className="p-12 text-center bg-card rounded-2xl border border-dashed border-border/80 space-y-2">
+ <div className="p-12 text-center bg-card rounded-lg border border-dashed border-border/80 space-y-2">
  <p className="text-sm font-bold text-foreground">Nenhum segmento encontrado</p>
  <p className="text-xs text-muted-foreground">
  Tente buscar com outros termos ou selecione "Todas as Categorias".
@@ -524,7 +524,7 @@ function CriarNegocioPage() {
  setActiveCategoryFilter("todas");
  setSearchQuery("");
  }}
- className="mt-2 rounded-xl text-xs font-bold"
+ className="mt-2 rounded-lg text-xs font-bold"
  >
  Limpar Filtros
  </Button>
@@ -542,7 +542,7 @@ function CriarNegocioPage() {
  <div className="lg:col-span-7 space-y-6 w-full min-w-0">
  {/* ETAPA 2: IDENTIFICAÇÃO */}
  {step === 2 && (
- <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border/70 space-y-6 shadow-xs">
+ <div className="bg-card p-6 sm:p-8 rounded-lg border border-border/70 space-y-6 shadow-xs">
  <div className="space-y-1 pb-2 border-b border-border/60">
  <h2 className="text-lg font-bold text-foreground">Identificação do Negócio</h2>
  <p className="text-xs text-muted-foreground">
@@ -551,7 +551,7 @@ function CriarNegocioPage() {
  </div>
 
  <div className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">
  Nome da Loja / Estabelecimento *
  </Label>
@@ -559,13 +559,13 @@ function CriarNegocioPage() {
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Armazém do Sabor, Boutique Chic, Dr. Pet..."
- className="h-11 rounded-xl text-sm bg-background font-medium"
+ className="h-11 rounded-lg text-sm bg-background font-medium"
  autoFocus
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">
  CNPJ ou CPF (Opcional)
  </Label>
@@ -573,11 +573,11 @@ function CriarNegocioPage() {
  value={docNumber}
  onChange={(e) => setDocNumber(e.target.value)}
  placeholder="00.000.000/0001-00"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">
  WhatsApp / Telefone de Contato
  </Label>
@@ -585,12 +585,12 @@ function CriarNegocioPage() {
  value={phone}
  onChange={(e) => setPhone(e.target.value)}
  placeholder="(49) 99999-9999"
- className="h-11 rounded-xl text-xs bg-background font-mono"
+ className="h-11 rounded-lg text-xs bg-background font-mono"
  />
  </div>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-medium text-muted-foreground">
  E-mail Comercial da Loja
  </Label>
@@ -599,7 +599,7 @@ function CriarNegocioPage() {
  value={email}
  onChange={(e) => setEmail(e.target.value)}
  placeholder="contato@sualoja.com.br"
- className="h-11 rounded-xl text-xs bg-background"
+ className="h-11 rounded-lg text-xs bg-background"
  />
  </div>
 
@@ -617,7 +617,7 @@ function CriarNegocioPage() {
  <Button
  variant="ghost"
  onClick={() => setStep(1)}
- className="rounded-xl text-xs font-bold gap-1"
+ className="rounded-lg text-xs font-bold gap-1"
  >
  <ArrowLeft className="size-3.5" /> Escolher outro nicho
  </Button>
@@ -633,7 +633,7 @@ function CriarNegocioPage() {
  }
  setStep(3);
  }}
- className="rounded-xl text-xs font-bold h-11 px-6 gap-2 bg-primary text-primary-foreground shadow-xs"
+ className="rounded-lg text-xs font-bold h-11 px-6 gap-2 bg-primary text-primary-foreground shadow-xs"
  >
  <span>Avançar para Identidade Visual</span>
  <ArrowRight className="size-3.5" />
@@ -644,7 +644,7 @@ function CriarNegocioPage() {
 
  {/* ETAPA 3: IDENTIDADE VISUAL */}
  {step === 3 && (
- <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border/70 space-y-6 shadow-xs">
+ <div className="bg-card p-6 sm:p-8 rounded-lg border border-border/70 space-y-6 shadow-xs">
  <div className="space-y-1 pb-2 border-b border-border/60">
  <h2 className="text-lg font-bold text-foreground">Identidade Visual da Loja</h2>
  <p className="text-xs text-muted-foreground">
@@ -673,7 +673,7 @@ function CriarNegocioPage() {
  {/* Logotipo Oficial */}
  <div className="space-y-2 pt-2 border-t border-border/40">
  <Label className="text-xs font-bold text-foreground">Logotipo Oficial da Loja</Label>
- <div className="flex items-center gap-5 p-4 rounded-2xl bg-muted/20 border border-border/60">
+ <div className="flex items-center gap-5 p-4 rounded-lg bg-muted/20 border border-border/60">
  <ImageUpload
  value={logoUrl}
  onChange={(url) => {
@@ -700,13 +700,13 @@ function CriarNegocioPage() {
  <Button
  variant="ghost"
  onClick={() => setStep(2)}
- className="rounded-xl text-xs font-bold gap-1"
+ className="rounded-lg text-xs font-bold gap-1"
  >
  <ArrowLeft className="size-3.5" /> Voltar aos dados
  </Button>
  <Button
  onClick={() => setStep(4)}
- className="rounded-xl text-xs font-bold h-11 px-6 gap-2 bg-primary text-primary-foreground shadow-xs"
+ className="rounded-lg text-xs font-bold h-11 px-6 gap-2 bg-primary text-primary-foreground shadow-xs"
  >
  <span>Avançar para Operação e Entrega</span>
  <ArrowRight className="size-3.5" />
@@ -720,7 +720,7 @@ function CriarNegocioPage() {
  <div className="space-y-6">
  {/* Banner de Logística — EXCLUSIVO para negócios de Delivery/Varejo */}
  {isDeliverySegment && (
- <div className="relative rounded-2xl overflow-hidden border border-border/80 bg-card shadow-xs">
+ <div className="relative rounded-lg overflow-hidden border border-border/80 bg-card shadow-xs">
  <div className="relative h-44 sm:h-52 w-full overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-800 to-black">
  {logisticsInfo?.image_desktop_url && (
  <img
@@ -731,9 +731,9 @@ function CriarNegocioPage() {
  )}
  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
 
- <div className="absolute inset-x-0 bottom-0 p-5 text-white space-y-1.5">
+ <div className="absolute inset-x-0 bottom-0 p-5 text-white space-y-2">
  <div className="flex items-center gap-2">
- <Badge className="bg-emerald-500 text-white text-[10px] font-extrabold px-2.5 py-0.5 border-none">
+ <Badge className="bg-emerald-500 text-white text-[10px] font-extrabold px-3 py-1 border-none">
  Zero Taxa de Intermediação
  </Badge>
  </div>
@@ -750,7 +750,7 @@ function CriarNegocioPage() {
  )}
 
  {/* Configurações Operacionais */}
- <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border/70 space-y-6 shadow-xs">
+ <div className="bg-card p-6 sm:p-8 rounded-lg border border-border/70 space-y-6 shadow-xs">
  <div className="space-y-1 pb-2 border-b border-border/60">
  <h3 className="text-base font-bold text-foreground">
  {isDeliverySegment ? "Configurações de Entrega & Atendimento" : "Modalidades de Atendimento & Horários"}
@@ -766,9 +766,9 @@ function CriarNegocioPage() {
  {/* Modalidades Condicionais */}
  {isDeliverySegment ? (
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-border/60">
- <div className="space-y-0.5">
- <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/60">
+ <div className="space-y-1">
+ <p className="text-xs font-bold text-foreground flex items-center gap-2">
  <Truck className="size-4 text-primary" />
  <span>Delivery e MotoLink</span>
  </p>
@@ -779,9 +779,9 @@ function CriarNegocioPage() {
  <Switch checked={hasDelivery} onCheckedChange={setHasDelivery} />
  </div>
 
- <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-border/60">
- <div className="space-y-0.5">
- <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/60">
+ <div className="space-y-1">
+ <p className="text-xs font-bold text-foreground flex items-center gap-2">
  <Store className="size-4 text-primary" />
  <span>Retirada no Balcão</span>
  </p>
@@ -794,9 +794,9 @@ function CriarNegocioPage() {
  </div>
  ) : (
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-border/60">
- <div className="space-y-0.5">
- <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/60">
+ <div className="space-y-1">
+ <p className="text-xs font-bold text-foreground flex items-center gap-2">
  <Building2 className="size-4 text-primary" />
  <span>Atendimento Presencial no Escritório / Sede</span>
  </p>
@@ -807,9 +807,9 @@ function CriarNegocioPage() {
  <Switch checked={hasInPersonService} onCheckedChange={setHasInPersonService} />
  </div>
 
- <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-border/60">
- <div className="space-y-0.5">
- <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/60">
+ <div className="space-y-1">
+ <p className="text-xs font-bold text-foreground flex items-center gap-2">
  <Phone className="size-4 text-primary" />
  <span>Atendimento Online / WhatsApp / Remoto</span>
  </p>
@@ -825,7 +825,7 @@ function CriarNegocioPage() {
  {/* Horário de Atendimento */}
  <div className="space-y-3 pt-2">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2">
  <Clock className="size-4 text-primary" />
  <span>Grade de Horários de Funcionamento</span>
  </Label>
@@ -855,13 +855,13 @@ function CriarNegocioPage() {
  <Button
  variant="ghost"
  onClick={() => setStep(3)}
- className="rounded-xl text-xs font-bold gap-1"
+ className="rounded-lg text-xs font-bold gap-1"
  >
  <ArrowLeft className="size-3.5" /> Voltar
  </Button>
  <Button
  onClick={() => setStep(5)}
- className="rounded-xl text-xs font-bold h-11 px-6 gap-2 bg-primary text-primary-foreground shadow-xs"
+ className="rounded-lg text-xs font-bold h-11 px-6 gap-2 bg-primary text-primary-foreground shadow-xs"
  >
  <span>Avançar para Documentos</span>
  <ArrowRight className="size-3.5" />
@@ -873,7 +873,7 @@ function CriarNegocioPage() {
 
  {/* ETAPA 5: DOCUMENTOS OPCIONAIS */}
  {step === 5 && (
- <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border/70 space-y-6 shadow-xs">
+ <div className="bg-card p-6 sm:p-8 rounded-lg border border-border/70 space-y-6 shadow-xs">
  <div className="space-y-1 pb-2 border-b border-border/60">
  <div className="flex items-center justify-between">
  <h2 className="text-lg font-bold text-foreground">Documentos e Regularização</h2>
@@ -885,15 +885,15 @@ function CriarNegocioPage() {
  </div>
 
  <div className="space-y-4">
- <div className="border-2 border-dashed border-border/80 rounded-2xl p-6 text-center bg-muted/20 hover:bg-muted/40 transition-colors">
+ <div className="border-2 border-dashed border-border/80 rounded-lg p-6 text-center bg-muted/20 hover:bg-muted/40 transition-colors">
  <FileText className="size-8 mx-auto text-muted-foreground opacity-50 mb-2" />
  <p className="text-xs font-bold text-foreground">
  Anexar Cartão CNPJ, Alvará ou Contrato Social
  </p>
- <p className="text-[11px] text-muted-foreground mt-0.5">
+ <p className="text-[11px] text-muted-foreground mt-1">
  Formatos aceitos: PDF, PNG ou JPG (até 10MB)
  </p>
- <label className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold cursor-pointer hover:opacity-90 transition-opacity shadow-xs">
+ <label className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold cursor-pointer hover:opacity-90 transition-opacity shadow-xs">
  {isUploadingDoc ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
  <span>{isUploadingDoc ? "Enviando..." : "Selecionar Arquivo"}</span>
  <input
@@ -909,11 +909,11 @@ function CriarNegocioPage() {
  {complianceDocs.length > 0 && (
  <div className="space-y-2">
  <p className="text-xs font-bold text-foreground">Documentos Anexados ({complianceDocs.length})</p>
- <div className="space-y-1.5">
+ <div className="space-y-2">
  {complianceDocs.map((doc, dIdx) => (
  <div
  key={dIdx}
- className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/60 text-xs"
+ className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/60 text-xs"
  >
  <div className="flex items-center gap-2 truncate">
  <FileText className="size-4 text-primary shrink-0" />
@@ -938,13 +938,13 @@ function CriarNegocioPage() {
  <Button
  variant="ghost"
  onClick={() => setStep(4)}
- className="rounded-xl text-xs font-bold gap-1"
+ className="rounded-lg text-xs font-bold gap-1"
  >
  <ArrowLeft className="size-3.5" /> Voltar
  </Button>
  <Button
  onClick={() => setStep(6)}
- className="rounded-xl text-xs font-bold h-11 px-6 gap-2 bg-primary text-primary-foreground shadow-xs"
+ className="rounded-lg text-xs font-bold h-11 px-6 gap-2 bg-primary text-primary-foreground shadow-xs"
  >
  <span>Avançar para Convite de Equipe</span>
  <ArrowRight className="size-3.5" />
@@ -955,7 +955,7 @@ function CriarNegocioPage() {
 
  {/* ETAPA 6: EQUIPE & PERMISSÕES */}
  {step === 6 && (
- <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border/70 space-y-6 shadow-xs">
+ <div className="bg-card p-6 sm:p-8 rounded-lg border border-border/70 space-y-6 shadow-xs">
  <div className="space-y-1 pb-2 border-b border-border/60">
  <div className="flex items-center justify-between">
  <h2 className="text-lg font-bold text-foreground">Equipe e Permissões</h2>
@@ -968,8 +968,8 @@ function CriarNegocioPage() {
  </p>
  </div>
 
- <div className="p-4 rounded-2xl bg-muted/20 border border-border/60 space-y-3">
- <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-3">
+ <p className="text-xs font-bold text-foreground flex items-center gap-2">
  <UserPlus className="size-3.5 text-primary" />
  <span>Adicionar Colaborador à Loja</span>
  </p>
@@ -982,7 +982,7 @@ function CriarNegocioPage() {
  value={newMemberEmail}
  onChange={(e) => setNewMemberEmail(e.target.value)}
  placeholder="colaborador@email.com"
- className="h-10 rounded-xl text-xs bg-background"
+ className="h-10 rounded-lg text-xs bg-background"
  />
  </div>
 
@@ -992,7 +992,7 @@ function CriarNegocioPage() {
  value={newMemberName}
  onChange={(e) => setNewMemberName(e.target.value)}
  placeholder="Nome completo"
- className="h-10 rounded-xl text-xs bg-background"
+ className="h-10 rounded-lg text-xs bg-background"
  />
  </div>
 
@@ -1002,7 +1002,7 @@ function CriarNegocioPage() {
  value={newMemberRole}
  onValueChange={(val: any) => setNewMemberRole(val)}
  >
- <SelectTrigger className="h-10 rounded-xl text-xs bg-background">
+ <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1023,7 +1023,7 @@ function CriarNegocioPage() {
  variant="outline"
  size="sm"
  onClick={handleAddTeamMember}
- className="rounded-xl text-xs font-bold gap-1.5"
+ className="rounded-lg text-xs font-bold gap-2"
  >
  <Plus className="size-3.5" /> Adicionar à Lista
  </Button>
@@ -1039,10 +1039,10 @@ function CriarNegocioPage() {
  {teamMembers.map((m, mIdx) => (
  <div
  key={mIdx}
- className="flex items-center justify-between p-3 rounded-2xl bg-background border border-border/70 text-xs"
+ className="flex items-center justify-between p-3 rounded-lg bg-background border border-border/70 text-xs"
  >
  <div className="flex items-center gap-3">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
  {m.fullName ? m.fullName.charAt(0).toUpperCase() : m.email.charAt(0).toUpperCase()}
  </div>
  <div>
@@ -1069,7 +1069,7 @@ function CriarNegocioPage() {
  </div>
  </div>
  ) : (
- <div className="p-6 text-center rounded-2xl border border-dashed border-border/70 space-y-1">
+ <div className="p-6 text-center rounded-lg border border-dashed border-border/70 space-y-1">
  <Users className="size-6 mx-auto text-muted-foreground opacity-40 mb-1" />
  <p className="text-xs font-medium text-foreground">Nenhum membro adicionado ainda</p>
  <p className="text-[11px] text-muted-foreground">
@@ -1083,7 +1083,7 @@ function CriarNegocioPage() {
  variant="ghost"
  onClick={() => setStep(5)}
  disabled={isSubmitting}
- className="w-full sm:w-auto rounded-xl text-xs font-bold gap-1 order-2 sm:order-1"
+ className="w-full sm:w-auto rounded-lg text-xs font-bold gap-1 order-2 sm:order-1"
  >
  <ArrowLeft className="size-3.5" /> Voltar
  </Button>
@@ -1091,7 +1091,7 @@ function CriarNegocioPage() {
  <Button
  onClick={handleSubmitAll}
  disabled={isSubmitting}
- className="w-full sm:w-auto rounded-xl text-xs font-bold h-11 px-8 gap-2 bg-primary text-primary-foreground order-1 sm:order-2"
+ className="w-full sm:w-auto rounded-lg text-xs font-bold h-11 px-8 gap-2 bg-primary text-primary-foreground order-1 sm:order-2"
  >
  {isSubmitting ? (
  <>
@@ -1112,10 +1112,10 @@ function CriarNegocioPage() {
 
  {/* ── COLUNA DIREITA STICKY: THE TRUTHFUL STORE PREVIEW (5 COLS) ── */}
  <div className="lg:col-span-5 sticky top-24 space-y-4 w-full min-w-0">
- <div className="bg-card rounded-2xl border border-border/80 overflow-hidden">
+ <div className="bg-card rounded-lg border border-border/80 overflow-hidden">
  {/* Header do Mockup */}
- <div className="p-3.5 bg-muted/40 border-b border-border/60 flex items-center justify-between">
- <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+ <div className="p-4 bg-muted/40 border-b border-border/60 flex items-center justify-between">
+ <div className="flex items-center gap-2 text-xs font-bold text-foreground">
  <Eye className="size-3.5 text-primary" />
  <span>Prévia da Loja ao Vivo</span>
  </div>
@@ -1150,7 +1150,7 @@ function CriarNegocioPage() {
  <div className="p-5 pt-0 relative space-y-4">
  <div className="flex items-end justify-between -mt-8 mb-2">
  {/* Logotipo Redondo/Squircle */}
- <div className="size-16 sm:size-20 rounded-2xl overflow-hidden border-[3px] border-card bg-background flex items-center justify-center shrink-0">
+ <div className="size-16 sm:size-20 rounded-lg overflow-hidden border-[3px] border-card bg-background flex items-center justify-center shrink-0">
  {logoUrl ? (
  <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover" />
  ) : (
@@ -1191,7 +1191,7 @@ function CriarNegocioPage() {
  </div>
 
  {/* Badges de Atendimento & Modelo Dinâmicos por Nicho */}
- <div className="flex flex-wrap gap-1.5 pt-1">
+ <div className="flex flex-wrap gap-2 pt-1">
  {isDeliverySegment ? (
  <>
  <Badge variant="secondary" className="text-[10px] font-bold gap-1 bg-primary/10 text-primary border-primary/20">
@@ -1240,28 +1240,28 @@ function CriarNegocioPage() {
  <div className="pt-3 border-t border-border/50 grid grid-cols-2 gap-2">
  {selectedSegment.id === "tourism" ? (
  <>
- <div className="py-2 px-3 rounded-xl bg-muted/40 text-center text-[11px] font-bold text-foreground border border-border/40 truncate">
+ <div className="py-2 px-3 rounded-lg bg-muted/40 text-center text-[11px] font-bold text-foreground border border-border/40 truncate">
  Ver Roteiros e Pacotes
  </div>
- <div className="py-2 px-3 rounded-xl bg-primary text-center text-[11px] font-bold text-primary-foreground shadow-xs truncate">
+ <div className="py-2 px-3 rounded-lg bg-primary text-center text-[11px] font-bold text-primary-foreground shadow-xs truncate">
  Solicitar Cotação
  </div>
  </>
  ) : selectedSegment.category === "servicos" ? (
  <>
- <div className="py-2 px-3 rounded-xl bg-muted/40 text-center text-[11px] font-bold text-foreground border border-border/40 truncate">
+ <div className="py-2 px-3 rounded-lg bg-muted/40 text-center text-[11px] font-bold text-foreground border border-border/40 truncate">
  Conhecer Serviços
  </div>
- <div className="py-2 px-3 rounded-xl bg-primary text-center text-[11px] font-bold text-primary-foreground shadow-xs truncate">
+ <div className="py-2 px-3 rounded-lg bg-primary text-center text-[11px] font-bold text-primary-foreground shadow-xs truncate">
  Agendar Horário
  </div>
  </>
  ) : (
  <>
- <div className="py-2 px-3 rounded-xl bg-muted/40 text-center text-[11px] font-bold text-foreground border border-border/40 truncate">
+ <div className="py-2 px-3 rounded-lg bg-muted/40 text-center text-[11px] font-bold text-foreground border border-border/40 truncate">
  Ver Catálogo
  </div>
- <div className="py-2 px-3 rounded-xl bg-primary text-center text-[11px] font-bold text-primary-foreground shadow-xs truncate">
+ <div className="py-2 px-3 rounded-lg bg-primary text-center text-[11px] font-bold text-primary-foreground shadow-xs truncate">
  Fazer Pedido
  </div>
  </>
@@ -1271,8 +1271,8 @@ function CriarNegocioPage() {
  </div>
 
  {/* Box Informativo / Dica Contextual */}
- <div className="p-4 rounded-2xl bg-muted/30 border border-border/60 space-y-1.5 text-xs text-muted-foreground">
- <p className="font-bold text-foreground flex items-center gap-1.5">
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-2 text-xs text-muted-foreground">
+ <p className="font-bold text-foreground flex items-center gap-2">
  <Sliders className="size-3.5 text-primary" />
  <span>Configuração Automática</span>
  </p>

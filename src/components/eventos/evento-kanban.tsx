@@ -160,7 +160,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
   return (
     <div className="space-y-6">
       {/* Topo do Kanban com Ações Apple HIG */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">
@@ -170,14 +170,14 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
               {tasks.length} {tasks.length === 1 ? "tarefa" : "tarefas"}
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             {board?.descricao || "Gestão ágil de etapas, fornecedores, montagem e prazos operacionais."}
           </p>
         </div>
 
         <Sheet open={isNewTaskOpen} onOpenChange={setIsNewTaskOpen}>
           <SheetTrigger asChild>
-            <Button className="h-11 px-4 rounded-xl text-xs font-bold gap-2">
+            <Button className="h-11 px-4 rounded-lg text-xs font-bold gap-2">
               <Plus className="size-4" />
               <span>Nova Tarefa</span>
             </Button>
@@ -191,10 +191,10 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
             </SheetHeader>
 
             <form onSubmit={handleCreateTask} className="space-y-4 mt-6">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Coluna de Destino</Label>
                 <Select value={selectedColumn} onValueChange={setSelectedColumn}>
-                  <SelectTrigger className="h-11 rounded-xl text-xs">
+                  <SelectTrigger className="h-11 rounded-lg text-xs">
                     <SelectValue placeholder="Selecione a coluna" />
                   </SelectTrigger>
                   <SelectContent>
@@ -207,45 +207,45 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Título da Tarefa *</Label>
                 <Input
                   required
                   placeholder="Ex: Instalar gerador de backup no palco"
-                  className="h-11 rounded-xl text-xs"
+                  className="h-11 rounded-lg text-xs"
                   value={taskForm.titulo}
                   onChange={(e) => setTaskForm({ ...taskForm, titulo: e.target.value })}
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Descrição e Detalhes</Label>
                 <Textarea
                   rows={3}
                   placeholder="Especificações técnicas, contato do fornecedor, etc."
-                  className="rounded-xl text-xs"
+                  className="rounded-lg text-xs"
                   value={taskForm.descricao}
                   onChange={(e) => setTaskForm({ ...taskForm, descricao: e.target.value })}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Responsável</Label>
                   <Input
                     placeholder="Ex: Carlos Elétrica"
-                    className="h-11 rounded-xl text-xs"
+                    className="h-11 rounded-lg text-xs"
                     value={taskForm.responsavelNome}
                     onChange={(e) => setTaskForm({ ...taskForm, responsavelNome: e.target.value })}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Prioridade</Label>
                   <Select
                     value={taskForm.prioridade}
                     onValueChange={(v: any) => setTaskForm({ ...taskForm, prioridade: v })}
                   >
-                    <SelectTrigger className="h-11 rounded-xl text-xs">
+                    <SelectTrigger className="h-11 rounded-lg text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -259,27 +259,27 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Início Previsto</Label>
                   <Input
                     type="date"
-                    className="h-11 rounded-xl text-xs"
+                    className="h-11 rounded-lg text-xs"
                     value={taskForm.dataInicio}
                     onChange={(e) => setTaskForm({ ...taskForm, dataInicio: e.target.value })}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Prazo Final</Label>
                   <Input
                     type="date"
-                    className="h-11 rounded-xl text-xs"
+                    className="h-11 rounded-lg text-xs"
                     value={taskForm.dataFim}
                     onChange={(e) => setTaskForm({ ...taskForm, dataFim: e.target.value })}
                   />
                 </div>
               </div>
 
-              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-xl text-xs font-bold mt-4">
+              <Button type="submit" disabled={isPending} className="w-full h-11 rounded-lg text-xs font-bold mt-4">
                 {isPending ? "Criando..." : "Salvar Tarefa"}
               </Button>
             </form>
@@ -297,11 +297,11 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
           renderItem: (task: any) => (
             <Card
               key={task.id}
-              className="rounded-xl border border-border/80 bg-card p-3.5 shadow-2xs hover:border-primary/40 transition-all group"
+              className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs hover:border-primary/40 transition-all group"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-1 flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {getPriorityBadge(task.prioridade)}
                     {task.responsavel_nome && (
                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -331,7 +331,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
               </div>
 
               {/* Rodapé do Card com Ações Rápidas de Transição de Coluna */}
-              <div className="mt-3 pt-2.5 border-t border-border/50 flex items-center justify-between text-[10px] text-muted-foreground">
+              <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between text-[10px] text-muted-foreground">
                 <div className="flex items-center gap-1">
                   {task.data_fim ? (
                     <span className="flex items-center gap-1 text-muted-foreground">
@@ -352,7 +352,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
                         key={targetCol.id}
                         type="button"
                         onClick={() => handleMoveTask(task.id, targetCol.id)}
-                        className="px-1.5 py-0.5 rounded border border-border/80 text-[9px] hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-2 py-1 rounded border border-border/80 text-[9px] hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
                         title={`Mover para ${targetCol.nome}`}
                       >
                         <span>{targetCol.nome.substring(0, 4)}</span>

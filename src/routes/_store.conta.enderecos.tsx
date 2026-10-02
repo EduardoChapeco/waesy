@@ -164,7 +164,7 @@ function AddressesPage() {
         fallbackHref="/conta"
         badge={
           addresses.length > 0 ? (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
               {addresses.length}
             </Badge>
           ) : null
@@ -174,7 +174,7 @@ function AddressesPage() {
             <Button
               size="sm"
               onClick={() => setIsAdding(true)}
-              className="rounded-xl h-8.5 px-3.5 text-xs font-bold gap-1.5 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-2xs cursor-pointer"
+              className="rounded-lg h-8.5 px-4 text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-2xs cursor-pointer"
             >
               <Plus className="size-3.5" />
               <span>Novo</span>
@@ -185,8 +185,8 @@ function AddressesPage() {
 
       {/* ── 2. Formulário Apple HIG Inset-Grouped: Novo Endereço ── */}
       {isAdding && (
-        <div className="bg-card rounded-none sm:rounded-2xl border-y sm:border border-border/80 shadow-xs overflow-hidden transition-all animate-in fade-in-50 duration-200">
-          <div className="px-4 sm:px-5 py-3.5 bg-muted/20 border-b border-border/40 flex items-center justify-between">
+        <div className="bg-card rounded-none sm:rounded-lg border-y sm:border border-border/80 shadow-xs overflow-hidden transition-all animate-in fade-in-50 duration-200">
+          <div className="px-4 sm:px-5 py-4 bg-muted/20 border-b border-border/40 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MapPin className="size-4.5 text-primary" strokeWidth={2} />
               <h2 className="text-sm font-bold text-foreground">Novo Endereço</h2>
@@ -196,7 +196,7 @@ function AddressesPage() {
               variant="ghost"
               size="icon"
               onClick={() => setIsAdding(false)}
-              className="size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+              className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <X className="size-4" />
             </Button>
@@ -212,12 +212,12 @@ function AddressesPage() {
                 placeholder="Ex: Minha Casa"
                 value={formData.label}
                 onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                className="h-11 rounded-xl bg-background border-border/70 text-sm focus-visible:ring-primary/20"
+                className="h-11 rounded-lg bg-background border-border/70 text-sm focus-visible:ring-primary/20"
               />
             </div>
 
             {/* Linha 1: CEP com busca automática */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1 sm:col-span-1">
                 <label className="text-xs font-semibold text-foreground flex items-center justify-between">
                   <span>CEP *</span>
@@ -236,7 +236,7 @@ function AddressesPage() {
                     maxLength={9}
                     value={formData.zipcode}
                     onChange={(e) => handleCepLookup(e.target.value)}
-                    className="h-11 rounded-xl bg-background border-border/70 text-sm font-mono focus-visible:ring-primary/20"
+                    className="h-11 rounded-lg bg-background border-border/70 text-sm font-mono focus-visible:ring-primary/20"
                   />
                   <Navigation className="size-4 text-muted-foreground/50 absolute right-3.5 top-3.5 pointer-events-none" />
                 </div>
@@ -252,13 +252,13 @@ function AddressesPage() {
                   placeholder="Ex: Avenida Brasil"
                   value={formData.street}
                   onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                  className="h-11 rounded-xl bg-background border-border/70 text-sm focus-visible:ring-primary/20"
+                  className="h-11 rounded-lg bg-background border-border/70 text-sm focus-visible:ring-primary/20"
                 />
               </div>
             </div>
 
             {/* Linha 2: Número e Complemento */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1 sm:col-span-1">
                 <label className="text-xs font-semibold text-foreground">
                   Número *
@@ -268,7 +268,7 @@ function AddressesPage() {
                   placeholder="Ex: 120"
                   value={formData.number}
                   onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                  className="h-11 rounded-xl bg-background border-border/70 text-sm focus-visible:ring-primary/20"
+                  className="h-11 rounded-lg bg-background border-border/70 text-sm focus-visible:ring-primary/20"
                 />
               </div>
 
@@ -280,13 +280,13 @@ function AddressesPage() {
                   placeholder="Ex: Apto 402, Bloco B"
                   value={formData.complement}
                   onChange={(e) => setFormData({ ...formData, complement: e.target.value })}
-                  className="h-11 rounded-xl bg-background border-border/70 text-sm focus-visible:ring-primary/20"
+                  className="h-11 rounded-lg bg-background border-border/70 text-sm focus-visible:ring-primary/20"
                 />
               </div>
             </div>
 
             {/* Linha 3: Bairro, Cidade, Estado */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-foreground">
                   Bairro *
@@ -296,7 +296,7 @@ function AddressesPage() {
                   placeholder="Ex: Centro"
                   value={formData.neighborhood}
                   onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                  className="h-11 rounded-xl bg-background border-border/70 text-sm focus-visible:ring-primary/20"
+                  className="h-11 rounded-lg bg-background border-border/70 text-sm focus-visible:ring-primary/20"
                 />
               </div>
 
@@ -309,7 +309,7 @@ function AddressesPage() {
                   placeholder="Ex: Chapecó"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="h-11 rounded-xl bg-background border-border/70 text-sm focus-visible:ring-primary/20"
+                  className="h-11 rounded-lg bg-background border-border/70 text-sm focus-visible:ring-primary/20"
                 />
               </div>
 
@@ -323,13 +323,13 @@ function AddressesPage() {
                   placeholder="SC"
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
-                  className="h-11 rounded-xl bg-background border-border/70 text-sm uppercase font-mono focus-visible:ring-primary/20"
+                  className="h-11 rounded-lg bg-background border-border/70 text-sm uppercase font-mono focus-visible:ring-primary/20"
                 />
               </div>
             </div>
 
             {/* Linha 4: Especificações de Condomínio & Apartamento (V139 Waesy Go) */}
-            <div className="p-3.5 rounded-xl bg-muted/30 border border-border/40 space-y-3">
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Building className="size-4 text-primary" />
@@ -351,7 +351,7 @@ function AddressesPage() {
                       placeholder="Ex: Bloco 2, Torre Norte"
                       value={formData.block_tower}
                       onChange={(e) => setFormData({ ...formData, block_tower: e.target.value })}
-                      className="h-10 rounded-xl bg-background text-xs"
+                      className="h-10 rounded-lg bg-background text-xs"
                     />
                   </div>
                   <div className="space-y-1">
@@ -360,7 +360,7 @@ function AddressesPage() {
                       placeholder="Ex: Interfone 402"
                       value={formData.intercom_code}
                       onChange={(e) => setFormData({ ...formData, intercom_code: e.target.value })}
-                      className="h-10 rounded-xl bg-background text-xs"
+                      className="h-10 rounded-lg bg-background text-xs"
                     />
                   </div>
                 </div>
@@ -373,14 +373,14 @@ function AddressesPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsAdding(false)}
-                className="rounded-xl h-11 px-4 text-xs font-semibold cursor-pointer"
+                className="rounded-lg h-11 px-4 text-xs font-semibold cursor-pointer"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl h-11 px-6 text-xs font-bold bg-primary text-primary-foreground gap-1.5 cursor-pointer"
+                className="rounded-lg h-11 px-6 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -408,7 +408,7 @@ function AddressesPage() {
             action={
               <Button
                 onClick={() => setIsAdding(true)}
-                className="rounded-xl h-10 px-5 text-xs font-bold gap-1.5"
+                className="rounded-lg h-10 px-5 text-xs font-bold gap-2"
               >
                 <Plus className="size-3.5" />
                 Cadastrar
@@ -424,14 +424,14 @@ function AddressesPage() {
               <div
                 key={addr.id}
                 className={cn(
-                  "p-3.5 flex items-start justify-between gap-3 transition-colors",
+                  "p-4 flex items-start justify-between gap-3 transition-colors",
                   addr.is_default && "bg-primary/5"
                 )}
               >
                 <div className="flex items-start gap-3 min-w-0 flex-1">
                   <div
                     className={cn(
-                      "size-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
+                      "size-9 rounded-lg flex items-center justify-center shrink-0 mt-1",
                       addr.is_default
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground"
@@ -439,18 +439,18 @@ function AddressesPage() {
                   >
                     <MapPin className="size-4" />
                   </div>
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-xs font-bold text-foreground truncate">
                         {addr.label || "Endereço"} • {addr.street}, {addr.number}
                       </p>
                       {addr.is_default && (
-                        <Badge variant="success" className="text-[9px] px-1.5 py-0 h-4 font-bold">
+                        <Badge variant="success" className="text-[9px] px-2 py-0 h-4 font-bold">
                           Padrão
                         </Badge>
                       )}
                       {addr.is_apartment && (
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 font-bold text-primary border-primary/30">
+                        <Badge variant="outline" className="text-[9px] px-2 py-0 h-4 font-bold text-primary border-primary/30">
                           Apto/Condomínio
                         </Badge>
                       )}
@@ -470,7 +470,7 @@ function AddressesPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-0.5 shrink-0 pt-0.5">
+                <div className="flex items-center gap-1 shrink-0 pt-1">
                   {!addr.is_default && (
                     <Button
                       variant="ghost"
@@ -512,7 +512,7 @@ function AddressesPage() {
               <div
                 key={addr.id}
                 className={cn(
-                  "bg-card rounded-2xl border p-5 flex flex-col justify-between gap-4 transition-all",
+                  "bg-card rounded-lg border p-5 flex flex-col justify-between gap-4 transition-all",
                   addr.is_default
                     ? "border-primary/50 ring-1 ring-primary/20 shadow-2xs"
                     : "border-border/60 hover:border-border"
@@ -520,10 +520,10 @@ function AddressesPage() {
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-2.5">
+                    <div className="flex items-start gap-3">
                       <div
                         className={cn(
-                          "size-9 rounded-xl flex items-center justify-center shrink-0",
+                          "size-9 rounded-lg flex items-center justify-center shrink-0",
                           addr.is_default
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground"
@@ -542,14 +542,14 @@ function AddressesPage() {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-foreground font-medium truncate mt-0.5">
+                        <p className="text-xs text-foreground font-medium truncate mt-1">
                           {addr.street}, {addr.number}
                         </p>
                         {addr.complement && (
                           <p className="text-xs text-muted-foreground truncate">{addr.complement}</p>
                         )}
                         {addr.block_tower && (
-                          <p className="text-[11px] text-primary font-medium truncate mt-0.5">
+                          <p className="text-[11px] text-primary font-medium truncate mt-1">
                             Bloco: {addr.block_tower} {addr.intercom_code ? `• Interfone: ${addr.intercom_code}` : ""}
                           </p>
                         )}
@@ -563,7 +563,7 @@ function AddressesPage() {
                     )}
                   </div>
 
-                  <div className="text-xs text-muted-foreground space-y-0.5 pl-11.5">
+                  <div className="text-xs text-muted-foreground space-y-1 pl-11.5">
                     <p>{addr.neighborhood}</p>
                     <p>{addr.city} - {addr.state}</p>
                     <p className="font-mono text-[11px] text-muted-foreground/80">CEP: {addr.zipcode}</p>
@@ -578,7 +578,7 @@ function AddressesPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleSetDefault(addr.id)}
-                        className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground gap-1.5 cursor-pointer -ml-2"
+                        className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground gap-2 cursor-pointer -ml-2"
                       >
                         <Star className="size-3.5" />
                         <span>Tornar Padrão</span>

@@ -297,10 +297,10 @@ export default function WorkspaceMarketingEncartesPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <Button
             onClick={handleOpenCreate}
-            className="h-10 px-4 rounded-xl font-bold text-xs gap-2 cursor-pointer shadow-sm bg-red-600 hover:bg-red-700 text-white"
+            className="h-10 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer shadow-sm bg-red-600 hover:bg-red-700 text-white"
           >
             <Plus className="size-4" />
             <span>Novo Encarte da Semana</span>
@@ -310,7 +310,7 @@ export default function WorkspaceMarketingEncartesPage() {
 
       {/* ─── Cards de Estatísticas / Métricas de Vigência ─────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-semibold">
             <span>Encartes Ativos</span>
             <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -319,7 +319,7 @@ export default function WorkspaceMarketingEncartesPage() {
           <p className="text-xs text-muted-foreground">Exibidos na vitrine agora</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-semibold">
             <span>Agendados</span>
             <Clock className="size-3.5 text-blue-500" />
@@ -328,7 +328,7 @@ export default function WorkspaceMarketingEncartesPage() {
           <p className="text-xs text-muted-foreground">Iniciam em datas futuras</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-semibold">
             <span>Expirados</span>
             <Clock className="size-3.5 text-muted-foreground" />
@@ -337,7 +337,7 @@ export default function WorkspaceMarketingEncartesPage() {
           <p className="text-xs text-muted-foreground">Ocultos automaticamente</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-1">
+        <div className="p-4 rounded-lg bg-card border border-border/60 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-semibold">
             <span>Interações</span>
             <ShoppingBag className="size-3.5 text-amber-500" />
@@ -351,25 +351,25 @@ export default function WorkspaceMarketingEncartesPage() {
 
       {/* ─── Navegação por Abas (Ativos, Agendados, Expirados, Todos) ──── */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-4">
-        <TabsList className="bg-muted/60 p-1 rounded-xl h-10 border border-border/40">
-          <TabsTrigger value="ativos" className="rounded-lg text-xs font-bold gap-1.5 cursor-pointer">
+        <TabsList className="bg-muted/60 p-1 rounded-lg h-10 border border-border/40">
+          <TabsTrigger value="ativos" className="rounded-lg text-xs font-bold gap-2 cursor-pointer">
             <span className="size-2 rounded-full bg-emerald-500" />
             <span>Ativos ({activeCount})</span>
           </TabsTrigger>
-          <TabsTrigger value="agendados" className="rounded-lg text-xs font-bold gap-1.5 cursor-pointer">
+          <TabsTrigger value="agendados" className="rounded-lg text-xs font-bold gap-2 cursor-pointer">
             <span>Agendados ({scheduledCount})</span>
           </TabsTrigger>
-          <TabsTrigger value="expirados" className="rounded-lg text-xs font-bold gap-1.5 cursor-pointer">
+          <TabsTrigger value="expirados" className="rounded-lg text-xs font-bold gap-2 cursor-pointer">
             <span>Expirados ({expiredCount})</span>
           </TabsTrigger>
-          <TabsTrigger value="todos" className="rounded-lg text-xs font-bold gap-1.5 cursor-pointer">
+          <TabsTrigger value="todos" className="rounded-lg text-xs font-bold gap-2 cursor-pointer">
             <span>Todos ({flyers.length})</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4 m-0">
           {filteredFlyers.length === 0 ? (
-            <div className="py-16 text-center border border-dashed border-border/80 rounded-2xl p-8 space-y-3 bg-muted/20">
+            <div className="py-16 text-center border border-dashed border-border/80 rounded-lg p-8 space-y-3 bg-muted/20">
               <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
                 <Flame className="size-6" />
               </div>
@@ -382,7 +382,7 @@ export default function WorkspaceMarketingEncartesPage() {
               <Button
                 onClick={handleOpenCreate}
                 variant="outline"
-                className="h-9 px-4 rounded-xl text-xs font-bold gap-1.5 cursor-pointer mt-2"
+                className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer mt-2"
               >
                 <Plus className="size-4" />
                 <span>Criar Primeiro Encarte</span>
@@ -398,33 +398,33 @@ export default function WorkspaceMarketingEncartesPage() {
                   <div
                     key={flyer.id}
                     className={cn(
-                      "rounded-2xl border overflow-hidden flex flex-col justify-between transition-all bg-card shadow-xs",
+                      "rounded-lg border overflow-hidden flex flex-col justify-between transition-all bg-card shadow-xs",
                       isRetro ? "border-amber-400/80 bg-amber-50/20 dark:bg-amber-950/10" : "border-border/60"
                     )}
                   >
                     {/* Header do Card com Status & Badges */}
-                    <div className="p-3.5 pb-2 flex items-center justify-between gap-2 border-b border-border/40">
-                      <div className="flex items-center gap-1.5">
+                    <div className="p-4 pb-2 flex items-center justify-between gap-2 border-b border-border/40">
+                      <div className="flex items-center gap-2">
                         {flyer.status_badge === "active" && (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1">
+                          <span className="px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1">
                             <span className="size-1.5 rounded-full bg-emerald-500" />
                             <span>Ativo</span>
                           </span>
                         )}
                         {flyer.status_badge === "scheduled" && (
-                          <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
+                          <span className="px-2 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
                             Agendado
                           </span>
                         )}
                         {flyer.status_badge === "expired" && (
-                          <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-500 text-xs font-bold">
+                          <span className="px-2 py-1 rounded-full bg-zinc-500/10 text-zinc-500 text-xs font-bold">
                             Expirado
                           </span>
                         )}
 
                         <span
                           className={cn(
-                            "px-2 py-0.5 rounded text-xs font-bold",
+                            "px-2 py-1 rounded text-xs font-bold",
                             isRetro
                               ? "bg-amber-300 text-red-950 font-black"
                               : "bg-muted text-muted-foreground"
@@ -441,8 +441,8 @@ export default function WorkspaceMarketingEncartesPage() {
                     </div>
 
                     {/* Corpo com Miniatura & Informações */}
-                    <div className="p-3.5 flex gap-3.5 items-start">
-                      <div className="relative w-20 h-28 rounded-xl overflow-hidden bg-muted/40 border border-border/60 shrink-0 group">
+                    <div className="p-4 flex gap-4 items-start">
+                      <div className="relative w-20 h-28 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shrink-0 group">
                         <img
                           src={flyer.image_url}
                           alt={flyer.title}
@@ -458,7 +458,7 @@ export default function WorkspaceMarketingEncartesPage() {
                         </button>
                       </div>
 
-                      <div className="min-w-0 flex-1 space-y-1.5">
+                      <div className="min-w-0 flex-1 space-y-2">
                         <h3 className="text-sm font-bold text-foreground line-clamp-1 leading-snug">
                           {flyer.title}
                         </h3>
@@ -466,7 +466,7 @@ export default function WorkspaceMarketingEncartesPage() {
                           <p className="text-xs text-muted-foreground line-clamp-1">{flyer.subtitle}</p>
                         )}
 
-                        <div className="text-xs text-muted-foreground space-y-0.5 pt-1">
+                        <div className="text-xs text-muted-foreground space-y-1 pt-1">
                           <div className="flex items-center gap-1">
                             <Clock className="size-3 text-primary shrink-0" />
                             <span className="font-semibold text-foreground">
@@ -485,12 +485,12 @@ export default function WorkspaceMarketingEncartesPage() {
 
                     {/* Rodapé com Ações Diretas */}
                     <div className="p-3 bg-muted/20 border-t border-border/40 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => setPreviewFlyer(flyer)}
-                          className="h-8 px-2.5 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
+                          className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
                         >
                           <Eye className="size-3.5" />
                           <span>Ver</span>
@@ -500,7 +500,7 @@ export default function WorkspaceMarketingEncartesPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleOpenEdit(flyer)}
-                          className="h-8 px-2.5 rounded-lg text-xs font-semibold gap-1 cursor-pointer border-border/60"
+                          className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer border-border/60"
                         >
                           <Edit3 className="size-3.5" />
                           <span>Editar</span>
@@ -540,7 +540,7 @@ export default function WorkspaceMarketingEncartesPage() {
 
       {/* ─── Modal Drawer de Criação & Edição de Encarte ──────────────── */}
       <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
-        <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto sm:rounded-2xl p-5 sm:p-6 space-y-4">
+        <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto sm:rounded-lg p-5 sm:p-6 space-y-4">
           <DialogHeader className="pb-2 border-b border-border/60">
             <DialogTitle className="text-lg font-black flex items-center gap-2">
               <Flame className="size-5 text-red-600" />
@@ -553,7 +553,7 @@ export default function WorkspaceMarketingEncartesPage() {
 
           <form onSubmit={handleSubmitFlyer} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5 sm:col-span-2">
+              <div className="space-y-2 sm:col-span-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Título do Encarte *
                 </label>
@@ -562,11 +562,11 @@ export default function WorkspaceMarketingEncartesPage() {
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="Ex: Quarta e Quinta do Hortifrúti, Encarte de Carnes..."
                   required
-                  className="h-10 rounded-xl text-xs font-medium"
+                  className="h-10 rounded-lg text-xs font-medium"
                 />
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
+              <div className="space-y-2 sm:col-span-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Subtítulo / Descrição Rápida (Opcional)
                 </label>
@@ -574,33 +574,33 @@ export default function WorkspaceMarketingEncartesPage() {
                   value={formSubtitle}
                   onChange={(e) => setFormSubtitle(e.target.value)}
                   placeholder="Ex: Ofertas válidas enquanto durarem os estoques em toda a rede."
-                  className="h-10 rounded-xl text-xs"
+                  className="h-10 rounded-lg text-xs"
                 />
               </div>
 
               {/* Seletor de Tema Visual */}
-              <div className="space-y-1.5 sm:col-span-2">
+              <div className="space-y-2 sm:col-span-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Estilo Visual do Encarte
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div
                     onClick={() => setFormTheme("retro_mercado")}
                     className={cn(
-                      "p-3 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3",
+                      "p-3 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-3",
                       formTheme === "retro_mercado"
                         ? "border-red-600 bg-amber-100/60 dark:bg-amber-950/30 text-red-950 dark:text-amber-100"
                         : "border-border/60 hover:border-foreground/30"
                     )}
                   >
-                    <div className="size-4 rounded-full border-2 border-red-600 flex items-center justify-center mt-0.5 shrink-0">
+                    <div className="size-4 rounded-full border-2 border-red-600 flex items-center justify-center mt-1 shrink-0">
                       {formTheme === "retro_mercado" && <div className="size-2 rounded-full bg-red-600" />}
                     </div>
                     <div>
                       <h4 className="text-xs font-black uppercase tracking-tight">
                         Retrô Mercadista (Cartazista Antigo)
                       </h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Amarelo vibrante com tipografia e bordas de pincel vermelho das mercearias e feiras clássicas.
                       </p>
                     </div>
@@ -609,18 +609,18 @@ export default function WorkspaceMarketingEncartesPage() {
                   <div
                     onClick={() => setFormTheme("clean")}
                     className={cn(
-                      "p-3 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3",
+                      "p-3 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-3",
                       formTheme === "clean"
                         ? "border-primary bg-primary/5 text-foreground"
                         : "border-border/60 hover:border-foreground/30"
                     )}
                   >
-                    <div className="size-4 rounded-full border-2 border-primary flex items-center justify-center mt-0.5 shrink-0">
+                    <div className="size-4 rounded-full border-2 border-primary flex items-center justify-center mt-1 shrink-0">
                       {formTheme === "clean" && <div className="size-2 rounded-full bg-primary" />}
                     </div>
                     <div>
                       <h4 className="text-xs font-bold">Clean e Editorial</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Bordas finas, superfícies neutras, minimalismo padrão Apple HIG e alta nitidez.
                       </p>
                     </div>
@@ -629,8 +629,8 @@ export default function WorkspaceMarketingEncartesPage() {
               </div>
 
               {/* Período de Validade com Expiração Automática */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Calendar className="size-3.5 text-primary" />
                   <span>Válido a partir de *</span>
                 </label>
@@ -639,12 +639,12 @@ export default function WorkspaceMarketingEncartesPage() {
                   value={formValidFrom}
                   onChange={(e) => setFormValidFrom(e.target.value)}
                   required
-                  className="h-10 rounded-xl text-xs"
+                  className="h-10 rounded-lg text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Clock className="size-3.5 text-red-500" />
                   <span>Válido até (Expiração Automática)</span>
                 </label>
@@ -652,7 +652,7 @@ export default function WorkspaceMarketingEncartesPage() {
                   type="datetime-local"
                   value={formValidUntil}
                   onChange={(e) => setFormValidUntil(e.target.value)}
-                  className="h-10 rounded-xl text-xs"
+                  className="h-10 rounded-lg text-xs"
                 />
                 <p className="text-xs text-muted-foreground">
                   Após esta data, o encarte sairá do ar automaticamente da vitrine pública.
@@ -683,12 +683,12 @@ export default function WorkspaceMarketingEncartesPage() {
                       value={formImageUrl}
                       onChange={(e) => setFormImageUrl(e.target.value)}
                       placeholder="https://exemplo.com/encarte.jpg"
-                      className="h-9 rounded-xl text-xs"
+                      className="h-9 rounded-lg text-xs"
                     />
                   </div>
 
                   {/* Prévia da Imagem */}
-                  <div className="flex items-center justify-center p-2 rounded-xl bg-muted/40 border border-border/60 min-h-36">
+                  <div className="flex items-center justify-center p-2 rounded-lg bg-muted/40 border border-border/60 min-h-36">
                     {formImageUrl ? (
                       <img
                         src={formImageUrl}
@@ -710,7 +710,7 @@ export default function WorkspaceMarketingEncartesPage() {
                 <div className="space-y-3 sm:col-span-2 border-t border-border/60 pt-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                      <h3 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-2">
                         <Tag className="size-4 text-emerald-500" />
                         <span>Vincular Produtos com Botão Redondo (Estilo Instagram)</span>
                       </h3>
@@ -718,20 +718,20 @@ export default function WorkspaceMarketingEncartesPage() {
                         Clique diretamente sobre a imagem do encarte abaixo onde o produto aparece para adicionar o botão de compra.
                       </p>
                     </div>
-                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-md">
                       {formHotspots.length} vinculados
                     </span>
                   </div>
 
                   {/* Canvas Interativo do Encarte */}
-                  <div className="relative inline-block mx-auto max-w-full overflow-hidden rounded-2xl border border-border/80 bg-black/90 p-2 sm:p-4 select-none cursor-crosshair">
+                  <div className="relative inline-block mx-auto max-w-full overflow-hidden rounded-lg border border-border/80 bg-black/90 p-2 sm:p-4 select-none cursor-crosshair">
                     <div className="relative inline-block">
                       <img
                         ref={imageCanvasRef}
                         src={formImageUrl}
                         alt="Canvas de marcação de hotspots"
                         onClick={handleImageClick}
-                        className="max-h-[500px] w-auto object-contain rounded-xl select-none"
+                        className="max-h-[500px] w-auto object-contain rounded-lg select-none"
                       />
 
                       {/* Pins já posicionados */}
@@ -749,7 +749,7 @@ export default function WorkspaceMarketingEncartesPage() {
                           </div>
 
                           {/* Tooltip do produto no hover com botão de excluir */}
-                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:flex items-center gap-1.5 px-2 py-1 bg-black/90 text-white text-xs font-bold rounded shadow-xs whitespace-nowrap z-30">
+                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:flex items-center gap-2 px-2 py-1 bg-black/90 text-white text-xs font-bold rounded shadow-xs whitespace-nowrap z-30">
                             <span>{spot.custom_label || spot.product?.title || "Produto"}</span>
                             <button
                               type="button"
@@ -777,7 +777,7 @@ export default function WorkspaceMarketingEncartesPage() {
                         {formHotspots.map((h, index) => (
                           <div
                             key={h.id}
-                            className="flex items-center justify-between p-2 rounded-xl bg-muted/40 border border-border/60 text-xs"
+                            className="flex items-center justify-between p-2 rounded-lg bg-muted/40 border border-border/60 text-xs"
                           >
                             <div className="flex items-center gap-2 min-w-0">
                               <span className="size-5 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
@@ -817,7 +817,7 @@ export default function WorkspaceMarketingEncartesPage() {
                 type="button"
                 variant="ghost"
                 onClick={() => setIsEditorOpen(false)}
-                className="h-10 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+                className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
               >
                 Cancelar
               </Button>
@@ -825,7 +825,7 @@ export default function WorkspaceMarketingEncartesPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-10 px-5 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                className="h-10 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-sm"
               >
                 {isSubmitting ? (
                   <span>Salvando...</span>
@@ -843,7 +843,7 @@ export default function WorkspaceMarketingEncartesPage() {
 
       {/* ─── Modal Seletor de Produto do Catálogo para o Ponto Marcado ─── */}
       <Dialog open={isProductPickerOpen} onOpenChange={setIsProductPickerOpen}>
-        <DialogContent className="max-w-md sm:rounded-2xl p-5 space-y-3">
+        <DialogContent className="max-w-md sm:rounded-lg p-5 space-y-3">
           <DialogHeader className="pb-1">
             <DialogTitle className="text-sm font-bold flex items-center gap-2">
               <ShoppingBag className="size-4 text-primary" />
@@ -861,12 +861,12 @@ export default function WorkspaceMarketingEncartesPage() {
               value={productSearch}
               onChange={(e) => setProductSearch(e.target.value)}
               placeholder="Buscar pelo nome do produto..."
-              className="h-9 pl-8 rounded-xl text-xs"
+              className="h-9 pl-8 rounded-lg text-xs"
             />
           </div>
 
           {/* Lista com Rolagem dos Produtos Cadastrados */}
-          <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
+          <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
             {filteredCatalog.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
                 Nenhum produto encontrado. Cadastre produtos no seu catálogo para vinculá-los.
@@ -876,9 +876,9 @@ export default function WorkspaceMarketingEncartesPage() {
                 <div
                   key={prod.id}
                   onClick={() => handleSelectProductForPin(prod)}
-                  className="p-2 rounded-xl border border-border/60 hover:border-primary hover:bg-primary/5 cursor-pointer flex items-center justify-between gap-3 transition-colors"
+                  className="p-2 rounded-lg border border-border/60 hover:border-primary hover:bg-primary/5 cursor-pointer flex items-center justify-between gap-3 transition-colors"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     {Array.isArray(prod.images) && prod.images[0] ? (
                       <img
                         src={prod.images[0]}
@@ -915,7 +915,7 @@ export default function WorkspaceMarketingEncartesPage() {
                 setIsProductPickerOpen(false);
                 setPendingPinCoords(null);
               }}
-              className="h-8 rounded-xl text-xs"
+              className="h-8 rounded-lg text-xs"
             >
               Cancelar
             </Button>

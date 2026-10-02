@@ -278,7 +278,7 @@ function KDSDashboard() {
  <div className="flex items-center gap-3">
  <NativeBackButton fallbackHref="/workspace/pdv" />
 
- <div className="size-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+ <div className="size-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
  <ChefHat className="size-6" />
  </div>
  <div>
@@ -288,7 +288,7 @@ function KDSDashboard() {
  Estação de Produção
  </Badge>
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  {activeOrders.length} pedido{activeOrders.length !== 1 ? "s" : ""} ativos • Atualiza a cada 3s
  </p>
  </div>
@@ -300,7 +300,7 @@ function KDSDashboard() {
  variant="outline"
  size="sm"
  onClick={() => setItemsSummaryOpen(true)}
- className="gap-1.5 text-xs font-bold rounded-xl min-h-[44px] px-3.5"
+ className="gap-2 text-xs font-bold rounded-lg min-h-11 px-4"
  >
  <Layers className="size-3.5 text-primary" />
  <span>Lote ({itemsSummary.reduce((acc, i) => acc + i.count, 0)})</span>
@@ -309,7 +309,7 @@ function KDSDashboard() {
  <Button
  variant="outline"
  size="sm"
- className="gap-1.5 text-xs font-bold rounded-xl min-h-[44px] px-3.5"
+ className="gap-2 text-xs font-bold rounded-lg min-h-11 px-4"
  onClick={() => setSoundEnabled(!soundEnabled)}
  title={soundEnabled ? "Desativar som (S)" : "Ativar som (S)"}
  >
@@ -320,7 +320,7 @@ function KDSDashboard() {
  <Button
  variant="outline"
  size="sm"
- className="gap-1.5 text-xs font-bold rounded-xl min-h-[44px] px-3.5"
+ className="gap-2 text-xs font-bold rounded-lg min-h-11 px-4"
  onClick={toggleFullscreen}
  title="Tela cheia (F)"
  >
@@ -333,7 +333,7 @@ function KDSDashboard() {
  {/* Linha 2: Filtros de Origem + Estação */}
  <div className="flex items-center gap-3 flex-wrap pb-1">
  {/* Filtro por Origem */}
- <div className="flex items-center bg-muted/60 p-0.5 rounded-xl border border-border/60 text-xs font-semibold">
+ <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/60 text-xs font-semibold">
  {(["all", "table", "delivery", "counter"] as const).map((f) => {
  const labels: Record<typeof f, string> = {
  all: `Todos (${activeOrders.length})`,
@@ -347,7 +347,7 @@ function KDSDashboard() {
  type="button"
  onClick={() => setOriginFilter(f)}
  className={cn(
- "px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
+ "px-3 py-1 rounded-lg transition-colors cursor-pointer",
  originFilter === f
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -377,7 +377,7 @@ function KDSDashboard() {
  type="button"
  onClick={() => setStationFilter(station.id)}
  className={cn(
- "flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-bold transition-all cursor-pointer",
+ "flex items-center gap-2 px-3 py-1 rounded-lg border text-xs font-bold transition-all cursor-pointer",
  isActive
  ? "bg-background border-border shadow-2xs text-foreground"
  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60",
@@ -471,7 +471,7 @@ function KDSDashboard() {
  return (
  <div
  key={station.id}
- className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/40 border border-border/60"
+ className="flex items-center gap-2 p-3 rounded-lg bg-muted/40 border border-border/60"
  >
  <StationIcon className={cn("size-4 shrink-0", station.color)} />
  <span className="text-xs font-bold text-foreground">{station.label}</span>
@@ -494,11 +494,11 @@ function KDSDashboard() {
  return (
  <div
  key={idx}
- className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/70 gap-2"
+ className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/70 gap-2"
  >
  {StIcon && <StIcon className={cn("size-4 shrink-0", station?.color)} />}
  <span className="font-bold text-sm text-foreground flex-1 min-w-0 truncate">{item.title}</span>
- <Badge variant="default" className="text-sm font-mono font-black px-2.5 py-0.5 shrink-0">
+ <Badge variant="default" className="text-sm font-mono font-black px-3 py-1 shrink-0">
  {item.count}x
  </Badge>
  </div>
@@ -554,7 +554,7 @@ function KDSDashboard() {
  const stationInfo = STATIONS.find((s) => s.id === station);
 
  return (
- <div key={i} className="space-y-0.5">
+ <div key={i} className="space-y-1">
  <div className="flex justify-between font-black text-sm">
  <span>{it.qty ?? it.quantity ?? 1}x {it.product_title || it.product_name}</span>
  {stationInfo && stationInfo.id !== "all" && (
@@ -569,7 +569,7 @@ function KDSDashboard() {
  </p>
  ))}
  {it.notes && (
- <p className="text-xs font-black bg-neutral-200 px-1 py-0.5 mt-0.5 uppercase">
+ <p className="text-xs font-black bg-neutral-200 px-1 py-1 mt-1 uppercase">
  * OBS: {it.notes}
  </p>
  )}
@@ -589,7 +589,7 @@ function KDSDashboard() {
  <Button variant="ghost" size="sm" onClick={() => setOrderToPrint(null)} className="text-xs">
  Fechar
  </Button>
- <Button size="sm" onClick={() => window.print()} className="font-bold text-xs gap-1.5">
+ <Button size="sm" onClick={() => window.print()} className="font-bold text-xs gap-2">
  <Printer className="size-3.5" />
  Imprimir
  </Button>
@@ -618,12 +618,12 @@ function KitchenColumn({
  stationFilter,
 }: any) {
  return (
- <div className="flex flex-col w-[380px] shrink-0 h-full max-h-full rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs">
- <div className={cn("p-3.5 border-b flex items-center justify-between shrink-0 font-bold", headerClass)}>
+ <div className="flex flex-col w-[380px] shrink-0 h-full max-h-full rounded-lg border border-border/80 bg-card overflow-hidden shadow-xs">
+ <div className={cn("p-4 border-b flex items-center justify-between shrink-0 font-bold", headerClass)}>
  <h2 className="text-sm flex items-center gap-2 font-bold">
  <Icon className="size-4" /> {title}
  </h2>
- <Badge variant="secondary" className="text-xs font-mono px-2 py-0.5 font-bold">
+ <Badge variant="secondary" className="text-xs font-mono px-2 py-1 font-bold">
  {count}
  </Badge>
  </div>
@@ -644,8 +644,8 @@ function KitchenColumn({
  />
  ))}
  {orders.length === 0 && (
- <div className="h-40 flex flex-col items-center justify-center text-muted-foreground opacity-50 border border-dashed border-border/60 rounded-xl m-2">
- <AlertCircle className="size-7 mb-1.5" />
+ <div className="h-40 flex flex-col items-center justify-center text-muted-foreground opacity-50 border border-dashed border-border/60 rounded-lg m-2">
+ <AlertCircle className="size-7 mb-2" />
  <p className="text-xs font-medium">Nenhum pedido nesta etapa</p>
  </div>
  )}
@@ -694,7 +694,7 @@ function KitchenTicketCard({
  }[urgency];
 
  return (
- <div className={cn("rounded-xl border bg-card overflow-hidden flex flex-col transition-all shadow-2xs", cardUrgencyClass)}>
+ <div className={cn("rounded-lg border bg-card overflow-hidden flex flex-col transition-all shadow-2xs", cardUrgencyClass)}>
  {/* Topo do Ticket */}
  <div className={cn("p-3 text-white flex justify-between items-center", headerUrgencyClass)}>
  <div className="flex items-center gap-2">
@@ -712,7 +712,7 @@ function KitchenTicketCard({
  type="button"
  onClick={(e) => { e.stopPropagation(); onPrint(); }}
  title="Imprimir comanda térmica"
- className="size-10 sm:size-8 rounded-xl bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors cursor-pointer"
+ className="size-10 sm:size-8 rounded-lg bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors cursor-pointer"
  >
  <Printer className="size-4" />
  </button>
@@ -745,7 +745,7 @@ function KitchenTicketCard({
  </div>
 
  {/* Lista de Itens */}
- <div className="p-3.5 flex-1 space-y-3">
+ <div className="p-4 flex-1 space-y-3">
  <ul className="space-y-3">
  {itemsList.map((item: any, idx: number) => {
  const itemKey = `${order.id}-item-${idx}`;
@@ -768,7 +768,7 @@ function KitchenTicketCard({
  <li
  key={itemKey}
  className={cn(
- "p-2.5 rounded-xl border transition-colors select-none",
+ "p-3 rounded-lg border transition-colors select-none",
  isChecked
  ? "bg-muted/40 border-border/40 opacity-40 line-through"
  : isHighlighted
@@ -776,7 +776,7 @@ function KitchenTicketCard({
  : "bg-muted/15 border-border/70 hover:bg-muted/30",
  )}
  >
- <div className="flex items-start gap-2.5">
+ <div className="flex items-start gap-3">
  <button
  type="button"
  className="p-1 -m-1 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
@@ -791,7 +791,7 @@ function KitchenTicketCard({
  </button>
 
  <div className="min-w-0 flex-1">
- <div className="flex items-baseline gap-1.5">
+ <div className="flex items-baseline gap-2">
  <span className="text-base font-black text-primary font-mono leading-none">
  {item.qty ?? item.quantity ?? 1}x
  </span>
@@ -806,14 +806,14 @@ function KitchenTicketCard({
  </div>
 
  {optionsArray.length > 0 && (
- <div className="mt-1.5 flex flex-wrap gap-1">
+ <div className="mt-2 flex flex-wrap gap-1">
  {optionsArray.map((opt: any, oIdx: number) => {
  const label =
  typeof opt === "string" ? opt : opt?.label || opt?.name || JSON.stringify(opt);
  return (
  <span
  key={oIdx}
- className="text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-md"
+ className="text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-2 py-1 rounded-md"
  >
  + {label}
  </span>
@@ -823,7 +823,7 @@ function KitchenTicketCard({
  )}
 
  {item.notes && (
- <div className="mt-1.5 text-xs font-black text-destructive bg-destructive/10 border border-destructive/20 p-1 rounded-md uppercase">
+ <div className="mt-2 text-xs font-black text-destructive bg-destructive/10 border border-destructive/20 p-1 rounded-md uppercase">
  OBS: {item.notes}
  </div>
  )}
@@ -838,7 +838,7 @@ function KitchenTicketCard({
  {/* Ação de Avanço de Etapa */}
  <div className="p-3 bg-muted/20 border-t border-border/80">
  <Button
- className="w-full font-bold h-12 sm:h-11 text-sm sm:text-xs rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
+ className="w-full font-bold h-12 sm:h-11 text-sm sm:text-xs rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
  onClick={onAction}
  disabled={isPending}
  >

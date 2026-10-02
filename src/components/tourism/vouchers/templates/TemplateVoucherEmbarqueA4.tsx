@@ -119,7 +119,7 @@ export default function TemplateVoucherEmbarqueA4({
             <img
               src={logoUrl}
               alt={agency.name}
-              className="h-10 w-auto max-w-[160px] aspect-[4/1] object-contain"
+              className="h-10 w-auto max-w-40 aspect-[4/1] object-contain"
               width={160}
               height={40}
               crossOrigin="anonymous"
@@ -132,7 +132,7 @@ export default function TemplateVoucherEmbarqueA4({
               {agency.name}
             </div>
           )}
-          <div className="ds-meta text-slate-400 mt-0.5">Guia de Embarque</div>
+          <div className="ds-meta text-slate-400 mt-1">Guia de Embarque</div>
         </div>
         <div className="text-right">
           <div
@@ -142,7 +142,7 @@ export default function TemplateVoucherEmbarqueA4({
             {v.destination ?? "—"}
           </div>
           {v.general_locator && (
-            <div className="ds-meta font-mono mt-0.5 text-slate-500">
+            <div className="ds-meta font-mono mt-1 text-slate-500">
               LOC: <span className="font-bold text-slate-700">{v.general_locator}</span>
             </div>
           )}
@@ -156,7 +156,7 @@ export default function TemplateVoucherEmbarqueA4({
             {v.passengers.map((p: any, i: number) => (
               <div key={i} className="flex flex-col border border-slate-100 rounded-full px-3 py-2">
                 <span
-                  className="font-bold text-[12px] text-slate-800"
+                  className="font-bold text-xs text-slate-800"
                   style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
                 >
                   {p.name}
@@ -173,7 +173,7 @@ export default function TemplateVoucherEmbarqueA4({
       {v.flights && v.flights.length > 0 && (
         <Section title="Voos">
           {v.flights.map((f: any, i: number) => (
-            <div key={i} className="mb-2 bg-slate-50 rounded-2xl px-4 py-3 border border-slate-100">
+            <div key={i} className="mb-2 bg-slate-50 rounded-lg px-4 py-3 border border-slate-100">
               <div className="flex items-center justify-between mb-1">
                 <span
                   className="font-black text-base tracking-tighter"
@@ -181,7 +181,7 @@ export default function TemplateVoucherEmbarqueA4({
                 >
                   {f.origin ?? "—"} → {f.destination ?? "—"}
                 </span>
-                <span className="ds-meta font-bold bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">
+                <span className="ds-meta font-bold bg-slate-200 text-slate-600 px-2 py-1 rounded-full">
                   {f.class ?? "Economy"}
                 </span>
               </div>
@@ -203,7 +203,7 @@ export default function TemplateVoucherEmbarqueA4({
       {v.accommodation && v.accommodation.length > 0 && (
         <Section title="Hospedagem">
           {v.accommodation.map((a: any, i: number) => (
-            <div key={i} className="mb-2 bg-slate-50 rounded-2xl px-4 py-3 border border-slate-100">
+            <div key={i} className="mb-2 bg-slate-50 rounded-lg px-4 py-3 border border-slate-100">
               <div
                 className="font-bold text-[13px]"
                 style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
@@ -266,7 +266,7 @@ export default function TemplateVoucherEmbarqueA4({
       {/* GUIA DE DESTINO ADICIONAL */}
       {dest && (
         <Section title="Guia do Destino">
-          <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-50 border border-slate-100 rounded-lg p-4 space-y-3">
             <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2 mb-1">
               <Compass className="h-4 w-4 text-slate-500" style={{ color: brand }} />
               <span className="font-bold text-xs text-slate-800 tracking-wide">
@@ -274,9 +274,9 @@ export default function TemplateVoucherEmbarqueA4({
               </span>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2.5">
-              <div className="flex items-start gap-1.5 ds-meta">
-                <Languages className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
+              <div className="flex items-start gap-2 ds-meta">
+                <Languages className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
                 <div>
                   <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
                     Idioma
@@ -284,8 +284,8 @@ export default function TemplateVoucherEmbarqueA4({
                   <span className="text-slate-800 font-medium">{dest.language || "Português"}</span>
                 </div>
               </div>
-              <div className="flex items-start gap-1.5 ds-meta">
-                <DollarSign className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 ds-meta">
+                <DollarSign className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
                 <div>
                   <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
                     Moeda
@@ -295,8 +295,8 @@ export default function TemplateVoucherEmbarqueA4({
                   </span>
                 </div>
               </div>
-              <div className="flex items-start gap-1.5 ds-meta">
-                <Plug className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 ds-meta">
+                <Plug className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
                 <div>
                   <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
                     Tomada
@@ -306,8 +306,8 @@ export default function TemplateVoucherEmbarqueA4({
                   </span>
                 </div>
               </div>
-              <div className="flex items-start gap-1.5 ds-meta">
-                <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 ds-meta">
+                <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
                 <div>
                   <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
                     Fuso Horário

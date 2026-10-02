@@ -207,7 +207,7 @@ function WorkspaceConcursosPage() {
           <Button
             type="button"
             onClick={openCreateModal}
-            className="h-11 px-5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-primary text-primary-foreground"
+            className="h-11 px-5 rounded-lg text-xs font-semibold gap-2 cursor-pointer bg-primary text-primary-foreground"
           >
             <Plus className="size-4" />
             <span>Novo Sorteio</span>
@@ -217,8 +217,8 @@ function WorkspaceConcursosPage() {
 
       {/* ── Lista de Sorteios ou Empty State ── */}
       {concursos.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-border/80 bg-card p-12 text-center space-y-4">
-          <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-border/80 bg-card p-12 text-center space-y-4">
+          <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Ticket className="size-6" />
           </div>
           <div className="max-w-md mx-auto space-y-1">
@@ -230,7 +230,7 @@ function WorkspaceConcursosPage() {
           <Button
             type="button"
             onClick={openCreateModal}
-            className="h-11 px-6 rounded-xl text-xs font-semibold cursor-pointer"
+            className="h-11 px-6 rounded-lg text-xs font-semibold cursor-pointer"
           >
             Criar Primeiro Sorteio
           </Button>
@@ -251,7 +251,7 @@ function WorkspaceConcursosPage() {
             return (
               <div
                 key={c.id}
-                className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-xs flex flex-col justify-between hover:border-foreground/30 transition-all"
+                className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-xs flex flex-col justify-between hover:border-foreground/30 transition-all"
               >
                 {/* Imagem no Aspecto Exato (16:9) */}
                 {c.image_url ? (
@@ -313,7 +313,7 @@ function WorkspaceConcursosPage() {
                   )}
 
                   <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
-                    <div className="rounded-xl bg-muted/40 p-2.5 border border-border/40">
+                    <div className="rounded-lg bg-muted/40 p-3 border border-border/40">
                       <span className="text-xs text-muted-foreground block uppercase font-mono">
                         Cupons Emitidos
                       </span>
@@ -321,7 +321,7 @@ function WorkspaceConcursosPage() {
                         {c.totalTickets}
                       </span>
                     </div>
-                    <div className="rounded-xl bg-muted/40 p-2.5 border border-border/40">
+                    <div className="rounded-lg bg-muted/40 p-3 border border-border/40">
                       <span className="text-xs text-muted-foreground block uppercase font-mono">
                         Limite por Cliente
                       </span>
@@ -332,7 +332,7 @@ function WorkspaceConcursosPage() {
                   </div>
 
                   {isCompleted && c.winner_ticket_number && (
-                    <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3.5 flex items-center gap-3">
+                    <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-4 flex items-center gap-3">
                       <Trophy className="size-5 text-amber-500 shrink-0" />
                       <div className="text-xs">
                         <span className="font-bold text-foreground block">
@@ -347,13 +347,13 @@ function WorkspaceConcursosPage() {
                 </div>
 
                 <div className="p-4 border-t border-border/40 flex items-center justify-between gap-2 bg-card/40">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => handleOpenParticipants(c.id)}
-                      className="h-9 px-2.5 rounded-lg text-xs gap-1 cursor-pointer"
+                      className="h-9 px-3 rounded-lg text-xs gap-1 cursor-pointer"
                     >
                       <Users className="size-3.5" />
                       <span>Participantes ({c.totalTickets})</span>
@@ -365,7 +365,7 @@ function WorkspaceConcursosPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => openEditModal(c)}
-                        className="h-9 px-2.5 rounded-lg text-xs gap-1 cursor-pointer"
+                        className="h-9 px-3 rounded-lg text-xs gap-1 cursor-pointer"
                       >
                         <Pencil className="size-3.5" />
                         <span>Editar</span>
@@ -379,7 +379,7 @@ function WorkspaceConcursosPage() {
                       variant="outline"
                       disabled={drawingId === c.id || c.totalTickets === 0}
                       onClick={() => handleDraw(c.id)}
-                      className="h-10 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+                      className="h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
                     >
                       {drawingId === c.id ? (
                         <Loader2 className="size-3.5 animate-spin" />
@@ -410,7 +410,7 @@ function WorkspaceConcursosPage() {
               type="button"
               variant="outline"
               onClick={() => setIsSheetOpen(false)}
-              className="h-11 px-5 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 px-5 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
@@ -418,7 +418,7 @@ function WorkspaceConcursosPage() {
               type="submit"
               form="sorteio-form"
               disabled={isSubmitting}
-              className="h-11 px-6 rounded-xl text-xs font-semibold gap-1.5 bg-primary text-primary-foreground cursor-pointer"
+              className="h-11 px-6 rounded-lg text-xs font-semibold gap-2 bg-primary text-primary-foreground cursor-pointer"
             >
               {isSubmitting && <Loader2 className="size-4 animate-spin" />}
               <span>{editingConcurso ? "Salvar Alterações" : "Publicar Sorteio"}</span>
@@ -443,42 +443,42 @@ function WorkspaceConcursosPage() {
           </div>
 
           {/* 2. TÍTULO DO PRÊMIO COM PLACEHOLDER DO NICHO */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold">Título do Prêmio *</Label>
             <Input
               placeholder={prizePlaceholder}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="h-11 rounded-xl text-sm"
+              className="h-11 rounded-lg text-sm"
               required
             />
           </div>
 
           {/* 3. DESCRIÇÃO */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold">Descrição do Prêmio</Label>
             <Textarea
               placeholder="Descreva os itens inclusos, como retirar na loja e condições para o vencedor..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="rounded-xl text-sm min-h-[90px] leading-relaxed"
+              className="rounded-lg text-sm min-h-[90px] leading-relaxed"
             />
           </div>
 
           {/* 4. DATA & LIMITE (DUAS COLUNAS AMPLAS NO DESKTOP, FLUIDO NO MOBILE) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Data & Horário do Sorteio *</Label>
               <Input
                 type="datetime-local"
                 value={drawDate}
                 onChange={(e) => setDrawDate(e.target.value)}
-                className="h-11 rounded-xl text-sm font-mono"
+                className="h-11 rounded-lg text-sm font-mono"
                 required
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold">Máximo de Cupons por Cliente</Label>
               <Input
                 type="number"
@@ -486,14 +486,14 @@ function WorkspaceConcursosPage() {
                 max="50"
                 value={maxTicketsPerUser}
                 onChange={(e) => setMaxTicketsPerUser(e.target.value)}
-                className="h-11 rounded-xl text-sm font-mono"
+                className="h-11 rounded-lg text-sm font-mono"
                 required
               />
             </div>
           </div>
 
           {/* 5. CUSTO EM PONTOS */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold">Pontos de Fidelidade (Opcional)</Label>
             <Input
               type="number"
@@ -501,17 +501,17 @@ function WorkspaceConcursosPage() {
               placeholder="0 (Gratuito para qualquer cliente)"
               value={pointsCost}
               onChange={(e) => setPointsCost(e.target.value)}
-              className="h-11 rounded-xl text-sm font-mono"
+              className="h-11 rounded-lg text-sm font-mono"
             />
           </div>
 
           {/* 6. REGULAMENTO DO SORTEIO */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs font-semibold">Regulamento do Sorteio *</Label>
             <Textarea
               value={termsText}
               onChange={(e) => setTermsText(e.target.value)}
-              className="rounded-xl text-xs min-h-[90px] leading-relaxed"
+              className="rounded-lg text-xs min-h-[90px] leading-relaxed"
               required
             />
           </div>
@@ -532,7 +532,7 @@ function WorkspaceConcursosPage() {
               type="button"
               variant="outline"
               onClick={() => setViewingParticipantsId(null)}
-              className="h-11 px-5 rounded-xl text-xs font-semibold cursor-pointer"
+              className="h-11 px-5 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Fechar
             </Button>
@@ -553,14 +553,14 @@ function WorkspaceConcursosPage() {
             <div className="text-xs font-mono text-muted-foreground pb-1">
               Total de {participantsList.length} cupons emitidos
             </div>
-            <div className="divide-y divide-border/40 border border-border/50 rounded-2xl overflow-hidden bg-card">
+            <div className="divide-y divide-border/40 border border-border/50 rounded-lg overflow-hidden bg-card">
               {participantsList.map((p) => (
                 <div
                   key={p.id}
-                  className="p-3.5 flex items-center justify-between text-xs gap-3"
+                  className="p-4 flex items-center justify-between text-xs gap-3"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-mono font-bold text-foreground bg-muted px-2.5 py-1 rounded-lg">
+                    <span className="font-mono font-bold text-foreground bg-muted px-3 py-1 rounded-lg">
                       #{p.ticketNumber}
                     </span>
                     <div>

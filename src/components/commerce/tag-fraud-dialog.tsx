@@ -63,9 +63,9 @@ export function TagFraudDialog({
 
  return (
  <Dialog open={isOpen} onOpenChange={handleResetAndClose}>
- <DialogContent className="sm:max-w-[460px] sm:rounded-2xl bg-card sm:p-6">
+ <DialogContent className="sm:max-w-[460px] sm:rounded-lg bg-card sm:p-6">
  <DialogHeader className="space-y-2">
- <div className="size-11 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mb-1">
+ <div className="size-11 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mb-1">
  <ShieldAlert className="size-6" />
  </div>
  <DialogTitle className="text-lg font-bold text-foreground">
@@ -86,18 +86,18 @@ export function TagFraudDialog({
  <p className="text-xs text-muted-foreground max-w-xs mx-auto">
  Nossa equipe de auditoria revisará as tags de <strong>{productTitle}</strong>. Obrigado por manter a plataforma segura!
  </p>
- <Button onClick={handleResetAndClose} className="rounded-xl font-bold text-xs">
+ <Button onClick={handleResetAndClose} className="rounded-lg font-bold text-xs">
  Fechar
  </Button>
  </div>
  ) : (
  <form onSubmit={handleSubmit} className="space-y-4 pt-2">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">Motivo da Irregularidade</label>
  <select
  value={reason}
  onChange={(e) => setReason(e.target.value as any)}
- className="w-full h-10 px-3 rounded-xl bg-background text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+ className="w-full h-10 px-3 rounded-lg bg-background text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
  >
  <option value="cobranca_frete_indevida">Cobrança de entrega em produto com tag "Entrega Grátis"</option>
  <option value="atraso_grave">Atraso grave em entrega prometida como "Expressa / Full"</option>
@@ -107,26 +107,26 @@ export function TagFraudDialog({
  </select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">Detalhes do Ocorrido</label>
  <textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
  placeholder="Explique o que aconteceu (ex: o entregador cobrou R$ 10 de taxa mesmo com a tag de frete grátis)..."
  rows={3}
- className="w-full p-3 rounded-xl bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+ className="w-full p-3 rounded-lg bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">WhatsApp ou E-mail (Opcional)</label>
  <input
  type="text"
  value={contact}
  onChange={(e) => setContact(e.target.value)}
  placeholder="Para eventual contato do nosso comitê"
- className="w-full h-10 px-3 rounded-xl bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+ className="w-full h-10 px-3 rounded-lg bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
  />
  </div>
 
@@ -135,14 +135,14 @@ export function TagFraudDialog({
  type="button"
  variant="ghost"
  onClick={handleResetAndClose}
- className="rounded-xl font-bold text-xs"
+ className="rounded-lg font-bold text-xs"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isSubmitting}
- className="rounded-xl font-bold text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
+ className="rounded-lg font-bold text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
  >
  {isSubmitting ? "Enviando..." : "Enviar Denúncia"}
  </Button>

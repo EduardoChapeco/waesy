@@ -180,7 +180,7 @@ function SystemLogsPage() {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="gap-1.5"
+            className="gap-2"
           >
             <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
             Atualizar
@@ -192,7 +192,7 @@ function SystemLogsPage() {
               size="sm"
               onClick={handleClearAll}
               disabled={isClearingAll}
-              className="gap-1.5"
+              className="gap-2"
             >
               <Trash2 className="size-3.5" />
               {isClearingAll ? "Limpando..." : "Limpar Logs"}
@@ -207,7 +207,7 @@ function SystemLogsPage() {
           variant={activeTab === "errors" ? "default" : "outline"}
           size="sm"
           onClick={() => setActiveTab("errors")}
-          className="rounded-xl text-xs font-bold gap-1.5"
+          className="rounded-lg text-xs font-bold gap-2"
         >
           <Server className="size-3.5" />
           <span>Logs de Erro ({logs.length})</span>
@@ -216,7 +216,7 @@ function SystemLogsPage() {
           variant={activeTab === "forensic" ? "default" : "outline"}
           size="sm"
           onClick={() => setActiveTab("forensic")}
-          className="rounded-xl text-xs font-bold gap-1.5"
+          className="rounded-lg text-xs font-bold gap-2"
         >
           <Fingerprint className="size-3.5" />
           <span>Trilha Forense & Governança ({forensicEvents.length})</span>
@@ -234,9 +234,9 @@ function SystemLogsPage() {
                 <p className="text-2xl font-bold tracking-tight text-foreground mt-1">
                   {stats.total}
                 </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Eventos auditados</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Eventos auditados</p>
               </div>
-              <div className="p-2.5 bg-muted rounded-xl text-muted-foreground">
+              <div className="p-3 bg-muted rounded-lg text-muted-foreground">
                 <Server className="size-5" />
               </div>
             </Surface>
@@ -247,9 +247,9 @@ function SystemLogsPage() {
                 <p className={`text-2xl font-bold tracking-tight mt-1 ${stats.critical > 0 ? "text-destructive" : "text-foreground"}`}>
                   {stats.critical}
                 </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Exigem intervenção imediata</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Exigem intervenção imediata</p>
               </div>
-              <div className={`p-2.5 rounded-xl ${stats.critical > 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>
+              <div className={`p-3 rounded-lg ${stats.critical > 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>
                 <AlertTriangle className="size-5" />
               </div>
             </Surface>
@@ -260,9 +260,9 @@ function SystemLogsPage() {
                 <p className="text-2xl font-bold tracking-tight text-foreground mt-1">
                   {stats.errors} <span className="text-xs font-normal text-muted-foreground">/ {stats.warnings} avisos</span>
                 </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Interceptados em BFF</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Interceptados em BFF</p>
               </div>
-              <div className="p-2.5 bg-amber-500/10 text-amber-600 rounded-xl">
+              <div className="p-3 bg-amber-500/10 text-amber-600 rounded-lg">
                 <AlertCircle className="size-5" />
               </div>
             </Surface>
@@ -273,18 +273,18 @@ function SystemLogsPage() {
                 <p className="text-sm font-bold tracking-tight text-foreground mt-1 truncate max-w-[140px]" title={topRouteInfo?.route}>
                   {topRouteInfo?.route || "Nenhuma"}
                 </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   {topRouteInfo ? `${topRouteInfo.count} ocorrências` : "Tudo operando estável"}
                 </p>
               </div>
-              <div className="p-2.5 bg-muted rounded-xl text-muted-foreground">
+              <div className="p-3 bg-muted rounded-lg text-muted-foreground">
                 <Database className="size-5" />
               </div>
             </Surface>
           </div>
 
           {/* Barra de Filtros & Busca de Erros */}
-          <Surface className="p-3.5 flex flex-col md:flex-row items-center justify-between gap-3 border-border/70">
+          <Surface className="p-4 flex flex-col md:flex-row items-center justify-between gap-3 border-border/70">
             <div className="relative w-full md:w-80">
               <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -295,7 +295,7 @@ function SystemLogsPage() {
               />
             </div>
 
-            <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
               <Button
                 variant={severityFilter === "all" ? "default" : "outline"}
                 size="sm"
@@ -332,10 +332,10 @@ function SystemLogsPage() {
           </Surface>
 
           {/* Lista de Logs de Erro */}
-          <div className="grid grid-cols-1 gap-3.5">
+          <div className="grid grid-cols-1 gap-4">
             {filteredLogs.length === 0 ? (
-              <Surface className="p-12 text-center border border-dashed border-border/80 rounded-2xl">
-                <div className="size-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-3.5">
+              <Surface className="p-12 text-center border border-dashed border-border/80 rounded-lg">
+                <div className="size-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
                   <ShieldCheck className="size-6" />
                 </div>
                 <h3 className="font-bold text-base text-foreground">
@@ -403,18 +403,18 @@ function SystemLogsPage() {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                          <p className="text-xs text-muted-foreground font-mono mt-1">
                             {log.created_at ? new Date(log.created_at).toLocaleString("pt-BR") : "Data indisponível"}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCopyLog(log)}
-                          className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground gap-1"
+                          className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-1"
                         >
                           {isCopied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
                           <span className="hidden sm:inline">{isCopied ? "Copiado" : "Copiar"}</span>
@@ -448,7 +448,7 @@ function SystemLogsPage() {
                         </span>
                       )}
                       {log.page_url && (
-                        <div className="text-[11px] text-muted-foreground bg-muted/40 px-2.5 py-1 rounded-md border border-border/40 font-mono truncate max-w-xs">
+                        <div className="text-[11px] text-muted-foreground bg-muted/40 px-3 py-1 rounded-md border border-border/40 font-mono truncate max-w-xs">
                           {log.page_url}
                         </div>
                       )}
@@ -474,13 +474,13 @@ function SystemLogsPage() {
                         </Button>
 
                         {isExpanded && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2.5">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                             {log.payload && (
                               <div className="space-y-1">
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                                   <Terminal className="size-3" /> Payload da Requisição
                                 </span>
-                                <pre className="bg-muted/70 p-2.5 rounded-lg text-[11px] overflow-x-auto no-scrollbar border border-border/50 text-foreground font-mono max-h-48">
+                                <pre className="bg-muted/70 p-3 rounded-lg text-[11px] overflow-x-auto no-scrollbar border border-border/50 text-foreground font-mono max-h-48">
                                   {JSON.stringify(log.payload, null, 2)}
                                 </pre>
                               </div>
@@ -491,7 +491,7 @@ function SystemLogsPage() {
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                                   Stack Trace
                                 </span>
-                                <pre className="bg-muted/70 p-2.5 rounded-lg text-[10px] overflow-x-auto no-scrollbar border border-border/50 text-foreground/75 font-mono max-h-48">
+                                <pre className="bg-muted/70 p-3 rounded-lg text-[10px] overflow-x-auto no-scrollbar border border-border/50 text-foreground/75 font-mono max-h-48">
                                   {log.stack_trace}
                                 </pre>
                               </div>
@@ -511,7 +511,7 @@ function SystemLogsPage() {
       {/* ── ABA 2: TRILHA FORENSE DE GOVERNANÇA ── */}
       {activeTab === "forensic" && (
         <div className="space-y-4">
-          <Surface className="p-3.5 flex flex-col md:flex-row items-center justify-between gap-3 border-border/70">
+          <Surface className="p-4 flex flex-col md:flex-row items-center justify-between gap-3 border-border/70">
             <div className="relative w-full md:w-96">
               <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -526,10 +526,10 @@ function SystemLogsPage() {
             </span>
           </Surface>
 
-          <div className="grid grid-cols-1 gap-3.5">
+          <div className="grid grid-cols-1 gap-4">
             {filteredForensicEvents.length === 0 ? (
-              <Surface className="p-12 text-center border border-dashed border-border/80 rounded-2xl">
-                <div className="size-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-3.5">
+              <Surface className="p-12 text-center border border-dashed border-border/80 rounded-lg">
+                <div className="size-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
                   <Fingerprint className="size-6" />
                 </div>
                 <h3 className="font-bold text-base text-foreground">
@@ -575,7 +575,7 @@ function SystemLogsPage() {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                          <p className="text-xs text-muted-foreground font-mono mt-1">
                             {ev.created_at ? new Date(ev.created_at).toLocaleString("pt-BR") : "—"} · Autor: {ev.actor_name}
                             {ev.ip_address && ` · IP: ${ev.ip_address}`}
                           </p>
@@ -583,7 +583,7 @@ function SystemLogsPage() {
                       </div>
 
                       {ev.checksum_sha256 && (
-                        <div className="text-[10px] font-mono text-muted-foreground bg-muted/40 px-2 py-0.5 rounded border border-border/40 shrink-0 hidden sm:block" title="Checksum SHA-256 de Autenticidade">
+                        <div className="text-[10px] font-mono text-muted-foreground bg-muted/40 px-2 py-1 rounded border border-border/40 shrink-0 hidden sm:block" title="Checksum SHA-256 de Autenticidade">
                           SHA: {ev.checksum_sha256.slice(0, 12)}...
                         </div>
                       )}
@@ -609,7 +609,7 @@ function SystemLogsPage() {
                         </Button>
 
                         {isExpanded && (
-                          <pre className="bg-muted/70 p-2.5 rounded-lg text-[11px] overflow-x-auto no-scrollbar border border-border/50 text-foreground font-mono max-h-48 mt-2">
+                          <pre className="bg-muted/70 p-3 rounded-lg text-[11px] overflow-x-auto no-scrollbar border border-border/50 text-foreground font-mono max-h-48 mt-2">
                             {JSON.stringify(ev.payload_snapshot, null, 2)}
                           </pre>
                         )}

@@ -83,7 +83,7 @@ function FeedPage() {
       <div className="max-w-2xl mx-auto px-0 sm:px-4 py-2 sm:py-5 space-y-3 sm:space-y-4">
         {/* ── 1. Menu de Abas Canônicas (Apple HIG) ───────────────────────── */}
         <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar px-0">
-          <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-2xl border border-border/40 w-full sm:w-auto overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg border border-border/40 w-full sm:w-auto overflow-x-auto no-scrollbar">
             {FEED_TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -91,7 +91,7 @@ function FeedPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`h-9 px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer select-none ${
+                  className={`h-9 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer select-none ${
                     isActive
                       ? "bg-card text-foreground shadow-2xs font-bold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -117,8 +117,8 @@ function FeedPage() {
             <span className="text-xs">Carregando feed...</span>
           </div>
         ) : activeTab === "following" && requiresAuth ? (
-          <div className="p-8 text-center rounded-2xl border border-border/60 bg-card space-y-3">
-            <div className="size-11 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto text-primary">
+          <div className="p-8 text-center rounded-lg border border-border/60 bg-card space-y-3">
+            <div className="size-11 rounded-lg bg-primary/10 flex items-center justify-center mx-auto text-primary">
               <Users className="size-5" />
             </div>
             <div className="space-y-1">
@@ -127,15 +127,15 @@ function FeedPage() {
                 Faça login para ver publicações, fotos e histórias das pessoas e empresas que você escolheu acompanhar.
               </p>
             </div>
-            <Button asChild className="h-11 px-6 rounded-xl font-bold text-xs mt-2">
+            <Button asChild className="h-11 px-6 rounded-lg font-bold text-xs mt-2">
               <Link to="/entrar" search={{ returnUrl: "/feed" }}>
                 Entrar na Conta
               </Link>
             </Button>
           </div>
         ) : activeTab === "following" && emptyFollowing ? (
-          <div className="p-8 text-center rounded-2xl border border-border/60 bg-card space-y-3">
-            <div className="size-11 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+          <div className="p-8 text-center rounded-lg border border-border/60 bg-card space-y-3">
+            <div className="size-11 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
               <Compass className="size-5" />
             </div>
             <div className="space-y-1">
@@ -148,14 +148,14 @@ function FeedPage() {
               type="button"
               variant="outline"
               onClick={() => setActiveTab("explore")}
-              className="h-11 px-6 rounded-xl font-bold text-xs border-border/60 mt-2 cursor-pointer"
+              className="h-11 px-6 rounded-lg font-bold text-xs border-border/60 mt-2 cursor-pointer"
             >
               Explorar Comunidade
             </Button>
           </div>
         ) : items.length === 0 ? (
           <div className="py-12 px-4 text-center space-y-3">
-            <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+            <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
               <MessageSquare className="size-5 stroke-[1.5]" />
             </div>
             <div className="space-y-1">

@@ -70,7 +70,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md w-full p-4 sm:p-6 bg-card border-border/60 rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <DialogContent className="max-w-md w-full p-4 sm:p-6 bg-card border-border/60 rounded-lg overflow-hidden flex flex-col max-h-[90vh]">
         <DialogHeader className="pb-2 border-b border-border/40">
           <DialogTitle className="text-sm font-semibold text-foreground flex items-center justify-between">
             <span className="flex items-center gap-2">
@@ -85,12 +85,12 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
           {/* 9:16 Canvas Card */}
           <div
             ref={cardRef}
-            className="w-[300px] h-[533px] bg-zinc-950 text-white rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden shadow-2xl shrink-0"
+            className="w-[300px] h-[533px] bg-zinc-950 text-white rounded-lg p-5 flex flex-col justify-between relative overflow-hidden shadow-2xl shrink-0"
             style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
           >
             {/* Header Brand */}
             <div className="flex items-center justify-between relative z-10">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <div className="size-6 rounded-md bg-white text-zinc-950 flex items-center justify-center font-bold text-xs">
                   W
                 </div>
@@ -98,13 +98,13 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
                   Waesy Gastronomia
                 </span>
               </div>
-              <span className="text-[10px] font-mono uppercase bg-zinc-800/90 text-zinc-300 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-mono uppercase bg-zinc-800/90 text-zinc-300 px-2 py-1 rounded-full">
                 {recipe.category || "Receita"}
               </span>
             </div>
 
             {/* Imagem de Destaque */}
-            <div className="relative w-full h-[210px] rounded-xl overflow-hidden my-2 bg-zinc-900 border border-zinc-800">
+            <div className="relative w-full h-[210px] rounded-lg overflow-hidden my-2 bg-zinc-900 border border-zinc-800">
               <img
                 src={
                   recipe.cover_image_url ||
@@ -116,7 +116,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
               />
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
               {recipe.total_time && (
-                <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-zinc-900/90 px-2 py-0.5 rounded-md text-[10px] font-mono text-zinc-200">
+                <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-zinc-900/90 px-2 py-1 rounded-md text-[10px] font-mono text-zinc-200">
                   <Clock className="size-3 text-amber-400" />
                   {recipe.total_time}
                 </div>
@@ -134,7 +134,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
                   <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
                     Principais Ingredientes:
                   </span>
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     {recipe.ingredients.slice(0, 3).map((ing, i) => (
                       <p key={i} className="text-[10px] text-zinc-300 line-clamp-1 flex items-center gap-1">
                         <span className="size-1 rounded-full bg-zinc-500 shrink-0" />
@@ -152,8 +152,8 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
             </div>
 
             {/* Footer com QR Code Minimalista */}
-            <div className="mt-2 pt-2 border-t border-zinc-800/80 flex items-center justify-between relative z-10 bg-zinc-900/50 p-2.5 rounded-xl">
-              <div className="space-y-0.5">
+            <div className="mt-2 pt-2 border-t border-zinc-800/80 flex items-center justify-between relative z-10 bg-zinc-900/50 p-3 rounded-lg">
+              <div className="space-y-1">
                 <p className="text-[11px] font-bold text-white">
                   Veja o modo de preparo
                 </p>
@@ -161,7 +161,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
                   Aponte a câmera para o QR Code
                 </p>
               </div>
-              <div className="size-12 rounded-lg bg-white p-0.5 overflow-hidden shrink-0">
+              <div className="size-12 rounded-lg bg-white p-1 overflow-hidden shrink-0">
                 <img
                   src={qrImageUrl}
                   alt="QR Code da receita"
@@ -179,7 +179,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
             onClick={handleDownloadStory}
             disabled={isGenerating}
             variant="default"
-            className="flex-1 rounded-xl h-9 text-xs font-semibold gap-1.5"
+            className="flex-1 rounded-lg h-9 text-xs font-semibold gap-2"
           >
             <Download className="size-3.5" />
             {isGenerating ? "Gerando Story..." : "Baixar Imagem (Story)"}
@@ -188,7 +188,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
           <Button
             onClick={handleCopyLink}
             variant="outline"
-            className="rounded-xl h-9 text-xs font-medium gap-1.5"
+            className="rounded-lg h-9 text-xs font-medium gap-2"
           >
             {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
             {copied ? "Copiado!" : "Copiar Link"}

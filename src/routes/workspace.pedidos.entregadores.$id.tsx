@@ -127,7 +127,7 @@ function EntregadorDetailPage() {
  onClick={() =>
  navigate({ to: "/workspace/pedidos/entregadores" })
  }
- className="rounded-xl"
+ className="rounded-lg"
  >
  Voltar para lista
  </Button>
@@ -166,7 +166,7 @@ function EntregadorDetailPage() {
  ? "destructive"
  : "secondary"
  }
- className="gap-1.5"
+ className="gap-2"
  >
  {currentStatus && <currentStatus.icon className="size-3" />}
  {currentStatus?.label || form.status}
@@ -175,7 +175,7 @@ function EntregadorDetailPage() {
 
  <div className="space-y-6 max-w-2xl">
  {/* ── Status ── */}
- <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+ <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Status Operacional
  </div>
@@ -183,10 +183,10 @@ function EntregadorDetailPage() {
  value={form.status}
  onValueChange={(v) => update("status", v)}
  >
- <SelectTrigger className="rounded-xl h-11 max-w-xs border-border/60">
+ <SelectTrigger className="rounded-lg h-11 max-w-xs border-border/60">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  {STATUS_OPTIONS.map((opt) => (
  <SelectItem key={opt.value} value={opt.value}>
  <span className="flex items-center gap-2">
@@ -200,14 +200,14 @@ function EntregadorDetailPage() {
  </div>
 
  {/* ── Dados Pessoais ── */}
- <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+ <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
  <User className="size-3.5" />
  Dados Pessoais
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="name" className="text-xs font-semibold">
  Nome Completo *
  </Label>
@@ -215,11 +215,11 @@ function EntregadorDetailPage() {
  id="name"
  value={form.name}
  onChange={(e) => update("name", e.target.value)}
- className="rounded-xl h-11 border-border/60"
+ className="rounded-lg h-11 border-border/60"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="phone" className="text-xs font-semibold">
  Telefone / WhatsApp
  </Label>
@@ -229,12 +229,12 @@ function EntregadorDetailPage() {
  id="phone"
  value={form.phone}
  onChange={(e) => update("phone", e.target.value)}
- className="rounded-xl h-11 pl-10 border-border/60"
+ className="rounded-lg h-11 pl-10 border-border/60"
  />
  </div>
  </div>
 
- <div className="space-y-1.5 sm:col-span-2">
+ <div className="space-y-2 sm:col-span-2">
  <Label htmlFor="cpf" className="text-xs font-semibold">
  CPF
  </Label>
@@ -244,7 +244,7 @@ function EntregadorDetailPage() {
  id="cpf"
  value={form.cpf}
  onChange={(e) => update("cpf", e.target.value)}
- className="rounded-xl h-11 pl-10 border-border/60"
+ className="rounded-lg h-11 pl-10 border-border/60"
  />
  </div>
  </div>
@@ -252,23 +252,23 @@ function EntregadorDetailPage() {
  </div>
 
  {/* ── Veículo ── */}
- <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+ <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
  <Car className="size-3.5" />
  Veículo
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-semibold">Tipo de Veículo</Label>
  <Select
  value={form.vehicle_type}
  onValueChange={(v) => update("vehicle_type", v)}
  >
- <SelectTrigger className="rounded-xl h-11 border-border/60">
+ <SelectTrigger className="rounded-lg h-11 border-border/60">
  <SelectValue />
  </SelectTrigger>
- <SelectContent className="rounded-xl">
+ <SelectContent className="rounded-lg">
  {VEHICLE_OPTIONS.map((opt) => (
  <SelectItem key={opt.value} value={opt.value}>
  <span className="flex items-center gap-2">
@@ -281,7 +281,7 @@ function EntregadorDetailPage() {
  </Select>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="plate" className="text-xs font-semibold">
  Placa
  </Label>
@@ -291,19 +291,19 @@ function EntregadorDetailPage() {
  onChange={(e) =>
  update("vehicle_plate", e.target.value.toUpperCase())
  }
- className="rounded-xl h-11 uppercase border-border/60"
+ className="rounded-lg h-11 uppercase border-border/60"
  />
  </div>
  </div>
  </div>
 
  {/* ── Financeiro ── */}
- <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
+ <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Taxa e Observações
  </div>
 
- <div className="space-y-1.5 max-w-xs">
+ <div className="space-y-2 max-w-xs">
  <Label htmlFor="fee" className="text-xs font-semibold">
  Taxa Padrão por Entrega (R$)
  </Label>
@@ -319,11 +319,11 @@ function EntregadorDetailPage() {
  Math.round(parseFloat(e.target.value || "0") * 100),
  )
  }
- className="rounded-xl h-11"
+ className="rounded-lg h-11"
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label htmlFor="notes" className="text-xs font-semibold">
  Observações Internas
  </Label>
@@ -332,7 +332,7 @@ function EntregadorDetailPage() {
  rows={3}
  value={form.notes}
  onChange={(e) => update("notes", e.target.value)}
- className="w-full rounded-xl border border-border bg-background p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+ className="w-full rounded-lg border border-border bg-background p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary"
  />
  </div>
  </div>
@@ -345,14 +345,14 @@ function EntregadorDetailPage() {
  onClick={() =>
  navigate({ to: "/workspace/pedidos/entregadores" })
  }
- className="rounded-xl"
+ className="rounded-lg"
  >
  Cancelar
  </Button>
  <Button
  onClick={handleSave}
  disabled={isSubmitting || !form.name.trim()}
- className="rounded-xl min-w-[140px]"
+ className="rounded-lg min-w-[140px]"
  >
  {isSubmitting ? (
  <>

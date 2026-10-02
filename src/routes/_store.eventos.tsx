@@ -117,14 +117,14 @@ export const Route = createFileRoute("/_store/eventos")({
 function EventosErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <WarningCircle size={32} />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar eventos</h2>
       <p className="text-sm text-muted-foreground max-w-md mx-auto">
         {error?.message || "Não foi possível carregar a programação de eventos e ingressos no momento."}
       </p>
-      <Button onClick={reset} className="rounded-xl font-bold">
+      <Button onClick={reset} className="rounded-lg font-bold">
         Tentar Novamente
       </Button>
     </div>
@@ -590,7 +590,7 @@ function EventosPage() {
       {/* ── 3. Subcategorias de Eventos ── */}
       <section aria-label="Subcategorias de Eventos" className="space-y-2">
         {selectedCategory !== "todos" && (
-          <div className="flex justify-end pb-0.5">
+          <div className="flex justify-end pb-1">
             <button
               type="button"
               onClick={() => setSelectedCategory("todos")}
@@ -612,7 +612,7 @@ function EventosPage() {
                 key={sub.id}
                 type="button"
                 onClick={() => setSelectedCategory(isSelected && sub.id !== "todos" ? "todos" : sub.id)}
-                className={`h-10 px-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 shrink-0 transition-all cursor-pointer select-none snap-start whitespace-nowrap ${
+                className={`h-10 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-all cursor-pointer select-none snap-start whitespace-nowrap ${
                   isSelected
                     ? "bg-foreground text-background font-bold shadow-sm scale-102"
                     : "bg-card border border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:border-foreground/20"
@@ -622,7 +622,7 @@ function EventosPage() {
                 <span>{sub.label}</span>
                 {count > 0 && (
                   <span
-                    className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
+                    className={`text-[10px] font-mono px-2 py-1 rounded-md ${
                       isSelected
                         ? "bg-background/20 text-background font-bold"
                         : "bg-muted text-muted-foreground"
@@ -645,7 +645,7 @@ function EventosPage() {
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className={`h-9 px-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all cursor-pointer select-none shrink-0 snap-start whitespace-nowrap ${
+                className={`h-9 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 border transition-all cursor-pointer select-none shrink-0 snap-start whitespace-nowrap ${
                   selectedDateFilter !== "all" && selectedDateFilter.includes("-")
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                     : "bg-card border-border/80 text-foreground hover:bg-muted/60"
@@ -657,10 +657,10 @@ function EventosPage() {
                     ? activeDateLabel
                     : "Escolher Data"}
                 </span>
-                <LucideChevronDown className="size-3 opacity-60 ml-0.5" />
+                <LucideChevronDown className="size-3 opacity-60 ml-1" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 rounded-2xl border border-border shadow-xs bg-card" align="start">
+            <PopoverContent className="w-auto p-0 rounded-lg border border-border shadow-xs bg-card" align="start">
               <Calendar
                 mode="single"
                 selected={selectedDateFilter.includes("-") && selectedDateFilter.length === 10 ? new Date(selectedDateFilter + "T12:00:00") : undefined}
@@ -691,7 +691,7 @@ function EventosPage() {
                 key={pill.id}
                 type="button"
                 onClick={() => setSelectedDateFilter(pill.id)}
-                className={`h-9 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 snap-start whitespace-nowrap ${
+                className={`h-9 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0 snap-start whitespace-nowrap ${
                   isSelected
                     ? "bg-foreground text-background font-bold shadow-xs"
                     : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -707,7 +707,7 @@ function EventosPage() {
             <button
               type="button"
               onClick={() => setSelectedDateFilter("all")}
-              className="h-9 px-2.5 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center gap-1 transition-colors cursor-pointer"
+              className="h-9 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center gap-1 transition-colors cursor-pointer"
             >
               <LucideX className="size-3.5" />
               <span>Limpar</span>
@@ -742,14 +742,14 @@ function EventosPage() {
       )}
 
       {isError && (
-        <div className="py-12 px-6 rounded-2xl border border-destructive/20 bg-destructive/5 text-center space-y-2">
+        <div className="py-12 px-6 rounded-lg border border-destructive/20 bg-destructive/5 text-center space-y-2">
           <WarningCircle size={32} className="text-destructive mx-auto" />
           <p className="font-semibold text-foreground text-sm">Erro ao carregar o Marketplace de Eventos</p>
         </div>
       )}
 
       {!isLoading && !isError && filteredEvents.length === 0 && (
-        <div className="py-20 text-center space-y-3 bg-muted/20 rounded-2xl p-8 border border-border/40">
+        <div className="py-20 text-center space-y-3 bg-muted/20 rounded-lg p-8 border border-border/40">
           <CalendarBlank size={36} className="text-muted-foreground/50 mx-auto" />
           <h2 className="text-sm font-semibold text-foreground">
             Nenhum evento agendado para {activeDateLabel}
@@ -766,7 +766,7 @@ function EventosPage() {
                 setSelectedCategory("todos");
                 setSearchQuery("");
               }}
-              className="rounded-xl text-xs font-bold"
+              className="rounded-lg text-xs font-bold"
             >
               Ver Todos os Eventos
             </Button>
@@ -794,7 +794,7 @@ function EventosPage() {
                   key={event.id}
                   to="/evento/$id"
                   params={{ id: event.id }}
-                  className="min-w-[290px] sm:min-w-[320px] max-w-[340px] rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between shrink-0 group select-none block shadow-xs"
+                  className="min-w-[290px] sm:min-w-80 max-w-[340px] rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between shrink-0 group select-none block shadow-xs"
                 >
                   <div className="space-y-3 block">
                     <div className="aspect-16/10 relative overflow-hidden bg-muted">
@@ -808,8 +808,8 @@ function EventosPage() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
-                      <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                        <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border border-white/20">
+                      <div className="absolute top-3 left-3 flex items-center gap-2">
+                        <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-mono font-bold px-3 py-1 rounded-lg border border-white/20">
                           {formatDate(event.event_date)}
                         </span>
                       </div>
@@ -821,9 +821,9 @@ function EventosPage() {
                       </div>
                     </div>
 
-                    <div className="px-4 space-y-1.5 text-xs">
+                    <div className="px-4 space-y-2 text-xs">
                       {event.location && (
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <div className="flex items-center gap-2 text-muted-foreground">
                           <MapPin size={13} weight="bold" className="shrink-0" />
                           <span className="truncate">{event.location}</span>
                         </div>
@@ -865,7 +865,7 @@ function EventosPage() {
               key={event.id}
               to="/evento/$id"
               params={{ id: event.id }}
-              className="rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group shadow-xs"
+              className="rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group shadow-xs"
             >
               <div className="space-y-3">
                 <div className="aspect-16/10 relative overflow-hidden bg-muted">
@@ -879,7 +879,7 @@ function EventosPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute top-3 left-3">
-                    <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border border-white/20">
+                    <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-mono font-bold px-3 py-1 rounded-lg border border-white/20">
                       {formatDate(event.event_date)}
                     </span>
                   </div>
@@ -892,7 +892,7 @@ function EventosPage() {
 
                 <div className="px-4 space-y-1 text-xs">
                   {event.location && (
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <MapPin size={13} weight="bold" className="shrink-0" />
                       <span className="truncate">{event.location}</span>
                     </div>
@@ -924,9 +924,9 @@ function EventosPage() {
               key={event.id}
               to="/evento/$id"
               params={{ id: event.id }}
-              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[136px] pl-32 sm:pl-44 pr-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer w-full"
+              className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[136px] pl-32 sm:pl-44 pr-4 py-4 flex items-center justify-between gap-3 cursor-pointer w-full"
             >
-              <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-2xl overflow-hidden bg-muted">
+              <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-lg overflow-hidden bg-muted">
                 <img
                   src={getEventCover(event)}
                   alt={event.title}
@@ -954,11 +954,11 @@ function EventosPage() {
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 sm:gap-4 shrink-0 pl-1">
+              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-4 shrink-0 pl-1">
                 <span className="text-xs sm:text-sm font-bold text-primary font-mono">
                   {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Gratuito"}
                 </span>
-                <Button size="sm" variant="outline" className="h-8 sm:h-9 px-3 sm:px-4 rounded-xl text-xs font-semibold gap-1 cursor-pointer">
+                <Button size="sm" variant="outline" className="h-8 sm:h-9 px-3 sm:px-4 rounded-lg text-xs font-semibold gap-1 cursor-pointer">
                   <span>Ingressos</span>
                   <CaretRight size={12} weight="bold" />
                 </Button>

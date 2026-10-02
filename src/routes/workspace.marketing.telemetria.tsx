@@ -86,13 +86,13 @@ function LeadRow({ lead, onStatusChange }: { lead: WhatsAppLeadDTO; onStatusChan
  return (
  <tr className="hover:bg-muted/30 transition-colors last:border-0">
  <td className="py-3 px-3">
- <div className="flex flex-col gap-0.5">
+ <div className="flex flex-col gap-1">
  <span className="font-bold text-foreground text-xs">{lead.entity_title || "—"}</span>
  <span className="text-xs text-muted-foreground font-mono">{lead.lead_code}</span>
  </div>
  </td>
  <td className="py-3 px-3">
- <Badge variant="outline" className="text-xs font-mono font-bold uppercase px-1.5">
+ <Badge variant="outline" className="text-xs font-mono font-bold uppercase px-2">
  {ENTITY_LABELS[lead.entity_type] || lead.entity_type}
  </Badge>
  </td>
@@ -103,7 +103,7 @@ function LeadRow({ lead, onStatusChange }: { lead: WhatsAppLeadDTO; onStatusChan
  </Badge>
  </td>
  <td className="py-3 px-3">
- <Badge variant="outline" className="text-xs font-mono uppercase px-1.5">
+ <Badge variant="outline" className="text-xs font-mono uppercase px-2">
  {lead.device_type}
  </Badge>
  </td>
@@ -165,26 +165,26 @@ function WorkspaceTelemetriaPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div>
  <div className="flex items-center gap-2">
- <span className="px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+ <span className="px-3 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
  Telemetria e Analytics
  </span>
  <span className="text-xs text-muted-foreground font-mono">Dados Auditados em Tempo Real</span>
  </div>
  <h1 className="text-2xl font-black tracking-tight text-foreground mt-1">Telemetria</h1>
- <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+ <p className="text-xs sm:text-sm text-muted-foreground mt-1">
  Mensuração real de leads de WhatsApp, alcance de patrocinadores e taxa de conversão.
  </p>
  </div>
  <div className="flex items-center gap-2">
- <Button asChild variant="outline" className="rounded-xl font-bold text-xs h-9">
+ <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-9">
  <Link to="/workspace/marketing/pixels">
- <CursorClick size={16} weight="bold" className="mr-1.5 text-primary" />
+ <CursorClick size={16} weight="bold" className="mr-2 text-primary" />
  Pixels e CAPI
  </Link>
  </Button>
- <Button asChild variant="outline" className="rounded-xl font-bold text-xs h-9">
+ <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-9">
  <Link to="/workspace/marketing/patrocinadores">
- <Megaphone size={16} weight="bold" className="mr-1.5" />
+ <Megaphone size={16} weight="bold" className="mr-2" />
  Patrocinadores
  </Link>
  </Button>
@@ -192,13 +192,13 @@ function WorkspaceTelemetriaPage() {
  </div>
 
  {/* Tabs */}
- <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-2xl w-fit ">
+ <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg w-fit ">
  {(["whatsapp", "sponsors"] as const).map((tab) => (
  <button
  key={tab}
  type="button"
  onClick={() => setActiveTab(tab)}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
  activeTab === tab
  ? "bg-background text-foreground "
  : "text-muted-foreground hover:text-foreground"
@@ -224,7 +224,7 @@ function WorkspaceTelemetriaPage() {
  { label: "Convertidos", value: wa.converted_leads, sub: "Fecharam negócio", icon: <CheckCircle size={18} weight="bold" className="text-primary" /> },
  { label: "Taxa de Conversão", value: `${(wa.conversion_rate ?? 0).toFixed(1)}%`, sub: "De leads → fechados", icon: <TrendUp size={18} weight="bold" className="text-info" /> },
  ].map((card) => (
- <div key={card.label} className="p-5 rounded-2xl bg-card space-y-2 ">
+ <div key={card.label} className="p-5 rounded-lg bg-card space-y-2 ">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-bold uppercase tracking-wider">{card.label}</span>
  {card.icon}
@@ -239,7 +239,7 @@ function WorkspaceTelemetriaPage() {
  {(wa.entity_distribution.length > 0 || wa.top_items.length > 0) && (
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  {wa.entity_distribution.length > 0 && (
- <div className="p-5 rounded-2xl bg-card space-y-3 ">
+ <div className="p-5 rounded-lg bg-card space-y-3 ">
  <div className="flex items-center gap-2">
  <Buildings size={18} weight="bold" className="text-muted-foreground" />
  <h3 className="text-sm font-bold text-foreground">Leads por Módulo</h3>
@@ -263,19 +263,19 @@ function WorkspaceTelemetriaPage() {
  </div>
  )}
  {wa.top_items.length > 0 && (
- <div className="p-5 rounded-2xl bg-card space-y-3 ">
+ <div className="p-5 rounded-lg bg-card space-y-3 ">
  <div className="flex items-center gap-2">
  <CursorClick size={18} weight="bold" className="text-primary" />
  <h3 className="text-sm font-bold text-foreground">Mais Clicados</h3>
  </div>
  <div className="space-y-2">
           {wa.top_items.slice(0, 5).map((item: any, idx: number) => (
- <div key={`${item.entity_id}-${idx}`} className="flex items-center justify-between gap-2 text-xs py-1.5 last:border-0">
+ <div key={`${item.entity_id}-${idx}`} className="flex items-center justify-between gap-2 text-xs py-2 last:border-0">
  <div className="flex items-center gap-2 min-w-0">
  <span className="size-5 shrink-0 rounded-full bg-muted flex items-center justify-center font-black text-xs text-muted-foreground">{idx + 1}</span>
  <span className="font-semibold text-foreground truncate">{item.title || "—"}</span>
  </div>
- <div className="flex items-center gap-1.5 shrink-0">
+ <div className="flex items-center gap-2 shrink-0">
  <WhatsappLogo size={12} weight="bold" className="text-emerald-500" />
  <span className="font-black text-foreground">{item.clicks}</span>
  </div>
@@ -288,7 +288,7 @@ function WorkspaceTelemetriaPage() {
  )}
 
  {/* Tabela de Leads */}
- <div className="p-5 sm:p-6 rounded-2xl bg-card space-y-4 ">
+ <div className="p-5 sm:p-6 rounded-lg bg-card space-y-4 ">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div>
  <h3 className="text-base font-bold text-foreground">Leads</h3>
@@ -297,7 +297,7 @@ function WorkspaceTelemetriaPage() {
  <div className="flex items-center gap-2">
  <Funnel size={14} weight="bold" className="text-muted-foreground" />
  <select
- className="text-xs rounded-xl bg-background px-3 py-1.5 font-bold text-foreground"
+ className="text-xs rounded-lg bg-background px-3 py-2 font-bold text-foreground"
  value={statusFilter}
  onChange={(e) => setStatusFilter(e.target.value)}
  >
@@ -359,7 +359,7 @@ function WorkspaceTelemetriaPage() {
  { label: "Cliques nos Anúncios", value: totalClicks, sub: "Interações diretas para o anunciante", icon: <CursorClick size={18} weight="bold" className="text-info" /> },
  { label: "CTR Médio", value: `${avgCtr}%`, sub: "Taxa de conversão por impressão", icon: <Percent size={18} weight="bold" className="text-primary" /> },
  ].map((card) => (
- <div key={card.label} className="p-5 rounded-2xl bg-card space-y-2 ">
+ <div key={card.label} className="p-5 rounded-lg bg-card space-y-2 ">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-bold uppercase tracking-wider">{card.label}</span>
  {card.icon}
@@ -370,13 +370,13 @@ function WorkspaceTelemetriaPage() {
  ))}
  </div>
 
- <div className="p-5 sm:p-6 rounded-2xl bg-card space-y-4 ">
+ <div className="p-5 sm:p-6 rounded-lg bg-card space-y-4 ">
  <div className="flex items-center justify-between">
  <div>
  <h3 className="text-base font-bold text-foreground">Desempenho por Anunciante</h3>
  <p className="text-xs text-muted-foreground">Relatório de entrega com tempo de visualização e alcance de rolagem de página.</p>
  </div>
- <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
  <ShieldCheck size={14} weight="bold" className="text-emerald-500" />
  <span>Anti-duplicação ativo</span>
  </div>
@@ -399,16 +399,16 @@ function WorkspaceTelemetriaPage() {
  <tbody className="divide-y divide-border/60">
             {sponsorsMetrics.map((sp: any) => (
  <tr key={sp.sponsor_id} className="hover:bg-muted/30 transition-colors">
- <td className="py-3.5 px-3 font-bold text-foreground">{sp.sponsor_name}</td>
- <td className="py-3.5 px-3">
- <span className="px-2 py-0.5 rounded-full text-xs font-black uppercase bg-primary/10 text-primary">{sp.tier}</span>
+ <td className="py-4 px-3 font-bold text-foreground">{sp.sponsor_name}</td>
+ <td className="py-4 px-3">
+ <span className="px-2 py-1 rounded-full text-xs font-black uppercase bg-primary/10 text-primary">{sp.tier}</span>
  </td>
- <td className="py-3.5 px-3 font-mono">{sp.total_impressions}</td>
- <td className="py-3.5 px-3 font-mono">{sp.unique_views}</td>
- <td className="py-3.5 px-3 font-mono text-muted-foreground">{sp.avg_duration_seconds}s</td>
- <td className="py-3.5 px-3 font-mono text-muted-foreground">{sp.scroll_reach_50}</td>
- <td className="py-3.5 px-3 font-mono font-bold text-foreground">{sp.total_clicks}</td>
- <td className="py-3.5 px-3 font-mono font-bold text-primary">{sp.ctr_percentage}%</td>
+ <td className="py-4 px-3 font-mono">{sp.total_impressions}</td>
+ <td className="py-4 px-3 font-mono">{sp.unique_views}</td>
+ <td className="py-4 px-3 font-mono text-muted-foreground">{sp.avg_duration_seconds}s</td>
+ <td className="py-4 px-3 font-mono text-muted-foreground">{sp.scroll_reach_50}</td>
+ <td className="py-4 px-3 font-mono font-bold text-foreground">{sp.total_clicks}</td>
+ <td className="py-4 px-3 font-mono font-bold text-primary">{sp.ctr_percentage}%</td>
  </tr>
  ))}
  </tbody>

@@ -42,7 +42,7 @@ function ContractEditorPage() {
     return (
       <div className="max-w-md mx-auto py-20 text-center space-y-4">
         <p className="text-sm text-muted-foreground">Contrato não encontrado.</p>
-        <Button asChild variant="outline" size="sm" className="rounded-xl">
+        <Button asChild variant="outline" size="sm" className="rounded-lg">
           <Link to="/workspace/contratos">Voltar</Link>
         </Button>
       </div>
@@ -247,7 +247,7 @@ function ContractEditorPage() {
               <h1 className="text-base sm:text-xl font-bold tracking-tight text-foreground truncate max-w-md">
                 {docTitle || "Editor de Contrato"}
               </h1>
-              <Badge variant={isAlreadySealed ? "default" : "secondary"} className="text-xs px-2.5 py-0.5">
+              <Badge variant={isAlreadySealed ? "default" : "secondary"} className="text-xs px-3 py-1">
                 {isAlreadySealed ? "Pronto para Assinar" : "Rascunho em Edição"}
               </Badge>
             </div>
@@ -265,19 +265,19 @@ function ContractEditorPage() {
               variant="outline"
               size="sm"
               onClick={handleSaveDraft}
-              className="rounded-xl text-xs sm:text-sm font-semibold h-10 px-4"
+              className="rounded-lg text-xs sm:text-sm font-semibold h-10 px-4"
             >
-              <Save className="size-4 mr-1.5" />
+              <Save className="size-4 mr-2" />
               Salvar Rascunho
             </Button>
           )}
 
           {/* Stepper Superior Comercial & Nítido */}
-          <div className="flex items-center p-1 bg-muted/80 rounded-xl text-xs sm:text-sm">
+          <div className="flex items-center p-1 bg-muted/80 rounded-lg text-xs sm:text-sm">
             <button
               type="button"
               onClick={() => setActiveStep(1)}
-              className={`px-3.5 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
+              className={`px-4 py-2 rounded-lg transition-all font-semibold cursor-pointer ${
                 activeStep === 1 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -286,7 +286,7 @@ function ContractEditorPage() {
             <button
               type="button"
               onClick={() => setActiveStep(2)}
-              className={`px-3.5 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
+              className={`px-4 py-2 rounded-lg transition-all font-semibold cursor-pointer ${
                 activeStep === 2 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -295,7 +295,7 @@ function ContractEditorPage() {
             <button
               type="button"
               onClick={() => setActiveStep(3)}
-              className={`px-3.5 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
+              className={`px-4 py-2 rounded-lg transition-all font-semibold cursor-pointer ${
                 activeStep === 3 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -308,7 +308,7 @@ function ContractEditorPage() {
       {/* SE O CONTRATO JÁ ESTÁ SELADO: EXIBE PAINEL DE DISPARO & PROTOCOLO */}
       {isAlreadySealed ? (
         <div className="space-y-6">
-          <div className="p-6 rounded-2xl bg-card border border-emerald-500/30 space-y-4">
+          <div className="p-6 rounded-lg bg-card border border-emerald-500/30 space-y-4">
             <div className="flex items-center gap-3 text-emerald-600">
               <ShieldCheck className="size-7 shrink-0" />
               <div>
@@ -337,7 +337,7 @@ function ContractEditorPage() {
                   return (
                     <div
                       key={idx}
-                      className="p-4 rounded-xl border border-border/80 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm"
+                      className="p-4 rounded-lg border border-border/80 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm"
                     >
                       <div className="min-w-0">
                         <p className="font-bold text-sm text-foreground truncate">{env.signer_name}</p>
@@ -349,10 +349,10 @@ function ContractEditorPage() {
                           <Button
                             asChild
                             size="sm"
-                            className="min-h-[44px] px-3.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold"
+                            className="min-h-11 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold"
                           >
                             <a href={waLink} target="_blank" rel="noreferrer">
-                              <WhatsappLogo className="size-4 mr-1.5" />
+                              <WhatsappLogo className="size-4 mr-2" />
                               Enviar no WhatsApp
                             </a>
                           </Button>
@@ -361,10 +361,10 @@ function ContractEditorPage() {
                           asChild
                           variant="outline"
                           size="sm"
-                          className="min-h-[44px] px-3.5 rounded-xl text-xs font-semibold"
+                          className="min-h-11 px-4 rounded-lg text-xs font-semibold"
                         >
                           <Link to={signingUrl}>
-                            <ExternalLink className="size-3.5 mr-1.5" />
+                            <ExternalLink className="size-3.5 mr-2" />
                             Abrir Documento
                           </Link>
                         </Button>
@@ -398,13 +398,13 @@ function ContractEditorPage() {
           {/* PASSO 1: REVISÃO DE MINUTA & CONTEÚDO */}
           {activeStep === 1 && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-8 bg-card border border-border/80 rounded-2xl p-5 space-y-4">
-                <div className="space-y-1.5">
+              <div className="lg:col-span-8 bg-card border border-border/80 rounded-lg p-5 space-y-4">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Título do Instrumento</Label>
                   <Input
                     value={docTitle}
                     onChange={(e) => setDocTitle(e.target.value)}
-                    className="h-10 text-xs rounded-xl"
+                    className="h-10 text-xs rounded-lg"
                   />
                 </div>
 
@@ -414,7 +414,7 @@ function ContractEditorPage() {
                   className="mb-2"
                 />
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-bold">Cláusulas do Contrato (Markdown)</Label>
                     <span className="text-xs text-muted-foreground">
@@ -426,7 +426,7 @@ function ContractEditorPage() {
                     rows={16}
                     value={contentMarkdown}
                     onChange={(e) => setContentMarkdown(e.target.value)}
-                    className="font-mono text-xs rounded-xl p-3.5 leading-relaxed resize-y"
+                    className="font-mono text-xs rounded-lg p-4 leading-relaxed resize-y"
                     placeholder="Digite ou cole as cláusulas do contrato..."
                   />
                 </div>
@@ -435,16 +435,16 @@ function ContractEditorPage() {
                   <Button
                     type="button"
                     onClick={() => setActiveStep(2)}
-                    className="rounded-xl text-xs h-10 px-5 font-semibold"
+                    className="rounded-lg text-xs h-10 px-5 font-semibold"
                   >
                     Avançar para Posicionamento
-                    <ArrowRight className="size-4 ml-1.5" />
+                    <ArrowRight className="size-4 ml-2" />
                   </Button>
                 </div>
               </div>
 
               {/* Prévia ao Lado */}
-              <div className="lg:col-span-4 bg-card border border-border/80 rounded-2xl p-5 space-y-3">
+              <div className="lg:col-span-4 bg-card border border-border/80 rounded-lg p-5 space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Prévia de Leitura
                 </h3>
@@ -475,7 +475,7 @@ function ContractEditorPage() {
           {activeStep === 3 && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Formulário de Configurações Adicionais */}
-              <div className="lg:col-span-7 bg-card border border-border/80 rounded-2xl p-6 space-y-6">
+              <div className="lg:col-span-7 bg-card border border-border/80 rounded-lg p-6 space-y-6">
                 <div>
                   <h2 className="text-base font-bold text-foreground">Configurações adicionais</h2>
                   <p className="text-xs text-muted-foreground">
@@ -484,22 +484,22 @@ function ContractEditorPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-bold">Nome do Documento</Label>
                     <Input
                       value={docTitle}
                       onChange={(e) => setDocTitle(e.target.value)}
-                      className="h-10 text-xs rounded-xl"
+                      className="h-10 text-xs rounded-lg"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-bold">Arquivar em pasta</Label>
                     <Select value={folderName} onValueChange={setFolderName}>
-                      <SelectTrigger className="h-10 text-xs rounded-xl">
+                      <SelectTrigger className="h-10 text-xs rounded-lg">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl text-xs">
+                      <SelectContent className="rounded-lg text-xs">
                         <SelectItem value="Sem pasta">Sem pasta</SelectItem>
                         <SelectItem value="Turismo 2026">Turismo e Viagens 2026</SelectItem>
                         <SelectItem value="Contratos Gerais">Contratos Gerais</SelectItem>
@@ -509,7 +509,7 @@ function ContractEditorPage() {
                   </div>
 
                   {/* Bloco de Aparência */}
-                  <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+                  <div className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-3">
                     <h3 className="text-xs font-bold text-foreground">Aparência da Autenticação Eletrônica</h3>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -522,7 +522,7 @@ function ContractEditorPage() {
                           <SelectTrigger className="h-9 text-xs rounded-lg">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl text-xs">
+                          <SelectContent className="rounded-lg text-xs">
                             <SelectItem value="footer">Rodapé</SelectItem>
                             <SelectItem value="header">Cabeçalho</SelectItem>
                             <SelectItem value="side">Lateral</SelectItem>
@@ -539,7 +539,7 @@ function ContractEditorPage() {
                           <SelectTrigger className="h-9 text-xs rounded-lg">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl text-xs">
+                          <SelectContent className="rounded-lg text-xs">
                             <SelectItem value="standard">Padrão</SelectItem>
                             <SelectItem value="compact">Compacto</SelectItem>
                             <SelectItem value="mini">Mini</SelectItem>
@@ -561,7 +561,7 @@ function ContractEditorPage() {
                   </div>
 
                   {/* Observadores e Notificações */}
-                  <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+                  <div className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-3">
                     <h3 className="text-xs font-bold text-foreground">Observadores (Recebem cópia assinada)</h3>
                     <div className="flex gap-2">
                       <Input
@@ -588,7 +588,7 @@ function ContractEditorPage() {
                     </div>
 
                     {observers.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
+                      <div className="flex flex-wrap gap-2 pt-1">
                         {observers.map((obs, i) => (
                           <Badge key={i} variant="secondary" className="text-xs">
                             {obs.name} ({obs.email})
@@ -605,7 +605,7 @@ function ContractEditorPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setActiveStep(2)}
-                    className="rounded-xl text-xs h-10 px-4"
+                    className="rounded-lg text-xs h-10 px-4"
                   >
                     Voltar ao Posicionamento
                   </Button>
@@ -614,7 +614,7 @@ function ContractEditorPage() {
                     type="button"
                     onClick={handleSealContract}
                     disabled={isSealing}
-                    className="rounded-xl text-xs h-11 px-8 font-bold bg-primary hover:bg-primary/90"
+                    className="rounded-lg text-xs h-11 px-8 font-bold bg-primary hover:bg-primary/90"
                   >
                     {isSealing ? (
                       <>
@@ -633,7 +633,7 @@ function ContractEditorPage() {
 
               {/* Resumo do Envelope & Validade Jurídica */}
               <div className="lg:col-span-5 space-y-4">
-                <div className="p-5 rounded-2xl bg-muted/20 border border-border/80 space-y-3">
+                <div className="p-5 rounded-lg bg-muted/20 border border-border/80 space-y-3">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Lock className="size-3.5 text-primary" />
                     Validade Jurídica Assegurada
@@ -641,7 +641,7 @@ function ContractEditorPage() {
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Ao clicar em <strong>Criar Documento e Selar</strong>, o hash SHA-256 será computado de forma irreversível sobre o conteúdo e as caixas de assinatura.
                   </p>
-                  <div className="space-y-1.5 text-xs text-muted-foreground border-t border-border/50 pt-2.5">
+                  <div className="space-y-2 text-xs text-muted-foreground border-t border-border/50 pt-3">
                     <p>Trilha de auditoria com IP, User-Agent e Timestamp UTC</p>
                     <p>Folha de rosto anexada com QR Code oficial de verificação</p>
                     <p>Envio instantâneo via WhatsApp e E-mail para os signatários</p>

@@ -96,7 +96,7 @@ export function LawsuitDetailsSheet({
  <Button
  size="sm"
  onClick={() => setIsDeadlineSheetOpen(true)}
- className="h-8 px-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-[11px] gap-1.5 shadow-2xs"
+ className="h-8 px-3 rounded-lg bg-primary text-primary-foreground font-bold text-[11px] gap-2 shadow-2xs"
  >
  <Clock className="size-3.5" />
  <span>+ Prazo Fatal</span>
@@ -115,7 +115,7 @@ export function LawsuitDetailsSheet({
 
  {/* Linha de Status de Monitoramento & Última Movimentação */}
  <div className="flex flex-wrap items-center justify-between gap-3 text-xs pt-1">
- <div className="flex items-center gap-2.5 bg-background px-3 py-1.5 rounded-xl border border-border">
+ <div className="flex items-center gap-3 bg-background px-3 py-2 rounded-lg border border-border">
  <Radio
  className={cn(
  "size-3.5",
@@ -153,9 +153,9 @@ export function LawsuitDetailsSheet({
  </div>
 
  {/* ── GRID DOS 5 STAT CARDS RÁPIDOS ── */}
- <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-2">
- <div className="p-3 rounded-xl bg-card border border-border/70 space-y-1">
- <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
+ <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
+ <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1">
+ <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
  <Building2 className="size-3.5 text-primary" />
  <span>Tribunal</span>
  </div>
@@ -164,8 +164,8 @@ export function LawsuitDetailsSheet({
  </p>
  </div>
 
- <div className="p-3 rounded-xl bg-card border border-border/70 space-y-1">
- <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
+ <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1">
+ <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
  <DollarSign className="size-3.5 text-emerald-500" />
  <span>Valor Causa</span>
  </div>
@@ -174,8 +174,8 @@ export function LawsuitDetailsSheet({
  </p>
  </div>
 
- <div className="p-3 rounded-xl bg-card border border-border/70 space-y-1">
- <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
+ <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1">
+ <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
  <Calendar className="size-3.5 text-blue-500" />
  <span>Distribuição</span>
  </div>
@@ -184,8 +184,8 @@ export function LawsuitDetailsSheet({
  </p>
  </div>
 
- <div className="p-3 rounded-xl bg-card border border-border/70 space-y-1">
- <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
+ <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1">
+ <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
  <Users className="size-3.5 text-amber-500" />
  <span>Partes</span>
  </div>
@@ -196,8 +196,8 @@ export function LawsuitDetailsSheet({
  </p>
  </div>
 
- <div className="p-3 rounded-xl bg-card border border-border/70 space-y-1 col-span-2 sm:col-span-1">
- <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
+ <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1 col-span-2 sm:col-span-1">
+ <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
  <CheckCircle2 className="size-3.5 text-primary" />
  <span>Status</span>
  </div>
@@ -211,7 +211,7 @@ export function LawsuitDetailsSheet({
  </div>
 
  {/* Órgão Julgador & Classe Processual */}
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-muted/20 border border-border/50 text-xs">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-muted/20 border border-border/50 text-xs">
  <div>
  <span className="text-muted-foreground text-[10px] uppercase font-bold">Órgão Julgador:</span>
  <p className="font-semibold text-foreground">{lawsuit.organ_name || "Vara Cível / Comarca Competente"}</p>
@@ -226,7 +226,7 @@ export function LawsuitDetailsSheet({
  {/* ── 2. CORPO COM ABAS DETALHADAS ── */}
  <div className="flex-1 overflow-y-auto no-scrollbar p-6">
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
- <TabsList className="grid w-full grid-cols-3 h-11 bg-muted/40 p-1 rounded-xl">
+ <TabsList className="grid w-full grid-cols-3 h-11 bg-muted/40 p-1 rounded-lg">
  <TabsTrigger value="movimentacoes" className="text-xs font-bold rounded-lg gap-2">
  <Clock className="size-3.5" />
  <span>Movimentações ({movements.length})</span>
@@ -244,7 +244,7 @@ export function LawsuitDetailsSheet({
  {/* ── ABA 1: MOVIMENTAÇÕES PROCESSUAIS (TIMELINE) ── */}
  <TabsContent value="movimentacoes" className="space-y-4">
  {movements.length === 0 ? (
- <div className="p-8 text-center rounded-2xl bg-card border border-border text-xs text-muted-foreground">
+ <div className="p-8 text-center rounded-lg bg-card border border-border text-xs text-muted-foreground">
  Nenhuma movimentação detalhada registrada neste acervo.
  </div>
  ) : (
@@ -260,7 +260,7 @@ export function LawsuitDetailsSheet({
  </Badge>
  )}
  </div>
- <p className="text-xs sm:text-sm font-medium text-foreground bg-card p-3 rounded-xl border border-border/70 leading-relaxed">
+ <p className="text-xs sm:text-sm font-medium text-foreground bg-card p-3 rounded-lg border border-border/70 leading-relaxed">
  {mov.description}
  </p>
  </div>
@@ -272,7 +272,7 @@ export function LawsuitDetailsSheet({
  {/* ── ABA 2: INFORMAÇÕES & POLOS DO PROCESSO ── */}
  <TabsContent value="informacoes" className="space-y-6">
  {/* Bloco Dados Gerais */}
- <div className="p-5 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/80 space-y-4">
  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Dados do Processo
  </h3>
@@ -305,7 +305,7 @@ export function LawsuitDetailsSheet({
  </div>
 
  {/* Bloco Partes do Processo (Polos) */}
- <div className="p-5 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border/80 space-y-4">
  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Partes Envolvidas
  </h3>
@@ -315,7 +315,7 @@ export function LawsuitDetailsSheet({
  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
  Polo Ativo (Autor / Exequente)
  </span>
- <div className="p-3 rounded-xl bg-background border border-border/60 text-xs space-y-1">
+ <div className="p-3 rounded-lg bg-background border border-border/60 text-xs space-y-1">
  <p className="font-bold text-foreground">
  {parties.active?.[0]?.name || "William Marcos de Braga"}
  </p>
@@ -332,7 +332,7 @@ export function LawsuitDetailsSheet({
  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
  Polo Passivo (Réu / Executado)
  </span>
- <div className="p-3 rounded-xl bg-background border border-border/60 text-xs space-y-1">
+ <div className="p-3 rounded-lg bg-background border border-border/60 text-xs space-y-1">
  <p className="font-bold text-foreground">
  {parties.passive?.[0]?.name || "BUSER BRASIL TECNOLOGIA LTDA"}
  </p>
@@ -348,7 +348,7 @@ export function LawsuitDetailsSheet({
 
  {/* ── ABA 3: JUS IA (ANÁLISE JURÍDICA INTELIGENTE) ── */}
  <TabsContent value="jus_ia" className="space-y-4">
- <div className="p-5 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
+ <div className="p-5 rounded-lg bg-primary/5 border border-primary/20 space-y-3">
  <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase font-mono">
  <Layers className="size-4" />
  <span>Síntese Processual Automatizada</span>
@@ -359,7 +359,7 @@ export function LawsuitDetailsSheet({
  </p>
  </div>
 
- <div className="p-4 rounded-xl bg-card border border-border/80 flex items-center justify-between text-xs">
+ <div className="p-4 rounded-lg bg-card border border-border/80 flex items-center justify-between text-xs">
  <div className="flex items-center gap-2">
  <ShieldCheck className="size-4 text-emerald-500" />
  <span className="font-medium text-foreground">Auditoria de Compliance Concluída</span>

@@ -154,7 +154,7 @@ export function CartItemEditDrawer({
  {/* Cabeçalho Fixo */}
  <SheetHeader className="px-6 py-4 bg-card/60 backdrop-blur-md shrink-0">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <SlidersHorizontal className="size-4" />
  </div>
  <div>
@@ -171,8 +171,8 @@ export function CartItemEditDrawer({
  {/* Corpo com Scroll Suave */}
  <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 scrollbar-none">
  {/* Card Resumo do Produto com Foto Grande */}
- <div className="flex items-center gap-4 p-4 rounded-2xl bg-card ">
- <div className="size-20 sm:size-24 rounded-xl overflow-hidden bg-muted/30 shrink-0 flex items-center justify-center">
+ <div className="flex items-center gap-4 p-4 rounded-lg bg-card ">
+ <div className="size-20 sm:size-24 rounded-lg overflow-hidden bg-muted/30 shrink-0 flex items-center justify-center">
  {item.coverUrl ? (
  <img
  src={item.coverUrl}
@@ -228,7 +228,7 @@ export function CartItemEditDrawer({
  type="button"
  onClick={() => setSelectedVariantId(v.id)}
  className={cn(
- "p-3 rounded-xl border text-left transition-all flex flex-col justify-between cursor-pointer",
+ "p-3 rounded-lg border text-left transition-all flex flex-col justify-between cursor-pointer",
  isSelected
  ? "bg-primary/5 border-primary text-foreground "
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/40",
@@ -260,9 +260,9 @@ export function CartItemEditDrawer({
  return (
  <div
  key={group.id}
- className="space-y-3 p-4 rounded-2xl bg-card "
+ className="space-y-3 p-4 rounded-lg bg-card "
  >
- <div className="flex items-center justify-between pb-2.5">
+ <div className="flex items-center justify-between pb-3">
  <div>
  <h4 className="text-xs font-bold text-foreground">
  {group.displayName}
@@ -282,7 +282,7 @@ export function CartItemEditDrawer({
  )}
  </div>
 
- <div className="space-y-1.5 pt-1">
+ <div className="space-y-2 pt-1">
  {group.values?.map((val: any) => {
  const isSelected = isSingle
  ? currentVal === val.id
@@ -298,13 +298,13 @@ export function CartItemEditDrawer({
  : handleToggleMultipleOption(group.id, val.id, group.maxSelections)
  }
  className={cn(
- "w-full px-3.5 py-2.5 rounded-xl border text-left transition-all flex items-center justify-between cursor-pointer",
+ "w-full px-4 py-3 rounded-lg border text-left transition-all flex items-center justify-between cursor-pointer",
  isSelected
  ? "bg-primary/5 border-primary/60 text-foreground"
  : "bg-background border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/30",
  )}
  >
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-3">
  <div
  className={cn(
  "size-4 rounded flex items-center justify-center border transition-all",
@@ -339,7 +339,7 @@ export function CartItemEditDrawer({
  )}
 
  {/* ── 3. CONTROLE DE QUANTIDADE ── */}
- <div className="flex items-center justify-between p-4 rounded-2xl bg-card ">
+ <div className="flex items-center justify-between p-4 rounded-lg bg-card ">
  <div>
  <span className="text-xs font-bold text-foreground block">
  Quantidade
@@ -349,7 +349,7 @@ export function CartItemEditDrawer({
  </span>
  </div>
 
- <div className="flex items-center rounded-xl bg-background p-1 ">
+ <div className="flex items-center rounded-lg bg-background p-1 ">
  <button
  type="button"
  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -402,7 +402,7 @@ export function CartItemEditDrawer({
  size="lg"
  onClick={handleSave}
  disabled={isCartUpdating || isLoading}
- className="w-full h-12 rounded-xl bg-foreground text-background font-bold text-sm hover:bg-foreground/90 transition-all cursor-pointer flex items-center justify-center gap-2"
+ className="w-full h-12 rounded-lg bg-foreground text-background font-bold text-sm hover:bg-foreground/90 transition-all cursor-pointer flex items-center justify-center gap-2"
  >
  {isCartUpdating ? (
  <>

@@ -101,8 +101,8 @@ export function ProductWaitlistSheet({
 
  <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-5">
  {/* Card Resumo do Produto Selecionado */}
- <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 flex items-center gap-3">
- <div className="size-14 rounded-xl overflow-hidden bg-background border border-border/60 shrink-0 flex items-center justify-center">
+ <div className="p-4 rounded-lg bg-muted/40 border border-border/60 flex items-center gap-3">
+ <div className="size-14 rounded-lg overflow-hidden bg-background border border-border/60 shrink-0 flex items-center justify-center">
  {product.coverImageUrl ? (
  <img
  src={product.coverImageUrl}
@@ -127,7 +127,7 @@ export function ProductWaitlistSheet({
  </div>
 
  {isSubmitted ? (
- <div className="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-3">
+ <div className="p-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center space-y-3">
  <CheckCircle2 className="size-10 text-emerald-600 mx-auto" />
  <h3 className="text-sm font-bold text-foreground">Inscrição Confirmada!</h3>
  <p className="text-xs text-muted-foreground leading-relaxed">
@@ -136,31 +136,31 @@ export function ProductWaitlistSheet({
  <Button
  type="button"
  onClick={handleClose}
- className="mt-2 h-10 px-5 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700"
+ className="mt-2 h-10 px-5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700"
  >
  Concluir
  </Button>
  </div>
  ) : (
  <form onSubmit={handleSubmit} className="space-y-4">
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Seu Nome Completo *</Label>
  <Input
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Maria Silva"
- className="h-11 rounded-xl bg-card text-xs font-medium"
+ className="h-11 rounded-lg bg-card text-xs font-medium"
  required
  />
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">WhatsApp ou Celular *</Label>
  <Input
  value={contact}
  onChange={(e) => setContact(e.target.value)}
  placeholder="(49) 99999-9999"
- className="h-11 rounded-xl bg-card text-xs font-medium font-mono"
+ className="h-11 rounded-lg bg-card text-xs font-medium font-mono"
  required
  />
  <p className="text-[11px] text-muted-foreground">
@@ -168,20 +168,20 @@ export function ProductWaitlistSheet({
  </p>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Observações (Opcional)</Label>
  <Input
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
  placeholder="Ex: Prefiro tamanho M caso chegue"
- className="h-11 rounded-xl bg-card text-xs font-medium"
+ className="h-11 rounded-lg bg-card text-xs font-medium"
  />
  </div>
 
  <Button
  type="submit"
  disabled={isSubmitting}
- className="w-full h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-2 mt-4 shadow-sm"
+ className="w-full h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 mt-4 shadow-sm"
  >
  <BellRing className="size-4" />
  <span>{isSubmitting ? "Salvando..." : "Entrar na Lista de Espera"}</span>
@@ -196,7 +196,7 @@ export function ProductWaitlistSheet({
  type="button"
  variant="ghost"
  onClick={() => onOpenChange(false)}
- className="w-full h-9 rounded-xl text-xs text-muted-foreground hover:text-foreground"
+ className="w-full h-9 rounded-lg text-xs text-muted-foreground hover:text-foreground"
  >
  Voltar ao produto
  </Button>

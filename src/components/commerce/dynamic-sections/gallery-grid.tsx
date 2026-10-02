@@ -31,7 +31,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  if (images.length === 0) {
  return (
  <section className="w-full max-w-6xl mx-auto px-4 py-8">
- <div className="p-8 rounded-2xl text-center text-xs text-muted-foreground border border-dashed border-border/80 bg-muted/20">
+ <div className="p-8 rounded-lg text-center text-xs text-muted-foreground border border-dashed border-border/80 bg-muted/20">
  Nenhuma imagem cadastrada na galeria.
  </div>
  </section>
@@ -51,7 +51,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  {images.map((img, idx) => (
  <div
  key={idx}
- className="break-inside-avoid rounded-2xl overflow-hidden bg-muted/40 relative group cursor-pointer shadow-2xs"
+ className="break-inside-avoid rounded-lg overflow-hidden bg-muted/40 relative group cursor-pointer shadow-2xs"
  >
  <img
  src={img.url || img.image_url}
@@ -84,7 +84,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  <div
  key={idx}
  className={cn(
- "rounded-2xl overflow-hidden bg-muted/40 relative group cursor-pointer shadow-2xs",
+ "rounded-lg overflow-hidden bg-muted/40 relative group cursor-pointer shadow-2xs",
  idx === 0 ? "col-span-1 @md:col-span-2 @md:row-span-2 aspect-[4/3]" : "aspect-square"
  )}
  >
@@ -113,7 +113,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  {images.map((img, idx) => (
  <div
  key={idx}
- className="shrink-0 w-72 sm:w-80 aspect-square rounded-2xl overflow-hidden bg-muted/40 relative group cursor-pointer snap-start shadow-2xs"
+ className="shrink-0 w-72 sm:w-80 aspect-square rounded-lg overflow-hidden bg-muted/40 relative group cursor-pointer snap-start shadow-2xs"
  >
  <img
  src={img.url || img.image_url}
@@ -157,7 +157,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  <Wrapper
  key={idx}
  {...wrapperProps}
- className="relative group aspect-square overflow-hidden rounded-2xl bg-muted/40 flex items-center justify-center cursor-pointer shadow-2xs hover:border-primary/40 transition-all"
+ className="relative group aspect-square overflow-hidden rounded-lg bg-muted/40 flex items-center justify-center cursor-pointer shadow-2xs hover:border-primary/40 transition-all"
  >
  <img
  src={img.url || img.image_url}

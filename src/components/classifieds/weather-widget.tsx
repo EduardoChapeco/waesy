@@ -61,9 +61,9 @@ export function WeatherWidget({ city, className, compact = false }: WeatherWidge
   if (!city?.trim()) return null;
 
   return (
-    <div className={cn("p-4 rounded-2xl bg-muted/40 border border-border/40 space-y-2.5", className)}>
+    <div className={cn("p-4 rounded-lg bg-muted/40 border border-border/40 space-y-3", className)}>
       <div className="flex items-center justify-between">
-        <h4 className="font-bold text-xs text-foreground flex items-center gap-1.5">
+        <h4 className="font-bold text-xs text-foreground flex items-center gap-2">
           <Sun className="size-4 text-amber-500" />
           <span>Clima Previsto</span>
         </h4>
@@ -75,10 +75,10 @@ export function WeatherWidget({ city, className, compact = false }: WeatherWidge
       {loading && (
         <div className="grid grid-cols-3 gap-2 text-center" aria-label="Carregando previsão do tempo">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="p-2 rounded-xl bg-background border border-border/30 animate-pulse space-y-1.5">
+            <div key={i} className="p-2 rounded-lg bg-background border border-border/30 animate-pulse space-y-2">
               <div className="h-2.5 bg-muted rounded w-8 mx-auto" />
               <div className="h-4 bg-muted rounded w-10 mx-auto" />
-              <div className="size-4 bg-muted rounded-full mx-auto mt-0.5" />
+              <div className="size-4 bg-muted rounded-full mx-auto mt-1" />
             </div>
           ))}
         </div>
@@ -94,9 +94,9 @@ export function WeatherWidget({ city, className, compact = false }: WeatherWidge
       {!loading && !error && days.length > 0 && (
         <div className="grid grid-cols-3 gap-2 text-center">
           {days.map((w, idx) => (
-            <div key={idx} className="p-2 rounded-xl bg-background border border-border/30">
+            <div key={idx} className="p-2 rounded-lg bg-background border border-border/30">
               <span className="text-[10.5px] text-muted-foreground block">{w.day}</span>
-              <span className="font-extrabold text-sm text-foreground my-0.5 block">
+              <span className="font-extrabold text-sm text-foreground my-1 block">
                 {w.maxTempC}°
               </span>
               {!compact && (
@@ -104,7 +104,7 @@ export function WeatherWidget({ city, className, compact = false }: WeatherWidge
                   mín {w.minTempC}°
                 </span>
               )}
-              <div className="flex justify-center mt-0.5">
+              <div className="flex justify-center mt-1">
                 <WeatherIcon condition={w.condition} className="size-4" />
               </div>
             </div>

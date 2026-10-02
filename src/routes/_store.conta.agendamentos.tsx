@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_store/conta/agendamentos")({
 function CustomerAgendamentosErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <AlertCircle className="size-8" />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar agendamentos</h2>
@@ -46,10 +46,10 @@ function CustomerAgendamentosErrorComponent({ error, reset }: { error: any; rese
         {error?.message || "Não foi possível carregar seus agendamentos no momento."}
       </p>
       <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-xl font-bold">
+        <Button onClick={reset} className="rounded-lg font-bold">
           Tentar Novamente
         </Button>
-        <Button asChild variant="outline" className="rounded-xl font-bold">
+        <Button asChild variant="outline" className="rounded-lg font-bold">
           <Link to="/conta">Voltar para Conta</Link>
         </Button>
       </div>
@@ -123,7 +123,7 @@ function CustomerAgendaPage() {
      fallbackHref="/conta"
      badge={
        apptList.length > 0 ? (
-         <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+         <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
            {apptList.length}
          </Badge>
        ) : null
@@ -133,7 +133,7 @@ function CustomerAgendaPage() {
          asChild
          size="sm"
          variant="outline"
-         className="rounded-xl text-xs font-semibold h-8.5 px-3.5 cursor-pointer"
+         className="rounded-lg text-xs font-semibold h-8.5 px-4 cursor-pointer"
        >
          <Link to="/agendar">Agendar</Link>
        </Button>
@@ -141,12 +141,12 @@ function CustomerAgendaPage() {
    />
 
  {/* ── 2. Minimalist Tab Controls (Apple iOS Segments) ── */}
- <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-2xl w-fit border border-border/40">
+ <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg w-fit border border-border/40">
  <button
  type="button"
  onClick={() => setActiveTab("upcoming")}
  className={cn(
- "px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
+ "px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
  activeTab === "upcoming"
  ? "bg-card text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -158,7 +158,7 @@ function CustomerAgendaPage() {
  type="button"
  onClick={() => setActiveTab("past")}
  className={cn(
- "px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
+ "px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
  activeTab === "past"
  ? "bg-card text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -170,7 +170,7 @@ function CustomerAgendaPage() {
 
     {/* ── 3. Appointments List (Grouped iOS Surface) ── */}
     {apptList.length === 0 ? (
-      <div className="w-full rounded-2xl border border-border/60 bg-card p-4 sm:p-8 text-center space-y-3">
+      <div className="w-full rounded-lg border border-border/60 bg-card p-4 sm:p-8 text-center space-y-3">
         <p className="text-sm font-semibold text-foreground">
  {activeTab === "upcoming"
  ? "Nenhum agendamento futuro encontrado"
@@ -183,14 +183,14 @@ function CustomerAgendaPage() {
  </p>
  {activeTab === "upcoming" && (
  <div className="pt-2">
- <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-9">
+ <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-9">
  <Link to="/agendar">Explorar</Link>
  </Button>
  </div>
  )}
  </div>
  ) : (
- <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
+ <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-lg border-y sm:border border-border/60 bg-card overflow-hidden">
  {apptList.map((appt: any) => {
  const dateObj = new Date(appt.scheduled_at);
  const isUpcoming = dateObj >= new Date() && appt.status !== "cancelled";
@@ -202,11 +202,11 @@ function CustomerAgendaPage() {
  return (
           <div
             key={appt.id}
-            className="p-3.5 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-muted/20"
+            className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-muted/20"
           >
  {/* Data e Horário em Destaque */}
  <div className="flex items-start gap-4">
- <div className="size-14 rounded-2xl bg-muted/40 border border-border/50 flex flex-col items-center justify-center shrink-0">
+ <div className="size-14 rounded-lg bg-muted/40 border border-border/50 flex flex-col items-center justify-center shrink-0">
  <span className="text-[10px] font-bold uppercase text-muted-foreground">
  {dateObj.toLocaleDateString("pt-BR", { month: "short" })}
  </span>
@@ -222,7 +222,7 @@ function CustomerAgendaPage() {
  </h2>
  {getStatusBadge(appt.status)}
  {appt.pass_id && (
- <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">
+ <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-medium bg-primary/10 text-primary">
  Pacote
  </span>
  )}
@@ -233,7 +233,7 @@ function CustomerAgendaPage() {
  </p>
 
  {appt.notes && (
- <p className="text-[11px] text-muted-foreground/80 line-clamp-1 italic pt-0.5">
+ <p className="text-[11px] text-muted-foreground/80 line-clamp-1 italic pt-1">
  Nota: {appt.notes}
  </p>
  )}
@@ -254,7 +254,7 @@ function CustomerAgendaPage() {
    variant="outline"
    size="sm"
    onClick={() => setSelectedCompanionAppt(appt)}
-   className="rounded-xl text-xs font-semibold h-8 text-primary border-primary/30 hover:bg-primary/5 cursor-pointer gap-1"
+   className="rounded-lg text-xs font-semibold h-8 text-primary border-primary/30 hover:bg-primary/5 cursor-pointer gap-1"
    title="Visualizar Cartão Digital de Atendimento 9:16 e WhatsApp"
  >
    <Smartphone className="size-3.5" />
@@ -267,7 +267,7 @@ function CustomerAgendaPage() {
  variant="outline"
  size="sm"
  onClick={() => setCancellingAppt(appt)}
- className="rounded-xl text-xs font-semibold h-8 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 border-border/60 cursor-pointer"
+ className="rounded-lg text-xs font-semibold h-8 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 border-border/60 cursor-pointer"
  >
  Cancelar
  </Button>
@@ -278,7 +278,7 @@ function CustomerAgendaPage() {
  asChild
  variant="ghost"
  size="sm"
- className="rounded-xl text-xs font-semibold h-8 text-muted-foreground hover:text-foreground cursor-pointer"
+ className="rounded-lg text-xs font-semibold h-8 text-muted-foreground hover:text-foreground cursor-pointer"
  >
  <Link to="/c/$storeSlug" params={{ storeSlug: appt.stores.slug }}>
  Loja ↗
@@ -298,8 +298,8 @@ function CustomerAgendaPage() {
  open={!!cancellingAppt}
  onOpenChange={(open) => !open && setCancellingAppt(null)}
  >
- <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6">
- <DialogHeader className="space-y-1.5">
+ <DialogContent className="sm:max-w-md sm:rounded-lg sm:p-6">
+ <DialogHeader className="space-y-2">
  <DialogTitle className="text-base font-bold text-foreground">
  Cancelar Agendamento
  </DialogTitle>
@@ -316,7 +316,7 @@ function CustomerAgendaPage() {
  variant="outline"
  size="sm"
  onClick={() => setCancellingAppt(null)}
- className="rounded-xl text-xs font-semibold h-9"
+ className="rounded-lg text-xs font-semibold h-9"
  >
  Manter Horário
  </Button>
@@ -326,7 +326,7 @@ function CustomerAgendaPage() {
  size="sm"
  disabled={cancelMutation.isPending}
  onClick={() => cancellingAppt && cancelMutation.mutate(cancellingAppt.id)}
- className="rounded-xl text-xs font-semibold h-9"
+ className="rounded-lg text-xs font-semibold h-9"
  >
  {cancelMutation.isPending ? "Cancelando..." : "Confirmar Cancelamento"}
  </Button>
@@ -341,7 +341,7 @@ function CustomerAgendaPage() {
         if (!open) setSelectedCompanionAppt(null);
       }}
     >
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
         <DialogHeader className="sr-only">
           <DialogTitle>Guia Digital do Atendimento</DialogTitle>
         </DialogHeader>

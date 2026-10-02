@@ -411,7 +411,7 @@ function DedicatedHotpageView() {
  <div className="relative z-10 max-w-7xl mx-auto space-y-3 sm:space-y-4">
  <div className="flex items-center gap-2">
  {customIcon && (
- <div className="size-8 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 p-1 flex items-center justify-center shrink-0">
+ <div className="size-8 rounded-lg bg-white/15 backdrop-blur-md border border-white/20 p-1 flex items-center justify-center shrink-0">
  <img
  src={customIcon}
  alt="Ícone"
@@ -440,7 +440,7 @@ function DedicatedHotpageView() {
  {theme.heroPills.map((pill, idx) => (
  <span
  key={idx}
- className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/35 text-white text-[11px] sm:text-xs font-bold border border-white/15 drop-"
+ className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/35 text-white text-[11px] sm:text-xs font-bold border border-white/15 drop-"
  >
  {pill}
  </span>
@@ -453,7 +453,7 @@ function DedicatedHotpageView() {
       <div className="relative z-20 -mt-8 rounded-t-[32px] bg-background px-0 sm:px-4 md:px-0 pt-6 pb-12 space-y-6 max-w-7xl mx-auto">
  
         {/* ── 2.1. Sub-abas de Navegação por Nicho (Padrão Botão Grande) ── */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1">
           {activeChips.map((chip) => {
             const Icon = chip.icon;
             const isSelected = selectedSubCategory === chip.id;
@@ -463,7 +463,7 @@ function DedicatedHotpageView() {
                 type="button"
                 onClick={() => setSelectedSubCategory(chip.id)}
                 className={cn(
-                  "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 ",
+                  "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 ",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold "
                     : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -488,7 +488,7 @@ function DedicatedHotpageView() {
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  placeholder={`Buscar em ${title}...`}
- className="pl-9.5 h-10 rounded-xl bg-card border-border text-xs focus:ring-1 focus:ring-primary w-full"
+ className="pl-9.5 h-10 rounded-lg bg-card border-border text-xs focus:ring-1 focus:ring-primary w-full"
  />
  </div>
 
@@ -496,7 +496,7 @@ function DedicatedHotpageView() {
  <button
  type="button"
  onClick={() => setSelectedFastFilter(selectedFastFilter === "desconto" ? null : "desconto")}
- className={`h-8.5 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+ className={`h-8.5 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer shrink-0 flex items-center gap-2 ${
  selectedFastFilter === "desconto"
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-card border-border text-muted-foreground hover:text-foreground"
@@ -507,11 +507,11 @@ function DedicatedHotpageView() {
  </button>
 
  {/* Alternador de Modo de Visualização */}
- <div className="flex items-center p-1 rounded-xl bg-muted/60 shrink-0 ml-auto sm:ml-0">
+ <div className="flex items-center p-1 rounded-lg bg-muted/60 shrink-0 ml-auto sm:ml-0">
  <button
  type="button"
  onClick={() => setViewMode("list")}
- className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+ className={`p-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
  viewMode === "list"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -523,7 +523,7 @@ function DedicatedHotpageView() {
  <button
  type="button"
  onClick={() => setViewMode("grid")}
- className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+ className={`p-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
  viewMode === "grid"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -577,7 +577,7 @@ function DedicatedHotpageView() {
  </div>
 
  {filteredProducts.length === 0 ? (
- <div className="py-16 text-center space-y-3 bg-muted/10 rounded-2xl border-0 p-8">
+ <div className="py-16 text-center space-y-3 bg-muted/10 rounded-lg border-0 p-8">
  <p className="font-bold text-sm text-foreground">Nenhum produto encontrado.</p>
  <p className="text-xs text-muted-foreground">Tente limpar a busca ou selecionar outro filtro.</p>
  </div>
@@ -594,10 +594,10 @@ function DedicatedHotpageView() {
  return (
  <div
  key={p.id}
- className="flex items-stretch justify-between p-3 sm:p-4 rounded-2xl bg-card hover:border-foreground/30 transition-all gap-3.5 group"
+ className="flex items-stretch justify-between p-3 sm:p-4 rounded-lg bg-card hover:border-foreground/30 transition-all gap-4 group"
  >
  {/* Imagem do Produto com Badge de Desconto */}
- <div className="relative size-20 sm:size-24 rounded-xl overflow-hidden bg-muted shrink-0 flex items-center justify-center">
+ <div className="relative size-20 sm:size-24 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
  {p.coverUrl ? (
  <img
  src={p.coverUrl}
@@ -610,7 +610,7 @@ function DedicatedHotpageView() {
  )}
  {discountPercent && (
  <div className="absolute top-1 left-1">
- <span className="bg-destructive text-white font-mono font-black text-[9px] px-1.5 py-0.5 rounded-md">
+ <span className="bg-destructive text-white font-mono font-black text-[9px] px-2 py-1 rounded-md">
  -{discountPercent}%
  </span>
  </div>
@@ -648,7 +648,7 @@ function DedicatedHotpageView() {
  size="icon"
  disabled={isAdding}
  onClick={() => handleQuickAdd(p)}
- className="size-9 rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer"
+ className="size-9 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer"
  title="Adicionar à Sacola"
  >
  <Plus size={16} weight="bold" />

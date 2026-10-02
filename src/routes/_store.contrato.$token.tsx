@@ -70,7 +70,7 @@ function PublicTravelContractSignaturePage() {
  <p className="text-xs text-muted-foreground">
  O link de assinatura informado expirou ou é inválido.
  </p>
- <Button asChild size="sm" variant="outline" className="rounded-xl">
+ <Button asChild size="sm" variant="outline" className="rounded-lg">
  <Link to="/turismo">Voltar ao Início</Link>
  </Button>
  </div>
@@ -97,8 +97,8 @@ function PublicTravelContractSignaturePage() {
  return (
  <div className="max-w-3xl mx-auto py-6 px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
  {/* ── 1. TOPO FLUTUANTE DE STATUS ── */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/80 sticky top-4 z-20 shadow-xs">
- <div className="space-y-0.5">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/80 sticky top-4 z-20 shadow-xs">
+ <div className="space-y-1">
  <div className="flex items-center gap-2">
  <span className="text-xs font-bold text-foreground truncate">
  {contract.contract_title}
@@ -125,7 +125,7 @@ function PublicTravelContractSignaturePage() {
  variant="outline"
  disabled={isExportingPdf}
  onClick={handleExportPdf}
- className="rounded-xl text-xs font-bold gap-1.5 h-9"
+ className="rounded-lg text-xs font-bold gap-2 h-9"
  >
  <Download className="size-3.5" />
  <span>{isExportingPdf ? "Gerando..." : "Baixar PDF"}</span>
@@ -136,7 +136,7 @@ function PublicTravelContractSignaturePage() {
  {/* ── 2. CORPO DO CONTRATO EDITORIAL ── */}
  <div
  id="contract-document-view"
- className="p-6 sm:p-10 rounded-2xl bg-white text-slate-900 border border-slate-200 shadow-sm space-y-8"
+ className="p-6 sm:p-10 rounded-lg bg-white text-slate-900 border border-slate-200 shadow-sm space-y-8"
  >
  {/* Cabeçalho do Instrumento Particular */}
  <div className="text-center space-y-2 pb-6 border-b border-slate-200">
@@ -169,7 +169,7 @@ function PublicTravelContractSignaturePage() {
  </div>
 
  {/* Resumo dos Serviços & Passageiros */}
- <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+ <div className="space-y-3 p-4 rounded-lg bg-slate-50 border border-slate-200 text-xs">
  <h3 className="font-black text-slate-900 uppercase tracking-wider text-[11px]">
  2. ESPECIFICAÇÃO DOS SERVIÇOS
  </h3>
@@ -191,7 +191,7 @@ function PublicTravelContractSignaturePage() {
  </div>
 
  {/* Resumo Financeiro & Condições de Pagamento */}
- <div className="space-y-2 p-4 rounded-2xl bg-slate-900 text-white text-xs">
+ <div className="space-y-2 p-4 rounded-lg bg-slate-900 text-white text-xs">
  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">
  3. PREÇO e CONDIÇÕES DE PAGAMENTO
  </span>
@@ -223,7 +223,7 @@ function PublicTravelContractSignaturePage() {
 
  {/* Certificado de Autenticidade Digital (Se Já Assinado) */}
  {isAlreadySigned && (
- <div className="p-5 rounded-2xl bg-emerald-50 border-2 border-emerald-200 space-y-3">
+ <div className="p-5 rounded-lg bg-emerald-50 border-2 border-emerald-200 space-y-3">
  <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
  <ShieldCheck className="size-5 text-emerald-600" />
  <span>CERTIFICADO DIGITAL DE AUTENTICIDADE (MP 2.200-2/2001)</span>
@@ -248,7 +248,7 @@ function PublicTravelContractSignaturePage() {
 
  {/* ── 3. FORMULÁRIO DE ASSINATURA ELETRÔNICA MOBILE ── */}
  {!isAlreadySigned && (
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-5 shadow-sm">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-5 shadow-sm">
  <div className="space-y-1">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Lock className="size-4 text-primary" />
@@ -266,7 +266,7 @@ function PublicTravelContractSignaturePage() {
  value={signerName}
  onChange={(e) => setSignerName(e.target.value)}
  placeholder="Seu nome completo"
- className="h-10 text-xs rounded-xl"
+ className="h-10 text-xs rounded-lg"
  required
  />
  </div>
@@ -277,25 +277,25 @@ function PublicTravelContractSignaturePage() {
  value={signerDoc}
  onChange={(e) => setSignerDoc(e.target.value)}
  placeholder="000.000.000-00"
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-xs rounded-lg font-mono"
  required
  />
  </div>
  </div>
 
  {/* Quadro de Assinatura Canvas */}
- <div className="space-y-1.5">
+ <div className="space-y-2">
  <Label className="text-xs font-bold">Rubrica / Assinatura Digital</Label>
  <SignaturePad onSave={(dataUrl) => setSignatureDataUrl(dataUrl)} />
  </div>
 
  {/* Checkbox de Aceite dos Termos */}
- <label className="flex items-start gap-2.5 cursor-pointer text-xs text-muted-foreground leading-relaxed pt-1">
+ <label className="flex items-start gap-3 cursor-pointer text-xs text-muted-foreground leading-relaxed pt-1">
  <input
  type="checkbox"
  checked={acceptedTerms}
  onChange={(e) => setAcceptedTerms(e.target.checked)}
- className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary"
+ className="mt-1 size-4 rounded border-border text-primary focus:ring-primary"
  />
  <span>
  Declaro que li e concordo integralmente com todas as cláusulas, valores, políticas de cancelamento e termos deste contrato de viagem.
@@ -306,7 +306,7 @@ function PublicTravelContractSignaturePage() {
  type="button"
  disabled={signMutation.isPending || !acceptedTerms || !signerName || !signerDoc}
  onClick={() => signMutation.mutate()}
- className="w-full h-12 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
+ className="w-full h-12 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
  >
  <CheckCircle className="size-4 text-emerald-500" />
  <span>{signMutation.isPending ? "Validando e gerando certificado..." : "Assinar Contrato Eletronicamente"}</span>
