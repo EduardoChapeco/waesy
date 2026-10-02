@@ -68,6 +68,8 @@ try {
     outfile: bundledFile,
     bundle: true,
     minify: true,
+    treeShaking: true,
+    legalComments: "none",
     target: "es2022",
     format: "esm",
     external: ["node:*", "cloudflare:*"],

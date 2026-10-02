@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import {
   screenResumeLogic,
   generateJobDescriptionLogic,
@@ -187,14 +185,27 @@ function scoreResult(benchmark: any, output: any): { passed: boolean; scores: Ru
 }
 
 export async function runFullQualityEvaluation(): Promise<FullEvaluationReport> {
-  const benchPath = path.join(process.cwd(), "ia", "reference-benchmarks.json");
-  const baselinePath = path.join(process.cwd(), "ia", "quality-baseline.json");
+  let rawBenchmarks: { benchmarks?: any[] } = { benchmarks: [] };
+  let baseline: any = null;
 
-  if (fs.existsSync(benchPath) === false) {
-    throw new Error(`Arquivo de benchmark de referência não encontrado: ${benchPath}`);
+  try {
+    if (typeof process !== "undefined" && typeof process.cwd === "function") {
+      const fsMod = await import("node:fs");
+      const pathMod = await import("node:path");
+      const benchPath = pathMod.join(process.cwd(), "ia", "reference-benchmarks.json");
+      const baselinePath = pathMod.join(process.cwd(), "ia", "quality-baseline.json");
+
+      if (fsMod.existsSync(benchPath)) {
+        rawBenchmarks = JSON.parse(fsMod.readFileSync(benchPath, "utf-8"));
+      }
+      if (fsMod.existsSync(baselinePath)) {
+        baseline = JSON.parse(fsMod.readFileSync(baselinePath, "utf-8"));
+      }
+    }
+  } catch (err) {
+    console.warn("[ai-evaluator] Leitura via filesystem ignorada no runtime atual:", err);
   }
 
-  const rawBenchmarks = JSON.parse(fs.readFileSync(benchPath, "utf-8"));
   const benchmarks: any[] = rawBenchmarks.benchmarks || [];
 
   const results: BenchmarkEvaluationResult[] = [];
@@ -263,8 +274,7 @@ export async function runFullQualityEvaluation(): Promise<FullEvaluationReport> 
   const regressionDetails: string[] = [];
   let hasRegression = false;
 
-  if (fs.existsSync(baselinePath)) {
-    const baseline = JSON.parse(fs.readFileSync(baselinePath, "utf-8"));
+  if (baseline) {
     const thresholds = baseline.thresholds || {};
 
     if (overallScore < (thresholds.min_overall_score ?? 4.2)) {

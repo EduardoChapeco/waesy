@@ -232,33 +232,46 @@ export async function mapCartToDTO(cart: any): Promise<CartDTO> {
     }
   }
 
- const items: any[] = [];
- for (const item of rawItems) {
- let variant = item.product_variants;
- let product = variant?.product;
+ // Pre-fetch de variantes faltantes em lote único (S20: Elimina N+1)
+ const missingVariantIds = rawItems
+ .filter((item: any) => (!item.product_variants || !item.product_variants.product) && item.variant_id)
+ .map((item: any) => item.variant_id);
 
- // Fallback robusto se o join aninhado do PostgREST não trouxer a variante/produto
- if (!variant || !product) {
+ const fallbackVariantsMap = new Map<string, any>();
+ if (missingVariantIds.length > 0) {
  try {
- const { data: vData } = await supabase
+ const { data: vList } = await supabase
  .from("product_variants")
  .select("id, sku, price_override_cents, stock_on_hand, attributes, status, product_id, products(id, title, slug, price_cents, compare_at_cents, product_media(url))")
- .eq("id", item.variant_id)
- .maybeSingle();
+ .in("id", missingVariantIds);
 
- if (vData) {
- variant = {
+ if (vList) {
+ for (const vData of vList) {
+ fallbackVariantsMap.set(vData.id, {
  sku: vData.sku,
  price_override_cents: vData.price_override_cents,
  stock_on_hand: vData.stock_on_hand,
  attributes: (vData.attributes as any) || {},
  status: vData.status,
  product: (vData.products as any) || null,
- };
- product = variant.product;
+ });
+ }
  }
  } catch (err) {
- console.warn("[cart.functions] Erro ao buscar variante de fallback:", err);
+ console.warn("[cart.functions] Erro ao buscar variantes de fallback em lote:", err);
+ }
+ }
+
+ const items: any[] = [];
+ for (const item of rawItems) {
+ let variant = item.product_variants;
+ let product = variant?.product;
+
+ if (!variant || !product) {
+ const fb = fallbackVariantsMap.get(item.variant_id);
+ if (fb) {
+ variant = fb;
+ product = fb.product;
  }
  }
 

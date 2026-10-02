@@ -738,19 +738,32 @@ export const getMyStoresList = createServerFn({ method: "GET" }).handler(async (
 
  const activeStoreId = identity.store_id;
 
- // 4. Enriquecer lojas com metadados e contagem de produtos
- const enriched = await Promise.all(
- (stores || []).map(async (st: any) => {
- let productCount = 0;
+ // 4. Enriquecer lojas com metadados e contagem de produtos em lote (S20: Elimina N+1)
+ const storeList = stores || [];
+ const storeIds = storeList.map((st: any) => st.id).filter(Boolean);
+ const productCountMap = new Map<string, number>();
+
+ if (storeIds.length > 0) {
  try {
- const { count } = await db
+ const { data: prods } = await db
  .from("products")
- .select("id", { count: "exact", head: true })
- .eq("store_id", st.id);
- productCount = count || 0;
- } catch {
- productCount = 0;
+ .select("store_id")
+ .in("store_id", storeIds);
+
+ if (prods) {
+ for (const p of prods) {
+ if (p.store_id) {
+ productCountMap.set(p.store_id, (productCountMap.get(p.store_id) || 0) + 1);
  }
+ }
+ }
+ } catch {
+ // Fallback silencioso para contagem
+ }
+ }
+
+ const enriched = storeList.map((st: any) => {
+ const productCount = productCountMap.get(st.id) || 0;
 
  const settings = (st.settings as Record<string, any>) || {};
  const bannerUrl = settings.bannerUrl || settings.banner_url || null;
@@ -779,8 +792,7 @@ export const getMyStoresList = createServerFn({ method: "GET" }).handler(async (
  is_active_context: st.id === activeStoreId,
  product_count: productCount,
  };
- }),
- );
+ });
 
  return enriched;
  } catch (err) {

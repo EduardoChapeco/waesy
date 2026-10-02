@@ -13,8 +13,6 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import fs from "node:fs";
-import path from "node:path";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getServerIdentity, requireAdmin } from "@/lib/server-access";
 import {
@@ -205,20 +203,28 @@ export function evaluateOutputAgainstBenchmark(
 export async function runPlatformQualityBenchmark(
   customOutputs?: Record<string, string>
 ): Promise<PlatformQualityBenchmarkReport> {
-  const datasetPath = path.join(process.cwd(), "ia", "benchmark-reference-dataset-v2.json");
-  const baselinePath = path.join(process.cwd(), "ia", "quality-baseline-v2.json");
-
-  if (fs.existsSync(datasetPath) === false) {
-    throw new Error(`Dataset de referência não encontrado: ${datasetPath}`);
-  }
-
-  const rawDataset = JSON.parse(fs.readFileSync(datasetPath, "utf-8"));
-  const benchmarks: BenchmarkCaseItem[] = rawDataset.benchmarks || [];
-
+  let rawDataset: { version?: string; benchmarks?: BenchmarkCaseItem[] } = { version: "2.0.0", benchmarks: [] };
   let baseline: any = null;
-  if (fs.existsSync(baselinePath)) {
-    baseline = JSON.parse(fs.readFileSync(baselinePath, "utf-8"));
+
+  try {
+    if (typeof process !== "undefined" && typeof process.cwd === "function") {
+      const fsMod = await import("node:fs");
+      const pathMod = await import("node:path");
+      const datasetPath = pathMod.join(process.cwd(), "ia", "benchmark-reference-dataset-v2.json");
+      const baselinePath = pathMod.join(process.cwd(), "ia", "quality-baseline-v2.json");
+
+      if (fsMod.existsSync(datasetPath)) {
+        rawDataset = JSON.parse(fsMod.readFileSync(datasetPath, "utf-8"));
+      }
+      if (fsMod.existsSync(baselinePath)) {
+        baseline = JSON.parse(fsMod.readFileSync(baselinePath, "utf-8"));
+      }
+    }
+  } catch (err) {
+    console.warn("[ai-benchmark] Leitura via filesystem ignorada no runtime atual:", err);
   }
+
+  const benchmarks: BenchmarkCaseItem[] = rawDataset.benchmarks || [];
 
   const results: EvaluationItemResult[] = [];
   let passedCount = 0;

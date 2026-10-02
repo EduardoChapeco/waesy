@@ -1247,4 +1247,14 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S17-S18, docs/PERFORMANCE.md (Core Web Vitals) e Definition of Done B.9.
 - **Consequências:** Fases S17 e S18 100% CONCLUÍDAS e HOMOLOGADAS. Total de 18 de 48 fases do Plano 5 finalizadas (37.5%). Próxima fase: S19 (Otimização do Worker: bundle, cold start e imports seletivos).
 
+## DEC-110: Conclusão das Fases S19 e S20 (Plano 5 — Bloco C) — Otimização do Worker, Índices de Banco e Eliminação de Loops N+1
+- **Data:** 2026-10-02
+- **Contexto:** Execução das Fases S19 (Otimização do Cloudflare Worker) e S20 (Índices no banco, seleção explícita e fim do N+1) do Bloco C (Rotas e Performance).
+- **Decisão:**
+  1. `S19`: Configurado `treeShaking: true` e `legalComments: "none"` no empacotador esbuild do Cloudflare Worker (`scripts/wrap-worker.js`), eliminando comentários e código não alcançável. Erradicado o uso estático de `node:fs` e `node:path` em runtime serverless edge em `src/services/ai-quality-benchmark.functions.ts` e `src/services/ai-quality-evaluator.engine.ts`, isolando leituras de filesystem para import dinâmico em Node e garantindo execução sem quebras na borda Cloudflare.
+  2. `S20`: Criada e aplicada via Supabase MCP a migração `supabase/migrations/20261002000001_s20_scale_indexes.sql` com 5 novos índices compostos de alta performance (`idx_orders_store_created_at`, `idx_products_store_status_created_at`, `idx_classifieds_status_created_at`, `idx_customers_crm_store_created_at`, `idx_events_status_event_date`). Eliminados 4 loops críticos de padrão N+1 no backend: contagem de produtos em `store.functions.ts`, sincronização de estoque em `checkout.functions.ts`, fallback de variantes em `cart.functions.ts` e reserva de poltronas em `tourism.functions.ts`, substituindo por queries em lote com `.in("id", ids)` e batch array inserts.
+  3. Resultado da Verificação: TypeScript `tsc --noEmit` com 0 erros, Vitest com 155 suítes e 1.030 testes verdes (100%), Build de produção aprovado com `dist/_worker.js` dentro do orçamento de escala (16.81 MB), e todos os 9 gates de CI `npm run check:canonical` aprovados com 100% de conformidade.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S19-S20, docs/PERFORMANCE.md (Core Web Vitals) e Definition of Done B.9.
+- **Consequências:** Fases S19 e S20 100% CONCLUÍDAS e HOMOLOGADAS. Total de 20 de 48 fases do Plano 5 finalizadas (41.7%). Próximas fases: S21 (RLS performático com medição do custo por linha) e S22 (Rate limit, idempotência e desacoplamento assíncrono).
+
 

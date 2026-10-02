@@ -323,18 +323,21 @@ export const bookTourismExperience = createServerFn({ method: "POST" })
         throw new Error("Não foi possível reservar a poltrona selecionada no momento.");
       }
 
-      // Sincroniza espelho em trip_seat_reservations para telemetria de frota
-      for (const seatNum of seatsToBook) {
+      // Sincroniza espelho em trip_seat_reservations em lote único (S20: Elimina N+1)
+      if (seatsToBook.length > 0) {
         try {
-          await supabase.from("trip_seat_reservations").insert({
+          const seatRows = seatsToBook.map((seatNum) => ({
             experience_id: data.experienceId,
             seat_number: seatNum,
             passenger_name: data.customerName,
             passenger_doc: data.passengers?.[0]?.document || null,
             passenger_phone: data.customerPhone,
             status: "confirmed",
-          });
-        } catch {}
+          }));
+          await supabase.from("trip_seat_reservations").insert(seatRows);
+        } catch (seatErr) {
+          console.warn("[tourism.functions] Erro ao gravar reservas de assento em lote:", seatErr);
+        }
       }
     }
 

@@ -13,7 +13,7 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 | **PLANO-2** | `03_PLANO_MOTOR_DE_ANUNCIOS_E_VITRINE_F01_A_F48.md` | Motor de Anúncios Unificado, Preview Real e Vitrine | 48 Fases (F01–F48) | Concluído e Homologado | DEC-086 / Migração 20261221 / View ativa |
 | **PLANO-3** | `04_PLANO_3_MOTOR_DE_OFERTAS_E_NICHOS.md` | Nichos, 11 Blocos, Estoque Ledger e Motor de Preço | 72 Fases (G01–G72) | Concluído e Homologado | DEC-087 / DEC-088 / 38 testes verdes |
 | **PLANO-4** | `05_SUPER_PROMPT_OPERACAO_VERDADE_UNICA.md` | Operação Verdade Única, Erradicação de Remendos | 64 Fases (R01–R64) | **Concluído e Homologado** | 64/64 Fases / DEC-089 a DEC-104 / 1.007 testes verdes / 0 erros TS / Build OK |
-| **PLANO-5** | `06_PROMPT_ESTRUTURA_ESCALA_OPERACAO_BIGTECH.md` | Governança BigTech, Camadas, Telemetria e Escala | 48 Fases (S01–S48) | **Em Andamento (18/48 concluídas)** | DEC-105 a DEC-109 / 18 fases concluídas / 1.030 testes verdes |
+| **PLANO-5** | `06_PROMPT_ESTRUTURA_ESCALA_OPERACAO_BIGTECH.md` | Governança BigTech, Camadas, Telemetria e Escala | 48 Fases (S01–S48) | **Em Andamento (20/48 concluídas)** | DEC-105 a DEC-110 / 20 fases concluídas / 1.030 testes verdes |
 
 ---
 
@@ -145,8 +145,8 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **S16**: Orçamento por rota bloqueante no CI. *(Concluído — `scripts/route-budget-guard.mjs`, `npm run check:route-budget`)*
 - [x] **S17**: Paginação keyset e streaming em listagens volumosas. *(Concluído — DEC-109, `src/lib/pagination/keyset-pagination.ts`, testes 9/9 verdes)*
 - [x] **S18**: Cache de edge para páginas públicas e invalidação precisa. *(Concluído — DEC-109, `src/lib/cache/edge-cache.ts`, testes 6/6 verdes)*
-- [ ] **S19**: Otimização do Cloudflare Worker (bundle, cold start, imports seletivos).
-- [ ] **S20**: Índices no banco, seleção explícita de colunas e fim do N+1.
+- [x] **S19**: Otimização do Cloudflare Worker (bundle, cold start, imports seletivos). *(Concluído — DEC-110, esbuild tree-shaking, isolamento de node:fs no edge)*
+- [x] **S20**: Índices no banco, seleção explícita de colunas e fim do N+1. *(Concluído — DEC-110, migração 20261002000001 com 5 índices e batching de queries)*
 - [ ] **S21**: RLS performático com medição do custo por linha.
 - [ ] **S22**: Rate limit, idempotência e desacoplamento assíncrono para filas/webhooks.
 

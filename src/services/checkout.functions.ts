@@ -523,15 +523,30 @@ export const processCheckout = createServerFn({ method: "POST" })
           .maybeSingle();
 
         if (orderWithStore?.store_id && Array.isArray(orderWithStore.order_items)) {
+          const itemIds = orderWithStore.order_items.map((i: any) => i.item_id).filter(Boolean);
+          const variantMap = new Map<string, { stock_on_hand?: number | null; product_id?: string | null }>();
+
+          if (itemIds.length > 0) {
+            try {
+              const { data: variants } = await db
+                .from("product_variants")
+                .select("id, stock_on_hand, product_id")
+                .in("id", itemIds);
+
+              if (variants) {
+                for (const v of variants) {
+                  variantMap.set(v.id, v);
+                }
+              }
+            } catch (err) {
+              console.warn("[checkout:stock-sync] Falha ao carregar variantes em lote:", err);
+            }
+          }
+
           for (const item of orderWithStore.order_items) {
             if (!item.item_id) continue;
             try {
-              const { data: variant } = await db
-                .from("product_variants")
-                .select("stock_on_hand, product_id")
-                .eq("id", item.item_id)
-                .maybeSingle();
-
+              const variant = variantMap.get(item.item_id);
               const targetProductId = variant?.product_id || item.item_id;
               const newStockQty = variant?.stock_on_hand ?? 0;
 
