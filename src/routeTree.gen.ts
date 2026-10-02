@@ -24,6 +24,7 @@ import { Route as StoreAgendaRouteImport } from './routes/_store.agenda'
 import { Route as StoreAgendarRouteImport } from './routes/_store.agendar'
 import { Route as StoreBebidasRouteImport } from './routes/_store.bebidas'
 import { Route as StoreBelezaRouteImport } from './routes/_store.beleza'
+import { Route as StoreBuscaRouteImport } from './routes/_store.busca'
 import { Route as StoreBuscarRouteImport } from './routes/_store.buscar'
 import { Route as StoreCadastroRouteImport } from './routes/_store.cadastro'
 import { Route as StoreCadastroantecipadoRouteImport } from './routes/_store.cadastroantecipado'
@@ -471,6 +472,11 @@ const StoreBebidasRoute = StoreBebidasRouteImport.update({
 const StoreBelezaRoute = StoreBelezaRouteImport.update({
   id: '/beleza',
   path: '/beleza',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreBuscaRoute = StoreBuscaRouteImport.update({
+  id: '/busca',
+  path: '/busca',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreBuscarRoute = StoreBuscarRouteImport.update({
@@ -2481,6 +2487,7 @@ export interface FileRoutesByFullPath {
   '/agendar': typeof StoreAgendarRouteWithChildren
   '/bebidas': typeof StoreBebidasRoute
   '/beleza': typeof StoreBelezaRoute
+  '/busca': typeof StoreBuscaRoute
   '/buscar': typeof StoreBuscarRoute
   '/cadastro': typeof StoreCadastroRoute
   '/cadastroantecipado': typeof StoreCadastroantecipadoRoute
@@ -2867,6 +2874,7 @@ export interface FileRoutesByTo {
   '/agenda': typeof StoreAgendaRoute
   '/bebidas': typeof StoreBebidasRoute
   '/beleza': typeof StoreBelezaRoute
+  '/busca': typeof StoreBuscaRoute
   '/buscar': typeof StoreBuscarRoute
   '/cadastro': typeof StoreCadastroRoute
   '/cadastroantecipado': typeof StoreCadastroantecipadoRoute
@@ -3253,6 +3261,7 @@ export interface FileRoutesById {
   '/_store/agendar': typeof StoreAgendarRouteWithChildren
   '/_store/bebidas': typeof StoreBebidasRoute
   '/_store/beleza': typeof StoreBelezaRoute
+  '/_store/busca': typeof StoreBuscaRoute
   '/_store/buscar': typeof StoreBuscarRoute
   '/_store/cadastro': typeof StoreCadastroRoute
   '/_store/cadastroantecipado': typeof StoreCadastroantecipadoRoute
@@ -3646,6 +3655,7 @@ export interface FileRouteTypes {
     | '/agendar'
     | '/bebidas'
     | '/beleza'
+    | '/busca'
     | '/buscar'
     | '/cadastro'
     | '/cadastroantecipado'
@@ -4032,6 +4042,7 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/bebidas'
     | '/beleza'
+    | '/busca'
     | '/buscar'
     | '/cadastro'
     | '/cadastroantecipado'
@@ -4417,6 +4428,7 @@ export interface FileRouteTypes {
     | '/_store/agendar'
     | '/_store/bebidas'
     | '/_store/beleza'
+    | '/_store/busca'
     | '/_store/buscar'
     | '/_store/cadastro'
     | '/_store/cadastroantecipado'
@@ -4943,6 +4955,13 @@ declare module '@tanstack/react-router' {
       path: '/beleza'
       fullPath: '/beleza'
       preLoaderRoute: typeof StoreBelezaRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/busca': {
+      id: '/_store/busca'
+      path: '/busca'
+      fullPath: '/busca'
+      preLoaderRoute: typeof StoreBuscaRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/buscar': {
@@ -7740,6 +7759,7 @@ interface StoreRouteChildren {
   StoreAgendarRoute: typeof StoreAgendarRouteWithChildren
   StoreBebidasRoute: typeof StoreBebidasRoute
   StoreBelezaRoute: typeof StoreBelezaRoute
+  StoreBuscaRoute: typeof StoreBuscaRoute
   StoreBuscarRoute: typeof StoreBuscarRoute
   StoreCadastroRoute: typeof StoreCadastroRoute
   StoreCadastroantecipadoRoute: typeof StoreCadastroantecipadoRoute
@@ -7832,6 +7852,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreAgendarRoute: StoreAgendarRouteWithChildren,
   StoreBebidasRoute: StoreBebidasRoute,
   StoreBelezaRoute: StoreBelezaRoute,
+  StoreBuscaRoute: StoreBuscaRoute,
   StoreBuscarRoute: StoreBuscarRoute,
   StoreCadastroRoute: StoreCadastroRoute,
   StoreCadastroantecipadoRoute: StoreCadastroantecipadoRoute,

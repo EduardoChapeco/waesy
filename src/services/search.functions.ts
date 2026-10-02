@@ -115,8 +115,7 @@ export type FederatedSearchResponse = {
 
 async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedSearchResponse> {
  const db = getServerClient();
- const { query, types, limit, store_id } = input;
-
+ const { query, types, limit, store_id } = input;  const trimmed = query.trim();  if (trimmed.length < 2) {    return { products: [], events: [], classifieds: [], stores: [], recipes: [], total: 0 };  }
  // Preparar o termo de busca para FTS e ILIKE
  const ftsTerm = query
  .trim()
@@ -517,3 +516,8 @@ export const getSearchDiscoveryData = createServerFn({ method: "GET" }).handler(
     };
   }
 });
+
+// ---------------------------------------------------------------------------
+// Canonical Universal Search Alias (F14)
+// ---------------------------------------------------------------------------
+export const universalSearchFn = federatedSearch;

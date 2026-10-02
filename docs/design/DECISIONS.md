@@ -1664,3 +1664,17 @@
 
 
 
+
+## DEC-140: Conclusão da Fase F14 (Plano de Estabilização E2E) — Motor de Busca Universal (Classificados + Marketplace + Places)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F14 do Plano de Estabilização E2E, unificando a descoberta pública multi-domínio através dos 3 pilares de consumo (Places, Classificados e Marketplace Pro) com zero mocks, rota transparente /busca redirecionando para /buscar e queries federadas com proteção anti-varredura para termos curtos (< 2 caracteres).
+- **Decisão:**
+  1. `Server Function Federada (universalSearchFn)`: Exportado alias canônico em `src/services/search.functions.ts` que executa queries paralelas nas tabelas reais `products`, `classifieds`, `stores` e `mined_raw_extractions` (receitas) com otimização de retorno instantâneo quando termo < 2 caracteres.
+  2. `Paridade de Rota (/busca e /buscar)`: Criada rota canônica `src/routes/_store.busca.tsx` que preserva query parameters e redireciona transparentemente sem duplicação de componentes de UI.
+  3. `Aprovação Integral nas 4 Gates de Qualidade`:
+     - `vitest`: 3/3 testes unitários verdes em `src/services/search.functions.test.ts`.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+     - `npm run typecheck`: 0 erros de compilação TypeScript.
+     - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F14-UNIVERSAL-SEARCH, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F14 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F15: Geolocalização e Filtros de Cidade/Bairro**.
