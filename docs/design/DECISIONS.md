@@ -1723,3 +1723,18 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F17-FINANCIAL-DASHBOARD, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
 - **Consequências:** Fase F17 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F18: Suporte Interno — Módulo de Tickets com SLA**.
 
+## DEC-144: Conclusão da Fase F18 (Plano de Estabilização E2E) — Suporte Interno: Módulo de Tickets com SLA
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F18 do Plano de Estabilização E2E, consolidando o módulo de chamados e suporte interno no Workspace Pro com categorização, prioridades calibradas, SLA determinístico e histórico encadeado de mensagens, sem dados fictícios (M01: Zero Mocks).
+- **Decisão:**
+  1. `Server Functions Canônicas de Suporte`: Exportados aliases canônicos em `src/services/support-tickets.functions.ts` (`listSupportTicketsFn`, `getSupportTicketDetailsFn`, `createSupportTicketFn`, `addSupportTicketMessageFn`, `updateSupportTicketStatusFn`) com isolamento multi-tenant intransponível por `store_id`.
+  2. `Governança de SLA e Categorias`: Implementado cálculo determinístico de data limite de SLA (`sla_due_at`), validação estrita de esquemas Zod e proibição de respostas vazias.
+  3. `Aprovação Integral nas 4 Gates de Qualidade`:
+     - `vitest`: 6/6 testes unitários verdes em `src/services/support-tickets.functions.test.ts`.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+     - `npm run typecheck`: 0 erros de compilação TypeScript em 1.798 arquivos.
+     - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F18-SUPPORT-TICKETS, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F18 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para deploy e publicações.
+
+

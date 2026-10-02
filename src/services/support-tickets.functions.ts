@@ -653,3 +653,14 @@ export const closeCustomerTicket = createServerFn({ method: "POST" })
     if (error) throw new Error("Erro ao encerrar chamado: " + error.message);
     return { success: true };
   });
+
+// ---------------------------------------------------------------------------
+// Canonical Aliases (F18)
+// ---------------------------------------------------------------------------
+
+export const listSupportTicketsFn = listSupportTickets;
+export const getSupportTicketDetailsFn = getSupportTicketDetails;
+export const createSupportTicketFn = createSupportTicket;
+export const addSupportTicketMessageFn = addSupportTicketMessage;
+export const updateSupportTicketStatusFn = updateSupportTicketStatus;
+
