@@ -92,7 +92,7 @@ describe("Pilar 2 — Isolamento do Feed de Classificados", () => {
       author_profile_id: "660e8400-e29b-41d4-a716-446655440001",
       store_id: null,
       category: "sale" as const,
-      status: "promoted" as const, // Promovido = fora do feed público
+      status: "promoted" as string, // cast para string genérica — evita TS2367
       is_store_official: false,
       workspace_entity_id: "770e8400-e29b-41d4-a716-446655440003",
       promoted_to_product_id: "880e8400-e29b-41d4-a716-446655440004",
@@ -101,8 +101,9 @@ describe("Pilar 2 — Isolamento do Feed de Classificados", () => {
     const result = ClassifiedPillarSchema.safeParse(promotedClassified);
     expect(result.success).toBe(true);
 
-    // Verificar que o status 'promoted' exclui do feed ativo
-    const apareceriaNoFeedAtivo = promotedClassified.status === "active";
+    // Verificar que o status 'promoted' exclui do feed ativo (comparação via string)
+    const status: string = promotedClassified.status;
+    const apareceriaNoFeedAtivo = status === "active";
     expect(apareceriaNoFeedAtivo).toBe(false); // CORRETO: promovido não aparece
   });
 
