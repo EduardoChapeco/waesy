@@ -35,16 +35,16 @@ export function ActionsFamily({ mode }: ComponentStateProps) {
           <StateCard title="Ações Interativas" state="ready">
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" className="h-11 sm:h-9">
+                <Button size="sm" className="h-11">
                   Principal
                 </Button>
-                <Button variant="secondary" size="sm" className="h-11 sm:h-9">
+                <Button variant="secondary" size="sm" className="h-11">
                   Secundário
                 </Button>
-                <Button variant="outline" size="sm" className="h-11 sm:h-9">
+                <Button variant="outline" size="sm" className="h-11">
                   Linha
                 </Button>
-                <Button variant="destructive" size="sm" className="h-11 sm:h-9">
+                <Button variant="destructive" size="sm" className="h-11">
                   Excluir
                 </Button>
               </div>
@@ -73,7 +73,7 @@ export function ActionsFamily({ mode }: ComponentStateProps) {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-1.5 pt-1">
+              <div className="flex flex-wrap gap-2 pt-1">
                 <Badge variant="default">Ativo</Badge>
                 <Badge variant="secondary">Pendente</Badge>
                 <Badge variant="outline">Neutro</Badge>
@@ -88,10 +88,10 @@ export function ActionsFamily({ mode }: ComponentStateProps) {
           <StateCard title="Ações em Espera" state="loading">
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-2">
-                <Skeleton className="h-11 sm:h-9 w-20 rounded-md" />
-                <Skeleton className="h-11 sm:h-9 w-24 rounded-md" />
-                <Skeleton className="h-11 sm:h-9 w-16 rounded-md" />
-                <Skeleton className="h-11 sm:h-9 w-18 rounded-md" />
+                <Skeleton className="h-11 w-20 rounded-md" />
+                <Skeleton className="h-11 w-24 rounded-md" />
+                <Skeleton className="h-11 w-16 rounded-md" />
+                <Skeleton className="h-11 w-18 rounded-md" />
               </div>
 
               <div className="flex items-center gap-4 pt-2">
@@ -105,7 +105,7 @@ export function ActionsFamily({ mode }: ComponentStateProps) {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-1.5 pt-1">
+              <div className="flex flex-wrap gap-2 pt-1">
                 <Skeleton className="h-5 w-12 rounded-full" />
                 <Skeleton className="h-5 w-16 rounded-full" />
                 <Skeleton className="h-5 w-14 rounded-full" />
@@ -123,9 +123,9 @@ export function ActionsFamily({ mode }: ComponentStateProps) {
               description="Nenhum gatilho de ação configurado para este contexto."
               action={{
                 label: "Habilitar comandos",
-                onClick: () => {},
+                onClick: () => {}, /* focus-visible: delegate */
               }}
-              className="py-4 min-h-[160px]"
+              className="py-4 min-h-36"
             />
           </StateCard>
         )}
@@ -144,7 +144,7 @@ export function ActionsFamily({ mode }: ComponentStateProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-11 sm:h-9 w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
+                className="h-11 w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Tentar novamente

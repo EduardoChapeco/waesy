@@ -51,8 +51,8 @@ export function DesignSystemHeader({ currentMode, onSelectMode }: DesignSystemHe
               key={mode.id}
               variant={isActive ? "default" : "outline"}
               size="sm"
-              onClick={() => onSelectMode(mode.id)}
-              className="h-11 sm:h-9 text-xs px-3 focus-visible:ring-2"
+              onClick={() => onSelectMode(mode.id)} /* focus-visible:ring-2 */
+              className="h-11 text-xs px-3 focus-visible:ring-2"
             >
               {mode.label}
             </Button>

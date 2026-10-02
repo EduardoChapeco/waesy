@@ -1370,3 +1370,18 @@
   5. `Suíte de Testes`: 7/7 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S29, WCAG 2.2 AA (Critério 2.5.8), Apple HIG e Definition of Done B.9.
 - **Consequências:** Fase S29 100% CONCLUÍDA e HOMOLOGADA. Total de **29 de 48 fases do Plano 5 concluídas (60.4%)**. Próxima fase: **S30 (Migração de Módulos para Primitivas Canônicas com Catraca Zerando)**.
+
+## DEC-119: Conclusão da Fase S30 (Plano 5 — Bloco D) — Migração de Módulos para Primitivas Canônicas com Catraca Zerando
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S30 (Migração de Módulos para as Primitivas e Catraca Zerando) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
+- **Decisão:**
+  1. `Saneamento Integral de Débito Visual em Componentes`: Corrigidas todas as violações em `src/components/design-system/`:
+     - `actions-family.tsx`: Erradicação de `sm:h-9` em botões e skeletons, substituição de `gap-1.5` por múltiplos de 4px e touch targets padronizados em `h-11` (>=44px).
+     - `design-system-header.tsx`: Adicionada tag de foco explícito `:focus-visible` em acionadores de filtro e touch targets `h-11`.
+     - `state-card.tsx`: Corrigido raio não-canônico `rounded-xl` para `rounded-lg` (DL-09).
+     - Resultado: 100% dos arquivos sob `src/components/design-system/` operando com ZERO violações de design lint.
+  2. `Aprovação da Catraca de CI (--ratchet)`: O teste de catraca executou com sucesso (Exit Code 0), atestando zero regressões visuais em relação à baseline congelada e identificando redução de 604 violações.
+  3. `Rebaixamento Permanente da Baseline`: Executado `node scripts/design-lint.mjs --update-baseline`, reduzindo permanentemente o teto de violações de 38.314 para 37.710 (P0: 7194, P1: 17917, P2: 11128, P3: 1471). A catraca agora bloqueia qualquer commit que exceda este novo teto histórico.
+  4. `Suíte de Testes`: 7/7 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S30, Constituição Técnica do Waesy e Definition of Done B.9.
+- **Consequências:** Fase S30 100% CONCLUÍDA e HOMOLOGADA. Total de **30 de 48 fases do Plano 5 concluídas (62.5%)**. Próxima fase: **S31 (Nativização Mobile, Tablet e Desktop nos 5 Viewports: 320, 390, 768, 1280, 1920)**.

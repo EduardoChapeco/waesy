@@ -13,7 +13,7 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 | **PLANO-2** | `03_PLANO_MOTOR_DE_ANUNCIOS_E_VITRINE_F01_A_F48.md` | Motor de Anúncios Unificado, Preview Real e Vitrine | 48 Fases (F01–F48) | Concluído e Homologado | DEC-086 / Migração 20261221 / View ativa |
 | **PLANO-3** | `04_PLANO_3_MOTOR_DE_OFERTAS_E_NICHOS.md` | Nichos, 11 Blocos, Estoque Ledger e Motor de Preço | 72 Fases (G01–G72) | Concluído e Homologado | DEC-087 / DEC-088 / 38 testes verdes |
 | **PLANO-4** | `05_SUPER_PROMPT_OPERACAO_VERDADE_UNICA.md` | Operação Verdade Única, Erradicação de Remendos | 64 Fases (R01–R64) | **Concluído e Homologado** | 64/64 Fases / DEC-089 a DEC-104 / 1.007 testes verdes / 0 erros TS / Build OK |
-| **PLANO-5** | `06_PROMPT_ESTRUTURA_ESCALA_OPERACAO_BIGTECH.md` | Governança BigTech, Camadas, Telemetria e Escala | 48 Fases (S01–S48) | **Em Andamento (29/48 concluídas)** | DEC-105 a DEC-118 / 29 fases concluídas / 1.046 testes verdes |
+| **PLANO-5** | `06_PROMPT_ESTRUTURA_ESCALA_OPERACAO_BIGTECH.md` | Governança BigTech, Camadas, Telemetria e Escala | 48 Fases (S01–S48) | **Em Andamento (30/48 concluídas)** | DEC-105 a DEC-119 / 30 fases concluídas / 1.047 testes verdes |
 
 ---
 
@@ -158,7 +158,7 @@ Nenhum item foi descartado. Todos os planos têm ID canônico, origem declarada,
 - [x] **S27**: Família mídia. *(Concluído — DEC-116, `CanonicalMediaFrame`, `CanonicalAvatarCluster`, `CanonicalUploadDropzone`)*
 - [x] **S28**: Família formulário e wizard. *(Concluído — DEC-117, `CanonicalStepperWizard`, `CanonicalField`, `CanonicalFieldError`)*
 - [x] **S29**: Família overlay e matriz de 4 estados. *(Concluído — DEC-118, `AdaptiveModal`, `CanonicalDrawer`, `CanonicalConfirmDialog`)*
-- [ ] **S30**: Migração de módulos para primitivas, com catraca de design zerando.
+- [x] **S30**: Migração de módulos para primitivas, com catraca de design zerando. *(Concluído — DEC-119, catraca aprovada, baseline rebaixada para 37.710 com -604 violações)*
 - [ ] **S31**: Nativização mobile, tablet e desktop nos 5 viewports (320, 390, 768, 1280, 1920).
 
 ### Bloco E — Telemetria Real (S32–S37) — NA FILA

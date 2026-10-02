@@ -35,7 +35,7 @@ export function StateCard({ title, state, children, className }: StateCardProps)
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-xl border border-border bg-card p-4 text-card-foreground transition-colors",
+        "flex flex-col gap-3 rounded-lg border border-border bg-card p-4 text-card-foreground transition-colors",
         className
       )}
     >
