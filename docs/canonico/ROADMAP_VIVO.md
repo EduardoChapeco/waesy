@@ -36,8 +36,8 @@ A arquitetura do produto é dividida em 4 pilares semânticos soberanos:
 | **F16** | Notificações em Tempo Real (Supabase Realtime) | `e979401b` | Homologado | `notifications.functions.ts`, `notification-bell.tsx` |
 | **F17** | Painel Financeiro Real (Receita, Despesas, Caixa) | `b89542c4` | Homologado | `financial.functions.ts`, `workspace.financeiro.index.tsx` |
 | **F18** | Suporte Interno: Módulo de Tickets com SLA | `6c7486a1` | Homologado | `support-tickets.functions.ts`, `workspace.suporte.tsx` |
-| **F19** | Roadmap Vivo e Changelog Automatizado | Em curso | Em curso | `generate-changelog.mjs`, `ROADMAP_VIVO.md` |
-| **F20** | Runbook de Operação e Dicionário de Domínio | Planejado | Próximo | `RUNBOOK.md`, `DICIONARIO_DOMINIO.md` |
+| **F19** | Roadmap Vivo e Changelog Automatizado | `f2b55f8a` | Homologado | `generate-changelog.mjs`, `ROADMAP_VIVO.md` |
+| **F20** | Runbook de Operação e Dicionário de Domínio | `docs(F20)` | Homologado | `RUNBOOK.md`, `DICIONARIO_DOMINIO.md`, `CONTRIBUTING.md` |
 | **F21** | Scanner de Órfãos e Dead Code no CI | Planejado | Próximo | `dead-code-detector.mjs` |
 | **F22** | CI Bloqueante Unificado (5 Gates) | Planejado | Próximo | `.github/workflows/ci.yml` |
 | **F23** | Auditoria de Segurança Final e RLS Abrangente | Planejado | Próximo | `security-guard` audit |

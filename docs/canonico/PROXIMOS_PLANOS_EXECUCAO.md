@@ -335,15 +335,15 @@
 
 ---
 
-#### F20 — ADRs, Runbook de Operação e Dicionário de Domínio
+#### [x] F20 — ADRs, Runbook de Operação e Dicionário de Domínio (CONCLUÍDA — DEC-146)
 **Objetivo:** Governança operacional completa.
 
 **Microfases:**
-1. Criar `docs/operacao/RUNBOOK.md` — deploy, rollback, rotação de chaves, resposta a incidentes.
-2. Criar `docs/canonico/DICIONARIO_DOMINIO.md` — glossário ubíquo do ecossistema Waesy.
-3. Atualizar `CONTRIBUTING.md` com guia definitivo para developers e agentes.
-4. Registrar `DEC-143`.
-5. Commit: `docs(F20): runbook, dicionário de domínio e guia de contribuição`.
+1. [x] Criar `docs/operacao/RUNBOOK.md` — deploy, rollback, rotação de chaves, resposta a incidentes.
+2. [x] Criar `docs/canonico/DICIONARIO_DOMINIO.md` — glossário ubíquo do ecossistema Waesy.
+3. [x] Atualizar `CONTRIBUTING.md` com guia definitivo para developers e agentes.
+4. [x] Registrar `DEC-146`.
+5. [x] Commit: `docs(F20): runbook, dicionário de domínio e guia de contribuição`.
 
 ---
 

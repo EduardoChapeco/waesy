@@ -1749,7 +1749,12 @@
      - `npm run typecheck`: 0 erros de compilação TypeScript.
      - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F19-ROADMAP-CHANGELOG, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
-- **Consequências:** Fase F19 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F20: ADRs, Runbook de Operação e Dicionário de Domínio**.
-
-
-
+## DEC-146: Conclusão da Fase F20 (Plano de Estabilização E2E) — ADRs, Runbook de Operação e Dicionário de Domínio
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F20 do Plano de Estabilização E2E, estabelecendo a infraestrutura canônica de governança operacional e conhecimento do repositório, incluindo procedimentos de deploy e resposta a incidentes (`docs/operacao/RUNBOOK.md`), terminologia ubíqua do ecossistema Waesy (`docs/canonico/DICIONARIO_DOMINIO.md`) e guia unificado de desenvolvimento e agentes (`CONTRIBUTING.md`).
+- **Decisão:**
+  1. `Runbook de Operação`: Criado `docs/operacao/RUNBOOK.md` cobrindo pipelines de deploy na borda Cloudflare Pages, migrações Supabase, rollback em menos de 5 segundos, rotação de chaves sem downtime e matriz de severidade de incidentes (SEV-1 a SEV-3).
+  2. `Dicionário de Domínio Ubíquo`: Criado `docs/canonico/DICIONARIO_DOMINIO.md` consolidando a soberania dos 4 pilares (Places, Classificados, Marketplace e Workspace Pro), entidades reais de dados, máquinas de estados transacionais e invariantes estritos (Aritmética inteira de centavos, Deny-by-Default em multi-tenancy e Zero Mocks).
+  3. `Guia Definitivo de Contribuição`: Criado `CONTRIBUTING.md` vinculando o contrato operacional do `AGENTS.md`, separação de camadas arquiteturais, regras de design system e os 5 gates bloqueantes do CI.
+- **Fundamentação:** AGENTS.md B.1 a B.12, docs/canonico/PROXIMOS_PLANOS_EXECUCAO.md e Definition of Done B.9.
+- **Consequências:** Fase F20 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F21: Scanner de Órfãos, Duplicados e Dead Code no CI**.
