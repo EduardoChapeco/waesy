@@ -331,3 +331,9 @@ export const sendNicheContextualNotification = createServerFn({ method: "POST" }
       template,
     };
   });
+
+// ---------------------------------------------------------------------------
+// Canonical Notification Aliases (F16)
+// ---------------------------------------------------------------------------
+export const listNotificationsFn = listUserNotifications;
+export const markNotificationReadFn = markNotificationAsRead;

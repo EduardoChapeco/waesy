@@ -1693,3 +1693,17 @@
      - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F15-GEO-SEARCH, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
 - **Consequências:** Fase F15 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F16: Notificações em Tempo Real (Supabase Realtime)**.
+
+## DEC-142: Conclusão da Fase F16 (Plano de Estabilização E2E) — Notificações em Tempo Real no Workspace (Supabase Realtime)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F16 do Plano de Estabilização E2E, consolidando as Server Functions de notificações do Workspace Pro (`src/services/notifications.functions.ts`) e o componente de sino reativo (`src/components/workspace/notification-bell.tsx`) conectado ao canal do Supabase Realtime, eliminando polling agressivo e garantindo dados 100% reais (M01: Zero Mocks).
+- **Decisão:**
+  1. `Server Functions Canônicas (listNotificationsFn / markNotificationReadFn)`: Exportados aliases canônicos em `src/services/notifications.functions.ts` consultando estritamente a tabela real `notifications` do Supabase com isolamento de `user_id` e marcação atômica de leitura.
+  2. `Componente NotificationBell Reativo`: Criado `src/components/workspace/notification-bell.tsx` com escuta ao evento `INSERT` via canal `workspace_realtime_notifications`, badge numérico silencioso, flyout popover acessível e alvos de toque em conformidade estrita com o piso `min-h-11` (DL-14).
+  3. `Aprovação Integral nas 4 Gates de Qualidade`:
+     - `vitest`: 3/3 testes unitários verdes em `src/services/notifications.functions.test.ts`.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+     - `npm run typecheck`: 0 erros de compilação TypeScript.
+     - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F16-NOTIFICATIONS-REALTIME, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F16 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F17: Painel Financeiro Real (Receita, Despesas e Fluxo de Caixa)**.

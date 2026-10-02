@@ -64,7 +64,9 @@
 | F11 | [x] | `942e8964` | Workspace: Gestão de Pedidos Real (CRUD Completo e Status) |
 | F12 | [x] | `7f799931` | Workspace: Catálogo de Produtos Real (CRUD Completo) |
 | F13 | [x] | `76253115` | CRM de Clientes do Workspace (Lista Real) |
-| F14 | [x] | `pendente` | Motor de Busca Universal (Classificados + Marketplace + Places) |
+| F14 | [x] | `9188a2f3` | Motor de Busca Universal (Classificados + Marketplace + Places) |
+| F15 | [x] | `6739ea8e` | Geolocalização e Filtros por Cidade/Bairro |
+| F16 | [x] | `pendente` | Notificações em Tempo Real (Supabase Realtime) |
 
 ---
 
