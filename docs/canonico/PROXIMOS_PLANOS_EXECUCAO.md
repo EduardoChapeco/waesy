@@ -69,7 +69,7 @@
 | F16 | [x] | `e979401b` | Notificações em Tempo Real (Supabase Realtime) |
 | F17 | [x] | `b89542c4` | Painel Financeiro Real (Receita, Despesas e Fluxo de Caixa) |
 | F18 | [x] | `6c7486a1` | Suporte Interno: Módulo de Tickets com SLA |
-| F19 | [x] | `pendente` | Roadmap Vivo e Changelog Automatizado |
+| F19 | [x] | `f2b55f8a` | Roadmap Vivo e Changelog Automatizado |
 
 ---
 
