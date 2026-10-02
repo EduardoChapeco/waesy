@@ -1,31 +1,21 @@
 import { useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  AdaptiveModal,
+  CanonicalDrawer,
+  CanonicalConfirmDialog,
+} from "@/components/ui/canonical";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { StateCard } from "./state-card";
 import type { ComponentStateProps } from "./design-system-types";
-import { Layers, AlertCircle, RefreshCw, PanelRight, ShieldAlert } from "lucide-react";
+import { Layers, RefreshCw, PanelRight, ShieldAlert, Trash2 } from "lucide-react";
 
 export function OverlaysFamily({ mode }: ComponentStateProps) {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const showReady = mode === "all" || mode === "ready";
   const showLoading = mode === "all" || mode === "loading";
@@ -35,75 +25,100 @@ export function OverlaysFamily({ mode }: ComponentStateProps) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Família de Modais e Overlays</h2>
+        <h2 className="text-lg font-semibold text-foreground">Família Modais e Overlays</h2>
         <p className="text-xs text-muted-foreground">
-          Diálogos, gavetas laterais (sheets) e alertas nas 4 matrizes de estado operacional.
+          AdaptiveModal, CanonicalDrawer e CanonicalConfirmDialog nas 4 matrizes de estado.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* ESTADO 1: PRONTO */}
         {showReady && (
-          <StateCard title="Modais Interativos" state="ready">
+          <StateCard title="Overlays Adaptativos" state="ready">
             <div className="flex flex-col gap-3">
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-11 sm:h-9 w-full justify-start gap-2">
-                    <Layers className="h-3.5 w-3.5" />
-                    Abrir Diálogo Canônico
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Diálogo Canônico</DialogTitle>
-                    <DialogDescription className="text-xs">
-                      Superfície flutuante com foco preso e fechamento por Escape.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-2 text-xs text-muted-foreground">
-                    Exemplo de conteúdo estruturado com separação rígida de camadas e tokens DTCG.
-                  </div>
-                  <div className="flex justify-end gap-2 pt-2">
-                    <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} className="h-11 sm:h-9">
-                      Fechar
-                    </Button>
-                    <Button size="sm" onClick={() => setDialogOpen(false)} className="h-11 sm:h-9">
-                      Confirmar
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setModalOpen(true)} /* focus-visible:ring-2 */
+                className="h-11 w-full justify-start gap-2 text-xs focus-visible:ring-2"
+              >
+                <Layers className="h-4 w-4" />
+                Abrir Modal Adaptativo
+              </Button>
 
-              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-11 sm:h-9 w-full justify-start gap-2">
-                    <PanelRight className="h-3.5 w-3.5" />
-                    Abrir Gaveta Lateral
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDrawerOpen(true)} /* focus-visible:ring-2 */
+                className="h-11 w-full justify-start gap-2 text-xs focus-visible:ring-2"
+              >
+                <PanelRight className="h-4 w-4" />
+                Abrir Gaveta Lateral
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmOpen(true)} /* focus-visible:ring-2 */
+                className="h-11 w-full justify-start gap-2 text-xs text-destructive hover:bg-destructive/10 border-destructive/30 focus-visible:ring-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Diálogo de Exclusão
+              </Button>
+
+              {/* Modais Ativos */}
+              <AdaptiveModal
+                open={modalOpen}
+                onOpenChange={setModalOpen}
+                title="Configuração Canônica"
+                description="Painel adaptativo de ajuste de parâmetros."
+                footerAction={
+                  <Button size="sm" onClick={() => setModalOpen(false)} className="h-11 px-4 text-xs">
+                    Salvar e Fechar
                   </Button>
-                </SheetTrigger>
-                <SheetContent side="right">
-                  <SheetHeader>
-                    <SheetTitle>Painel Lateral</SheetTitle>
-                    <SheetDescription className="text-xs">
-                      Gaveta lateral adaptável com barra inferior no mobile.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="py-4 text-xs text-muted-foreground">
-                    Navegação contextual limpa sem interferência no scroll principal.
-                  </div>
-                </SheetContent>
-              </Sheet>
+                }
+              >
+                <div className="text-xs text-muted-foreground py-2">
+                  Conteúdo do modal adaptativo renderizado com confinamento de foco e escape.
+                </div>
+              </AdaptiveModal>
+
+              <CanonicalDrawer
+                open={drawerOpen}
+                onOpenChange={setDrawerOpen}
+                title="Histórico de Auditoria"
+                description="Linha do tempo de eventos do ecossistema."
+                footerAction={
+                  <Button variant="outline" size="sm" onClick={() => setDrawerOpen(false)} className="h-11 px-4 text-xs">
+                    Fechar Painel
+                  </Button>
+                }
+              >
+                <div className="text-xs text-muted-foreground py-2">
+                  Registro cronológico de alterações e decisões arquiteturais.
+                </div>
+              </CanonicalDrawer>
+
+              <CanonicalConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Excluir Módulo de Produção"
+                description="Esta ação é permanente e irreversível. Todos os dados vinculados serão purgados."
+                confirmLabel="Excluir Definitivamente"
+                onConfirm={() => setConfirmOpen(false)}
+              />
             </div>
           </StateCard>
         )}
 
         {/* ESTADO 2: CARREGAMENTO (SKELETON ESPELHADO) */}
         {showLoading && (
-          <StateCard title="Overlay em Preparação" state="loading">
+          <StateCard title="Overlay em Carga" state="loading">
             <div className="flex flex-col gap-3">
-              <Skeleton className="h-11 sm:h-9 w-full rounded-md" />
-              <Skeleton className="h-11 sm:h-9 w-full rounded-md" />
-              <div className="flex flex-col gap-1.5 pt-2">
+              <Skeleton className="h-11 w-full rounded-md" />
+              <Skeleton className="h-11 w-full rounded-md" />
+              <Skeleton className="h-11 w-full rounded-md" />
+              <div className="flex flex-col gap-2 pt-2">
                 <Skeleton className="h-3 w-3/4" />
                 <Skeleton className="h-3 w-1/2" />
               </div>
@@ -118,7 +133,7 @@ export function OverlaysFamily({ mode }: ComponentStateProps) {
               icon={Layers}
               title="Sem diálogos pendentes"
               description="Nenhuma confirmação ou tela modal aguardando resposta do operador."
-              className="py-4 min-h-[160px]"
+              className="py-4 min-h-36"
             />
           </StateCard>
         )}
@@ -138,7 +153,7 @@ export function OverlaysFamily({ mode }: ComponentStateProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-11 sm:h-9 w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
+                className="h-11 w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Reautenticar operador

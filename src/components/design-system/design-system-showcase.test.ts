@@ -22,9 +22,12 @@ import {
   CanonicalStepperWizard,
   CanonicalField,
   CanonicalFieldError,
+  AdaptiveModal,
+  CanonicalDrawer,
+  CanonicalConfirmDialog,
 } from "@/components/ui/canonical";
 
-describe("Design System Showcase — Fases S24 a S28 (Shell, Superfícies, Dados, Mídia, Forms e Wizard)", () => {
+describe("Design System Showcase — Fases S24 a S29 (Shell, Superfícies, Dados, Mídia, Forms, Wizard e Overlays)", () => {
   it("deve exportar todas as famílias canônicas e componentes de apresentação", () => {
     expect(ActionsFamily).toBeDefined();
     expect(FormsFamily).toBeDefined();
@@ -60,6 +63,12 @@ describe("Design System Showcase — Fases S24 a S28 (Shell, Superfícies, Dados
     expect(CanonicalStepperWizard).toBeDefined();
     expect(CanonicalField).toBeDefined();
     expect(CanonicalFieldError).toBeDefined();
+  });
+
+  it("deve exportar todas as primitivas de overlay e modal canônicas (S29)", () => {
+    expect(AdaptiveModal).toBeDefined();
+    expect(CanonicalDrawer).toBeDefined();
+    expect(CanonicalConfirmDialog).toBeDefined();
   });
 
   it("deve aceitar os 5 modos canônicos de visualização de estados", () => {

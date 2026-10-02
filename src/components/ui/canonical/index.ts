@@ -10,3 +10,4 @@ export * from './navigation-shell';
 export * from './data-surface';
 export * from './media-family';
 export * from './canonical-wizard';
+export * from './canonical-overlay';

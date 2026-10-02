@@ -1356,3 +1356,17 @@
   5. `Suíte de Testes`: 6/6 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S28, WCAG 2.2 AA (Critério 2.5.8), Apple HIG e Definition of Done B.9.
 - **Consequências:** Fase S28 100% CONCLUÍDA e HOMOLOGADA. Total de **28 de 48 fases do Plano 5 concluídas (58.3%)**. Próxima fase: **S29 (Família Overlay e Matriz de 4 Estados)**.
+
+## DEC-118: Conclusão da Fase S29 (Plano 5 — Bloco D) — Família Overlay e Matriz de 4 Estados Canônica
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase S29 (Família Overlay e Matriz de 4 Estados) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
+- **Decisão:**
+  1. `Primitivas Canônicas de Overlay`: Criado `src/components/ui/canonical/canonical-overlay.tsx` exportando:
+     - `CanonicalDrawer`: Gaveta lateral responsiva (Desktop) e bottom-sheet tátil com fechamento suave no Mobile, safe-area e foco acessível.
+     - `CanonicalConfirmDialog`: Diálogo estrito para confirmações irreversíveis (DL-26) com ação destrutiva `variant="destructive"` e ação secundária `variant="outline"`.
+  2. `Exportação Centralizada`: Atualizado `src/components/ui/canonical/index.ts` expondo todos os componentes e tipos de overlays e diálogos adaptativos.
+  3. `Showcase de Overlays e Matriz de 4 Estados`: Refatorado `src/components/design-system/overlays-family.tsx` integrando `AdaptiveModal`, `CanonicalDrawer` e `CanonicalConfirmDialog` com a matriz completa dos 4 estados (Pronto, Carregamento com Skeleton espelhado, Vazio com EmptyState e Erro com Alert crítico).
+  4. `Piso de Acessibilidade e Design Lint`: 0 violações P0 e 0 violações P1 no `scripts/design-lint.mjs --changed`. Sombras confinadas exclusivamente a overlays (DL-07), alvos de toque >= 44px (`h-11`), anéis de foco (:focus-visible) e espaçamentos na grade modular de 4px.
+  5. `Suíte de Testes`: 7/7 testes vitest verdes em `src/components/design-system/design-system-showcase.test.ts`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-S29, WCAG 2.2 AA (Critério 2.5.8), Apple HIG e Definition of Done B.9.
+- **Consequências:** Fase S29 100% CONCLUÍDA e HOMOLOGADA. Total de **29 de 48 fases do Plano 5 concluídas (60.4%)**. Próxima fase: **S30 (Migração de Módulos para Primitivas Canônicas com Catraca Zerando)**.
