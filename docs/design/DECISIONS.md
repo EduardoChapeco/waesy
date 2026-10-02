@@ -1577,7 +1577,25 @@
      - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada com preservação estrita da baseline congelada (37.702 violações, zero regressões).
      - `npm run build`: Sincronização do `routeTree.gen.ts` e compilação do bundle de produção.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F08-MARKETPLACE-CHECKOUT, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
-- **Consequências:** Fase F08 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F09: Places — Detalhe do Estabelecimento Físico com Reputação, Galeria e Mapa**.
+## DEC-135: Conclusão da Fase F09 (Plano de Estabilização E2E) — Places: Detalhe do Estabelecimento com Reputação, Galeria e Mapa
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F09 do Plano de Estabilização E2E, implementando a página canônica de detalhe do estabelecimento no Guia Oficial (Pilar 1: Places em `/places/:placeSlug`) com SSR, reputação e avaliações transparentes, horários de atendimento, rotas de mapa (OpenStreetMap/Google Maps) e ponte de navegação opcional para o Marketplace se possuir vitrine comercial ativa.
+- **Decisão:**
+  1. `BFF Server Functions`: Criado `src/services/places-detail.functions.ts` exportando `getPlaceDetailBySlugFn` com resolução por slug ou ID em `directory_listings` e `stores` (estritamente com localização física), buscando avaliações em `reviews`, coordenadas e checagem de produtos para `hasMarketplaceShowcase`.
+  2. `Rota Pública e Silent Design (Pilar 1)`: Criada `src/routes/_store.places.$placeSlug.tsx` no TanStack Router com:
+     - Header completo com foto/fachada, avatar, badge de verificação e nota média.
+     - Barra de ações com navegação em mapa ("Como Chegar"), WhatsApp oficial com mensagem contextual e ligação direta (`tel:`).
+     - Ponte para o Pilar 3 ("Ver Produtos no Marketplace") quando houver produtos ativos.
+     - Reputação e avaliações sem dados sintéticos ou mocks (M01: Zero Mocks).
+     - Endereço com botão de cópia rápida e horários de funcionamento estruturados.
+  3. `Piso de Acessibilidade e Design System`:
+     - Respeito à grade canônica de 4px (DL-03), raios estritamente canônicos `rounded-lg` (DL-09), zero `!important`, touch targets >= 44px (`h-11`), único botão primário `variant="default"` por tela (DL-25) e anéis de foco explícitos `:focus-visible:ring-2` (DL-15).
+  4. `Aprovação Integral nas Gates`:
+     - `vitest`: 7/7 testes unitários verdes (4 de serviço + 3 de rota).
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações estritamente mantidas, zero regressões).
+     - `npm run build`: Sincronização do `routeTree.gen.ts` e compilação do bundle de produção.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F09-PLACES-DETAIL, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F09 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F10: Workspace — Dashboard com KPIs Reais do Supabase (Zero Mocks)**.
 
 
 

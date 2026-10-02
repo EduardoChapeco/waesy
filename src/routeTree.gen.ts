@@ -194,6 +194,7 @@ import { Route as StoreNoticiasSlugRouteImport } from './routes/_store.noticias.
 import { Route as StorePaginasSlugRouteImport } from './routes/_store.paginas.$slug'
 import { Route as StorePatrocinadorTokenRouteImport } from './routes/_store.patrocinador.$token'
 import { Route as StorePlacesIndexRouteImport } from './routes/_store.places.index'
+import { Route as StorePlacesPlaceSlugRouteImport } from './routes/_store.places.$placeSlug'
 import { Route as StorePoliticasSlugRouteImport } from './routes/_store.politicas.$slug'
 import { Route as StoreProdutoSlugRouteImport } from './routes/_store.produto.$slug'
 import { Route as StorePropostaTokenRouteImport } from './routes/_store.proposta.$token'
@@ -1326,6 +1327,11 @@ const StorePatrocinadorTokenRoute = StorePatrocinadorTokenRouteImport.update({
 const StorePlacesIndexRoute = StorePlacesIndexRouteImport.update({
   id: '/places/',
   path: '/places/',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StorePlacesPlaceSlugRoute = StorePlacesPlaceSlugRouteImport.update({
+  id: '/places/$placeSlug',
+  path: '/places/$placeSlug',
   getParentRoute: () => StoreRoute,
 } as any)
 const StorePoliticasSlugRoute = StorePoliticasSlugRouteImport.update({
@@ -2637,6 +2643,7 @@ export interface FileRoutesByFullPath {
   '/noticias/$slug': typeof StoreNoticiasSlugRoute
   '/paginas/$slug': typeof StorePaginasSlugRoute
   '/patrocinador/$token': typeof StorePatrocinadorTokenRoute
+  '/places/$placeSlug': typeof StorePlacesPlaceSlugRoute
   '/politicas/$slug': typeof StorePoliticasSlugRoute
   '/produto/$slug': typeof StoreProdutoSlugRoute
   '/proposta/$token': typeof StorePropostaTokenRoute
@@ -3018,6 +3025,7 @@ export interface FileRoutesByTo {
   '/noticias/$slug': typeof StoreNoticiasSlugRoute
   '/paginas/$slug': typeof StorePaginasSlugRoute
   '/patrocinador/$token': typeof StorePatrocinadorTokenRoute
+  '/places/$placeSlug': typeof StorePlacesPlaceSlugRoute
   '/politicas/$slug': typeof StorePoliticasSlugRoute
   '/produto/$slug': typeof StoreProdutoSlugRoute
   '/proposta/$token': typeof StorePropostaTokenRoute
@@ -3408,6 +3416,7 @@ export interface FileRoutesById {
   '/_store/noticias/$slug': typeof StoreNoticiasSlugRoute
   '/_store/paginas/$slug': typeof StorePaginasSlugRoute
   '/_store/patrocinador/$token': typeof StorePatrocinadorTokenRoute
+  '/_store/places/$placeSlug': typeof StorePlacesPlaceSlugRoute
   '/_store/politicas/$slug': typeof StorePoliticasSlugRoute
   '/_store/produto/$slug': typeof StoreProdutoSlugRoute
   '/_store/proposta/$token': typeof StorePropostaTokenRoute
@@ -3799,6 +3808,7 @@ export interface FileRouteTypes {
     | '/noticias/$slug'
     | '/paginas/$slug'
     | '/patrocinador/$token'
+    | '/places/$placeSlug'
     | '/politicas/$slug'
     | '/produto/$slug'
     | '/proposta/$token'
@@ -4180,6 +4190,7 @@ export interface FileRouteTypes {
     | '/noticias/$slug'
     | '/paginas/$slug'
     | '/patrocinador/$token'
+    | '/places/$placeSlug'
     | '/politicas/$slug'
     | '/produto/$slug'
     | '/proposta/$token'
@@ -4569,6 +4580,7 @@ export interface FileRouteTypes {
     | '/_store/noticias/$slug'
     | '/_store/paginas/$slug'
     | '/_store/patrocinador/$token'
+    | '/_store/places/$placeSlug'
     | '/_store/politicas/$slug'
     | '/_store/produto/$slug'
     | '/_store/proposta/$token'
@@ -6121,6 +6133,13 @@ declare module '@tanstack/react-router' {
       path: '/places'
       fullPath: '/places/'
       preLoaderRoute: typeof StorePlacesIndexRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/places/$placeSlug': {
+      id: '/_store/places/$placeSlug'
+      path: '/places/$placeSlug'
+      fullPath: '/places/$placeSlug'
+      preLoaderRoute: typeof StorePlacesPlaceSlugRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/politicas/$slug': {
@@ -7789,6 +7808,7 @@ interface StoreRouteChildren {
   StoreNoticiasSlugRoute: typeof StoreNoticiasSlugRoute
   StorePaginasSlugRoute: typeof StorePaginasSlugRoute
   StorePatrocinadorTokenRoute: typeof StorePatrocinadorTokenRoute
+  StorePlacesPlaceSlugRoute: typeof StorePlacesPlaceSlugRoute
   StorePoliticasSlugRoute: typeof StorePoliticasSlugRoute
   StoreProdutoSlugRoute: typeof StoreProdutoSlugRoute
   StorePropostaTokenRoute: typeof StorePropostaTokenRoute
@@ -7880,6 +7900,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreNoticiasSlugRoute: StoreNoticiasSlugRoute,
   StorePaginasSlugRoute: StorePaginasSlugRoute,
   StorePatrocinadorTokenRoute: StorePatrocinadorTokenRoute,
+  StorePlacesPlaceSlugRoute: StorePlacesPlaceSlugRoute,
   StorePoliticasSlugRoute: StorePoliticasSlugRoute,
   StoreProdutoSlugRoute: StoreProdutoSlugRoute,
   StorePropostaTokenRoute: StorePropostaTokenRoute,
