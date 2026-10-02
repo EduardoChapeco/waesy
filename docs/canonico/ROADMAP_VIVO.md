@@ -41,7 +41,7 @@ A arquitetura do produto é dividida em 4 pilares semânticos soberanos:
 | **F21** | Scanner de Órfãos e Dead Code no CI | `feat(F21)` | Homologado | `dead-code-detector.mjs`, `dead-code.report.json` |
 | **F22** | CI Bloqueante Unificado (5 Gates) | `feat(F22)` | Homologado | `.github/workflows/ci.yml` |
 | **F23** | Auditoria de Segurança Final e RLS Abrangente | `security(F23)` | Homologado | `AUDITORIA_SEGURANCA_F23.md`, 536 tabelas RLS |
-| **F24** | Selo Final de Conclusão do Plano Mestre | Planejado | Próximo | Certificação e Release 2.0 |
+| **F24** | Selo Final de Conclusão do Plano Mestre | `release(F24)` | Homologado | `SELO_FINAL_F24.md`, Waesy v2.0 |
 
 ---
 

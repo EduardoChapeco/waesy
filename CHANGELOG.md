@@ -7,6 +7,11 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Principais Marcos & Decisões Arquiteturais (DEC)
 
+- **DEC-150**: Conclusão da Fase F24 (Plano de Estabilização E2E) — Selo Final do Plano Mestre e Release v2.0
+- **DEC-149**: Conclusão da Fase F23 (Plano de Estabilização E2E) — Auditoria de Segurança Final e RLS Abrangente
+- **DEC-148**: Conclusão da Fase F22 (Plano de Estabilização E2E) — CI Bloqueante Unificado (5 Gates de Qualidade)
+- **DEC-147**: Conclusão da Fase F21 (Plano de Estabilização E2E) — Scanner de Órfãos, Duplicados e Dead Code no CI
+- **DEC-146**: Conclusão da Fase F20 (Plano de Estabilização E2E) — ADRs, Runbook de Operação e Dicionário de Domínio
 - **DEC-145**: Conclusão da Fase F19 (Plano de Estabilização E2E) — Roadmap Vivo e Changelog Automatizado
 - **DEC-144**: Conclusão da Fase F18 (Plano de Estabilização E2E) — Suporte Interno: Módulo de Tickets com SLA
 - **DEC-143**: Conclusão da Fase F17 (Plano de Estabilização E2E) — Painel Financeiro Real (Receita, Despesas e Fluxo de Caixa)
@@ -22,15 +27,13 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - **DEC-133**: Conclusão da Fase F07 (Plano de Estabilização E2E) — Vitrine Pública do Marketplace por Loja (SSR e SEO Canônico)
 - **DEC-132**: Conclusão da Fase F06 (Plano de Estabilização E2E) — Testes de Isolamento dos 4 Pilares e Fechamento do Bloco 1
 - **DEC-131**: Conclusão da Fase F05 (Plano de Estabilização E2E) — Assistente de Nativização e Modal de Importação no Workspace
-- **DEC-130**: Conclusão da Fase F04 (Plano de Estabilização E2E) — Ponte Canônica de Promoção e Upgrade (Classificados ➔ Workspace)
-- **DEC-129**: Conclusão da Fase F03 (Plano de Estabilização E2E) — Consolidação do Places e Guia Oficial de Estabelecimentos
-- **DEC-128**: Deploy Completo de Produção (GitHub + Supabase + Cloudflare Pages Edge Worker)
-- **DEC-127**: Conclusão da Fase F02 (Plano de Estabilização E2E) — Blindagem da Rota de Classificados e Desambiguação de Contexto
-- **DEC-126**: Auditoria Forense dos 4 Pilares, Fase F01 (Marketplace Hub) e Deploy Completo de Produção (GitHub + Cloudflare Pages)
 
 ### Alterações do Repositório (Git Commits Recentes)
 
 #### Funcionalidades Adicionadas (Features)
+- `70117064`: feat(F22): CI bloqueante unificado com 5 gates de qualidade (2026-10-02)
+- `54f460b0`: feat(F21): scanner de orfaos e dead code no CI (2026-10-02)
+- `f2b55f8a`: feat(F19): roadmap vivo, gerador de changelog e DEC-145 (2026-10-02)
 - `6c7486a1`: feat(F18): modulo de tickets de suporte com SLA no Workspace e DEC-144 (2026-10-02)
 - `b89542c4`: feat(F17): painel financeiro real com receita, despesas, fluxo de caixa e DEC-143 (2026-10-02)
 - `e979401b`: feat(F16): notificacoes em tempo real no workspace com supabase realtime e DEC-142 (2026-10-02)
@@ -65,24 +68,23 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - `a13defa4`: feat(Plano-5): re-baseline BigTech S01-S05, contrato de arquitetura em camadas S06 e conclusao homologada Plano 4 R51-R64; 0 erros TS, 1011 testes Vitest verdes, CI canonical aprovado (2026-10-01)
 - `fad07d96`: feat(R45-R50): checkout adaptavel multi-nicho, suporte completo a turismo/embratur, mitigacao DL-04 em checkout.functions; 0 lint violations (2026-10-01)
 - `5eeb1759`: feat(R37-R44): salvar rascunho/publicar, preview fidedigno nos 3 viewports, transacoes multi-nicho, fiscal condicional turismo/varejo e IA com revisao humana; 0 lint violations (2026-10-01)
-- `d8b24952`: feat(R30-R34): dono unico metamorfose, campos padronizados por nicho, matriz nicho x arquetipo A01-A15, seletor de templates coerente; 0 violacoes lint (2026-10-01)
-- `007ebf30`: feat(R21-R25): donos unicos de parcelamento, NCM/fiscal, preco/margem, estoque e galeria; 100% aprovado no check-duplication CI (2026-10-01)
-- `9ca00803`: feat(R35-bridge+DL04): niche-semantic-library bridge sobre niche-semantics.ts; fix DL-04 em unified-listing-workflow; DEC-095-097; 0 lint violations (2026-10-01)
-- `b3d0b58e`: feat(R35+R36): niche-semantic-library.ts (dono unico de labels/textos por nicho); niche-data-registry.ts (nichos como dado puro); gate R36 sem hardcode em componentes; 0 lint violations (2026-10-01)
 
 #### Correções de Estabilidade (Fixes)
 - `fc1b5fa4`: fix(F04): compatibilidade nativa com workspace_entity_id no Supabase (2026-10-02)
 - `8d50feab`: fix(F04-F06): purga de regressoes de design lint, DEC-132 e ativacao de SPEC-F07 (2026-10-02)
 - `fa1c4504`: fix(F04-F06): corrigir TS2367 comparacao literal promoted, TS2322 promoted_to_product_id null vs string, e UUIDs invalidos nos fixtures de teste (2026-10-02)
 
+#### Segurança e RLS (Security)
+- `4e40b2e4`: security(F23): auditoria completa de RLS, rate-limit e protecao multi-tenant (2026-10-02)
+
 #### Documentação e Especificações (Docs)
+- `b2633351`: docs(F20): runbook, dicionario de dominio e guia de contribuicao (2026-10-02)
 - `16dfca93`: docs(proximos-planos): protocolo canonico com F04-F24 em microfases, estado real e ativacao via leia os proximos planos (2026-10-02)
 - `848bece9`: docs(canonico): sincroniza conclusao dos Blocos D e E e ativa Bloco F em BACKLOG_UNICO e PROXIMOS_PLANOS_EXECUCAO (2026-10-02)
 - `fc7ad02b`: docs(decisions): registrar DEC-126 com deploy de producao e auditoria dos 4 pilares (2026-10-02)
 - `caca8dc0`: docs(canonico): adiciona protocolo de execucao dos proximos planos e tipagem serializavel em outbox (2026-10-02)
 - `e39fcd9a`: docs(R37-R44): encerramento Bloco 6 (Editor, Preview e Compra); 44 fases concluidas; DEC-100 registrado (2026-10-01)
-- `67ed3588`: docs(R29-R36): encerramento Bloco 5 (Metamorfose e Nichos); 36 fases concluidas; DEC-099 registrado (2026-10-01)
-- `2cb50a17`: docs(R21-R28): encerramento Bloco 4 (Dono Unico); 31 fases concluidas; DEC-098 registrado (2026-10-01)
 
 #### Tarefas de Infraestrutura e Governança (Chores)
+- `4ee37356`: chore: atualiza hash F19 no plano de execucao (2026-10-02)
 - `92e92b72`: chore: atualiza hash F18 no plano de execucao (2026-10-02)

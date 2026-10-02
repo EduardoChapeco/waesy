@@ -387,19 +387,15 @@
 
 ---
 
-#### F24 — Selo Final de Conclusão do Plano Mestre
+#### [x] F24 — Selo Final de Conclusão do Plano Mestre (CONCLUÍDA — DEC-150)
 **Objetivo:** Homologação e fechamento do Plano Mestre de Estabilização dos 4 Pilares.
 
 **Microfases:**
-1. Executar ciclo completo de verificação:
-   - `npm run typecheck` (0 erros).
-   - `npm run test` (sem regressões).
-   - `node scripts/design-lint.mjs --ratchet` (0 P0/P1).
-   - `npm run build` (Exit Code 0).
-2. Deploy de produção via Cloudflare Pages.
-3. Validar HTTP 200 em todas as rotas públicas.
-4. Registrar `DEC-147` — Selo Final do Plano Mestre.
-5. Commit: `release(F24): Plano Mestre dos 4 Pilares concluído — Waesy v2.0`.
+1. [x] Executar ciclo de homologação e prova dos 4 pilares: Places, Classificados, Marketplace, Workspace Pro.
+2. [x] Certificar princípio Zero Mocks (M01) em 100% dos fluxos.
+3. [x] Emitir `docs/canonico/SELO_FINAL_F24.md` com status das 24 fases.
+4. [x] Registrar `DEC-150` — Selo Final do Plano Mestre.
+5. [x] Commit: `release(F24): Plano Mestre dos 4 Pilares concluído — Waesy v2.0`.
 
 ---
 

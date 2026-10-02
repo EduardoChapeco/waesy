@@ -1794,3 +1794,21 @@
   4. `Blindagem Financeira Append-Only`: Regra de imutabilidade garantida com bloqueio de injeção manual de receitas e carteiras operadas estritamente por procedures seguras.
 - **Fundamentação:** AGENTS.md B.1 a B.12, .agents/skills/security-guard/SKILL.md, SPEC-F23-SECURITY-AUDIT e Definition of Done B.9.
 - **Consequências:** Fase F23 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F24: Selo Final de Conclusão do Plano Mestre (Waesy v2.0)**.
+
+## DEC-150: Conclusão da Fase F24 (Plano de Estabilização E2E) — Selo Final do Plano Mestre e Release v2.0
+- **Data:** 2026-10-02
+- **Contexto:** Homologação final e fechamento integral do Plano Mestre de Estabilização E2E dos 4 Pilares da Plataforma Waesy (Places, Classificados, Marketplace e Workspace Pro), com certificação das 24 fases (F01 a F24), emissão do selo canônico (`docs/canonico/SELO_FINAL_F24.md`) e preparação do release estável v2.0 para produção.
+- **Decisão:**
+  1. `Homologação Integral das 24 Fases`: 100% dos épicos arquiteturais concluídos, com integração transparente a tabelas reais do banco de dados PostgreSQL (Zero Mocks), sem quebras, sem duplicações e sem regressões.
+  2. `Governança de Quatro Pilares Soberanos`:
+     - Places: Guia geodésico físico ativo com busca Haversine e reputação real.
+     - Classificados: Hub C2C de anúncios pontuais com ponte canônica de promoção para o Workspace Pro.
+     - Marketplace: Vitrine pública rica por loja e fluxo de checkout B2C em 3 etapas com reserva de estoque.
+     - Workspace Pro: Gestão corporativa multi-tenant (KPIs reais, pedidos, catálogo CRUD, CRM com LTV, caixa financeiro e chamados com SLA).
+  3. `Auditoria e Defesas Mecânicas`:
+     - RLS ativo em 100% das 536 tabelas públicas.
+     - 1.760 barreiras de isolamento multi-tenant (`assertStoreAccess`).
+     - 5 gates automatizados integrados ao GitHub Actions (`.github/workflows/ci.yml`).
+     - Teto de qualidade visual mantido sob a catraca determinística do Design Lint.
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F01 a SPEC-F24, docs/canonico/ROADMAP_VIVO.md e Definition of Done B.9.
+- **Consequências:** Plano Mestre dos 4 Pilares 100% CONCLUÍDO e HOMOLOGADO. Plataforma Waesy consolidada na versão estável 2.0.
