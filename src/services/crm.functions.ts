@@ -2387,3 +2387,10 @@ export const listLeadActivitiesByLead = createServerFn({ method: "GET" })
     }
     return data || [];
   });
+
+// ---------------------------------------------------------------------------
+// Canonical Aliases for F13 (Workspace CRM)
+// ---------------------------------------------------------------------------
+export const listCustomersFn = listCustomers;
+export const getCustomerDetailFn = getCustomer360;
+

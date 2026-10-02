@@ -1637,6 +1637,20 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F12-WORKSPACE-CATALOG-CRUD, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
 - **Consequências:** Fase F12 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F13: Workspace — CRM de Clientes Real (Lista Paginada, Detalhe e LTV Calculado)**.
 
+## DEC-139: Conclusão da Fase F13 (Plano de Estabilização E2E) — Workspace: CRM de Clientes Real (Lista Paginada, Detalhe e LTV Calculado)
+- **Data:** 2026-10-02
+- **Contexto:** Execução da Fase F13 do Plano de Estabilização E2E, consolidando e ratificando as Server Functions transacionais de CRM do Workspace Pro (`src/services/crm.functions.ts`), incluindo listagem keyset com filtros e busca (`listCustomersFn` / `listCustomers`), agregação de pedidos para cálculo exato de Lifetime Value (`ltvCents`), alertas de expiração de documentos e visão 360 individual do cliente (`getCustomerDetailFn` / `getCustomer360`), com garantia de isolamento multi-tenant (`assertStoreAccess`).
+- **Decisão:**
+  1. `BFF Server Functions Transacionais`: Ratificadas `listCustomersFn` e `getCustomerDetailFn` em `src/services/crm.functions.ts` consumindo estritamente as tabelas reais `customers_crm`, `orders` e `customer_documents` (M01: Zero Mocks).
+  2. `Governança e Isolamento Multi-Tenant`: Todo acesso valida obrigatoriamente `assertStoreAccess(identity, STAFF_ROLES)` impedindo qualquer vazamento de carteira entre lojas concorrentes.
+  3. `Cálculo Servidor de LTV`: Agregação real de centavos (`total_cents`) sobre pedidos com status transacional concluído (`paid`, `delivered`, etc.), sem aproximação de ponto flutuante no cliente.
+  4. `Aprovação Integral nas Gates`:
+     - `vitest`: 3/3 testes unitários verdes em `src/services/crm.functions.test.ts`.
+     - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações preservadas, zero regressões).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F13-WORKSPACE-CRM, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+- **Consequências:** Fase F13 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F14: Motor de Busca Universal (Classificados + Marketplace + Places)**.
+
+
 
 
 
