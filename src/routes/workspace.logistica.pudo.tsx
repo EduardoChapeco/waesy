@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Package, Search, CheckCircle2, Clock, AlertTriangle, RotateCcw, KeyRound, MapPin, Phone, User, Plus, ShieldCheck, FileSpreadsheet, TrendingUp, Boxes, Percent } from "lucide-react";
+import { Package, Search, CheckCircle2, Clock, AlertTriangle, RotateCcw, KeyRound, MapPin, Phone, User, Plus, ShieldCheck, FileSpreadsheet, TrendingUp, Boxes, Percent, Coins } from "lucide-react";
+import { formatMoney } from "@/lib/money";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ function WorkspacePudoLogisticsPage() {
     const returns = packages.filter((p) => p.has_damage || p.status === "return_requested" || p.status === "returned_to_hub").length;
     const total = packages.length;
     const successRate = total > 0 ? Math.round((delivered / total) * 100) : 100;
+    const custodyEarningsCents = delivered * 300; // R$ 3,00 por pacote custodiado e entregue
 
     return {
       ready,
@@ -63,6 +65,7 @@ function WorkspacePudoLogisticsPage() {
       returns,
       total,
       successRate,
+      custodyEarningsCents,
     };
   }, [packages]);
 
@@ -266,7 +269,7 @@ function WorkspacePudoLogisticsPage() {
               onClick={handleExportCSV}
               variant="outline"
               size="sm"
-              className="font-bold text-xs gap-2 h-10 px-4 rounded-lg cursor-pointer"
+              className="font-bold text-xs gap-2 h-11 sm:h-9 px-4 rounded-lg cursor-pointer"
             >
               <FileSpreadsheet className="size-4 text-emerald-600" />
               <span>Exportar Manifesto (CSV)</span>
@@ -274,7 +277,7 @@ function WorkspacePudoLogisticsPage() {
             <Button
               onClick={() => setIsCheckInModalOpen(true)}
               size="sm"
-              className="rounded-lg font-bold bg-primary text-primary-foreground text-xs gap-2 h-10 px-4 cursor-pointer shadow-2xs"
+              className="rounded-lg font-bold bg-primary text-primary-foreground text-xs gap-2 h-11 sm:h-9 px-4 cursor-pointer shadow-2xs"
             >
               <Plus className="size-4" />
               <span>Receber Novo Pacote</span>
@@ -283,8 +286,8 @@ function WorkspacePudoLogisticsPage() {
         }
       />
 
-      {/* ── 4 KPIS NO PARADIGMA CLEAN ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ── 5 KPIS NO PARADIGMA CLEAN ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Boxes className="size-3.5 text-amber-600" />
@@ -294,46 +297,59 @@ function WorkspacePudoLogisticsPage() {
             {kpis.ready}
           </div>
           <p className="text-xs text-muted-foreground font-mono">
-            Aguardando retirada pelo cliente
+            Aguardando retirada
           </p>
         </div>
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <CheckCircle2 className="size-3.5 text-emerald-600" />
-            Entregas Concluídas
+            Entregues
           </span>
           <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
             {kpis.delivered}
           </div>
           <p className="text-xs text-muted-foreground font-mono">
-            Volumes entregues no balcão
+            Volumes no balcão
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+            <Coins className="size-3.5 text-emerald-600" />
+            Remuneração Custódia
+          </span>
+          <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
+            {formatMoney(kpis.custodyEarningsCents)}
+          </div>
+          <p className="text-xs text-muted-foreground font-mono">
+            R$ 3,00 / volume entregue
           </p>
         </div>
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <RotateCcw className="size-3.5 text-destructive" />
-            Logística Reversa / Avarias
+            Reversa / Avarias
           </span>
           <div className="text-2xl font-mono font-bold text-destructive">
             {kpis.returns}
           </div>
           <p className="text-xs text-muted-foreground font-mono">
-            Devoluções e pacotes danificados
+            Devoluções e danos
           </p>
         </div>
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Percent className="size-3.5 text-primary" />
-            Taxa de Eficiência PUDO
+            Taxa de Eficiência
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
             {kpis.successRate}%
           </div>
           <p className="text-xs text-muted-foreground font-mono">
-            Conclusão sem intercorrências
+            Sem intercorrências
           </p>
         </div>
       </div>
@@ -374,7 +390,7 @@ function WorkspacePudoLogisticsPage() {
             placeholder="Buscar por rastreio, destinatário ou telefone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-10 rounded-lg bg-background border-border/80 text-xs font-mono"
+            className="pl-9 h-11 sm:h-9 rounded-lg bg-background border-border/80 text-xs font-mono"
           />
         </div>
 
@@ -390,7 +406,7 @@ function WorkspacePudoLogisticsPage() {
               variant={statusTab === tab.id ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusTab(tab.id)}
-              className="h-9 rounded-lg text-xs font-bold cursor-pointer whitespace-nowrap"
+              className="h-11 sm:h-9 px-3.5 rounded-lg text-xs font-bold cursor-pointer whitespace-nowrap"
             >
               {tab.label} ({tab.count})
             </Button>
@@ -491,7 +507,7 @@ function WorkspacePudoLogisticsPage() {
                       setDamageModalPkg(pkg);
                       setDamageNotes("");
                     }}
-                    className="rounded-lg text-xs font-bold gap-1 text-destructive hover:bg-destructive/10 h-8 cursor-pointer"
+                    className="rounded-lg text-xs font-bold gap-1 text-destructive hover:bg-destructive/10 h-11 sm:h-9 px-3 cursor-pointer"
                   >
                     <RotateCcw className="size-3" />
                     <span>Avaria / Reversa</span>
@@ -558,18 +574,18 @@ function WorkspacePudoLogisticsPage() {
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-2">
             <Button
               variant="outline"
               onClick={() => setIsCheckInModalOpen(false)}
-              className="rounded-lg text-xs font-bold"
+              className="rounded-lg text-xs font-bold h-11 sm:h-9 px-4"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleCheckInPackage}
               disabled={isProcessing}
-              className="rounded-lg font-bold bg-primary text-primary-foreground text-xs shadow-2xs"
+              className="rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 sm:h-9 px-4 shadow-2xs"
             >
               Salvar Entrada
             </Button>
@@ -602,18 +618,18 @@ function WorkspacePudoLogisticsPage() {
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-2">
             <Button
               variant="outline"
               onClick={() => setDamageModalPkg(null)}
-              className="rounded-lg text-xs font-bold"
+              className="rounded-lg text-xs font-bold h-11 sm:h-9 px-4"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleReportDamage}
               disabled={isProcessing}
-              className="rounded-lg font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs"
+              className="rounded-lg font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs h-11 sm:h-9 px-4"
             >
               Confirmar Logística Reversa
             </Button>

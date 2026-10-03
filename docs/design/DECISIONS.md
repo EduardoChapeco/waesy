@@ -1,5 +1,13 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-162: Logística Urbana & Pontos de Retirada (PUDO): Remuneração de Custódia, Checklist de Avarias e Ergonomia Tátil
+- **Data:** 2026-10-03
+- **Contexto:** Execução da Onda 4 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Item 6): (1) O painel de gestão PUDO (`/workspace/logistica/pudo`) necessitava de transparência na remuneração de custódia por pacote retido/entregue (R$ 3,00 / volume) no balcão da loja parceira. (2) Faltava visualização direta e consolidada dos ganhos de custódia nos indicadores chave (KPIs). (3) Controles de interface, abas e botões de ação apresentavam alturas sub-ergonômicas (`h-10`, `h-9` e `h-8`), violando a regra de acessibilidade tátil móvel DL-14 (>= 44px).
+- **Decisão:** (1) **Remuneração de Custódia Transparente:** Adicionado cálculo em tempo real de `custodyEarningsCents = delivered * 300` e criado o 5º bloco de KPI no grid superior ("Remuneração Custódia") com formatação canônica de moeda via `formatMoney`. (2) **Checklist de Avarias e Logística Reversa:** Formalizado fluxo de avaria com modal descritivo e anexo de evidências fotográficas conectado a `reportPackageDamageAndReturn`. (3) **Calibração Ergonômica Apple HIG:** Todos os botões primários, secundários, exportador de manifesto CSV, abas de filtro por status e campos de formulário e pesquisa foram calibrados para `h-11 sm:h-9` (touch target >= 44px no mobile com `:focus-visible:ring-2`), sem colchetes arbitrários.
+- **Fundamentação:** Apple HIG, Invariantes M01 (Zero Mocks), M08 (Integridade Transacional), AGENTS.md B.4/B.8 (Piso WCAG 2.2 AA DL-14) e Doutrina de Design Silencioso.
+- **Consequências:** Lojistas parceiros visualizam com clareza a rentabilidade financeira da operação PUDO, o fluxo de logística reversa e avarias opera com integridade fotográfica e a usabilidade em dispositivos móveis atende integralmente às diretrizes HIG.
+
+
 ## DEC-161: PropTech & Gestão de Locação: Central de Manutenção, Vistorias de Entrada/Saída e Conciliação de Aluguel
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 3 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Itens 5 e 4): (1) O módulo de manutenções de imóveis (`/workspace/imoveis/manutencoes`) sofria com corrupção de codificação de caracteres (mojibake duplo em dezenas de strings), botão "Novo Chamado" sem modal no JSX (falsa completude), e botões com alvos de toque `h-8` violando DL-14. (2) Faltava suporte à seleção de imóveis reais da loja (`listStoreProperties`) no formulário de criação de chamados. (3) Ausência da aba de Vistorias Técnicas (Entrada/Saída) e Conciliação de Comprovantes de Aluguel com o módulo de recebíveis (`/workspace/financeiro/recebiveis`).
