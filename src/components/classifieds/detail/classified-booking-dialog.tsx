@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Calendar, Users, Check, MapPin, Loader2, AlertTriangle } from "lucide-react";
+import { Calendar, Users, Check, MapPin, Loader2, AlertTriangle, Clock, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { formatMoney } from "@/lib/money";
@@ -42,6 +43,13 @@ interface ClassifiedBookingDialogProps {
   nightsCount: number;
   cleaningFeeCents: number;
   bookingTotalCents: number;
+  isService?: boolean;
+  serviceAppointmentDate?: string;
+  setServiceAppointmentDate?: (d: string) => void;
+  serviceAppointmentTime?: string;
+  setServiceAppointmentTime?: (t: string) => void;
+  serviceAppointmentNotes?: string;
+  setServiceAppointmentNotes?: (n: string) => void;
 }
 
 export function ClassifiedBookingDialog({
@@ -78,6 +86,13 @@ export function ClassifiedBookingDialog({
   nightsCount,
   cleaningFeeCents,
   bookingTotalCents,
+  isService = false,
+  serviceAppointmentDate = "",
+  setServiceAppointmentDate,
+  serviceAppointmentTime = "09:00",
+  setServiceAppointmentTime,
+  serviceAppointmentNotes = "",
+  setServiceAppointmentNotes,
 }: ClassifiedBookingDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -303,6 +318,123 @@ export function ClassifiedBookingDialog({
                   <>
                     <Check className="size-4" />
                     <span>Confirmar Reserva — {formatMoney(travelTotalCents)}</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        ) : isService ? (
+          <>
+            <DialogHeader>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs font-bold uppercase tracking-wider text-primary border-primary/25 bg-primary/10">
+                  Agendamento de Serviço
+                </Badge>
+              </div>
+              <DialogTitle className="text-lg font-bold flex items-center gap-2">
+                <Clock className="size-5 text-primary" />
+                <span>Solicitar Horário de Atendimento</span>
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Escolha a data desejada, o melhor horário comercial e informe detalhes para o prestador.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              {/* Resumo do Serviço */}
+              <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1.5">
+                <span className="text-xs font-bold text-foreground block truncate">
+                  {classified?.title}
+                </span>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-semibold text-primary font-mono">
+                    {classified?.price_cents && classified.price_cents > 0 ? formatMoney(classified.price_cents) : "Sob Consulta"}
+                  </span>
+                  <span>•</span>
+                  <span>Duração: {classified?.service_duration_minutes || classified?.attributes?.service_duration_minutes || 60} min</span>
+                  {classified?.attributes?.modality && (
+                    <>
+                      <span>•</span>
+                      <span>
+                        {classified.attributes.modality === "remoto" ? "Online / Remoto" : classified.attributes.modality === "domicilio" ? "A Domicílio" : "Presencial"}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Data do Agendamento */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">
+                  Data do Atendimento *
+                </label>
+                <Input
+                  type="date"
+                  value={serviceAppointmentDate}
+                  onChange={(e) => setServiceAppointmentDate?.(e.target.value)}
+                  className="h-11 rounded-lg text-xs bg-background font-mono"
+                />
+                {Array.isArray(classified?.attributes?.available_weekdays) && classified.attributes.available_weekdays.length > 0 && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Dias de atendimento: {classified.attributes.available_weekdays.join(", ")}
+                  </p>
+                )}
+              </div>
+
+              {/* Horário Comercial */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">
+                  Horário Preferencial *
+                </label>
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
+                  {["08:00", "09:00", "10:00", "11:00", "13:30", "14:30", "15:30", "16:30", "17:30"].map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => setServiceAppointmentTime?.(slot)}
+                      className={cn(
+                        "h-10 rounded-lg text-xs font-mono font-semibold transition-colors border cursor-pointer",
+                        serviceAppointmentTime === slot
+                          ? "bg-primary text-primary-foreground border-primary font-bold shadow-sm"
+                          : "bg-card text-muted-foreground border-border/70 hover:border-primary/40 hover:text-foreground"
+                      )}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Observações / Descrição do Pedido */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">
+                  Detalhes do Atendimento / Observações (Opcional)
+                </label>
+                <Textarea
+                  value={serviceAppointmentNotes}
+                  onChange={(e) => setServiceAppointmentNotes?.(e.target.value)}
+                  placeholder="Descreva o que precisa ser feito ou detalhes sobre o local..."
+                  rows={3}
+                  className="rounded-lg text-xs bg-background"
+                />
+              </div>
+
+              {/* Botão de Confirmação */}
+              <Button
+                type="button"
+                onClick={handleDirectBooking}
+                disabled={isBooking || !serviceAppointmentDate}
+                className="w-full h-12 rounded-lg font-bold text-sm bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-98 transition-all gap-2 cursor-pointer"
+              >
+                {isBooking ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Enviando Agendamento...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="size-4" />
+                    <span>Confirmar Solicitação de Agendamento</span>
                   </>
                 )}
               </Button>

@@ -1999,3 +1999,23 @@
   4. `Mapeamento de Payloads no Editor`: Sincronizados `useProductEdit.saveVariants` e `useProductEditor.onSubmit` para mapear e persistir `wholesale_price_cents`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Constituição do Repositório (Art. 1, 2 e 3), docs/design/DESIGN.md e Doutrina Zero-Mock.
 - **Consequências:** Trilha de auditoria 100% preservada para movimentações de matriz, suporte nativo a B2B/atacado e banco de dados de produção sincronizado.
+
+## DEC-157: Ecossistema Completo de Classificados — Unificação de Ficha Técnica dos 15 Nichos, Isolamento de Contexto Civil vs Loja, Chat Nativo In-App, Agendamento de Serviços e Blindagem de Pedidos de Conveniência
+- **Data:** 2026-10-03
+- **Contexto:** Auditoria sistêmica do ecossistema de Classificados (rotas de criação/edição `_store.conta.classificados.novo.tsx`, listagem `_store.conta.classificados.index.tsx` e visualizadores `classified-detail-desktop.tsx`, `classified-detail-mobile.tsx`, `convenience-showcase-view.tsx`):
+  1. Divergência de propriedades entre o formulário, colunas da tabela `classified_ads` e o objeto JSONB `attributes` provocando omissão de campos cadastrados na vitrine de detalhes (ex: `mileage_km` vs `mileage`, `garage_spots` vs `parking_spots`, `year_model`/`year_fab` vs `year`).
+  2. Poluição de contexto (B7) no criador de anúncios para perfis civis: formulários de captação de leads de workspace eram exibidos para usuários sem loja com links mortos para `/workspace/marketing/formularios`.
+  3. Falta de botão de chat nativo interno: a interface só oferecia WhatsApp, e no mobile exibia ícone de balão de mensagem que abria WhatsApp externamente.
+  4. Queda de pedidos rápidos (`createQuickOrder`) para lojas terceiras aleatórias em anúncios pessoais de conveniência/mercado.
+  5. Modal de agendamento de classificados (`ClassifiedBookingDialog`) limitado a diárias de hospedagem e turismo, sem suporte a agendamento de horários comerciais para serviços.
+  6. Edição de anúncios (`activeNiche`) falhando na identificação de nichos gastronômicos, negócios, farmácias e mercados quando abertos via `/conta/classificados/novo?editId=...`.
+- **Decisão:**
+  1. `Resolvedor Canônico de Ficha Técnica (canonical-specs-resolver.ts)`: Criada função unificada `resolveClassifiedDetailedSpecs` para os 15 nichos semânticos. Resolve propriedades tanto de colunas explícitas quanto do JSONB `attributes`, cobrindo 100% dos campos de Veículos, Imóveis, Hospedagem, Negócios, Serviços, Empregos, etc.
+  2. `Isolamento Estrito de Contexto Civil vs Loja`: Em `_store.conta.classificados.novo.tsx`, a seleção de formulários de leads foi restrita a lojas oficiais (`selectedStoreId`). Perfis civis recebem card informativo seguro e sem links mortos, orientando o uso de chat nativo, propostas e WhatsApp.
+  3. `Canal Duplo de Contato (Chat In-App + WhatsApp)`: Inserção de botão explícito "Conversar no App" (`MessageCircle` com rota direta para `/_store/conta/conversas/$id`) em paridade com "WhatsApp" (`Phone`/`ExternalLink`), corrigindo o botão mobile que usava ícone de chat para WhatsApp.
+  4. `Blindagem em Pedidos Rápidos de Conveniência`: Em `createQuickOrder`, eliminação da queda para loja aleatória da cidade; resolução estrita da loja vinculada ao autor ou da loja raiz da plataforma (`is_platform_root: true`).
+  5. `Agendador Nativo de Horários Comerciais para Serviços`: Em `ClassifiedBookingDialog` e `useClassifiedDetail`, criação de fluxo dedicado de agendamento de serviços (`dealType: "service"`), com seleção de data, slots de horário comercial (08:00 às 17:30) e notas do cliente.
+  6. `Transição e Edição Segura dos 15 Nichos`: Em `_store.conta.classificados.novo.tsx`, normalização e resolução semântica automática no carregamento com `editId`, garantindo abertura correta para todos os 15 nichos.
+  7. `Escalação Humana no AI SDR`: Integração do botão "Falar com Vendedor" em `AiSdrChat` direcionando diretamente para a conversa com o autor (`startCustomerChatThread`).
+- **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F25-CLASSIFIEDS-ECOSYSTEM-COMPLETENESS, Apple HIG, Linear Silent Design, Regras de Isolamento de Contexto (B7) e WCAG 2.2 AA.
+- **Consequências:** 100% dos campos cadastrados renderizados fielmente na vitrine de detalhes, isolamento de contexto civil preservado, experiência omnichannel com chat nativo e agendamento de serviços plenamente operacionais.

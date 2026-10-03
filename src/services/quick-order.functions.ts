@@ -87,10 +87,15 @@ export const createQuickOrder = createServerFn({ method: "POST" })
       if (!resolvedStoreId && input.classifiedId) {
         const { data: classified } = await db
           .from("classifieds")
-          .select("store_id")
+      let classifiedAuthorId: string | null = null;
+      if (!resolvedStoreId && input.classifiedId) {
+        const { data: classified } = await db
+          .from("classifieds")
+          .select("store_id, author_profile_id")
           .eq("id", input.classifiedId)
           .maybeSingle();
         if (classified?.store_id) resolvedStoreId = classified.store_id;
+        if (classified?.author_profile_id) classifiedAuthorId = classified.author_profile_id;
       }
 
       if (!resolvedStoreId && input.productId) {
@@ -102,21 +107,31 @@ export const createQuickOrder = createServerFn({ method: "POST" })
         if (product?.store_id) resolvedStoreId = product.store_id;
       }
 
-      // Se ainda não resolvido, buscar loja padrão do marketplace
-      if (!resolvedStoreId) {
-        const { data: fallbackStore } = await db
+      // Se ainda não resolvido e for anúncio civil, buscar loja do próprio autor
+      if (!resolvedStoreId && classifiedAuthorId) {
+        const { data: authorStore } = await db
           .from("stores")
           .select("id")
+          .eq("owner_profile_id", classifiedAuthorId)
           .limit(1)
           .maybeSingle();
-        if (fallbackStore?.id) resolvedStoreId = fallbackStore.id;
+        if (authorStore?.id) resolvedStoreId = authorStore.id;
       }
 
+      // Se for transação comunitária/civil sem loja comercial, vincular à Loja Raiz da Plataforma (nunca a terceiros)
       if (!resolvedStoreId) {
-        return {
-          status: "error",
-          message: "Não foi possível identificar o comerciante para este pedido.",
-        };
+        const { data: rootStore } = await db
+          .from("stores")
+          .select("id")
+          .eq("is_platform_root", true)
+          .limit(1)
+          .maybeSingle();
+        if (rootStore?.id) {
+          resolvedStoreId = rootStore.id;
+        } else {
+          // Fallback seguro para o UUID canônico da matriz Waesy
+          resolvedStoreId = "00000000-0000-0000-0000-000000000002";
+        }
       }
 
       // 2. Token Público Canônico Seguro

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Share2, MapPin, Check, ShieldCheck, Tag, Clock, User, ChevronLeft, ChevronRight, Maximize2, X, Phone, MessageCircle, Package, Truck, CreditCard, QrCode, Receipt, FileSpreadsheet, CheckCircle2, Edit3, Smartphone, ExternalLink, ShieldAlert, Coins, TrendingUp, Banknote, FileCheck, Download, AlertCircle, Eye, Building, Car, Hotel, Briefcase, HelpCircle, Lock } from "lucide-react";
+import { ArrowLeft, Share2, MapPin, Check, ShieldCheck, Tag, Clock, User, ChevronLeft, ChevronRight, Maximize2, X, Phone, MessageCircle, Package, Truck, CreditCard, QrCode, Receipt, FileSpreadsheet, CheckCircle2, Edit3, Smartphone, ExternalLink, ShieldAlert, Coins, TrendingUp, Banknote, FileCheck, Download, AlertCircle, Eye, Building, Car, Hotel, Briefcase, HelpCircle, Lock, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
@@ -9,10 +9,13 @@ import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods } from "@/lib/classifieds/semantics";
+import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
+import { LeadFormModal } from "@/components/leads/lead-form-modal";
 import { startCustomerChatThread } from "@/services/chat.functions";
 import { addToCart } from "@/services/cart.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import type { UniversalClassifiedShowcaseProps } from "@/types/unified-ad-engine";
 
 function isVideoUrl(url?: string | null): boolean {
@@ -46,6 +49,7 @@ export function ClassifiedDetailDesktop({
   const [activeImage, setActiveImage] = useState(0);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "specs" | "seller" | "map">("overview");
+  const [isLeadFormModalOpen, setIsLeadFormModalOpen] = useState(false);
   const navigate = useNavigate();
   const { refreshCart, setIsCartOpen } = useCartContext();
   const [isStartingChat, setIsStartingChat] = useState(false);
@@ -242,28 +246,8 @@ export function ClassifiedDetailDesktop({
     );
   }, [classified, attrs]);
 
-  // Features list
-  const featureList = useMemo(() => {
-    const list: Array<{ label: string; value: string }> = [];
-    if (classified.condition) {
-      list.push({
-        label: "Condição",
-        value: classified.condition === "new" ? "Novo na Caixa" : classified.condition === "refurbished" ? "Revisado" : "Usado",
-      });
-    }
-    if (attrs.brand) list.push({ label: "Marca", value: attrs.brand });
-    if (attrs.model) list.push({ label: "Modelo", value: attrs.model });
-    if (attrs.year) list.push({ label: "Ano", value: String(attrs.year) });
-    if (attrs.mileage) list.push({ label: "Km", value: `${attrs.mileage.toLocaleString()} km` });
-    if (attrs.property_type) list.push({ label: "Tipo de Imóvel", value: attrs.property_type });
-    if (attrs.area_sqm) list.push({ label: "Área Útil", value: `${attrs.area_sqm} m²` });
-    if (attrs.bedrooms) list.push({ label: "Quartos", value: String(attrs.bedrooms) });
-    if (attrs.bathrooms) list.push({ label: "Banheiros", value: String(attrs.bathrooms) });
-    if (attrs.garage_spots) list.push({ label: "Vagas", value: String(attrs.garage_spots) });
-    if (attrs.delivery_available) list.push({ label: "Envio / Entrega", value: "Disponível para todo o Brasil" });
-    if (attrs.warranty) list.push({ label: "Garantia", value: attrs.warranty });
-    return list;
-  }, [classified, attrs]);
+  // Features list canônica resolvida para todos os 15 nichos
+  const featureList = useMemo(() => resolveClassifiedDetailedSpecs(classified), [classified]);
 
   return (
     <div className="w-full min-h-[100dvh] bg-background text-foreground pb-16">
@@ -503,17 +487,30 @@ export function ClassifiedDetailDesktop({
                 </div>
               </div>
 
-              {cleanPhone && (
+              <div className="flex items-center gap-2">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleWhatsApp}
-                  className="h-10 px-4 rounded-lg border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 text-xs font-bold flex items-center gap-2 cursor-pointer"
+                  onClick={handleStartNativeChat}
+                  disabled={isStartingChat}
+                  className="h-10 px-4 rounded-lg border-primary/30 text-primary bg-primary/10 hover:bg-primary/20 text-xs font-bold flex items-center gap-2 cursor-pointer"
                 >
-                  <MessageCircle className="size-4 text-emerald-500" />
-                  <span>WhatsApp</span>
+                  <MessageCircle className="size-4 text-primary" />
+                  <span>{isStartingChat ? "Abrindo..." : "Conversar no App"}</span>
                 </Button>
-              )}
+
+                {cleanPhone && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleWhatsApp}
+                    className="h-10 px-4 rounded-lg border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 text-xs font-bold flex items-center gap-2 cursor-pointer"
+                  >
+                    <Phone className="size-4 text-emerald-500" />
+                    <span>WhatsApp</span>
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -620,13 +617,40 @@ export function ClassifiedDetailDesktop({
 
             {/* CTAs de Conversão Direta */}
             <div className="space-y-3">
+              {(classified.lead_form || classified.form_id) && (
+                <Button
+                  type="button"
+                  onClick={() => setIsLeadFormModalOpen(true)}
+                  className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <FileText className="size-4" />
+                  <span>Preencher Formulário</span>
+                </Button>
+              )}
+
               <Button
                 type="button"
                 onClick={primaryCta.action}
                 disabled={isBooking || isBuyingDirect || isDownloadingDigital}
-                className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer"
+                className={cn(
+                  "h-12 w-full rounded-lg text-sm font-bold shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer",
+                  classified.lead_form || classified.form_id
+                    ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    : "bg-primary text-primary-foreground"
+                )}
               >
                 {primaryCta.label}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleStartNativeChat}
+                disabled={isStartingChat}
+                className="h-11 w-full rounded-lg text-xs font-bold border-primary/30 text-primary bg-primary/5 hover:bg-primary/15 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <MessageCircle className="size-4 text-primary" />
+                <span>{isStartingChat ? "Iniciando Chat..." : "Conversar no App"}</span>
               </Button>
 
               {onOpenProposalModal && !isDonation && (
@@ -634,7 +658,7 @@ export function ClassifiedDetailDesktop({
                   type="button"
                   variant="outline"
                   onClick={onOpenProposalModal}
-                  className="h-11 w-full rounded-lg text-xs font-semibold border-border/70 text-foreground hover:bg-muted/40"
+                  className="h-11 w-full rounded-lg text-xs font-semibold border-border/70 text-foreground hover:bg-muted/40 cursor-pointer"
                 >
                   Enviar Proposta
                 </Button>
@@ -645,9 +669,9 @@ export function ClassifiedDetailDesktop({
                   type="button"
                   variant="outline"
                   onClick={handleWhatsApp}
-                  className="h-11 w-full rounded-lg text-xs font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 flex items-center justify-center gap-2"
+                  className="h-11 w-full rounded-lg text-xs font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <MessageCircle className="size-4 text-emerald-600" />
+                  <Phone className="size-4 text-emerald-600" />
                   <span>WhatsApp</span>
                 </Button>
               )}
@@ -700,6 +724,19 @@ export function ClassifiedDetailDesktop({
             />
           )}
         </div>
+      )}
+
+      {/* ── Modal Universal de Captura de Leads (Lojas Oficiais) ── */}
+      {(classified?.lead_form || classified?.form_id) && (
+        <LeadFormModal
+          formSlug={classified.lead_form?.slug || null}
+          formId={classified.form_id || null}
+          initialForm={classified.lead_form || null}
+          classifiedId={classified.id}
+          classifiedTitle={classified.title}
+          isOpen={isLeadFormModalOpen}
+          onOpenChange={setIsLeadFormModalOpen}
+        />
       )}
     </div>
   );

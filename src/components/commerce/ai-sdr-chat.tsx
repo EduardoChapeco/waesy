@@ -8,12 +8,14 @@
  * - Cores neutras dark mode (sem gradientes neon)
  */
 import React, { useState, useRef, useEffect } from "react";
-import { Bot, X, Send, Loader2, Info } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { Bot, X, Send, Loader2, Info, MessageSquare, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { chatWithSDR } from "@/services/ai-sdr.functions";
+import { startCustomerChatThread } from "@/services/chat.functions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface ChatMessage {
@@ -23,16 +25,20 @@ interface ChatMessage {
 
 interface AiSdrChatProps {
   classifiedId: string;
+  storeId?: string;
+  sellerProfileId?: string;
   storeName?: string;
   sellerName?: string;
 }
 
-export function AiSdrChat({ classifiedId, storeName, sellerName }: AiSdrChatProps) {
+export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, sellerName }: AiSdrChatProps) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isEscalating, setIsEscalating] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Sessão anônima persistida no sessionStorage
@@ -82,8 +88,31 @@ export function AiSdrChat({ classifiedId, storeName, sellerName }: AiSdrChatProp
       console.error("[sdr-chat] Erro:", e?.message);
       toast.error("Assistente indisponível no momento. Tente novamente.");
       setMessages((prev) => prev.slice(0, -1));
+  const handleEscalateToHuman = async () => {
+    setIsEscalating(true);
+    try {
+      const res = await startCustomerChatThread({
+        data: {
+          storeId: storeId || undefined,
+          recipientProfileId: sellerProfileId || undefined,
+          subject: `Interesse no Anúncio: ${displayName}`,
+          initialMessage: `Olá! Estive conversando com o assistente virtual do anúncio e gostaria de tirar dúvidas diretamente com o vendedor.`,
+        },
+      });
+      if (res?.threadId) {
+        toast.success("Transferindo para o chat do vendedor...");
+        navigate({ to: `/conta/conversas/${res.threadId}` });
+      } else {
+        throw new Error("Não foi possível iniciar o chat.");
+      }
+    } catch {
+      toast.info("Identifique-se para conversar com o anunciante no app.");
+      navigate({
+        to: "/entrar",
+        search: { returnUrl: `/classificados/${classifiedId}` },
+      });
     } finally {
-      setIsLoading(false);
+      setIsEscalating(false);
     }
   };
 
@@ -181,16 +210,28 @@ export function AiSdrChat({ classifiedId, storeName, sellerName }: AiSdrChatProp
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleEscalateToHuman}
+                disabled={isEscalating}
+                className="h-8 px-2 text-[11px] font-semibold text-primary hover:bg-primary/10 gap-1 rounded-md"
+                title="Conversar com o vendedor humano no chat do app"
+              >
+                <MessageSquare className="size-3.5" />
+                <span className="hidden sm:inline">{isEscalating ? "Chamando..." : "Falar com Vendedor"}</span>
+              </Button>
               <button
                 onClick={() => setIsInfoOpen(true)}
-                className="size-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground"
+                className="size-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground cursor-pointer"
                 aria-label="Sobre o assistente"
               >
                 <Info className="size-4" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="size-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground"
+                className="size-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground cursor-pointer"
                 aria-label="Fechar chat"
               >
                 <X className="size-4" />

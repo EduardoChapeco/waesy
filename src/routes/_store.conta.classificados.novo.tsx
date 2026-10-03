@@ -40,6 +40,7 @@ import { lookupCnpj } from "@/services/public-apis.functions";
 import { CANONICAL_VEHICLE_BRANDS, CANONICAL_TRANSMISSIONS, CANONICAL_FUELS, CANONICAL_VEHICLE_COLORS, CANONICAL_VEHICLE_OPTIONS, CANONICAL_VEHICLE_PROVENANCE, CANONICAL_GOODS_SEGMENTS, CANONICAL_ITEM_CONDITIONS, CANONICAL_SMARTPHONE_BRANDS, CANONICAL_COMPUTER_TYPES, CANONICAL_COMPUTER_BRANDS, CANONICAL_PROCESSORS, CANONICAL_RAM_OPTIONS, CANONICAL_STORAGE_OPTIONS, CANONICAL_APPLIANCE_TYPES, CANONICAL_APPLIANCE_BRANDS, CANONICAL_VOLTAGES, CANONICAL_GAME_CONSOLES, CANONICAL_FASHION_CATEGORIES, CANONICAL_FASHION_SIZES, CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_BUSINESS_SEGMENTS, CANONICAL_SALE_REASONS, CANONICAL_EMPLOYEES_RANGES, CANONICAL_COMMERCIAL_POINT_TYPES, CANONICAL_INVESTMENT_MODELS, CANONICAL_PROJECT_STAGES, CANONICAL_USE_OF_FUNDS, CANONICAL_GROCERY_DEPARTMENTS, CANONICAL_UNIT_TYPES, CANONICAL_STORAGE_TEMPERATURES, CANONICAL_MEAT_CUT_OPTIONS, CANONICAL_BAKERY_PREP_OPTIONS, GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS } from "@/lib/classifieds/canonical-taxonomy";
 import { CANONICAL_EDUCATION_LEVELS, CANONICAL_EXPERIENCE_LEVELS, CANONICAL_JOB_REGIMES, CANONICAL_WORKPLACE_MODELS, CANONICAL_WORK_SCHEDULES, CANONICAL_SALARY_RANGES, CANONICAL_JOB_BENEFITS, SUGGESTED_JOB_SKILLS, getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 // (ChevronDown, ChevronUp merged into main lucide import above)
+import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
 import { z } from "zod";
 
 const ClassifiedSearchSchema = z.object({
@@ -366,11 +367,34 @@ function NovoClassificadoPage() {
       return NICHE_CARDS.find((n) => n.id === selectedType);
     }
     if (initialData) {
-      const savedNiche = initialData.attributes?.niche;
-      if (savedNiche) {
-        const found = NICHE_CARDS.find((n) => n.id === savedNiche);
+      const rawNiche = initialData.attributes?.niche || "";
+      const normalizeNiche = (id?: string) => {
+        if (!id) return undefined;
+        const s = id.toLowerCase();
+        if (s === "business" || s === "negocio" || s === "negocios") return "negocio";
+        if (s === "food" || s === "gastronomia" || s === "alimentacao") return "gastronomia";
+        if (s === "travel" || s === "viagem" || s === "turismo") return "viagem";
+        if (s === "equipment" || s === "equipamento" || s === "equipamentos") return "equipamento";
+        if (s === "donation" || s === "doacao" || s === "doacoes") return "doacao";
+        if (s === "job" || s === "vaga" || s === "vagas" || s === "emprego") return "vaga";
+        if (s === "real_estate" || s === "imovel" || s === "imoveis") return "imovel";
+        if (s === "vehicle" || s === "veiculo" || s === "veiculos") return "veiculo";
+        if (s === "goods" || s === "desapego" || s === "produtos") return "desapego";
+        if (s === "digital" || s === "infoproduto") return "digital";
+        if (s === "hospitality" || s === "hospitality_stay" || s === "hospedagem" || s === "temporada") return "hospedagem";
+        if (s === "service" || s === "servico" || s === "servicos") return "servico";
+        if (s === "subscription" || s === "assinatura" || s === "assinaturas") return "assinatura";
+        if (s === "pharmacy" || s === "farmacia") return "farmacia";
+        if (s === "market" || s === "mercado") return "mercado";
+        return s;
+      };
+
+      const normalizedSaved = normalizeNiche(rawNiche);
+      if (normalizedSaved) {
+        const found = NICHE_CARDS.find((n) => n.id === normalizedSaved);
         if (found) return found;
       }
+
       if (initialData.category === "travel") {
         return NICHE_CARDS.find((n) => n.id === "viagem");
       }
@@ -396,10 +420,34 @@ function NovoClassificadoPage() {
           ? NICHE_CARDS.find((n) => n.id === "assinatura")
           : NICHE_CARDS.find((n) => n.id === "servico");
       }
+      if (initialData.category === "food" || initialData.category === "gastronomia") {
+        return NICHE_CARDS.find((n) => n.id === "gastronomia");
+      }
+      if (initialData.category === "business" || initialData.category === "negocio" || initialData.attributes?.is_business_sale) {
+        return NICHE_CARDS.find((n) => n.id === "negocio");
+      }
+      if (initialData.category === "pharmacy" || initialData.category === "farmacia") {
+        return NICHE_CARDS.find((n) => n.id === "farmacia");
+      }
+      if (initialData.category === "market" || initialData.category === "mercado") {
+        return NICHE_CARDS.find((n) => n.id === "mercado");
+      }
       if (initialData.category === "sale") {
         return initialData.is_digital || initialData.digital_file_url
           ? NICHE_CARDS.find((n) => n.id === "digital")
           : NICHE_CARDS.find((n) => n.id === "desapego");
+      }
+
+      // Fallback semântico canonizado
+      try {
+        const semantic = resolveClassifiedNiche(initialData);
+        const mappedId = normalizeNiche(semantic.id);
+        if (mappedId) {
+          const found = NICHE_CARDS.find((n) => n.id === mappedId);
+          if (found) return found;
+        }
+      } catch (e) {
+        // Fallback pass-through
       }
     }
     return undefined;
@@ -8500,83 +8548,95 @@ function SpecializedClassifiedEditor({
  </div>
  </div>
 
-              {/* ── Formulário de Captura de Leads / Landing Page Vinculada ── */}
-              <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                    <FileText className="size-4 text-primary shrink-0" />
-                    <span>Captura de Leads (Opcional)</span>
+              {/* ── Formulário de Captura de Leads / Landing Page Vinculada (Restrito a Lojas Oficiais) ── */}
+              {selectedStoreId ? (
+                <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                      <FileText className="size-4 text-primary shrink-0" />
+                      <span>Captura de Leads (Loja Oficial)</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
+                      CRM Workspace
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
-                    Campanhas Ads e CRM
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Vincule um formulário personalizado para captar contatos qualificados diretamente no seu CRM do Workspace com Registro Rápido e redirecionamento WhatsApp.
-                </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Vincule um formulário personalizado para captar contatos qualificados diretamente no seu CRM do Workspace com Registro Rápido e redirecionamento WhatsApp.
+                  </p>
 
-                {storeForms.length > 0 ? (
-                  <div className="space-y-2">
-                    <Select
-                      value={selectedFormId || "none"}
-                      onValueChange={(val) => setSelectedFormId(val === "none" ? null : val)}
-                    >
-                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
-                        <SelectValue placeholder="Selecione um formulário de captura..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Nenhum (anúncio sem formulário direto)</SelectItem>
-                        {storeForms.map((f: any) => (
-                          <SelectItem key={f.id} value={f.id}>
-                            {f.title} ({f.slug}) • {f.submissions_count || 0} leads
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {storeForms.length > 0 ? (
+                    <div className="space-y-2">
+                      <Select
+                        value={selectedFormId || "none"}
+                        onValueChange={(val) => setSelectedFormId(val === "none" ? null : val)}
+                      >
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                          <SelectValue placeholder="Selecione um formulário de captura..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Nenhum (anúncio sem formulário direto)</SelectItem>
+                          {storeForms.map((f: any) => (
+                            <SelectItem key={f.id} value={f.id}>
+                              {f.title} ({f.slug}) • {f.submissions_count || 0} leads
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-                    <div className="flex items-center justify-between pt-1">
-                      {selectedFormId && (
+                      <div className="flex items-center justify-between pt-1">
+                        {selectedFormId && (
+                          <Link
+                            to="/f/$slug"
+                            params={{ slug: storeForms.find((f: any) => f.id === selectedFormId)?.slug || selectedFormId }}
+                            target="_blank"
+                            className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
+                          >
+                            <Eye className="size-3" />
+                            <span>Ver landing page do formulário</span>
+                          </Link>
+                        )}
                         <Link
-                          to="/f/$slug"
-                          params={{ slug: storeForms.find((f: any) => f.id === selectedFormId)?.slug || selectedFormId }}
-                          target="_blank"
-                          className="text-xs text-muted-foreground/75 text-primary hover:underline flex items-center gap-1 font-medium"
+                          to="/workspace/marketing/formularios"
+                          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 ml-auto"
                         >
-                          <Eye className="size-3" />
-                          <span>Ver landing page do formulário</span>
+                          <Plus className="size-3" />
+                          <span>Gerenciar Formulários no Workspace</span>
                         </Link>
-                      )}
-                      <Link
-                        to="/workspace/marketing/formularios"
-                        className="text-xs text-muted-foreground/75 text-muted-foreground hover:text-foreground flex items-center gap-1 ml-auto"
-                      >
-                        <Plus className="size-3" />
-                        <span>Gerenciar Formulários no Workspace</span>
-                      </Link>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Input
-                      type="text"
-                      value={selectedFormId || ""}
-                      onChange={(e) => setSelectedFormId(e.target.value.trim() || null)}
-                      placeholder="ID ou Slug do formulário (ex: cotacao-cancun ou UUID)"
-                      className="w-full h-11 px-3 rounded-lg border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    <div className="flex items-center justify-between text-xs text-muted-foreground/75 text-muted-foreground">
-                      <span>Cole o slug ou UUID do formulário</span>
-                      <Link
-                        to="/workspace/marketing/formularios"
-                        className="text-primary hover:underline flex items-center gap-1 font-medium"
-                      >
-                        <Plus className="size-3" />
-                        <span>Criar no Workspace</span>
-                      </Link>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input
+                        type="text"
+                        value={selectedFormId || ""}
+                        onChange={(e) => setSelectedFormId(e.target.value.trim() || null)}
+                        placeholder="ID ou Slug do formulário (ex: cotacao-cancun ou UUID)"
+                        className="w-full h-11 px-3 rounded-lg border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Cole o slug ou UUID do formulário</span>
+                        <Link
+                          to="/workspace/marketing/formularios"
+                          className="text-primary hover:underline flex items-center gap-1 font-medium"
+                        >
+                          <Plus className="size-3" />
+                          <span>Criar no Workspace</span>
+                        </Link>
+                      </div>
                     </div>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                    <MessageCircle className="size-4 text-primary shrink-0" />
+                    <span>Canal de Contato Direto (Anunciante Comunitário)</span>
                   </div>
-                )}
-              </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Como anunciante pessoa física, seus compradores contatam você diretamente via <strong>WhatsApp</strong>, <strong>Chat no App</strong> e <strong>Propostas Comerciais</strong> salvas em sua conta. Formulários de CRM são reservados a Lojas Oficiais do Workspace.
+                  </p>
+                </div>
+              )}
 
               {/* ── Seção 6: Agente Vendedor (SDR) — Configuração ── */}
               <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.03] p-4 sm:p-5 space-y-4">

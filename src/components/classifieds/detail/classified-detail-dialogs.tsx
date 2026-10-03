@@ -53,6 +53,13 @@ export function ClassifiedDetailDialogs({
         nightsCount={detail.nightsCount}
         cleaningFeeCents={detail.cleaningFeeCents}
         bookingTotalCents={detail.bookingTotalCents}
+        isService={detail.isService}
+        serviceAppointmentDate={detail.serviceAppointmentDate}
+        setServiceAppointmentDate={detail.setServiceAppointmentDate}
+        serviceAppointmentTime={detail.serviceAppointmentTime}
+        setServiceAppointmentTime={detail.setServiceAppointmentTime}
+        serviceAppointmentNotes={detail.serviceAppointmentNotes}
+        setServiceAppointmentNotes={detail.setServiceAppointmentNotes}
       />
       <ClassifiedProposalDialog
         classified={classified}

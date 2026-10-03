@@ -143,6 +143,8 @@ function ClassifiedDetailPage() {
             classifiedId={classified.id}
             storeName={classified.store_name || undefined}
             sellerName={classified.profiles?.full_name || classified.author_profile?.full_name || undefined}
+            storeId={classified.store_id || undefined}
+            sellerProfileId={classified.author_profile_id || undefined}
           />
         )}
       </>
@@ -190,6 +192,8 @@ function ClassifiedDetailPage() {
             classifiedId={classified.id}
             storeName={classified.store_name || undefined}
             sellerName={classified.profiles?.full_name || classified.author_profile?.full_name || undefined}
+            storeId={classified.store_id || undefined}
+            sellerProfileId={classified.author_profile_id || undefined}
           />
         )}
       </>
@@ -248,6 +252,8 @@ function ClassifiedDetailPage() {
           classifiedId={classified.id}
           storeName={classified.store_name || undefined}
           sellerName={classified.profiles?.full_name || classified.author_profile?.full_name || undefined}
+          storeId={classified.store_id || undefined}
+          sellerProfileId={classified.author_profile_id || undefined}
         />
       )}
     </>

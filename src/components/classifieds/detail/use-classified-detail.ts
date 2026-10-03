@@ -111,6 +111,20 @@ export function useClassifiedDetail({
   const [isBooking, setIsBooking] = useState(false);
   const [isBuyingDirect, setIsBuyingDirect] = useState(false);
 
+  // Service Appointment State
+  const isService = Boolean(
+    classified?.category === "service" ||
+    classified?.attributes?.niche === "servico" ||
+    niche?.id === "service"
+  );
+  const [serviceAppointmentDate, setServiceAppointmentDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  });
+  const [serviceAppointmentTime, setServiceAppointmentTime] = useState("09:00");
+  const [serviceAppointmentNotes, setServiceAppointmentNotes] = useState("");
+
   // Booked Dates
   const { data: bookedDates = [] } = useQuery({
     queryKey: ["classified-booked-dates", classified?.id],
@@ -274,7 +288,22 @@ export function useClassifiedDetail({
     if (!classified) return;
     setIsBooking(true);
     try {
-      if (isTravelPackage) {
+      if (isService) {
+        await createDealProposal({
+          data: {
+            classifiedId: classified.id,
+            sellerId: classified.author_profile_id,
+            proposedPriceCents: classified.price_cents || 0,
+            totalPriceCents: classified.price_cents || 0,
+            dealType: "service",
+            startDate: serviceAppointmentDate,
+            isDirectBooking: true,
+            terms: `Agendamento de Serviço: ${classified.title}\nData Solicitada: ${serviceAppointmentDate}\nHorário Selecionado: ${serviceAppointmentTime}\nDuração Estimada: ${classified.service_duration_minutes || 60} minutos\nObservações: ${serviceAppointmentNotes.trim() || "Nenhuma"}`,
+          },
+        });
+
+        toast.success("Solicitação de agendamento enviada! O prestador foi notificado.");
+      } else if (isTravelPackage) {
         const depDate = selectedDeparture?.departure_date || "";
         const retDate = selectedDeparture?.return_date || "";
         const depTime = selectedDeparture?.departure_time ? ` às ${selectedDeparture.departure_time}` : "";
@@ -479,5 +508,12 @@ export function useClassifiedDetail({
     travelTotalCents,
     maxInstallments,
     travelInstallmentCents,
+    isService,
+    serviceAppointmentDate,
+    setServiceAppointmentDate,
+    serviceAppointmentTime,
+    setServiceAppointmentTime,
+    serviceAppointmentNotes,
+    setServiceAppointmentNotes,
   };
 }
