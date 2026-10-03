@@ -273,6 +273,7 @@ export function useProductEdit(
               Object.entries(v.attributes || {}).map(([k, val]) => [k, String(val ?? "")])
             ),
             price_override_cents: v.price_override_cents ?? null,
+            wholesale_price_cents: v.wholesale_price_cents ?? null,
             stock: v.stock ?? 0,
             original_stock: v.original_stock,
             cost_cents: v.cost_cents ?? null,

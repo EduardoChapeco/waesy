@@ -385,6 +385,7 @@ export async function _createProduct(input: {
 				sku: v.sku,
 				attributes: v.attributes || {},
 				price_override_cents: v.price_override_cents || null,
+				wholesale_price_cents: (v as any).wholesale_price_cents || null,
 				stock_on_hand: v.stock || 0,
 				image_url: v.image_url || null,
 			}));
@@ -1055,6 +1056,7 @@ export async function _upsertProductVariant(input: {
  barcode?: string | null;
  status: "active" | "inactive" | "archived";
  price_override_cents?: number | null;
+ wholesale_price_cents?: number | null;
  cost_cents?: number | null;
  stock_alert_qty?: number | null;
  ean?: string | null;
@@ -1136,6 +1138,7 @@ export const upsertProductVariant = createServerFn({ method: "POST" })
  barcode: z.string().optional().nullable(),
  status: z.enum(["active", "inactive", "archived"]).default("active"),
  price_override_cents: z.number().int().min(0).optional().nullable(),
+ wholesale_price_cents: z.number().int().min(0).optional().nullable(),
  cost_cents: z.number().int().min(0).optional().nullable(),
  stock_alert_qty: z.number().int().min(0).optional().nullable(),
  ean: z.string().optional().nullable(),
@@ -1171,6 +1174,7 @@ export async function _batchUpsertVariantMatrix(input: {
  ean?: string | null;
  attributes: Record<string, string>;
  price_override_cents?: number | null;
+ wholesale_price_cents?: number | null;
  cost_cents?: number | null;
  weight_kg?: number | null;
  stock: number;
@@ -1216,6 +1220,7 @@ export const batchUpsertVariantMatrix = createServerFn({ method: "POST" })
  sku: z.string().optional(),
  attributes: z.record(z.string()),
  price_override_cents: z.number().int().min(0).optional().nullable(),
+ wholesale_price_cents: z.number().int().min(0).optional().nullable(),
  stock: z.number().int().min(0).default(0),
  original_stock: z.number().int().min(0).optional(),
  cost_cents: z.number().int().min(0).optional().nullable(),

@@ -42,6 +42,12 @@ export async function _getStoreSettings() {
  niche: settings.niche || settings.segment || null,
  order_types: settings.order_types || { delivery: true, takeout: true, dine_in: true },
  tourism_layout_mode: settings.tourism_layout_mode || "air_cover",
+ wholesale_enabled: !!(
+  settings.wholesale_enabled ||
+  settings.wholesale_mode ||
+  settings.b2b_enabled ||
+  (Array.isArray(settings.enabled_modules) && settings.enabled_modules.includes("wholesale"))
+ ),
  };
 }
 
@@ -81,6 +87,7 @@ export const saveStoreSettingsSchema = z.object({
  .optional(),
  checkout_config: z.record(z.any()).optional(),
  ai_knowledge_base: z.string().optional().or(z.literal("")),
+ wholesale_enabled: z.boolean().optional(),
 });
 
 export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsSchema>) {
@@ -92,6 +99,7 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  type,
  niche,
  enabled_modules,
+ wholesale_enabled,
  logoUrl,
  bannerUrl,
  faviconUrl,
@@ -119,6 +127,7 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  ...(type && !segment ? { type, segment: type, niche: type } : {}),
  ...(niche && !segment && !type ? { niche, segment: niche, type: niche } : {}),
  ...(enabled_modules !== undefined ? { enabled_modules } : {}),
+ ...(wholesale_enabled !== undefined ? { wholesale_enabled } : {}),
  ...(payment_processing_mode !== undefined ? { payment_processing_mode } : {}),
  logoUrl,
  bannerUrl,

@@ -1898,4 +1898,13 @@
   6. `Conformidade e Redução de Dívida`: Baseline do Design Lint atualizada de 18.693 para 18.692 (-1 dívida reduzida), 0 violações P0/P1 novas, 100% de testes unitários verdes em `chat-commerce.test.ts` e compilação de produção com Exit Code 0.
 - **Fundamentação:** AGENTS.md B.1 a B.12, docs/design/DESIGN.md, docs/design/DESIGN-LINT.md, Silent Design, Apple HIG e Doutrina Zero-Mock.
 - **Consequências:** IA Copilot 100% conectada a dados reais de produção, sem elementos visuais artificiais, com segurança estrita para dados financeiros e conformidade arquitetural absoluta.
-
+## DEC-156: Preços de Atacado B2B (wholesale_price_cents) e Trilha Canônica de Auditoria em stock_movements na Matriz 2D
+- **Data:** 2026-10-03
+- **Contexto:** Execução das ações prioritárias de catálogo e governança de estoque: (1) adição de suporte nativo a preços diferenciados de atacado B2B por variante (`wholesale_price_cents`); (2) vinculação direta das edições de saldo na matriz 2D à trilha imutável de auditoria em `stock_movements`; (3) sincronização remota via migração DDL aplicada ao banco de produção.
+- **Decisão:**
+  1. `Schema Relacional e Coluna de Atacado`: Adicionada coluna `wholesale_price_cents` em `public.product_variants` com constraint `CHECK (wholesale_price_cents >= 0)`. Atualizado `RawVariant` em `src/types/catalog.ts`.
+  2. `Trilha Canônica em stock_movements`: Corrigida a função atômica `public.batch_upsert_variant_matrix_v5` para inserir movimentações de estoque usando as colunas canônicas (`store_id`, `variant_id`, `movement_type = 'adjustment'`, `qty`, `reference_type = 'variant_matrix'`, `note`, `actor_id`), eliminando o descarte de histórico e integrando diretamente ao `/workspace/estoque/movimentos`.
+  3. `BFF e Server Functions Atualizadas`: Atualizados `_batchUpsertVariantMatrix`, `batchUpsertVariantMatrix`, `_upsertProductVariant`, `upsertProductVariant`, `createProduct` em `src/services/admin-catalog.functions.ts` e `_getStoreSettings`/`saveStoreSettingsSchema` em `src/services/store.functions.ts`.
+  4. `Mapeamento de Payloads no Editor`: Sincronizados `useProductEdit.saveVariants` e `useProductEditor.onSubmit` para mapear e persistir `wholesale_price_cents`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, Constituição do Repositório (Art. 1, 2 e 3), docs/design/DESIGN.md e Doutrina Zero-Mock.
+- **Consequências:** Trilha de auditoria 100% preservada para movimentações de matriz, suporte nativo a B2B/atacado e banco de dados de produção sincronizado.
