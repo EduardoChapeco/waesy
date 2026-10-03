@@ -4,6 +4,7 @@ import { Tag, Newspaper, Briefcase, CalendarDots, MapPin, Clock, WhatsappLogo, B
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { MasterSquircleHero } from "@/components/commerce/master-squircle-hero";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
+import { HitsLeadCard } from "@/components/commerce/hits-lead-card";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
 import { NewsCard } from "@/components/news/news-card";
 import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
@@ -633,6 +634,18 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                 actionLabel="Ver todos"
                 onAction={() => {}}
                 actionTo="/diretorio"
+                leadCard={
+                  <HitsLeadCard
+                    title="Lugares em Alta"
+                    subtitle="Empresas e serviços verificados na cidade"
+                    badge="Guia Local"
+                    actionLabel="Explorar"
+                    actionTo="/diretorio"
+                    gradient="from-emerald-700 via-teal-700 to-cyan-800"
+                    className="h-72 w-52 sm:w-60"
+                    ariaLabel="Explorar Guia de Lugares e Negócios"
+                  />
+                }
               >
                 {filteredPlaces.map((item: DirectoryListingDTO) => {
                   const coverImage = item.banner_url || item.avatar_url;
@@ -719,6 +732,18 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                 actionLabel="Ver todos"
                 onAction={() => {}}
                 actionTo="/classificados"
+                leadCard={
+                  <HitsLeadCard
+                    title="Feirão & Desapego"
+                    subtitle="Compre e negocie direto com quem anuncia"
+                    badge="Oportunidades"
+                    actionLabel="Ver ofertas"
+                    actionTo="/classificados"
+                    gradient="from-amber-600 via-orange-600 to-red-600"
+                    className="h-80 w-52 sm:w-60"
+                    ariaLabel="Ver ofertas em Classificados"
+                  />
+                }
               >
                 {filteredClassifieds.map((item: any) => {
                   const coverImage =
@@ -868,6 +893,18 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                 actionLabel="Ver todas"
                 onAction={() => {}}
                 actionTo="/empregos"
+                leadCard={
+                  <HitsLeadCard
+                    title="Carreiras & Talentos"
+                    subtitle="Oportunidades com recrutamento ativo na região"
+                    badge="Vagas Abertas"
+                    actionLabel="Ver vagas"
+                    actionTo="/empregos"
+                    gradient="from-blue-700 via-indigo-700 to-violet-800"
+                    className="min-h-48 w-52 sm:w-60"
+                    ariaLabel="Ver vagas de emprego abertas"
+                  />
+                }
               >
                 {filteredJobs.map((job: JobItemDTO) => {
                   const coverImage = (job as any).cover_image_url || job.company_logo_url;
@@ -927,6 +964,18 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                 actionLabel="Ver todos"
                 onAction={() => {}}
                 actionTo="/eventos"
+                leadCard={
+                  <HitsLeadCard
+                    title="Agenda & Shows"
+                    subtitle="Espetáculos e encontros culturais confirmados"
+                    badge="Ingressos"
+                    actionLabel="Ver agenda"
+                    actionTo="/eventos"
+                    gradient="from-purple-700 via-fuchsia-700 to-pink-700"
+                    className="min-h-64 w-52 sm:w-60"
+                    ariaLabel="Ver programação de eventos e ingressos"
+                  />
+                }
               >
                 {filteredEvents.map((ev: any) => {
                   const coverImage = ev.cover_image || ev.image_url || ev.banner_url;

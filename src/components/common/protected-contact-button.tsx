@@ -89,7 +89,7 @@ export function ProtectedContactButton({
   const handleLoginRedirect = () => {
     if (typeof window !== "undefined") {
       const currentPath = window.location.pathname + window.location.search;
-      window.location.href = `/entrar?redirect=${encodeURIComponent(currentPath)}`;
+      window.location.href = `/entrar?returnUrl=${encodeURIComponent(currentPath)}`;
     }
   };
 
@@ -102,7 +102,7 @@ export function ProtectedContactButton({
           size={size}
           onClick={handleClick}
           className={cn(
-            "rounded-lg gap-2 font-medium transition-all group border-border/80 hover:border-emerald-500/50 hover:bg-emerald-500/5 text-foreground cursor-pointer",
+            "rounded-lg gap-2 font-medium transition-all group border-border/80 hover:border-emerald-500/50 hover:bg-emerald-500/5 text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
             className
           )}
           title="Faça login para contatar pelo WhatsApp"
@@ -111,7 +111,7 @@ export function ProtectedContactButton({
           <MessageCircle className="size-4 text-emerald-600 opacity-70" />
           <span>{label}</span>
           {showMaskedPhone && (
-            <span className="text-[11px] font-mono text-muted-foreground/80 ml-1">
+            <span className="text-xs font-mono text-muted-foreground/80 ml-1">
               {maskedPhone}
             </span>
           )}
@@ -148,16 +148,14 @@ export function ProtectedContactButton({
             <DialogFooter className="flex-col sm:flex-row gap-2 pt-2">
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => setIsModalOpen(false)}
-                className="w-full sm:w-auto rounded-lg text-xs"
+                className="w-full sm:w-auto rounded-lg text-xs h-11 sm:h-9 px-4 focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Voltar
               </Button>
               <Button
-                size="sm"
                 onClick={handleLoginRedirect}
-                className="w-full sm:w-auto rounded-lg text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                className="w-full sm:w-auto rounded-lg text-xs h-11 sm:h-9 px-4 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Entrar ou Criar Conta
                 <ArrowRight className="size-3.5" />

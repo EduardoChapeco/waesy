@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
+import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { getPublicJobById, applyToJob, getEmployerProfileInsights, type JobItemDTO, type EmployerProfileInsightsDTO } from "@/services/jobs.functions";
 import { getUserSession, getProfile } from "@/services/auth.functions";
@@ -64,6 +66,17 @@ function JobDetailPage() {
   const { job, session, profile, employerInsights } = ((Route.useLoaderData?.() as any) || {});
   const matchedProfession = useMemo(() => (job?.title ? findProfessionByTitle(job.title) : null), [job?.title]);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
+  const { requireAuth, modalProps } = useActionAuthGuard();
+
+  const handleOpenApply = () => {
+    requireAuth({
+      title: "Faça login para se candidatar",
+      description: `Para enviar seu currículo diretamente ao recrutador da vaga "${job?.title || "esta oportunidade"}", acesse sua conta Waesy.`,
+      actionContext: `Candidatura à vaga: ${job?.title || "Vaga"} (${job?.company_name || "Empresa"})`,
+      onSuccess: () => setIsApplyOpen(true),
+    });
+  };
+
  const [candidateName, setCandidateName] = useState(session?.user_metadata?.full_name || "");
  const [candidateEmail, setCandidateEmail] = useState(session?.email || "");
  const [candidatePhone, setCandidatePhone] = useState("");
@@ -145,7 +158,7 @@ function JobDetailPage() {
           job={job}
           employerInsights={employerInsights}
           matchedProfession={matchedProfession}
-          onOpenApply={() => setIsApplyOpen(true)}
+          onOpenApply={handleOpenApply}
           onShare={handleShare}
         />
       ) : (
@@ -153,7 +166,7 @@ function JobDetailPage() {
           job={job}
           employerInsights={employerInsights}
           matchedProfession={matchedProfession}
-          onOpenApply={() => setIsApplyOpen(true)}
+          onOpenApply={handleOpenApply}
           onShare={handleShare}
         />
       )}
@@ -186,6 +199,8 @@ function JobDetailPage() {
         isPending={applyMutation.isPending}
         onSubmit={handleSubmitApply}
       />
+
+      <ActionAuthGuardModal {...modalProps} />
     </>
   );
 }

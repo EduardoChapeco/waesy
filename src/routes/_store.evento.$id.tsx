@@ -1,7 +1,7 @@
 import { useIsDesktop } from "@/hooks/use-mobile";
 import { EventDetailMobile } from "@/components/events/event-detail-mobile";
 import { EventDetailDesktop } from "@/components/events/event-detail-desktop";
-﻿import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { getEventWithLots } from "@/services/events.functions";
 import { getEventRsvpStatus, toggleEventRsvpAction } from "@/services/events/external-events.functions";
 import { getIdentity } from "@/services/identity.functions";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
+import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
+import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
 
 export const Route = createFileRoute("/_store/evento/$id")({
   head: ({ loaderData }) => ({
@@ -111,42 +113,51 @@ function EventDetailPage() {
     );
   }
 
-  const handleBuyTicket = async (lot: any) => {
-    try {
-      await addToCart({
-        data: {
-          variantId: lot.id,
-          quantity: 1,
-        },
-      });
-      recordUserBehavior({
-        data: {
-          eventType: "add_to_cart",
-          entityType: "event",
-          entityId: event.id,
-          niche: "eventos",
-          metadata: { lot_id: lot.id, price_cents: lot.price_cents },
-        },
-      }).catch(() => {});
+  const { requireAuth, modalProps } = useActionAuthGuard();
 
-      if (event.store_id) {
-        linkEventInteractionToCrmFn({
-          data: {
-            eventId: event.id,
-            storeId: event.store_id,
-            interactionType: "ticket_buy",
-            metadata: { lot_id: lot.id, price_cents: lot.price_cents },
-          },
-        }).catch(() => {});
-      }
+  const handleBuyTicket = (lot: any) => {
+    requireAuth({
+      title: "Faça login para emitir ingressos",
+      description: `Para emitir seus ingressos com QR Code e segurança nominal para "${event.title}", acesse sua conta Waesy.`,
+      actionContext: `Compra de Ingresso: ${lot.title} (${event.title})`,
+      onSuccess: async () => {
+        try {
+          await addToCart({
+            data: {
+              variantId: lot.id,
+              quantity: 1,
+            },
+          });
+          recordUserBehavior({
+            data: {
+              eventType: "add_to_cart",
+              entityType: "event",
+              entityId: event.id,
+              niche: "eventos",
+              metadata: { lot_id: lot.id, price_cents: lot.price_cents },
+            },
+          }).catch(() => {});
 
-      toast.success("Ingresso adicionado ao carrinho!");
-      router.navigate({ to: "/carrinho" });
-    } catch (err: unknown) {
-      toast.error(
-        (err instanceof Error ? err.message : String(err)) || "Erro ao adicionar ingresso."
-      );
-    }
+          if (event.store_id) {
+            linkEventInteractionToCrmFn({
+              data: {
+                eventId: event.id,
+                storeId: event.store_id,
+                interactionType: "ticket_buy",
+                metadata: { lot_id: lot.id, price_cents: lot.price_cents },
+              },
+            }).catch(() => {});
+          }
+
+          toast.success("Ingresso adicionado ao carrinho!");
+          router.navigate({ to: "/carrinho" });
+        } catch (err: unknown) {
+          toast.error(
+            (err instanceof Error ? err.message : String(err)) || "Erro ao adicionar ingresso."
+          );
+        }
+      },
+    });
   };
 
   const handleToggleRsvp = async (status: "going" | "interested" | "not_going") => {
@@ -244,7 +255,26 @@ function EventDetailPage() {
 
   if (!isDesktop) {
     return (
-      <EventDetailMobile
+      <>
+        <EventDetailMobile
+          event={event}
+          lots={lots}
+          linkedNews={linkedNews}
+          userRsvp={userRsvp}
+          rsvpCounts={rsvpCounts}
+          isSubmittingRsvp={isSubmittingRsvp}
+          handleToggleRsvp={handleToggleRsvp}
+          handleBuyTicket={handleBuyTicket}
+          isOwner={isOwner}
+        />
+        <ActionAuthGuardModal {...modalProps} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <EventDetailDesktop
         event={event}
         lots={lots}
         linkedNews={linkedNews}
@@ -255,20 +285,7 @@ function EventDetailPage() {
         handleBuyTicket={handleBuyTicket}
         isOwner={isOwner}
       />
-    );
-  }
-
-  return (
-    <EventDetailDesktop
-      event={event}
-      lots={lots}
-      linkedNews={linkedNews}
-      userRsvp={userRsvp}
-      rsvpCounts={rsvpCounts}
-      isSubmittingRsvp={isSubmittingRsvp}
-      handleToggleRsvp={handleToggleRsvp}
-      handleBuyTicket={handleBuyTicket}
-      isOwner={isOwner}
-    />
+      <ActionAuthGuardModal {...modalProps} />
+    </>
   );
 }
