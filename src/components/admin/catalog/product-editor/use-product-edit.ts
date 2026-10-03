@@ -6,6 +6,7 @@ import type { TravelPackageData } from "@/types/travel-package";
 import type { BomItem } from "@/components/admin/catalog/product-bom-card";
 import type { FoodSpecsData } from "@/components/admin/catalog/product-food-specs-card";
 import type { RawVariant } from "@/types/catalog";
+import type { NicheAttributesData } from "./product-specs-tab";
 import { updateProduct, batchUpsertVariantMatrix } from "@/services/admin-catalog.functions";
 
 export function useProductEdit(
@@ -81,6 +82,54 @@ export function useProductEdit(
   }, [product]);
 
   const [foodSpecs, setFoodSpecs] = useState<FoodSpecsData>(initialFoodSpecs);
+
+  const initialNicheAttributes: NicheAttributesData = useMemo(() => {
+    const attrs = (product?.attributes as any) || {};
+    return {
+      brand: attrs.brand || product?.brand || "",
+      model: attrs.model || "",
+      year: attrs.year || "",
+      mileage: attrs.mileage || "",
+      transmission: attrs.transmission || "",
+      fuel_type: attrs.fuel_type || "",
+      color: attrs.color || "",
+      doors: attrs.doors || "",
+      license_plate_end: attrs.license_plate_end || "",
+      usable_area: attrs.usable_area || "",
+      total_area: attrs.total_area || "",
+      bedrooms: attrs.bedrooms || "",
+      suites: attrs.suites || "",
+      bathrooms: attrs.bathrooms || "",
+      parking_spaces: attrs.parking_spaces || "",
+      service_duration: attrs.service_duration || "",
+      service_modality: attrs.service_modality || "",
+      service_warranty: attrs.service_warranty || "",
+      weight_kg: attrs.weight_kg || product?.weight_kg || "",
+      dimensions: attrs.dimensions || "",
+      material: attrs.material || "",
+    };
+  }, [product]);
+
+  const [nicheAttributes, setNicheAttributes] = useState<NicheAttributesData>(initialNicheAttributes);
+
+  const handleNicheAttributesChange = async (newAttrs: NicheAttributesData) => {
+    setNicheAttributes(newAttrs);
+    try {
+      await updateProduct({
+        data: {
+          id: product.id,
+          attributes: {
+            ...(product.attributes || {}),
+            ...newAttrs,
+          },
+        },
+      });
+      toast.success("Especificações atualizadas com sucesso!");
+    } catch {
+      toast.error("Erro ao salvar especificações.");
+    }
+  };
+
   const [isMasterCatalogOpen, setIsMasterCatalogOpen] = useState(false);
 
   const isTourismStore =
@@ -329,6 +378,8 @@ export function useProductEdit(
     handleApplyCostToProduct,
     foodSpecs,
     handleFoodSpecsChange,
+    nicheAttributes,
+    handleNicheAttributesChange,
     isMasterCatalogOpen,
     setIsMasterCatalogOpen,
     handleSelectMasterProduct,

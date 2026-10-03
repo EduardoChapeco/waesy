@@ -12,3 +12,4 @@ export * from "./use-product-edit";
 export * from "./product-edit-general-form";
 export * from "./product-edit-media-manager";
 export * from "./product-edit-variants-manager";
+export * from "./product-specs-tab";

@@ -28,6 +28,7 @@ import {
   ProductEditMediaManager,
   ProductEditVariantsManager,
   ProductPreviewPane,
+  ProductSpecsTab,
   useProductEdit,
 } from "@/components/admin/catalog/product-editor";
 import {
@@ -158,17 +159,18 @@ function EditProductPage() {
           }
           sections={[
             ...(edit.isTourismStore
-              ? [{ id: "turismo", label: "Pacote de Viagem e Roteiro", icon: <Plane className="size-4" /> }]
+              ? [{ id: "turismo", label: "Roteiro", icon: <Plane className="size-4" /> }]
               : []),
-            { id: "geral", label: "Informações Básicas", icon: <Box className="size-4" /> },
+            { id: "geral", label: "Básico", icon: <Box className="size-4" /> },
+            { id: "especificacoes-nicho", label: "Especificações", icon: <Boxes className="size-4" /> },
             ...(nicheCtx.isFoodBusiness
-              ? [{ id: "especificacoes", label: "Cardápio e Restrições", icon: <Utensils className="size-4" /> }]
+              ? [{ id: "especificacoes", label: "Cardápio", icon: <Utensils className="size-4" /> }]
               : []),
-            { id: "midias", label: "Galeria de Fotos", icon: <ImagePlus className="size-4" /> },
+            { id: "midias", label: "Fotos", icon: <ImagePlus className="size-4" /> },
             { id: "variantes", label: nicheCtx.variationsSectionTitle, icon: <LayoutList className="size-4" /> },
-            { id: "opcoes", label: "Adicionais e Opções", icon: <SlidersHorizontal className="size-4" /> },
-            { id: "ofertas", label: "Oferta de Checkout", icon: <Zap className="size-4" /> },
-            { id: "ficha-tecnica", label: "Composição & Ficha Técnica", icon: <Boxes className="size-4" /> },
+            { id: "opcoes", label: "Adicionais", icon: <SlidersHorizontal className="size-4" /> },
+            { id: "ofertas", label: "Ofertas", icon: <Zap className="size-4" /> },
+            { id: "ficha-tecnica", label: "Insumos", icon: <Boxes className="size-4" /> },
           ]}
         >
           {edit.isTourismStore && (
@@ -235,6 +237,22 @@ function EditProductPage() {
               onCompareChange={edit.setLiveCompareCents}
               onCostChange={edit.setLiveCostCents}
               onStatusChange={edit.setLiveStatus}
+            />
+          </div>
+
+          <div id="especificacoes-nicho" className="scroll-mt-32 pt-12 border-t">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Boxes className="size-5 text-primary" /> Especificações
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Atributos técnicos, medidas físicas, ficha de veículo, imóvel ou parâmetros de serviço.
+              </p>
+            </div>
+            <ProductSpecsTab
+              attributes={edit.nicheAttributes}
+              onChange={edit.handleNicheAttributesChange}
+              nicheContext={nicheCtx}
             />
           </div>
 

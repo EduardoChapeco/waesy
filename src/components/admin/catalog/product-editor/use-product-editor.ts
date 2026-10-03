@@ -10,6 +10,7 @@ import type { BomItem } from "@/components/admin/catalog/product-bom-card";
 import type { FoodSpecsData } from "@/components/admin/catalog/product-food-specs-card";
 import type { TravelPackageData } from "@/types/travel-package";
 import type { FiscalData } from "./product-fiscal-tab";
+import type { NicheAttributesData } from "./product-specs-tab";
 
 export function slugify(text: string) {
   return text
@@ -90,6 +91,8 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
     cfop_default: "5.102",
     tax_regime: "padrao_bens_servicos",
   });
+
+  const [nicheAttributes, setNicheAttributes] = useState<NicheAttributesData>({});
 
   const [isAddDimensionOpen, setIsAddDimensionOpen] = useState(false);
   const [newDimensionName, setNewDimensionName] = useState("");
@@ -243,6 +246,7 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
             bill_of_materials: bomItems,
             food_specs: foodSpecs,
             fiscal: fiscalData,
+            ...nicheAttributes,
           },
         },
       });
@@ -305,6 +309,7 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
             bill_of_materials: bomItems,
             food_specs: foodSpecs,
             fiscal: fiscalData,
+            ...nicheAttributes,
           },
         },
       });
@@ -395,6 +400,8 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
     setNewDimensionName,
     newDimensionValue,
     setNewDimensionValue,
+    nicheAttributes,
+    setNicheAttributes,
     handleTitleChange,
     handleSelectMasterProduct,
     handleAddDimensionSubmit,

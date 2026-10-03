@@ -24,6 +24,7 @@ import {
   ProductCategoryModal,
   ProductImportSheet,
   ProductDimensionModal,
+  ProductSpecsTab,
   useProductEditor,
 } from "@/components/admin/catalog/product-editor";
 import { ProductEditorStickyBar } from "@/components/admin/product-editor/product-editor-sticky-bar";
@@ -168,6 +169,9 @@ export function UnifiedNewProductPage() {
                   <TabsTrigger value="basico" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
                     Básico
                   </TabsTrigger>
+                  <TabsTrigger value="especificacoes" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                    Especificações
+                  </TabsTrigger>
                   <TabsTrigger value="preco" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
                     Preço & Grade 2D
                   </TabsTrigger>
@@ -183,7 +187,7 @@ export function UnifiedNewProductPage() {
                     Fotos
                   </TabsTrigger>
                   <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                    Composição / Insumos
+                    Insumos
                   </TabsTrigger>
                 </TabsList>
 
@@ -213,6 +217,14 @@ export function UnifiedNewProductPage() {
                   onTitleChange={editor.handleTitleChange}
                   categoriesList={editor.categoriesList}
                   onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
+                />
+              </TabsContent>
+
+              <TabsContent value="especificacoes" className="space-y-4 m-0">
+                <ProductSpecsTab
+                  attributes={editor.nicheAttributes}
+                  onChange={editor.setNicheAttributes}
+                  nicheContext={nicheCtx}
                 />
               </TabsContent>
 

@@ -9,6 +9,7 @@ import { PriceDisplay } from "@/components/commerce/price-display";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { NativeBackButton } from "@/components/navigation";
 import { ProductQuickOrderDialog } from "./product-quick-order-dialog";
+import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { ProductDetailDTO, ProductMediaDTO, VariantDTO } from "@/types/catalog";
@@ -464,6 +465,16 @@ export function ProductDetailMobile({
                 </button>
               )}
             </div>
+          </div>
+        )}
+
+        {/* ── ESPECIFICAÇÕES DO PRODUTO (CARDS SUTIS) ── */}
+        {product.attributes && (
+          <div className="space-y-2 pt-1 border-t border-border/40">
+            <NicheSpecificationsDisplay
+              attributes={product.attributes}
+              title="Especificações"
+            />
           </div>
         )}
 

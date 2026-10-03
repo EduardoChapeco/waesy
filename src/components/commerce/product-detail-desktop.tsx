@@ -8,6 +8,7 @@ import { formatMoney } from "@/lib/money";
 import { PriceDisplay } from "@/components/commerce/price-display";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { ProductQuickOrderDialog } from "./product-quick-order-dialog";
+import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
 import { cn } from "@/lib/utils";
 import type { ProductMediaDTO, VariantDTO } from "@/types/catalog";
 import type { ProductDetailViewProps } from "./product-detail-mobile";
@@ -155,6 +156,16 @@ export function ProductDetailDesktop({
               <div className="rounded-lg border border-border/50 bg-card p-5 text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
                 {product.description}
               </div>
+            </div>
+          )}
+
+          {/* Ficha Técnica / Especificações Desktop */}
+          {product.attributes && (
+            <div className="pt-4 border-t border-border/50">
+              <NicheSpecificationsDisplay
+                attributes={product.attributes}
+                title="Especificações"
+              />
             </div>
           )}
 

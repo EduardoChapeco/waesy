@@ -10,6 +10,7 @@ import { NativeBackButton } from "@/components/navigation";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods } from "@/lib/classifieds/semantics";
 import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
+import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
 import { LeadFormModal } from "@/components/leads/lead-form-modal";
 import { startCustomerChatThread } from "@/services/chat.functions";
 import { addToCart } from "@/services/cart.functions";
@@ -638,23 +639,37 @@ export function ClassifiedDetailMobile({
         )}
 
         {/* ── 4. CARDS DE CARACTERÍSTICAS TÉCNICAS (Bento Grid Mobile) ── */}
-        {(displayMode === "continuous_list" || activeTab === "specs") && featureList.length > 0 && (
-          <div className="space-y-2">
-            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Especificações
-            </h2>
-            <div className="grid grid-cols-2 gap-2">
-              {featureList.map((item, idx) => (
-                <div key={idx} className="rounded-lg border border-border/50 bg-card p-3 space-y-1">
-                  <span className="text-[10px] text-muted-foreground uppercase font-medium block">
-                    {item.label}
-                  </span>
-                  <span className="text-xs font-semibold text-foreground truncate block">
-                    {item.value}
-                  </span>
+        {(displayMode === "continuous_list" || activeTab === "specs") && (
+          <div className="space-y-3">
+            <NicheSpecificationsDisplay
+              attributes={{
+                ...(classified.attributes || {}),
+                brand: classified.brand || classified.attributes?.brand,
+                model: classified.model || classified.attributes?.model,
+                condition: classified.condition || classified.attributes?.condition,
+              }}
+              title="Especificações"
+            />
+
+            {featureList.length > 0 && (!classified.attributes || Object.keys(classified.attributes).length === 0) && (
+              <div className="space-y-2">
+                <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Especificações
+                </h2>
+                <div className="grid grid-cols-2 gap-2">
+                  {featureList.map((item, idx) => (
+                    <div key={idx} className="rounded-lg border border-border/50 bg-card p-3 space-y-1">
+                      <span className="text-[10px] text-muted-foreground uppercase font-medium block">
+                        {item.label}
+                      </span>
+                      <span className="text-xs font-semibold text-foreground truncate block">
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         )}
 

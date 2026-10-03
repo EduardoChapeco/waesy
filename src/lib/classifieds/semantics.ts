@@ -7,7 +7,7 @@
  * 3. Cada nicho possui vocabulário, badges, fichas técnicas e CTAs contextuais dedicados.
  */
 
-import { Home, Building, Key, Car, Tag, Wrench, Tractor, Calendar, Clock, MapPin, CheckCircle2, ShieldCheck, Package, Truck, Layers, RefreshCw, CreditCard, QrCode, FileCheck, UserCheck, Lock, Plane, HeartHandshake, Utensils, Users, Banknote, Briefcase, Download, DownloadCloud, FileArchive, Gauge, Coins, TrendingUp, ShieldAlert, Star, Store, Flame, Apple, Bath, Fuel } from "lucide-react";
+import { Home, Building, Key, Car, Tag, Wrench, Tractor, Calendar, Clock, MapPin, CheckCircle2, ShieldCheck, Package, Truck, Layers, RefreshCw, CreditCard, QrCode, FileCheck, UserCheck, Lock, Plane, HeartHandshake, Utensils, Users, Banknote, Briefcase, Download, DownloadCloud, FileArchive, Gauge, Coins, TrendingUp, ShieldAlert, Star, Store, Flame, Apple, Bath, Fuel, Receipt, FileSpreadsheet, Landmark } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 
@@ -1346,44 +1346,118 @@ export function getClassifiedPaymentMethods(classified: any): ClassifiedPaymentM
   if (!classified) return [];
   const attrs = classified.attributes || {};
   const paymentMethods = Array.isArray(attrs.payment_methods) ? attrs.payment_methods : [];
+  const acceptedMethods = Array.isArray(attrs.accepted_payment_methods) ? attrs.accepted_payment_methods : [];
   const items: ClassifiedPaymentMethodItem[] = [];
 
-  if (attrs.accepts_pix === true || paymentMethods.includes("pix") || classified.accepts_pix) {
+  // 1. Pix
+  if (
+    attrs.accepts_pix === true ||
+    paymentMethods.includes("pix") ||
+    acceptedMethods.includes("pix") ||
+    classified.accepts_pix === true
+  ) {
+    const discount = Number(attrs.pix_discount_percent || 0);
     items.push({
       id: "pix",
       label: "Pix Instantâneo",
-      badge: "Aprovação Imediata",
+      badge: discount > 0 ? `${discount}% off` : "À vista",
       icon: QrCode,
       is_informative_only: true,
     });
   }
 
-  if (attrs.accepts_card === true || paymentMethods.includes("card") || classified.accepts_card) {
-    const maxInst = Number(attrs.max_installments);
+  // 2. Cartão de Crédito
+  if (
+    attrs.accepts_card === true ||
+    paymentMethods.includes("card") ||
+    acceptedMethods.includes("cartao_credito") ||
+    classified.accepts_card === true
+  ) {
+    const maxInst = Number(attrs.max_installments || 1);
     items.push({
       id: "card",
       label: "Cartão de Crédito",
-      badge: maxInst > 1 ? `Até ${maxInst}x` : "Crédito",
+      badge: maxInst > 1 ? `Até ${maxInst}x` : "Crédito à vista",
       icon: CreditCard,
       is_informative_only: true,
     });
   }
 
-  if (attrs.accepts_cash === true || paymentMethods.includes("cash") || classified.accepts_cash !== false) {
+  // 3. Boleto Bancário
+  if (
+    attrs.accepts_boleto === true ||
+    paymentMethods.includes("boleto") ||
+    acceptedMethods.includes("boleto") ||
+    classified.accepts_boleto === true
+  ) {
+    items.push({
+      id: "boleto",
+      label: "Boleto Bancário",
+      badge: attrs.boleto_due_days ? `${attrs.boleto_due_days} dias` : "Boleto",
+      icon: Receipt,
+      is_informative_only: true,
+    });
+  }
+
+  // 4. Carnê Digital / Boleto Parcelado
+  if (
+    attrs.accepts_carne === true ||
+    attrs.accepts_boleto_installments === true ||
+    paymentMethods.includes("carne") ||
+    acceptedMethods.includes("carne_digital") ||
+    acceptedMethods.includes("boleto_parcelado")
+  ) {
+    const maxCarne = Number(attrs.max_carne_installments || attrs.max_boleto_installments || 12);
+    items.push({
+      id: "carne",
+      label: "Carnê / Parcelado",
+      badge: `Até ${maxCarne}x`,
+      icon: FileSpreadsheet,
+      is_informative_only: true,
+    });
+  }
+
+  // 5. Financiamento
+  if (
+    attrs.accepts_financing === true ||
+    paymentMethods.includes("financing") ||
+    acceptedMethods.includes("financiamento")
+  ) {
+    items.push({
+      id: "financing",
+      label: "Financiamento",
+      badge: "Bancos / Consórcio",
+      icon: Landmark,
+      is_informative_only: true,
+    });
+  }
+
+  // 6. Dinheiro / À Vista (apenas se explicitamente habilitado)
+  if (
+    attrs.accepts_cash === true ||
+    paymentMethods.includes("cash") ||
+    acceptedMethods.includes("dinheiro")
+  ) {
     items.push({
       id: "cash",
       label: "Dinheiro / À Vista",
-      badge: "Na Entrega/Check-in",
+      badge: "Na Entrega/Local",
       icon: Banknote,
       is_informative_only: true,
     });
   }
 
-  if (attrs.accepts_trade === true || paymentMethods.includes("trade") || classified.accepts_trade) {
+  // 7. Permuta / Troca
+  if (
+    attrs.accepts_trade === true ||
+    paymentMethods.includes("trade") ||
+    acceptedMethods.includes("permuta") ||
+    classified.accepts_trade === true
+  ) {
     items.push({
       id: "trade",
       label: "Aceita Permuta / Troca",
-      badge: "Com Avaliação",
+      badge: "Sob Avaliação",
       icon: RefreshCw,
       is_informative_only: true,
     });
