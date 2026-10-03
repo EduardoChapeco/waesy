@@ -307,7 +307,7 @@ export default function MeuCurriculoPage() {
         <div className="size-16 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
           <User className="size-8" />
         </div>
-        <h2 className="text-xl font-bold">Faça login para acessar seu currículo digital</h2>
+        <h2 className="text-xl font-bold">Acesse seu Currículo Digital</h2>
         <p className="text-xs text-muted-foreground max-w-sm">
           Crie seu currículo profissional, exporte em PDF de alta qualidade e compartilhe com recrutadores da região.
         </p>

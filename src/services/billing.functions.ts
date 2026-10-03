@@ -10,7 +10,7 @@ export const getStoreInvoices = createServerFn({ method: "GET" })
     const storeId = data?.storeId || identity.store_id;
     if (!storeId) throw new Error("Identificador da loja não fornecido.");
 
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
 
     const supabase = getServerClient();
     const { data: invoices, error } = await supabase
@@ -34,7 +34,7 @@ export const createInvoice = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin"]);
+    assertStoreAccess(identity, ["owner", "admin"], data.storeId);
 
     const supabase = getServerClient();
 

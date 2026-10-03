@@ -10,6 +10,7 @@ import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { inspectPromptSecurity } from "@/lib/prompt-shield";
 import { formatMoney } from "@/lib/money";
 import { executeAiCoreGateway } from "./ai-core-gateway.functions";
+import { executeManusAutonomousTask } from "./ai-manus-orchestrator";
 import type {
   AIActivityStep,
   AIActivityStepType,
@@ -223,56 +224,57 @@ export function resolveAiPipelineSteps(
     responseMessage = "Gerei a estrutura inicial da landing page. O artefato está disponível abaixo e pode ser aberto diretamente no Builder visual para edição.";
     updatedMemory.last_landing_page = artifact.title;
   }
-  // Detectar solicitação de planilha ou dados financeiros
-  else if (promptLower.includes("planilha") || promptLower.includes("tabela") || promptLower.includes("métricas") || promptLower.includes("caixa")) {
-    steps.push({
-      id: `step-2-${startTime}`,
-      type: "tool",
-      label: "Tool pos_get_cash_status e balanço",
-      detail: "Agrupando transações por método de liquidação e categoria",
-      status: "completed",
-      startedAt: new Date(startTime + 185).toISOString(),
-      completedAt: new Date(startTime + 390).toISOString(),
-      durationMs: 205,
-      tokensUsed: 145,
+  // Detectar solicitação de mineração, leads, processos, empresas ou planilhas via Manus Engine
+  else if (
+    promptLower.includes("lead") ||
+    promptLower.includes("minerar") ||
+    promptLower.includes("processo") ||
+    promptLower.includes("cnpj") ||
+    promptLower.includes("planilha") ||
+    promptLower.includes("tabela") ||
+    promptLower.includes("métricas")
+  ) {
+    const manusResult = await executeManusAutonomousTask(data.message, {
+      threadId: data.threadId,
+      storeId: (thread as any)?.store_id,
     });
 
-    artifact = {
-      id: crypto.randomUUID(),
-      type: "spreadsheet",
-      title: "Consolidado Financeiro de Vendas e Operação",
-      version: 1,
-      totalVersions: 1,
-      authorName: "Auditor Financeiro IA",
-      authorRole: "Controladoria",
-      previewSummary: "Demonstrativo de receitas por categoria, liquidação Pix e cartão, e saldo disponível.",
-      data: {
-        rows: 12,
-        columns: 5,
-        format: "tabular",
-      },
-    };
+    if (manusResult.steps && manusResult.steps.length > 0) {
+      steps.push(...manusResult.steps);
+    }
 
-    structuredPayload = {
-      blocks: [
-        {
-          type: "table",
-          data: {
-            title: "Demonstrativo Financeiro Consolidado",
-            headers: ["Categoria", "Transações", "Receita Bruta", "Liquidação"],
-            rows: [
-              ["Vendas Balcão (PDV)", "142", "R$ 14.850,00", "PIX / Dinheiro"],
-              ["Delivery Online", "86", "R$ 6.420,00", "Cartão / Gateway"],
-              ["Serviços & Pacotes", "23", "R$ 8.900,00", "Faturado 15D"],
-              ["Total Consolidado", "251", "R$ 30.170,00", "Fechado"],
-            ],
-          },
-        },
-      ],
-    };
+    if (manusResult.artifact) {
+      artifact = {
+        id: crypto.randomUUID(),
+        type: manusResult.artifact.type,
+        title: manusResult.artifact.title,
+        version: 1,
+        totalVersions: 1,
+        authorName: "Manus Copilot Engine",
+        authorRole: "Mineração & Inteligência Urbana",
+        previewSummary: manusResult.summaryMessage,
+        data: manusResult.artifact.data,
+      };
 
-    responseMessage = "Compilei os dados em uma planilha estruturada. Você pode inspecionar os números ou exportar o arquivo em formato CSV.";
-    updatedMemory.last_report_generated = new Date().toISOString();
+      if (manusResult.artifact.type === "spreadsheet" && manusResult.artifact.data?.headers) {
+        structuredPayload = {
+          blocks: [
+            {
+              type: "table",
+              data: {
+                title: manusResult.artifact.title,
+                headers: manusResult.artifact.data.headers,
+                rows: manusResult.artifact.data.rows,
+              },
+            },
+          ],
+        };
+      }
+    }
+
+    responseMessage = manusResult.summaryMessage;
+    updatedMemory.last_manus_task = manusResult.domain;
+    updatedMemory.last_tokens_saved = manusResult.tokensSaved;
   }
   // Detectar solicitação de compras, carrinho ou mercado
   else if (promptLower.includes("comprar") || promptLower.includes("carrinho") || promptLower.includes("mercado") || promptLower.includes("vestuário")) {

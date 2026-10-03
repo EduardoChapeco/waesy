@@ -30,18 +30,45 @@ import type {
   ModerationStatus,
 } from "@/types/unified-ad-engine";
 
+export const PUBLIC_SPEC_ALLOWLIST = new Set([
+  "brand", "marca", "model", "modelo", "version", "versao", "condition", "condicao",
+  "year", "ano_fabricacao", "ano_modelo", "mileage", "quilometragem", "km",
+  "transmission", "cambio", "fuel_type", "combustivel", "fuel", "color", "cor", "doors", "portas", "license_plate_end", "final_placa",
+  "usable_area", "area_util", "area_privativa", "total_area", "area_total", "bedrooms", "quartos", "suites", "suites_count", "bathrooms", "banheiros", "parking_spaces", "vagas", "garage_spots",
+  "service_duration", "duracao_estimada", "duracao", "service_modality", "regime_atendimento", "modalidade", "service_warranty", "garantia_servico", "warranty", "garantia",
+  "servings", "rendimento", "serve_pessoas", "prep_time", "tempo_preparo",
+  "weight_kg", "peso_kg", "weight", "peso", "dimensions", "dimensoes", "width_cm", "height_cm", "length_cm", "material", "composicao", "voltage", "voltagem", "tensao", "power", "potencia",
+  "niche", "segment", "is_featured", "highlights", "amenities", "included_items",
+]);
+
+export function sanitizePublicProductAttributes(raw: Record<string, any> | null | undefined): Record<string, any> {
+  if (!raw || typeof raw !== "object") return {};
+  const clean: Record<string, any> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (PUBLIC_SPEC_ALLOWLIST.has(key.toLowerCase()) && typeof value !== "object" && value !== null && value !== undefined) {
+      clean[key] = value;
+    }
+  }
+  return clean;
+}
+
 /**
  * Converte registro do banco (tabela classifieds ou products) para UnifiedListing canônica
  */
-export function mapDatabaseRowToUnifiedListing(row: any, origin: "classified" | "workspace"): UnifiedListing {
+export function mapDatabaseRowToUnifiedListing(
+  row: any,
+  origin: "classified" | "workspace",
+  isPublic = true
+): UnifiedListing {
   const isClassified = origin === "classified";
-  const attrs = row.attributes || {};
-  const nicheId = row.niche_id || row.niche || attrs.niche || (isClassified ? "varejo" : "varejo");
+  const rawAttrs = (row.attributes && typeof row.attributes === "object") ? row.attributes : {};
+  const attrs = isPublic ? sanitizePublicProductAttributes(rawAttrs) : rawAttrs;
+  const nicheId = row.niche_id || row.niche || rawAttrs.niche || (isClassified ? "varejo" : "varejo");
 
   const baseListing: UnifiedListing = {
     id: row.id,
     origin,
-    item_type: row.item_type || attrs.item_type || (nicheId === "turismo" ? "package" : "product"),
+    item_type: row.item_type || rawAttrs.item_type || (nicheId === "turismo" ? "package" : "product"),
     niche_id: nicheId,
     category_id: row.category_id || row.category || "geral",
     sub_category_id: row.sub_category_id,
@@ -62,46 +89,46 @@ export function mapDatabaseRowToUnifiedListing(row: any, origin: "classified" | 
     price_cents: Number(row.price_cents || 0),
     price_max_cents: row.price_max_cents ? Number(row.price_max_cents) : undefined,
     compare_at_cents: row.compare_at_cents ? Number(row.compare_at_cents) : null,
-    cost_cents: row.cost_cents ? Number(row.cost_cents) : null,
-    margin_percent: row.margin_percent ? Number(row.margin_percent) : null,
-    markup_percent: row.markup_percent ? Number(row.markup_percent) : null,
+    cost_cents: isPublic ? undefined : (row.cost_cents ? Number(row.cost_cents) : null),
+    margin_percent: isPublic ? undefined : (row.margin_percent ? Number(row.margin_percent) : null),
+    markup_percent: isPublic ? undefined : (row.markup_percent ? Number(row.markup_percent) : null),
     selling_unit: row.selling_unit || "un",
     
     payment_config: {
-      accepts_pix: row.accepts_pix ?? attrs.accepts_pix ?? true,
-      pix_discount_percent: Number(row.pix_discount_percent ?? attrs.pix_discount_percent ?? 0),
-      accepts_card: row.accepts_card ?? attrs.accepts_card ?? true,
-      max_installments: Number(row.max_installments ?? attrs.max_installments ?? 12),
-      fee_free_installments: Number(row.fee_free_installments ?? attrs.fee_free_installments ?? 6),
-      accepts_cash: row.accepts_cash ?? attrs.accepts_cash ?? false,
-      accepts_trade: row.accepts_trade ?? attrs.accepts_trade ?? false,
-      deposit_percent: attrs.deposit_percent ? Number(attrs.deposit_percent) : undefined,
-      balance_due_days: attrs.balance_due_days ? Number(attrs.balance_due_days) : undefined,
+      accepts_pix: row.accepts_pix ?? rawAttrs.accepts_pix ?? true,
+      pix_discount_percent: Number(row.pix_discount_percent ?? rawAttrs.pix_discount_percent ?? 0),
+      accepts_card: row.accepts_card ?? rawAttrs.accepts_card ?? true,
+      max_installments: Number(row.max_installments ?? rawAttrs.max_installments ?? 12),
+      fee_free_installments: Number(row.fee_free_installments ?? rawAttrs.fee_free_installments ?? 6),
+      accepts_cash: row.accepts_cash ?? rawAttrs.accepts_cash ?? false,
+      accepts_trade: row.accepts_trade ?? rawAttrs.accepts_trade ?? false,
+      deposit_percent: rawAttrs.deposit_percent ? Number(rawAttrs.deposit_percent) : undefined,
+      balance_due_days: rawAttrs.balance_due_days ? Number(rawAttrs.balance_due_days) : undefined,
     },
     
-    inclusions: Array.isArray(row.inclusions) ? row.inclusions : Array.isArray(attrs.inclusions) ? attrs.inclusions : [],
-    exclusions: Array.isArray(row.exclusions) ? row.exclusions : Array.isArray(attrs.exclusions) ? attrs.exclusions : [],
-    cancellation_policy: row.cancellation_policy || attrs.cancellation_policy,
-    terms_and_conditions: row.terms_and_conditions || attrs.terms_and_conditions,
+    inclusions: Array.isArray(row.inclusions) ? row.inclusions : Array.isArray(rawAttrs.inclusions) ? rawAttrs.inclusions : [],
+    exclusions: Array.isArray(row.exclusions) ? row.exclusions : Array.isArray(rawAttrs.exclusions) ? rawAttrs.exclusions : [],
+    cancellation_policy: row.cancellation_policy || rawAttrs.cancellation_policy,
+    terms_and_conditions: row.terms_and_conditions || rawAttrs.terms_and_conditions,
     
     cover_url: row.cover_url || (Array.isArray(row.images) ? row.images[0] : null),
     media_urls: Array.isArray(row.media_urls) ? row.media_urls : Array.isArray(row.images) ? row.images : [],
-    video_url: row.video_url || attrs.video_url || null,
+    video_url: row.video_url || rawAttrs.video_url || null,
     
-    location: row.location || attrs.location || (row.location_name ? { city: row.location_name, state: "SC" } : undefined),
-    shipping_mode: row.shipping_mode || attrs.shipping_mode || "both",
-    free_shipping_local: row.free_shipping_local ?? attrs.free_shipping_local ?? false,
+    location: row.location || rawAttrs.location || (row.location_name ? { city: row.location_name, state: "SC" } : undefined),
+    shipping_mode: row.shipping_mode || rawAttrs.shipping_mode || "both",
+    free_shipping_local: row.free_shipping_local ?? rawAttrs.free_shipping_local ?? false,
     stock_quantity: row.stock !== undefined ? Number(row.stock) : Number(row.stock_quantity ?? 1),
-    capacity_limit: attrs.capacity_limit ? Number(attrs.capacity_limit) : undefined,
-    is_unlimited_stock: Boolean(row.is_unlimited_stock ?? attrs.is_unlimited_stock ?? false),
+    capacity_limit: rawAttrs.capacity_limit ? Number(rawAttrs.capacity_limit) : undefined,
+    is_unlimited_stock: Boolean(row.is_unlimited_stock ?? rawAttrs.is_unlimited_stock ?? false),
     
-    departure_options: Array.isArray(attrs.departure_options) ? attrs.departure_options : [],
-    fiscal_profile: row.fiscal_profile || attrs.fiscal_profile,
+    departure_options: Array.isArray(rawAttrs.departure_options) ? rawAttrs.departure_options : [],
+    fiscal_profile: isPublic ? undefined : (row.fiscal_profile || rawAttrs.fiscal_profile || undefined),
     
     status: (row.status === "active" ? "published" : row.status || "draft") as ListingStatus,
-    moderation_status: (attrs.moderation_status || "approved") as ModerationStatus,
-    moderation_history: Array.isArray(attrs.moderation_history) ? attrs.moderation_history : [],
-    is_featured: Boolean(row.is_featured ?? attrs.is_featured ?? false),
+    moderation_status: (rawAttrs.moderation_status || "approved") as ModerationStatus,
+    moderation_history: Array.isArray(rawAttrs.moderation_history) ? rawAttrs.moderation_history : [],
+    is_featured: Boolean(row.is_featured ?? rawAttrs.is_featured ?? false),
     views_count: Number(row.views_count ?? row.clicks_count ?? 0),
     clicks_count: Number(row.clicks_count ?? 0),
     leads_count: Number(row.whatsapp_clicks_count ?? row.leads_count ?? 0),

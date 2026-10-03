@@ -411,40 +411,133 @@ export const processPosMultiPayment = createServerFn({ method: "POST" })
                 .from("products")
                 .select("attributes")
                 .eq("id", variant.product_id)
+                .eq("store_id", identity.store_id)
                 .maybeSingle();
 
               const bomList = (parentProduct?.attributes as any)?.bill_of_materials;
               if (Array.isArray(bomList) && bomList.length > 0) {
                 for (const bomItem of bomList) {
-                  const consumedQty = (Number(bomItem.quantity) || 1) * soldQty;
-                  const { data: ingProduct } = await supabase
-                    .from("products")
-                    .select("id, product_variants(id, stock_on_hand)")
-                    .eq("store_id", identity.store_id)
-                    .ilike("title", `%${bomItem.name}%`)
-                    .limit(1)
-                    .maybeSingle();
+                  const itemQty = Number(bomItem.quantity) || 1;
+                  const consumedQty = itemQty * soldQty;
+                  if (consumedQty <= 0) continue;
 
-                  const firstVariant = (ingProduct?.product_variants as any[])?.[0];
-                  if (firstVariant?.id) {
-                    const prevIngStock = firstVariant.stock_on_hand || 0;
+                  let targetVariantId: string | null = null;
+                  let prevIngStock = 0;
+
+                  // 1. Resolução Canônica Prioridade 1: variant_id / variantId UUID
+                  const rawVariantId = bomItem.variant_id || bomItem.variantId;
+                  if (rawVariantId && typeof rawVariantId === "string") {
+                    const { data: matchedVar } = await supabase
+                      .from("product_variants")
+                      .select("id, stock_on_hand")
+                      .eq("id", rawVariantId)
+                      .eq("store_id", identity.store_id)
+                      .maybeSingle();
+                    if (matchedVar) {
+                      targetVariantId = matchedVar.id;
+                      prevIngStock = matchedVar.stock_on_hand || 0;
+                    }
+                  }
+
+                  // 2. Resolução Canônica Prioridade 2: SKU
+                  if (!targetVariantId && bomItem.sku && typeof bomItem.sku === "string") {
+                    const { data: matchedVar } = await supabase
+                      .from("product_variants")
+                      .select("id, stock_on_hand")
+                      .eq("sku", bomItem.sku.trim())
+                      .eq("store_id", identity.store_id)
+                      .maybeSingle();
+                    if (matchedVar) {
+                      targetVariantId = matchedVar.id;
+                      prevIngStock = matchedVar.stock_on_hand || 0;
+                    }
+                  }
+
+                  // 3. Resolução Canônica Prioridade 3: product_id
+                  const rawProdId = bomItem.product_id || bomItem.productId;
+                  if (!targetVariantId && rawProdId && typeof rawProdId === "string") {
+                    const { data: matchedVar } = await supabase
+                      .from("product_variants")
+                      .select("id, stock_on_hand")
+                      .eq("product_id", rawProdId)
+                      .eq("store_id", identity.store_id)
+                      .limit(1)
+                      .maybeSingle();
+                    if (matchedVar) {
+                      targetVariantId = matchedVar.id;
+                      prevIngStock = matchedVar.stock_on_hand || 0;
+                    }
+                  }
+
+                  // 4. Fallback resiliente por título exato e aproximação sanitizada
+                  if (!targetVariantId && bomItem.name && typeof bomItem.name === "string" && bomItem.name.trim()) {
+                    const trimmedName = bomItem.name.trim();
+                    let { data: ingProduct } = await supabase
+                      .from("products")
+                      .select("id, product_variants(id, stock_on_hand)")
+                      .eq("store_id", identity.store_id)
+                      .eq("title", trimmedName)
+                      .limit(1)
+                      .maybeSingle();
+
+                    if (!ingProduct) {
+                      const { data: fuzzyProduct } = await supabase
+                        .from("products")
+                        .select("id, product_variants(id, stock_on_hand)")
+                        .eq("store_id", identity.store_id)
+                        .ilike("title", `%${trimmedName}%`)
+                        .limit(1)
+                        .maybeSingle();
+                      ingProduct = fuzzyProduct;
+                    }
+
+                    const firstVar = (ingProduct?.product_variants as any[])?.[0];
+                    if (firstVar?.id) {
+                      targetVariantId = firstVar.id;
+                      prevIngStock = firstVar.stock_on_hand || 0;
+                    }
+                  }
+
+                  if (targetVariantId) {
                     const newIngStock = Math.max(0, prevIngStock - consumedQty);
 
                     await supabase
                       .from("product_variants")
                       .update({ stock_on_hand: newIngStock, updated_at: new Date().toISOString() })
-                      .eq("id", firstVariant.id);
+                      .eq("id", targetVariantId)
+                      .eq("store_id", identity.store_id);
+
+                    if (activeLocationId) {
+                      const { data: locInv } = await supabase
+                        .from("product_location_inventories")
+                        .select("stock_qty")
+                        .eq("location_id", activeLocationId)
+                        .eq("variant_id", targetVariantId)
+                        .maybeSingle();
+
+                      if (locInv) {
+                        await supabase
+                          .from("product_location_inventories")
+                          .update({
+                            stock_qty: Math.max(0, locInv.stock_qty - consumedQty),
+                            updated_at: new Date().toISOString(),
+                          })
+                          .eq("location_id", activeLocationId)
+                          .eq("variant_id", targetVariantId);
+                      }
+                    }
 
                     await supabase.from("stock_movements").insert({
                       store_id: identity.store_id,
-                      variant_id: firstVariant.id,
+                      variant_id: targetVariantId,
                       location_id: activeLocationId,
-                      movement_type: "loss",
+                      movement_type: "sale",
                       qty: -consumedQty,
                       reference_type: "bom_consumption",
                       reference_id: data.orderId,
                       channel_origin: "pdv",
-                      note: `Consumo de insumo (${bomItem.name} - ${bomItem.quantity}${bomItem.unit || ""}) no Pedido #${data.orderId.slice(0, 8)}`,
+                      channel_source: "pos_counter",
+                      note: `Consumo de insumo BOM (${bomItem.name || targetVariantId} - ${bomItem.quantity || 1}${bomItem.unit || ""}) no Pedido #${data.orderId.slice(0, 8)}`,
                       created_at: new Date().toISOString(),
                     });
                   }

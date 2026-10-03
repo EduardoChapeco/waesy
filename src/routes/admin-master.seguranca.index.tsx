@@ -136,7 +136,7 @@ function AdminSecurityOverviewPage() {
  <div className="space-y-3">
  <div className="flex items-center gap-2">
  <AlertTriangle className="size-5 text-amber-500" />
- <h2 className="text-base font-bold text-foreground">Alertas de Risco Ativo (VPS / Datacenter / IP Estrangeiro)</h2>
+ <h2 className="text-base font-bold text-foreground">Alertas de Risco Ativo</h2>
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

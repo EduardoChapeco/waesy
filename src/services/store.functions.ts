@@ -2,7 +2,7 @@ import { resolveUniqueStoreSlug } from "@/lib/slug-utils";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess, assertOwnerAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, assertOwnerAccess, requireAdmin } from "@/lib/server-access";
 import type { Weekday, TimeInterval, DaySchedule, WeeklySchedule as WorkingHours } from "@/lib/business-hours";
 export type { Weekday, TimeInterval, DaySchedule, WorkingHours };
 
@@ -529,6 +529,7 @@ export async function getStorePaymentInfoByOrderId(orderId: string) {
 export const executeHardRefresh = createServerFn({ method: "POST" })
  .validator(z.object({ confirmText: z.string() }))
  .handler(async ({ data: { confirmText } }) => {
+    await requireAdmin();
  const db = getServerClient();
  const { data, error } = await db.rpc("execute_hard_refresh", { p_confirm_text: confirmText });
  if (error) {

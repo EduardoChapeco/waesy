@@ -28,6 +28,8 @@ export interface ClientTelemetrySnapshot {
   isDatacenterOrVpn: boolean;
   threatScore: number;
   cfRay: string;
+  asn?: number;
+  asOrganization?: string;
 }
 
 /**
@@ -299,10 +301,15 @@ export function captureRequestTelemetry(
   const geo = resolveGeoLocation(req, clientGeoPayload);
 
   const cfIpType = req?.headers.get("cf-iptype") || "";
+  const rawAsn = req?.headers.get("cf-connecting-asn") || req?.headers.get("cf-asn");
+  const asn = rawAsn ? parseInt(rawAsn, 10) : undefined;
+  const asOrganization = req?.headers.get("cf-as-organization") || undefined;
+
   const isDatacenterOrVpn =
     cfIpType.toLowerCase().includes("datacenter") ||
     cfIpType.toLowerCase().includes("vpn") ||
-    cfIpType.toLowerCase().includes("bot");
+    cfIpType.toLowerCase().includes("bot") ||
+    (asOrganization ? /amazon|google|digitalocean|hetzner|ovh|microsoft|oracle|linode|vultr|alibaba/i.test(asOrganization) : false);
 
   const threatScore = parseInt(req?.headers.get("cf-threat-score") || "0", 10) || 0;
   const cfRay = req?.headers.get("cf-ray") || "direct-request";
@@ -316,5 +323,7 @@ export function captureRequestTelemetry(
     isDatacenterOrVpn,
     threatScore,
     cfRay,
+    asn,
+    asOrganization,
   };
 }

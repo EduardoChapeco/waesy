@@ -36,6 +36,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 import { resolveTenantStoreId } from "@/lib/tenant.server";
+import { sanitizePublicProductAttributes } from "./unified-listing.functions";
 
 /**
  * Helper to map Supabase joined row into ProductCardDTO(s).
@@ -120,7 +121,7 @@ function explodeProductToCards(row: any): ProductCardDTO[] {
  publishedAt: row.published_at ?? null,
  variantId,
  variantName,
- attributes: row.attributes ?? {},
+ attributes: sanitizePublicProductAttributes(row.attributes),
  };
  };
 
@@ -847,7 +848,7 @@ export const getProductDetail = createServerFn({ method: "GET" })
  sku: v.sku,
  effectivePriceCents: v.price_override_cents ?? data.price_cents,
  availableQty,
- attributes: v.attributes || {},
+ attributes: sanitizePublicProductAttributes(v.attributes),
  media: variantMedia.length > 0 ? variantMedia : media, // Fallback para a mídia do produto
  allowBackorder: v.allow_backorder ?? false,
  backorderLeadTimeDays: v.backorder_lead_time_days ?? 0,

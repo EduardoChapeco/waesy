@@ -116,6 +116,7 @@ export const updateServiceOrderStatus = createServerFn({ method: "POST" })
  "in_repair",
  "ready_for_pickup",
  "delivered",
+ "completed",
  "cancelled",
  ]),
  technical_diagnosis: z.string().optional(),
@@ -127,6 +128,22 @@ export const updateServiceOrderStatus = createServerFn({ method: "POST" })
 
  const supabase = getServerClient();
 
+ // 1. Obter estado atual da OS para validar posse e verificar se já foi entregue/concluída
+ const { data: currentOs, error: fetchErr } = await supabase
+ .from("service_orders")
+ .select("id, status, parts_used, store_id")
+ .eq("id", data.order_id)
+ .eq("store_id", identity.store_id)
+ .maybeSingle();
+
+ if (fetchErr || !currentOs) {
+ throw new Error("Ordem de serviço não encontrada ou acesso não autorizado.");
+ }
+
+ const isConclusionStatus = data.status === "delivered" || data.status === "completed";
+ const wasAlreadyConcluded = currentOs.status === "delivered" || currentOs.status === "completed";
+
+ // 2. Atualizar status e diagnóstico técnico
  const { data: os, error } = await supabase
  .from("service_orders")
  .update({
@@ -135,44 +152,62 @@ export const updateServiceOrderStatus = createServerFn({ method: "POST" })
  updated_at: new Date().toISOString(),
  })
  .eq("id", data.order_id)
+ .eq("store_id", identity.store_id)
  .select()
  .single();
 
  if (error) throw new Error(`Falha ao atualizar status da OS: ${error.message}`);
 
- // Se a OS foi entregue, consome estoque dos insumos/peças associadas a variantes do catálogo
- if (data.status === "delivered" && os?.parts_used && Array.isArray(os.parts_used)) {
+ // 3. Dedução de peças com idempotência estrita (apenas na transição para entregue/concluída)
+ if (isConclusionStatus && !wasAlreadyConcluded && os?.parts_used && Array.isArray(os.parts_used)) {
+ const { data: existingDeductions } = await supabase
+ .from("stock_movements")
+ .select("id")
+ .eq("store_id", identity.store_id)
+ .eq("reference_type", "service_order")
+ .eq("reference_id", data.order_id)
+ .limit(1);
+
+ const alreadyDeducted = Boolean(existingDeductions && existingDeductions.length > 0);
+
+ if (!alreadyDeducted) {
  for (const part of os.parts_used as any[]) {
  if (part.variant_id && part.quantity > 0) {
  try {
  const { data: variant } = await supabase
  .from("product_variants")
- .select("stock_on_hand")
+ .select("id, stock_on_hand, store_id")
  .eq("id", part.variant_id)
+ .eq("store_id", identity.store_id)
  .maybeSingle();
+
+ if (!variant) continue;
 
  const prevStock = variant?.stock_on_hand ?? 0;
  const newStock = Math.max(0, prevStock - part.quantity);
 
  await supabase.from("stock_movements").insert({
  store_id: identity.store_id,
- variant_id: part.variant_id,
- movement_type: "loss",
+ variant_id: variant.id,
+ movement_type: "sale",
  qty: -part.quantity,
- previous_stock: prevStock,
- new_stock: newStock,
  reference_type: "service_order",
  reference_id: data.order_id,
- note: `Consumo de insumo na OS #${data.order_id.slice(0, 8)} (${part.name})`,
+ channel_origin: "workspace_services",
+ channel_source: "service_order",
+ note: `Consumo de peça na OS #${data.order_id.slice(0, 8)} (${part.name || "Peça/Insumo"})`,
  actor_id: identity.user_id,
+ created_at: new Date().toISOString(),
  });
 
  await supabase
  .from("product_variants")
- .update({ stock_on_hand: newStock })
- .eq("id", part.variant_id);
+ .update({ stock_on_hand: newStock, updated_at: new Date().toISOString() })
+ .eq("id", variant.id)
+ .eq("store_id", identity.store_id);
  } catch (stockErr) {
  console.warn(`[service-orders] Erro ao consumir estoque de ${part.name}:`, stockErr);
+ }
  }
  }
  }

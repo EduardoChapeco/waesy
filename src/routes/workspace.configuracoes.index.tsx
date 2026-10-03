@@ -1513,7 +1513,7 @@ export default function WorkspaceConfiguracoesPage() {
         {/* ── Módulo de Varejo por Quilo & Mercado (A14) ── */}
         <Card className="p-6 rounded-lg border-border bg-card space-y-4">
           <div className="pb-2 border-b border-border/40">
-            <h2 className="text-sm font-bold text-foreground">Produtos por Quilo / Pesáveis (Mercado & Açougue)</h2>
+            <h2 className="text-sm font-bold text-foreground">Produtos Pesáveis</h2>
             <p className="text-xs text-muted-foreground mt-1">
               Como sua empresa prefere gerenciar itens com microvariações de peso.
             </p>

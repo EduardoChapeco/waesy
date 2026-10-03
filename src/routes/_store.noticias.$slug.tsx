@@ -30,6 +30,40 @@ export const Route = createFileRoute("/_store/noticias/$slug")({
   component: NoticiaDetailPage,
 });
 
+/**
+ * Catálogo normativo de termos estruturais internos que NUNCA devem ser
+ * renderizados como subtítulos/cabeçalhos editoriais na matéria pública.
+ */
+const FORBIDDEN_HEADER_KEYWORDS = [
+  "síntese", "sintese",
+  "resumo",
+  "desenrolar",
+  "desenvolvimento",
+  "introdução", "introducao",
+  "notícia", "noticia",
+  "conclusão", "conclusao",
+  "contexto",
+  "análise", "analise",
+  "panorama",
+  "visão geral", "visao geral",
+  "fato", "fatos",
+  "detalhe", "detalhes",
+  "lead", "subtítulo", "subtitulo",
+];
+
+function isForbiddenHeader(text?: string | null): boolean {
+  if (!text) return true;
+  const clean = text.trim().toLowerCase();
+  if (clean.length < 3) return true;
+  return FORBIDDEN_HEADER_KEYWORDS.some(
+    (kw) =>
+      clean === kw ||
+      clean.startsWith(`${kw}:`) ||
+      clean.startsWith(`${kw} -`) ||
+      clean.endsWith(`: ${kw}`)
+  );
+}
+
 function NoticiaDetailPage() {
   const { article, sponsors = [], related = [], linkedEvent } = ((Route.useLoaderData?.() as any) || {});
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -77,9 +111,9 @@ function NoticiaDetailPage() {
 
   if (!article) {
     return (
-      <div className="max-w-2xl mx-auto px-0 sm:px-4 py-20 text-center space-y-4">
+      <div className="max-w-3xl mx-auto px-4 py-20 text-center space-y-4">
         <h2 className="text-xl font-bold text-foreground">Matéria não encontrada</h2>
-        <Button asChild variant="outline" className="rounded-lg font-bold">
+        <Button asChild variant="outline" className="rounded-lg font-bold min-h-11">
           <Link to="/noticias">
             Voltar para Notícias
           </Link>
@@ -107,6 +141,12 @@ function NoticiaDetailPage() {
   const secondarySponsor = sponsors[1] || sponsors[0];
   const footerSponsor = sponsors[2] || null;
 
+  // Normalização de seções: prioriza mobile_sections se existir, senão content_sections
+  const rawSections: any[] =
+    (article as any).mobile_sections && Array.isArray((article as any).mobile_sections) && (article as any).mobile_sections.length > 0
+      ? (article as any).mobile_sections
+      : article.content_sections || [];
+
   return (
     <div className="w-full relative">
       {/* Barra de Progresso de Leitura Fixa no Topo */}
@@ -117,39 +157,42 @@ function NoticiaDetailPage() {
         />
       </div>
 
-      <article className="max-w-2xl mx-auto px-0 sm:px-4 space-y-8 pb-20 pt-4">
+      <article className="max-w-3xl mx-auto px-4 sm:px-6 space-y-8 pb-20 pt-4">
         {/* Breadcrumb Apple HIG */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Link to="/noticias" className="hover:text-foreground transition-colors">
+          <Link to="/noticias" className="hover:text-foreground transition-colors min-h-11 inline-flex items-center">
             Notícias
           </Link>
           <ChevronRight className="size-3" />
-          <span className="capitalize text-foreground font-bold">{article.category}</span>
+          <span className="capitalize text-foreground font-semibold">{article.category}</span>
         </div>
 
-        {/* ── Cabeçalho Editorial da Matéria ── */}
+        {/* ── Hierarquia Editorial Canônica (Padrão Imprensa & Apple HIG) ── */}
         <header className="space-y-4">
-          {article.kicker && (
-            <span className="px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-              {article.kicker}
+          {/* Chapéu / Editoria */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              {article.kicker || article.category}
             </span>
-          )}
+          </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-foreground leading-[1.18] font-display">
+          {/* Headline Principal */}
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground leading-snug">
             {article.title}
           </h1>
 
+          {/* Linha Fina (Dek) */}
           {article.subtitle && (
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-serif italic border-l-2 border-primary/40 pl-4 py-1">
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
               {article.subtitle}
             </p>
           )}
 
-          {/* Linha de Metadados / Autor / Compartilhar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t py-3 text-xs text-muted-foreground">
-            <div className="flex items-center gap-4 flex-wrap">
+          {/* Linha Única de Metadados Editoriais */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2">
-                <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary overflow-hidden">
+                <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary overflow-hidden">
                   {article.store_avatar ? (
                     <img
                       src={article.store_avatar}
@@ -157,31 +200,49 @@ function NoticiaDetailPage() {
                       className="size-full rounded-full object-cover"
                     />
                   ) : (
-                    <Newspaper className="size-3.5" />
+                    <Newspaper className="size-3" />
                   )}
                 </div>
-                <div>
-                  <p className="font-bold text-foreground">{article.store_name || "Redação Waesy"}</p>
-                  {article.author_name && <p className="text-[10px]">Por {article.author_name}</p>}
-                </div>
+                <span className="font-semibold text-foreground">
+                  {article.author_name || article.store_name || "Redação Waesy"}
+                </span>
               </div>
 
-              <div className="flex items-center gap-2 font-mono text-[11px]">
+              <span>•</span>
+
+              <span className="inline-flex items-center gap-1 font-mono">
                 <Calendar className="size-3.5" />
-                <span>{formattedDate}</span>
-              </div>
+                {formattedDate}
+              </span>
 
-              <div className="flex items-center gap-2 font-mono text-[11px]">
+              <span>•</span>
+
+              <span className="inline-flex items-center gap-1 font-mono">
                 <Clock className="size-3.5" />
-                <span>{article.reading_time_minutes} min de leitura</span>
-              </div>
+                {article.reading_time_minutes} min de leitura
+              </span>
+
+              {(article as any).source_url && (
+                <>
+                  <span>•</span>
+                  <a
+                    href={(article as any).source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-semibold text-primary hover:underline min-h-11"
+                  >
+                    <span>Fonte Verificada</span>
+                    <ArrowRight className="size-3" />
+                  </a>
+                </>
+              )}
             </div>
 
             <Button
               variant="outline"
               size="sm"
               onClick={handleShare}
-              className="rounded-lg font-bold text-xs gap-2 h-10 px-4 min-h-11"
+              className="rounded-lg font-bold text-xs gap-2 h-10 px-3 min-h-11"
             >
               <Share2 className="size-3.5" />
               <span>Compartilhar</span>
@@ -189,9 +250,9 @@ function NoticiaDetailPage() {
           </div>
         </header>
 
-        {/* ── Capa Principal (Imagem ou Vídeo) ── */}
+        {/* ── Imagem de Capa 16:9 Contida com Legenda e Atribuição ── */}
         {article.cover_media_url && (
-          <div className="space-y-2">
+          <figure className="space-y-2">
             <div className="relative aspect-16/9 rounded-lg overflow-hidden bg-muted">
               {article.cover_media_type === "video" ? (
                 <video
@@ -208,10 +269,13 @@ function NoticiaDetailPage() {
                 />
               )}
             </div>
-          </div>
+            <figcaption className="text-xs text-muted-foreground text-right italic font-sans pr-1">
+              Foto: {article.author_name || article.store_name || "Arquivo / Divulgação"}
+            </figcaption>
+          </figure>
         )}
 
-        {/* ── Patrocinador Topo / Entrada Randômica ── */}
+        {/* ── Patrocinador Topo ── */}
         {primarySponsor && (
           <NewsSponsorBanner
             sponsor={primarySponsor}
@@ -220,41 +284,32 @@ function NoticiaDetailPage() {
           />
         )}
 
-        {/* ── Síntese Editorial Curada (Quando distinta do subtítulo) ── */}
-        {(article as any).ai_summary && (article as any).ai_summary !== article.subtitle && (
-          <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
-              Síntese Editorial
-            </span>
-            <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
-              {(article as any).ai_summary}
-            </p>
-          </div>
-        )}
-
-        {/* ── Corpo do Artigo / Seções Estruturadas ── */}
-        <div className="space-y-6 text-sm sm:text-base leading-relaxed text-foreground/90">
-          {article.content_sections && article.content_sections.length > 0 ? (
-            article.content_sections.map((section: any, idx: number) => {
-              // Insere patrocinador no meio do artigo (após o 2º bloco)
-              const showMidSponsor = idx === 1 && secondarySponsor;
+        {/* ── Corpo Editorial Fluido e Contínuo (Sem Cards Conversacionais) ── */}
+        <div className="space-y-6 text-base sm:text-lg leading-relaxed text-foreground/90 max-w-2xl sm:max-w-3xl">
+          {rawSections && rawSections.length > 0 ? (
+            rawSections.map((section: any, idx: number) => {
+              const showMidSponsor = idx === 2 && secondarySponsor;
+              const hasHeading = section.heading && !isForbiddenHeader(section.heading);
+              const isHeadingType = section.type === "heading" && !isForbiddenHeader(section.content);
 
               return (
-                <div key={idx} className="space-y-3">
-                  {section.heading && (
-                    <h2 className="text-lg sm:text-xl font-bold text-foreground pt-2 tracking-tight">
+                <div key={idx} className="space-y-4">
+                  {hasHeading && (
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground pt-4 tracking-tight">
                       {String(section.heading)}
                     </h2>
                   )}
 
-                  {section.type === "heading" && (
-                    <h2 className="text-xl sm:text-2xl font-black text-foreground pt-4 tracking-tight">
+                  {isHeadingType && (
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground pt-4 tracking-tight">
                       {String(section.content)}
                     </h2>
                   )}
 
                   {section.type === "paragraph" && (
-                    <p className="leading-relaxed whitespace-pre-line">{String(section.content)}</p>
+                    <p className="leading-relaxed whitespace-pre-line text-foreground/90">
+                      {String(section.content)}
+                    </p>
                   )}
 
                   {section.type === "quote" && (
@@ -324,15 +379,15 @@ function NoticiaDetailPage() {
 
         {/* ── Fonte Original Verificada ── */}
         {(article as any).source_url && (
-          <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
-            <span>Fonte: {article.author_name || "Imprensa Regional"}</span>
+          <div className="pt-4 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+            <span>Fonte original: {article.author_name || article.store_name || "Imprensa Regional"}</span>
             <a
               href={(article as any).source_url}
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-foreground hover:underline inline-flex items-center gap-1 min-h-11"
             >
-              <span>Publicação original</span>
+              <span>Ver notícia na íntegra</span>
               <ArrowRight className="size-3.5" />
             </a>
           </div>
@@ -385,6 +440,7 @@ function NoticiaDetailPage() {
             </div>
           </div>
         )}
+
         {article.tags && article.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 pt-4">
             {article.tags.map((tag: string) => (
@@ -413,7 +469,7 @@ function NoticiaDetailPage() {
         {/* ── Matérias Relacionadas ── */}
         {related && related.length > 0 && (
           <div className="mt-12 pt-8 space-y-4">
-            <h3 className="text-lg font-black text-foreground">Leia Também</h3>
+            <h3 className="text-lg font-bold text-foreground">Leia Também</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {related.map((rel: any) => (
                 <Link
@@ -432,7 +488,7 @@ function NoticiaDetailPage() {
                     </div>
                   )}
                   <div className="space-y-1">
-                    <span className="text-[9px] font-black uppercase text-primary">
+                    <span className="text-[9px] font-bold uppercase text-primary">
                       {rel.kicker || rel.category}
                     </span>
                     <h4 className="text-xs font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">

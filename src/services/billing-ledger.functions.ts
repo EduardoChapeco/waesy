@@ -25,6 +25,40 @@ export const recordOrderMicroFee = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<BillingLineItemDTO> => {
     const supabase = getServerClient();
 
+    // 0. Autenticação e verificação de integridade do pedido
+    const { data: order } = await supabase
+      .from("orders")
+      .select("id, store_id, customer_id")
+      .eq("id", data.orderId)
+      .eq("store_id", data.storeId)
+      .maybeSingle();
+
+    if (!order) {
+      throw new Error("Pedido não encontrado para a loja especificada.");
+    }
+
+    // Idempotência estrita: se a microtaxa para este pedido já foi registrada, retorna sem duplicar
+    const { data: existingFee } = await supabase
+      .from("billing_line_items")
+      .select("*")
+      .eq("store_id", data.storeId)
+      .eq("origin_event_id", data.orderId)
+      .eq("fee_type", "ORDER_MICROFEE_RANDOM")
+      .maybeSingle();
+
+    if (existingFee) {
+      return {
+        id: existingFee.id,
+        invoiceId: existingFee.invoice_id,
+        storeId: existingFee.store_id,
+        originEventId: existingFee.origin_event_id,
+        description: existingFee.description,
+        amountCents: existingFee.amount_cents,
+        feeType: existingFee.fee_type as BillingFeeType,
+        createdAt: existingFee.created_at,
+      };
+    }
+
     // 1. Localizar ou criar fatura aberta para o mês corrente
     const now = new Date();
     const periodStart = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -108,9 +142,34 @@ export const RecordSubscriptionMonthlyFeeSchema = z.object({
 export const recordSubscriptionMonthlyFee = createServerFn({ method: "POST" })
   .validator(RecordSubscriptionMonthlyFeeSchema)
   .handler(async ({ data }): Promise<BillingLineItemDTO> => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "platform_admin", "master"], data.storeId);
+
     const supabase = getServerClient();
     const now = new Date();
     const cycle = data.cycleMonth || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+    // Idempotência de ciclo: evita faturamento duplicado no mesmo mês
+    const { data: existingSub } = await supabase
+      .from("billing_line_items")
+      .select("*")
+      .eq("store_id", data.storeId)
+      .eq("origin_event_id", `SUB-${cycle}`)
+      .eq("fee_type", "SUBSCRIPTION_MONTHLY")
+      .maybeSingle();
+
+    if (existingSub) {
+      return {
+        id: existingSub.id,
+        invoiceId: existingSub.invoice_id,
+        storeId: existingSub.store_id,
+        originEventId: existingSub.origin_event_id,
+        description: existingSub.description,
+        amountCents: existingSub.amount_cents,
+        feeType: existingSub.fee_type as BillingFeeType,
+        createdAt: existingSub.created_at,
+      };
+    }
 
     const { data: item, error } = await supabase
       .from("billing_line_items")

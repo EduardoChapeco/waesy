@@ -149,7 +149,7 @@ async function _getProductBySlug(slug: string): Promise<ProductDetailDTO> {
  displayName: v.display_name ?? null,
  effectivePriceCents: v.price_override_cents ?? (product.price_cents as number),
  availableQty: v.stock_on_hand,
- attributes: v.attributes ?? {},
+ attributes: sanitizePublicProductAttributes(v.attributes),
  ean: v.ean ?? null,
  weightKg: v.weight_kg ?? (product.weight_kg as number | null) ?? null,
  widthCm: v.width_cm ?? (product.width_cm as number | null) ?? null,

@@ -992,12 +992,38 @@ export const updateEventTask = createServerFn({ method: "POST" })
     return task;
   });
 
+/**
+ * Valida que o evento especificado pertence à loja ativa do usuário autenticado.
+ */
+async function assertEventAccess(supabase: any, eventId: string, storeId: string) {
+  const { data: event } = await supabase
+    .from("events")
+    .select("id")
+    .eq("id", eventId)
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  if (!event) {
+    throw new Error("Acesso negado: o evento não pertence a esta organização.");
+  }
+}
+
 export const deleteEventTask = createServerFn({ method: "POST" })
   .validator(z.object({ taskId: z.string().uuid() }))
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    // Valida pertencimento via eventos_tarefas_view
+    const { data: task } = await supabase
+      .from("eventos_tarefas_view")
+      .select("id, evento_id")
+      .eq("id", data.taskId)
+      .maybeSingle();
+
+    if (!task) throw new Error("Tarefa não encontrada.");
+    await assertEventAccess(supabase, task.evento_id, identity.store_id);
 
     const { error } = await supabase.from("eventos_tarefas").delete().eq("id", data.taskId);
     if (error) throw new Error("Erro ao excluir tarefa: " + error.message);
@@ -1114,6 +1140,15 @@ export const deleteEventBudget = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
+    const { data: budget } = await supabase
+      .from("eventos_orcamentos")
+      .select("id, evento_id")
+      .eq("id", data.budgetId)
+      .maybeSingle();
+
+    if (!budget) throw new Error("Orçamento não encontrado.");
+    await assertEventAccess(supabase, budget.evento_id, identity.store_id);
+
     const { error } = await supabase.from("eventos_orcamentos").delete().eq("id", data.budgetId);
     if (error) throw new Error("Erro ao excluir orçamento: " + error.message);
     return { success: true };
@@ -1189,6 +1224,15 @@ export const deleteEventSector = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
+    const { data: sector } = await supabase
+      .from("eventos_setores")
+      .select("id, evento_id")
+      .eq("id", data.sectorId)
+      .maybeSingle();
+
+    if (!sector) throw new Error("Setor não encontrado.");
+    await assertEventAccess(supabase, sector.evento_id, identity.store_id);
+
     const { error } = await supabase.from("eventos_setores").delete().eq("id", data.sectorId);
     if (error) throw new Error(error.message);
     return { success: true };
@@ -1261,6 +1305,15 @@ export const deleteEventPartner = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const { data: partner } = await supabase
+      .from("eventos_parceiros")
+      .select("id, evento_id")
+      .eq("id", data.partnerId)
+      .maybeSingle();
+
+    if (!partner) throw new Error("Parceiro não encontrado.");
+    await assertEventAccess(supabase, partner.evento_id, identity.store_id);
 
     const { error } = await supabase.from("eventos_parceiros").delete().eq("id", data.partnerId);
     if (error) throw new Error(error.message);
@@ -1340,6 +1393,15 @@ export const deleteEventLineup = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
+    const { data: lineup } = await supabase
+      .from("eventos_lineup")
+      .select("id, evento_id")
+      .eq("id", data.lineupId)
+      .maybeSingle();
+
+    if (!lineup) throw new Error("Item do lineup não encontrado.");
+    await assertEventAccess(supabase, lineup.evento_id, identity.store_id);
+
     const { error } = await supabase.from("eventos_lineup").delete().eq("id", data.lineupId);
     if (error) throw new Error(error.message);
     return { success: true };
@@ -1411,6 +1473,15 @@ export const deleteEventDocument = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const { data: doc } = await supabase
+      .from("eventos_documentos")
+      .select("id, evento_id")
+      .eq("id", data.documentId)
+      .maybeSingle();
+
+    if (!doc) throw new Error("Documento não encontrado.");
+    await assertEventAccess(supabase, doc.evento_id, identity.store_id);
 
     const { error } = await supabase.from("eventos_documentos").delete().eq("id", data.documentId);
     if (error) throw new Error(error.message);

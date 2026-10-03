@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getRealClientIP } from "@/lib/network-telemetry.server";
 import type { StorePwaConfig } from "@/types/wms-workflows-reputation";
 
 export const getStorePwaConfig = createServerFn({ method: "GET" })
@@ -130,6 +132,12 @@ export const recordPwaInstallation = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
+    let req: Request | null = null;
+    try {
+      req = getRequest();
+    } catch {}
+
+    const ipAddress = getRealClientIP(req);
     const supabase = getAnonServerClient();
 
     const { error } = await supabase.from("pwa_telemetry").insert({
@@ -137,6 +145,7 @@ export const recordPwaInstallation = createServerFn({ method: "POST" })
       event_type: data.eventType,
       platform: data.platform || "unknown",
       user_agent: data.userAgent?.slice(0, 500) || null,
+      ip_address: ipAddress,
     });
 
     if (error) {

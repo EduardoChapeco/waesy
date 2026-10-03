@@ -31,12 +31,12 @@
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| 1 | M1: Storage Governance, Media Triad, Mock & Unsplash Purge | RLS Storage, views security_invoker, covers bucket, uploaders com URL, remoção de placehold.co e Unsplash | none | COMPLETED |
-| 2 | M2: BFF Multi-Tenant Protection, Fiscal Allowlist & BOM | Proteção de tenant em server functions, IDOR fix, blindagem de dados fiscais, dedução BOM e idempotência de OS | none | PLANNED |
-| 3 | M3: 15 Niches & 4 Macro-Archetypes Route Hardening | Verificação funcional das 393 rotas nos 4 macro-arquétipos (carrinho, specs allowlist, agendamento, vitrine) | M1, M2 | PLANNED |
-| 4 | M4: Platform Differentiation: Mobile HIG vs Bento & Regra B.8 | Touch targets >=44px, bottom bars, 12-col Bento, correção de 3 títulos compostos e sanitização B.8 | M3 | PLANNED |
-| 5 | M5: Edge Telemetry Cloudflare Pages & Anti-Spam | ASN em network-telemetry, IP em pwa_telemetry, verificação de anti-flooding e fingerprint | M2 | PLANNED |
-| 6 | M6: Design-Lint, Vitest & Final Quality Gate | node scripts/design-lint.mjs, testes Vitest focados, zero typecheck/build, registro em DECISIONS.md | M1, M2, M3, M4, M5 | PLANNED |
+| 1 | M1: Storage Governance, Media Triad, Mock & Unsplash Purge | RLS Storage, views security_invoker, covers bucket, uploaders com URL, remoção de placehold.co e Unsplash | none | DONE |
+| 2 | M2: BFF Multi-Tenant Protection, Fiscal Allowlist & BOM | Proteção de tenant em server functions, IDOR fix, blindagem de dados fiscais, dedução BOM e idempotência de OS | none | COMPLETED |
+| 3 | M3: 15 Niches & 4 Macro-Archetypes Route Hardening | Verificação funcional das 393 rotas nos 4 macro-arquétipos (carrinho, specs allowlist, agendamento, vitrine) | M1, M2 | COMPLETED |
+| 4 | M4: Platform Differentiation: Mobile HIG vs Bento & Regra B.8 | Touch targets >=44px, bottom bars, 12-col Bento, correção de 3 títulos compostos e sanitização B.8 | M3 | COMPLETED |
+| 5 | M5: Edge Telemetry Cloudflare Pages & Anti-Spam | ASN em network-telemetry, IP em pwa_telemetry, verificação de anti-flooding e fingerprint | M2 | COMPLETED |
+| 6 | M6: Design-Lint, Vitest & Final Quality Gate | node scripts/design-lint.mjs, testes Vitest focados, zero typecheck/build, registro em DECISIONS.md | M1, M2, M3, M4, M5 | COMPLETED |
 
 ## Interface Contracts
 ### Public Listing DTO ↔ Client
@@ -51,7 +51,7 @@
 
 ### BOM Consumption Contract (PDV & OS)
 - Insumo identificado preferencialmente por `variant_id` UUID canônico.
-- Movimentação de estoque registrada em `stock_movements` com `movement_type: "loss"`, `reference_type: "bom_consumption"` ou `"service_order"`.
+- Movimentação de estoque registrada em `stock_movements` com `movement_type: "sale"`, `reference_type: "bom_consumption"` ou `"service_order"`.
 - Idempotência: Operação não pode executar baixa repetida para a mesma OS já concluída.
 
 ## Code Layout

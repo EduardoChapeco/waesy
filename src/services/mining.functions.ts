@@ -1,3 +1,4 @@
+import { executeAutomatedNewsHarvest } from "./mining/automated-harvest";
 import { harvestAndPersistDataJudProcess } from "./mining/datajud-harvester";
 import { harvestAndPersistPlaces } from "./mining/places-harvester";
 /**
@@ -3642,6 +3643,27 @@ export const harvestSpecializedUrlFn = createServerFn({ method: "POST" })
 /**
  * Telemetria de Economia de Tokens (Mecânica Zero-Token vs IA)
  */
+/**
+ * Colheita Automatizada de Notícias com Deduplicação SHA-256 e Curadoria Editorial
+ */
+export const executeAutomatedNewsHarvestFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      store_id: z.string().uuid().optional(),
+      city: z.string().optional(),
+      max_items: z.number().int().min(1).max(50).default(10),
+      force_refresh: z.boolean().default(false),
+    }).optional()
+  )
+  .handler(async ({ data }) => {
+    return executeAutomatedNewsHarvest({
+      storeId: data?.store_id,
+      city: data?.city,
+      maxItems: data?.max_items,
+      forceRefresh: data?.force_refresh,
+    });
+  });
+
 export const getTokenEconomyMetricsFn = createServerFn({ method: "GET" })
   .handler(async () => {
     const supabase = getAnonServerClient();

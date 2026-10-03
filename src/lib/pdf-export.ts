@@ -66,7 +66,7 @@ export async function exportElementAsPdf(
   noPrintElements.forEach((el) => {
     const htmlEl = el as HTMLElement;
     originalDisplays.push({ el: htmlEl, display: htmlEl.style.display });
-    htmlEl.style.setProperty("display", "none", "important");
+    htmlEl.style.display = "none";
   });
 
   // Aguarda carregamento de fontes

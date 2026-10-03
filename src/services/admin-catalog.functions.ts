@@ -1728,12 +1728,15 @@ export async function _bulkUpdateProductStatus(input: {
  action: "draft" | "published" | "archived" | "delete";
 }) {
  const db = getServerClient();
+  const { getServerIdentity } = await import("@/lib/server-access");
+  const identity = await getServerIdentity();
+  if (!identity?.store_id) throw new Error("Acesso não autorizado.");
  if (!input.productIds || input.productIds.length === 0) {
  return { count: 0 };
  }
 
  if (input.action === "delete") {
- const { error } = await db.from("products").delete().in("id", input.productIds);
+  const { error } = await db.from("products").delete().in("id", input.productIds).eq("store_id", identity.store_id);
  if (error) throw error;
  return { count: input.productIds.length };
  }
@@ -1741,7 +1744,8 @@ export async function _bulkUpdateProductStatus(input: {
  const { error } = await db
  .from("products")
  .update({ status: input.action })
- .in("id", input.productIds);
+    .in("id", input.productIds)
+    .eq("store_id", identity.store_id);
 
  if (error) throw error;
  return { count: input.productIds.length };
@@ -2393,6 +2397,7 @@ export const saveStoreComplementGroup = createServerFn({ method: "POST" })
  .from("store_complement_groups")
  .update(payload)
  .eq("id", data.id)
+ .eq("store_id", identity.store_id)
  .select()
  .single();
  if (error) throw new Error(error.message);
@@ -2418,7 +2423,8 @@ export const deleteStoreComplementGroup = createServerFn({ method: "POST" })
  const { error } = await db
  .from("store_complement_groups")
  .delete()
- .eq("id", data.id);
+ .eq("id", data.id)
+ .eq("store_id", identity.store_id);
 
  if (error) throw new Error(error.message);
  return { success: true };

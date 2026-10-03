@@ -15,6 +15,30 @@ import { applyServerFnEdgeCache, CACHE_TAGS } from "@/lib/cache/edge-cache";
 // PUBLIC (no auth required) — 100% Real no Supabase | Zero Mocks
 // ---------------------------------------------------------------------------
 
+import { sanitizePublicProductAttributes } from "./unified-listing.functions";
+
+const CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA = new Set([
+  "feed_media", "feed_images", "display_mode", "template_style",
+  "single_owner", "unico_dono", "delivery_mode", "delivery_type",
+  "is_digital", "is_free_donation", "is_business_sale", "business_type",
+  "accepts_card", "accepts_trade", "accepts_pix", "pix_discount_percent",
+  "installments_available", "max_installments", "working_hours_start",
+  "working_hours_end", "available_weekdays", "cancellation_policy",
+  "inquiry_config", "travel", "amenities", "features", "provenance",
+]);
+
+function sanitizePublicClassifiedAttributes(raw: Record<string, any> | null | undefined): Record<string, any> {
+  if (!raw || typeof raw !== "object") return {};
+  const base = sanitizePublicProductAttributes(raw);
+  for (const [key, value] of Object.entries(raw)) {
+    const lower = key.toLowerCase();
+    if (CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA.has(lower) && (typeof value !== "object" || Array.isArray(value)) && value !== null && value !== undefined) {
+      base[key] = value;
+    }
+  }
+  return base;
+}
+
 export const getPublicClassifieds = createServerFn({ method: "GET" })
  .validator(
  z
@@ -83,6 +107,11 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
 
      const normalizedItem = {
        ...item,
+       cost_cents: undefined,
+       margin_percent: undefined,
+       markup_percent: undefined,
+       fiscal_profile: undefined,
+       attributes: sanitizePublicClassifiedAttributes(item.attributes),
        is_sponsored: isValidSponsored,
        is_boosted: isValidSponsored,
        sponsored_until: rawUntil || null,
@@ -165,7 +194,14 @@ export const getAdsByStoreId = createServerFn({ method: "GET" })
         .limit(limit);
 
       if (!error && ads) {
-        return ads;
+        return ads.map((ad: any) => ({
+          ...ad,
+          cost_cents: undefined,
+          margin_percent: undefined,
+          markup_percent: undefined,
+          fiscal_profile: undefined,
+          attributes: sanitizePublicClassifiedAttributes(ad.attributes),
+        }));
       }
     } catch (err) {
       console.warn("[classifieds] getAdsByStoreId error:", err);
@@ -434,8 +470,17 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
       const computedStatus: "active" | "sold" | "paused" | "reserved" | "archived" =
         classifiedData.status === "completed" ? "sold" : (classifiedData.status || "active");
 
+      const publicClassified = canManage ? classifiedData : {
+        ...classifiedData,
+        cost_cents: undefined,
+        margin_percent: undefined,
+        markup_percent: undefined,
+        fiscal_profile: undefined,
+        attributes: sanitizePublicClassifiedAttributes(classifiedData.attributes),
+      };
+
       return {
-        classified: classifiedData,
+        classified: publicClassified,
         status: computedStatus,
         isOwner,
         canManage,

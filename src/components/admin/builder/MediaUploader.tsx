@@ -176,7 +176,7 @@ export function MediaUploader({
  {isVideo ? (
  <video src={value} className="w-full h-full object-cover rounded-lg" muted />
  ) : hasImageError ? (
- <div className="flex flex-col items-center justify-center gap-1.5 p-4 text-center select-none" role="status">
+ <div className="flex flex-col items-center justify-center gap-2 p-4 text-center select-none" role="status">
  <ImageIcon className="size-8 stroke-1 text-muted-foreground/60" />
  <span className="text-xs font-medium text-muted-foreground">Imagem indisponível</span>
  </div>
