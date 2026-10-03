@@ -173,3 +173,41 @@ export const resolveMaintenanceRequest = createServerFn({ method: "POST" })
  });
 
 export const updateMaintenanceRequestStatus = resolveMaintenanceRequest;
+
+export interface StorePropertyItemDTO {
+  id: string;
+  title: string;
+  location_name?: string | null;
+  deal_type?: string | null;
+}
+
+export const listStoreProperties = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const supabase = getServerClient();
+    const identity = await getCurrentIdentity();
+    if (!identity.store_id && !identity.customer_id) {
+      return [];
+    }
+
+    let query = supabase
+      .from("classifieds")
+      .select("id, title, location_name, deal_type")
+      .eq("category", "real_estate")
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (identity.store_id) {
+      query = query.eq("store_id", identity.store_id);
+    } else {
+      query = query.eq("author_profile_id", identity.customer_id);
+    }
+
+    const { data: rows, error } = await query;
+    if (error) {
+      console.error("Erro ao listar imóveis da loja:", error);
+      return [];
+    }
+
+    return (rows || []) as StorePropertyItemDTO[];
+  });
+
