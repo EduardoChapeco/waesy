@@ -6,6 +6,7 @@ import { CurrencyField } from "@/components/ui/currency-field";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { formatMoney } from "@/lib/money";
 import { AdvancedVariantEditor } from "./advanced-variant-editor";
+import { ProductDimensionModal } from "./product-editor/product-dimension-modal";
 import { toast } from "sonner";
 
 import type { RawVariant } from "@/types/catalog";
@@ -19,6 +20,9 @@ interface VariantMatrixGridProps {
 
 export function VariantMatrixGrid({ variants, onChange, basePriceCents }: VariantMatrixGridProps) {
   const [advancedEditIndex, setAdvancedEditIndex] = React.useState<number | null>(null);
+  const [isAddDimensionOpen, setIsAddDimensionOpen] = React.useState(false);
+  const [newDimensionName, setNewDimensionName] = React.useState("");
+  const [newDimensionValue, setNewDimensionValue] = React.useState("");
 
   // Coleta todas as chaves dinamicas que existem no banco/state atual
   const attributeKeys = useMemo(() => {
@@ -44,19 +48,32 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
   }
 
   // --- Funcoes Auxiliares de Atualizacao ---
-  const handleAddDimension = () => {
-    const dimName = window.prompt("Nome da nova coluna/propriedade (Ex: Tamanho, Material, Voltagem):");
-    if (!dimName || dimName.trim() === "") return;
-    const newDim = dimName.trim();
-    if (attributeKeys.includes(newDim)) {
+  const handleOpenAddDimension = () => {
+    setNewDimensionName("");
+    setNewDimensionValue("");
+    setIsAddDimensionOpen(true);
+  };
+
+  const handleAddDimensionSubmit = () => {
+    const dim = newDimensionName.trim();
+    const val = newDimensionValue.trim();
+    if (!dim) {
+      toast.error("Informe o nome da propriedade.");
+      return;
+    }
+    if (attributeKeys.includes(dim)) {
       toast.error("Essa propriedade já existe!");
       return;
     }
     const newVariants = variants.map((v) => ({
       ...v,
-      attributes: { ...v.attributes, [newDim]: "" },
+      attributes: { ...v.attributes, [dim]: v.attributes[dim] || val },
     }));
     onChange(newVariants);
+    setIsAddDimensionOpen(false);
+    setNewDimensionName("");
+    setNewDimensionValue("");
+    toast.success(`Propriedade "${dim}" adicionada como coluna.`);
   };
 
   const handleRenameDimension = (oldKey: string, newKey: string) => {
@@ -126,11 +143,20 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
   };
 
   const handleDeleteVariant = (globalIdx: number) => {
-    if (window.confirm("Deseja realmente remover esta linha?")) {
-      const newVariants = [...variants];
-      newVariants.splice(globalIdx, 1);
-      onChange(newVariants);
-    }
+    const removed = variants[globalIdx];
+    const newVariants = variants.filter((_, idx) => idx !== globalIdx);
+    onChange(newVariants);
+    toast.success("Linha removida.", {
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          const restored = [...newVariants];
+          restored.splice(globalIdx, 0, removed);
+          onChange(restored);
+          toast.info("Linha restaurada.");
+        },
+      },
+    });
   };
 
   const handleCloneVariant = (globalIdx: number) => {
@@ -157,8 +183,8 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
         <Button
           variant="outline"
           size="sm"
-          onClick={handleAddDimension}
-          className="border-dashed text-primary hover:text-primary font-bold h-11 px-4 focus-visible:ring-2 focus-visible:ring-ring"
+          onClick={handleOpenAddDimension} /* focus-visible: */
+          className="border-dashed text-primary hover:text-primary font-bold h-11 px-4 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
         >
           <Plus className="size-4 mr-2" /> Adicionar Coluna de Propriedade
         </Button>
@@ -169,7 +195,7 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
         <table className="w-full min-w-3xl text-sm text-left">
           <thead className="bg-muted/40 text-muted-foreground text-xs uppercase font-semibold">
             <tr>
-              <th className="px-4 py-3 min-w-48 group bg-muted/60">
+              <th className="px-4 py-3 min-w-48 group bg-muted/90 backdrop-blur-xs sticky left-0 z-20 border-r border-border shadow-xs">
                 <div className="flex items-center gap-1">
                   <Input
                     value={rowKey}
@@ -218,7 +244,7 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
                       {/* Celula Agrupada (Matriz Mae) */}
                       {localIdx === 0 && (
                         <td
-                          className="px-4 py-3 w-56 align-top border-r bg-muted/5"
+                          className="px-4 py-3 w-56 align-top border-r border-border bg-card sticky left-0 z-10 shadow-xs"
                           rowSpan={gData.variants.length + 1}
                         >
                           <div className="flex flex-col gap-3">
@@ -592,6 +618,16 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
           }}
         />
       )}
+
+      <ProductDimensionModal
+        open={isAddDimensionOpen}
+        onOpenChange={setIsAddDimensionOpen}
+        dimensionName={newDimensionName}
+        onDimensionNameChange={setNewDimensionName}
+        dimensionValue={newDimensionValue}
+        onDimensionValueChange={setNewDimensionValue}
+        onSubmit={handleAddDimensionSubmit}
+      />
     </>
   );
 }

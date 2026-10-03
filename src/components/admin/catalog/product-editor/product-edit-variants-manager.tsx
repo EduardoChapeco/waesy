@@ -10,12 +10,22 @@ import { batchUpsertVariantMatrix } from "@/services/admin-catalog.functions";
 
 interface ProductEditVariantsManagerProps {
   product: any;
+  variants?: RawVariant[];
+  onVariantsChange?: (variants: RawVariant[]) => void;
+  onSave?: () => Promise<boolean | void>;
+  isSaving?: boolean;
 }
 
-export function ProductEditVariantsManager({ product }: ProductEditVariantsManagerProps) {
+export function ProductEditVariantsManager({
+  product,
+  variants: propVariants,
+  onVariantsChange,
+  onSave,
+  isSaving: propIsSaving,
+}: ProductEditVariantsManagerProps) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [variants, setVariants] = useState<RawVariant[]>(() => {
+  const [internalIsSubmitting, setInternalIsSubmitting] = useState(false);
+  const [internalVariants, setInternalVariants] = useState<RawVariant[]>(() => {
     return (product?.product_variants || []).map((v: any) => ({
       id: v.id,
       sku: v.sku,
@@ -33,8 +43,16 @@ export function ProductEditVariantsManager({ product }: ProductEditVariantsManag
     }));
   });
 
+  const variants = propVariants ?? internalVariants;
+  const setVariants = onVariantsChange ?? setInternalVariants;
+  const isSubmitting = propIsSaving ?? internalIsSubmitting;
+
   const handleSaveMatrix = async () => {
-    setIsSubmitting(true);
+    if (onSave) {
+      await onSave();
+      return;
+    }
+    setInternalIsSubmitting(true);
     try {
       await batchUpsertVariantMatrix({
         data: {
@@ -47,7 +65,7 @@ export function ProductEditVariantsManager({ product }: ProductEditVariantsManag
     } catch (e: unknown) {
       toast.error((e instanceof Error ? e.message : String(e)) || "Erro ao salvar matriz");
     } finally {
-      setIsSubmitting(false);
+      setInternalIsSubmitting(false);
     }
   };
 

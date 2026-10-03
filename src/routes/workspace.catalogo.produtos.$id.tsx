@@ -11,6 +11,7 @@ import {
   SlidersHorizontal,
   Boxes,
   Zap,
+  Loader2,
 } from "lucide-react";
 import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
@@ -107,16 +108,18 @@ function EditProductPage() {
               <Button
                 type="submit"
                 form="product-edit-general-form"
+                disabled={edit.isSaving}
                 size="sm"
                 className="h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
+                {edit.isSaving ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" /> : null}
                 Salvar Alterações
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => edit.setIsMasterCatalogOpen(true)}
+                onClick={() => edit.setIsMasterCatalogOpen(true)} /* focus-visible: */
                 className="rounded-lg text-xs font-bold gap-2 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer h-11 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Star className="size-3.5" />
@@ -223,6 +226,8 @@ function EditProductPage() {
               categories={categories}
               productTypes={productTypes}
               nicheCtx={nicheCtx}
+              variants={edit.variants}
+              onSavingChange={edit.setIsSavingGeneral}
               onTitleChange={edit.setLiveTitle}
               onDescriptionChange={edit.setLiveDescription}
               onBrandChange={edit.setLiveBrand}
@@ -263,7 +268,13 @@ function EditProductPage() {
                 Gerencie o saldo em estoque granular, variações de tamanho, porção, códigos, preços sobrepostos e fotos específicas.
               </p>
             </div>
-            <ProductEditVariantsManager product={product} />
+            <ProductEditVariantsManager
+              product={product}
+              variants={edit.variants}
+              onVariantsChange={edit.setVariants}
+              onSave={edit.saveVariants}
+              isSaving={edit.isSavingVariants}
+            />
           </div>
 
           <div id="opcoes" className="scroll-mt-32 pt-12 border-t">
@@ -308,7 +319,7 @@ function EditProductPage() {
 
         <ProductEditorStickyBar
           entityName={nicheCtx.entityName}
-          isSubmitting={false}
+          isSubmitting={edit.isSaving}
           formId="product-edit-general-form"
           status={product.status}
           previewUrl={`/produto/${product.slug}`}

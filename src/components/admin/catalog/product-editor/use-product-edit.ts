@@ -5,7 +5,8 @@ import type { MasterProductRecord } from "@/lib/data/master-products-catalog";
 import type { TravelPackageData } from "@/types/travel-package";
 import type { BomItem } from "@/components/admin/catalog/product-bom-card";
 import type { FoodSpecsData } from "@/components/admin/catalog/product-food-specs-card";
-import { updateProduct } from "@/services/admin-catalog.functions";
+import type { RawVariant } from "@/types/catalog";
+import { updateProduct, batchUpsertVariantMatrix } from "@/services/admin-catalog.functions";
 
 export function useProductEdit(
   product: any,
@@ -24,6 +25,28 @@ export function useProductEdit(
   const [, setLiveCostCents] = useState(product?.cost_cents || null);
   const [, setLiveStatus] = useState(product?.status || "draft");
   const [activePreviewImage, setActivePreviewImage] = useState(0);
+
+  const initialVariants: RawVariant[] = useMemo(() => {
+    return (product?.product_variants || []).map((v: any) => ({
+      id: v.id,
+      sku: v.sku,
+      ean: v.ean,
+      attributes: v.attributes || {},
+      stock: v.stock_on_hand ?? v.stock ?? 0,
+      price_override_cents: v.price_override_cents,
+      cost_cents: v.cost_cents,
+      weight_kg: v.weight_kg,
+      image_url: v.image_url,
+      status: v.status || "active",
+      allow_backorder: v.allow_backorder,
+      backorder_lead_time_days: v.backorder_lead_time_days,
+      requires_payment_for_backorder: v.requires_payment_for_backorder,
+    }));
+  }, [product?.product_variants]);
+
+  const [variants, setVariants] = useState<RawVariant[]>(initialVariants);
+  const [isSavingVariants, setIsSavingVariants] = useState(false);
+  const [isSavingGeneral, setIsSavingGeneral] = useState(false);
 
   const [optionGroups, setOptionGroups] = useState<any[]>(optionGroupsList || []);
   const initialSelectedGroups = useMemo(() => {
@@ -234,6 +257,45 @@ export function useProductEdit(
     }
   };
 
+  const saveVariants = async (matrixToSave?: RawVariant[]) => {
+    if (!product?.id) return false;
+    const toSave = matrixToSave || variants;
+    setIsSavingVariants(true);
+    try {
+      await batchUpsertVariantMatrix({
+        data: {
+          product_id: product.id,
+          matrix: toSave.map((v) => ({
+            id: v.id,
+            sku: v.sku,
+            ean: v.ean,
+            attributes: Object.fromEntries(
+              Object.entries(v.attributes || {}).map(([k, val]) => [k, String(val ?? "")])
+            ),
+            price_override_cents: v.price_override_cents ?? null,
+            stock: v.stock ?? 0,
+            original_stock: v.original_stock,
+            cost_cents: v.cost_cents ?? null,
+            weight_kg: v.weight_kg ?? null,
+            image_url: v.image_url ?? null,
+            status: (v.status as any) || "active",
+            allow_backorder: v.allow_backorder,
+            backorder_lead_time_days: v.backorder_lead_time_days,
+            requires_payment_for_backorder: v.requires_payment_for_backorder,
+          })),
+        },
+      });
+      toast.success("Matriz de variações salva com sucesso!");
+      router.invalidate();
+      return true;
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : String(e)) || "Erro ao salvar matriz de variações.");
+      return false;
+    } finally {
+      setIsSavingVariants(false);
+    }
+  };
+
   return {
     liveTitle,
     setLiveTitle,
@@ -249,6 +311,13 @@ export function useProductEdit(
     setLiveStatus,
     activePreviewImage,
     setActivePreviewImage,
+    variants,
+    setVariants,
+    saveVariants,
+    isSavingVariants,
+    isSavingGeneral,
+    setIsSavingGeneral,
+    isSaving: isSavingGeneral || isSavingVariants,
     optionGroups,
     setOptionGroups,
     selectedOptionGroupIds,

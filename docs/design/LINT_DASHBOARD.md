@@ -1,26 +1,26 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-03T02:32:01.277Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-03T10:58:24.164Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
 | **Total de Arquivos** | 1803 | 1803 | Estável |
-| **Arquivos com Débito** | 1100 | 1100 | Monitorado |
-| **Total de Violações** | **18701** | **18701** | PASS (<= Baseline) |
-| **P0 (Bloqueia Entrega)** | **7267** | 7267 | PASS |
-| **P1 (Bloqueia Merge)** | **8498** | 8498 | PASS |
+| **Arquivos com Débito** | 1098 | 1098 | Monitorado |
+| **Total de Violações** | **18693** | **18693** | PASS (<= Baseline) |
+| **P0 (Bloqueia Entrega)** | **7262** | 7262 | PASS |
+| **P1 (Bloqueia Merge)** | **8496** | 8496 | PASS |
 | **P2 (Fila de Correção)** | 1453 | 1453 | Acompanhamento |
-| **P3 (Polimento)** | 1483 | 1483 | Acompanhamento |
+| **P3 (Polimento)** | 1482 | 1482 | Acompanhamento |
 
 ## 2. Débito Visual por Módulo
 
 | Módulo | Total | P0 | P1 | P2 | P3 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `components/app` | 7028 | 2248 | 3558 | 641 | 581 |
+| `components/app` | 7021 | 2244 | 3556 | 641 | 580 |
 | `routes/store` | 3223 | 1217 | 1400 | 246 | 360 |
-| `routes/workspace` | 3097 | 1871 | 820 | 121 | 285 |
+| `routes/workspace` | 3096 | 1870 | 820 | 121 | 285 |
 | `components/tourism` | 1622 | 446 | 910 | 191 | 75 |
 | `routes/admin` | 1312 | 456 | 677 | 57 | 122 |
 | `services` | 902 | 585 | 237 | 78 | 2 |
@@ -38,8 +38,8 @@
 
 | Regra | Descrição Sumária | Severidade | Ocorrências |
 | :--- | :--- | :--- | :--- |
-| **DL-15** | Diretriz do Catálogo | `P0` | 5514 |
-| **DL-02** | Diretriz do Catálogo | `P1` | 5324 |
+| **DL-15** | Diretriz do Catálogo | `P0` | 5509 |
+| **DL-02** | Diretriz do Catálogo | `P1` | 5322 |
 | **DL-04** | Diretriz do Catálogo | `P0` | 1753 |
 | **DL-18** | Diretriz do Catálogo | `P1` | 1319 |
 | **DL-27** | Diretriz do Catálogo | `P3` | 1221 |
@@ -48,7 +48,7 @@
 | **DL-07** | Diretriz do Catálogo | `P2` | 501 |
 | **DL-28** | Diretriz do Catálogo | `P1` | 312 |
 | **DL-14** | Diretriz do Catálogo | `P1` | 310 |
-| **DL-30** | Diretriz do Catálogo | `P3` | 262 |
+| **DL-30** | Diretriz do Catálogo | `P3` | 261 |
 | **DL-05** | Diretriz do Catálogo | `P1` | 138 |
 | **DL-29** | Diretriz do Catálogo | `P2` | 130 |
 | **DL-08** | Diretriz do Catálogo | `P2` | 127 |

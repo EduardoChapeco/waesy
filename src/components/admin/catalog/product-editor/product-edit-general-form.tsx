@@ -11,13 +11,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CurrencyField } from "@/components/ui/currency-field";
-import { updateProduct, createCategory } from "@/services/admin-catalog.functions";
+import { updateProduct, createCategory, batchUpsertVariantMatrix } from "@/services/admin-catalog.functions";
+import type { RawVariant } from "@/types/catalog";
 
 interface ProductEditGeneralFormProps {
   product: any;
   categories: any[];
   productTypes: any[];
   nicheCtx: any;
+  variants?: RawVariant[];
+  onSavingChange?: (saving: boolean) => void;
   onTitleChange: (v: string) => void;
   onDescriptionChange: (v: string) => void;
   onBrandChange: (v: string) => void;
@@ -32,6 +35,8 @@ export function ProductEditGeneralForm({
   categories,
   productTypes,
   nicheCtx,
+  variants,
+  onSavingChange,
   onTitleChange,
   onDescriptionChange,
   onBrandChange,
@@ -134,6 +139,7 @@ export function ProductEditGeneralForm({
 
   const onSubmit = async (values: any) => {
     setIsSubmitting(true);
+    onSavingChange?.(true);
     try {
       const price_cents = typeof values.price_cents === "number"
         ? values.price_cents
@@ -182,8 +188,34 @@ export function ProductEditGeneralForm({
         },
       });
 
+      if (variants && variants.length > 0) {
+        await batchUpsertVariantMatrix({
+          data: {
+            product_id: product.id,
+            matrix: variants.map((v) => ({
+              id: v.id,
+              sku: v.sku,
+              ean: v.ean,
+              attributes: Object.fromEntries(
+                Object.entries(v.attributes || {}).map(([k, val]) => [k, String(val ?? "")])
+              ),
+              price_override_cents: v.price_override_cents ?? null,
+              stock: v.stock ?? 0,
+              original_stock: v.original_stock,
+              cost_cents: v.cost_cents ?? null,
+              weight_kg: v.weight_kg ?? null,
+              image_url: v.image_url ?? null,
+              status: (v.status as any) || "active",
+              allow_backorder: v.allow_backorder,
+              backorder_lead_time_days: v.backorder_lead_time_days,
+              requires_payment_for_backorder: v.requires_payment_for_backorder,
+            })),
+          },
+        });
+      }
+
       if (res) {
-        toast.success(`${nicheCtx.entityName} atualizado com sucesso!`);
+        toast.success(`${nicheCtx.entityName} e variações atualizados com sucesso!`);
         await router.invalidate();
       } else {
         toast.error(`Erro ao atualizar ${nicheCtx.entityName.toLowerCase()}`);
@@ -192,6 +224,7 @@ export function ProductEditGeneralForm({
       toast.error(e?.message || "Erro inesperado ao salvar alterações");
     } finally {
       setIsSubmitting(false);
+      onSavingChange?.(false);
     }
   };
 
