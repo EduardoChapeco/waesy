@@ -12,7 +12,6 @@ import {
   createAiConversationThread,
   sendAiConversationMessage,
   executeAiCopilotPipeline,
-  resolveAiPipelineSteps,
 } from "@/services/ai-conversations.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { toast } from "sonner";
@@ -44,28 +43,42 @@ export const Route = createFileRoute("/_store/copilot")({
 
 function CopilotPage() {
   const { session, initialThreads } = Route.useLoaderData();
-  const [threads, setThreads] = useState<ChatThreadItem[]>(() => {
-    if (initialThreads && initialThreads.length > 0) {
-      return initialThreads.map((t: any) => ({
-        id: t.id,
-        type: t.type || "ai_assistant",
-        title: t.title,
-        isPinned: t.is_pinned,
-        metadata: t.metadata,
-        workingMemory: t.working_memory,
-        updatedAt: t.updated_at,
-      }));
+  const [userCoords, setUserCoords] = useState<{ lat?: number; lng?: number }>({});
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && "geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        () => {},
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
+      );
     }
-    return [
-      {
-        id: "default-assistant-thread",
-        type: "ai_assistant",
-        title: "Copilot Geral",
-        isPinned: true,
-        lastMessageSnippet: "Como posso ajudar com produtos, viagens ou servicos?",
-        workingMemory: {},
-      },
-    ];
+  }, []);
+
+  const [threads, setThreads] = useState<ChatThreadItem[]>(() => {
+    if (!initialThreads || initialThreads.length === 0) {
+      return [
+        {
+          id: "default-assistant-thread",
+          type: "ai_assistant",
+          title: "Copilot Geral",
+          isPinned: true,
+          lastMessageSnippet: "Como posso ajudar com produtos, viagens ou servicos?",
+          workingMemory: {},
+        },
+      ];
+    }
+    return initialThreads.map((t: any) => ({
+      id: t.id,
+      type: t.type || "ai_assistant",
+      title: t.title,
+      isPinned: t.is_pinned,
+      metadata: t.metadata,
+      workingMemory: t.working_memory,
+      updatedAt: t.updated_at,
+    }));
   });
 
   const [activeThreadId, setActiveThreadId] = useState<string>(
@@ -104,7 +117,7 @@ function CopilotPage() {
     const userMessageItem: ChatMessageItem = {
       id: `usr-${Date.now()}`,
       threadId: activeThreadId,
-      senderName: session?.user_metadata?.full_name || "Voce",
+      senderName: (session as any)?.user?.user_metadata?.full_name || (session as any)?.user_metadata?.full_name || "Voce",
       isStaffOrAI: false,
       text,
       createdAt: new Date().toISOString(),
@@ -123,6 +136,8 @@ function CopilotPage() {
             message: text,
             replyToId,
             attachments,
+            userLat: userCoords.lat,
+            userLng: userCoords.lng,
           },
         });
         const updated = await getAiConversationThread({ data: { threadId: activeThreadId } });
@@ -130,7 +145,15 @@ function CopilotPage() {
           setMessages(updated.messages as any);
         }
       } else {
-        const execution = await executeAiCopilotPipeline(text, {}, { userId: session?.id });
+        const execution = await executeAiCopilotPipeline(
+          text,
+          {},
+          {
+            userId: session?.id,
+            userLat: userCoords.lat,
+            userLng: userCoords.lng,
+          }
+        );
         const aiMessageItem: ChatMessageItem = {
           id: `ai-${Date.now()}`,
           threadId: activeThreadId,

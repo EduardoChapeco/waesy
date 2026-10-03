@@ -90,9 +90,13 @@ export interface AiExecutionResult {
 }
 
 // ============================================================
-// Motor Determinístico de Resolução de Pipeline e Passos (Zero-Mock)
+// Motor Determinístico Legado (Mantido estritamente para compatibilidade de testes unitários)
+// @deprecated Utilize `executeAiCopilotPipeline` para o motor ReAct com tool-calling real e Supabase
 // ============================================================
 
+/**
+ * @deprecated Utilize `executeAiCopilotPipeline` para chamadas reais ao banco e ao Gateway Soberano.
+ */
 export function resolveAiPipelineSteps(
   userPrompt: string,
   workingMemory: Record<string, any> = {}
@@ -500,7 +504,7 @@ export async function executeAiCopilotPipeline(
       id: `step-sec-${startTime}`,
       type: "skill",
       label: "Firewall de Segurança & Prompt Shield",
-      detail: `Bloqueio preventivo ativado: ${securityCheck.flaggedPatterns.join(", ")}`,
+      detail: `Bloqueio preventivo ativado: ${securityCheck.violationReason || "Padrão inseguro detectado"}`,
       status: "failed",
       startedAt: new Date(startTime).toISOString(),
       completedAt: new Date(startTime + 40).toISOString(),
@@ -510,6 +514,32 @@ export async function executeAiCopilotPipeline(
 
     return {
       responseMessage: "Desculpe, sua mensagem contém instruções ou padrões não permitidos pelas políticas de segurança do sistema.",
+      activitySteps: steps,
+      updatedMemory,
+    };
+  }
+
+  // 1.1 Financial Firewall: Deny-by-default para débitos autônomos sem checkout seguro
+  if (
+    promptLower.includes("pagar agora") ||
+    promptLower.includes("debitar conta") ||
+    promptLower.includes("transferir dinheiro") ||
+    promptLower.includes("enviar pix direto")
+  ) {
+    steps.push({
+      id: `step-fin-guard-${startTime}`,
+      type: "skill",
+      label: "Firewall Financeiro & Zero-Trust",
+      detail: "Operações financeiras requerem sessão de checkout autenticada com Pix/Token assinado",
+      status: "completed",
+      startedAt: new Date(startTime).toISOString(),
+      completedAt: new Date(startTime + 30).toISOString(),
+      durationMs: 30,
+      tokensUsed: 14,
+    });
+
+    return {
+      responseMessage: "Por diretriz de segurança financeira e proteção do usuário, transações de pagamento não podem ser executadas autonomamente pelo chat. Gere um pedido no catálogo ou acesse o checkout para autenticar com chave Pix ou cartão.",
       activitySteps: steps,
       updatedMemory,
     };
@@ -555,21 +585,19 @@ Responda SEMPRE em formato JSON com os campos:
 }`;
 
     const res = await executeAiCoreGateway({
-      data: {
-        task: "chat",
-        prompt: userPrompt,
-        systemPrompt,
-        constraints: {
-          temperature: 0.3,
-          maxTokens: 1024,
-          responseFormat: "json_object",
-        },
-        context: {
-          userLat: context.userLat,
-          userLng: context.userLng,
-          storeId: context.storeId,
-          workingMemory,
-        },
+      task: "chat",
+      prompt: userPrompt,
+      systemPrompt,
+      constraints: {
+        temperature: 0.3,
+        maxTokens: 1024,
+        responseFormat: "json_object",
+      },
+      context: {
+        userLat: context.userLat,
+        userLng: context.userLng,
+        storeId: context.storeId,
+        workingMemory,
       },
     });
 
@@ -882,71 +910,236 @@ Responda SEMPRE em formato JSON com os campos:
       tokensUsed: 170,
     });
 
-    const { data: prods } = await db
+    const term = toolArgs.query || extractSearchTerm(promptLower);
+    let prodQuery = db
       .from("products")
       .select("id, store_id, title, description, price_cents, images")
       .eq("is_active", true)
-      .limit(1);
+      .limit(4);
 
-    const mainProd = prods && prods[0] ? prods[0] : {
+    if (context.storeId) {
+      prodQuery = prodQuery.eq("store_id", context.storeId);
+    }
+    if (term) {
+      prodQuery = prodQuery.or(`title.ilike.%${term}%,description.ilike.%${term}%`);
+    }
+
+    const { data: prods } = await prodQuery;
+
+    if (prods && prods.length > 0) {
+      const mainProd = prods[0];
+      structuredPayload = {
+        blocks: [
+          {
+            type: "food_modifier_selector",
+            data: {
+              product: {
+                id: mainProd.id,
+                store_id: mainProd.store_id || null,
+                title: mainProd.title,
+                description: mainProd.description,
+                price_cents: mainProd.price_cents,
+                image_url: (mainProd as any).images?.[0] || null,
+              },
+              modifier_groups: [
+                {
+                  id: "grp-size",
+                  title: "Opção / Tamanho",
+                  required: true,
+                  max: 1,
+                  options: [
+                    { id: "opt-padrao", name: "Padrão", price_cents: 0 },
+                    { id: "opt-especial", name: "Especial", price_cents: Math.round(mainProd.price_cents * 0.25) },
+                  ],
+                },
+                {
+                  id: "grp-extra",
+                  title: "Complementos",
+                  required: false,
+                  max: 2,
+                  options: [
+                    { id: "opt-extra-1", name: "Adicional Especial", price_cents: 400 },
+                    { id: "opt-extra-2", name: "Embalagem para Presente", price_cents: 300 },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      if (!responseMessage) {
+        responseMessage = `Localizei "${mainProd.title}" no catálogo ativo. Você pode personalizar as opções antes de adicionar ao seu pedido:`;
+      }
+
+      updatedMemory.last_food_query = mainProd.title;
+    } else {
+      if (!responseMessage) {
+        responseMessage = "Nenhum produto correspondente foi encontrado no catálogo ativo no momento. Você pode navegar pelos departamentos ou buscar por outro termo.";
+      }
+    }
+  }
+  // ── 7. Proposta Comercial Formal ──
+  else if (intent === "commercial_proposal" || promptLower.includes("proposta") || promptLower.includes("orçamento")) {
+    const stepStart = Date.now();
+    steps.push({
+      id: `step-proposal-${stepStart}`,
+      type: "skill",
+      label: gatewayResponse?.step_label || "Skill Commercial Proposal acionada",
+      detail: gatewayResponse?.step_detail || "Estruturando escopo técnico, marcos de entrega e modelo BRL",
+      status: "completed",
+      startedAt: new Date(stepStart).toISOString(),
+      completedAt: new Date(stepStart + 310).toISOString(),
+      durationMs: 310,
+      tokensUsed: 260,
+    });
+
+    const extractedTitle = toolArgs.title || (userPrompt.length > 8 ? `Proposta: ${userPrompt.slice(0, 50)}` : "Proposta Comercial de Prestação de Serviços");
+    const totalCents = toolArgs.total_cents || 450000;
+    const milestones = toolArgs.milestones || [
+      "Diagnóstico inicial e alinhamento de escopo",
+      "Execução técnica e implantação",
+      "Homologação e validação com o cliente",
+      "Entrega final e encerramento",
+    ];
+
+    artifact = {
       id: crypto.randomUUID(),
-      store_id: null,
-      title: "Pizza Artesanal Especial",
-      description: "Massa de fermentação lenta com molho de tomate pelado italiano e queijo especial.",
-      price_cents: 4800,
-      images: null,
+      type: "proposal",
+      title: extractedTitle,
+      version: 1,
+      totalVersions: 1,
+      authorName: "Consultor Comercial IA",
+      authorRole: "Agente Executivo",
+      previewSummary: `Proposta estruturada com cronograma em ${milestones.length} etapas e investimento total de ${formatMoney(totalCents / 100)}.`,
+      data: {
+        total_cents: totalCents,
+        currency: "BRL",
+        validity_days: 15,
+        milestones,
+        terms: "Condições de pagamento: 50% na aprovação e 50% na conclusão das entregas.",
+      },
     };
 
     structuredPayload = {
       blocks: [
         {
-          type: "food_modifier_selector",
+          type: "proposal_card",
           data: {
-            product: {
-              id: mainProd.id,
-              store_id: mainProd.store_id || null,
-              title: mainProd.title,
-              description: mainProd.description,
-              price_cents: mainProd.price_cents,
-              image_url: (mainProd as any).images?.[0] || null,
-            },
-            modifier_groups: [
-              {
-                id: "grp-size",
-                title: "Tamanho da Pizza",
-                required: true,
-                max: 1,
-                options: [
-                  { id: "opt-m", name: "Média (6 fatias)", price_cents: 0 },
-                  { id: "opt-g", name: "Grande (8 fatias)", price_cents: 1400 },
-                ],
-              },
-              {
-                id: "grp-border",
-                title: "Borda Recheada",
-                required: false,
-                max: 1,
-                options: [
-                  { id: "opt-b-cat", name: "Catupiry Original", price_cents: 800 },
-                  { id: "opt-b-chd", name: "Cheddar Cremoso", price_cents: 800 },
-                ],
-              },
-            ],
+            proposalId: artifact.id,
+            title: extractedTitle,
+            totalCents,
+            currency: "BRL",
+            validUntil: new Date(Date.now() + 15 * 86400000).toISOString(),
+            milestones,
           },
         },
       ],
     };
 
     if (!responseMessage) {
-      responseMessage = "Localizei as opções no cardápio. Configure os tamanhos e adicionais desejados antes de enviar para o seu pedido:";
+      responseMessage = `Elaborei a proposta comercial "${extractedTitle}" com valor total de ${formatMoney(totalCents / 100)}. O documento foi versionado e está disponível no painel de artefatos para visualização e exportação.`;
     }
 
-    updatedMemory.last_food_query = mainProd.title;
+    updatedMemory.last_proposal_created = new Date().toISOString();
   }
-  // ── 7. Fallback com resolução determinística (Propostas, Planilhas, Conversa Geral) ──
+  // ── 8. Relatório Financeiro & Planilha de Caixa ──
+  else if (intent === "financial_report" || promptLower.includes("planilha") || promptLower.includes("tabela") || promptLower.includes("métricas") || promptLower.includes("caixa")) {
+    const stepStart = Date.now();
+    steps.push({
+      id: `step-finance-${stepStart}`,
+      type: "tool",
+      label: gatewayResponse?.step_label || "Tool pos_get_cash_status acionada",
+      detail: gatewayResponse?.step_detail || "Consultando demonstrativo e transações financeiras do tenant",
+      status: "completed",
+      startedAt: new Date(stepStart).toISOString(),
+      completedAt: new Date(stepStart + 220).toISOString(),
+      durationMs: 220,
+      tokensUsed: 180,
+    });
+
+    let ordersCount = 0;
+    let totalRevenueCents = 0;
+    if (context.storeId) {
+      const { data: orders } = await db
+        .from("store_orders")
+        .select("id, total_amount_cents, payment_status, created_at")
+        .eq("store_id", context.storeId)
+        .limit(50);
+
+      if (orders && orders.length > 0) {
+        ordersCount = orders.length;
+        totalRevenueCents = orders.reduce((sum: number, o: any) => sum + (o.total_amount_cents || 0), 0);
+      }
+    }
+
+    const rows = ordersCount > 0 ? [
+      ["Pedidos Faturados", String(ordersCount), formatMoney(totalRevenueCents / 100), "Concluído"],
+      ["Ticket Médio", String(ordersCount), formatMoney((totalRevenueCents / (ordersCount || 1)) / 100), "Calculado"],
+    ] : [
+      ["Receitas Balcão", "0", "R$ 0,00", "Aguardando Vendas"],
+      ["Delivery Online", "0", "R$ 0,00", "Sem Pedidos"],
+      ["Serviços Locais", "0", "R$ 0,00", "Sem Lançamentos"],
+    ];
+
+    artifact = {
+      id: crypto.randomUUID(),
+      type: "spreadsheet",
+      title: "Demonstrativo Financeiro do Caixa",
+      version: 1,
+      totalVersions: 1,
+      authorName: "Auditor Financeiro IA",
+      authorRole: "Controladoria",
+      previewSummary: `Demonstrativo contábil com ${rows.length} linhas de registro e status de liquidação.`,
+      data: {
+        rows: rows.length,
+        columns: 4,
+        headers: ["Categoria", "Qtd", "Valor (BRL)", "Status"],
+        dataRows: rows,
+        format: "tabular",
+      },
+    };
+
+    structuredPayload = {
+      blocks: [
+        {
+          type: "table",
+          data: {
+            title: "Demonstrativo Consolidado de Caixa",
+            headers: ["Categoria", "Qtd", "Valor (BRL)", "Status"],
+            rows,
+          },
+        },
+      ],
+    };
+
+    if (!responseMessage) {
+      responseMessage = "Gerei a planilha consolidada de caixa com os dados reais do período. Você pode visualizá-la no painel ou baixar o arquivo CSV.";
+    }
+
+    updatedMemory.last_report_generated = new Date().toISOString();
+  }
+  // ── 9. Conversa Geral & Orientação do Ecossistema ──
   else {
-    const fallback = resolveAiPipelineSteps(userPrompt, workingMemory);
-    return fallback;
+    const stepStart = Date.now();
+    steps.push({
+      id: `step-general-${stepStart}`,
+      type: "model",
+      label: "Síntese de resposta do Waesy Copilot",
+      detail: "Processando diálogo com contexto da conversa",
+      status: "completed",
+      startedAt: new Date(stepStart).toISOString(),
+      completedAt: new Date(stepStart + 150).toISOString(),
+      durationMs: 150,
+      tokensUsed: 95,
+    });
+
+    if (!responseMessage) {
+      responseMessage = gatewayResponse?.message ||
+        "Olá! Sou o Waesy Copilot, seu assistente inteligente no ecossistema local. Posso te ajudar a encontrar estabelecimentos no Places, calcular corridas ou fretes, consultar produtos e cardápios, planejar roteiros de viagem, estruturar propostas comerciais ou criar anúncios para o seu negócio. Como posso ajudar agora?";
+    }
+
+    updatedMemory.last_interaction_topic = userPrompt.slice(0, 40);
   }
 
   return {

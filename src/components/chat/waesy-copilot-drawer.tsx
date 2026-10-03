@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { Sparkle, ArrowSquareOut, X, CircleNotch, PaperPlaneRight, User } from "@phosphor-icons/react";
+import { ChatCircleDots, ArrowSquareOut, X, CircleNotch, PaperPlaneRight, User } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -35,6 +35,19 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat?: number; lng?: number }>({});
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && "geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        () => {},
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
+      );
+    }
+  }, []);
 
   // Nao exibe o drawer flutuante se o usuario ja esta na rota dedicada /copilot
   const currentPath = location.pathname || "/";
@@ -71,10 +84,16 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
     setIsSending(true);
 
     try {
-      // Executa pipeline ReAct e de pesquisa unificada
-      const execution: AiExecutionResult = await executeAiCopilotPipeline(text, {}, {
-        userId: session?.id,
-      });
+      // Executa pipeline ReAct e de pesquisa unificada com geolocalização do navegador
+      const execution: AiExecutionResult = await executeAiCopilotPipeline(
+        text,
+        {},
+        {
+          userId: session?.id,
+          userLat: userCoords.lat,
+          userLng: userCoords.lng,
+        }
+      );
 
       const assistantMsg: DrawerMessage = {
         id: `ai-${Date.now()}`,
@@ -143,7 +162,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
         }`}
         title="Abrir Assistente Inteligente Waesy Copilot"
       >
-        <Sparkle className="size-4 animate-pulse motion-reduce:animate-none" weight="fill" />
+        <ChatCircleDots className="size-4" weight="fill" />
         <span className="hidden sm:inline">Copilot</span>
       </button>
 
@@ -159,7 +178,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
           <SheetHeader className="p-4 border-b border-border bg-muted/30 flex flex-row items-center justify-between space-y-0">
             <div className="flex items-center gap-3">
               <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
-                <Sparkle className="size-4" weight="fill" />
+                <ChatCircleDots className="size-4" weight="fill" />
               </div>
               <div className="flex flex-col text-left">
                 <SheetTitle className="text-sm font-bold text-foreground">
@@ -197,7 +216,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
               >
                 {m.role === "assistant" && (
                   <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-border shrink-0 mt-1">
-                    <Sparkle className="size-3.5" weight="fill" />
+                    <ChatCircleDots className="size-3.5" weight="fill" />
                   </div>
                 )}
 
@@ -231,7 +250,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
                   {m.artifact && (
                     <ChatArtifactCard
                       artifact={m.artifact}
-                      onOpenInBuilder={() => {
+                      onOpenBuilder={() => {
                         setIsOpen(false);
                         navigate({ to: "/copilot" as any });
                       }}
@@ -250,7 +269,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
             {isSending && (
               <div className="flex gap-3 justify-start">
                 <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-border shrink-0 mt-1">
-                  <CircleNotch className="size-3.5 animate-spin" />
+                  <CircleNotch className="size-3.5 animate-spin motion-reduce:animate-none" />
                 </div>
                 <div className="bg-muted text-muted-foreground border border-border/60 rounded-lg px-4 py-2 text-xs flex items-center gap-2">
                   <span>Processando instrucao...</span>

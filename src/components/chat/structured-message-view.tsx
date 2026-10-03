@@ -23,7 +23,6 @@ import {
   Briefcase,
   DollarSign,
   Vote,
-  Sparkles,
   AlertCircle,
   RotateCcw,
   Check,
@@ -798,7 +797,7 @@ function SummaryCardBlock({ data }: { data: Record<string, any> }) {
   return (
     <div className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs max-w-md w-full space-y-2">
       <div className="flex items-center gap-2">
-        <Sparkles className="size-4 text-primary shrink-0" />
+        <FileText className="size-4 text-primary shrink-0" />
         <h4 className="text-xs font-bold text-foreground">{data.title || "Resumo Executivo"}</h4>
       </div>
       {data.summary && (
@@ -1355,7 +1354,7 @@ function FoodModifierSelectorBlock({
                     type="button"
                     onClick={() => toggleOption(grp.id, opt.id, grp.max || 1)} /* focus-visible:ring-2 */
                     className={cn(
-                      "w-full h-9 px-3 rounded-md border text-left text-2xs flex items-center justify-between transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                      "w-full min-h-11 py-2 px-3 rounded-md border text-left text-2xs flex items-center justify-between transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       isSelected
                         ? "border-primary bg-primary/10 text-foreground font-semibold"
                         : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
@@ -1413,7 +1412,7 @@ function CreativeAdPreviewBlock({
     <div className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs max-w-sm w-full space-y-3">
       <div className="flex items-center justify-between border-b border-border/60 pb-2">
         <span className="text-2xs uppercase tracking-wider font-semibold text-primary flex items-center gap-2">
-          <Sparkles className="size-3.5" />
+          <Layers className="size-3.5" />
           <span>Arte & Anuncio Gerado</span>
         </span>
         <Badge variant="outline" className="text-2xs font-mono">

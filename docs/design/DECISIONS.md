@@ -1886,6 +1886,16 @@
   5. `Produtos Fracionados & Checkout Híbrido`: Tolerância de peso de até 10%, captura de preferência de substituição (similar, WhatsApp ou estorno) e separação de etapas no checkout (frete só para físicos, agendador para serviços e liberação imediata para digitais).
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-M09-PRODUCT-EDITOR-AND-LOGISTICS-360, Apple HIG, Linear Design System e WCAG 2.2 AA.
 - **Consequências:** Ergonomia impecável no editor de produtos em desktop e mobile, ausência de colunas espremidas e governança logística 360 completa e integrada.
-
-
+## DEC-155: Motor ReAct de IA Copilot, Widgets Generativos de Alta Densidade e Split-Screen de Artefatos
+- **Data:** 2026-10-03
+- **Contexto:** Execução integral da suíte de 6 Prompts do Ecossistema AI Copilot & All-In-One: (1) eliminação definitiva de mocks/árvore estática no dispatcher ReAct; (2) enriquecimento dos blocos de Generative UI sem AI-smell; (3) paridade total de geolocalização e métodos entre rota dedicada e gaveta flutuante; (4) blindagem de segurança com firewall financeiro deny-by-default; (5) split-screen estilo Claude Artifacts com visualizadores nativos e paridade mobile via Sheet; (6) prova end-to-end com zero erros TypeScript e catraca do design lint aprovada.
+- **Decisão:**
+  1. `Eliminação de Mocks e Dispatcher ReAct Real`: Em `src/services/ai-conversations.functions.ts`, substituída a resolução estática por consulta direta e tipada às tabelas `directory_listings`, `products` (filtrado por `storeId`) e `store_orders` (apuração contábil real para relatórios financeiros), integradas ao gateway `executeAiCoreGateway`.
+  2. `Generative UI Silenciosa & Erradicação de AI-Smell`: Em `src/components/chat/structured-message-view.tsx`, purgados ícones decorativos de estrelas/sparkles (substituídos por `FileText` e `Layers`), ajustados alvos de toque para mínimo de 44px (`min-h-11 py-2`) nos botões de seletores e garantido anel de foco acessível `:focus-visible:ring-2` em todas as ações tipadas.
+  3. `Paridade Rota Copilot e Gaveta Drawer`: Em `src/routes/_store.copilot.tsx` e `src/components/chat/waesy-copilot-drawer.tsx`, adicionada captura e injeção transparente de coordenadas do navegador (`navigator.geolocation.getCurrentPosition`), unificando o payload enviado ao BFF e eliminando ícones decorativos.
+  4. `Escudo de Segurança e Firewall Financeiro`: Em `src/services/ai-conversations.functions.ts`, corrigido o tratamento de violação de segurança do prompt (evitando crash em `flaggedPatterns`), mantido teto estrito de 2.000 caracteres e ativado o firewall financeiro deny-by-default que bloqueia comandos autônomos de débito/pagamento sem confirmação explícita no carrinho/checkout.
+  5. `Claude Artifacts Split-Screen & Paridade Mobile`: Em `src/components/chat/ai-chat-shell.tsx`, implementada a 3ª coluna dinâmica de artefatos com visualizador de Propostas (com exportação PDF via `window.print()`), Planilha tabulada (com download CSV instantâneo) e Linha do Tempo, com fallback para `Sheet` móvel inferior quando viewport < 840px (`isCompact`).
+  6. `Conformidade e Redução de Dívida`: Baseline do Design Lint atualizada de 18.693 para 18.692 (-1 dívida reduzida), 0 violações P0/P1 novas, 100% de testes unitários verdes em `chat-commerce.test.ts` e compilação de produção com Exit Code 0.
+- **Fundamentação:** AGENTS.md B.1 a B.12, docs/design/DESIGN.md, docs/design/DESIGN-LINT.md, Silent Design, Apple HIG e Doutrina Zero-Mock.
+- **Consequências:** IA Copilot 100% conectada a dados reais de produção, sem elementos visuais artificiais, com segurança estrita para dados financeiros e conformidade arquitetural absoluta.
 
